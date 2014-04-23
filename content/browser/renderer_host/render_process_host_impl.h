@@ -21,9 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/embedder/scoped_platform_handle.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/cpp/system/core.h"
 #include "ui/surface/transport_dib.h"
 
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
@@ -43,7 +41,6 @@ class BrowserDemuxerAndroid;
 class GeolocationDispatcherHost;
 class GpuMessageFilter;
 class MessagePortMessageFilter;
-class MojoApplicationHost;
 class PeerConnectionTrackerHost;
 class RendererMainThread;
 class RenderProcessHostMojoImpl;
@@ -243,10 +240,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void IncrementWorkerRefCount();
   void DecrementWorkerRefCount();
 
-  // Establish a connection to a renderer-provided service. See
-  // content/common/mojo/mojo_service_names.h for a list of services.
-  void ConnectTo(const base::StringPiece& service_name,
-                 mojo::ScopedMessagePipeHandle handle);
+  void SetWebUIHandle(int32 view_routing_id,
+                      mojo::ScopedMessagePipeHandle handle);
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
@@ -310,8 +305,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SendAecDumpFileToRenderer(IPC::PlatformFileForTransit file_for_transit);
   void SendDisableAecDumpToRenderer();
 #endif
-
-  scoped_ptr<MojoApplicationHost> mojo_application_host_;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
@@ -437,6 +430,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks survive_for_worker_start_time_;
+
+  scoped_ptr<RenderProcessHostMojoImpl> render_process_host_mojo_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

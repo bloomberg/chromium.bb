@@ -10,7 +10,6 @@
     '../base/base.gyp:base',
     '../base/base.gyp:base_i18n',
     '../crypto/crypto.gyp:crypto',
-    '../mojo/mojo.gyp:mojo_shell_bindings',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',

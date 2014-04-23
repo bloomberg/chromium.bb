@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_CHANNEL_INIT_H_
-#define MOJO_COMMON_CHANNEL_INIT_H_
+#ifndef MOJO_COMMON_MOJO_CHANNEL_INIT_H_
+#define MOJO_COMMON_MOJO_CHANNEL_INIT_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -23,23 +23,27 @@ struct ChannelInfo;
 
 namespace common {
 
-// ChannelInit handle creation (and destruction) of the mojo channel. It is
+// MojoChannelInit handle creation (and destruction) of the mojo channel. It is
 // expected that this class is created and destroyed on the main thread.
-class MOJO_COMMON_EXPORT ChannelInit {
+class MOJO_COMMON_EXPORT MojoChannelInit {
  public:
-  ChannelInit();
-  ~ChannelInit();
+  MojoChannelInit();
+  ~MojoChannelInit();
 
-  // Initializes the channel. This takes ownership of |file|. Returns the
-  // primordial MessagePipe for the channel.
-  mojo::ScopedMessagePipeHandle Init(
-      base::PlatformFile file,
-      scoped_refptr<base::TaskRunner> io_thread_task_runner);
+  // Inits the channel. This takes ownership of |file|.
+  void Init(base::PlatformFile file,
+            scoped_refptr<base::TaskRunner> io_thread_task_runner);
+
+  bool is_handle_valid() const { return bootstrap_message_pipe_.is_valid(); }
+
+  mojo::ScopedMessagePipeHandle bootstrap_message_pipe() {
+    return bootstrap_message_pipe_.Pass();
+  }
 
  private:
   // Invoked on the main thread once the channel has been established.
   static void OnCreatedChannel(
-      base::WeakPtr<ChannelInit> host,
+      base::WeakPtr<MojoChannelInit> host,
       scoped_refptr<base::TaskRunner> io_thread,
       embedder::ChannelInfo* channel);
 
@@ -48,12 +52,15 @@ class MOJO_COMMON_EXPORT ChannelInit {
   // If non-null the channel has been established.
   embedder::ChannelInfo* channel_info_;
 
-  base::WeakPtrFactory<ChannelInit> weak_factory_;
+  // The handle from channel creation.
+  mojo::ScopedMessagePipeHandle bootstrap_message_pipe_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChannelInit);
+  base::WeakPtrFactory<MojoChannelInit> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoChannelInit);
 };
 
 }  // namespace common
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_CHANNEL_INIT_H_
+#endif  // MOJO_COMMON_MOJO_CHANNEL_INIT_H_

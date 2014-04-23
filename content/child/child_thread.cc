@@ -29,7 +29,6 @@
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
-#include "content/child/mojo/mojo_application.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
@@ -237,8 +236,6 @@ void ChildThread::Init() {
     IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
-  mojo_application_.reset(new MojoApplication(this));
-
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
   thread_safe_sender_ = new ThreadSafeSender(
@@ -352,13 +349,6 @@ void ChildThread::OnChannelError() {
   base::MessageLoop::current()->Quit();
 }
 
-void ChildThread::AcceptConnection(
-    const mojo::String& service_name,
-    mojo::ScopedMessagePipeHandle message_pipe) {
-  // By default, we don't expect incoming connections.
-  NOTREACHED();
-}
-
 bool ChildThread::Send(IPC::Message* msg) {
   DCHECK(base::MessageLoop::current() == message_loop());
   if (!channel_) {
@@ -419,9 +409,6 @@ base::SharedMemory* ChildThread::AllocateSharedMemory(
 }
 
 bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
-  if (mojo_application_->OnMessageReceived(msg))
-    return true;
-
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))
     return true;

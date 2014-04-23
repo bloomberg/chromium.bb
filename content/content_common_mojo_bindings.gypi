@@ -12,7 +12,7 @@
         '../mojo/mojo.gyp:mojo_environment_chromium',
       ],
       'sources': [
-        'common/web_ui_setup.mojom',
+        'common/mojo/render_process.mojom',
       ],
       # TODO(sky): this shouldn't be necessary. It's working around a bug in
       # gyp.

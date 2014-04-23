@@ -352,8 +352,6 @@
     'common/message_router.h',
     'common/mime_registry_messages.h',
     'common/mojo/mojo_messages.h',
-    'common/mojo/mojo_service_names.cc',
-    'common/mojo/mojo_service_names.h',
     'common/navigation_gesture.h',
     'common/net/url_fetcher.cc',
     'common/net/url_request_user_data.cc',

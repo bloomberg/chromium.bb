@@ -51,7 +51,6 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/mojo/mojo_service_names.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
@@ -83,6 +82,7 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/media/webrtc_identity_service.h"
+#include "content/renderer/mojo/mojo_render_process_observer.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -90,7 +90,6 @@
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
-#include "content/renderer/web_ui_setup_impl.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
@@ -98,7 +97,6 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
-#include "mojo/common/common_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "skia/ext/event_tracer_impl.h"
@@ -395,6 +393,9 @@ void RenderThreadImpl::Init() {
   AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
 
   AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
+
+  // MojoRenderProcessObserver deletes itself as necessary.
+  new MojoRenderProcessObserver(this);
 
   GetContentClient()->renderer()->RenderThreadStarted();
 
@@ -1199,17 +1200,6 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
       handle,
       gfx::Size(width, height),
       internalformat).PassAs<gfx::GpuMemoryBuffer>();
-}
-
-void RenderThreadImpl::AcceptConnection(
-    const mojo::String& service_name,
-    mojo::ScopedMessagePipeHandle message_pipe) {
-  // TODO(darin): Invent some kind of registration system to use here.
-  if (service_name.To<base::StringPiece>() == kRendererService_WebUISetup) {
-    WebUISetupImpl::Bind(message_pipe.Pass());
-  } else {
-    NOTREACHED() << "Unknown service name";
-  }
 }
 
 void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
