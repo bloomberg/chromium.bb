@@ -257,8 +257,10 @@ void DownloadTargetDeterminer::NotifyExtensionsDone(
     net::GenerateSafeFileName(std::string(), false, &new_path);
     virtual_path_ = new_path;
     create_target_directory_ = true;
-    conflict_action_ = conflict_action;
   }
+  // An extension may set conflictAction without setting filename.
+  if (conflict_action != DownloadPathReservationTracker::UNIQUIFY)
+    conflict_action_ = conflict_action;
 
   DoLoop();
 }

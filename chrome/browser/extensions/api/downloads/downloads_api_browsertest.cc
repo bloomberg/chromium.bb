@@ -1209,7 +1209,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(item1_value->GetString("filename", &item1_name));
   ASSERT_GT(items[0]->GetTargetFilePath().value(),
             items[1]->GetTargetFilePath().value());
-  ASSERT_GT(item0_name, item1_name);
+  // The order of results when orderBy is empty is unspecified. When there are
+  // no sorters, DownloadQuery does not call sort(), so the order of the results
+  // depends on the order of the items in base::hash_map<uint32,...>
+  // DownloadManagerImpl::downloads_, which is unspecified and differs between
+  // libc++ and libstdc++. http://crbug.com/365334
 }
 
 // Test the |danger| option for search().
@@ -1739,6 +1743,80 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "    \"current\": \"%s\"}}]",
                          result_id,
                          GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
+}
+
+// conflictAction may be specified without filename.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_Download_ConflictAction) {
+  static char kFilename[] = "download.txt";
+  LoadExtension("downloads_split");
+  std::string download_url = "data:text/plain,hello";
+  GoOnTheRecord();
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+      "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(api::OnCreated::kEventName,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename(kFilename).c_str())));
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
+
+  result.reset(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\",  \"conflictAction\": \"overwrite\"}]",
+          download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller2(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(api::OnCreated::kEventName,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_url.c_str())));
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename(kFilename).c_str())));
   ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"state\": {"
@@ -2890,6 +2968,130 @@ IN_PROC_BROWSER_TEST_F(
       api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
       &error));
   EXPECT_STREQ(errors::kInvalidFilename, error.c_str());
+
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
+}
+
+// conflictAction may be specified without filename.
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest,
+    DownloadExtensionTest_OnDeterminingFilename_Overwrite) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
+  std::string download_url = test_server()->GetURL("slow?0").spec();
+
+  // Start downloading a file.
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+  ASSERT_TRUE(WaitFor(api::OnCreated::kEventName,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"id\": %d,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         result_id,
+                         download_url.c_str())));
+  ASSERT_TRUE(WaitFor(
+      api::OnDeterminingFilename::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+
+  // Respond to the onDeterminingFilename.
+  std::string error;
+  ASSERT_TRUE(ExtensionDownloadsEventRouter::DetermineFilename(
+      browser()->profile(),
+      false,
+      GetExtensionId(),
+      result_id,
+      base::FilePath(),
+      api::FILENAME_CONFLICT_ACTION_UNIQUIFY,
+      &error));
+  EXPECT_EQ("", error);
+
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\": {"
+                         "    \"previous\": \"\","
+                         "    \"current\": \"%s\"}}]",
+                         result_id,
+                         GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]",
+                         result_id)));
+
+  // Start downloading a file.
+  result.reset(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(), base::StringPrintf(
+          "[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller2(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(api::OnCreated::kEventName,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"id\": %d,"
+                         "  \"mime\": \"text/plain\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         result_id,
+                         download_url.c_str())));
+  ASSERT_TRUE(WaitFor(
+      api::OnDeterminingFilename::kEventName,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"filename\":\"slow.txt\"}]",
+                         result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+
+  // Respond to the onDeterminingFilename.
+  // Also test that DetermineFilename allows (chrome) extensions to set
+  // filenames without (filename) extensions. (Don't ask about v8 extensions or
+  // python extensions or kernel extensions or firefox extensions...)
+  error = "";
+  ASSERT_TRUE(ExtensionDownloadsEventRouter::DetermineFilename(
+      browser()->profile(),
+      false,
+      GetExtensionId(),
+      result_id,
+      base::FilePath(),
+      api::FILENAME_CONFLICT_ACTION_OVERWRITE,
+      &error));
+  EXPECT_EQ("", error);
 
   ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
       base::StringPrintf("[{\"id\": %d,"

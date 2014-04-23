@@ -439,6 +439,7 @@ enum DownloadsFunctionName {
   DOWNLOADS_FUNCTION_REMOVE_FILE = 12,
   DOWNLOADS_FUNCTION_SHOW_DEFAULT_FOLDER = 13,
   DOWNLOADS_FUNCTION_SET_SHELF_ENABLED = 14,
+  DOWNLOADS_FUNCTION_DETERMINE_FILENAME = 15,
   // Insert new values here, not at the beginning.
   DOWNLOADS_FUNCTION_LAST
 };
@@ -723,7 +724,8 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
         // Do not use filename if another determiner has already overridden the
         // filename and they take precedence. Extensions that were installed
         // later take precedence over previous extensions.
-        if (!filename.empty()) {
+        if (!filename.empty() ||
+            (conflict_action != downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY)) {
           extensions::ExtensionWarningSet warnings;
           std::string winner_extension_id;
           ExtensionDownloadsEventRouter::DetermineFilenameInternal(
@@ -775,7 +777,9 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
       if (!iter->reported)
         return;
     }
-    if (determined_filename_.empty()) {
+    if (determined_filename_.empty() &&
+        (determined_conflict_action_ ==
+         downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY)) {
       if (!filename_no_change_.is_null())
         filename_no_change_.Run();
     } else {
@@ -1048,7 +1052,9 @@ void DownloadsDownloadFunction::OnStarted(
   if (item) {
     DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     SetResult(new base::FundamentalValue(static_cast<int>(item->GetId())));
-    if (!creator_suggested_filename.empty()) {
+    if (!creator_suggested_filename.empty() ||
+        (creator_conflict_action !=
+         downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY)) {
       ExtensionDownloadsEventRouterData* data =
           ExtensionDownloadsEventRouterData::Get(item);
       if (!data) {
@@ -1601,7 +1607,9 @@ void ExtensionDownloadsEventRouter::OnDeterminingFilename(
                 json);
   if (!any_determiners) {
     data->ClearPendingDeterminers();
-    if (!data->creator_suggested_filename().empty()) {
+    if (!data->creator_suggested_filename().empty() ||
+        (data->creator_conflict_action() !=
+         downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY)) {
       change.Run(data->creator_suggested_filename(),
                  ConvertConflictAction(data->creator_conflict_action()));
       // If all listeners are removed, don't keep |data| around.
@@ -1624,7 +1632,8 @@ void ExtensionDownloadsEventRouter::DetermineFilenameInternal(
     downloads::FilenameConflictAction*
       determined_conflict_action,
     extensions::ExtensionWarningSet* warnings) {
-  DCHECK(!filename.empty());
+  DCHECK(!filename.empty() ||
+         (conflict_action != downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY));
   DCHECK(!suggesting_extension_id.empty());
 
   if (incumbent_extension_id.empty()) {
@@ -1665,6 +1674,7 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
     downloads::FilenameConflictAction conflict_action,
     std::string* error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordApiFunctions(DOWNLOADS_FUNCTION_DETERMINE_FILENAME);
   DownloadItem* item = GetDownload(profile, include_incognito, download_id);
   ExtensionDownloadsEventRouterData* data =
       item ? ExtensionDownloadsEventRouterData::Get(item) : NULL;
