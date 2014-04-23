@@ -95,7 +95,6 @@ class CONTENT_EXPORT RenderWidget
   int32 surface_id() const { return surface_id_; }
   blink::WebWidget* webwidget() const { return webwidget_; }
   gfx::Size size() const { return size_; }
-  float filtered_time_per_frame() const { return filtered_time_per_frame_; }
   bool has_focus() const { return has_focus_; }
   bool is_fullscreen() const { return is_fullscreen_; }
   bool is_hidden() const { return is_hidden_; }
@@ -304,16 +303,13 @@ class CONTENT_EXPORT RenderWidget
   // Paints a border at the given rect for debugging purposes.
   void PaintDebugBorder(const gfx::Rect& rect, SkCanvas* canvas);
 
-  bool IsRenderingVSynced();
   void AnimationCallback();
-  void AnimateIfNeeded();
   void InvalidationCallback();
   void FlushPendingInputEventAck();
   void DoDeferredUpdateAndSendInputAck();
   void DoDeferredUpdate();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const blink::WebRect& pos);
-  virtual void Composite(base::TimeTicks frame_begin_time);
 
   // Set the background of the render widget to a bitmap. The bitmap will be
   // tiled in both directions if it isn't big enough to fill the area. This is
@@ -569,9 +565,6 @@ class CONTENT_EXPORT RenderWidget
   // Flags for the next ViewHostMsg_UpdateRect message.
   int next_paint_flags_;
 
-  // Filtered time per frame based on UpdateRect messages.
-  float filtered_time_per_frame_;
-
   // Whether the WebWidget is in auto resize mode, which is used for example
   // by extension popups.
   bool auto_resize_mode_;
@@ -687,12 +680,8 @@ class CONTENT_EXPORT RenderWidget
   bool was_accelerated_compositing_ever_active_;
 
   base::OneShotTimer<RenderWidget> animation_timer_;
-  base::Time animation_floor_time_;
   bool animation_update_pending_;
   bool invalidation_task_posted_;
-
-  bool has_disable_gpu_vsync_switch_;
-  base::TimeTicks last_do_deferred_update_time_;
 
   // Stats for legacy software mode
   scoped_ptr<cc::RenderingStatsInstrumentation> legacy_software_mode_stats_;
@@ -712,10 +701,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;
-
-  // The latency information for any current non-accelerated-compositing
-  // frame.
-  std::vector<ui::LatencyInfo> latency_info_;
 
   uint32 next_output_surface_id_;
 

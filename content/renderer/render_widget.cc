@@ -358,7 +358,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       has_frame_pending_(false),
       overdraw_bottom_height_(0.f),
       next_paint_flags_(0),
-      filtered_time_per_frame_(0.0f),
       auto_resize_mode_(false),
       need_update_rect_for_auto_resize_(false),
       did_show_(false),
@@ -397,8 +396,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
-  has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableGpuVsync);
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
@@ -956,8 +953,6 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     latency_info_swap_promise_monitor =
         compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info)
             .Pass();
-  } else {
-    latency_info_.push_back(latency_info);
   }
 
   if (base::TimeTicks::IsHighResNowFastAndReliable()) {
@@ -1244,75 +1239,7 @@ void RenderWidget::AnimationCallback() {
     TRACE_EVENT0("renderer", "EarlyOut_NoAnimationUpdatePending");
     return;
   }
-  if (!animation_floor_time_.is_null() && IsRenderingVSynced()) {
-    // Record when we fired (according to base::Time::Now()) relative to when
-    // we posted the task to quantify how much the base::Time/base::TimeTicks
-    // skew is affecting animations.
-    base::TimeDelta animation_callback_delay = base::Time::Now() -
-        (animation_floor_time_ - base::TimeDelta::FromMilliseconds(16));
-    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.AnimationCallbackDelayTime",
-                               animation_callback_delay,
-                               base::TimeDelta::FromMilliseconds(0),
-                               base::TimeDelta::FromMilliseconds(30),
-                               25);
-  }
   DoDeferredUpdateAndSendInputAck();
-}
-
-void RenderWidget::AnimateIfNeeded() {
-  if (!animation_update_pending_)
-    return;
-
-  // Target 60FPS if vsync is on. Go as fast as we can if vsync is off.
-  base::TimeDelta animationInterval = IsRenderingVSynced() ?
-      base::TimeDelta::FromMilliseconds(16) : base::TimeDelta();
-
-  base::Time now = base::Time::Now();
-
-  // animation_floor_time_ is the earliest time that we should animate when
-  // using the dead reckoning software scheduler. If we're using swapbuffers
-  // complete callbacks to rate limit, we can ignore this floor.
-  if (now >= animation_floor_time_) {
-    TRACE_EVENT0("renderer", "RenderWidget::AnimateIfNeeded")
-    animation_floor_time_ = now + animationInterval;
-    // Set a timer to call us back after animationInterval before
-    // running animation callbacks so that if a callback requests another
-    // we'll be sure to run it at the proper time.
-    animation_timer_.Stop();
-    animation_timer_.Start(FROM_HERE, animationInterval, this,
-                           &RenderWidget::AnimationCallback);
-    animation_update_pending_ = false;
-    if (is_accelerated_compositing_active_ && compositor_) {
-      compositor_->UpdateAnimations(base::TimeTicks::Now());
-    } else {
-      double frame_begin_time =
-        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-      webwidget_->animate(frame_begin_time);
-    }
-    return;
-  }
-  TRACE_EVENT0("renderer", "EarlyOut_AnimatedTooRecently");
-  if (!animation_timer_.IsRunning()) {
-    // This code uses base::Time::Now() to calculate the floor and next fire
-    // time because javascript's Date object uses base::Time::Now().  The
-    // message loop uses base::TimeTicks, which on windows can have a
-    // different granularity than base::Time.
-    // The upshot of all this is that this function might be called before
-    // base::Time::Now() has advanced past the animation_floor_time_.  To
-    // avoid exposing this delay to javascript, we keep posting delayed
-    // tasks until base::Time::Now() has advanced far enough.
-    base::TimeDelta delay = animation_floor_time_ - now;
-    animation_timer_.Start(FROM_HERE, delay, this,
-                           &RenderWidget::AnimationCallback);
-  }
-}
-
-bool RenderWidget::IsRenderingVSynced() {
-  // TODO(nduca): Forcing a driver to disable vsync (e.g. in a control panel) is
-  // not caught by this check. This will lead to artificially low frame rates
-  // for people who force vsync off at a driver level and expect Chrome to speed
-  // up.
-  return !has_disable_gpu_vsync_switch_;
 }
 
 void RenderWidget::InvalidationCallback() {
@@ -1334,12 +1261,6 @@ void RenderWidget::DoDeferredUpdateAndSendInputAck() {
 
 // TODO(danakj): Remove this when everything is ForceCompositingMode.
 void RenderWidget::DoDeferredUpdate() {
-}
-
-void RenderWidget::Composite(base::TimeTicks frame_begin_time) {
-  DCHECK(is_accelerated_compositing_active_);
-  if (compositor_)  // TODO(jamesr): Figure out how this can be null.
-    compositor_->Composite(frame_begin_time);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

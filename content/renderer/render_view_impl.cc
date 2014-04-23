@@ -1441,8 +1441,6 @@ void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
   if (RenderWidgetCompositor* rwc = compositor()) {
     latency_info_swap_promise_monitor =
         rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
-  } else {
-    latency_info_.push_back(latency_info);
   }
   ScheduleCompositeWithForcedRedraw();
 }
@@ -2755,7 +2753,7 @@ bool RenderViewImpl::GetContentStateImmediately() const {
 }
 
 float RenderViewImpl::GetFilteredTimePerFrame() const {
-  return filtered_time_per_frame();
+  return 0.0f;
 }
 
 blink::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
