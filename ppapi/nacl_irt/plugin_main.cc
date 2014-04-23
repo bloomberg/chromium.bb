@@ -24,15 +24,9 @@
 
 void PpapiPluginRegisterThreadCreator(
     const struct PP_ThreadFunctions* thread_functions) {
-#if defined(__native_client__)
-  // TODO(hidehiko): The thread creation for the PPB_Audio is not yet
-  // implemented on non-SFI mode. Support this. Now, this function invocation
-  // is just ignored.
-
   // Initialize all classes that need to create threads that call back into
   // user code.
   ppapi::PPB_Audio_Shared::SetThreadFunctions(thread_functions);
-#endif
 }
 
 int PpapiPluginMain() {

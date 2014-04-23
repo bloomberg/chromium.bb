@@ -5,18 +5,18 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #include "base/logging.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 
-#if defined(OS_NACL)
 namespace {
+bool g_nacl_mode = false;
 // Because this is static, the function pointers will be NULL initially.
-PP_ThreadFunctions thread_functions;
+PP_ThreadFunctions g_thread_functions;
 }
-#endif  // defined(OS_NACL)
 
 AudioCallbackCombined::AudioCallbackCombined()
     : callback_1_0_(NULL), callback_(NULL) {}
@@ -50,10 +50,7 @@ void AudioCallbackCombined::Run(void* sample_buffer,
 PPB_Audio_Shared::PPB_Audio_Shared()
     : playing_(false),
       shared_memory_size_(0),
-#if defined(OS_NACL)
-      thread_id_(0),
-      thread_active_(false),
-#endif
+      nacl_thread_active_(false),
       user_data_(NULL),
       client_buffer_size_bytes_(0),
       bytes_per_second_(0),
@@ -75,11 +72,8 @@ void PPB_Audio_Shared::SetCallback(const AudioCallbackCombined& callback,
 
 void PPB_Audio_Shared::SetStartPlaybackState() {
   DCHECK(!playing_);
-#if !defined(OS_NACL)
   DCHECK(!audio_thread_.get());
-#else
-  DCHECK(!thread_active_);
-#endif
+  DCHECK(!nacl_thread_active_);
   // If the socket doesn't exist, that means that the plugin has started before
   // the browser has had a chance to create all the shared memory info and
   // notify us. This is a common case. In this case, we just set the playing_
@@ -138,62 +132,68 @@ void PPB_Audio_Shared::StartThread() {
   // start up quickly enough.
   memset(shared_memory_->memory(), 0, shared_memory_size_);
   memset(client_buffer_.get(), 0, client_buffer_size_bytes_);
-#if !defined(OS_NACL)
-  DCHECK(!audio_thread_.get());
-  audio_thread_.reset(
-      new base::DelegateSimpleThread(this, "plugin_audio_thread"));
-  audio_thread_->Start();
-#else
-  // Use NaCl's special API for IRT code that creates threads that call back
-  // into user code.
-  if (!IsThreadFunctionReady())
-    return;
 
-  DCHECK(!thread_active_);
-  int result = thread_functions.thread_create(&thread_id_, CallRun, this);
-  DCHECK_EQ(result, 0);
-  thread_active_ = true;
-#endif
+  if (g_nacl_mode) {
+    // Use NaCl's special API for IRT code that creates threads that call back
+    // into user code.
+    if (!IsThreadFunctionReady())
+      return;
+
+    DCHECK(!nacl_thread_active_);
+    int result =
+        g_thread_functions.thread_create(&nacl_thread_id_, CallRun, this);
+    DCHECK_EQ(0, result);
+    nacl_thread_active_ = true;
+  } else {
+    DCHECK(!audio_thread_.get());
+    audio_thread_.reset(
+        new base::DelegateSimpleThread(this, "plugin_audio_thread"));
+    audio_thread_->Start();
+  }
 }
 
 void PPB_Audio_Shared::StopThread() {
-#if !defined(OS_NACL)
-  if (audio_thread_.get()) {
-    // In general, the audio thread should not do Pepper calls, but it might
-    // anyway (for example, our Audio test does CallOnMainThread). If it did
-    // a pepper call which acquires the lock (most of them do), and we try to
-    // shut down the thread and Join it while holding the lock, we would
-    // deadlock. So we give up the lock here so that the thread at least _can_
-    // make Pepper calls without causing deadlock.
-    CallWhileUnlocked(base::Bind(&base::DelegateSimpleThread::Join,
-                                 base::Unretained(audio_thread_.get())));
-    audio_thread_.reset();
+  // In general, the audio thread should not do Pepper calls, but it might
+  // anyway (for example, our Audio test does CallOnMainThread). If it did a
+  // pepper call which acquires the lock (most of them do), and we try to shut
+  // down the thread and Join it while holding the lock, we would deadlock. So
+  // we give up the lock here so that the thread at least _can_ make Pepper
+  // calls without causing deadlock.
+  if (g_nacl_mode) {
+    if (nacl_thread_active_) {
+      int result =
+          CallWhileUnlocked(g_thread_functions.thread_join, nacl_thread_id_);
+      DCHECK_EQ(0, result);
+      nacl_thread_active_ = false;
+    }
+  } else {
+    if (audio_thread_.get()) {
+      CallWhileUnlocked(base::Bind(&base::DelegateSimpleThread::Join,
+                                   base::Unretained(audio_thread_.get())));
+      audio_thread_.reset();
+    }
   }
-#else
-  if (thread_active_) {
-    // See comment above about why we unlock here.
-    int result = CallWhileUnlocked(thread_functions.thread_join, thread_id_);
-    DCHECK_EQ(0, result);
-    thread_active_ = false;
-  }
-#endif
 }
 
 // static
 bool PPB_Audio_Shared::IsThreadFunctionReady() {
-#if defined(OS_NACL)
-  if (thread_functions.thread_create == NULL ||
-      thread_functions.thread_join == NULL)
-    return false;
-#endif
-  return true;
+  if (!g_nacl_mode)
+    return true;
+
+  return (g_thread_functions.thread_create != NULL &&
+          g_thread_functions.thread_join != NULL);
 }
 
-#if defined(OS_NACL)
+// static
+void PPB_Audio_Shared::SetNaClMode() {
+  g_nacl_mode = true;
+}
+
 // static
 void PPB_Audio_Shared::SetThreadFunctions(
     const struct PP_ThreadFunctions* functions) {
-  thread_functions = *functions;
+  DCHECK(g_nacl_mode);
+  g_thread_functions = *functions;
 }
 
 // static
@@ -201,7 +201,6 @@ void PPB_Audio_Shared::CallRun(void* self) {
   PPB_Audio_Shared* audio = static_cast<PPB_Audio_Shared*>(self);
   audio->Run();
 }
-#endif
 
 void PPB_Audio_Shared::Run() {
   int pending_data = 0;

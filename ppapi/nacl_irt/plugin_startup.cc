@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ppapi/nacl_irt/manifest_service.h"
+#include "ppapi/shared_impl/ppb_audio_shared.h"
 
 namespace ppapi {
 namespace {
@@ -79,6 +80,8 @@ void StartUpPlugin() {
         base::Bind(StartUpManifestServiceOnIOThread, &event));
     event.Wait();
   }
+
+  PPB_Audio_Shared::SetNaClMode();
 }
 
 int GetBrowserIPCFileDescriptor() {

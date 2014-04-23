@@ -15,9 +15,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_api.h"
 
-#if defined(OS_NACL)
-#include "ppapi/nacl_irt/public/irt_ppapi.h"
-#endif
+struct PP_ThreadFunctions;
 
 namespace ppapi {
 
@@ -85,11 +83,14 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // was invoked properly.
   static bool IsThreadFunctionReady();
 
-#if defined(OS_NACL)
+  // Configures this class to run in a NaCl plugin.
+  // If called, SetThreadFunctions() must be called before calling
+  // SetStartPlaybackState() on any instance of this class.
+  static void SetNaClMode();
+
   // NaCl has a special API for IRT code to create threads that can call back
   // into user code.
   static void SetThreadFunctions(const struct PP_ThreadFunctions* functions);
-#endif
 
  private:
   // Starts execution of the audio thread.
@@ -116,15 +117,12 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // The size of the sample buffer in bytes.
   size_t shared_memory_size_;
 
-#if !defined(OS_NACL)
   // When the callback is set, this thread is spawned for calling it.
   scoped_ptr<base::DelegateSimpleThread> audio_thread_;
-#else
-  uintptr_t thread_id_;
-  bool thread_active_;
+  uintptr_t nacl_thread_id_;
+  bool nacl_thread_active_;
 
   static void CallRun(void* self);
-#endif
 
   // Callback to call when audio is ready to accept new samples.
   AudioCallbackCombined callback_;

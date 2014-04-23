@@ -1196,9 +1196,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioThreadCreator)) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, AudioThreadCreator) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
-// TODO(hidehiko): Enable AudioThreadCreator testing for NonSfi when
-// PPB_Audio_Shared::SetThreadFunctions is fixed.
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, DISABLED_AudioThreadCreator) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
+                       MAYBE_NONSFI(AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 
