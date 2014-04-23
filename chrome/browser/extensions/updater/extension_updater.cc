@@ -102,16 +102,14 @@ ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
     const std::string& i,
     const base::FilePath& p,
     bool file_ownership_passed,
-    const GURL& u,
     const std::set<int>& request_ids)
     : extension_id(i),
       path(p),
       file_ownership_passed(file_ownership_passed),
-      download_url(u),
       request_ids(request_ids) {}
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
-    : path(), file_ownership_passed(true), download_url() {}
+    : path(), file_ownership_passed(true) {}
 
 ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() {}
 
@@ -485,8 +483,7 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
 
   VLOG(2) << download_url << " written to " << path.value();
 
-  FetchedCRXFile fetched(id, path, file_ownership_passed, download_url,
-                         request_ids);
+  FetchedCRXFile fetched(id, path, file_ownership_passed, request_ids);
   fetched_crx_files_.push(fetched);
 
   // MaybeInstallCRXFile() removes extensions from |in_progress_ids_| after
@@ -560,7 +557,6 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
     if (service_->UpdateExtension(crx_file.extension_id,
                                   crx_file.path,
                                   crx_file.file_ownership_passed,
-                                  crx_file.download_url,
                                   &installer)) {
       crx_install_is_running_ = true;
       current_crx_file_ = crx_file;

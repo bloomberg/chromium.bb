@@ -35,6 +35,7 @@
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -369,7 +370,8 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
     DownloadItem* item, const content::DownloadOpenDelayedCallback& callback) {
-  if (download_crx_util::IsExtensionDownload(*item)) {
+  if (download_crx_util::IsExtensionDownload(*item) &&
+      !extensions::WebstoreInstaller::GetAssociatedApproval(*item)) {
     scoped_refptr<extensions::CrxInstaller> crx_installer =
         download_crx_util::OpenChromeExtension(profile_, *item);
 

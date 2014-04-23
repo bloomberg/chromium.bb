@@ -110,9 +110,6 @@ class CrxInstaller
   int creation_flags() const { return creation_flags_; }
   void set_creation_flags(int val) { creation_flags_ = val; }
 
-  const GURL& download_url() const { return download_url_; }
-  void set_download_url(const GURL& val) { download_url_ = val; }
-
   const base::FilePath& source_file() const { return source_file_; }
 
   Manifest::Location install_source() const {
@@ -144,14 +141,6 @@ class CrxInstaller
       creation_flags_ |= Extension::FROM_WEBSTORE;
     else
       creation_flags_ &= ~Extension::FROM_WEBSTORE;
-  }
-
-  // The original download URL should be set when the WebstoreInstaller is
-  // tracking the installation. The WebstoreInstaller uses this URL to match
-  // failure notifications to the extension.
-  const GURL& original_download_url() const { return original_download_url_; }
-  void set_original_download_url(const GURL& url) {
-    original_download_url_ = url;
   }
 
   // If |apps_require_extension_mime_type_| is set to true, be sure to set
@@ -313,9 +302,6 @@ class CrxInstaller
   // Whether we're supposed to delete the source file on destruction. Defaults
   // to false.
   bool delete_source_;
-
-  // The download URL, before redirects, if this is a gallery install.
-  GURL original_download_url_;
 
   // Whether to create an app shortcut after successful installation. This is
   // set based on the user's selection in the UI and can only ever be true for

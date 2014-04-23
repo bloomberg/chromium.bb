@@ -14,6 +14,15 @@ using content::DownloadItem;
 
 namespace download_crx_util {
 
+scoped_refptr<extensions::CrxInstaller> CreateCrxInstaller(
+    Profile* profile,
+    const content::DownloadItem& download_item) {
+  NOTIMPLEMENTED() << "CrxInstaller not implemented on Android";
+  scoped_refptr<extensions::CrxInstaller> installer(
+      extensions::CrxInstaller::CreateSilent(NULL));
+  return installer;
+}
+
 void SetMockInstallPromptForTesting(ExtensionInstallPrompt* mock_prompt) {
   NOTIMPLEMENTED();
 }

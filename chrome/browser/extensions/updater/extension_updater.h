@@ -126,14 +126,12 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     FetchedCRXFile(const std::string& id,
                    const base::FilePath& path,
                    bool file_ownership_passed,
-                   const GURL& download_url,
                    const std::set<int>& request_ids);
     ~FetchedCRXFile();
 
     std::string extension_id;
     base::FilePath path;
     bool file_ownership_passed;
-    GURL download_url;
     std::set<int> request_ids;
   };
 

@@ -38,6 +38,7 @@ class WebContents;
 
 namespace extensions {
 
+class CrxInstaller;
 class Extension;
 class Manifest;
 
@@ -228,6 +229,9 @@ class WebstoreInstaller : public content::NotificationObserver,
   // Updates the InstallTracker with the latest download progress.
   void UpdateDownloadProgress();
 
+  // Creates and starts CrxInstaller for the downloaded extension package.
+  void StartCrxInstaller(const content::DownloadItem& item);
+
   // Reports an install |error| to the delegate for the given extension if this
   // managed its installation. This also removes the associated PendingInstall.
   void ReportFailure(const std::string& error, FailureReason reason);
@@ -254,6 +258,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   base::OneShotTimer<WebstoreInstaller> download_progress_timer_;
   scoped_ptr<Approval> approval_;
   GURL download_url_;
+  scoped_refptr<CrxInstaller> crx_installer_;
 
   // Pending modules.
   std::list<SharedModuleInfo::ImportInfo> pending_modules_;

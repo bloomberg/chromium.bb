@@ -411,11 +411,9 @@ class ServiceForDownloadTests : public MockService {
       const std::string& id,
       const base::FilePath& extension_path,
       bool file_ownership_passed,
-      const GURL& download_url,
       CrxInstaller** out_crx_installer) OVERRIDE {
     extension_id_ = id;
     install_path_ = extension_path;
-    download_url_ = download_url;
 
     if (ContainsKey(fake_crx_installers_, id)) {
       *out_crx_installer = fake_crx_installers_[id];
@@ -437,7 +435,6 @@ class ServiceForDownloadTests : public MockService {
 
   const std::string& extension_id() const { return extension_id_; }
   const base::FilePath& install_path() const { return install_path_; }
-  const GURL& download_url() const { return download_url_; }
 
  private:
   // Hold the set of ids that UpdateExtension() should fake success on.
@@ -1078,7 +1075,6 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_EQ(id, service->extension_id());
       base::FilePath tmpfile_path = service->install_path();
       EXPECT_FALSE(tmpfile_path.empty());
-      EXPECT_EQ(test_url, service->download_url());
       EXPECT_EQ(extension_file_path, tmpfile_path);
     }
   }
@@ -1161,7 +1157,6 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_EQ(id, service->extension_id());
       base::FilePath tmpfile_path = service->install_path();
       EXPECT_FALSE(tmpfile_path.empty());
-      EXPECT_EQ(test_url, service->download_url());
       EXPECT_EQ(extension_file_path, tmpfile_path);
     }
   }
@@ -1259,7 +1254,6 @@ class ExtensionUpdaterTest : public testing::Test {
     base::FilePath tmpfile_path = service.install_path();
     EXPECT_FALSE(tmpfile_path.empty());
     EXPECT_EQ(id1, service.extension_id());
-    EXPECT_EQ(url1, service.download_url());
     RunUntilIdle();
 
     // Make sure the second fetch finished and asked the service to do an
@@ -1282,7 +1276,6 @@ class ExtensionUpdaterTest : public testing::Test {
       // The second install should not have run, because the first has not
       // sent a notification that it finished.
       EXPECT_EQ(id1, service.extension_id());
-      EXPECT_EQ(url1, service.download_url());
 
       // Fake install notice.  This should start the second installation,
       // which will be checked below.
@@ -1292,7 +1285,6 @@ class ExtensionUpdaterTest : public testing::Test {
     }
 
     EXPECT_EQ(id2, service.extension_id());
-    EXPECT_EQ(url2, service.download_url());
     EXPECT_FALSE(service.install_path().empty());
 
     // Make sure the correct crx contents were passed for the update call.

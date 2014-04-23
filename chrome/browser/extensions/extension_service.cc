@@ -503,7 +503,6 @@ void ExtensionService::LoadGreylistFromPrefs() {
 bool ExtensionService::UpdateExtension(const std::string& id,
                                        const base::FilePath& extension_path,
                                        bool file_ownership_passed,
-                                       const GURL& download_url,
                                        CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (browser_terminating_) {
@@ -583,7 +582,6 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   installer->set_creation_flags(creation_flags);
 
   installer->set_delete_source(file_ownership_passed);
-  installer->set_download_url(download_url);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
   installer->InstallCrx(extension_path);
 

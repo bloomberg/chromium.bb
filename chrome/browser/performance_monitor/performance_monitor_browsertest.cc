@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<extensions::CrxInstaller>(crx_installer));
   ASSERT_TRUE(extension_service->
-      UpdateExtension(extension->id(), path_v2_, true, GURL(), &crx_installer));
+      UpdateExtension(extension->id(), path_v2_, true, &crx_installer));
   windowed_observer.Wait();
 
   extension = extension_service->GetExtensionById(

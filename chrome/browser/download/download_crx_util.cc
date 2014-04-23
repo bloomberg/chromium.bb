@@ -69,11 +69,9 @@ void SetMockInstallPromptForTesting(
   mock_install_prompt_for_testing = mock_prompt.release();
 }
 
-scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
+scoped_refptr<extensions::CrxInstaller> CreateCrxInstaller(
     Profile* profile,
-    const DownloadItem& download_item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+    const content::DownloadItem& download_item) {
   ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
       extension_service();
   CHECK(service);
@@ -87,6 +85,19 @@ scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
   installer->set_error_on_unsupported_requirements(true);
   installer->set_delete_source(true);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
+  installer->set_original_mime_type(download_item.GetOriginalMimeType());
+  installer->set_apps_require_extension_mime_type(true);
+
+  return installer;
+}
+
+scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
+    Profile* profile,
+    const DownloadItem& download_item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_refptr<extensions::CrxInstaller> installer(
+      CreateCrxInstaller(profile, download_item));
 
   if (OffStoreInstallAllowedByPrefs(profile, download_item)) {
     installer->set_off_store_install_allow_reason(
@@ -98,15 +109,7 @@ scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
     installer->InstallUserScript(download_item.GetFullPath(),
                                  download_item.GetURL());
   } else {
-    bool is_gallery_download =
-        WebstoreInstaller::GetAssociatedApproval(download_item) != NULL;
-    installer->set_original_mime_type(download_item.GetOriginalMimeType());
-    installer->set_apps_require_extension_mime_type(true);
-    installer->set_download_url(download_item.GetURL());
-    installer->set_is_gallery_install(is_gallery_download);
-    if (is_gallery_download)
-      installer->set_original_download_url(download_item.GetOriginalUrl());
-    installer->set_allow_silent_install(is_gallery_download);
+    DCHECK(!WebstoreInstaller::GetAssociatedApproval(download_item));
     installer->InstallCrx(download_item.GetFullPath());
   }
 

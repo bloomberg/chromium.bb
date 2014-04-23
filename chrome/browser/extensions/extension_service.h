@@ -84,7 +84,6 @@ class ExtensionServiceInterface
       const std::string& id,
       const base::FilePath& path,
       bool file_ownership_passed,
-      const GURL& download_url,
       extensions::CrxInstaller** out_crx_installer) = 0;
   virtual const extensions::Extension* GetExtensionById(
       const std::string& id,
@@ -190,7 +189,6 @@ class ExtensionService
       const std::string& id,
       const base::FilePath& extension_path,
       bool file_ownership_passed,
-      const GURL& download_url,
       extensions::CrxInstaller** out_crx_installer) OVERRIDE;
 
   // Reloads the specified extension, sending the onLaunched() event to it if it

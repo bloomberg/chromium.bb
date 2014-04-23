@@ -25,7 +25,6 @@ bool TestExtensionService::UpdateExtension(
     const std::string& id,
     const base::FilePath& path,
     bool file_ownership_passed,
-    const GURL& download_url,
     extensions::CrxInstaller** out_crx_installer) {
   ADD_FAILURE();
   return false;

@@ -30,6 +30,11 @@ namespace download_crx_util {
 void SetMockInstallPromptForTesting(
     scoped_ptr<ExtensionInstallPrompt> mock_prompt);
 
+// Create and pre-configure a CrxInstaller for a given |download_item|.
+scoped_refptr<extensions::CrxInstaller> CreateCrxInstaller(
+    Profile* profile,
+    const content::DownloadItem& download_item);
+
 // Start installing a downloaded item item as a CRX (extension, theme, app,
 // ...).  The installer does work on the file thread, so the installation
 // is not complete when this function returns.  Returns the object managing
