@@ -35,12 +35,6 @@ chrome/browser/importer/firefox_profile_lock_win.cc
 # Credits notice for ChromeOS.
 chrome/browser/resources/chromeos/about_os_credits.html
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/foreground/js/photo/gallery_scripts.js
-# String 'copyright' used in code.
-chrome/browser/resources/file_manager/foreground/js/main_scripts.js
-# String 'copyright' used in code.
-chrome/browser/resources/file_manager/foreground/js/media/mediaplayer_scripts.js
-# String 'copyright' used in code.
 chrome/common/importer/firefox_importer_utils.cc
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
 # license. Not used on Android.
@@ -170,6 +164,14 @@ ui/base/dragdrop/os_exchange_data_provider_win.cc
 ui/events/keycodes/keyboard_codes_posix.h
 # String 'copyright' used in code.
 ui/file_manager/gallery/js/gallery_scripts.js
+# String 'copyright' used in code.
+ui/file_manager/file_manager/foreground/js/photo/gallery_scripts.js
+# String 'copyright' used in code.
+ui/file_manager/file_manager/foreground/js/main_scripts.js
+# String 'copyright' used in code.
+ui/file_manager/file_manager/foreground/js/media/mediaplayer_scripts.js
+# String 'copyright' used in code.
+ui/file_manager/file_manager/audio_player/js/audio_player_scripts.js
 # String 'copyright' used in code.
 ui/file_manager/video_player/js/video_player_scripts.js
 # This third-party code is taken from Mozilla, but is copyright Google and has

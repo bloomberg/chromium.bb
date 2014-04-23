@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../../../../../../ui/webui/resources/js/cr.js"/>
-<include src="../../../../../../ui/webui/resources/js/cr/event_target.js"/>
-<include src="../../../../../../ui/webui/resources/js/cr/ui/array_data_model.js"/>
+<include src="../../../../webui/resources/js/cr.js"/>
+<include src="../../../../webui/resources/js/cr/event_target.js"/>
+<include src="../../../../webui/resources/js/cr/ui/array_data_model.js"/>
 
 // Hack for polymer, notifying that CSP is enabled here.
 // TODO(yoshiki): Find a way to remove the hack.
@@ -17,8 +17,8 @@ if (!('allowsEval' in document.securityPolicy))
 Object['observe'] = undefined;
 Object['unobserve'] = undefined;
 
-<include src="../../../../../../third_party/polymer/platform/platform.js">
-<include src="../../../../../../third_party/polymer/polymer/polymer.js">
+<include src="../../../../../third_party/polymer/platform/platform.js">
+<include src="../../../../../third_party/polymer/polymer/polymer.js">
 
 (function() {
 

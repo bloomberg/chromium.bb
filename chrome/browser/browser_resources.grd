@@ -337,9 +337,6 @@
         <include name="IDR_CHARGER_REPLACEMENT_HTML" file="resources\chromeos\charger_replacement.html" flattenhtml="true" type="BINDATA" />
       </if>
       <if expr="chromeos">
-        <include name="IDR_FILEMANAGER_MANIFEST" file="resources\file_manager\manifest.json" type="BINDATA" />
-      </if>
-      <if expr="chromeos">
         <include name="IDR_DEMO_APP_MANIFEST" file="resources\chromeos\demo_app\manifest.json" type="BINDATA" />
         <include name="IDR_WALLPAPERMANAGER_MANIFEST" file="resources\chromeos\wallpaper_manager\manifest.json" type="BINDATA" />
         <include name="IDR_FIRST_RUN_DIALOG_MANIFEST" file="resources\chromeos\first_run\app/manifest.json" type="BINDATA" />
