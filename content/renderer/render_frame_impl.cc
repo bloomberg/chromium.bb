@@ -1215,7 +1215,7 @@ void RenderFrameImpl::LoadURLExternally(blink::WebLocalFrame* frame,
                                         const blink::WebURLRequest& request,
                                         blink::WebNavigationPolicy policy) {
   DCHECK(!frame_ || frame_ == frame);
-  loadURLExternally(frame, request, policy);
+  loadURLExternally(frame, request, policy, WebString());
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -1508,13 +1508,6 @@ void RenderFrameImpl::didAddMessageToConsole(
                                             message.text,
                                             static_cast<int32>(source_line),
                                             source_name));
-}
-
-void RenderFrameImpl::loadURLExternally(blink::WebLocalFrame* frame,
-                                        const blink::WebURLRequest& request,
-                                        blink::WebNavigationPolicy policy) {
-  DCHECK(!frame_ || frame_ == frame);
-  loadURLExternally(frame, request, policy, WebString());
 }
 
 void RenderFrameImpl::loadURLExternally(

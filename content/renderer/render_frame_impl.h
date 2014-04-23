@@ -236,9 +236,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                       const blink::WebString& stack_trace);
   virtual void loadURLExternally(blink::WebLocalFrame* frame,
                                  const blink::WebURLRequest& request,
-                                 blink::WebNavigationPolicy policy);
-  virtual void loadURLExternally(blink::WebLocalFrame* frame,
-                                 const blink::WebURLRequest& request,
                                  blink::WebNavigationPolicy policy,
                                  const blink::WebString& suggested_name);
   // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
