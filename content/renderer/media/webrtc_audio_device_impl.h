@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -354,7 +355,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Enables the Aec dump.  If the default capturer exists, it will call
   // StartAecDump() on the capturer and pass the ownership of the file to
   // WebRtc. Otherwise it will hold the file until a capturer is added.
-  void EnableAecDump(const base::PlatformFile& aec_dump_file);
+  void EnableAecDump(base::File aec_dump_file);
 
   // Disables the Aec dump.  When this method is called, the ongoing Aec dump
   // on WebRtc will be stopped.
@@ -450,7 +451,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   std::vector<int16> render_buffer_;
 
   // Used for start the Aec dump on the default capturer.
-  base::PlatformFile aec_dump_file_;
+  base::File aec_dump_file_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };

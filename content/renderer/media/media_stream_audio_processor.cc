@@ -235,10 +235,10 @@ const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
   return capture_converter_->sink_parameters();
 }
 
-void MediaStreamAudioProcessor::StartAecDump(
-    const base::PlatformFile& aec_dump_file) {
+void MediaStreamAudioProcessor::StartAecDump(base::File aec_dump_file) {
   if (audio_processing_)
-    StartEchoCancellationDump(audio_processing_.get(), aec_dump_file);
+    StartEchoCancellationDump(audio_processing_.get(),
+                              aec_dump_file.TakePlatformFile());
 }
 
 void MediaStreamAudioProcessor::StopAecDump() {

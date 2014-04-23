@@ -166,14 +166,11 @@ MediaStreamDependencyFactory::MediaStreamDependencyFactory(
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       signaling_thread_(NULL),
       worker_thread_(NULL),
-      chrome_worker_thread_("Chrome_libJingle_WorkerThread"),
-      aec_dump_file_(base::kInvalidPlatformFileValue) {
+      chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
 }
 
 MediaStreamDependencyFactory::~MediaStreamDependencyFactory() {
   CleanupPeerConnectionFactory();
-  if (aec_dump_file_ != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(aec_dump_file_);
 }
 
 blink::WebRTCPeerConnectionHandler*
@@ -349,10 +346,8 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   pc_factory_->SetOptions(factory_options);
 
   // |aec_dump_file| will be invalid when dump is not enabled.
-  if (aec_dump_file_ != base::kInvalidPlatformFileValue) {
-    StartAecDump(aec_dump_file_);
-    aec_dump_file_ = base::kInvalidPlatformFileValue;
-  }
+  if (aec_dump_file_.IsValid())
+    StartAecDump(aec_dump_file_.Pass());
 }
 
 bool MediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
@@ -619,24 +614,23 @@ bool MediaStreamDependencyFactory::OnControlMessageReceived(
 
 void MediaStreamDependencyFactory::OnAecDumpFile(
     IPC::PlatformFileForTransit file_handle) {
-  DCHECK_EQ(aec_dump_file_, base::kInvalidPlatformFileValue);
-  base::PlatformFile file =
-      IPC::PlatformFileForTransitToPlatformFile(file_handle);
-  DCHECK_NE(file, base::kInvalidPlatformFileValue);
+  DCHECK(!aec_dump_file_.IsValid());
+  base::File file = IPC::PlatformFileForTransitToFile(file_handle);
+  DCHECK(file.IsValid());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAudioTrackProcessing)) {
     EnsureWebRtcAudioDeviceImpl();
-    GetWebRtcAudioDevice()->EnableAecDump(file);
+    GetWebRtcAudioDevice()->EnableAecDump(file.Pass());
     return;
   }
 
   // TODO(xians): Remove the following code after kEnableAudioTrackProcessing
   // is removed.
   if (PeerConnectionFactoryCreated())
-    StartAecDump(file);
+    StartAecDump(file.Pass());
   else
-    aec_dump_file_ = file;
+    aec_dump_file_ = file.Pass();
 }
 
 void MediaStreamDependencyFactory::OnDisableAecDump() {
@@ -648,16 +642,14 @@ void MediaStreamDependencyFactory::OnDisableAecDump() {
 
   // TODO(xians): Remove the following code after kEnableAudioTrackProcessing
   // is removed.
-  if (aec_dump_file_ != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(aec_dump_file_);
-  aec_dump_file_ = base::kInvalidPlatformFileValue;
+  if (aec_dump_file_.IsValid())
+    aec_dump_file_.Close();
 }
 
-void MediaStreamDependencyFactory::StartAecDump(
-    const base::PlatformFile& aec_dump_file) {
+void MediaStreamDependencyFactory::StartAecDump(base::File aec_dump_file) {
   // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
   // fails, |aec_dump_file| will be closed.
-  if (!GetPcFactory()->StartAecDump(aec_dump_file))
+  if (!GetPcFactory()->StartAecDump(aec_dump_file.TakePlatformFile()))
     VLOG(1) << "Could not start AEC dump.";
 }
 

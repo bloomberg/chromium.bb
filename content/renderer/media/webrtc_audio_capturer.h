@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -117,7 +117,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::AudioParameters params);
 
-  void StartAecDump(const base::PlatformFile& aec_dump_file);
+  void StartAecDump(base::File aec_dump_file);
   void StopAecDump();
 
  protected:

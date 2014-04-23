@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
@@ -28,8 +27,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       initialized_(false),
       playing_(false),
       recording_(false),
-      microphone_volume_(0),
-      aec_dump_file_(base::kInvalidPlatformFileValue) {
+      microphone_volume_(0) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
 }
 
@@ -444,7 +442,7 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
 
   // Start the Aec dump if the Aec dump has been enabled and has not been
   // started.
-  if (aec_dump_file_ != base::kInvalidPlatformFileValue)
+  if (aec_dump_file_.IsValid())
     MaybeStartAecDump();
 }
 
@@ -497,12 +495,11 @@ bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(
       session_id, output_sample_rate, output_frames_per_buffer);
 }
 
-void WebRtcAudioDeviceImpl::EnableAecDump(
-    const base::PlatformFile& aec_dump_file) {
+void WebRtcAudioDeviceImpl::EnableAecDump(base::File aec_dump_file) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(aec_dump_file, base::kInvalidPlatformFileValue);
-  DCHECK_EQ(aec_dump_file_, base::kInvalidPlatformFileValue);
-  aec_dump_file_ = aec_dump_file;
+  DCHECK(aec_dump_file.IsValid());
+  DCHECK(!aec_dump_file_.IsValid());
+  aec_dump_file_ = aec_dump_file.Pass();
   MaybeStartAecDump();
 }
 
@@ -510,9 +507,8 @@ void WebRtcAudioDeviceImpl::DisableAecDump() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Simply invalidate the |aec_dump_file_| if we have not pass the ownership
   // to WebRtc.
-  if (aec_dump_file_ != base::kInvalidPlatformFileValue) {
-    base::ClosePlatformFile(aec_dump_file_);
-    aec_dump_file_ = base::kInvalidPlatformFileValue;
+  if (aec_dump_file_.IsValid()) {
+    aec_dump_file_.Close();
     return;
   }
 
@@ -526,18 +522,14 @@ void WebRtcAudioDeviceImpl::DisableAecDump() {
 
 void WebRtcAudioDeviceImpl::MaybeStartAecDump() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(aec_dump_file_, base::kInvalidPlatformFileValue);
+  DCHECK(aec_dump_file_.IsValid());
 
   // Start the Aec dump on the current default capturer.
   scoped_refptr<WebRtcAudioCapturer> default_capturer(GetDefaultCapturer());
   if (!default_capturer)
     return;
 
-  default_capturer->StartAecDump(aec_dump_file_);
-
-  // Invalidate the |aec_dump_file_| since the ownership of the file has been
-  // passed to WebRtc.
-  aec_dump_file_ = base::kInvalidPlatformFileValue;
+  default_capturer->StartAecDump(aec_dump_file_.Pass());
 }
 
 }  // namespace content

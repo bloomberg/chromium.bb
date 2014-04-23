@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -185,7 +185,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   void OnAecDumpFile(IPC::PlatformFileForTransit file_handle);
   void OnDisableAecDump();
 
-  void StartAecDump(const base::PlatformFile& aec_dump_file);
+  void StartAecDump(base::File aec_dump_file);
 
   // Helper method to create a WebRtcAudioDeviceImpl.
   void EnsureWebRtcAudioDeviceImpl();
@@ -206,7 +206,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
 
-  base::PlatformFile aec_dump_file_;
+  base::File aec_dump_file_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

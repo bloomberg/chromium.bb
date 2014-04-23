@@ -609,11 +609,10 @@ void WebRtcAudioCapturer::SetCapturerSourceForTesting(
                     static_cast<float>(params.sample_rate()));
 }
 
-void WebRtcAudioCapturer::StartAecDump(
-    const base::PlatformFile& aec_dump_file) {
+void WebRtcAudioCapturer::StartAecDump(base::File aec_dump_file) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(aec_dump_file, base::kInvalidPlatformFileValue);
-  audio_processor_->StartAecDump(aec_dump_file);
+  DCHECK(aec_dump_file.IsValid());
+  audio_processor_->StartAecDump(aec_dump_file.Pass());
 }
 
 void WebRtcAudioCapturer::StopAecDump() {
