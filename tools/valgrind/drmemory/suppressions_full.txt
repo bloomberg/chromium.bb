@@ -1954,6 +1954,7 @@ osmesa.dll!_tnl_generic_interp
 
 UNADDRESSABLE ACCESS
 name=bug_340752
+...
 blink_heap.dll!WebCore::ThreadState::visitStack
 blink_heap.dll!WebCore::ThreadState::trace
 blink_heap.dll!WebCore::ThreadState::visitRoots
