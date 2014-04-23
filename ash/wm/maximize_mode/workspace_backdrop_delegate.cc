@@ -37,8 +37,15 @@ WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(aura::Window* container)
   // activateable.
   params.can_activate = false;
   background_->Init(params);
+  // Do not use the animation system. We don't want the bounds animation and
+  // opacity needs to get set to |kBackdropOpacity|.
+  ::wm::SetWindowVisibilityAnimationTransition(
+      background_->GetNativeView(),
+      ::wm::ANIMATE_NONE);
   background_->GetNativeView()->SetName("WorkspaceBackdropDelegate");
   background_->GetNativeView()->layer()->SetColor(SK_ColorBLACK);
+  // Make sure that the layer covers visibly everything - including the shelf.
+  background_->GetNativeView()->layer()->SetBounds(params.bounds);
   Show();
   RestackBackdrop();
   container_->AddObserver(this);
