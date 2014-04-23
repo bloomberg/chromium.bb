@@ -21,16 +21,17 @@ import sys
 # directly in .so file.
 SUPPORTED_SANITIZERS = {
     'asan': {
-        'compiler_flags': '-fsanitize=address -gline-tables-only -fPIC -w',
+        'compiler_flags': '-O2 -fsanitize=address -gline-tables-only -fPIC -w',
         'linker_flags': '-fsanitize=address -Wl,-z,origin -Wl,-R,XORIGIN/.'
     },
     'msan': {
-        'compiler_flags': '-fsanitize=memory -fsanitize-memory-track-origins '
+        'compiler_flags': '-O2 -fsanitize=memory '
+                          '-fsanitize-memory-track-origins '
                           '-gline-tables-only -fPIC -w',
         'linker_flags': '-fsanitize=memory -Wl,-z,origin -Wl,-R,XORIGIN/.'
     },
     'tsan': {
-        'compiler_flags': '-fsanitize=thread -gline-tables-only -fPIC -w',
+        'compiler_flags': '-O2 -fsanitize=thread -gline-tables-only -fPIC -w',
         'linker_flags': '-fsanitize=thread -Wl,-z,origin -Wl,-R,XORIGIN/.'
     },
 }
