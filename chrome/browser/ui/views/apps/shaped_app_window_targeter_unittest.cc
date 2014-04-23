@@ -184,9 +184,9 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     EXPECT_EQ(window, move.target());
   }
 
-#if !defined(OS_CHROMEOS)
-  // The non standard app frame has a easy resize targetter installed.
-  app_window_views()->CreateNonStandardAppFrame();
+  // The EasyResizeTargeter specifies an inset of 5px within the window.
+  app_window_views()->InstallEasyResizeTargeterOnContainer();
+
   {
     // Ensure that the window has an event targeter (there should be an
     // EasyResizeWindowTargeter installed).
@@ -223,5 +223,4 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
-#endif  // defined (OS_CHROMEOS)
 }

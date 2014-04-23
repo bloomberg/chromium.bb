@@ -40,28 +40,22 @@ class AppWindowFrameView : public views::NonClientFrameView,
  public:
   static const char kViewClassName[];
 
-  // AppWindowFrameView is used to draw frames for app windows when a non
-  // standard frame is needed. This occurs if there is no frame needed, or if
-  // there is a frame color.
-  // If |draw_frame| is true, the view draws its own window title area and
-  // controls, using |frame_color|. If |draw_frame| is not true, no frame is
-  // drawn.
-  // TODO(benwells): Refactor this to split out frameless and colored frame
-  // views. See http://crbug.com/359432.
-  AppWindowFrameView(views::Widget* widget,
-                     NativeAppWindow* window,
-                     bool draw_frame,
-                     const SkColor& frame_color);
+  explicit AppWindowFrameView();
   virtual ~AppWindowFrameView();
 
-  void Init();
-
-  void SetResizeSizes(int resize_inside_bounds_size,
-                      int resize_outside_bounds_size,
-                      int resize_area_corner_size);
-  int resize_inside_bounds_size() const {
-    return resize_inside_bounds_size_;
-  };
+  // Initializes this for |widget|. Sets the number of pixels for which a click
+  // is interpreted as a resize for the inner and outer border of the window
+  // and the lower-right corner resize handle. If |draw_frame|, the view draws
+  // its own window title area and controls, using |frame_color| (otherwise
+  // |frame_color| is ignored).
+  void Init(views::Widget* widget,
+            NativeAppWindow* window,
+            bool draw_frame,
+            const SkColor& frame_color,
+            int resize_inside_bounds_size,
+            int resize_outside_bounds_size,
+            int resize_outside_scale_for_touch,
+            int resize_area_corner_size);
 
  private:
   // views::NonClientFrameView implementation.
