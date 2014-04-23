@@ -185,14 +185,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Returns true if this has at least one process to run.
   bool HasProcessToRun() const;
 
-  // Adds and removes a controllee's |provider_host|.
+  // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
   void AddPendingControllee(ServiceWorkerProviderHost* provider_host);
   void RemovePendingControllee(ServiceWorkerProviderHost* provider_host);
 
   // Returns if it has (non-pending) controllee.
-  bool HasControllee() const { return !controllee_providers_.empty(); }
+  bool HasControllee() const { return !controllee_map_.empty(); }
 
   // Adds and removes Listeners.
   void AddListener(Listener* listener);
@@ -218,10 +218,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
  private:
   typedef ServiceWorkerVersion self;
-  typedef std::set<ServiceWorkerProviderHost*> ProviderHostSet;
+  typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
+  typedef IDMap<ServiceWorkerProviderHost> ControlleeByIDMap;
   friend class base::RefCounted<ServiceWorkerVersion>;
 
   virtual ~ServiceWorkerVersion();
+
+  // Message handlers.
+  void OnGetClientDocuments(int request_id);
 
   const int64 version_id_;
   int64 registration_id_;
@@ -233,7 +237,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;
   IDMap<MessageCallback, IDMapOwnPointer> message_callbacks_;
-  ProviderHostSet controllee_providers_;
+  ControlleeMap controllee_map_;
+  ControlleeByIDMap controllee_by_id_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ObserverList<Listener> listeners_;
 

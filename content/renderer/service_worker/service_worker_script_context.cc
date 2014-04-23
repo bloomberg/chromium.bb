@@ -9,6 +9,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextProxy.h"
 
 namespace content {
@@ -35,6 +36,8 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_Message, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SyncEvent, OnSyncEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
+                        OnDidGetClientDocuments)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -62,6 +65,14 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
 
 void ServiceWorkerScriptContext::DidHandleSyncEvent(int request_id) {
   Reply(request_id, ServiceWorkerHostMsg_SyncEventFinished());
+}
+
+void ServiceWorkerScriptContext::GetClientDocuments(
+    blink::WebServiceWorkerClientsCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = pending_clients_callbacks_.Add(callbacks);
+  Send(new ServiceWorkerHostMsg_GetClientDocuments(
+      GetRoutingID(), request_id));
 }
 
 void ServiceWorkerScriptContext::Send(IPC::Message* message) {
@@ -106,6 +117,25 @@ void ServiceWorkerScriptContext::OnPostMessage(
 
 void ServiceWorkerScriptContext::OnSyncEvent() {
   proxy_->dispatchSyncEvent(current_request_id_);
+}
+
+void ServiceWorkerScriptContext::OnDidGetClientDocuments(
+    int request_id, const std::vector<int>& client_ids) {
+  blink::WebServiceWorkerClientsCallbacks* callbacks =
+      pending_clients_callbacks_.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  scoped_ptr<blink::WebServiceWorkerClientsInfo> info(
+      new blink::WebServiceWorkerClientsInfo);
+  info->clientIDs = client_ids;
+  callbacks->onSuccess(info.release());
+  pending_clients_callbacks_.Remove(request_id);
+}
+
+int ServiceWorkerScriptContext::GetRoutingID() const {
+  return embedded_context_->embedded_worker_id();
 }
 
 }  // namespace content

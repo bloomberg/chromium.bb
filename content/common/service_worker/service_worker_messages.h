@@ -113,6 +113,11 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
                      content::ServiceWorkerResponse)
 IPC_MESSAGE_CONTROL0(ServiceWorkerHostMsg_SyncEventFinished)
 
+// Asks the browser to retrieve documents controlled by the sender
+// ServiceWorker.
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientDocuments,
+                    int /* request_id */)
+
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
 //
@@ -164,3 +169,8 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_Message,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
 IPC_MESSAGE_CONTROL0(ServiceWorkerMsg_SyncEvent)
+
+// Sent via EmbeddedWorker as a response of GetClientDocuments.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,
+                     int /* request_id */,
+                     std::vector<int> /* client_ids */)

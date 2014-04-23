@@ -376,15 +376,18 @@ bool ServiceWorkerVersion::HasProcessToRun() const {
 
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
-  DCHECK(!ContainsKey(controllee_providers_, provider_host));
-  controllee_providers_.insert(provider_host);
+  DCHECK(!ContainsKey(controllee_map_, provider_host));
+  int controllee_id = controllee_by_id_.Add(provider_host);
+  controllee_map_[provider_host] = controllee_id;
   AddProcessToWorker(provider_host->process_id());
 }
 
 void ServiceWorkerVersion::RemoveControllee(
     ServiceWorkerProviderHost* provider_host) {
-  DCHECK(ContainsKey(controllee_providers_, provider_host));
-  controllee_providers_.erase(provider_host);
+  ControlleeMap::iterator found = controllee_map_.find(provider_host);
+  DCHECK(found != controllee_map_.end());
+  controllee_by_id_.Remove(found->second);
+  controllee_map_.erase(found);
   RemoveProcessFromWorker(provider_host->process_id());
   // TODO(kinuko): Fire NoControllees notification when the # of controllees
   // reaches 0, so that a new pending version can be activated (which will
@@ -470,8 +473,13 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
 }
 
 bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
-  // TODO(kinuko): Implement.
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ServiceWorkerVersion, message)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClientDocuments,
+                        OnGetClientDocuments)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 bool ServiceWorkerVersion::OnReplyReceived(
@@ -498,6 +506,21 @@ bool ServiceWorkerVersion::OnReplyReceived(
   NOTREACHED() << "Got unexpected message: " << request_id
                << " " << message.type();
   return false;
+}
+
+void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
+  std::vector<int> client_ids;
+  ControlleeByIDMap::iterator it(&controllee_by_id_);
+  while (!it.IsAtEnd()) {
+    client_ids.push_back(it.GetCurrentKey());
+    it.Advance();
+  }
+  // Don't bother if it's no longer running.
+  if (running_status() == RUNNING) {
+    embedded_worker_->SendMessage(
+        kInvalidServiceWorkerRequestId,
+        ServiceWorkerMsg_DidGetClientDocuments(request_id, client_ids));
+  }
 }
 
 }  // namespace content

@@ -8,9 +8,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/id_map.h"
 #include "base/strings/string16.h"
-
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 
 namespace blink {
@@ -46,8 +47,13 @@ class ServiceWorkerScriptContext {
                            ServiceWorkerFetchEventResult result,
                            const ServiceWorkerResponse& response);
   void DidHandleSyncEvent(int request_id);
+  void GetClientDocuments(
+      blink::WebServiceWorkerClientsCallbacks* callbacks);
 
  private:
+  typedef IDMap<blink::WebServiceWorkerClientsCallbacks, IDMapOwnPointer>
+      ClientsCallbacksMap;
+
   // Send a message to the browser.
   void Send(IPC::Message* message);
 
@@ -62,6 +68,12 @@ class ServiceWorkerScriptContext {
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
   void OnSyncEvent();
+  void OnDidGetClientDocuments(
+      int request_id, const std::vector<int>& client_ids);
+
+  // Get routing_id for sending message to the ServiceWorkerVersion
+  // in the browser process.
+  int GetRoutingID() const;
 
   // Not owned; embedded_context_ owns this.
   EmbeddedWorkerContextClient* embedded_context_;
@@ -73,6 +85,9 @@ class ServiceWorkerScriptContext {
   // back to the browser is expected, the id must be sent back with the
   // response.
   int current_request_id_;
+
+  // Pending callbacks for GetClientDocuments().
+  ClientsCallbacksMap pending_clients_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptContext);
 };

@@ -121,6 +121,16 @@ void EmbeddedWorkerContextClient::SendReplyToBrowser(
       embedded_worker_id_, request_id, message));
 }
 
+blink::WebURL EmbeddedWorkerContextClient::scope() const {
+  return service_worker_scope_;
+}
+
+void EmbeddedWorkerContextClient::getClients(
+    blink::WebServiceWorkerClientsCallbacks* callbacks) {
+  DCHECK(script_context_);
+  script_context_->GetClientDocuments(callbacks);
+}
+
 void EmbeddedWorkerContextClient::workerContextFailedToStart() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   DCHECK(!script_context_);
@@ -221,6 +231,11 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
       request_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response);
 }
 
+void EmbeddedWorkerContextClient::didHandleSyncEvent(int request_id) {
+  DCHECK(script_context_);
+  script_context_->DidHandleSyncEvent(request_id);
+}
+
 blink::WebServiceWorkerNetworkProvider*
 EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
     blink::WebDataSource* data_source) {
@@ -241,15 +256,6 @@ EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
 
   // Blink is responsible for deleting the returned object.
   return new WebServiceWorkerNetworkProviderImpl();
-}
-
-void EmbeddedWorkerContextClient::didHandleSyncEvent(int request_id) {
-  DCHECK(script_context_);
-  script_context_->DidHandleSyncEvent(request_id);
-}
-
-blink::WebURL EmbeddedWorkerContextClient::scope() const {
-  return service_worker_scope_;
 }
 
 void EmbeddedWorkerContextClient::OnMessageToWorker(
