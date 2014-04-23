@@ -47,9 +47,9 @@ IPC_MESSAGE_CONTROL2(EmbeddedWorkerHostMsg_WorkerStarted,
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerStopped,
                      int /* embedded_worker_id */)
 
-// Renderer -> Browser message to send message.
-// |request_id| might be used for bi-directional messaging.
-IPC_MESSAGE_CONTROL3(EmbeddedWorkerHostMsg_SendMessageToBrowser,
+// Renderer -> Browser message to send reply message for |request_id|.
+// TODO(kinuko): Deprecate this.
+IPC_MESSAGE_CONTROL3(EmbeddedWorkerHostMsg_ReplyToBrowser,
                      int /* embedded_worker_id */,
                      int /* request_id */,
                      IPC::Message /* message */)
@@ -77,8 +77,10 @@ IPC_MESSAGE_CONTROL2(
 #define IPC_MESSAGE_START EmbeddedWorkerContextMsgStart
 
 // Browser -> Renderer message to send message.
-// |request_id| might be used for bi-directional messaging.
-IPC_MESSAGE_CONTROL4(EmbeddedWorkerContextMsg_SendMessageToWorker,
+// |request_id| might be used for bi-directional messaging (in the case where
+// browser side expects a corresponding EmbeddedWorkerHostMsg_ReplyToBrowser
+// message for the |request_id|.
+IPC_MESSAGE_CONTROL4(EmbeddedWorkerContextMsg_MessageToWorker,
                      int /* thread_id */,
                      int /* embedded_worker_id */,
                      int /* request_id */,

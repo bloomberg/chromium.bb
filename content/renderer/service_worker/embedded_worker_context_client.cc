@@ -103,17 +103,21 @@ bool EmbeddedWorkerContextClient::OnMessageReceived(
     const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerContextClient, msg)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_SendMessageToWorker,
-                        OnSendMessageToWorker)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_MessageToWorker,
+                        OnMessageToWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void EmbeddedWorkerContextClient::SendMessageToBrowser(
+void EmbeddedWorkerContextClient::Send(IPC::Message* message) {
+  sender_->Send(message);
+}
+
+void EmbeddedWorkerContextClient::SendReplyToBrowser(
     int request_id,
     const IPC::Message& message) {
-  sender_->Send(new EmbeddedWorkerHostMsg_SendMessageToBrowser(
+  Send(new EmbeddedWorkerHostMsg_ReplyToBrowser(
       embedded_worker_id_, request_id, message));
 }
 
@@ -161,7 +165,7 @@ void EmbeddedWorkerContextClient::reportException(
     int line_number,
     int column_number,
     const blink::WebString& source_url) {
-  sender_->Send(new EmbeddedWorkerHostMsg_ReportException(
+  Send(new EmbeddedWorkerHostMsg_ReportException(
       embedded_worker_id_, error_message, line_number,
       column_number, GURL(source_url)));
 }
@@ -179,7 +183,7 @@ void EmbeddedWorkerContextClient::reportConsoleMessage(
   params.line_number = line_number;
   params.source_url = GURL(source_url);
 
-  sender_->Send(new EmbeddedWorkerHostMsg_ReportConsoleMessage(
+  Send(new EmbeddedWorkerHostMsg_ReportConsoleMessage(
       embedded_worker_id_, params));
 }
 
@@ -248,7 +252,7 @@ blink::WebURL EmbeddedWorkerContextClient::scope() const {
   return service_worker_scope_;
 }
 
-void EmbeddedWorkerContextClient::OnSendMessageToWorker(
+void EmbeddedWorkerContextClient::OnMessageToWorker(
     int thread_id,
     int embedded_worker_id,
     int request_id,
@@ -261,7 +265,7 @@ void EmbeddedWorkerContextClient::OnSendMessageToWorker(
 
 void EmbeddedWorkerContextClient::SendWorkerStarted() {
   DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
-  sender_->Send(new EmbeddedWorkerHostMsg_WorkerStarted(
+  Send(new EmbeddedWorkerHostMsg_WorkerStarted(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
       embedded_worker_id_));
 }

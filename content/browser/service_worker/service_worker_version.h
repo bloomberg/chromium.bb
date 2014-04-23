@@ -40,7 +40,7 @@ class ServiceWorkerVersionInfo;
 // This happens when a version is replaced as well as at browser shutdown.
 class CONTENT_EXPORT ServiceWorkerVersion
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerVersion>),
-      public EmbeddedWorkerInstance::Observer {
+      public EmbeddedWorkerInstance::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode,
@@ -200,11 +200,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
-  // EmbeddedWorkerInstance::Observer overrides:
+  // EmbeddedWorkerInstance::Listener overrides:
   virtual void OnStarted() OVERRIDE;
   virtual void OnStopped() OVERRIDE;
-  virtual void OnMessageReceived(int request_id,
-                                 const IPC::Message& message) OVERRIDE;
   virtual void OnReportException(const base::string16& error_message,
                                  int line_number,
                                  int column_number,
@@ -214,6 +212,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                       const base::string16& message,
                                       int line_number,
                                       const GURL& source_url) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnReplyReceived(int request_id,
+                               const IPC::Message& message) OVERRIDE;
 
  private:
   typedef ServiceWorkerVersion self;

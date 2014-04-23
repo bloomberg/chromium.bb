@@ -137,7 +137,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
 };
 
 class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
-                                  public EmbeddedWorkerInstance::Observer {
+                                  public EmbeddedWorkerInstance::Listener {
  public:
   typedef EmbeddedWorkerBrowserTest self;
 
@@ -147,7 +147,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
 
   virtual void TearDownOnIOThread() OVERRIDE {
     if (worker_) {
-      worker_->RemoveObserver(this);
+      worker_->RemoveListener(this);
       worker_.reset();
     }
   }
@@ -156,7 +156,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     worker_ = wrapper()->context()->embedded_worker_registry()->CreateWorker();
     EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker_->status());
-    worker_->AddObserver(this);
+    worker_->AddListener(this);
 
     AssociateRendererProcessToWorker(worker_.get());
 
@@ -203,10 +203,6 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     last_worker_status_ = worker_->status();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_closure_);
   }
-  virtual void OnMessageReceived(
-      int request_id, const IPC::Message& message) OVERRIDE {
-    NOTREACHED();
-  }
   virtual void OnReportException(const base::string16& error_message,
                                  int line_number,
                                  int column_number,
@@ -216,6 +212,13 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
                                       const base::string16& message,
                                       int line_number,
                                       const GURL& source_url) OVERRIDE {}
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    return false;
+  }
+  virtual bool OnReplyReceived(int request_id,
+                               const IPC::Message& message) OVERRIDE {
+    return false;
+  }
 
   scoped_ptr<EmbeddedWorkerInstance> worker_;
   EmbeddedWorkerInstance::Status last_worker_status_;

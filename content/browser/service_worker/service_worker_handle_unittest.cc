@@ -104,7 +104,7 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
                             blink::WebServiceWorkerStateInstalling,
                             ipc_sink()->GetMessageAt(1));
   // 3. SendMessageToWorker (to send InstallEvent), and
-  EXPECT_EQ(EmbeddedWorkerContextMsg_SendMessageToWorker::ID,
+  EXPECT_EQ(EmbeddedWorkerContextMsg_MessageToWorker::ID,
             ipc_sink()->GetMessageAt(2)->type());
   // 4. StateChanged (state == Installed).
   VerifyStateChangedMessage(handle->handle_id(),

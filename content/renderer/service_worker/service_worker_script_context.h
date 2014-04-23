@@ -48,8 +48,12 @@ class ServiceWorkerScriptContext {
   void DidHandleSyncEvent(int request_id);
 
  private:
-  // Send message back to the browser.
-  void Send(int request_id, const IPC::Message& message);
+  // Send a message to the browser.
+  void Send(IPC::Message* message);
+
+  // Send a reply message (for |request_id|) back to the browser.
+  // TODO(kinuko): Deprecate this.
+  void Reply(int request_id, const IPC::Message& message);
 
   void OnActivateEvent();
   void OnInstallEvent(int active_version_id);

@@ -181,12 +181,12 @@ ServiceWorkerVersion::ServiceWorkerVersion(
   }
   context_->AddLiveVersion(this);
   embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
-  embedded_worker_->AddObserver(this);
+  embedded_worker_->AddListener(this);
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
   if (embedded_worker_) {
-    embedded_worker_->RemoveObserver(this);
+    embedded_worker_->RemoveListener(this);
     embedded_worker_.reset();
   }
   if (context_)
@@ -469,18 +469,35 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
                                            source_url));
 }
 
-void ServiceWorkerVersion::OnMessageReceived(
+bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
+  // TODO(kinuko): Implement.
+  return false;
+}
+
+bool ServiceWorkerVersion::OnReplyReceived(
     int request_id, const IPC::Message& message) {
+  // Perform security check to filter out any unexpected (and non-test)
+  // messages. This must list up all message types that can go through here.
+  // TODO(kinuko): Merge this into OnMessageReceived as we're deprecating
+  // this ReplyToBrowser.
+  if (message.type() != ServiceWorkerHostMsg_ActivateEventFinished::ID &&
+      message.type() != ServiceWorkerHostMsg_InstallEventFinished::ID &&
+      message.type() != ServiceWorkerHostMsg_FetchEventFinished::ID &&
+      message.type() != ServiceWorkerHostMsg_SyncEventFinished::ID &&
+      IPC_MESSAGE_CLASS(message) != TestMsgStart)
+    return false;
+
   MessageCallback* callback = message_callbacks_.Lookup(request_id);
   if (callback) {
     // Protect since a callback could destroy |this|.
     scoped_refptr<ServiceWorkerVersion> protect(this);
     callback->Run(SERVICE_WORKER_OK, message);
     message_callbacks_.Remove(request_id);
-    return;
+    return true;
   }
   NOTREACHED() << "Got unexpected message: " << request_id
                << " " << message.type();
+  return false;
 }
 
 }  // namespace content

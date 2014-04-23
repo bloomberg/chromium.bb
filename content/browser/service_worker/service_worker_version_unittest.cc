@@ -21,6 +21,7 @@
 #define IPC_MESSAGE_START TestMsgStart
 
 IPC_MESSAGE_CONTROL0(TestMsg_Message);
+IPC_MESSAGE_ROUTED1(TestMsg_MessageFromWorker, int);
 IPC_MESSAGE_CONTROL1(TestMsg_Request, int);
 IPC_MESSAGE_CONTROL1(TestMsg_Response, int);
 
@@ -40,11 +41,11 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
         current_request_id_(0) {}
   virtual ~MessageReceiver() {}
 
-  virtual bool OnSendMessageToWorker(int thread_id,
-                                     int embedded_worker_id,
-                                     int request_id,
-                                     const IPC::Message& message) OVERRIDE {
-    if (EmbeddedWorkerTestHelper::OnSendMessageToWorker(
+  virtual bool OnMessageToWorker(int thread_id,
+                                 int embedded_worker_id,
+                                 int request_id,
+                                 const IPC::Message& message) OVERRIDE {
+    if (EmbeddedWorkerTestHelper::OnMessageToWorker(
             thread_id, embedded_worker_id, request_id, message)) {
       return true;
     }
@@ -59,6 +60,10 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
     return handled;
   }
 
+  void SimulateSendValueToBrowser(int embedded_worker_id, int value) {
+    SimulateSend(new TestMsg_MessageFromWorker(embedded_worker_id, value));
+  }
+
  private:
   void OnMessage() {
     // Do nothing.
@@ -66,9 +71,9 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
 
   void OnRequest(int value) {
     // Double the given value and send back the response.
-    SimulateSendMessageToBrowser(current_embedded_worker_id_,
-                                 current_request_id_,
-                                 TestMsg_Response(value * 2));
+    SimulateSendReplyToBrowser(current_embedded_worker_id_,
+                               current_request_id_,
+                               TestMsg_Response(value * 2));
   }
 
   int current_embedded_worker_id_;
@@ -96,6 +101,42 @@ void ObserveStatusChanges(ServiceWorkerVersion* version,
   version->RegisterStatusChangeCallback(
       base::Bind(&ObserveStatusChanges, base::Unretained(version), statuses));
 }
+
+// A specialized listener class to receive test messages from a worker.
+class MessageReceiverFromWorker : public EmbeddedWorkerInstance::Listener {
+ public:
+  explicit MessageReceiverFromWorker(EmbeddedWorkerInstance* instance)
+      : instance_(instance) {
+    instance_->AddListener(this);
+  }
+  virtual ~MessageReceiverFromWorker() {
+    instance_->RemoveListener(this);
+  }
+
+  virtual void OnStarted() OVERRIDE { NOTREACHED(); }
+  virtual void OnStopped() OVERRIDE { NOTREACHED(); }
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(MessageReceiverFromWorker, message)
+      IPC_MESSAGE_HANDLER(TestMsg_MessageFromWorker, OnMessageFromWorker)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+  virtual bool OnReplyReceived(int request_id,
+                               const IPC::Message& message) OVERRIDE {
+    NOTREACHED();
+    return false;
+  }
+
+  void OnMessageFromWorker(int value) { received_values_.push_back(value); }
+  const std::vector<int>& received_values() const { return received_values_; }
+
+ private:
+  EmbeddedWorkerInstance* instance_;
+  std::vector<int> received_values_;
+  DISALLOW_COPY_AND_ASSIGN(MessageReceiverFromWorker);
+};
 
 }  // namespace
 
@@ -131,7 +172,7 @@ class ServiceWorkerVersionTest : public testing::Test {
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<ServiceWorkerContextCore> context_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  scoped_ptr<MessageReceiver> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionTest);
@@ -254,6 +295,21 @@ TEST_F(ServiceWorkerVersionTest, SendMessageAndRegisterCallback) {
   EXPECT_EQ(SERVICE_WORKER_OK, status2);
   EXPECT_EQ(111 * 2, value1);
   EXPECT_EQ(333 * 2, value2);
+}
+
+TEST_F(ServiceWorkerVersionTest, ReceiveMessageFromWorker) {
+  MessageReceiverFromWorker receiver(version_->embedded_worker());
+
+  // Simulate sending some dummy values from the worker.
+  helper_->SimulateSendValueToBrowser(
+      version_->embedded_worker()->embedded_worker_id(), 555);
+  helper_->SimulateSendValueToBrowser(
+      version_->embedded_worker()->embedded_worker_id(), 777);
+
+  // Verify the receiver received the values.
+  ASSERT_EQ(2U, receiver.received_values().size());
+  EXPECT_EQ(555, receiver.received_values()[0]);
+  EXPECT_EQ(777, receiver.received_values()[1]);
 }
 
 TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {

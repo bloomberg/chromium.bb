@@ -8,7 +8,6 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 
@@ -44,6 +43,18 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(
               new EmbeddedWorkerMsg_StopWorker(embedded_worker_id));
 }
 
+bool EmbeddedWorkerRegistry::OnMessageReceived(const IPC::Message& message) {
+  // TODO(kinuko): Move all EmbeddedWorker message handling from
+  // ServiceWorkerDispatcherHost.
+
+  WorkerInstanceMap::iterator found = worker_map_.find(message.routing_id());
+  if (found == worker_map_.end()) {
+    LOG(ERROR) << "Worker " << message.routing_id() << " not registered";
+    return false;
+  }
+  return found->second->OnMessageReceived(message);
+}
+
 void EmbeddedWorkerRegistry::OnWorkerStarted(
     int process_id, int thread_id, int embedded_worker_id) {
   DCHECK(!ContainsKey(worker_process_map_, process_id) ||
@@ -70,24 +81,14 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
   found->second->OnStopped();
 }
 
-void EmbeddedWorkerRegistry::OnSendMessageToBrowser(
+bool EmbeddedWorkerRegistry::OnReplyToBrowser(
     int embedded_worker_id, int request_id, const IPC::Message& message) {
   WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
   if (found == worker_map_.end()) {
     LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
-    return;
+    return false;
   }
-  // Perform security check to filter out any unexpected (and non-test)
-  // messages. This must list up all message types that can go through here.
-  if (message.type() == ServiceWorkerHostMsg_ActivateEventFinished::ID ||
-      message.type() == ServiceWorkerHostMsg_InstallEventFinished::ID ||
-      message.type() == ServiceWorkerHostMsg_FetchEventFinished::ID ||
-      message.type() == ServiceWorkerHostMsg_SyncEventFinished::ID ||
-      IPC_MESSAGE_CLASS(message) == TestMsgStart) {
-    found->second->OnMessageReceived(request_id, message);
-    return;
-  }
-  NOTREACHED() << "Got unexpected message: " << message.type();
+  return found->second->OnReplyReceived(request_id, message);
 }
 
 void EmbeddedWorkerRegistry::OnReportException(

@@ -90,7 +90,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
   virtual void OnInstallEvent(int embedded_worker_id,
                               int request_id,
                               int active_version_id) OVERRIDE {
-    SimulateSendMessageToBrowser(
+    SimulateSendReplyToBrowser(
         embedded_worker_id,
         request_id,
         ServiceWorkerHostMsg_InstallEventFinished(
@@ -106,7 +106,7 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
 
   virtual void OnActivateEvent(int embedded_worker_id,
                                int request_id) OVERRIDE {
-    SimulateSendMessageToBrowser(
+    SimulateSendReplyToBrowser(
         embedded_worker_id,
         request_id,
         ServiceWorkerHostMsg_ActivateEventFinished(

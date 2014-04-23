@@ -56,7 +56,10 @@ class EmbeddedWorkerContextClient
 
   bool OnMessageReceived(const IPC::Message& msg);
 
-  void SendMessageToBrowser(int request_id, const IPC::Message& message);
+  void Send(IPC::Message* message);
+
+  // TODO(kinuko): Deprecate this.
+  void SendReplyToBrowser(int request_id, const IPC::Message& message);
 
   // WebServiceWorkerContextClient overrides, some of them are just dispatched
   // on to script_context_.
@@ -93,10 +96,10 @@ class EmbeddedWorkerContextClient
   }
 
  private:
-  void OnSendMessageToWorker(int thread_id,
-                             int embedded_worker_id,
-                             int request_id,
-                             const IPC::Message& message);
+  void OnMessageToWorker(int thread_id,
+                         int embedded_worker_id,
+                         int request_id,
+                         const IPC::Message& message);
   void SendWorkerStarted();
 
   const int embedded_worker_id_;

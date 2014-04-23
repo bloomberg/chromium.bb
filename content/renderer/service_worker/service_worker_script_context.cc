@@ -44,29 +44,33 @@ void ServiceWorkerScriptContext::OnMessageReceived(
 void ServiceWorkerScriptContext::DidHandleActivateEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  Send(request_id, ServiceWorkerHostMsg_ActivateEventFinished(result));
+  Reply(request_id, ServiceWorkerHostMsg_ActivateEventFinished(result));
 }
 
 void ServiceWorkerScriptContext::DidHandleInstallEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  Send(request_id, ServiceWorkerHostMsg_InstallEventFinished(result));
+  Reply(request_id, ServiceWorkerHostMsg_InstallEventFinished(result));
 }
 
 void ServiceWorkerScriptContext::DidHandleFetchEvent(
     int request_id,
     ServiceWorkerFetchEventResult result,
     const ServiceWorkerResponse& response) {
-  Send(request_id, ServiceWorkerHostMsg_FetchEventFinished(result, response));
+  Reply(request_id, ServiceWorkerHostMsg_FetchEventFinished(result, response));
 }
 
 void ServiceWorkerScriptContext::DidHandleSyncEvent(int request_id) {
-  Send(request_id, ServiceWorkerHostMsg_SyncEventFinished());
+  Reply(request_id, ServiceWorkerHostMsg_SyncEventFinished());
 }
 
-void ServiceWorkerScriptContext::Send(int request_id,
-                                      const IPC::Message& message) {
-  embedded_context_->SendMessageToBrowser(request_id, message);
+void ServiceWorkerScriptContext::Send(IPC::Message* message) {
+  embedded_context_->Send(message);
+}
+
+void ServiceWorkerScriptContext::Reply(int request_id,
+                                       const IPC::Message& message) {
+  embedded_context_->SendReplyToBrowser(request_id, message);
 }
 
 void ServiceWorkerScriptContext::OnActivateEvent() {
