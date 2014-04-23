@@ -90,6 +90,7 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void didAssociateFormControls(
       const blink::WebVector<blink::WebNode>& nodes);
   virtual void openTextDataListChooser(const blink::WebInputElement& element);
+  virtual void firstUserGestureObserved();
 
   void OnFieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms);

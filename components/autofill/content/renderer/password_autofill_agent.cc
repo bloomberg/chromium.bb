@@ -395,6 +395,10 @@ void PasswordAutofillAgent::OnDynamicFormsSeen(blink::WebFrame* frame) {
   SendPasswordForms(frame, false /* only_visible */);
 }
 
+void PasswordAutofillAgent::FirstUserGestureObserved() {
+  gatekeeper_.OnUserGesture();
+}
+
 void PasswordAutofillAgent::SendPasswordForms(blink::WebFrame* frame,
                                               bool only_visible) {
   // Make sure that this security origin is allowed to use password manager.
@@ -515,10 +519,6 @@ void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
     // Remove reference since we have already submitted this form.
     provisionally_saved_forms_.erase(frame);
   }
-}
-
-void PasswordAutofillAgent::WillProcessUserGesture() {
-  gatekeeper_.OnUserGesture();
 }
 
 blink::WebFrame* PasswordAutofillAgent::CurrentOrChildFrameWithSavedForms(
@@ -818,17 +818,11 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     return false;
   }
 
-// TODO(vabr): The "gatekeeper" feature is currently disabled on mobile.
-// http://crbug.com/345510#c13
-#if !defined(OS_ANDROID) || !defined(OS_IOS)
   // Wait to fill in the password until a user gesture occurs. This is to make
   // sure that we do not fill in the DOM with a password until we believe the
   // user is intentionally interacting with the page.
   password_element->setSuggestedValue(password);
   gatekeeper_.RegisterElement(password_element);
-#else
-  password_element->setValue(password);
-#endif
 
   password_element->setAutofilled(true);
   return true;

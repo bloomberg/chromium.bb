@@ -53,6 +53,11 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen(blink::WebFrame* frame);
 
+  // Called when the user first interacts with the page after a load. This is a
+  // signal to make autofilled values of password input elements accessible to
+  // JavaScript.
+  void FirstUserGestureObserved();
+
  protected:
   virtual bool OriginCanAccessPasswordManager(
       const blink::WebSecurityOrigin& origin);
@@ -120,7 +125,6 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
                                    const blink::WebFormElement& form) OVERRIDE;
   virtual void WillSubmitForm(blink::WebLocalFrame* frame,
                               const blink::WebFormElement& form) OVERRIDE;
-  virtual void WillProcessUserGesture() OVERRIDE;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data);

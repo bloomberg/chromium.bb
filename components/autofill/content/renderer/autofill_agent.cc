@@ -416,6 +416,10 @@ void AutofillAgent::openTextDataListChooser(const WebInputElement& element) {
     ShowSuggestions(element, true, false, false, true);
 }
 
+void AutofillAgent::firstUserGestureObserved() {
+  password_autofill_agent_->FirstUserGestureObserved();
+}
+
 void AutofillAgent::AcceptDataListSuggestion(
     const base::string16& suggested_value) {
   WebInputElement* input_element = toWebInputElement(&element_);
