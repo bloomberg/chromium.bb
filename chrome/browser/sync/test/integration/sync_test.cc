@@ -998,3 +998,7 @@ void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
                  make_scoped_refptr(context_getter), proxy_config));
   done.Wait();
 }
+
+fake_server::FakeServer* SyncTest::GetFakeServer() const {
+  return fake_server_.get();
+}

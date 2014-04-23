@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/bookmarks/core/browser/bookmark_service.h"
+#include "sync/test/fake_server/fake_server_verifier.h"
 #include "ui/base/layout.h"
 
 using bookmarks_helper::AddFolder;
@@ -28,9 +32,37 @@ class SingleClientBookmarksSyncTest : public SyncTest {
   SingleClientBookmarksSyncTest() : SyncTest(SINGLE_CLIENT) {}
   virtual ~SingleClientBookmarksSyncTest() {}
 
+  // Verify that the local bookmark model (for the Profile corresponding to
+  // |index|) matches the data on the FakeServer. It is assumed that FakeServer
+  // is being used and each bookmark has a unique title. Folders are not
+  // verified.
+  void VerifyBookmarkModelMatchesFakeServer(int index);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientBookmarksSyncTest);
 };
+
+void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
+    int index) {
+  fake_server::FakeServerVerifier fake_server_verifier(GetFakeServer());
+  std::vector<BookmarkService::URLAndTitle> local_bookmarks;
+  GetBookmarkModel(index)->GetBookmarks(&local_bookmarks);
+
+  // Verify that the number of local bookmarks matches the number in the
+  // server.
+  ASSERT_TRUE(fake_server_verifier.VerifyEntityCountByType(
+      local_bookmarks.size(),
+      syncer::BOOKMARKS));
+
+  // Verify that all local bookmark titles exist once on the server.
+  std::vector<BookmarkService::URLAndTitle>::const_iterator it;
+  for (it = local_bookmarks.begin(); it != local_bookmarks.end(); ++it) {
+    ASSERT_TRUE(fake_server_verifier.VerifyEntityCountByTypeAndName(
+        1,
+        syncer::BOOKMARKS,
+        base::UTF16ToUTF8(it->title)));
+  }
+}
 
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -143,6 +175,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   // Wait for newly added bookmarks to sync.
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(ModelMatchesVerifier(0));
+
+  // Only verify FakeServer data if FakeServer is being used.
+  // TODO(pvalenzuela): Use this style of verification in more tests once it is
+  // proven stable.
+  if (GetFakeServer())
+    VerifyBookmarkModelMatchesFakeServer(0);
 }
 
 // Test that a client doesn't mutate the favicon data in the process

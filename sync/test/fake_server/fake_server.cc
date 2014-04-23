@@ -32,6 +32,7 @@ using std::vector;
 using base::AutoLock;
 using syncer::GetModelType;
 using syncer::ModelType;
+using syncer::ModelTypeSet;
 
 // The default birthday value.
 static const char kDefaultBirthday[] = "1234567890";
@@ -98,7 +99,7 @@ class UpdateSieve {
 
   // Returns the data type IDs of types being synced for the first time.
   vector<ModelType> GetFirstTimeTypes(
-      syncer::ModelTypeSet created_permanent_entity_types) const {
+      ModelTypeSet created_permanent_entity_types) const {
     vector<ModelType> types;
 
     ModelTypeToVersionMap::const_iterator it;
@@ -171,7 +172,7 @@ bool FakeServer::CreateDefaultPermanentItems(
     const vector<ModelType>& first_time_types) {
   for (vector<ModelType>::const_iterator it = first_time_types.begin();
        it != first_time_types.end(); ++it) {
-    if (!syncer::ModelTypeSet::All().Has(*it)) {
+    if (!ModelTypeSet::All().Has(*it)) {
       NOTREACHED() << "An unexpected ModelType was encountered.";
     }
 
@@ -454,6 +455,38 @@ bool FakeServer::HandleCommitRequest(
   }
 
   return true;
+}
+
+scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+
+  // Initialize an empty ListValue for all ModelTypes.
+  ModelTypeSet all_types = ModelTypeSet::All();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    dictionary->Set(ModelTypeToString(it.Get()), new base::ListValue());
+  }
+
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
+       ++it) {
+    FakeServerEntity* entity = it->second;
+    if (entity->IsDeleted() || entity->IsFolder()) {
+      // Tombstones are ignored as they don't represent current data. Folders
+      // are also ignored as current verification infrastructure does not
+      // consider them.
+      continue;
+    }
+    base::ListValue* list_value;
+    if (!dictionary->GetList(ModelTypeToString(entity->GetModelType()),
+                                               &list_value)) {
+      return scoped_ptr<base::DictionaryValue>();
+    }
+    // TODO(pvalenzuela): Store more data for each entity so additional
+    // verification can be performed. One example of additional verification
+    // is checking the correctness of the bookmark hierarchy.
+    list_value->Append(new base::StringValue(entity->GetName()));
+  }
+
+  return dictionary.Pass();
 }
 
 }  // namespace fake_server

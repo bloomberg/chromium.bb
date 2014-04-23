@@ -103,7 +103,8 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
-	'../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'sync',
       ],
       'export_dependent_settings': [
@@ -120,6 +121,8 @@
         'test/fake_server/fake_server_http_post_provider.h',
         'test/fake_server/fake_server_network_resources.cc',
         'test/fake_server/fake_server_network_resources.h',
+        'test/fake_server/fake_server_verifier.cc',
+        'test/fake_server/fake_server_verifier.h',
         'test/fake_server/permanent_entity.cc',
         'test/fake_server/permanent_entity.h',
         'test/fake_server/tombstone_entity.cc',

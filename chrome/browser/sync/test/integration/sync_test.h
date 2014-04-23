@@ -30,6 +30,10 @@ namespace base {
 class CommandLine;
 }
 
+namespace fake_server {
+class FakeServer;
+}
+
 namespace net {
 class FakeURLFetcherFactory;
 class ProxyConfig;
@@ -255,6 +259,10 @@ class SyncTest : public InProcessBrowserTest {
 
   // Triggers the creation the Synced Bookmarks folder on the server.
   void TriggerCreateSyncedBookmarks();
+
+  // Returns the FakeServer being used for the test or NULL if FakeServer is
+  // not being used.
+  fake_server::FakeServer* GetFakeServer() const;
 
  protected:
   // Add custom switches needed for running the test.
