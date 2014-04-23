@@ -2331,14 +2331,7 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   // attempt to read one byte extra.
 }
 
-// This test is only enabled on NSS until False Start support is added for
-// OpenSSL.  http://crbug.com/354132
-#if defined(USE_NSS)
-#define MAYBE_FalseStartEnabled FalseStartEnabled
-#else
-#define MAYBE_FalseStartEnabled DISABLED_FalseStartEnabled
-#endif  // USE_NSS
-TEST_F(SSLClientSocketFalseStartTest, MAYBE_FalseStartEnabled) {
+TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
   // False Start requires NPN and a forward-secret cipher suite.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
