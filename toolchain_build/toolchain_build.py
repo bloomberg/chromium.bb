@@ -616,6 +616,14 @@ def ConfigureGccCommand(source_component, host, target, extra_args=[]):
 def HostTools(host, target):
   def H(component_name):
     return ForHost(component_name, host)
+
+  # Return the file name with the appropriate suffix for an executable file.
+  def Exe(file):
+    if HostIsWindows(host):
+      return file + '.exe'
+    else:
+      return file
+
   tools = {
       H('binutils_' + target): {
           'type': 'build',
@@ -715,10 +723,17 @@ def HostTools(host, target):
                   '-C', 'gdb', 'install-strip',
                   ]),
               REMOVE_INFO_DIR,
-              ] + InstallDocFiles('gdb', [
-                  'COPYING3',
-                  command.path.join('gdb', 'NEWS'),
-                  ]),
+              ] + [command.Command(['ln', '-f',
+                                    command.path.join('%(abs_output)s',
+                                                      'bin',
+                                                      Exe('x86_64-nacl-gdb')),
+                                    command.path.join('%(abs_output)s',
+                                                      'bin',
+                                                      Exe(arch + '-nacl-gdb'))])
+                   for arch in ['i686', 'arm']] + InstallDocFiles('gdb', [
+                       'COPYING3',
+                       command.path.join('gdb', 'NEWS'),
+                       ]),
           },
       }
 
