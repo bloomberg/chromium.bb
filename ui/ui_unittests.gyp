@@ -8,46 +8,6 @@
   },
   'targets': [
     {
-      'target_name': 'ui_test_support',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        'gfx/gfx.gyp:gfx',
-        'gfx/gfx.gyp:gfx_geometry',
-      ],
-      'sources': [
-        'base/test/ui_controls.h',
-        'base/test/ui_controls_aura.cc',
-        'base/test/ui_controls_internal_win.cc',
-        'base/test/ui_controls_internal_win.h',
-        'base/test/ui_controls_mac.mm',
-        'base/test/ui_controls_win.cc',
-      ],
-      'include_dirs': [
-        '../',
-      ],
-      'conditions': [
-        ['OS!="ios"', {
-          'type': 'static_library',
-          'includes': [ 'base/ime/ime_test_support.gypi' ],
-        }, {  # OS=="ios"
-          # None of the sources in this target are built on iOS, resulting in
-          # link errors when building targets that depend on this target
-          # because the static library isn't found. If this target is changed
-          # to have sources that are built on iOS, the target should be changed
-          # to be of type static_library on all platforms.
-          'type': 'none',
-        }],
-        ['use_aura==1', {
-          'sources!': [
-            'base/test/ui_controls_mac.mm',
-            'base/test/ui_controls_win.cc',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'ui_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -61,11 +21,11 @@
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
         'base/ui_base.gyp:ui_base',
+        'base/ui_base.gyp:ui_base_test_support',
         'events/events.gyp:events_base',
         'gfx/gfx.gyp:gfx_test_support',
         'resources/ui_resources.gyp:ui_resources',
         'resources/ui_resources.gyp:ui_test_pak',
-        'ui_test_support',
       ],
       # iOS uses a small subset of ui. common_sources are the only files that
       # are built on iOS.

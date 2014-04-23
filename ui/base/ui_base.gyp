@@ -565,6 +565,46 @@
         }],
       ],
     },
+    {
+      'target_name': 'ui_base_test_support',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+        '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
+      ],
+      'sources': [
+        'test/ui_controls.h',
+        'test/ui_controls_aura.cc',
+        'test/ui_controls_internal_win.cc',
+        'test/ui_controls_internal_win.h',
+        'test/ui_controls_mac.mm',
+        'test/ui_controls_win.cc',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'conditions': [
+        ['OS!="ios"', {
+          'type': 'static_library',
+          'includes': [ 'ime/ime_test_support.gypi' ],
+        }, {  # OS=="ios"
+          # None of the sources in this target are built on iOS, resulting in
+          # link errors when building targets that depend on this target
+          # because the static library isn't found. If this target is changed
+          # to have sources that are built on iOS, the target should be changed
+          # to be of type static_library on all platforms.
+          'type': 'none',
+        }],
+        ['use_aura==1', {
+          'sources!': [
+            'test/ui_controls_mac.mm',
+            'test/ui_controls_win.cc',
+          ],
+        }],
+      ],
+    },
   ],
   'conditions': [
     ['OS=="android"' , {
