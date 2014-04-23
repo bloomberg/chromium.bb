@@ -70,7 +70,7 @@ void ChromeBrowserMainExtraPartsAura::PreEarlyInitialization() {
 void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
-  aura::Env::CreateInstance();
+  CHECK(aura::Env::GetInstance());
   active_desktop_monitor_.reset(new ActiveDesktopMonitor(GetInitialDesktop()));
 #endif
 #endif

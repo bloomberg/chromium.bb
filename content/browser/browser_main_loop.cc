@@ -66,6 +66,10 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "content/browser/android/browser_startup_controller.h"
@@ -1041,6 +1045,12 @@ void BrowserMainLoop::InitializeToolkit() {
   config.dwICC = ICC_WIN95_CLASSES;
   if (!InitCommonControlsEx(&config))
     LOG_GETLASTERROR(FATAL);
+#endif
+
+#if defined(USE_AURA)
+  // Env creates the compositor. Aura widgets need the compositor to be created
+  // before they can be initialized by the browser.
+  aura::Env::CreateInstance();
 #endif
 
   if (parts_)

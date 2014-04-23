@@ -1153,9 +1153,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 
 #if defined(USE_AURA)
-  // Env creates the compositor. Aura widgets need the compositor to be created
-  // before they can be initialized by the browser.
-  aura::Env::CreateInstance();
+  // Make sure aura::Env has been initialized.
+  CHECK(aura::Env::GetInstance());
 #endif
 
   // Android doesn't support extensions and doesn't implement ProcessSingleton.

@@ -113,7 +113,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 ShellPlatformDataAura* Shell::platform_ = NULL;
 
 ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
-  aura::Env::CreateInstance();
+  CHECK(aura::Env::GetInstance());
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(initial_size)));
   host_->InitHost();
   host_->window()->SetLayoutManager(new FillLayout(host_->window()));
