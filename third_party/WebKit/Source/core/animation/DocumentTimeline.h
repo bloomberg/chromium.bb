@@ -82,6 +82,8 @@ public:
     double zeroTime() const { return m_zeroTime; }
     double currentTime(bool& isNull);
     double currentTime();
+    double currentTimeInternal(bool& isNull);
+    double currentTimeInternal();
     double effectiveTime();
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;

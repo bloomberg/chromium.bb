@@ -78,7 +78,7 @@ double TimedItem::repeatedDuration() const
     return result;
 }
 
-double TimedItem::activeDuration() const
+double TimedItem::activeDurationInternal() const
 {
     const double result = m_timing.playbackRate
         ? repeatedDuration() / std::abs(m_timing.playbackRate)
@@ -109,7 +109,7 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     const double localTime = inheritedTime - m_startTime;
     double timeToNextIteration = std::numeric_limits<double>::infinity();
     if (needsUpdate) {
-        const double activeDuration = this->activeDuration();
+        const double activeDuration = this->activeDurationInternal();
 
         const Phase currentPhase = calculatePhase(activeDuration, localTime, m_timing);
         // FIXME: parentPhase depends on groups being implemented.

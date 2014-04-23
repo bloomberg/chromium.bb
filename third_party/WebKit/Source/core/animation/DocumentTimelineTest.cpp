@@ -89,7 +89,7 @@ protected:
         platformTiming = new MockPlatformTiming;
         timeline = DocumentTimeline::create(document.get(), adoptPtr(platformTiming));
         timeline->setZeroTime(0);
-        ASSERT_EQ(0, timeline->currentTime());
+        ASSERT_EQ(0, timeline->currentTimeInternal());
     }
 
     virtual void TearDown()
@@ -139,12 +139,12 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 
     platformTiming->expectNoMoreActions();
     updateClockAndService(0);
-    EXPECT_FLOAT_EQ(0, timeline->currentTime());
+    EXPECT_FLOAT_EQ(0, timeline->currentTimeInternal());
     EXPECT_FALSE(anim->isInEffect());
 
     platformTiming->expectNoMoreActions();
     updateClockAndService(100);
-    EXPECT_FLOAT_EQ(100, timeline->currentTime());
+    EXPECT_FLOAT_EQ(100, timeline->currentTimeInternal());
 }
 
 TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
@@ -157,12 +157,12 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
 
     platformTiming->expectNoMoreActions();
     updateClockAndService(0);
-    EXPECT_FLOAT_EQ(0, timeline->currentTime());
+    EXPECT_FLOAT_EQ(0, timeline->currentTimeInternal());
     EXPECT_TRUE(anim->isInEffect());
 
     platformTiming->expectNoMoreActions();
     updateClockAndService(100);
-    EXPECT_FLOAT_EQ(100, timeline->currentTime());
+    EXPECT_FLOAT_EQ(100, timeline->currentTimeInternal());
 }
 
 TEST_F(AnimationDocumentTimelineTest, ZeroTime)
@@ -171,21 +171,21 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime)
     bool isNull;
 
     document->animationClock().updateTime(100);
-    EXPECT_TRUE(std::isnan(timeline->currentTime()));
-    EXPECT_TRUE(std::isnan(timeline->currentTime(isNull)));
+    EXPECT_TRUE(std::isnan(timeline->currentTimeInternal()));
+    EXPECT_TRUE(std::isnan(timeline->currentTimeInternal(isNull)));
     EXPECT_TRUE(isNull);
 
     document->animationClock().updateTime(200);
-    EXPECT_TRUE(std::isnan(timeline->currentTime()));
+    EXPECT_TRUE(std::isnan(timeline->currentTimeInternal()));
 
     timeline->setZeroTime(300);
     document->animationClock().updateTime(300);
-    EXPECT_EQ(0, timeline->currentTime());
-    EXPECT_EQ(0, timeline->currentTime(isNull));
+    EXPECT_EQ(0, timeline->currentTimeInternal());
+    EXPECT_EQ(0, timeline->currentTimeInternal(isNull));
     EXPECT_FALSE(isNull);
 
     document->animationClock().updateTime(400);
-    EXPECT_EQ(100, timeline->currentTime());
+    EXPECT_EQ(100, timeline->currentTimeInternal());
 }
 
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
@@ -198,8 +198,8 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
     AnimationPlayer* player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
 
-    EXPECT_FLOAT_EQ(seekTime, player1->currentTime());
-    EXPECT_FLOAT_EQ(seekTime, player2->currentTime());
+    EXPECT_FLOAT_EQ(seekTime, player1->currentTimeInternal());
+    EXPECT_FLOAT_EQ(seekTime, player2->currentTimeInternal());
 }
 
 TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)

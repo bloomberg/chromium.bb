@@ -23,12 +23,12 @@ TimedItemTiming::TimedItemTiming(TimedItem* parent)
 
 double TimedItemTiming::delay()
 {
-    return m_parent->specifiedTiming().startDelay;
+    return m_parent->specifiedTiming().startDelay * 1000;
 }
 
 double TimedItemTiming::endDelay()
 {
-    return m_parent->specifiedTiming().endDelay;
+    return m_parent->specifiedTiming().endDelay * 1000;
 }
 
 String TimedItemTiming::fill()
@@ -75,7 +75,7 @@ void TimedItemTiming::getDuration(String propertyName, bool& element0Enabled, do
         return;
     }
     element0Enabled = true;
-    element0 = m_parent->specifiedTiming().iterationDuration;
+    element0 = m_parent->specifiedTiming().iterationDuration * 1000;
     return;
 }
 

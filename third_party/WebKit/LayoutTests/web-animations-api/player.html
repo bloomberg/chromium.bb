@@ -7,16 +7,17 @@
 <script>
 var element = document.getElementById('element');
 test(function() {
-    var player = element.animate([{left: '0px', offset: 0}, {left: '100px', offset: 1}], 10);
+    var player = element.animate([{left: '0px', offset: 0}, {left: '100px', offset: 1}], 10000);
     var animation = player.source;
     assert_equals(animation.player, player);
     assert_equals(player.currentTime, 0);
-    player.currentTime = 5;
-    assert_equals(player.currentTime, 5);
-    assert_equals(player.timeLag, -5);
+    player.currentTime = 5000;
+    assert_equals(player.currentTime, 5000);
+    assert_equals(player.timeLag, -5000);
 
-    player.startTime += 1;
-    assert_equals(player.currentTime, 4);
+    player.startTime += 1000;
+
+    assert_equals(player.currentTime, 4000);
 
     player.pause();
     assert_true(player.paused);
@@ -24,7 +25,7 @@ test(function() {
     assert_false(player.paused);
 
     player.finish();
-    assert_equals(player.currentTime, 10);
+    assert_equals(player.currentTime, 10000);
     assert_true(player.finished);
 
     player.reverse();

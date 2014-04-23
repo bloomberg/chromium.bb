@@ -58,15 +58,15 @@ function animate() {
         {left: '100px', opacity: '0', offset: 1}
     ];
 
-    playerTop = document.getElementById('top').animate(keyframes, 0.6);
+    playerTop = document.getElementById('top').animate(keyframes, 600);
     playerTop.name = 'playerTop';
     playerTop.onfinish = onFinishTop;
 
-    playerMiddle = document.getElementById('middle').animate(keyframes, 0.1);
+    playerMiddle = document.getElementById('middle').animate(keyframes, 100);
     playerMiddle.name = 'playerMiddle';
     playerMiddle.onfinish = onFinishMiddle;
 
-    playerBottom = document.getElementById('bottom').animate(keyframes, 0.1);
+    playerBottom = document.getElementById('bottom').animate(keyframes, 100);
     playerBottom.name = 'playerBottom';
     playerBottom.onfinish = onFinishBottom;
 

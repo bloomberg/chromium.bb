@@ -65,12 +65,15 @@ public:
     double currentTime();
     void setCurrentTime(double newCurrentTime);
 
+    double currentTimeInternal();
+    void setCurrentTimeInternal(double newCurrentTime);
+
     bool paused() const { return m_paused && !m_isPausedForTesting; }
     void pause();
     void play();
     void reverse();
     void finish(ExceptionState&);
-    bool finished() { return limited(currentTime()); }
+    bool finished() { return limited(currentTimeInternal()); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
 
@@ -85,15 +88,18 @@ public:
     void timelineDestroyed() { m_timeline = 0; }
 
     bool hasStartTime() const { return !isNull(m_startTime); }
-    double startTime() const { return m_startTime; }
-    void setStartTime(double, bool isUpdateFromCompositor = false);
+    double startTime() const { return m_startTime * 1000; }
+    double startTimeInternal() const { return m_startTime; }
+    void setStartTime(double startTime) { setStartTimeInternal(startTime / 1000); }
+    void setStartTimeInternal(double, bool isUpdateFromCompositor = false);
 
     const TimedItem* source() const { return m_content.get(); }
     TimedItem* source() { return m_content.get(); }
     TimedItem* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
     void setSource(TimedItem*);
 
-    double timeLag() { return currentTimeWithoutLag() - currentTime(); }
+    double timeLag() { return timeLagInternal() * 1000; }
+    double timeLagInternal() { return currentTimeWithoutLag() - currentTimeInternal(); }
 
     // Pausing via this method is not reflected in the value returned by
     // paused() and must never overlap with pausing via pause().

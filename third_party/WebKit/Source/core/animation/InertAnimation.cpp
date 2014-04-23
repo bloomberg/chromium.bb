@@ -55,7 +55,7 @@ PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > In
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    return m_effect->sample(static_cast<int>(iteration), timeFraction(), duration());
+    return m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration());
 }
 
 

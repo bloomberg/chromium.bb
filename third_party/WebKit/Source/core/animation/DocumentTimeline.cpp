@@ -82,7 +82,7 @@ AnimationPlayer* DocumentTimeline::play(TimedItem* child)
     if (!m_document)
         return 0;
     AnimationPlayer* player = createAnimationPlayer(child);
-    player->setStartTime(effectiveTime());
+    player->setStartTimeInternal(effectiveTime());
     m_document->compositorPendingAnimations().add(player);
     return player;
 }
@@ -148,6 +148,11 @@ void DocumentTimeline::DocumentTimelineTiming::serviceOnNextFrame()
 
 double DocumentTimeline::currentTime(bool& isNull)
 {
+    return currentTimeInternal(isNull) * 1000;
+}
+
+double DocumentTimeline::currentTimeInternal(bool& isNull)
+{
     if (!m_document) {
         isNull = true;
         return std::numeric_limits<double>::quiet_NaN();
@@ -159,13 +164,18 @@ double DocumentTimeline::currentTime(bool& isNull)
 
 double DocumentTimeline::currentTime()
 {
+    return currentTimeInternal() * 1000;
+}
+
+double DocumentTimeline::currentTimeInternal()
+{
     bool isNull;
-    return currentTime(isNull);
+    return currentTimeInternal(isNull);
 }
 
 double DocumentTimeline::effectiveTime()
 {
-    double time = currentTime();
+    double time = currentTimeInternal();
     return std::isnan(time) ? 0 : time;
 }
 

@@ -126,7 +126,7 @@ TEST(AnimationTimedItemTest, Sanity)
     EXPECT_TRUE(timedItem->isInEffect());
     EXPECT_EQ(0, timedItem->currentIteration());
     EXPECT_EQ(0, timedItem->startTime());
-    EXPECT_EQ(2, timedItem->activeDuration());
+    EXPECT_EQ(2, timedItem->activeDurationInternal());
     EXPECT_EQ(0, timedItem->timeFraction());
 
     timedItem->updateInheritedTime(1);
@@ -137,7 +137,7 @@ TEST(AnimationTimedItemTest, Sanity)
     EXPECT_TRUE(timedItem->isInEffect());
     EXPECT_EQ(0, timedItem->currentIteration());
     EXPECT_EQ(0, timedItem->startTime());
-    EXPECT_EQ(2, timedItem->activeDuration());
+    EXPECT_EQ(2, timedItem->activeDurationInternal());
     EXPECT_EQ(0.5, timedItem->timeFraction());
 
     timedItem->updateInheritedTime(2);
@@ -148,7 +148,7 @@ TEST(AnimationTimedItemTest, Sanity)
     EXPECT_TRUE(timedItem->isInEffect());
     EXPECT_EQ(0, timedItem->currentIteration());
     EXPECT_EQ(0, timedItem->startTime());
-    EXPECT_EQ(2, timedItem->activeDuration());
+    EXPECT_EQ(2, timedItem->activeDurationInternal());
     EXPECT_EQ(1, timedItem->timeFraction());
 
     timedItem->updateInheritedTime(3);
@@ -159,7 +159,7 @@ TEST(AnimationTimedItemTest, Sanity)
     EXPECT_TRUE(timedItem->isInEffect());
     EXPECT_EQ(0, timedItem->currentIteration());
     EXPECT_EQ(0, timedItem->startTime());
-    EXPECT_EQ(2, timedItem->activeDuration());
+    EXPECT_EQ(2, timedItem->activeDurationInternal());
     EXPECT_EQ(1, timedItem->timeFraction());
 }
 
@@ -245,12 +245,12 @@ TEST(AnimationTimedItemTest, ZeroIteration)
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
     timedItem->updateInheritedTime(-1);
-    EXPECT_EQ(0, timedItem->activeDuration());
+    EXPECT_EQ(0, timedItem->activeDurationInternal());
     EXPECT_TRUE(isNull(timedItem->currentIteration()));
     EXPECT_TRUE(isNull(timedItem->timeFraction()));
 
     timedItem->updateInheritedTime(0);
-    EXPECT_EQ(0, timedItem->activeDuration());
+    EXPECT_EQ(0, timedItem->activeDurationInternal());
     EXPECT_EQ(0, timedItem->currentIteration());
     EXPECT_EQ(0, timedItem->timeFraction());
 }
@@ -267,7 +267,7 @@ TEST(AnimationTimedItemTest, InfiniteIteration)
     EXPECT_TRUE(isNull(timedItem->currentIteration()));
     EXPECT_TRUE(isNull(timedItem->timeFraction()));
 
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDuration());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDurationInternal());
 
     timedItem->updateInheritedTime(0);
     EXPECT_EQ(0, timedItem->currentIteration());
@@ -381,7 +381,7 @@ TEST(AnimationTimedItemTest, ZeroDurationSanity)
     EXPECT_TRUE(timedItem->isInEffect());
     EXPECT_EQ(0, timedItem->currentIteration());
     EXPECT_EQ(0, timedItem->startTime());
-    EXPECT_EQ(0, timedItem->activeDuration());
+    EXPECT_EQ(0, timedItem->activeDurationInternal());
     EXPECT_EQ(1, timedItem->timeFraction());
 
     timedItem->updateInheritedTime(1);
@@ -392,7 +392,7 @@ TEST(AnimationTimedItemTest, ZeroDurationSanity)
     EXPECT_TRUE(timedItem->isInEffect());
     EXPECT_EQ(0, timedItem->currentIteration());
     EXPECT_EQ(0, timedItem->startTime());
-    EXPECT_EQ(0, timedItem->activeDuration());
+    EXPECT_EQ(0, timedItem->activeDurationInternal());
     EXPECT_EQ(1, timedItem->timeFraction());
 }
 
@@ -489,12 +489,12 @@ TEST(AnimationTimedItemTest, ZeroDurationInfiniteIteration)
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
     timedItem->updateInheritedTime(-1);
-    EXPECT_EQ(0, timedItem->activeDuration());
+    EXPECT_EQ(0, timedItem->activeDurationInternal());
     EXPECT_TRUE(isNull(timedItem->currentIteration()));
     EXPECT_TRUE(isNull(timedItem->timeFraction()));
 
     timedItem->updateInheritedTime(0);
-    EXPECT_EQ(0, timedItem->activeDuration());
+    EXPECT_EQ(0, timedItem->activeDurationInternal());
     EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->currentIteration());
     EXPECT_EQ(1, timedItem->timeFraction());
 }
@@ -593,7 +593,7 @@ TEST(AnimationTimedItemTest, InfiniteDurationSanity)
 
     timedItem->updateInheritedTime(0);
 
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDuration());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDurationInternal());
     EXPECT_EQ(TimedItem::PhaseActive, timedItem->phase());
     EXPECT_TRUE(timedItem->isInPlay());
     EXPECT_TRUE(timedItem->isCurrent());
@@ -603,7 +603,7 @@ TEST(AnimationTimedItemTest, InfiniteDurationSanity)
 
     timedItem->updateInheritedTime(1);
 
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDuration());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDurationInternal());
     EXPECT_EQ(TimedItem::PhaseActive, timedItem->phase());
     EXPECT_TRUE(timedItem->isInPlay());
     EXPECT_TRUE(timedItem->isCurrent());
@@ -624,7 +624,7 @@ TEST(AnimationTimedItemTest, InfiniteDurationZeroIterations)
 
     timedItem->updateInheritedTime(0);
 
-    EXPECT_EQ(0, timedItem->activeDuration());
+    EXPECT_EQ(0, timedItem->activeDurationInternal());
     EXPECT_EQ(TimedItem::PhaseAfter, timedItem->phase());
     EXPECT_FALSE(timedItem->isInPlay());
     EXPECT_FALSE(timedItem->isCurrent());
@@ -654,7 +654,7 @@ TEST(AnimationTimedItemTest, InfiniteDurationInfiniteIterations)
 
     timedItem->updateInheritedTime(0);
 
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDuration());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDurationInternal());
     EXPECT_EQ(TimedItem::PhaseActive, timedItem->phase());
     EXPECT_TRUE(timedItem->isInPlay());
     EXPECT_TRUE(timedItem->isCurrent());
@@ -664,7 +664,7 @@ TEST(AnimationTimedItemTest, InfiniteDurationInfiniteIterations)
 
     timedItem->updateInheritedTime(1);
 
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDuration());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDurationInternal());
     EXPECT_EQ(TimedItem::PhaseActive, timedItem->phase());
     EXPECT_TRUE(timedItem->isInPlay());
     EXPECT_TRUE(timedItem->isCurrent());
@@ -684,7 +684,7 @@ TEST(AnimationTimedItemTest, InfiniteDurationZeroPlaybackRate)
 
     timedItem->updateInheritedTime(0);
 
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDuration());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDurationInternal());
     EXPECT_EQ(TimedItem::PhaseActive, timedItem->phase());
     EXPECT_TRUE(timedItem->isInPlay());
     EXPECT_TRUE(timedItem->isCurrent());
@@ -694,7 +694,7 @@ TEST(AnimationTimedItemTest, InfiniteDurationZeroPlaybackRate)
 
     timedItem->updateInheritedTime(std::numeric_limits<double>::infinity());
 
-    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDuration());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timedItem->activeDurationInternal());
     EXPECT_EQ(TimedItem::PhaseAfter, timedItem->phase());
     EXPECT_FALSE(timedItem->isInPlay());
     EXPECT_FALSE(timedItem->isCurrent());
@@ -711,7 +711,7 @@ TEST(AnimationTimedItemTest, EndTime)
     timing.iterationDuration = 4;
     timing.iterationCount = 2;
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
-    EXPECT_EQ(11, timedItem->endTime());
+    EXPECT_EQ(11, timedItem->endTimeInternal());
 }
 
 TEST(AnimationTimedItemTest, Events)

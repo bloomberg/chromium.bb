@@ -45,9 +45,9 @@ private:
 
 TEST_F(AnimationTimingInputTest, TimingInputStartDelay)
 {
-    EXPECT_EQ(1.1, applyTimingInputNumber("delay", 1.1).startDelay);
-    EXPECT_EQ(-1, applyTimingInputNumber("delay", -1).startDelay);
-    EXPECT_EQ(1, applyTimingInputString("delay", "1").startDelay);
+    EXPECT_EQ(1.1, applyTimingInputNumber("delay", 1100).startDelay);
+    EXPECT_EQ(-1, applyTimingInputNumber("delay", -1000).startDelay);
+    EXPECT_EQ(1, applyTimingInputString("delay", "1000").startDelay);
     EXPECT_EQ(0, applyTimingInputString("delay", "1s").startDelay);
     EXPECT_EQ(0, applyTimingInputString("delay", "Infinity").startDelay);
     EXPECT_EQ(0, applyTimingInputString("delay", "-Infinity").startDelay);
@@ -57,8 +57,8 @@ TEST_F(AnimationTimingInputTest, TimingInputStartDelay)
 
 TEST_F(AnimationTimingInputTest, TimingInputEndDelay)
 {
-    EXPECT_EQ(10, applyTimingInputNumber("endDelay", 10).endDelay);
-    EXPECT_EQ(-2.5, applyTimingInputNumber("endDelay", -2.5).endDelay);
+    EXPECT_EQ(10, applyTimingInputNumber("endDelay", 10000).endDelay);
+    EXPECT_EQ(-2.5, applyTimingInputNumber("endDelay", -2500).endDelay);
 }
 
 TEST_F(AnimationTimingInputTest, TimingInputFillMode)
@@ -101,9 +101,9 @@ TEST_F(AnimationTimingInputTest, TimingInputIterationCount)
 
 TEST_F(AnimationTimingInputTest, TimingInputIterationDuration)
 {
-    EXPECT_EQ(1.1, applyTimingInputNumber("duration", 1.1).iterationDuration);
-    EXPECT_TRUE(std::isnan(applyTimingInputNumber("duration", -1).iterationDuration));
-    EXPECT_EQ(1, applyTimingInputString("duration", "1").iterationDuration);
+    EXPECT_EQ(1.1, applyTimingInputNumber("duration", 1100).iterationDuration);
+    EXPECT_TRUE(std::isnan(applyTimingInputNumber("duration", -1000).iterationDuration));
+    EXPECT_EQ(1, applyTimingInputString("duration", "1000").iterationDuration);
 
     Timing timing = applyTimingInputString("duration", "Infinity");
     EXPECT_TRUE(std::isinf(timing.iterationDuration));

@@ -108,11 +108,11 @@ TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
 TEST_F(AnimationAnimationV8Test, CanSetDuration)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    double duration = 2;
+    double duration = 2000;
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, duration, exceptionState);
 
-    EXPECT_EQ(duration, animation->specifiedTiming().iterationDuration);
+    EXPECT_EQ(duration / 1000, animation->specifiedTiming().iterationDuration);
 }
 
 TEST_F(AnimationAnimationV8Test, CanOmitSpecifiedDuration)
@@ -366,20 +366,20 @@ TEST_F(AnimationAnimationTest, TimeToEffectChange)
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
     EXPECT_EQ(inf, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(100);
+    player->setCurrentTimeInternal(100);
     EXPECT_EQ(0, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(199);
+    player->setCurrentTimeInternal(199);
     EXPECT_EQ(0, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(200);
+    player->setCurrentTimeInternal(200);
     // End-exclusive.
     EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(300);
+    player->setCurrentTimeInternal(300);
     EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
     EXPECT_EQ(100, animation->timeToReverseEffectChange());
 }
@@ -399,20 +399,20 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
     EXPECT_EQ(inf, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(100);
+    player->setCurrentTimeInternal(100);
     EXPECT_EQ(0, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(149);
+    player->setCurrentTimeInternal(149);
     EXPECT_EQ(0, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(150);
+    player->setCurrentTimeInternal(150);
     // End-exclusive.
     EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(200);
+    player->setCurrentTimeInternal(200);
     EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
     EXPECT_EQ(50, animation->timeToReverseEffectChange());
 }
@@ -432,19 +432,19 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
     EXPECT_EQ(inf, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(100);
+    player->setCurrentTimeInternal(100);
     EXPECT_EQ(0, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(149);
+    player->setCurrentTimeInternal(149);
     EXPECT_EQ(0, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(150);
+    player->setCurrentTimeInternal(150);
     EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
     EXPECT_EQ(0, animation->timeToReverseEffectChange());
 
-    player->setCurrentTime(200);
+    player->setCurrentTimeInternal(200);
     EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
     EXPECT_EQ(50, animation->timeToReverseEffectChange());
 }

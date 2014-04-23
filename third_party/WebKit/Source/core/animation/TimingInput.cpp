@@ -14,7 +14,7 @@ namespace WebCore {
 void TimingInput::setStartDelay(Timing& timing, double startDelay)
 {
     if (std::isfinite(startDelay))
-        timing.startDelay = startDelay;
+        timing.startDelay = startDelay / 1000;
     else
         timing.startDelay = Timing::defaults().startDelay;
 }
@@ -22,7 +22,7 @@ void TimingInput::setStartDelay(Timing& timing, double startDelay)
 void TimingInput::setEndDelay(Timing& timing, double endDelay)
 {
     if (std::isfinite(endDelay))
-        timing.endDelay = endDelay;
+        timing.endDelay = endDelay / 1000;
     else
         timing.endDelay = Timing::defaults().endDelay;
 }
@@ -61,7 +61,7 @@ void TimingInput::setIterationCount(Timing& timing, double iterationCount)
 void TimingInput::setIterationDuration(Timing& timing, double iterationDuration)
 {
     if (!std::isnan(iterationDuration) && iterationDuration >= 0)
-        timing.iterationDuration = iterationDuration;
+        timing.iterationDuration = iterationDuration / 1000;
     else
         timing.iterationDuration = Timing::defaults().iterationDuration;
 }

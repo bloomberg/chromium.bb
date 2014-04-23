@@ -148,7 +148,7 @@ void Animation::applyEffects()
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations = m_effect->sample(static_cast<int>(iteration), timeFraction(), duration());
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations = m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration());
     if (m_sampledEffect) {
         m_sampledEffect->setInterpolations(interpolations.release());
     } else if (!interpolations->isEmpty()) {
@@ -186,8 +186,8 @@ void Animation::updateChildrenAndEffects() const
 
 double Animation::calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const
 {
-    const double start = startTime() + specifiedTiming().startDelay;
-    const double end = start + activeDuration();
+    const double start = startTimeInternal() + specifiedTiming().startDelay;
+    const double end = start + activeDurationInternal();
 
     switch (phase()) {
     case PhaseBefore:

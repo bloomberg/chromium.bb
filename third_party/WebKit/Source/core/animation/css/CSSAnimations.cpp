@@ -293,9 +293,9 @@ PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Elemen
 {
     OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = adoptPtrWillBeNoop(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), element, parentElement, style, parentStyle, resolver);
-    calculateAnimationActiveInterpolations(update.get(), element, parentElement.document().timeline().currentTime());
+    calculateAnimationActiveInterpolations(update.get(), element, parentElement.document().timeline().currentTimeInternal());
     calculateTransitionUpdate(update.get(), element, style);
-    calculateTransitionActiveInterpolations(update.get(), element, parentElement.document().transitionTimeline().currentTime());
+    calculateTransitionActiveInterpolations(update.get(), element, parentElement.document().transitionTimeline().currentTimeInternal());
     return update->isEmpty() ? nullptr : update.release();
 }
 
@@ -414,7 +414,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         RefPtr<AnimationPlayer> player = m_transitions.take(id).player;
         Animation* animation = toAnimation(player->source());
         if (animation->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
-            retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(animation, player->startTime()));
+            retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(animation, player->startTimeInternal()));
         player->cancel();
     }
 
@@ -435,7 +435,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             const std::pair<RefPtr<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
             RefPtr<Animation> oldAnimation = oldTransition.first;
             double oldStartTime = oldTransition.second;
-            double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline().currentTime() - oldStartTime;
+            double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline().currentTimeInternal() - oldStartTime;
 
             AnimatableValueKeyframeEffectModel* oldEffect = toAnimatableValueKeyframeEffectModel(inertAnimation->effect());
             const KeyframeVector& frames = oldEffect->getFrames();
@@ -688,7 +688,7 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* ti
         maybeDispatch(Document::ANIMATIONSTART_LISTENER, EventTypeNames::animationstart, 0);
     }
     if ((isFirstSample || isEarlierPhase(previousPhase, TimedItem::PhaseAfter)) && currentPhase == TimedItem::PhaseAfter)
-        maybeDispatch(Document::ANIMATIONEND_LISTENER, EventTypeNames::animationend, timedItem->activeDuration());
+        maybeDispatch(Document::ANIMATIONEND_LISTENER, EventTypeNames::animationend, timedItem->activeDurationInternal());
 }
 
 void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)
