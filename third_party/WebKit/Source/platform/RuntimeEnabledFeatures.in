@@ -136,7 +136,7 @@ TouchIconLoading
 UserSelectAll status=experimental
 ScriptPromiseOnV8Promise
 WebAnimationsSVG
-WebAnimationsElementAnimate status=experimental
+WebAnimationsElementAnimate status=stable
 WebAnimationsAPI status=experimental, depends_on=WebAnimationsElementAnimate
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
