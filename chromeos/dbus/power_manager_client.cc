@@ -503,7 +503,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
     FOR_EACH_OBSERVER(Observer, observers_,
         IdleActionImminent(base::TimeDelta::FromInternalValue(
-                               proto.time_until_idle_action())));
+            proto.time_until_idle_action())));
   }
 
   void IdleActionDeferredReceived(dbus::Signal* signal) {

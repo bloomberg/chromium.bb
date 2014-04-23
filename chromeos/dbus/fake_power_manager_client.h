@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "base/time/time.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_manager_client.h"

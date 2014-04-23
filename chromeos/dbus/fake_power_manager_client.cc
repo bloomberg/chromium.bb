@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chromeos/dbus/fake_power_manager_client.h"
+
+#include "base/time/time.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 
 namespace chromeos {
