@@ -120,7 +120,7 @@ def TranslateImagePath(path, board):
                   'name is included in the image path.', path, board)
     raise ValueError('Cannot locate image: %s' % path)
   except ds_wrapper.DevServerException:
-    logging.error(ds.TailLog() or 'No devserver log is available.')
+    logging.warning(ds.TailLog() or 'No devserver log is available.')
     raise
   finally:
     ds.Stop()
@@ -282,8 +282,8 @@ class USBImager(object):
       url = ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=60 * 15)
 
     except ds_wrapper.DevServerResponseError:
-      logging.error('Could not download %s.', path)
-      logging.error(ds.TailLog() or 'No devserver log is available.')
+      logging.warning('Could not download %s.', path)
+      logging.warning(ds.TailLog() or 'No devserver log is available.')
       raise
     else:
       # Print out the log when debug is on.
@@ -559,7 +559,7 @@ class RemoteDeviceUpdater(object):
       ds.Stop()
     except Exception:
       logging.error('Rootfs update failed.')
-      logging.error(ds.TailLog() or 'No devserver log is available.')
+      logging.warning(ds.TailLog() or 'No devserver log is available.')
       raise
     finally:
       ds.Stop()
@@ -631,7 +631,7 @@ class RemoteDeviceUpdater(object):
       ds.DownloadFile(os.path.join(url, self.ROOTFS_FILENAME), payload_dir)
       ds.DownloadFile(os.path.join(url, self.STATEFUL_FILENAME), payload_dir)
     except ds_wrapper.DevServerException:
-      logging.error(ds.TailLog() or 'No devserver log is available.')
+      logging.warning(ds.TailLog() or 'No devserver log is available.')
       raise
     else:
       logging.debug(ds.TailLog() or 'No devserver log is available.')
