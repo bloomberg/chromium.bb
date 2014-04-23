@@ -99,7 +99,6 @@ static float scrollWheelMultiplier()
 ScrollElasticityController::ScrollElasticityController(ScrollElasticityControllerClient* client)
     : m_client(client)
     , m_inScrollGesture(false)
-    , m_hasScrolled(false)
     , m_momentumScrollInProgress(false)
     , m_ignoreMomentumScrolls(false)
     , m_lastMomentumScrollTimestamp(0)
@@ -110,12 +109,13 @@ ScrollElasticityController::ScrollElasticityController(ScrollElasticityControlle
 
 bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 {
-    if (wheelEvent.phase() == PlatformWheelEventPhaseMayBegin)
-        return false;
-
     if (wheelEvent.phase() == PlatformWheelEventPhaseBegan) {
+        // First, check if we should rubber-band at all.
+        if (m_client->pinnedInDirection(FloatSize(-wheelEvent.deltaX(), 0)) &&
+            !shouldRubberBandInHorizontalDirection(wheelEvent))
+            return false;
+
         m_inScrollGesture = true;
-        m_hasScrolled = false;
         m_momentumScrollInProgress = false;
         m_ignoreMomentumScrolls = false;
         m_lastMomentumScrollTimestamp = 0;
@@ -128,12 +128,16 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
 
         stopSnapRubberbandTimer();
 
-        return shouldHandleEvent(wheelEvent);
+        return true;
     }
 
-    if (wheelEvent.phase() == PlatformWheelEventPhaseEnded || wheelEvent.phase() == PlatformWheelEventPhaseCancelled) {
+    if (wheelEvent.phase() == PlatformWheelEventPhaseEnded) {
+        bool wasRubberBandInProgress = isRubberBandInProgress();
+        // Call snapRubberBand() even if isRubberBandInProgress() is false. For example,
+        // m_inScrollGesture may be true (and needs to be reset on a phase end) even if
+        // isRubberBandInProgress() is not (e.g. the overhang area is empty).
         snapRubberBand();
-        return m_hasScrolled;
+        return wasRubberBandInProgress;
     }
 
     bool isMomentumScrollEvent = (wheelEvent.momentumPhase() != PlatformWheelEventPhaseNone);
@@ -144,9 +148,6 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
         }
         return false;
     }
-
-    if (!shouldHandleEvent(wheelEvent))
-        return false;
 
     float deltaX = m_overflowScrollDelta.width();
     float deltaY = m_overflowScrollDelta.height();
@@ -240,7 +241,6 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
     }
 
     if (deltaX != 0 || deltaY != 0) {
-        m_hasScrolled = true;
         if (!(shouldStretch || isVerticallyStretched || isHorizontallyStretched)) {
             if (deltaY != 0) {
                 deltaY *= scrollWheelMultiplier();
@@ -413,28 +413,13 @@ void ScrollElasticityController::snapRubberBand()
     m_snapRubberbandTimerIsActive = true;
 }
 
-bool ScrollElasticityController::shouldHandleEvent(const PlatformWheelEvent& wheelEvent)
+bool ScrollElasticityController::shouldRubberBandInHorizontalDirection(const PlatformWheelEvent& wheelEvent)
 {
-    // Once any scrolling has happened, all future events should be handled.
-    if (m_hasScrolled)
-        return true;
+    if (wheelEvent.deltaX() > 0)
+        return m_client->shouldRubberBandInDirection(ScrollLeft);
+    if (wheelEvent.deltaX() < 0)
+        return m_client->shouldRubberBandInDirection(ScrollRight);
 
-    // The event can't cause scrolling to start if it its delta is 0.
-    if (wheelEvent.deltaX() == 0 && wheelEvent.deltaY() == 0)
-        return false;
-
-    // If the client isn't pinned, then the event is guaranteed to cause scrolling.
-    if (!m_client->pinnedInDirection(FloatSize(-wheelEvent.deltaX(), 0)))
-        return true;
-
-    // If the event is pinned, then the client can't scroll, but it might rubber band.
-    // Check if the event allows rubber banding.
-    if (wheelEvent.deltaX() > 0 && !wheelEvent.canRubberbandLeft())
-        return false;
-    if (wheelEvent.deltaX() < 0 && !wheelEvent.canRubberbandRight())
-        return false;
-
-    // The event is going to either cause scrolling or rubber banding.
     return true;
 }
 

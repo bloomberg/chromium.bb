@@ -171,6 +171,7 @@ public:
 
     virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, WebCore::Document::PageDismissalType) const OVERRIDE;
 
+    virtual bool shouldRubberBandInDirection(WebCore::ScrollDirection) const OVERRIDE;
     virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE;
 
     virtual bool requestPointerLock() OVERRIDE;
