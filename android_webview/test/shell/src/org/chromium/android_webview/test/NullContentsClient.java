@@ -9,6 +9,7 @@ import android.graphics.Picture;
 import android.net.http.SslError;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -31,6 +32,9 @@ import java.security.Principal;
  * empty implementations of all abstract methods.
  */
 public class NullContentsClient extends AwContentsClient {
+
+    private static final String TAG = "NullContentsClient";
+
     public NullContentsClient() {
         this(ThreadUtils.getUiThreadLooper());
     }
@@ -112,19 +116,27 @@ public class NullContentsClient extends AwContentsClient {
 
     @Override
     public void handleJsAlert(String url, String message, JsResultReceiver receiver) {
+        Log.i(TAG, "handleJsAlert(" + url + ", " + message + ")");
+        receiver.cancel();
     }
 
     @Override
     public void handleJsBeforeUnload(String url, String message, JsResultReceiver receiver) {
+        Log.i(TAG, "handleJsBeforeUnload(" + url + ", " + message + ")");
+        receiver.confirm();
     }
 
     @Override
     public void handleJsConfirm(String url, String message, JsResultReceiver receiver) {
+        Log.i(TAG, "handleJsConfirm(" + url + ", " + message + ")");
+        receiver.cancel();
     }
 
     @Override
     public void handleJsPrompt(
             String url, String message, String defaultValue, JsPromptResultReceiver receiver) {
+        Log.i(TAG, "handleJsPrompt(" + url + ", " + message + ")");
+        receiver.cancel();
     }
 
     @Override
