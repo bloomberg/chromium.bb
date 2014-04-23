@@ -273,6 +273,9 @@
     'drive_resource_metadata': {
       'filepath': 'chrome/browser/chromeos/drive/resource_metadata'
     },
+    'events': {
+      'filepath': 'ui/events/',
+    },
     'extension': {
       'filepath': 'extension',
     },
@@ -772,6 +775,7 @@
     'downloads_ui': ['asanka@chromium.org', 'benjhayden+dwatch@chromium.org'],
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
+    'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org',
