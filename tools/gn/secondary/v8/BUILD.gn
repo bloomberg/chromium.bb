@@ -21,6 +21,12 @@ config("internal_config") {
   }
 }
 
+# TODO(brettw) Fix v8_base on Android and re-enable.
+if (is_android) {
+  source_set("v8_base") {
+  }
+} else {
+
 source_set("v8_base") {
   sources = [
     "src/accessors.cc",
@@ -696,3 +702,5 @@ source_set("v8_nosnapshot") {
 #    libs = [ "bz2" ]
 #  }
 #}
+
+}  # end Android commenting-out.
