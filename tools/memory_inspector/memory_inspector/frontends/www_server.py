@@ -18,6 +18,7 @@ The following HTTP status code are returned by the server:
     This typically happens when the target device is disconnected.
 """
 
+import cgi
 import collections
 import datetime
 import dateutil.parser
@@ -33,6 +34,7 @@ import wsgiref.simple_server
 from memory_inspector.core import backends
 from memory_inspector.core import memory_map
 from memory_inspector.classification import mmap_classifier
+from memory_inspector.classification import native_heap_classifier
 from memory_inspector.data import serialization
 from memory_inspector.data import file_storage
 from memory_inspector.frontends import background_tasks
@@ -154,8 +156,10 @@ def _InitializeDevice(args, req_vars):  # pylint: disable=W0613
   if not device:
     return _HTTP_GONE, [], 'Device not found'
   device.Initialize()
+  if req_vars['enableNativeTracing']:
+    device.EnableNativeTracing(True)
   return _HTTP_OK, [], {
-    'isNativeTracingEnabled': device.IsNativeTracingEnabled()}
+      'isNativeTracingEnabled': device.IsNativeTracingEnabled()}
 
 
 @AjaxHandler(r'/ajax/profile/create', 'POST')
@@ -173,41 +177,58 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
   # Step 1: collect the memory dumps, according to what the client specified in
   # the 'type' and 'source' POST arguments.
 
-  # Case 1: Generate a profile from a set of mmap dumps.
-  if req_vars['type'] == 'mmap':
-    classifier = mmap_classifier
-    # Case 1a: Use a cached mmap dumps.
-    if req_vars['source'] == 'cache':
-      dumps[0] = _GetCacheObject(req_vars['id'])
-    # Case 1b: Load mem dumps from an archive.
-    elif req_vars['source'] == 'archive':
-      archive = _persistent_storage.OpenArchive(req_vars['archive'])
-      if not archive:
-        return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
-      first_timestamp = None
-      for timestamp_str in req_vars['snapshots']:
-        timestamp = dateutil.parser.parse(timestamp_str)
-        first_timestamp = timestamp if not first_timestamp else first_timestamp
-        time_delta = int((timestamp - first_timestamp).total_seconds())
+  # Case 1a: The client requests to load data from an archive.
+  if req_vars['source'] == 'archive':
+    archive = _persistent_storage.OpenArchive(req_vars['archive'])
+    if not archive:
+      return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
+    first_timestamp = None
+    for timestamp_str in req_vars['snapshots']:
+      timestamp = dateutil.parser.parse(timestamp_str)
+      first_timestamp = first_timestamp or timestamp
+      time_delta = int((timestamp - first_timestamp).total_seconds())
+      if req_vars['type'] == 'mmap':
         dumps[time_delta] = archive.LoadMemMaps(timestamp)
+      elif req_vars['type'] == 'nheap':
+        dumps[time_delta] = archive.LoadNativeHeap(timestamp)
 
-  # TODO(primiano): Add support for native_heap types.
+  # Case 1b: Use a dump recently cached (only mmap, via _DumpMmapsForProcess).
+  elif req_vars['source'] == 'cache':
+    assert(req_vars['type'] == 'mmap'), 'Only cached mmap dumps are supported.'
+    dumps[0] = _GetCacheObject(req_vars['id'])
 
-  # Step 2: Load the rule-set specified by the client in the 'ruleset' POST arg.
-  # Also, perform some basic sanity checking.
-  rules_path = os.path.join(memory_inspector.ROOT_DIR, 'classification_rules',
-                            req_vars['ruleset'])
-  if not classifier:
-    return _HTTP_GONE, [], 'Classifier %s not supported.' % req_vars['type']
   if not dumps:
     return _HTTP_GONE, [], 'No memory dumps could be retrieved'
-  if not os.path.isfile(rules_path):
-    return _HTTP_GONE, [], 'Cannot find the rule-set %s' % rules_path
-  with open(rules_path) as f:
-    rules = mmap_classifier.LoadRules(f.read())
 
-  # Step 3: Aggregate the data using the desired classifier and generate the
-  # profile dictionary (which will be kept cached here in the server).
+  # Initialize the classifier (mmap or nheap) and prepare symbols for nheap.
+  if req_vars['type'] == 'mmap':
+    classifier = mmap_classifier
+  elif req_vars['type'] == 'nheap':
+    classifier = native_heap_classifier
+    if not archive.HasSymbols():
+      return _HTTP_GONE, [], 'No symbols in archive %s' % req_vars['archive']
+    symbols = archive.LoadSymbols()
+    for nheap in dumps.itervalues():
+      nheap.SymbolizeUsingSymbolDB(symbols)
+
+  if not classifier:
+    return _HTTP_GONE, [], 'Classifier %s not supported.' % req_vars['type']
+
+  # Step 2: Load the rule-set specified by the client in the 'ruleset' POST arg.
+  if req_vars['ruleset'] == 'heuristic':
+    assert(req_vars['type'] == 'nheap'), (
+        'heuristic rules are supported only for nheap')
+    rules = native_heap_classifier.InferHeuristicRulesFromHeap(dumps[0])
+  else:
+    rules_path = os.path.join(
+        memory_inspector.ROOT_DIR, 'classification_rules', req_vars['ruleset'])
+    if not os.path.isfile(rules_path):
+      return _HTTP_GONE, [], 'Cannot find the rule-set %s' % rules_path
+    with open(rules_path) as f:
+      rules = classifier.LoadRules(f.read())
+
+  # Step 3: Aggregate the dump data using the classifier and generate the
+  # profile data (which will be kept cached here in the server).
   # The resulting profile will consist of 1+ snapshots (depending on the number
   # dumps the client has requested to process) and a number of 1+ metrics
   # (depending on the buckets' keys returned by the classifier).
@@ -223,8 +244,6 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
   profile_id = _CacheObject(snapshots)
 
   first_snapshot = next(snapshots.itervalues())
-
-  # |metrics| is the key set of any of the aggregated result
   return _HTTP_OK, [], {'id': profile_id,
                         'times': snapshots.keys(),
                         'metrics': first_snapshot.keys,
@@ -529,6 +548,51 @@ def _LoadMmapsFromStorage(args, req_vars):  # pylint: disable=W0613
     return _HTTP_GONE, [], 'No mmaps for snapshot %s' % timestamp
   mmap = archive.LoadMemMaps(timestamp)
   return _HTTP_OK, [], {'table': _ConvertMmapToGTable(mmap)}
+
+
+@AjaxHandler(r'/ajax/storage/(.+)/(.+)/nheap')
+def _LoadNheapFromStorage(args, req_vars):
+  """Returns a Google Charts DataTable dictionary for the nheap."""
+  archive = _persistent_storage.OpenArchive(args[0])
+  if not archive:
+    return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
+
+  timestamp = dateutil.parser.parse(args[1])
+  if not archive.HasNativeHeap(timestamp):
+    return _HTTP_GONE, [], 'No native heap dump for snapshot %s' % timestamp
+
+  nheap = archive.LoadNativeHeap(timestamp)
+  symbols = archive.LoadSymbols()
+  nheap.SymbolizeUsingSymbolDB(symbols)
+
+  resp = {
+      'cols': [
+          {'label': 'Total size [KB]', 'type':'number'},
+          {'label': 'Alloc size [B]', 'type':'number'},
+          {'label': 'Count', 'type':'number'},
+          {'label': 'Stack Trace', 'type':'string'},
+        ],
+      'rows': []}
+  for alloc in nheap.allocations:
+    strace = '<dl>'
+    for frame in alloc.stack_trace.frames:
+      # Use the fallback libname.so+0xaddr if symbol info is not available.
+      symbol_name = frame.symbol.name if frame.symbol else '??'
+      source_info = (str(frame.symbol.source_info[0]) if
+          frame.symbol and frame.symbol.source_info else frame.raw_address)
+      strace += '<dd title="%s">%s</dd><dt>%s</dt>' % (
+          cgi.escape(source_info),
+          cgi.escape(os.path.basename(source_info)),
+          cgi.escape(symbol_name))
+    strace += '</dl>'
+
+    resp['rows'] += [{'c': [
+        {'v': alloc.total_size, 'f': alloc.total_size / 1024},
+        {'v': alloc.size, 'f': None},
+        {'v': alloc.count, 'f': None},
+        {'v': strace, 'f': None},
+    ]}]
+  return _HTTP_OK, [], resp
 
 
 # /ajax/tracer/start/Android/device-id/pid

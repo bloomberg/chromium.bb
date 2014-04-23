@@ -11,6 +11,7 @@
   <link href='//fonts.googleapis.com/css?family=Coda' rel='stylesheet' type='text/css'>
   <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/flick/jquery-ui.css" rel="stylesheet">
   <link href="/css/mmap.css" rel="stylesheet" type="text/css">
+  <link href="/css/nheap.css" rel="stylesheet" type="text/css">
   <link href="/css/processes.css" rel="stylesheet" type="text/css">
   <link href="/css/profiler.css" rel="stylesheet" type="text/css">
   <link href="/css/rootUi.css" rel="stylesheet" type="text/css">
@@ -24,6 +25,7 @@
   </script>
   <script src="/js/devices.js"></script>
   <script src="/js/mmap.js"></script>
+  <script src="/js/nheap.js"></script>
   <script src="/js/processes.js"></script>
   <script src="/js/profiler.js"></script>
   <script src="/js/rootUi.js"></script>
@@ -40,6 +42,7 @@
         <li><a href="#tabs-ps">Processes</a></li>
         <li><a href="#tabs-prof">Profiler</a></li>
         <li><a href="#tabs-mm">Memory maps table</a></li>
+        <li><a href="#tabs-nheap">Native S.Traces</a></li>
         <li><a href="#tabs-storage">Archived traces</a></li>
         <li><a href="#tabs-settings">Settings</a></li>
       </ul>
@@ -88,6 +91,10 @@
           <div>
             <label for="ps-tracer-snapshots">Num snapshots</label>
             <input type="text" id="ps-tracer-snapshots" value="1">
+          </div>
+          <div>
+            <input type="checkbox" id="ps-tracer-bt" class="ui-widget-content">
+            <label for="ps-tracer-bt">Detailed (w/ backtraces)</label>
           </div>
         </div>
       </div>
@@ -159,12 +166,26 @@
         <div id="mm-table"></div>
       </div>
 
+      <div id="tabs-nheap">
+        <div id="nheap-toolbar" class="ui-widget-header ui-corner-all">
+          <label>Totals: </label>
+          <input type="text" id="nheap-totals" values="0 KB" readonly>
+          <label>Selected: </label>
+          <input type="text" id="nheap-selected" values="0 KB" readonly>
+          <label>Filter: </label>
+          <input type="text" id="nheap-filter">
+        </div>
+        <div id="nheap-table"></div>
+      </div>
+
       <div id="tabs-storage">
         <div id="storage-toolbar" class="ui-widget-header ui-corner-all">
           <label>Group:</label>
           <button id="storage-profile-mmaps">Profile memory maps</button>
+          <button id="storage-profile-native">Profile native allocations</button>
           <label>Single snapshot:</label>
           <button id="storage-dump-mmaps">Show memory maps</button>
+          <button id="storage-dump-nheap">Show native heap</button>
         </div>
         <div id="storage-table"></div>
       </div>

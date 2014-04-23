@@ -78,6 +78,7 @@ def TracerMain_(log, storage_path, backend_name, device_id, pid, interval,
   datetime_str = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
   archive_name = '%s - %s - %s' % (datetime_str, device.name, process.name)
   archive = storage.OpenArchive(archive_name, create=True)
+  heaps_to_symbolize = []
 
   for i in xrange(1, count + 1):  # [1, count] range is easier to handle.
     process = device.GetProcess(pid)
@@ -96,9 +97,21 @@ def TracerMain_(log, storage_path, backend_name, device_id, pid, interval,
       nheap = process.DumpNativeHeap()
       log.put((completion, 'Dumped %d native allocs' % len(nheap.allocations)))
       archive.StoreNativeHeap(nheap)
+      heaps_to_symbolize += [nheap]
 
     if i < count:
       time.sleep(interval)
+
+  log.put((90, 'Symbolizing'))
+  symbols = backend.ExtractSymbols(heaps_to_symbolize,
+                                   device.settings['native_symbol_paths'] or '')
+
+  expected_symbols_count = len(set.union(
+      *[set(x.stack_frames.iterkeys()) for x in heaps_to_symbolize]))
+  log.put((99, 'Symbolization complete. Got %d symbols (%.1f%%).' % (
+      len(symbols), 100.0 * len(symbols) / expected_symbols_count)))
+
+  archive.StoreSymbols(symbols)
 
   log.put((100, 'Trace complete.'))
   return 0

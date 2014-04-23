@@ -87,12 +87,23 @@ this.showTracingDialog_ = function() {
 this.startTracingSelectedProcess_ = function() {
   if (!this.selProcUri_)
     return alert('The process ' + this.selProcUri_ + ' died.');
+  var traceNativeHeap = $('#ps-tracer-bt').prop('checked');
 
   $('#ps-tracer-dialog').dialog('close');
 
+  if (traceNativeHeap && !devices.getSelectedDevice().isNativeTracingEnabled) {
+    var shouldProvision = confirm('Native heap tracing is not enabled.\n' +
+        'Do you want to enable it (will cause a reboot on Android)?');
+    if (shouldProvision) {
+      devices.initializeSelectedDevice(true);
+      alert('Wait device to complete reboot and then retry.');
+      return;
+    }
+  }
+
   var postArgs = {interval: $('#ps-tracer-period').val(),
                   count: $('#ps-tracer-snapshots').val(),
-                  traceNativeHeap: false};
+                  traceNativeHeap: traceNativeHeap};
 
   webservice.ajaxRequest('/tracer/start/' + this.selProcUri_,
                          this.onStartTracerAjaxResponse_.bind(this),

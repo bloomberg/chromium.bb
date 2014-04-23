@@ -65,7 +65,7 @@ this.profileCachedMmapDump = function(mmapDumpId) {
 };
 
 this.profileArchivedMmaps = function(archiveName, snapshots) {
-  // Creates a profile using the data from the storage.
+  // Creates a mmap profile using the data from the storage.
   webservice.ajaxRequest('/profile/create',  // This is a POST request.
                          this.onProfileAjaxResponse_.bind(this),
                          null,  // use the default error handler.
@@ -74,6 +74,19 @@ this.profileArchivedMmaps = function(archiveName, snapshots) {
                           archive: archiveName,
                           snapshots: snapshots,
                           ruleset: $('#prof-ruleset').val()});
+};
+
+this.profileArchivedNHeaps = function(archiveName, snapshots) {
+  // Creates a native-heap profile using the data from the storage.
+  webservice.ajaxRequest('/profile/create',  // This is a POST request.
+                         this.onProfileAjaxResponse_.bind(this),
+                         null,  // use the default error handler.
+                         {type: 'nheap',
+                          source: 'archive',
+                          archive: archiveName,
+                          snapshots: snapshots,
+                          ruleset: 'heuristic'});
+  // TODO(primiano): Next CLs: support custom rules, not just the heuristic one.
 };
 
 this.onProfileAjaxResponse_ = function(data) {

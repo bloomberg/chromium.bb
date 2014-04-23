@@ -75,15 +75,20 @@ this.onDeviceSelectionChange_ = function() {
   if (!this.selDeviceUri_)
     return;
 
-  // Initialize device and start processes / OS stats (it is a POST request).
+  this.initializeSelectedDevice(false);
+};
+
+this.initializeSelectedDevice = function(enableNativeTracing) {
   webservice.ajaxRequest(
       '/initialize/' + this.selDeviceUri_,
       this.onDeviceInitializationComplete_.bind(this),
       null,  // default error handler.
-      {});
+      {enableNativeTracing: (enableNativeTracing ? '1' : '')});
 };
 
-this.onDeviceInitializationComplete_ = function() {
+this.onDeviceInitializationComplete_ = function(data) {
+  this.devices_[this.selDeviceUri_].isNativeTracingEnabled =
+     data.isNativeTracingEnabled;
   processes.startPsTable();
   processes.startDeviceStats();
 };

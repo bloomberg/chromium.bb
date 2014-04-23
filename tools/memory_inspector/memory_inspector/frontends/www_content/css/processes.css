@@ -16,3 +16,8 @@
   font-size: 0.9em;
   margin-bottom: 1em;
 }
+
+#ps-tracer-dialog > div > :last-child {
+  float: right;
+  width: 60%;
+}

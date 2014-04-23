@@ -15,6 +15,8 @@ this.onDomReady_ = function() {
       .click(this.dumpMmapForSelectedSnapshot_.bind(this));
   $('#storage-profile-native').button({icons:{primary: 'ui-icon-image'}})
       .click(this.profileNativeForSelectedSnapshots.bind(this));
+  $('#storage-dump-nheap').button({icons:{primary: 'ui-icon-calculator'}})
+      .click(this.dumpNheapForSelectedSnapshot_.bind(this));
 
   // Create the table.
   this.table_ = new google.visualization.Table($('#storage-table')[0]);
@@ -64,9 +66,52 @@ this.dumpMmapForSelectedSnapshot_ = function() {
   rootUi.showTab('mm');
 };
 
-this.profileNativeForSelectedSnapshots = function() {
+this.dumpNheapForSelectedSnapshot_ = function() {
+  var sel = this.table_.getSelection();
+  if (sel.length != 1) {
+    alert('Please select only one snapshot.')
+    return;
+  }
 
+  var row = sel[0].row;
+  if (!this.checkHasNativeHapDump_(row))
+    return;
+  nheap.dumpNheapFromStorage(this.tableData_.getValue(row, 0),
+                             this.tableData_.getValue(row, 1))
+  rootUi.showTab('nheap');
 };
+
+this.profileNativeForSelectedSnapshots = function() {
+  // Generates a native heap profile for the selected snapshots.
+  var sel = this.table_.getSelection();
+  if (!sel.length || !this.tableData_)
+    return;
+  var archiveName = null;
+  var snapshots = [];
+
+  for (var i = 0; i < sel.length; ++i) {
+    var row = sel[i].row;
+    var curArchive = this.tableData_.getValue(row, 0);
+    if (archiveName && curArchive != archiveName) {
+      alert('All the selected snapshots must belong to the same archive!');
+      return;
+    }
+    if (!this.checkHasNativeHapDump_(row))
+      return;
+    archiveName = curArchive;
+    snapshots.push(this.tableData_.getValue(row, 1));
+  }
+  profiler.profileArchivedNHeaps(archiveName, snapshots);
+  rootUi.showTab('prof');
+};
+
+this.checkHasNativeHapDump_ = function(row) {
+  if (!this.tableData_.getValue(row, 3)) {
+    alert('The selected snapshot doesn\'t have a heap dump!');
+    return false;
+  }
+  return true;
+}
 
 this.redraw = function() {
   if (!this.tableData_)

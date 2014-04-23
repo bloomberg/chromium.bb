@@ -34,6 +34,8 @@ this.onTabChange_ = function(_, ui) {
       return profiler.redraw();
     case 'mm':
       return mmap.redraw();
+    case 'nheap':
+      return nheap.redraw();
     case 'settings':
       return settings.reload();
     case 'storage':
