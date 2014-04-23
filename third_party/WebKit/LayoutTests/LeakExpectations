@@ -15,6 +15,9 @@ crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak 
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
 
+# FIXME: The below test fails when the leak detector is disabled.
+crbug.com/366029 virtual/softwarecompositing/geometry/layer-due-to-layer-children-deep-switch.html [ PASS FAIL ]
+
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
 # -----------------------------------------------------------------
