@@ -113,15 +113,22 @@ def destdir_configure_make_install(parsed_arguments, environment,
                                    install_prefix):
   configure_command = './configure %s' % parsed_arguments.custom_configure_flags
   configure_command += ' --libdir=/lib/'
-  shell_call(configure_command, parsed_arguments.verbose, environment)
+  # Installing to a temporary directory allows us to safely clean up the .la
+  # files below.
+  destdir = '%s/debian/instrumented_build' % os.getcwd()
   # Some makefiles use BUILDROOT instead of DESTDIR.
   make_command = 'make -j%s DESTDIR=%s BUILDROOT=%s' % (
-      parsed_arguments.jobs, install_prefix, install_prefix),
-  shell_call(make_command, parsed_arguments.verbose, environment)
-  shell_call('%s install' % make_command, parsed_arguments.verbose, environment)
-  # Kill the .la files. They contain absolute paths, and will cause build errors
-  # in dependent libraries.
-  shell_call('rm %s/lib/*.la -f' % install_prefix)
+      parsed_arguments.jobs, destdir, destdir),
+  run_shell_commands([
+      configure_command,
+      make_command,
+      '%s install' % make_command,
+      # Kill the .la files. They contain absolute paths, and will cause build
+      # errors in dependent libraries.
+      'rm %s/lib/*.la -f' % destdir,
+      # Now move the contents of the temporary destdir to their final place.
+      'cp %s/* %s/ -rd' % (destdir, install_prefix)],
+                     parsed_arguments.verbose, environment)
 
 
 def prefix_configure_make_install(parsed_arguments, environment,
@@ -196,7 +203,7 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
 
   # `make install' will create a "$(DESTDIR)-udeb" directory alongside destdir.
   # We don't want that in our product dir, so we use an intermediate directory.
-  destdir = 'debian/pciutils'
+  destdir = '%s/debian/pciutils' % os.getcwd()
   make_args = [
       '%s="%s"' % (name, environment[name])
       for name in['CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS']]
