@@ -49,13 +49,14 @@ uint32_t GetCrtc(int fd,
       // Check if the encoder is compatible with this CRTC
       if (!(encoder->possible_crtcs & (1 << j)) ||
           IsCrtcInUse(resources->crtcs[j], displays)) {
-        drmModeFreeEncoder(encoder);
         continue;
       }
 
       drmModeFreeEncoder(encoder);
       return resources->crtcs[j];
     }
+
+    drmModeFreeEncoder(encoder);
   }
 
   return 0;
