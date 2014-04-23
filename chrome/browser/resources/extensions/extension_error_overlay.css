@@ -42,6 +42,7 @@
   background-color: rgba(240, 240, 240, 1);
   border-right: 1px solid #ccc;
   color: rgba(128, 128, 128, 1);
+  flex-shrink: 0;
   text-align: right;
 }
 
