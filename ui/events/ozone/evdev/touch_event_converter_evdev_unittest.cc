@@ -79,10 +79,10 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
   pressure_max_ = 60;
 
   // TODO(rjkroege): Check test axes.
-  x_min_ = 0;
-  x_max_ = std::numeric_limits<int>::max();
-  y_min_ = 0;
-  y_max_ = std::numeric_limits<int>::max();
+  x_min_pixels_ = x_min_tuxels_ = 0;
+  x_num_pixels_ = x_num_tuxels_ = std::numeric_limits<int>::max();
+  y_min_pixels_ = y_min_tuxels_ = 0;
+  y_num_pixels_ = y_num_tuxels_ = std::numeric_limits<int>::max();
 
   int fds[2];
 

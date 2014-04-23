@@ -16,11 +16,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/gfx/screen.h"
 
@@ -29,6 +34,40 @@ namespace {
 // Number is determined empirically.
 // TODO(rjkroege): Configure this per device.
 const float kFingerWidth = 25.f;
+
+struct TouchCalibration {
+  int bezel_left;
+  int bezel_right;
+  int bezel_top;
+  int bezel_bottom;
+};
+
+void GetTouchCalibration(TouchCalibration* cal) {
+  std::vector<std::string> parts;
+  if (Tokenize(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                   switches::kTouchCalibration),
+               ",",
+               &parts) >= 4) {
+    if (!base::StringToInt(parts[0], &cal->bezel_left))
+      DLOG(ERROR) << "Incorrect left border calibration value passed.";
+    if (!base::StringToInt(parts[1], &cal->bezel_right))
+      DLOG(ERROR) << "Incorrect right border calibration value passed.";
+    if (!base::StringToInt(parts[2], &cal->bezel_top))
+      DLOG(ERROR) << "Incorrect top border calibration value passed.";
+    if (!base::StringToInt(parts[3], &cal->bezel_bottom))
+      DLOG(ERROR) << "Incorrect bottom border calibration value passed.";
+  }
+}
+
+float TuxelsToPixels(float val,
+                     float min_tuxels,
+                     float num_tuxels,
+                     float min_pixels,
+                     float num_pixels) {
+  // Map [min_tuxels, min_tuxels + num_tuxels) to
+  //     [min_pixels, min_pixels + num_pixels).
+  return min_pixels + (val - min_tuxels) * num_pixels / num_tuxels;
+}
 
 }  // namespace
 
@@ -42,12 +81,14 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     : EventConverterEvdev(callback),
       pressure_min_(info.GetAbsMinimum(ABS_MT_PRESSURE)),
       pressure_max_(info.GetAbsMaximum(ABS_MT_PRESSURE)),
-      x_scale_(1.),
-      y_scale_(1.),
-      x_min_(info.GetAbsMinimum(ABS_MT_POSITION_X)),
-      x_max_(info.GetAbsMaximum(ABS_MT_POSITION_X)),
-      y_min_(info.GetAbsMinimum(ABS_MT_POSITION_Y)),
-      y_max_(info.GetAbsMaximum(ABS_MT_POSITION_Y)),
+      x_min_tuxels_(info.GetAbsMinimum(ABS_MT_POSITION_X)),
+      x_num_tuxels_(info.GetAbsMaximum(ABS_MT_POSITION_X) - x_min_tuxels_ + 1),
+      y_min_tuxels_(info.GetAbsMinimum(ABS_MT_POSITION_Y)),
+      y_num_tuxels_(info.GetAbsMaximum(ABS_MT_POSITION_Y) - y_min_tuxels_ + 1),
+      x_min_pixels_(x_min_tuxels_),
+      x_num_pixels_(x_num_tuxels_),
+      y_min_pixels_(y_min_tuxels_),
+      y_num_pixels_(y_num_tuxels_),
       current_slot_(0),
       fd_(fd),
       path_(path) {
@@ -66,9 +107,29 @@ void TouchEventConverterEvdev::Init() {
   gfx::Display display = screen->GetPrimaryDisplay();
   gfx::Size size = display.GetSizeInPixel();
 
-  x_scale_ = (double)size.width() / (x_max_ - x_min_);
-  y_scale_ = (double)size.height() / (y_max_ - y_min_);
-  VLOG(1) << "touch scaling x_scale=" << x_scale_ << " y_scale=" << y_scale_;
+  // Map coordinates onto screen.
+  x_min_pixels_ = 0;
+  y_min_pixels_ = 0;
+  x_num_pixels_ = size.width();
+  y_num_pixels_ = size.height();
+
+  VLOG(1) << "mapping touch coordinates to screen coordinates: "
+          << base::StringPrintf("%dx%d", size.width(), size.height());
+
+  // Apply --touch-calibration.
+  TouchCalibration cal = {};
+  GetTouchCalibration(&cal);
+  x_min_tuxels_ += cal.bezel_left;
+  x_num_tuxels_ -= cal.bezel_left + cal.bezel_right;
+  y_min_tuxels_ += cal.bezel_top;
+  y_num_tuxels_ -= cal.bezel_top + cal.bezel_bottom;
+
+  VLOG(1) << "applying touch calibration: "
+          << base::StringPrintf("[%d, %d, %d, %d]",
+                                cal.bezel_left,
+                                cal.bezel_right,
+                                cal.bezel_top,
+                                cal.bezel_bottom);
 }
 
 void TouchEventConverterEvdev::Start() {
@@ -109,12 +170,20 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
         case ABS_X:
         case ABS_MT_POSITION_X:
           altered_slots_.set(current_slot_);
-          events_[current_slot_].x_ = roundf(input.value * x_scale_);
+          events_[current_slot_].x_ = TuxelsToPixels(input.value,
+                                                     x_min_tuxels_,
+                                                     x_num_tuxels_,
+                                                     x_min_pixels_,
+                                                     x_num_pixels_);
           break;
         case ABS_Y:
         case ABS_MT_POSITION_Y:
           altered_slots_.set(current_slot_);
-          events_[current_slot_].y_ = roundf(input.value * y_scale_);
+          events_[current_slot_].y_ = TuxelsToPixels(input.value,
+                                                     y_min_tuxels_,
+                                                     y_num_tuxels_,
+                                                     y_min_pixels_,
+                                                     y_num_pixels_);
           break;
         case ABS_MT_TRACKING_ID:
           altered_slots_.set(current_slot_);
@@ -146,8 +215,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
               // TODO(rjkroege): Support elliptical finger regions.
               touch_events.push_back(new TouchEvent(
                   events_[j].type_,
-                  gfx::Point(std::min(x_max_, events_[j].x_),
-                             std::min(y_max_, events_[j].y_)),
+                  gfx::PointF(events_[j].x_, events_[j].y_),
                   /* flags */ 0,
                   /* touch_id */ j,
                   base::TimeDelta::FromMicroseconds(

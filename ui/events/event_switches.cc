@@ -27,7 +27,7 @@ const char kTouchEventsDisabled[] = "disabled";
 const char kTouchDevices[] = "touch-devices";
 #endif
 
-#if defined(USE_XI2_MT)
+#if defined(USE_XI2_MT) || defined(USE_OZONE)
 // The calibration factors given as "<left>,<right>,<top>,<bottom>".
 const char kTouchCalibration[] = "touch-calibration";
 #endif

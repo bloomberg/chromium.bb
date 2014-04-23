@@ -20,7 +20,7 @@ EVENTS_BASE_EXPORT extern const char kTouchEventsDisabled[];
 EVENTS_BASE_EXPORT extern const char kTouchDevices[];
 #endif
 
-#if defined(USE_XI2_MT)
+#if defined(USE_XI2_MT) || defined(USE_OZONE)
 EVENTS_BASE_EXPORT extern const char kTouchCalibration[];
 #endif
 
