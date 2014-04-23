@@ -999,6 +999,10 @@ const char kDisableWebRTC[]                 = "disable-webrtc";
 // Enable the recognition part of the Web Speech API.
 const char kEnableSpeechRecognition[]       = "enable-speech-recognition";
 
+// Always use the video overlay for the embedded video.
+// This switch is intended only for tests.
+const char kForceUseOverlayEmbeddedVideo[] = "force-use-overlay-embedded-video";
+
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

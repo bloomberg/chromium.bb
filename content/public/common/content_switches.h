@@ -285,6 +285,7 @@ CONTENT_EXPORT extern const char kDisableClickDelay[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
 CONTENT_EXPORT extern const char kDisableWebRTC[];
 CONTENT_EXPORT extern const char kEnableSpeechRecognition[];
+CONTENT_EXPORT extern const char kForceUseOverlayEmbeddedVideo[];
 CONTENT_EXPORT extern const char kHideScrollbars[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];

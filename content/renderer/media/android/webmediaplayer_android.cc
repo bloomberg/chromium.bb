@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
@@ -130,6 +131,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   // Defer stream texture creation until we are sure it's necessary.
   needs_establish_peer_ = false;
   current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
+  force_use_overlay_embedded_video_ = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kForceUseOverlayEmbeddedVideo);
 #endif  // defined(VIDEO_HOLE)
   TryCreateStreamTextureProxyIfNeeded();
 }
@@ -672,7 +675,8 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
 #if defined(VIDEO_HOLE)
   // Use H/W surface for encrypted video.
   // TODO(qinmin): Change this so that only EME needs the H/W surface
-  if (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted()) {
+  if (force_use_overlay_embedded_video_ ||
+      (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted())) {
     needs_external_surface_ = true;
     if (!paused() && !manager_->IsInFullscreen(frame_))
       manager_->RequestExternalSurface(player_id_, last_computed_rect_);

@@ -393,6 +393,10 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // A rectangle represents the geometry of video frame, when computed last
   // time.
   gfx::RectF last_computed_rect_;
+
+  // Whether to use the video overlay for all embedded video.
+  // True only for testing.
+  bool force_use_overlay_embedded_video_;
 #endif  // defined(VIDEO_HOLE)
 
   scoped_ptr<MediaSourceDelegate,
