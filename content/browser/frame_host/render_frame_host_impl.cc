@@ -522,9 +522,13 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
-  // TODO(creis): Support beforeunload on subframes.
+  // TODO(creis): Support properly beforeunload on subframes. For now just
+  // pretend that the handler ran and allowed the navigation to proceed.
   if (GetParent()) {
-    NOTREACHED() << "Should only receive BeforeUnload_ACK from the main frame.";
+    render_view_host_->is_waiting_for_beforeunload_ack_ = false;
+    frame_tree_node_->render_manager()->OnBeforeUnloadACK(
+        render_view_host_->unload_ack_is_for_cross_site_transition_, proceed,
+        renderer_before_unload_end_time);
     return;
   }
 
@@ -750,9 +754,7 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
 
 void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
   // TODO(creis): Support subframes.
-  DCHECK(!GetParent());
-
-  if (!render_view_host_->IsRenderViewLive()) {
+  if (!render_view_host_->IsRenderViewLive() || GetParent()) {
     // We don't have a live renderer, so just skip running beforeunload.
     render_view_host_->is_waiting_for_beforeunload_ack_ = true;
     render_view_host_->unload_ack_is_for_cross_site_transition_ =
