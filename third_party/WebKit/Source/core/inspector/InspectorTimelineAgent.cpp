@@ -73,6 +73,7 @@ static const char includeCounters[] = "includeCounters";
 static const char includeGPUEvents[] = "includeGPUEvents";
 static const char bufferEvents[] = "bufferEvents";
 static const char liveEvents[] = "liveEvents";
+static const char traceEventCategoryFilter[] = "traceEventCategoryFilter";
 }
 
 // Must be kept in sync with WebInspector.TimelineModel.RecordType in TimelineModel.js
@@ -299,9 +300,10 @@ void InspectorTimelineAgent::restore()
     }
 }
 
-void InspectorTimelineAgent::enable(ErrorString*)
+void InspectorTimelineAgent::enable(ErrorString*, const String* traceEventCategoryFilter)
 {
     m_state->setBoolean(TimelineAgentState::enabled, true);
+    m_state->setString(TimelineAgentState::traceEventCategoryFilter, traceEventCategoryFilter ? *traceEventCategoryFilter : "");
 }
 
 void InspectorTimelineAgent::disable(ErrorString*)
@@ -355,6 +357,13 @@ void InspectorTimelineAgent::innerStart()
     if (m_overlay)
         m_overlay->startedRecordingProfile();
     m_state->setBoolean(TimelineAgentState::started, true);
+    String traceEventCategoryFilter = m_state->getString(TimelineAgentState::traceEventCategoryFilter);
+    if (!traceEventCategoryFilter.isEmpty()) {
+        m_client->enableTracing(traceEventCategoryFilter);
+        m_disableTracingOnStop = true;
+    } else {
+        m_disableTracingOnStop = false;
+    }
     m_instrumentingAgents->setInspectorTimelineAgent(this);
     ScriptGCEvent::addEventListener(this);
     if (m_client) {
@@ -408,6 +417,11 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
         TraceEventDispatcher::instance()->removeAllListeners(this, m_client);
         if (m_state->getBoolean(TimelineAgentState::includeGPUEvents))
             m_client->stopGPUEventsRecording();
+    }
+    // If we have enabled tracing, disable it now.
+    if (m_disableTracingOnStop) {
+        m_client->disableTracing();
+        m_disableTracingOnStop = false;
     }
     m_instrumentingAgents->setInspectorTimelineAgent(0);
     ScriptGCEvent::removeEventListener(this);
@@ -1200,6 +1214,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, In
     , m_styleRecalcElementCounter(0)
     , m_mayEmitFirstPaint(false)
     , m_lastProgressTimestamp(0)
+    , m_disableTracingOnStop(false)
 {
 }
 

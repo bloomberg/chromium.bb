@@ -86,6 +86,8 @@ public:
 
     virtual void setTraceEventCallback(const WebString& categoryFilter, TraceEventCallback) { }
     virtual void resetTraceEventCallback() { }
+    virtual void enableTracing(const WebString& categoryFilter) { }
+    virtual void disableTracing() { }
 
     virtual void startGPUEventsRecording() { }
     virtual void stopGPUEventsRecording() { }

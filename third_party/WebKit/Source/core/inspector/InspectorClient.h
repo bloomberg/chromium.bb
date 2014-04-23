@@ -51,6 +51,8 @@ public:
         unsigned char flags, double timestamp);
     virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) { }
     virtual void resetTraceEventCallback() { }
+    virtual void enableTracing(const String& categoryFilter) { }
+    virtual void disableTracing() { }
 
     virtual void startGPUEventsRecording() { }
     virtual void stopGPUEventsRecording() { }

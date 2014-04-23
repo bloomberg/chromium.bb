@@ -529,6 +529,16 @@ void WebDevToolsAgentImpl::resetTraceEventCallback()
     m_client->resetTraceEventCallback();
 }
 
+void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)
+{
+    m_client->enableTracing(categoryFilter);
+}
+
+void WebDevToolsAgentImpl::disableTracing()
+{
+    m_client->disableTracing();
+}
+
 void WebDevToolsAgentImpl::startGPUEventsRecording()
 {
     m_client->startGPUEventsRecording();

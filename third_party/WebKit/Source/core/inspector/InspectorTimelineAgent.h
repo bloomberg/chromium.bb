@@ -127,7 +127,7 @@ public:
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
 
-    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void enable(ErrorString*, const String* traceEventCategoryFilter) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const String* liveEvents, const bool* includeCounters, const bool* includeGPUEvents) OVERRIDE;
     virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events) OVERRIDE;
@@ -327,6 +327,7 @@ private:
     bool m_mayEmitFirstPaint;
     HashSet<String> m_liveEvents;
     double m_lastProgressTimestamp;
+    bool m_disableTracingOnStop;
 };
 
 } // namespace WebCore
