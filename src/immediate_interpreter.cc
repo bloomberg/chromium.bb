@@ -368,7 +368,7 @@ ScrollManager::ScrollManager(PropRegistry* prop_reg)
 
       fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 10),
       fling_buffer_suppress_zero_length_scrolls_(
-          prop_reg, "Fling Buffer Suppress Zero Length Scrolls", 0),
+          prop_reg, "Fling Buffer Suppress Zero Length Scrolls", 1),
       fling_buffer_min_avg_speed_(prop_reg,
                                   "Fling Buffer Min Avg Speed",
                                   10.0) {
