@@ -64,6 +64,10 @@ class PanelWindowResizerTest : public test::AshTestBase {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     shelf_delegate_->AddShelfItem(window);
+    PanelLayoutManager* manager = static_cast<PanelLayoutManager*>(
+        Shell::GetContainer(window->GetRootWindow(),
+                            kShellWindowId_PanelContainer)->layout_manager());
+    manager->Relayout();
     return window;
   }
 
