@@ -156,10 +156,10 @@ public:
 
     virtual void animationEnded() OVERRIDE
     {
-        SVGAnimatedPropertyBase::animationEnded();
-
         ASSERT(m_currentValue);
         m_currentValue.clear();
+
+        SVGAnimatedPropertyBase::animationEnded();
     }
 
 protected:

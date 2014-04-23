@@ -62,6 +62,7 @@ void SVGAnimatedPropertyBase::animationStarted()
 
 void SVGAnimatedPropertyBase::animationEnded()
 {
+    synchronizeAttribute();
     ASSERT(isAnimating());
     m_isAnimating = false;
 }
