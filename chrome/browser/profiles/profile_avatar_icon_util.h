@@ -25,6 +25,12 @@ extern const SkColor kAvatarBubbleAccountsBackgroundColor;
 // Gets the number of default avatar icons that exist.
 size_t GetDefaultAvatarIconCount();
 
+// Gets the index for the (grey silhouette) avatar used as a placeholder.
+int GetPlaceholderAvatarIndex();
+
+// Gets the resource ID of the placeholder avatar icon.
+int GetPlaceholderAvatarIconResourceID();
+
 // Gets the number of generic avatar icons that exist.
 size_t GetGenericAvatarIconCount();
 
@@ -33,6 +39,9 @@ int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
 
 // Gets the resource filename of the default avatar icon at |index|.
 const char* GetDefaultAvatarIconFileNameAtIndex(size_t index);
+
+// Gets the file name of an avatar that has no high res version.
+const char* GetNoHighResAvatarFileName();
 
 // Returns a URL for the default avatar icon with specified index.
 std::string GetDefaultAvatarIconUrl(size_t index);

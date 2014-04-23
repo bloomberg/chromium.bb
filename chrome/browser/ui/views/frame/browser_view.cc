@@ -25,6 +25,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -559,10 +560,6 @@ int BrowserView::GetOTRIconResourceID() const {
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH && IsFullscreen())
     return IDR_OTR_ICON_FULLSCREEN;
   return IDR_OTR_ICON;
-}
-
-int BrowserView::GetGuestIconResourceID() const {
-  return IDR_LOGIN_GUEST;
 }
 
 bool BrowserView::ShouldShowAvatar() const {

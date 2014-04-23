@@ -43,6 +43,7 @@ void ProfileListDesktop::RebuildMenu() {
       omitted_item_count_++;
       continue;
     }
+
     gfx::Image icon = profile_info_->GetAvatarIconOfProfileAtIndex(i);
     AvatarMenu::Item* item = new AvatarMenu::Item(i - omitted_item_count_,
                                                   i,

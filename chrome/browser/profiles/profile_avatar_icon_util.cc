@@ -176,8 +176,13 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
 
 namespace profiles {
 
+struct IconResourceInfo {
+  int resource_id;
+  const char* filename;
+};
+
 const int kAvatarIconWidth = 38;
-const int kAvatarIconHeight = 31;
+const int kAvatarIconHeight = 38;
 const int kAvatarIconPadding = 2;
 const SkColor kAvatarTutorialBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 const SkColor kAvatarTutorialContentTextColor = SkColorSetRGB(0xc6, 0xda, 0xfc);
@@ -188,87 +193,35 @@ const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
 const char kHighResAvatarFolderName[] = "Avatars";
 
-const int kDefaultAvatarIconResources[] = {
-  IDR_PROFILE_AVATAR_0,
-  IDR_PROFILE_AVATAR_1,
-  IDR_PROFILE_AVATAR_2,
-  IDR_PROFILE_AVATAR_3,
-  IDR_PROFILE_AVATAR_4,
-  IDR_PROFILE_AVATAR_5,
-  IDR_PROFILE_AVATAR_6,
-  IDR_PROFILE_AVATAR_7,
-  IDR_PROFILE_AVATAR_8,
-  IDR_PROFILE_AVATAR_9,
-  IDR_PROFILE_AVATAR_10,
-  IDR_PROFILE_AVATAR_11,
-  IDR_PROFILE_AVATAR_12,
-  IDR_PROFILE_AVATAR_13,
-  IDR_PROFILE_AVATAR_14,
-  IDR_PROFILE_AVATAR_15,
-  IDR_PROFILE_AVATAR_16,
-  IDR_PROFILE_AVATAR_17,
-  IDR_PROFILE_AVATAR_18,
-  IDR_PROFILE_AVATAR_19,
-  IDR_PROFILE_AVATAR_20,
-  IDR_PROFILE_AVATAR_21,
-  IDR_PROFILE_AVATAR_22,
-  IDR_PROFILE_AVATAR_23,
-  IDR_PROFILE_AVATAR_24,
-  IDR_PROFILE_AVATAR_25,
-};
+// This avatar does not exist on the server, the high res copy is in the build.
+const char kNoHighResAvatar[] = "NothingToDownload";
 
-// File names for the high-res avatar icon resources. In the same order as
-// the avatars in kDefaultAvatarIconResources.
-const char* kDefaultAvatarIconResourceFileNames[] = {
-  "avatar_generic.png",
-  "avatar_generic_aqua.png",
-  "avatar_generic_blue.png",
-  "avatar_generic_green.png",
-  "avatar_generic_orange.png",
-  "avatar_generic_purple.png",
-  "avatar_generic_red.png",
-  "avatar_generic_yellow.png",
-  "avatar_secret_agent.png",
-  "avatar_superhero.png",
-  "avatar_volley_ball.png",
-  "avatar_businessman.png",
-  "avatar_ninja.png",
-  "avatar_alien.png",
-  "avatar_smiley.png",
-  "avatar_flower.png",
-  "avatar_pizza.png",
-  "avatar_soccer.png",
-  "avatar_burger.png",
-  "avatar_cat.png",
-  "avatar_cupcake.png",
-  "avatar_dog.png",
-  "avatar_horse.png",
-  "avatar_margarita.png",
-  "avatar_note.png",
-  "avatar_sun_cloud.png",
-};
-
-const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
+// The size of the function-static kDefaultAvatarIconResources array below.
+const size_t kDefaultAvatarIconsCount = 27;
 
 // The first 8 icons are generic.
 const size_t kGenericAvatarIconsCount = 8;
 
+// The avatar used as a placeholder (grey silhouette).
+const int kPlaceholderAvatarIcon = 26;
+
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                               bool is_rectangle,
                               int width, int height) {
-  if (!is_rectangle)
+  if (!is_rectangle && image.Height() <= height)
     return image;
 
   gfx::Size size(width, height);
 
-  // Source for a centered, sized icon with a border.
+  // Source for a centered, sized icon. GAIA images get a border.
   scoped_ptr<gfx::ImageSkiaSource> source(
       new AvatarImageSource(
           *image.ToImageSkia(),
           size,
           std::min(width, height),
           AvatarImageSource::POSITION_CENTER,
-          AvatarImageSource::BORDER_NONE));
+          is_rectangle ? AvatarImageSource::BORDER_NORMAL :
+              AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), size));
 }
@@ -286,10 +239,11 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
 }
 
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
-                                    bool is_rectangle,
+                                    bool is_gaia_image,
                                     int dst_width,
                                     int dst_height) {
-  if (!is_rectangle)
+  // The image requires no border or resizing.
+  if (!is_gaia_image && image.Height() <= kAvatarIconHeight)
     return image;
 
   int size = std::min(std::min(kAvatarIconWidth, kAvatarIconHeight),
@@ -297,14 +251,15 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   gfx::Size dst_size(dst_width, dst_height);
 
   // Source for a sized icon drawn at the bottom center of the canvas,
-  // with an etched border.
+  // with an etched border (for GAIA images).
   scoped_ptr<gfx::ImageSkiaSource> source(
       new AvatarImageSource(
           *image.ToImageSkia(),
           dst_size,
           size,
           AvatarImageSource::POSITION_BOTTOM_CENTER,
-          AvatarImageSource::BORDER_ETCHED));
+          is_gaia_image ? AvatarImageSource::BORDER_ETCHED :
+              AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), dst_size));
 }
@@ -318,13 +273,59 @@ size_t GetGenericAvatarIconCount() {
   return kGenericAvatarIconsCount;
 }
 
+int GetPlaceholderAvatarIndex() {
+  return kPlaceholderAvatarIcon;
+}
+
+int GetPlaceholderAvatarIconResourceID() {
+  return IDR_PROFILE_AVATAR_26;
+}
+
+const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
+  static const IconResourceInfo resource_info[kDefaultAvatarIconsCount] = {
+    { IDR_PROFILE_AVATAR_0, "avatar_generic.png"},
+    { IDR_PROFILE_AVATAR_1, "avatar_generic_aqua.png"},
+    { IDR_PROFILE_AVATAR_2, "avatar_generic_blue.png"},
+    { IDR_PROFILE_AVATAR_3, "avatar_generic_green.png"},
+    { IDR_PROFILE_AVATAR_4, "avatar_generic_orange.png"},
+    { IDR_PROFILE_AVATAR_5, "avatar_generic_purple.png"},
+    { IDR_PROFILE_AVATAR_6, "avatar_generic_red.png"},
+    { IDR_PROFILE_AVATAR_7, "avatar_generic_yellow.png"},
+    { IDR_PROFILE_AVATAR_8, "avatar_secret_agent.png"},
+    { IDR_PROFILE_AVATAR_9, "avatar_superhero.png"},
+    { IDR_PROFILE_AVATAR_10, "avatar_volley_ball.png"},
+    { IDR_PROFILE_AVATAR_11, "avatar_businessman.png"},
+    { IDR_PROFILE_AVATAR_12, "avatar_ninja.png"},
+    { IDR_PROFILE_AVATAR_13, "avatar_alien.png"},
+    { IDR_PROFILE_AVATAR_14, "avatar_smiley.png"},
+    { IDR_PROFILE_AVATAR_15, "avatar_flower.png"},
+    { IDR_PROFILE_AVATAR_16, "avatar_pizza.png"},
+    { IDR_PROFILE_AVATAR_17, "avatar_soccer.png"},
+    { IDR_PROFILE_AVATAR_18, "avatar_burger.png"},
+    { IDR_PROFILE_AVATAR_19, "avatar_cat.png"},
+    { IDR_PROFILE_AVATAR_20, "avatar_cupcake.png"},
+    { IDR_PROFILE_AVATAR_21, "avatar_dog.png"},
+    { IDR_PROFILE_AVATAR_22, "avatar_horse.png"},
+    { IDR_PROFILE_AVATAR_23, "avatar_margarita.png"},
+    { IDR_PROFILE_AVATAR_24, "avatar_note.png"},
+    { IDR_PROFILE_AVATAR_25, "avatar_sun_cloud.png"},
+    { IDR_PROFILE_AVATAR_26, kNoHighResAvatar},
+  };
+  return &resource_info[index];
+}
+
 int GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
   DCHECK(IsDefaultAvatarIconIndex(index));
-  return kDefaultAvatarIconResources[index];
+  return GetDefaultAvatarIconResourceInfo(index)->resource_id;
 }
 
 const char* GetDefaultAvatarIconFileNameAtIndex(size_t index) {
-  return kDefaultAvatarIconResourceFileNames[index];
+  DCHECK(index < kDefaultAvatarIconsCount);
+  return GetDefaultAvatarIconResourceInfo(index)->filename;
+}
+
+const char* GetNoHighResAvatarFileName() {
+  return kNoHighResAvatar;
 }
 
 std::string GetDefaultAvatarIconUrl(size_t index) {

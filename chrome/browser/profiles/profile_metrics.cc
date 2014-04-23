@@ -107,8 +107,9 @@ enum ProfileAvatar {
   AVATAR_MARGARITA,
   AVATAR_NOTE,
   AVATAR_SUN_CLOUD,
-  AVATAR_UNKNOWN,           // 26
-  AVATAR_GAIA,              // 27
+  AVATAR_PLACEHOLDER,
+  AVATAR_UNKNOWN,           // 27
+  AVATAR_GAIA,              // 28
   NUM_PROFILE_AVATAR_METRICS
 };
 
@@ -237,7 +238,10 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
     case 25:
       icon_name = AVATAR_SUN_CLOUD;
       break;
-    case 27:
+    case 26:
+      icon_name = AVATAR_PLACEHOLDER;
+      break;
+    case 28:
       icon_name = AVATAR_GAIA;
       break;
     default:  // We should never actually get here.
