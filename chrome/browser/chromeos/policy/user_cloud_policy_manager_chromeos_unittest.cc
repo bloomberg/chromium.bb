@@ -111,9 +111,13 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     chrome::RegisterLocalState(prefs_.registry());
 
     // Set up a policy map for testing.
-    policy_map_.Set("HomepageLocation",
+    policy_map_.Set(key::kHomepageLocation,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                     new base::StringValue("http://chromium.org"),
+                    NULL);
+    policy_map_.Set(key::kChromeOsMultiProfileUserBehavior,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                    new base::StringValue("primary-only"),
                     NULL);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);

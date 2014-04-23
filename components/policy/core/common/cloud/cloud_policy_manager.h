@@ -30,6 +30,8 @@ class URLRequestContextGetter;
 
 namespace policy {
 
+class PolicyMap;
+
 // CloudPolicyManager is the main switching central between cloud policy and the
 // upper layers of the policy stack. It wires up a CloudPolicyCore to the
 // ConfigurationPolicyProvider interface.
@@ -74,6 +76,11 @@ class POLICY_EXPORT CloudPolicyManager
   // Check whether fully initialized and if so, publish policy by calling
   // ConfigurationPolicyStore::UpdatePolicy().
   void CheckAndPublishPolicy();
+
+  // Writes Chrome policy into |policy_map|. This is intended to be overridden
+  // by subclasses that want to post-process policy before publishing it. The
+  // default implementation just copies over |store()->policy_map()|.
+  virtual void GetChromePolicy(PolicyMap* policy_map);
 
   void CreateComponentCloudPolicyService(
       const base::FilePath& policy_cache_path,

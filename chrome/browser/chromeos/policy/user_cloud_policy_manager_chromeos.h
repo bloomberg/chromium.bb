@@ -104,6 +104,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // ComponentCloudPolicyService::Delegate:
   virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
+ protected:
+  // CloudPolicyManager:
+  virtual void GetChromePolicy(PolicyMap* policy_map) OVERRIDE;
+
  private:
   // Fetches a policy token using the authentication context of the signin
   // Profile, and calls back to OnOAuth2PolicyTokenFetched when done.

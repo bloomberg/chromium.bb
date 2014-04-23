@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
@@ -21,8 +22,11 @@
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
+#include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/core/common/policy_types.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "policy/policy_constants.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -270,6 +274,20 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
 void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
   CloudPolicyManager::OnComponentCloudPolicyUpdated();
   StartRefreshSchedulerIfReady();
+}
+
+void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
+  CloudPolicyManager::GetChromePolicy(policy_map);
+
+  // Default multi-profile behavior for managed accounts to primary-only.
+  if (store()->has_policy() &&
+      !policy_map->Get(key::kChromeOsMultiProfileUserBehavior)) {
+    policy_map->Set(key::kChromeOsMultiProfileUserBehavior,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER,
+                    new base::StringValue("primary-only"),
+                    NULL);
+  }
 }
 
 void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {

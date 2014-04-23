@@ -121,6 +121,14 @@ std::string GetTestPolicy(const char* homepage, int key_version) {
                             key_version);
 }
 
+void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
+#if defined(OS_CHROMEOS)
+  policy_map->Set(
+      key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, base::Value::CreateStringValue("primary-only"), NULL);
+#endif
+}
+
 void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 base::Value::CreateBooleanValue(true), NULL);
@@ -138,6 +146,11 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
   expected->Set(
       key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
       POLICY_SCOPE_USER, base::Value::CreateStringValue(homepage), NULL);
+#if defined(OS_CHROMEOS)
+  expected->Set(
+      key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, base::Value::CreateStringValue("primary-only"), NULL);
+#endif
 }
 
 }  // namespace
@@ -282,8 +295,9 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
     run_loop.Run();
   }
 
-  PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(policy_service->GetPolicies(
+  PolicyMap default_policy;
+  GetExpectedDefaultPolicy(&default_policy);
+  EXPECT_TRUE(default_policy.Equals(policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
 
   ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy("google.com", 0)));
@@ -349,8 +363,9 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
   std::string initial_key;
   ASSERT_TRUE(base::ReadFileToString(user_policy_key_file_, &initial_key));
 
-  PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(policy_service->GetPolicies(
+  PolicyMap default_policy;
+  GetExpectedDefaultPolicy(&default_policy);
+  EXPECT_TRUE(default_policy.Equals(policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
 
   // Set the new policies and a new key at the server.
