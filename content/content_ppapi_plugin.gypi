@@ -7,6 +7,7 @@
     ['enable_plugins==1', {
       'dependencies': [
         '../base/base.gyp:base',
+        '../mojo/mojo.gyp:mojo_shell_bindings',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',

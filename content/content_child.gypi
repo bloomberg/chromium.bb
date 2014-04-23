@@ -6,6 +6,8 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../components/tracing.gyp:tracing',
+    '../mojo/mojo.gyp:mojo_environment_chromium',
+    '../mojo/mojo.gyp:mojo_shell_bindings',
     '../skia/skia.gyp:skia',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',
@@ -79,6 +81,8 @@
     'child/indexed_db/webidbdatabase_impl.h',
     'child/indexed_db/webidbfactory_impl.cc',
     'child/indexed_db/webidbfactory_impl.h',
+    'child/mojo/mojo_application.cc',
+    'child/mojo/mojo_application.h',
     'child/npapi/np_channel_base.cc',
     'child/npapi/np_channel_base.h',
     'child/npapi/npobject_base.h',

@@ -19,5 +19,6 @@
 
 #define IPC_MESSAGE_START MojoMsgStart
 
-IPC_MESSAGE_CONTROL1(MojoMsg_ChannelCreated,
+// Mojo IPC is bootstrapped over Chrome IPC via this message.
+IPC_MESSAGE_CONTROL1(MojoMsg_Activate,
                      IPC::PlatformFileForTransit /* handle */);

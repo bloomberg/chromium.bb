@@ -64,6 +64,7 @@
 #include "content/browser/media/media_internals.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
+#include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging_message_filter.h"
@@ -86,7 +87,6 @@
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/browser/renderer_host/render_process_host_mojo_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -112,6 +112,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/mojo/mojo_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
@@ -137,6 +138,8 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -542,6 +545,10 @@ bool RenderProcessHostImpl::Init() {
                                 this,
                                 BrowserThread::GetMessageLoopProxyForThread(
                                     BrowserThread::IO).get()));
+
+  // Setup the Mojo channel.
+  mojo_application_host_.reset(new MojoApplicationHost());
+  mojo_application_host_->Init();
 
   // Call the embedder first so that their IPC filters have priority.
   GetContentClient()->browser()->RenderProcessWillLaunch(this);
@@ -1897,7 +1904,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
   ClearTransportDIBCache();
 
-  render_process_host_mojo_.reset();
+  mojo_application_host_.reset();
 
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
@@ -2032,6 +2039,14 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       Source<RenderProcessHost>(this),
       NotificationService::NoDetails());
 
+  // TODO(darin): This is blocked on security review. Un-commenting this will
+  // allow Mojo calls from all renderers.
+#if 0
+  // Let the Mojo system get setup on the child process side before any other
+  // IPCs arrive. This way those may safely generate Mojo-related RPCs.
+  mojo_application_host_->Activate(this, GetHandle());
+#endif
+
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
     queued_messages_.pop();
@@ -2041,9 +2056,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   if (WebRTCInternals::GetInstance()->aec_dump_enabled())
     EnableAecDump(WebRTCInternals::GetInstance()->aec_dump_file_path());
 #endif
-
-  if (render_process_host_mojo_.get())
-    render_process_host_mojo_->OnProcessLaunched();
 }
 
 scoped_refptr<AudioRendererHost>
@@ -2117,12 +2129,15 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
     Cleanup();
 }
 
-void RenderProcessHostImpl::SetWebUIHandle(
-    int32 view_routing_id,
+void RenderProcessHostImpl::ConnectTo(
+    const base::StringPiece& service_name,
     mojo::ScopedMessagePipeHandle handle) {
-  if (!render_process_host_mojo_)
-    render_process_host_mojo_.reset(new RenderProcessHostMojoImpl(this));
-  render_process_host_mojo_->SetWebUIHandle(view_routing_id, handle.Pass());
+  if (!mojo_application_host_->did_activate())
+    mojo_application_host_->Activate(this, GetHandle());
+
+  mojo::AllocationScope scope;
+  mojo_application_host_->shell_client()->AcceptConnection(service_name,
+                                                           handle.Pass());
 }
 
 }  // namespace content

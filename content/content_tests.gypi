@@ -22,6 +22,7 @@
           ],
           'include_dirs': [
             '..',
+            '<(SHARED_INTERMEDIATE_DIR)',
           ],
           'sources': [
             'public/test/layouttest_support.h',
