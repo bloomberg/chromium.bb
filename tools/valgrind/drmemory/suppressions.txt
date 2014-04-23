@@ -447,7 +447,11 @@ KERNEL32.dll!DuplicateHandle*
 base.dll!base::`anonymous namespace'::ThreadFunc
 KERNEL32.dll!BaseThreadInitThunk
 
-UNINITIALIZED READ
-...
-v8.dll!*
-net_with_v8.dll!net::ProxyResolverV8::Context::*
+HANDLE LEAK
+name=http://crbug.com/366246
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+KERNEL32.dll!DuplicateHandle
+base.dll!base::SharedMemory::ShareToProcessCommon
+content.dll!content::ResourceBuffer::ShareToProcess
+content.dll!content::AsyncResourceHandler::OnReadCompleted
