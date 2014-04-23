@@ -56,6 +56,5 @@ BASE_EXPORT std::string UTF16ToASCII(const string16& utf16);
 // whatever module uses wstring and the conversion is being used as a stopgap.
 // This makes it easy to grep for the ones that should be removed.
 #define WideToUTF16Hack WideToUTF16
-#define UTF16ToWideHack UTF16ToWide
 
 #endif  // BASE_STRINGS_UTF_STRING_CONVERSIONS_H_
