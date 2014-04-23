@@ -165,7 +165,7 @@
   </translations>
   <release seq="1" allow_pseudo="false">
     <includes>
-      <!-- The HTML for the about:terms page -->     
+      <!-- The HTML for the about:terms page -->
       <if expr="chromeos and _google_chrome">
         <include name="IDS_TERMS_HTML" file="terms\chromeos\terms_en.html" type="BINDATA" />
       </if>
@@ -264,40 +264,38 @@
         55
       </message>
 
-      <!-- The width of the ash/ChromeOS system tray menu in pixels. -->
-      <message name="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS" use_name_for_id="true">
-        300
-      </message>
-       
-      <!-- The width of the Conflicting Module bubble in characters (See above). -->
-      <message name="IDS_CONFLICTING_MODULE_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
-        46
-      </message>
+      <if expr="is_win or chromeos">
+        <!-- The width of the ash/ChromeOS system tray menu in pixels. -->
+        <message name="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS" use_name_for_id="true">
+          300
+        </message>
+      </if>
 
-      <!-- The width and height of the Join Wi-Fi network dialog box in -->
-      <!-- characters and lines (See above). -->
-      <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-      <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
-        4
-      </message>
+      <if expr="is_win">
+        <!-- The width of the Conflicting Module bubble in characters (See above). -->
+        <message name="IDS_CONFLICTING_MODULE_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
+          46
+        </message>
+      </if>
 
-      <!-- The height of the advanced Join Wi-Fi network dialog box in lines. -->
-      <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS" use_name_for_id="true">
-        86
-      </message>
-      <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
-        30
-      </message>
-      
-      <!-- The width and height of the Script Bubble in characters and lines -->
-      <message name="IDS_SCRIPTBUBBLE_WIDTH_CHARS" use_name_for_id="true">
-        50
-      </message>
-      <message name="IDS_SCRIPTBUBBLE_HEIGHT_LINES" use_name_for_id="true">
-        5
-      </message>
+      <if expr="chromeos">
+        <!-- The width and height of the Join Wi-Fi network dialog box in -->
+        <!-- characters and lines (See above). -->
+        <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+          60
+        </message>
+        <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
+          4
+        </message>
+
+        <!-- The height of the advanced Join Wi-Fi network dialog box in lines. -->
+        <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS" use_name_for_id="true">
+          86
+        </message>
+        <message name="IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
+          30
+        </message>
+      </if>
 
       <!-- The width and height of the Edit Bookmark dialog box in characters and lines -->
       <!-- (See above). -->
@@ -306,15 +304,6 @@
       </message>
       <message name="IDS_EDITBOOKMARK_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         25
-      </message>
-
-      <!-- The width and height of the Import Progress dialog box in characters and -->
-      <!-- lines (See above). -->
-      <message name="IDS_IMPORTPROGRESS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        75
-      </message>
-      <message name="IDS_IMPORTPROGRESS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        16
       </message>
 
       <!-- The width and height of the "Mozilla Firefox is locked" dialog box in -->
@@ -410,20 +399,20 @@
         81
       </message>
 
-      <!-- The width of the help-app dialog in pixels. -->
-      <message name="IDS_HELP_APP_DIALOG_WIDTH_PIXELS" use_name_for_id="true">
-          710
-      </message>
+      <if expr="chromeos">
+        <!-- The width of the help-app dialog in pixels. -->
+        <message name="IDS_HELP_APP_DIALOG_WIDTH_PIXELS" use_name_for_id="true">
+            710
+        </message>
 
-      <!-- The height of the help-app dialog in pixels. -->
-      <message name="IDS_HELP_APP_DIALOG_HEIGHT_PIXELS" use_name_for_id="true">
-          400
-      </message>
+        <!-- The height of the help-app dialog in pixels. -->
+        <message name="IDS_HELP_APP_DIALOG_HEIGHT_PIXELS" use_name_for_id="true">
+            400
+        </message>
 
-        <if expr="chromeos">
-	<message name="IDS_FACTORY_RESET_HELP_URL" translateable="false">
-	  http://support.google.com/chromeos/bin/answer.py?answer=183084&amp;hl=[GRITLANGCODE]
-	</message>
+        <message name="IDS_FACTORY_RESET_HELP_URL" translateable="false">
+          http://support.google.com/chromeos/bin/answer.py?answer=183084&amp;hl=[GRITLANGCODE]
+        </message>
       </if>
     </messages>
   </release>
