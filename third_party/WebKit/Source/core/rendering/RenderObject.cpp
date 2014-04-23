@@ -1572,7 +1572,13 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
             invalidationReason = InvalidationBorderRadius;
     }
 
-    if (invalidationReason == InvalidationIncremental && (mustRepaintBackgroundOrBorder() && (newBounds != oldBounds)))
+    // If the bounds are the same then we know that none of the statements below
+    // can match, so we can early out since we will not need to do any
+    // invalidation.
+    if (invalidationReason == InvalidationIncremental && oldBounds == newBounds)
+        return false;
+
+    if (invalidationReason == InvalidationIncremental && mustRepaintBackgroundOrBorder())
         invalidationReason = InvalidationBoundsChangeWithBackground;
 
     // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
@@ -1597,9 +1603,6 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
             repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds), invalidationReason);
         return true;
     }
-
-    if (oldBounds == newBounds)
-        return false;
 
     LayoutUnit deltaLeft = newBounds.x() - oldBounds.x();
     if (deltaLeft > 0)
