@@ -1306,11 +1306,11 @@ bool ExynosVideoEncodeAccelerator::SetMfcFormats() {
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_S_FMT, &format);
   // We read direct from GSC, so we rely on the HW not changing our set
   // size/stride.
-  DCHECK_EQ(format.fmt.pix_mp.plane_fmt[0].sizeimage,
+  DCHECK_GT(format.fmt.pix_mp.plane_fmt[0].sizeimage,
             static_cast<__u32>(input_allocated_size_.GetArea()));
   DCHECK_EQ(format.fmt.pix_mp.plane_fmt[0].bytesperline,
             static_cast<__u32>(input_allocated_size_.width()));
-  DCHECK_EQ(format.fmt.pix_mp.plane_fmt[1].sizeimage,
+  DCHECK_GT(format.fmt.pix_mp.plane_fmt[1].sizeimage,
             static_cast<__u32>(input_allocated_size_.GetArea() / 2));
   DCHECK_EQ(format.fmt.pix_mp.plane_fmt[1].bytesperline,
             static_cast<__u32>(input_allocated_size_.width()));
