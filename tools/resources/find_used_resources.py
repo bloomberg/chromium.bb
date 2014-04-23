@@ -9,7 +9,7 @@ import sys
 
 usage = """find_used_resources.py
 
-Prints out (to sdout) the sorted list of resource ids that are part of unknown
+Prints out (to stdout) the sorted list of resource ids that are part of unknown
 pragma warning in the given build log (via stdin).
 
 This script is used to find the resources that are actually compiled in Chrome
@@ -32,11 +32,11 @@ def GetResourceIdsInPragmaWarnings(input):
   """
   used_resources = set()
   unknown_pragma_warning_pattern = re.compile(
-      'whitelisted_resource_(?P<resource_id>[0-9]*)')
+      'whitelisted_resource_(?P<resource_id>[0-9]+)')
   for ln in input:
     match = unknown_pragma_warning_pattern.search(ln)
     if match:
-      resource_id = match.group('resource_id')
+      resource_id = int(match.group('resource_id'))
       used_resources.add(resource_id)
   return sorted(used_resources)
 
@@ -46,8 +46,8 @@ def Main():
     sys.exit(1)
   else:
     used_resources = GetResourceIdsInPragmaWarnings(sys.stdin)
-    for rid in used_resources:
-      sys.stdout.write(rid + '\n')
+    for resource_id in used_resources:
+      sys.stdout.write('%d\n' % resource_id)
 
 if __name__ == '__main__':
   Main()
