@@ -1,0 +1,9 @@
+<head>
+<script src="http://127.0.0.1:8000/resources/slow-script.pl?delay=100"></script>
+<link rel="stylesheet" href="hello.css">
+<script src="hello.js"></script>
+<script>
+testPreload('hello.css', document.currentScript.ownerDocument);
+testPreload('hello.js', document.currentScript.ownerDocument);
+</script>
+</head>

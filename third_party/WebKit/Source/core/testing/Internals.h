@@ -82,6 +82,7 @@ public:
     PassRefPtrWillBeRawPtr<GCObservation> observeGC(ScriptValue);
 
     bool isPreloaded(const String& url);
+    bool isPreloadedBy(const String& url, Document*);
     bool isLoadingFromMemoryCache(const String& url);
 
     void crash();

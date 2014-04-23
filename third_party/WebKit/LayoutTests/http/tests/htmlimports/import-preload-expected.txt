@@ -1,0 +1,4 @@
+CONSOLE MESSAGE: line 9: PASS: hello.css is preloaded.
+CONSOLE MESSAGE: line 9: PASS: hello.js is preloaded.
+CONSOLE MESSAGE: line 9: PASS: resources/preload.html is preloaded.
+

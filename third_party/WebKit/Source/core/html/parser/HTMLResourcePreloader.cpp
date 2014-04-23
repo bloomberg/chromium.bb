@@ -56,6 +56,13 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     initiatorInfo.position = m_initiatorPosition;
     FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
 
+    if (m_resourceType == Resource::ImportResource) {
+        bool sameOrigin = document->contextDocument()->securityOrigin()->canRequest(request.url());
+        request.setCrossOriginAccessControl(document->contextDocument()->securityOrigin(),
+            sameOrigin ? AllowStoredCredentials : DoNotAllowStoredCredentials,
+            ClientDidNotRequestCredentials);
+    }
+
     if (m_isCORSEnabled)
         request.setCrossOriginAccessControl(document->securityOrigin(), m_allowCredentials);
     return request;
