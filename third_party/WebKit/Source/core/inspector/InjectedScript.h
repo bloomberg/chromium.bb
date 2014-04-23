@@ -102,7 +102,7 @@ public:
 
 private:
     friend class InjectedScriptModule;
-    friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);
+    friend InjectedScript InjectedScriptManager::injectedScriptFor(NewScriptState*);
     InjectedScript(ScriptObject, InspectedStateAccessCheck);
 
     ScriptValue nodeAsScriptValue(Node*);

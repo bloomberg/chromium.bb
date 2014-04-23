@@ -102,7 +102,7 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 {
 }
 
-void InspectorProfilerAgent::consoleProfile(const String& title, ScriptState* state)
+void InspectorProfilerAgent::consoleProfile(const String& title, NewScriptState*)
 {
     ASSERT(m_frontend && enabled());
     String id = nextProfileId();

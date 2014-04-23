@@ -30,7 +30,7 @@
 #ifndef InjectedScriptManager_h
 #define InjectedScriptManager_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
@@ -53,15 +53,15 @@ public:
 
     InjectedScriptHost* injectedScriptHost();
 
-    InjectedScript injectedScriptFor(ScriptState*);
+    InjectedScript injectedScriptFor(NewScriptState*);
     InjectedScript injectedScriptForId(int);
-    int injectedScriptIdFor(ScriptState*);
+    int injectedScriptIdFor(NewScriptState*);
     InjectedScript injectedScriptForObjectId(const String& objectId);
     void discardInjectedScripts();
     void discardInjectedScriptsFor(DOMWindow*);
     void releaseObjectGroup(const String& objectGroup);
 
-    typedef bool (*InspectedStateAccessCheck)(ScriptState*);
+    typedef bool (*InspectedStateAccessCheck)(NewScriptState*);
     InspectedStateAccessCheck inspectedStateAccessCheck() const { return m_inspectedStateAccessCheck; }
 
     struct CallbackData;
@@ -70,17 +70,17 @@ private:
     explicit InjectedScriptManager(InspectedStateAccessCheck);
 
     String injectedScriptSource();
-    ScriptObject createInjectedScript(const String& source, ScriptState*, int id);
+    ScriptObject createInjectedScript(const String& source, NewScriptState*, int id);
 
-    static bool canAccessInspectedWindow(ScriptState*);
-    static bool canAccessInspectedWorkerGlobalScope(ScriptState*);
+    static bool canAccessInspectedWindow(NewScriptState*);
+    static bool canAccessInspectedWorkerGlobalScope(NewScriptState*);
 
     int m_nextInjectedScriptId;
     typedef HashMap<int, InjectedScript> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
     RefPtr<InjectedScriptHost> m_injectedScriptHost;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
-    typedef HashMap<ScriptState*, int> ScriptStateToId;
+    typedef HashMap<NewScriptState*, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;
 };
 

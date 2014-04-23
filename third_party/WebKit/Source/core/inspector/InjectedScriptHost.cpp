@@ -89,7 +89,7 @@ void InjectedScriptHost::clearConsoleMessages()
     }
 }
 
-ScriptValue InjectedScriptHost::InspectableObject::get(ScriptState*)
+ScriptValue InjectedScriptHost::InspectableObject::get(NewScriptState*)
 {
     return ScriptValue();
 };

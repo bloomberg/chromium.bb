@@ -43,9 +43,23 @@ NewScriptState::~NewScriptState()
     ASSERT(m_context.isEmpty());
 }
 
+ScriptState* NewScriptState::oldScriptState()
+{
+    ASSERT(!m_context.isEmpty());
+    v8::HandleScope scope(m_isolate);
+    return ScriptState::forContext(context());
+}
+
 ExecutionContext* NewScriptState::executionContext() const
 {
+    v8::HandleScope scope(m_isolate);
     return toExecutionContext(context());
+}
+
+DOMWindow* NewScriptState::domWindow() const
+{
+    v8::HandleScope scope(m_isolate);
+    return toDOMWindow(context());
 }
 
 NewScriptState* NewScriptState::forMainWorld(LocalFrame* frame)

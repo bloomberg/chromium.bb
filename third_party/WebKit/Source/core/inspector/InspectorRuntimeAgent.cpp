@@ -30,13 +30,13 @@
 
 #include "config.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
+
+#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptDebugServer.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
 #include "platform/JSONValues.h"
-
-#include "bindings/v8/ScriptDebugServer.h"
-#include "bindings/v8/ScriptState.h"
 
 using WebCore::TypeBuilder::Runtime::ExecutionContextDescription;
 
@@ -195,7 +195,7 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
     m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
 }
 
-void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptState, bool isPageContext, const String& name, const String& frameId)
+void InspectorRuntimeAgent::addExecutionContextToFrontend(NewScriptState* scriptState, bool isPageContext, const String& name, const String& frameId)
 {
     int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
     m_scriptStateToId.set(scriptState, executionContextId);

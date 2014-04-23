@@ -810,7 +810,7 @@ void InspectorTimelineAgent::consoleTime(ExecutionContext* context, const String
     m_recordStack.last().skipWhenUnbalanced = true;
 }
 
-void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const String& message, ScriptState*)
+void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const String& message, NewScriptState*)
 {
     if (m_recordStack.last().type != TimelineRecordType::ConsoleTime)
         return;
@@ -821,13 +821,13 @@ void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const Str
     didCompleteCurrentRecord(TimelineRecordType::ConsoleTime);
 }
 
-void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* state)
+void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const String& title, NewScriptState* scriptState)
 {
     if (!m_state->getBoolean(TimelineAgentState::enabled))
         return;
 
     String message = String::format("Timeline '%s' started.", title.utf8().data());
-    mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, state);
+    mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
     m_consoleTimelines.append(title);
     if (!isStarted()) {
         innerStart();
@@ -837,7 +837,7 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForExecutionContext(context));
 }
 
-void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* state)
+void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, NewScriptState* scriptState)
 {
     if (!m_state->getBoolean(TimelineAgentState::enabled))
         return;
@@ -845,7 +845,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     size_t index = m_consoleTimelines.find(title);
     if (index == kNotFound) {
         String message = String::format("Timeline '%s' was not started.", title.utf8().data());
-        mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, state);
+        mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
         return;
     }
 
@@ -856,7 +856,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
         unwindRecordStack();
         innerStop(true);
     }
-    mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, state);
+    mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
 }
 
 void InspectorTimelineAgent::domContentLoadedEventFired(LocalFrame* frame)

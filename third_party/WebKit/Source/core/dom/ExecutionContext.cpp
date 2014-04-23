@@ -160,11 +160,11 @@ void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel leve
     m_client->addMessage(source, level, message, sourceURL, lineNumber, 0);
 }
 
-void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
+void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, NewScriptState* scriptState)
 {
     if (!m_client)
         return;
-    m_client->addMessage(source, level, message, String(), 0, state);
+    m_client->addMessage(source, level, message, String(), 0, scriptState);
 }
 
 bool ExecutionContext::dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent> event, AccessControlStatus corsStatus)

@@ -4896,12 +4896,12 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* state)
+void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, NewScriptState* scriptState)
 {
-    internalAddMessage(source, level, message, sourceURL, lineNumber, nullptr, state);
+    internalAddMessage(source, level, message, sourceURL, lineNumber, nullptr, scriptState);
 }
 
-void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state)
+void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, NewScriptState* scriptState)
 {
     if (!isContextThread()) {
         m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));
@@ -4912,7 +4912,7 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
         return;
 
     String messageURL = sourceURL;
-    if (!state && sourceURL.isNull() && !lineNumber) {
+    if (!scriptState && sourceURL.isNull() && !lineNumber) {
         messageURL = url().string();
         if (parsing() && !isInDocumentWrite() && scriptableDocumentParser()) {
             ScriptableDocumentParser* parser = scriptableDocumentParser();
@@ -4920,7 +4920,7 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
     }
-    m_frame->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, state, 0);
+    m_frame->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, scriptState, 0);
 }
 
 void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)

@@ -72,6 +72,7 @@ class InspectorPageAgent;
 class InspectorLayerTreeAgent;
 class InstrumentingAgents;
 class KURL;
+class NewScriptState;
 class Node;
 class RenderImage;
 class RenderObject;
@@ -81,7 +82,6 @@ class ResourceRequest;
 class ResourceResponse;
 class ScriptArguments;
 class ScriptCallStack;
-class ScriptState;
 class TimelineRecordStack;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
@@ -198,9 +198,9 @@ public:
     void loadEventFired(LocalFrame*);
 
     void consoleTime(ExecutionContext*, const String&);
-    void consoleTimeEnd(ExecutionContext*, const String&, ScriptState*);
-    void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
-    void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
+    void consoleTimeEnd(ExecutionContext*, const String&, NewScriptState*);
+    void consoleTimeline(ExecutionContext*, const String& title, NewScriptState*);
+    void consoleTimelineEnd(ExecutionContext*, const String& title, NewScriptState*);
 
     void didScheduleResourceRequest(Document*, const String& url);
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);

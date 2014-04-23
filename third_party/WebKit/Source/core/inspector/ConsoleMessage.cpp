@@ -51,7 +51,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_type(type)
     , m_level(level)
     , m_message(message)
-    , m_scriptState()
+    , m_scriptState(0)
     , m_url()
     , m_line(0)
     , m_column(0)
@@ -61,19 +61,19 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     autogenerateMetadata(canGenerateCallStack);
 }
 
-ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& url, unsigned line, unsigned column, ScriptState* state, unsigned long requestIdentifier)
+ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& url, unsigned line, unsigned column, NewScriptState* scriptState, unsigned long requestIdentifier)
     : m_source(source)
     , m_type(type)
     , m_level(level)
     , m_message(message)
-    , m_scriptState(state)
+    , m_scriptState(scriptState)
     , m_url(url)
     , m_line(line)
     , m_column(column)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
 {
-    autogenerateMetadata(canGenerateCallStack, state);
+    autogenerateMetadata(canGenerateCallStack, scriptState);
 }
 
 ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
@@ -81,7 +81,7 @@ ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, Mes
     , m_type(type)
     , m_level(level)
     , m_message(message)
-    , m_scriptState()
+    , m_scriptState(0)
     , m_arguments(nullptr)
     , m_line(0)
     , m_column(0)
@@ -97,12 +97,12 @@ ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, Mes
     m_callStack = callStack;
 }
 
-ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptArguments> arguments, ScriptState* state, unsigned long requestIdentifier)
+ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptArguments> arguments, NewScriptState* scriptState, unsigned long requestIdentifier)
     : m_source(source)
     , m_type(type)
     , m_level(level)
     , m_message(message)
-    , m_scriptState(state)
+    , m_scriptState(scriptState)
     , m_arguments(arguments)
     , m_url()
     , m_line(0)
@@ -110,19 +110,19 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
 {
-    autogenerateMetadata(canGenerateCallStack, state);
+    autogenerateMetadata(canGenerateCallStack, scriptState);
 }
 
 ConsoleMessage::~ConsoleMessage()
 {
 }
 
-void ConsoleMessage::autogenerateMetadata(bool canGenerateCallStack, ScriptState* state)
+void ConsoleMessage::autogenerateMetadata(bool canGenerateCallStack, NewScriptState* scriptState)
 {
     if (m_type == EndGroupMessageType)
         return;
 
-    if (state)
+    if (scriptState)
         m_callStack = createScriptCallStackForConsole();
     else if (canGenerateCallStack)
         m_callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
@@ -199,13 +199,13 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     jsonObj->setLine(static_cast<int>(m_line));
     jsonObj->setColumn(static_cast<int>(m_column));
     jsonObj->setUrl(m_url);
-    ScriptState* scriptState = m_scriptState.get();
+    NewScriptState* scriptState = m_scriptState.get();
     if (scriptState && scriptState->executionContext()->isDocument())
         jsonObj->setExecutionContextId(injectedScriptManager->injectedScriptIdFor(scriptState));
     if (m_source == NetworkMessageSource && !m_requestId.isEmpty())
         jsonObj->setNetworkRequestId(m_requestId);
     if (m_arguments && m_arguments->argumentCount()) {
-        InjectedScript injectedScript = injectedScriptManager->injectedScriptFor(m_arguments->globalState());
+        InjectedScript injectedScript = injectedScriptManager->injectedScriptFor(m_arguments->scriptState());
         if (!injectedScript.isEmpty()) {
             RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject> > jsonArgs = TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject>::create();
             if (m_type == TableMessageType && generatePreview && m_arguments->argumentCount()) {
@@ -242,7 +242,7 @@ void ConsoleMessage::windowCleared(DOMWindow* window)
 
     if (!m_arguments)
         return;
-    if (m_arguments->globalState()->domWindow() != window)
+    if (m_arguments->scriptState()->domWindow() != window)
         return;
     if (!m_message)
         m_message = "<message collected>";

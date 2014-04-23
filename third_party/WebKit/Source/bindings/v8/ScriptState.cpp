@@ -107,6 +107,12 @@ void ScriptState::setEvalEnabled(bool enabled)
     return context()->AllowCodeGenerationFromStrings(enabled);
 }
 
+NewScriptState* ScriptState::newScriptState()
+{
+    v8::HandleScope handleScope(m_isolate);
+    return NewScriptState::from(m_context.newLocal(m_isolate));
+}
+
 ScriptState* mainWorldScriptState(LocalFrame* frame)
 {
     v8::Isolate* isolate = toIsolate(frame);

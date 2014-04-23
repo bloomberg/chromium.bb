@@ -42,8 +42,8 @@ class InjectedScript;
 class InjectedScriptManager;
 class InstrumentingAgents;
 class JSONArray;
+class NewScriptState;
 class ScriptDebugServer;
-class ScriptState;
 
 typedef String ErrorString;
 
@@ -91,12 +91,12 @@ protected:
     virtual void unmuteConsole() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void addExecutionContextToFrontend(ScriptState*, bool isPageContext, const String& name, const String& frameId);
+    void addExecutionContextToFrontend(NewScriptState*, bool isPageContext, const String& name, const String& frameId);
 
     bool m_enabled;
     InspectorFrontend::Runtime* m_frontend;
 
-    typedef HashMap<ScriptState*, int> ScriptStateToId;
+    typedef HashMap<NewScriptState*, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;
 
 private:

@@ -32,6 +32,7 @@
 #define InjectedScriptBase_h
 
 #include "InspectorTypeBuilder.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptObject.h"
 #include "wtf/Forward.h"
 
@@ -49,10 +50,10 @@ public:
 
     const String& name() const { return m_name; }
     bool isEmpty() const { return m_injectedScriptObject.isEmpty(); }
-    ScriptState* scriptState() const { return m_injectedScriptObject.scriptState(); }
+    NewScriptState* scriptState() const { return m_injectedScriptObject.scriptState()->newScriptState(); }
 
 protected:
-    typedef bool (*InspectedStateAccessCheck)(ScriptState*);
+    typedef bool (*InspectedStateAccessCheck)(NewScriptState*);
     InjectedScriptBase(const String& name);
     InjectedScriptBase(const String& name, ScriptObject, InspectedStateAccessCheck);
 

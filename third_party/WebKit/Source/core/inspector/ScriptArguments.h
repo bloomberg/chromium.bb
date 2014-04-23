@@ -31,7 +31,7 @@
 #ifndef ScriptArguments_h
 #define ScriptArguments_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -43,21 +43,21 @@ class ScriptValue;
 
 class ScriptArguments : public RefCounted<ScriptArguments> {
 public:
-    static PassRefPtr<ScriptArguments> create(ScriptState*, Vector<ScriptValue>& arguments);
+    static PassRefPtr<ScriptArguments> create(NewScriptState*, Vector<ScriptValue>& arguments);
 
     ~ScriptArguments();
 
     const ScriptValue& argumentAt(size_t) const;
     size_t argumentCount() const { return m_arguments.size(); }
 
-    ScriptState* globalState() const;
+    NewScriptState* scriptState() const { return m_scriptState.get(); }
 
     bool getFirstArgumentAsString(WTF::String& result, bool checkForNullOrUndefined = false);
 
 private:
-    ScriptArguments(ScriptState*, Vector<ScriptValue>& arguments);
+    ScriptArguments(NewScriptState*, Vector<ScriptValue>& arguments);
 
-    ScriptStateProtectedPtr m_scriptState;
+    NewScriptStateProtectingContext m_scriptState;
     Vector<ScriptValue> m_arguments;
 };
 

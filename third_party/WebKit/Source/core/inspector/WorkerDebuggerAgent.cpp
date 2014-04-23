@@ -123,8 +123,7 @@ InjectedScript WorkerDebuggerAgent::injectedScriptForEval(ErrorString* error, co
         *error = "Execution context id is not supported for workers as there is only one execution context.";
         return InjectedScript();
     }
-    ScriptState* scriptState = scriptStateFromWorkerGlobalScope(m_inspectedWorkerGlobalScope);
-    return injectedScriptManager()->injectedScriptFor(scriptState);
+    return injectedScriptManager()->injectedScriptFor(m_inspectedWorkerGlobalScope->script()->scriptState());
 }
 
 void WorkerDebuggerAgent::muteConsole()

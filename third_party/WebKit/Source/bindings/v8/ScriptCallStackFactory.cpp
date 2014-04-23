@@ -124,14 +124,13 @@ PassRefPtr<ScriptArguments> createScriptArguments(const v8::FunctionCallbackInfo
 {
     v8::Isolate* isolate = v8arguments.GetIsolate();
     v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    ScriptState* state = ScriptState::forContext(context);
+    NewScriptState* scriptState = NewScriptState::current(isolate);
 
     Vector<ScriptValue> arguments;
     for (int i = skipArgumentCount; i < v8arguments.Length(); ++i)
         arguments.append(ScriptValue(v8arguments[i], isolate));
 
-    return ScriptArguments::create(state, arguments);
+    return ScriptArguments::create(scriptState, arguments);
 }
 
 } // namespace WebCore

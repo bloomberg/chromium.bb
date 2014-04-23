@@ -33,8 +33,8 @@
 
 #include "core/inspector/InjectedScriptBase.h"
 
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"
@@ -64,7 +64,7 @@ void InjectedScriptBase::initialize(ScriptObject injectedScriptObject, Inspected
 
 bool InjectedScriptBase::canAccessInspectedWindow() const
 {
-    return m_inspectedStateAccessCheck(m_injectedScriptObject.scriptState());
+    return m_inspectedStateAccessCheck(m_injectedScriptObject.scriptState()->newScriptState());
 }
 
 const ScriptObject& InjectedScriptBase::injectedScriptObject() const

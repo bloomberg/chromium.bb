@@ -165,17 +165,17 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, callStack, requestIdentifier)));
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, ScriptArguments* arguments, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, NewScriptState* scriptState, ScriptArguments* arguments, unsigned long requestIdentifier)
 {
     if (type == ClearMessageType) {
         ErrorString error;
         clearMessages(&error);
     }
 
-    addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, arguments, state, requestIdentifier)));
+    addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, arguments, scriptState, requestIdentifier)));
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* state, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, NewScriptState* scriptState, unsigned long requestIdentifier)
 {
     if (type == ClearMessageType) {
         ErrorString error;
@@ -183,7 +183,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     }
 
     bool canGenerateCallStack = !isWorkerAgent() && m_frontend;
-    addConsoleMessage(adoptPtr(new ConsoleMessage(canGenerateCallStack, source, type, level, message, scriptId, lineNumber, columnNumber, state, requestIdentifier)));
+    addConsoleMessage(adoptPtr(new ConsoleMessage(canGenerateCallStack, source, type, level, message, scriptId, lineNumber, columnNumber, scriptState, requestIdentifier)));
 }
 
 Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
@@ -204,7 +204,7 @@ void InspectorConsoleAgent::consoleTime(ExecutionContext*, const String& title)
     m_times.add(title, monotonicallyIncreasingTime());
 }
 
-void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& title, ScriptState* state)
+void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& title, NewScriptState* scriptState)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions
@@ -220,20 +220,20 @@ void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& titl
 
     double elapsed = monotonicallyIncreasingTime() - startTime;
     String message = title + String::format(": %.3fms", elapsed * 1000);
-    addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, String(), 0, 0, state);
+    addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, String(), 0, 0, scriptState);
 }
 
-void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* state)
+void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, NewScriptState* scriptState)
 {
-    m_timelineAgent->consoleTimeline(context, title, state);
+    m_timelineAgent->consoleTimeline(context, title, scriptState);
 }
 
-void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* state)
+void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, NewScriptState* scriptState)
 {
-    m_timelineAgent->consoleTimelineEnd(context, title, state);
+    m_timelineAgent->consoleTimelineEnd(context, title, scriptState);
 }
 
-void InspectorConsoleAgent::consoleCount(ScriptState* state, PassRefPtr<ScriptArguments> arguments)
+void InspectorConsoleAgent::consoleCount(NewScriptState*, PassRefPtr<ScriptArguments> arguments)
 {
     RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole());
     const ScriptCallFrame& lastCaller = callStack->at(0);
@@ -318,7 +318,7 @@ void InspectorConsoleAgent::addConsoleMessage(PassOwnPtr<ConsoleMessage> console
 class InspectableHeapObject FINAL : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableHeapObject(int heapObjectId) : m_heapObjectId(heapObjectId) { }
-    virtual ScriptValue get(ScriptState*) OVERRIDE
+    virtual ScriptValue get(NewScriptState*) OVERRIDE
     {
         return ScriptProfiler::objectByHeapObjectId(m_heapObjectId);
     }

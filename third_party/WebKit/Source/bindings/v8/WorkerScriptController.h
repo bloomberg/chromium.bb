@@ -92,6 +92,7 @@ namespace WebCore {
 
         v8::Isolate* isolate() const { return m_isolate; }
         DOMWrapperWorld& world() const { return *m_world; }
+        NewScriptState* scriptState() { return m_scriptState.get(); }
         v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
         bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
 

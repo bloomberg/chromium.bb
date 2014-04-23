@@ -73,7 +73,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
     return instanceTemplate;
 }
 
-ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id)
+ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSource, NewScriptState* inspectedScriptState, int id)
 {
     v8::Isolate* isolate = inspectedScriptState->isolate();
     v8::HandleScope handleScope(isolate);
@@ -101,10 +101,10 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
     v8::Local<v8::Object> windowGlobal = inspectedContext->Global();
     v8::Handle<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedContext->GetIsolate(), id) };
     v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedContext->GetIsolate());
-    return ScriptObject(inspectedScriptState, v8::Handle<v8::Object>::Cast(injectedScriptValue));
+    return ScriptObject(inspectedScriptState->oldScriptState(), v8::Handle<v8::Object>::Cast(injectedScriptValue));
 }
 
-bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
+bool InjectedScriptManager::canAccessInspectedWindow(NewScriptState* scriptState)
 {
     v8::HandleScope handleScope(scriptState->isolate());
     v8::Local<v8::Context> context = scriptState->context();

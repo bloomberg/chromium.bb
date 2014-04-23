@@ -49,12 +49,12 @@ namespace WebCore {
 class DOMWrapperWorld;
 class ExecutionContext;
 class Event;
-class LocalFrame;
 class HTMLDocument;
 class HTMLPlugInElement;
 class KURL;
+class LocalFrame;
+class NewScriptState;
 class ScriptSourceCode;
-class ScriptState;
 class SecurityOrigin;
 class V8WindowShell;
 class Widget;
@@ -118,7 +118,7 @@ public:
     static bool canAccessFromCurrentOrigin(LocalFrame*);
 
     static void setCaptureCallStackForUncaughtExceptions(bool);
-    void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >&);
+    void collectIsolatedContexts(Vector<std::pair<NewScriptState*, SecurityOrigin*> >&);
 
     bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
 

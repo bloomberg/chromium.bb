@@ -61,7 +61,7 @@ void FrameConsole::addMessage(MessageSource source, MessageLevel level, const St
     addMessage(source, level, message, String(), 0, 0, callStack, 0);
 }
 
-void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
+void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, NewScriptState* scriptState, unsigned long requestIdentifier)
 {
     if (muteCount)
         return;
@@ -78,7 +78,7 @@ void FrameConsole::addMessage(MessageSource source, MessageLevel level, const St
         InspectorInstrumentation::addMessageToConsole(context, source, LogMessageType, level, message, callStack, requestIdentifier);
     } else {
         messageURL = url;
-        InspectorInstrumentation::addMessageToConsole(context, source, LogMessageType, level, message, url, lineNumber, columnNumber, state, requestIdentifier);
+        InspectorInstrumentation::addMessageToConsole(context, source, LogMessageType, level, message, url, lineNumber, columnNumber, scriptState, requestIdentifier);
     }
 
     if (source == CSSMessageSource)

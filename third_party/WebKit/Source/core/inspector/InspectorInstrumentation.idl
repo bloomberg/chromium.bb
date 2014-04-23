@@ -203,7 +203,7 @@ interface InspectorInstrumentation {
     void didEvaluateScript(const InspectorInstrumentationCookie&);
 
     [PageRuntime, Inline=FastReturn]
-    void didCreateIsolatedContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*);
+    void didCreateIsolatedContext([Keep] LocalFrame*, NewScriptState*, SecurityOrigin*);
 
     [DOMDebugger, Debugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
@@ -468,31 +468,31 @@ interface InspectorConsoleInstrumentation {
 
     // Use the same implementation as above as a similar method dispatched on Page.
     [Console]
-    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* state, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, NewScriptState* state, unsigned long requestIdentifier = 0);
 
     [Console, Debugger]
-    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, NewScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
 
     [Console]
-    void consoleCount(ExecutionContext* context, ScriptState* state, PassRefPtr<ScriptArguments> arguments);
+    void consoleCount(ExecutionContext* context, NewScriptState* state, PassRefPtr<ScriptArguments> arguments);
 
     [Timeline, Console]
     void consoleTime([Keep] ExecutionContext* context, const String& title);
 
     [Console, Timeline]
-    void consoleTimeEnd([Keep] ExecutionContext* context, const String& title, ScriptState* state);
+    void consoleTimeEnd([Keep] ExecutionContext* context, const String& title, NewScriptState* state);
 
     [Timeline, Inline=FastReturn]
     void consoleTimeStamp([Keep] ExecutionContext* context, const String& title);
 
     [Console, Inline=FastReturn]
-    void consoleTimeline([Keep] ExecutionContext* context, const String& title, ScriptState* state);
+    void consoleTimeline([Keep] ExecutionContext* context, const String& title, NewScriptState* state);
 
     [Console, Inline=FastReturn]
-    void consoleTimelineEnd([Keep] ExecutionContext* context, const String& title, ScriptState* state);
+    void consoleTimelineEnd([Keep] ExecutionContext* context, const String& title, NewScriptState* state);
 
     [Profiler, Inline=FastReturn]
-    void consoleProfile(ExecutionContext* context, const String& title, ScriptState* state);
+    void consoleProfile(ExecutionContext* context, const String& title, NewScriptState* state);
 
     [Profiler, Inline=FastReturn]
     void consoleProfileEnd(ExecutionContext* context, const String& title);

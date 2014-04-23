@@ -6,12 +6,14 @@
 #define NewScriptState_h
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
 namespace WebCore {
 
+class DOMWindow;
 class DOMWrapperWorld;
 class ExecutionContext;
 class LocalFrame;
@@ -66,13 +68,19 @@ public:
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
+    ExecutionContext* executionContext() const;
+    DOMWindow* domWindow() const;
+
     // This can return an empty handle if the v8::Context is gone.
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
     bool contextIsEmpty() const { return m_context.isEmpty(); }
     void clearContext() { return m_context.clear(); }
-    ExecutionContext* executionContext() const;
+
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
     void disposePerContextData() { m_perContextData = nullptr; }
+
+    // FIXME: Once we replace all ScriptStates with NewScriptStates, remove this method.
+    ScriptState* oldScriptState();
 
 private:
     NewScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
@@ -89,6 +97,30 @@ private:
     // So you must explicitly clear the OwnPtr by calling disposePerContextData()
     // once you no longer need V8PerContextData. Otherwise, the v8::Context will leak.
     OwnPtr<V8PerContextData> m_perContextData;
+};
+
+// NewScriptStateProtectingContext keeps the context associated with the NewScriptState alive.
+// You need to call clear() once you no longer need the context. Otherwise, the context will leak.
+class NewScriptStateProtectingContext {
+    WTF_MAKE_NONCOPYABLE(NewScriptStateProtectingContext);
+public:
+    NewScriptStateProtectingContext(NewScriptState* scriptState)
+        : m_scriptState(scriptState)
+    {
+        if (m_scriptState)
+            m_context.set(m_scriptState->isolate(), m_scriptState->context());
+    }
+
+    NewScriptState* get() const { return m_scriptState.get(); }
+    void clear()
+    {
+        m_scriptState = nullptr;
+        m_context.clear();
+    }
+
+private:
+    RefPtr<NewScriptState> m_scriptState;
+    ScopedPersistent<v8::Context> m_context;
 };
 
 }

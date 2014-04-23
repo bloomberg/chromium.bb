@@ -102,7 +102,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     : InspectorBaseAgent<InspectorDebuggerAgent>("Debugger")
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
-    , m_pausedScriptState(0)
+    , m_pausedScriptState(nullptr)
     , m_javaScriptPauseScheduled(false)
     , m_listener(0)
     , m_skipStepInCount(numberOfStepsBeforeStepOut)
@@ -268,7 +268,7 @@ void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageTy
     addMessageToConsole(source, type);
 }
 
-void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, ScriptState*, ScriptArguments*, unsigned long)
+void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, NewScriptState*, ScriptArguments*, unsigned long)
 {
     addMessageToConsole(source, type);
 }
@@ -1069,7 +1069,7 @@ PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
 {
     if (!m_pausedScriptState || m_currentCallStack.isEmpty())
         return Array<CallFrame>::create();
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState.get());
     if (injectedScript.isEmpty()) {
         ASSERT_NOT_REACHED();
         return Array<CallFrame>::create();
@@ -1081,7 +1081,7 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
 {
     if (!m_pausedScriptState || !m_asyncCallStackTracker.isEnabled())
         return nullptr;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState.get());
     if (injectedScript.isEmpty()) {
         ASSERT_NOT_REACHED();
         return nullptr;
@@ -1176,7 +1176,7 @@ void InspectorDebuggerAgent::failedToParseSource(const String& url, const String
     m_frontend->scriptFailedToParse(url, data, firstLine, errorLine, errorMessage);
 }
 
-void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
+void InspectorDebuggerAgent::didPause(NewScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
 {
     ASSERT(scriptState && !m_pausedScriptState);
     m_pausedScriptState = scriptState;
@@ -1220,7 +1220,7 @@ void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValu
 
 void InspectorDebuggerAgent::didContinue()
 {
-    m_pausedScriptState = 0;
+    m_pausedScriptState = nullptr;
     m_currentCallStack = ScriptValue();
     clearBreakDetails();
     m_frontend->resumed();
@@ -1242,7 +1242,7 @@ void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::E
 
 void InspectorDebuggerAgent::clear()
 {
-    m_pausedScriptState = 0;
+    m_pausedScriptState = nullptr;
     m_currentCallStack = ScriptValue();
     m_scripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();

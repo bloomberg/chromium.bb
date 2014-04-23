@@ -39,8 +39,9 @@ namespace WebCore {
 
 class DOMWindow;
 class DOMWrapperWorld;
-class LocalFrame;
 class ExecutionContext;
+class LocalFrame;
+class NewScriptState;
 class WorkerGlobalScope;
 
 // FIXME: ScriptState is deprecated and going to be removed. Use NewScriptState instead.
@@ -61,6 +62,7 @@ public:
     ExecutionContext* executionContext() const;
     bool evalEnabled() const;
     void setEvalEnabled(bool);
+    NewScriptState* newScriptState();
 
     static ScriptState* forContext(v8::Handle<v8::Context>);
     static ScriptState* current();
@@ -84,43 +86,7 @@ private:
     v8::Isolate* m_isolate;
 };
 
-class ScriptStateProtectedPtr {
-    WTF_MAKE_NONCOPYABLE(ScriptStateProtectedPtr);
-public:
-    ScriptStateProtectedPtr()
-        : m_scriptState(0)
-    {
-    }
-
-    ScriptStateProtectedPtr(ScriptState* scriptState)
-        : m_scriptState(scriptState)
-    {
-        if (!scriptState)
-            return;
-
-        v8::HandleScope handleScope(scriptState->isolate());
-        // Keep the context from being GC'ed. ScriptState is guaranteed to be live while the context is live.
-        m_context.set(scriptState->isolate(), scriptState->context());
-    }
-
-    ScriptState* get() const { return m_scriptState; }
-
-    void clear()
-    {
-        if (!m_scriptState)
-            return;
-
-        m_context.clear();
-        m_scriptState = 0;
-    }
-
-private:
-    ScriptState* m_scriptState;
-    ScopedPersistent<v8::Context> m_context;
-};
-
 ScriptState* mainWorldScriptState(LocalFrame*);
-
 ScriptState* scriptStateFromWorkerGlobalScope(WorkerGlobalScope*);
 
 }
