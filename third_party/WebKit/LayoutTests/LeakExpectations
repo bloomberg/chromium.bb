@@ -15,8 +15,16 @@ crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak 
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
 
-# FIXME: The below test fails when the leak detector is disabled.
-crbug.com/366029 virtual/softwarecompositing/geometry/layer-due-to-layer-children-deep-switch.html [ PASS FAIL ]
+# FIXME: The below tests fails when the leak detector is disabled.
+crbug.com/366029 compositing/fixed-body-background-positioned.html [ Failure Pass ]
+crbug.com/366029 virtual/softwarecompositing/fixed-body-background-positioned.html [ Failure Pass ]
+crbug.com/366029 virtual/softwarecompositing/geometry/layer-due-to-layer-children-deep-switch.html [ Failure Pass ]
+
+# FIXME: The below tests crashes when the leak detector is run on debug builds
+crbug.com/366043 [ Debug ] fast/loader/stateobjects/state-api-on-detached-frame-crash.html [ Crash ]
+crbug.com/366043 [ Debug ] fast/dom/Window/property-access-on-cached-window-after-frame-removed-and-gced.html [ Crash ]
+crbug.com/366043 [ Debug ] fast/dom/Window/Location/set-location-after-close.html [ Crash ]
+crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [ Crash ]
 
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
@@ -83,10 +91,14 @@ crbug.com/364388 accessibility/contenteditable-notifications.html [ Leak ]
 crbug.com/364388 accessibility/inline-text-changes.html [ Leak ]
 crbug.com/364388 accessibility/inline-text-change-style.html [ Leak ]
 
+crbug.com/364390 fast/workers/shared-worker-constructor.html [ Leak ]
 crbug.com/364390 fast/workers/shared-worker-event-listener.html [ Leak ]
+crbug.com/364390 fast/workers/shared-worker-gc.html [ Leak ]
 crbug.com/364390 fast/workers/shared-worker-load-error.html [ Leak ]
+crbug.com/364390 fast/workers/shared-worker-shared.html [ Leak ]
 crbug.com/364390 fast/workers/worker-crash-with-invalid-location.html [ Leak ]
 crbug.com/364390 http/tests/security/contentSecurityPolicy/1.1/child-src/worker-shared-allowed.html [ Leak ]
+crbug.com/364390 http/tests/security/cross-origin-shared-worker-allowed.html [ Leak ]
 crbug.com/364390 http/tests/workers/shared-worker-redirect.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/indexeddb.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/interfaces.html [ Leak ]
@@ -157,6 +169,7 @@ crbug.com/364395 fast/events/context-nodrag.html [ Leak ]
 crbug.com/364395 fast/events/context-onmousedown-event.html [ Leak ]
 crbug.com/364395 fast/events/contextmenu-scrolled-page-with-frame.html [ Leak ]
 crbug.com/364395 fast/events/event-sender-context-click-leak-document.html [ Leak ]
+crbug.com/364395 fast/events/menu-key-context-menu.html [ Leak ]
 crbug.com/364395 fast/events/right-click-focus.html [ Leak ]
 crbug.com/364395 fast/events/selectstart-prevent-selection-on-right-click.html [ Leak ]
 crbug.com/364395 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak ]
@@ -178,3 +191,5 @@ crbug.com/364416 svg/custom/bug79798.html [ Leak ]
 crbug.com/364417 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak ]
 crbug.com/364417 w3c/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak ]
 crbug.com/364417 w3c/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak ]
+
+crbug.com/366042 fast/history/history-traversal-is-asynchronous.html [ Leak ]
