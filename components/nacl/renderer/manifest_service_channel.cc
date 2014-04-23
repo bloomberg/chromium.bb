@@ -10,14 +10,17 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 namespace nacl {
 
 ManifestServiceChannel::ManifestServiceChannel(
     const IPC::ChannelHandle& handle,
     const base::Callback<void(int32_t)>& connected_callback,
+    scoped_ptr<Delegate> delegate,
     base::WaitableEvent* waitable_event)
     : connected_callback_(connected_callback),
+      delegate_(delegate.Pass()),
       channel_(new IPC::SyncChannel(
           handle, IPC::Channel::MODE_CLIENT, this,
           content::RenderThread::Get()->GetIOMessageLoopProxy(),
@@ -30,8 +33,14 @@ ManifestServiceChannel::~ManifestServiceChannel() {
 }
 
 bool ManifestServiceChannel::OnMessageReceived(const IPC::Message& message) {
-  // TODO(hidehiko): Implement StartCompleted and OpenResource.
-  return false;
+  // TODO(hidehiko): Implement OpenResource.
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ManifestServiceChannel, message)
+      IPC_MESSAGE_HANDLER(PpapiHostMsg_StartupInitializationComplete,
+                          OnStartupInitializationComplete)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void ManifestServiceChannel::OnChannelConnected(int32 peer_pid) {
@@ -42,6 +51,10 @@ void ManifestServiceChannel::OnChannelConnected(int32 peer_pid) {
 void ManifestServiceChannel::OnChannelError() {
   if (!connected_callback_.is_null())
     base::ResetAndReturn(&connected_callback_).Run(PP_ERROR_FAILED);
+}
+
+void ManifestServiceChannel::OnStartupInitializationComplete() {
+  delegate_->StartupInitializationComplete();
 }
 
 }  // namespace nacl

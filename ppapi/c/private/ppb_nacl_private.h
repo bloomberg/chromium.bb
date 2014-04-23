@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Apr 22 13:59:14 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Apr 23 12:56:55 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -14,6 +14,9 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+
+#define PP_MANIFESTSERVICE_INTERFACE_1_0 "PP_ManifestService;1.0"
+#define PP_MANIFESTSERVICE_INTERFACE PP_MANIFESTSERVICE_INTERFACE_1_0
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
@@ -168,6 +171,22 @@ struct PP_PNaClOptions {
  * @addtogroup Interfaces
  * @{
  */
+/* ManifestService to support irt_open_resource() function.
+ * All functions of the service should have PP_Bool return value. It represents
+ * whether the service is still alive or not. Trivially Quit() should always
+ * return false. However, other functions also can return false.
+ * Once false is called, as the service has been destructed, all functions
+ * should never be called afterwords.
+ */
+struct PP_ManifestService_1_0 {
+  /* Called when ManifestService should be destructed. */
+  PP_Bool (*Quit)(void* user_data);
+  /* Called when PPAPI initialization in the NaCl plugin is finished. */
+  PP_Bool (*StartupInitializationComplete)(void* user_data);
+};
+
+typedef struct PP_ManifestService_1_0 PP_ManifestService;
+
 /* PPB_NaCl_Private */
 struct PPB_NaCl_Private_1_0 {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
@@ -189,18 +208,21 @@ struct PPB_NaCl_Private_1_0 {
    * the nexe contribute to crash throttling statisics and whether nexe starts
    * are throttled by crash throttling.
    */
-  void (*LaunchSelLdr)(PP_Instance instance,
-                       const char* alleged_url,
-                       PP_Bool uses_irt,
-                       PP_Bool uses_ppapi,
-                       PP_Bool uses_nonsfi_mode,
-                       PP_Bool enable_ppapi_dev,
-                       PP_Bool enable_dyncode_syscalls,
-                       PP_Bool enable_exception_handling,
-                       PP_Bool enable_crash_throttling,
-                       void* imc_handle,
-                       struct PP_Var* error_message,
-                       struct PP_CompletionCallback callback);
+  void (*LaunchSelLdr)(
+      PP_Instance instance,
+      const char* alleged_url,
+      PP_Bool uses_irt,
+      PP_Bool uses_ppapi,
+      PP_Bool uses_nonsfi_mode,
+      PP_Bool enable_ppapi_dev,
+      PP_Bool enable_dyncode_syscalls,
+      PP_Bool enable_exception_handling,
+      PP_Bool enable_crash_throttling,
+      const struct PP_ManifestService_1_0* manifest_service_interface,
+      void* manifest_service_user_data,
+      void* imc_handle,
+      struct PP_Var* error_message,
+      struct PP_CompletionCallback callback);
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser.
    */

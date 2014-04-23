@@ -105,4 +105,8 @@ base::Thread* GetIOThread() {
   return g_io_thread;
 }
 
+ManifestService* GetManifestService() {
+  return g_manifest_service;
+}
+
 }  // namespace ppapi

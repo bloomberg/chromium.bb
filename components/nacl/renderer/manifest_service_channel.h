@@ -24,9 +24,20 @@ namespace nacl {
 
 class ManifestServiceChannel : public IPC::Listener {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Called when PPAPI initialization in the NaCl plugin is finished.
+    virtual void StartupInitializationComplete() = 0;
+
+    // TODO(hidehiko): Add OpenResource() here.
+  };
+
   ManifestServiceChannel(
       const IPC::ChannelHandle& handle,
       const base::Callback<void(int32_t)>& connected_callback,
+      scoped_ptr<Delegate> delegate,
       base::WaitableEvent* waitable_event);
   virtual ~ManifestServiceChannel();
 
@@ -36,7 +47,10 @@ class ManifestServiceChannel : public IPC::Listener {
   virtual void OnChannelError() OVERRIDE;
 
  private:
+  void OnStartupInitializationComplete();
+
   base::Callback<void(int32_t)> connected_callback_;
+  scoped_ptr<Delegate> delegate_;
   scoped_ptr<IPC::SyncChannel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestServiceChannel);

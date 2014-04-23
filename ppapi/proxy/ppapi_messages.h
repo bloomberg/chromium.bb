@@ -753,6 +753,9 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Keepalive)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* handle */)
 
+// Notify the renderer that the PPAPI channel gets ready in the plugin.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_StartupInitializationComplete);
+
 // Logs the given message to the console of all instances.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_LogWithSource,
                      PP_Instance /* instance */,

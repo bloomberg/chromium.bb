@@ -139,6 +139,21 @@ struct PP_PNaClOptions {
   int32_t opt_level;
 };
 
+/* ManifestService to support irt_open_resource() function.
+ * All functions of the service should have PP_Bool return value. It represents
+ * whether the service is still alive or not. Trivially Quit() should always
+ * return false. However, other functions also can return false.
+ * Once false is called, as the service has been destructed, all functions
+ * should never be called afterwords.
+ */
+interface PP_ManifestService {
+  /* Called when ManifestService should be destructed. */
+  PP_Bool Quit([inout] mem_t user_data);
+
+  /* Called when PPAPI initialization in the NaCl plugin is finished. */
+  PP_Bool StartupInitializationComplete([inout] mem_t user_data);
+};
+
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
@@ -169,6 +184,8 @@ interface PPB_NaCl_Private {
                     [in] PP_Bool enable_dyncode_syscalls,
                     [in] PP_Bool enable_exception_handling,
                     [in] PP_Bool enable_crash_throttling,
+                    [in] PP_ManifestService manifest_service_interface,
+                    [inout] mem_t manifest_service_user_data,
                     [out] mem_t imc_handle,
                     [out] PP_Var error_message,
                     [in] PP_CompletionCallback callback);

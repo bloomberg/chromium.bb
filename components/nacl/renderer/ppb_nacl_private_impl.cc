@@ -38,6 +38,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 
+namespace nacl {
 namespace {
 
 base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
@@ -70,13 +71,13 @@ typedef std::map<PP_Instance, InstanceInfo> InstanceInfoMap;
 base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
 
-typedef base::ScopedPtrHashMap<PP_Instance, nacl::NexeLoadManager>
+typedef base::ScopedPtrHashMap<PP_Instance, NexeLoadManager>
     NexeLoadManagerMap;
 
 base::LazyInstance<NexeLoadManagerMap> g_load_manager_map =
     LAZY_INSTANCE_INITIALIZER;
 
-nacl::NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
+NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
   NexeLoadManagerMap& map = g_load_manager_map.Get();
   NexeLoadManagerMap::iterator iter = map.find(instance);
   if (iter != map.end())
@@ -153,6 +154,47 @@ class ChannelConnectedCallback {
   DISALLOW_COPY_AND_ASSIGN(ChannelConnectedCallback);
 };
 
+// Thin adapter from PP_ManifestService to ManifestServiceChannel::Delegate.
+// Note that user_data is managed by the caller of LaunchSelLdr. Please see
+// also PP_ManifestService's comment for more details about resource
+// management.
+class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
+ public:
+  ManifestServiceProxy(const PP_ManifestService* manifest_service,
+                       void* user_data)
+      : manifest_service_(*manifest_service),
+        user_data_(user_data) {
+  }
+
+  virtual ~ManifestServiceProxy() {
+    Quit();
+  }
+
+  virtual void StartupInitializationComplete() OVERRIDE {
+    if (!user_data_)
+      return;
+
+    if (!PP_ToBool(
+            manifest_service_.StartupInitializationComplete(user_data_))) {
+      user_data_ = NULL;
+    }
+  }
+
+ private:
+  void Quit() {
+    if (!user_data_)
+      return;
+
+    bool result = PP_ToBool(manifest_service_.Quit(user_data_));
+    DCHECK(!result);
+    user_data_ = NULL;
+  }
+
+  PP_ManifestService manifest_service_;
+  void* user_data_;
+  DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
+};
+
 // Launch NaCl's sel_ldr process.
 void LaunchSelLdr(PP_Instance instance,
                   const char* alleged_url,
@@ -163,13 +205,23 @@ void LaunchSelLdr(PP_Instance instance,
                   PP_Bool enable_dyncode_syscalls,
                   PP_Bool enable_exception_handling,
                   PP_Bool enable_crash_throttling,
+                  const PP_ManifestService* manifest_service_interface,
+                  void* manifest_service_user_data,
                   void* imc_handle,
                   struct PP_Var* error_message,
                   PP_CompletionCallback callback) {
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
 
-  nacl::FileDescriptor result_socket;
+  // Create the manifest service proxy here, so on error case, it will be
+  // destructed (without passing it to ManifestServiceChannel), and QUIT
+  // will be called in its destructor so that the caller of this function
+  // can free manifest_service_user_data properly.
+  scoped_ptr<ManifestServiceChannel::Delegate> manifest_service_proxy(
+      new ManifestServiceProxy(manifest_service_interface,
+                               manifest_service_user_data));
+
+  FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
   *error_message = PP_MakeUndefined();
@@ -201,17 +253,17 @@ void LaunchSelLdr(PP_Instance instance,
   instance_info.permissions =
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
   std::string error_message_string;
-  nacl::NaClLaunchResult launch_result;
+  NaClLaunchResult launch_result;
 
   if (!sender->Send(new NaClHostMsg_LaunchNaCl(
-          nacl::NaClLaunchParams(instance_info.url.spec(),
-                                 routing_id,
-                                 perm_bits,
-                                 PP_ToBool(uses_irt),
-                                 PP_ToBool(uses_nonsfi_mode),
-                                 PP_ToBool(enable_dyncode_syscalls),
-                                 PP_ToBool(enable_exception_handling),
-                                 PP_ToBool(enable_crash_throttling)),
+          NaClLaunchParams(instance_info.url.spec(),
+                           routing_id,
+                           perm_bits,
+                           PP_ToBool(uses_irt),
+                           PP_ToBool(uses_nonsfi_mode),
+                           PP_ToBool(enable_dyncode_syscalls),
+                           PP_ToBool(enable_exception_handling),
+                           PP_ToBool(enable_crash_throttling)),
           &launch_result,
           &error_message_string))) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
@@ -237,8 +289,7 @@ void LaunchSelLdr(PP_Instance instance,
   if (IsValidChannelHandle(instance_info.channel_handle))
     g_instance_info.Get()[instance] = instance_info;
 
-  *(static_cast<NaClHandle*>(imc_handle)) =
-      nacl::ToNativeHandle(result_socket);
+  *(static_cast<NaClHandle*>(imc_handle)) = ToNativeHandle(result_socket);
 
   // Here after, we starts to establish connections for TrustedPluginChannel
   // and ManifestServiceChannel in parallel. The invocation of the callback
@@ -249,14 +300,14 @@ void LaunchSelLdr(PP_Instance instance,
           2, // For TrustedPluginChannel and ManifestServiceChannel.
           callback)));
 
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
 
   // Stash the trusted handle as well.
   if (load_manager &&
       IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
-    scoped_ptr<nacl::TrustedPluginChannel> trusted_plugin_channel(
-        new nacl::TrustedPluginChannel(
+    scoped_ptr<TrustedPluginChannel> trusted_plugin_channel(
+        new TrustedPluginChannel(
             launch_result.trusted_ipc_channel_handle,
             connected_callback,
             content::RenderThread::Get()->GetShutdownEvent()));
@@ -269,10 +320,11 @@ void LaunchSelLdr(PP_Instance instance,
   if (load_manager &&
       IsValidChannelHandle(
           launch_result.manifest_service_ipc_channel_handle)) {
-    scoped_ptr<nacl::ManifestServiceChannel> manifest_service_channel(
-        new nacl::ManifestServiceChannel(
+    scoped_ptr<ManifestServiceChannel> manifest_service_channel(
+        new ManifestServiceChannel(
             launch_result.manifest_service_ipc_channel_handle,
             connected_callback,
+            manifest_service_proxy.Pass(),
             content::RenderThread::Get()->GetShutdownEvent()));
     load_manager->set_manifest_service_channel(
         manifest_service_channel.Pass());
@@ -318,7 +370,7 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
     // Log the amound of time that has passed between the trusted plugin being
     // initialized and the untrusted plugin being initialized.  This is
     // (roughly) the cost of using NaCl, in terms of startup time.
-    nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+    NexeLoadManager* load_manager = GetNexeLoadManager(instance);
     if (load_manager)
       load_manager->ReportStartupOverhead();
     return PP_TRUE;
@@ -453,14 +505,14 @@ int32_t GetNexeFd(PP_Instance instance,
   // the default-constructed null value.
   base::Time::FromString(last_modified.c_str(), &last_modified_time);
 
-  nacl::PnaclCacheInfo cache_info;
+  PnaclCacheInfo cache_info;
   cache_info.pexe_url = GURL(pexe_url);
   cache_info.abi_version = abi_version;
   cache_info.opt_level = opt_level;
   cache_info.last_modified = last_modified_time;
   cache_info.etag = etag;
   cache_info.has_no_store_header = has_no_store_header;
-  cache_info.sandbox_isa = nacl::GetSandboxArch();
+  cache_info.sandbox_isa = GetSandboxArch();
   cache_info.extra_flags = std::string(extra_flags);
 
   g_pnacl_resource_host.Get()->RequestNexeFd(
@@ -540,12 +592,12 @@ void DispatchEventOnMainThread(PP_Instance instance,
                                PP_Bool length_is_computable,
                                uint64_t loaded_bytes,
                                uint64_t total_bytes) {
-  nacl::NexeLoadManager* load_manager =
+  NexeLoadManager* load_manager =
       GetNexeLoadManager(instance);
   // The instance may have been destroyed after we were scheduled, so do
   // nothing if it's gone.
   if (load_manager) {
-    nacl::NexeLoadManager::ProgressEvent event(event_type);
+    NexeLoadManager::ProgressEvent event(event_type);
     event.resource_url = resource_url;
     event.length_is_computable = PP_ToBool(length_is_computable);
     event.loaded_bytes = loaded_bytes;
@@ -561,7 +613,7 @@ void NexeFileDidOpen(PP_Instance instance,
                      int64_t nexe_bytes_read,
                      const char* url,
                      int64_t time_since_open) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager) {
     load_manager->NexeFileDidOpen(pp_error,
                                   fd,
@@ -577,7 +629,7 @@ void ReportLoadSuccess(PP_Instance instance,
                        const char* url,
                        uint64_t loaded_bytes,
                        uint64_t total_bytes) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
     load_manager->ReportLoadSuccess(
         PP_ToBool(is_pnacl), url, loaded_bytes, total_bytes);
@@ -587,26 +639,25 @@ void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
                      const char* error_message,
                      const char* console_message) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
     load_manager->ReportLoadError(error, error_message, console_message);
 }
 
 void ReportLoadAbort(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
     load_manager->ReportLoadAbort();
 }
 
 void NexeDidCrash(PP_Instance instance, const char* crash_log) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
     load_manager->NexeDidCrash(crash_log);
 }
 
 void InstanceCreated(PP_Instance instance) {
-  scoped_ptr<nacl::NexeLoadManager> new_load_manager(
-      new nacl::NexeLoadManager(instance));
+  scoped_ptr<NexeLoadManager> new_load_manager(new NexeLoadManager(instance));
   NexeLoadManagerMap& map = g_load_manager_map.Get();
   DLOG_IF(ERROR, map.count(instance) != 0) << "Instance count should be 0";
   map.add(instance, new_load_manager.Pass());
@@ -620,7 +671,7 @@ void InstanceDestroyed(PP_Instance instance) {
   // the NexeLoadManager (e.g., by calling ReportLoadError). Passing out the
   // NexeLoadManager to a local scoped_ptr just ensures that its entry is gone
   // from the map prior to the destructor being invoked.
-  scoped_ptr<nacl::NexeLoadManager> temp(map.take(instance));
+  scoped_ptr<NexeLoadManager> temp(map.take(instance));
   map.erase(instance);
 }
 
@@ -638,10 +689,6 @@ PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
   return PP_FromBool(should_debug);
 }
 
-const char* GetSandboxArch() {
-  return nacl::GetSandboxArch();
-}
-
 PP_UrlSchemeType GetUrlScheme(PP_Var url) {
   scoped_refptr<ppapi::StringVar> url_string = ppapi::StringVar::FromPPVar(url);
   if (!url_string)
@@ -656,14 +703,14 @@ PP_UrlSchemeType GetUrlScheme(PP_Var url) {
 }
 
 void LogToConsole(PP_Instance instance, const char* message) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     load_manager->LogToConsole(std::string(message));
 }
 
 PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->nacl_ready_state();
@@ -671,7 +718,7 @@ PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
 }
 
 PP_Bool GetIsInstalled(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     return PP_FromBool(load_manager->is_installed());
@@ -679,7 +726,7 @@ PP_Bool GetIsInstalled(PP_Instance instance) {
 }
 
 int32_t GetExitStatus(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->exit_status();
@@ -687,7 +734,7 @@ int32_t GetExitStatus(PP_Instance instance) {
 }
 
 void SetExitStatus(PP_Instance instance, int32_t exit_status) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->set_exit_status(exit_status);
@@ -698,14 +745,14 @@ void Vlog(const char* message) {
 }
 
 void InitializePlugin(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     load_manager->InitializePlugin();
 }
 
 int64_t GetNexeSize(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->nexe_size();
@@ -715,7 +762,7 @@ int64_t GetNexeSize(PP_Instance instance) {
 PP_Bool RequestNaClManifest(PP_Instance instance,
                             const char* url,
                             PP_Bool* pp_is_data_uri) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager) {
     bool is_data_uri;
@@ -727,7 +774,7 @@ PP_Bool RequestNaClManifest(PP_Instance instance,
 }
 
 PP_Var GetManifestBaseURL(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (!load_manager)
     return PP_MakeUndefined();
@@ -739,7 +786,7 @@ PP_Var GetManifestBaseURL(PP_Instance instance) {
 
 PP_Bool ResolvesRelativeToPluginBaseURL(PP_Instance instance,
                                         const char *url) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (!load_manager)
     return PP_FALSE;
@@ -805,8 +852,6 @@ const PPB_NaCl_Private nacl_interface = {
 };
 
 }  // namespace
-
-namespace nacl {
 
 const PPB_NaCl_Private* GetNaClPrivateInterface() {
   return &nacl_interface;

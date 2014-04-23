@@ -8,6 +8,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 namespace ppapi {
 
@@ -24,6 +25,10 @@ ManifestService::ManifestService(
 }
 
 ManifestService::~ManifestService() {
+}
+
+void ManifestService::StartupInitializationComplete() {
+  filter_->Send(new PpapiHostMsg_StartupInitializationComplete);
 }
 
 }  // namespace ppapi

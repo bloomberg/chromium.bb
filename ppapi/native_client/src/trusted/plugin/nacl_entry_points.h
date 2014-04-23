@@ -16,6 +16,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppb_instance_private.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 
 typedef PP_ExternalPluginResult (*LaunchNaClProcessFunc)(
     PP_Instance instance,
@@ -27,6 +28,8 @@ typedef PP_ExternalPluginResult (*LaunchNaClProcessFunc)(
     PP_Bool enable_dyncode_syscalls,
     PP_Bool enable_exception_handling,
     PP_Bool enable_crash_throttling,
+    const PP_ManifestService* manifest_service_interface,
+    void* manifest_service_user_data,
     NaClHandle* result_socket,
     struct PP_Var* error_message,
     PP_CompletionCallback callback);

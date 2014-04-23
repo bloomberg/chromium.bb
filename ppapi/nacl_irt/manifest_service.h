@@ -29,6 +29,8 @@ class ManifestService {
                   base::WaitableEvent* shutdown_event);
   ~ManifestService();
 
+  void StartupInitializationComplete();
+
  private:
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_refptr<IPC::SyncMessageFilter> filter_;

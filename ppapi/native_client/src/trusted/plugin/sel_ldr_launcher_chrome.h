@@ -8,6 +8,7 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
@@ -24,6 +25,8 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
                      bool enable_dyncode_syscalls,
                      bool enable_exception_handling,
                      bool enable_crash_throttling,
+                     const PP_ManifestService* manifest_service_interface,
+                     void* manifest_service_user_data,
                      PP_Var* error_message,
                      pp::CompletionCallback callback);
 };

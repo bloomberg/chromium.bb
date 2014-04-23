@@ -23,6 +23,8 @@
 #include "ipc/ipc_message.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/nacl_irt/manifest_service.h"
+#include "ppapi/nacl_irt/plugin_startup.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_message_filter.h"
@@ -199,6 +201,11 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
   }
   // From here, the dispatcher will manage its own lifetime according to the
   // lifetime of the attached channel.
+
+  // Notify the renderer process, if necessary.
+  ManifestService* manifest_service = GetManifestService();
+  if (manifest_service)
+    manifest_service->StartupInitializationComplete();
 }
 
 void PpapiDispatcher::OnPluginDispatcherMessageReceived(
