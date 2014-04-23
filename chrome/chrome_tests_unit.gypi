@@ -1135,6 +1135,7 @@
         'browser/password_manager/password_store_x_unittest.cc',
         'browser/performance_monitor/database_unittest.cc',
         'browser/plugins/plugin_finder_unittest.cc',
+        'browser/plugins/plugin_installer_unittest.cc',
         'browser/plugins/plugin_metadata_unittest.cc',
         'browser/plugins/plugin_prefs_unittest.cc',
         'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
@@ -2675,6 +2676,11 @@
           ],
           'sources/': [
             ['exclude', '^browser/chromeos/events/'],  # crbug.com/354036
+          ],
+        }],
+        ['enable_plugin_installation==0', {
+          'sources!': [
+            'browser/plugins/plugin_installer_unittest.cc',
           ],
         }],
       ],
