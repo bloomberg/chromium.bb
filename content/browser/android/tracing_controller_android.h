@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_TRACING_CONTROLLER_ANDROID_H_
 #define CONTENT_BROWSER_ANDROID_TRACING_CONTROLLER_ANDROID_H_
 
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 

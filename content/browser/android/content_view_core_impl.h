@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"

@@ -7,7 +7,7 @@
 
 #include <jni.h>
 #include <vector>
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/observer_list.h"
 #include "ui/base/ui_base_export.h"

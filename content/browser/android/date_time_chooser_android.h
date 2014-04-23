@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/text_input_type.h"
 

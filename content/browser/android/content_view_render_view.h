@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_RENDER_VIEW_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_RENDER_VIEW_H_
 
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

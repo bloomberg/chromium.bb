@@ -4,8 +4,8 @@
 
 #include "chrome/browser/android/password_ui_view_android.h"
 
-#include "base/android/jni_helper.h"
 #include "base/android/jni_string.h"
+#include "base/android/jni_weak_ref.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/autofill/core/common/password_form.h"
 #include "jni/PasswordUIView_jni.h"

@@ -8,7 +8,7 @@
 #include <jni.h>
 
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/id_map.h"

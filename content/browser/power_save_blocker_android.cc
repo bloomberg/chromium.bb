@@ -5,7 +5,7 @@
 #include "content/browser/power_save_blocker_android.h"
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/logging.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/public/browser/android/content_view_core.h"

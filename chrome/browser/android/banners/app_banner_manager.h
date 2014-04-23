@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_MANAGER_H_
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/meta_tag_observer.h"
 #include "chrome/browser/bitmap_fetcher.h"

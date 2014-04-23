@@ -8,7 +8,7 @@
 #include <jni.h>
 #include <map>
 
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"

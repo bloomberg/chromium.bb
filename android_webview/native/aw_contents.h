@@ -16,8 +16,8 @@
 #include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser/shared_renderer_state.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/android/jni_helper.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 

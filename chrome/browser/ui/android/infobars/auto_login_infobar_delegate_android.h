@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_ANDROID_H_
 
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate.h"
 

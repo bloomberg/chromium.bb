@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/logging.h"

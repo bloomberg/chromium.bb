@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_
 
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"

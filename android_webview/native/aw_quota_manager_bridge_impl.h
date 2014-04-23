@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "android_webview/browser/aw_quota_manager_bridge.h"
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"

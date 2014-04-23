@@ -6,7 +6,7 @@
 #define UI_BASE_ANDROID_VIEW_ANDROID_H_
 
 #include <jni.h>
-#include "base/android/jni_helper.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "ui/base/ui_base_export.h"
 

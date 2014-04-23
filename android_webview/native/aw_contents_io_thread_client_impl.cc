@@ -9,8 +9,8 @@
 
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/intercepted_request_data_impl.h"
-#include "base/android/jni_helper.h"
 #include "base/android/jni_string.h"
+#include "base/android/jni_weak_ref.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
