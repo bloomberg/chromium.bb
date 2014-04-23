@@ -51,7 +51,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
   //
   // Overlapping mount points in a single MountPoints instance are not allowed.
   // Adding mount point whose path overlaps with an existing mount point will
-  // fail.
+  // fail except for media galleries, which do not count toward registered
+  // paths for overlap calculation.
   //
   // If not empty, |path| must be absolute. It is allowed for the path to be
   // empty, but |GetVirtualPath| will not work for those mount points.
@@ -90,6 +91,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
   // 'Downloads/foo'.
   // Returns false if the path cannot be resolved (e.g. if the path is not
   // part of any registered filesystem).
+  //
+  // Media gallery type file systems do not count for this calculation. i.e.
+  // if only a media gallery is registered for the path, false will be returned.
+  // If a media gallery and another file system are registered for related
+  // paths, only the other registration is taken into account.
   //
   // Returned virtual_path will have normalized path separators.
   bool GetVirtualPath(const base::FilePath& absolute_path,
@@ -130,10 +136,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
   //  - there is no registered mount point with mount_name
   //  - path does not contain a reference to a parent
   //  - path is absolute
-  //  - path does not overlap with an existing mount point path.
+  //  - path does not overlap with an existing mount point path unless it is a
+  //    media gallery type.
   //
   // |lock_| should be taken before calling this method.
   bool ValidateNewMountPoint(const std::string& mount_name,
+                             FileSystemType type,
                              const base::FilePath& path);
 
   // This lock needs to be obtained when accessing the instance_map_.

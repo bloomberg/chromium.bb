@@ -30,6 +30,10 @@ base::FilePath NormalizeFilePath(const base::FilePath& path) {
   return base::FilePath(path_str).NormalizePathSeparators();
 }
 
+bool IsOverlappingMountPathForbidden(fileapi::FileSystemType type) {
+  return type != fileapi::kFileSystemTypeNativeMedia;
+}
+
 // Wrapper around ref-counted ExternalMountPoints that will be used to lazily
 // create and initialize LazyInstance system ExternalMountPoints.
 class SystemMountPointsLazyWrapper {
@@ -101,11 +105,11 @@ bool ExternalMountPoints::RegisterFileSystem(
   base::AutoLock locker(lock_);
 
   base::FilePath path = NormalizeFilePath(path_in);
-  if (!ValidateNewMountPoint(mount_name, path))
+  if (!ValidateNewMountPoint(mount_name, type, path))
     return false;
 
   instance_map_[mount_name] = new Instance(type, path, mount_option);
-  if (!path.empty())
+  if (!path.empty() && IsOverlappingMountPathForbidden(type))
     path_to_name_map_.insert(std::make_pair(path, mount_name));
   return true;
 }
@@ -122,7 +126,8 @@ bool ExternalMountPoints::RevokeFileSystem(const std::string& mount_name) {
   if (found == instance_map_.end())
     return false;
   Instance* instance = found->second;
-  path_to_name_map_.erase(NormalizeFilePath(instance->path()));
+  if (IsOverlappingMountPathForbidden(instance->type()))
+    path_to_name_map_.erase(NormalizeFilePath(instance->path()));
   delete found->second;
   instance_map_.erase(found);
   return true;
@@ -303,6 +308,7 @@ FileSystemURL ExternalMountPoints::CrackFileSystemURL(
 }
 
 bool ExternalMountPoints::ValidateNewMountPoint(const std::string& mount_name,
+                                                FileSystemType type,
                                                 const base::FilePath& path) {
   lock_.AssertAcquired();
 
@@ -323,22 +329,28 @@ bool ExternalMountPoints::ValidateNewMountPoint(const std::string& mount_name,
   if (path.ReferencesParent() || !path.IsAbsolute())
     return false;
 
-  // Check there the new path does not overlap with one of the existing ones.
-  std::map<base::FilePath, std::string>::reverse_iterator potential_parent(
-      path_to_name_map_.upper_bound(path));
-  if (potential_parent != path_to_name_map_.rend()) {
-    if (potential_parent->first == path ||
-        potential_parent->first.IsParent(path)) {
-      return false;
+  if (IsOverlappingMountPathForbidden(type)) {
+    // Check there the new path does not overlap with one of the existing ones.
+    std::map<base::FilePath, std::string>::reverse_iterator potential_parent(
+        path_to_name_map_.upper_bound(path));
+    if (potential_parent != path_to_name_map_.rend()) {
+      if (potential_parent->first == path ||
+          potential_parent->first.IsParent(path)) {
+        return false;
+      }
+    }
+
+    std::map<base::FilePath, std::string>::iterator potential_child =
+        path_to_name_map_.upper_bound(path);
+    if (potential_child != path_to_name_map_.end()) {
+      if (potential_child->first == path ||
+          path.IsParent(potential_child->first)) {
+        return false;
+      }
     }
   }
 
-  std::map<base::FilePath, std::string>::iterator potential_child =
-      path_to_name_map_.upper_bound(path);
-  if (potential_child == path_to_name_map_.end())
-    return true;
-  return !(potential_child->first == path) &&
-         !path.IsParent(potential_child->first);
+  return true;
 }
 
 }  // namespace fileapi
