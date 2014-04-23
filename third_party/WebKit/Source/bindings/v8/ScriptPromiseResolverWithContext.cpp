@@ -5,15 +5,13 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 
-#include "bindings/v8/V8PerIsolateData.h"
-
 namespace WebCore {
 
 ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(NewScriptState* scriptState)
     : ActiveDOMObject(scriptState->executionContext())
     , m_state(Pending)
     , m_scriptState(scriptState)
-    , m_timer(this, &ScriptPromiseResolverWithContext::onTimerFired)
+    , m_timer(this, &ScriptPromiseResolverWithContext::resolveOrRejectImmediately)
     , m_resolver(ScriptPromiseResolver::create(m_scriptState->executionContext())) { }
 
 void ScriptPromiseResolverWithContext::suspend()
@@ -33,40 +31,26 @@ void ScriptPromiseResolverWithContext::stop()
     clear();
 }
 
-void ScriptPromiseResolverWithContext::onTimerFired(Timer<ScriptPromiseResolverWithContext>*)
-{
-    RefPtr<ScriptPromiseResolverWithContext> protect(this);
-    NewScriptState::Scope scope(m_scriptState.get());
-    v8::Isolate* isolate = m_scriptState->isolate();
-    resolveOrRejectImmediately();
-
-    v8::V8::RunMicrotasks(isolate);
-}
-
-void ScriptPromiseResolverWithContext::resolveOrRejectImmediately()
+void ScriptPromiseResolverWithContext::resolveOrRejectImmediately(Timer<ScriptPromiseResolverWithContext>*)
 {
     ASSERT(!executionContext()->activeDOMObjectsAreStopped());
     ASSERT(!executionContext()->activeDOMObjectsAreSuspended());
     if (m_state == Resolving) {
+        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->resolve(m_value.newLocal(m_scriptState->isolate()));
     } else {
         ASSERT(m_state == Rejecting);
+        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->reject(m_value.newLocal(m_scriptState->isolate()));
     }
+    m_state = ResolvedOrRejected;
     clear();
 }
 
 void ScriptPromiseResolverWithContext::clear()
 {
-    ResolutionState state = m_state;
-    m_state = ResolvedOrRejected;
     m_resolver.clear();
     m_value.clear();
-    if (state == Resolving || state == Rejecting) {
-        // |ref| was called in |resolveOrReject|.
-        deref();
-    }
-    // |this| may be deleted here.
 }
 
 } // namespace WebCore

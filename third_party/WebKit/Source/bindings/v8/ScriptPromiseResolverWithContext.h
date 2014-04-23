@@ -27,10 +27,6 @@ namespace WebCore {
 //    ExecutionContext state. When the ExecutionContext is suspended,
 //    resolve or reject will be delayed. When it is stopped, resolve or reject
 //    will be ignored.
-//
-// If you use ScriptPromiseResolverWithContext::resolve or reject from a
-// non script execution environment, you should NOT enter a v8 context
-// at the call site.
 class ScriptPromiseResolverWithContext FINAL : public ActiveDOMObject, public RefCounted<ScriptPromiseResolverWithContext> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolverWithContext);
 
@@ -46,14 +42,26 @@ public:
     template <typename T>
     void resolve(T value)
     {
-        resolveOrReject(value, Resolving);
+        if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_state = Resolving;
+        NewScriptState::Scope scope(m_scriptState.get());
+        m_value.set(m_scriptState->isolate(), toV8Value(value));
+        if (!executionContext()->activeDOMObjectsAreSuspended())
+            resolveOrRejectImmediately(&m_timer);
     }
 
     // Anything that can be passed to toV8Value can be passed to this function.
     template <typename T>
     void reject(T value)
     {
-        resolveOrReject(value, Rejecting);
+        if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_state = Rejecting;
+        NewScriptState::Scope scope(m_scriptState.get());
+        m_value.set(m_scriptState->isolate(), toV8Value(value));
+        if (!executionContext()->activeDOMObjectsAreSuspended())
+            resolveOrRejectImmediately(&m_timer);
     }
 
     NewScriptState* scriptState() { return m_scriptState.get(); }
@@ -94,30 +102,7 @@ private:
         return ToV8Value<ScriptPromiseResolverWithContext, NewScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
     }
 
-    template <typename T>
-    void resolveOrReject(T value, ResolutionState newState)
-    {
-        if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
-            return;
-        m_state = newState;
-        // Retain this object until it is actually resolved or rejected.
-        // |deref| will be called in |clear|.
-        ref();
-
-        bool isInContext = m_scriptState->isolate()->InContext();
-        NewScriptState::Scope scope(m_scriptState.get());
-        m_value.set(m_scriptState->isolate(), toV8Value(value));
-        if (!executionContext()->activeDOMObjectsAreSuspended()) {
-            if (isInContext) {
-                resolveOrRejectImmediately();
-            } else {
-                m_timer.startOneShot(0, FROM_HERE);
-            }
-        }
-    }
-
-    void resolveOrRejectImmediately();
-    void onTimerFired(Timer<ScriptPromiseResolverWithContext>*);
+    void resolveOrRejectImmediately(Timer<ScriptPromiseResolverWithContext>*);
     void clear();
 
     ResolutionState m_state;
