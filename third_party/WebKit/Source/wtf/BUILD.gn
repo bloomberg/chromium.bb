@@ -1,0 +1,84 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# The list of files is kept in the .gypi.
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("wtf.gypi") ]
+                          "scope",
+                          [ "wtf.gypi" ])
+
+config("wtf_config") {
+  if (is_win) {
+    defines = [
+      "__STD_C",
+      "_CRT_SECURE_NO_DEPRECATE",
+      "_SCL_SECURE_NO_DEPRECATE",
+      "CRASH=__debugbreak",
+    ]
+    include_dirs = [ "os-win32" ]
+
+    cflags = [
+      # Don't complain about calling specific versions of templatized
+      # functions (e.g. in RefPtrHashMap.h).
+      "/wd4344",
+      # Conversion from 'size_t' to 'type'.
+      "/wd4267",
+    ]
+
+    if (component_mode == "shared_library") {
+      # Chromium windows multi-dll build enables C++ exceptions and this causes
+      # wtf to generate 4291 warning due to operator new/delete
+      # implementations. Disable the warning for chromium windows multi-dll
+      # build.
+      cflags += [ "/wd4291" ]
+    }
+  }
+}
+
+component("wtf") {
+  sources = gypi_values.wtf_files
+
+  defines = [ "WTF_IMPLEMENTATION=1" ]
+
+  direct_dependent_configs = [
+    ":wtf_config",
+    "..:config",
+    "..:features",
+  ]
+
+  deps = [
+    "//third_party/icu",
+  ]
+  forward_dependent_configs_from = [ "//third_party/icu" ]
+
+  if (is_win) {
+    sources -= [
+      "ThreadIdentifierDataPthreads.cpp",
+      "ThreadIdentifierDataPthreads.h",
+      "ThreadingPthreads.cpp",
+    ]
+
+    cflags = [ "/wd4068" ]  # Unknown pragma.
+  } else {
+    # Non-Windows.
+    sources -= [
+      "ThreadSpecificWin.cpp",
+      "ThreadingWin.cpp",
+    ]
+  }
+
+  if (is_android) {
+    libs = [ "log" ]
+  }
+
+  if (is_mac) {
+    libs = [ "CoreFoundation.framework", "Foundation.framework" ]
+  } else {
+    sources -= [
+      "text/StringImplCF.cpp",
+      "text/AtomicStringCF.cpp",
+      "text/StringCF.cpp",
+    ]
+  }
+}

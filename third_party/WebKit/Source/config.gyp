@@ -34,7 +34,6 @@
     'remove_webcore_debug_symbols%': 0,
     # Set to 1 to enable the clang plugin that checks the usage of the Blink
     # garbage-collection infrastructure during compilation.
-    # Requires building locally since GOMA doesn't yet support the plugin.
     'enable_oilpan%': 0,
     'blink_gc_plugin%': 0,
     'blink_gc_plugin_dump_graph%': 0,

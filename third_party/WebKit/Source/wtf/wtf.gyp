@@ -126,8 +126,8 @@
           ],
           'conditions': [
             ['component=="shared_library"', {
-              # Chromium windows multi-dll build enables c++ exception and this
-              # causes wtf generates 4291 warning due to operator new/delete
+              # Chromium windows multi-dll build enables C++ exception and this
+              # causes wtf to generate 4291 warning due to operator new/delete
               # implementations. Disable the warning for chromium windows
               # multi-dll build.
               'msvs_disabled_warnings': [4291],
