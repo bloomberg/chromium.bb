@@ -27,7 +27,7 @@ const int kUpdateIntervalHours = 24;
 // before starting an update. This avoids slowdown during startup.
 const int kMinUpdateIntervalSeconds = 5;
 
-} // namespace
+}  // namespace
 
 GAIAInfoUpdateService::GAIAInfoUpdateService(Profile* profile)
     : profile_(profile) {

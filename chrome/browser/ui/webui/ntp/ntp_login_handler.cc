@@ -75,7 +75,7 @@ base::string16 CreateSpanWithClass(const base::string16& content,
       net::EscapeForHTML(content) + base::ASCIIToUTF16("</span>");
 }
 
-} // namespace
+}  // namespace
 
 NTPLoginHandler::NTPLoginHandler() {
 }
@@ -114,11 +114,8 @@ void NTPLoginHandler::RegisterMessages() {
 void NTPLoginHandler::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
-    UpdateLogin();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED, type);
+  UpdateLogin();
 }
 
 void NTPLoginHandler::HandleInitializeSyncLogin(const base::ListValue* args) {

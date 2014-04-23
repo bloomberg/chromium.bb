@@ -6,14 +6,14 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/command_line.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
 #include "policy/policy_constants.h"
 
 #if !defined(DISABLE_NACL)
+#include "base/command_line.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #endif

@@ -23,10 +23,10 @@
 
 namespace options {
 
-StartupPagesHandler::StartupPagesHandler() {}
+StartupPagesHandler::StartupPagesHandler() {
+}
 
 StartupPagesHandler::~StartupPagesHandler() {
-
 }
 
 void StartupPagesHandler::GetLocalizedValues(
@@ -186,7 +186,6 @@ void StartupPagesHandler::EditStartupPage(const base::ListValue* args) {
   } else {
     startup_custom_pages_table_model_->Remove(index);
   }
-
 }
 
 void StartupPagesHandler::DragDropStartupPage(const base::ListValue* args) {

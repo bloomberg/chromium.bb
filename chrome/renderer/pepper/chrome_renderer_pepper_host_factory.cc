@@ -33,7 +33,7 @@ scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
     const ppapi::proxy::ResourceMessageCallParams& params,
     PP_Instance instance,
     const IPC::Message& message) {
-  DCHECK(host == host_->GetPpapiHost());
+  DCHECK_EQ(host_->GetPpapiHost(), host);
 
   // Make sure the plugin is giving us a valid instance for this resource.
   if (!host_->IsValidInstance(instance))
