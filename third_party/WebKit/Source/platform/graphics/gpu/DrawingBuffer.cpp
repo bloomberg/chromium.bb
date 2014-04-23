@@ -654,31 +654,34 @@ void DrawingBuffer::clearFramebuffers(GLbitfield clearMask)
     m_context->clear(clearMask);
 }
 
-void DrawingBuffer::setSize(const IntSize& size) {
+void DrawingBuffer::setSize(const IntSize& size)
+{
     if (m_size == size)
         return;
 
-    s_currentResourceUsePixels += pixelDelta(size);
+    s_currentResourceUsePixels += pixelDelta(size, m_size);
     m_size = size;
 }
 
-int DrawingBuffer::pixelDelta(const IntSize& size) {
-    return (max(0, size.width()) * max(0, size.height())) - (max(0, m_size.width()) * max(0, m_size.height()));
+int DrawingBuffer::pixelDelta(const IntSize& newSize, const IntSize& curSize)
+{
+    return (max(0, newSize.width()) * max(0, newSize.height())) - (max(0, curSize.width()) * max(0, curSize.height()));
 }
 
-IntSize DrawingBuffer::adjustSize(const IntSize& size) {
-    IntSize adjustedSize = size;
+IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize)
+{
+    IntSize adjustedSize = desiredSize;
 
     // Clamp if the desired size is greater than the maximum texture size for the device.
-    if (adjustedSize.height() > m_maxTextureSize)
-        adjustedSize.setHeight(m_maxTextureSize);
+    if (adjustedSize.height() > maxTextureSize)
+        adjustedSize.setHeight(maxTextureSize);
 
-    if (adjustedSize.width() > m_maxTextureSize)
-        adjustedSize.setWidth(m_maxTextureSize);
+    if (adjustedSize.width() > maxTextureSize)
+        adjustedSize.setWidth(maxTextureSize);
 
     // Try progressively smaller sizes until we find a size that fits or reach a scale limit.
     int scaleAttempts = 0;
-    while ((s_currentResourceUsePixels + pixelDelta(adjustedSize)) > s_maximumResourceUsePixels) {
+    while ((s_currentResourceUsePixels + pixelDelta(adjustedSize, curSize)) > s_maximumResourceUsePixels) {
         scaleAttempts++;
         if (scaleAttempts > s_maxScaleAttempts)
             return IntSize();
@@ -692,8 +695,9 @@ IntSize DrawingBuffer::adjustSize(const IntSize& size) {
     return adjustedSize;
 }
 
-IntSize DrawingBuffer::adjustSizeWithContextEviction(const IntSize& size, bool& evictContext) {
-    IntSize adjustedSize = adjustSize(size);
+IntSize DrawingBuffer::adjustSizeWithContextEviction(const IntSize& size, bool& evictContext)
+{
+    IntSize adjustedSize = adjustSize(size, m_size, m_maxTextureSize);
     if (!adjustedSize.isEmpty()) {
         evictContext = false;
         return adjustedSize; // Buffer fits without evicting a context.
@@ -704,7 +708,7 @@ IntSize DrawingBuffer::adjustSizeWithContextEviction(const IntSize& size, bool& 
     int pixelDelta = oldestSize.width() * oldestSize.height();
 
     s_currentResourceUsePixels -= pixelDelta;
-    adjustedSize = adjustSize(size);
+    adjustedSize = adjustSize(size, m_size, m_maxTextureSize);
     s_currentResourceUsePixels += pixelDelta;
 
     evictContext = !adjustedSize.isEmpty();
@@ -720,7 +724,7 @@ bool DrawingBuffer::reset(const IntSize& newSize)
     if (s_allowContextEvictionOnCreate && isNewContext)
         adjustedSize = adjustSizeWithContextEviction(newSize, evictContext);
     else
-        adjustedSize = adjustSize(newSize);
+        adjustedSize = adjustSize(newSize, m_size, m_maxTextureSize);
 
     if (adjustedSize.isEmpty())
         return false;

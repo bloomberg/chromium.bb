@@ -125,10 +125,12 @@ size_t WebGLRenderingContextBase::oldestContextIndex()
         return maxGLActiveContexts;
 
     WebGLRenderingContextBase* candidate = activeContexts().first();
+    blink::WebGraphicsContext3D* candidateWGC3D = candidate->isContextLost() ? 0 : candidate->webContext();
     size_t candidateID = 0;
     for (size_t ii = 1; ii < activeContexts().size(); ++ii) {
         WebGLRenderingContextBase* context = activeContexts()[ii];
-        if (context->webContext() && candidate->webContext() && context->webContext()->lastFlushID() < candidate->webContext()->lastFlushID()) {
+        blink::WebGraphicsContext3D* contextWGC3D = context->isContextLost() ? 0 : context->webContext();
+        if (contextWGC3D && candidateWGC3D && contextWGC3D->lastFlushID() < candidateWGC3D->lastFlushID()) {
             candidate = context;
             candidateID = ii;
         }
@@ -189,7 +191,7 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
             continue;
         }
 
-        IntSize desiredSize = evictedContext->m_drawingBuffer->adjustSize(evictedContext->clampedCanvasSize());
+        IntSize desiredSize = DrawingBuffer::adjustSize(evictedContext->clampedCanvasSize(), IntSize(), evictedContext->m_maxTextureSize);
 
         // If there's room in the pixel budget for this context, restore it.
         if (!desiredSize.isEmpty()) {

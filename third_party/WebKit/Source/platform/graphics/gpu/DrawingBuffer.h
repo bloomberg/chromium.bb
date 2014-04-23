@@ -88,7 +88,7 @@ public:
     void clearFramebuffers(GLbitfield clearMask);
 
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
-    IntSize adjustSize(const IntSize&);
+    static IntSize adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize);
     bool reset(const IntSize&);
     void bind();
     IntSize size() const { return m_size; }
@@ -164,7 +164,7 @@ private:
     void setSize(const IntSize& size);
 
     // Calculates the difference in pixels between the current buffer size and the proposed size.
-    int pixelDelta(const IntSize& size);
+    static int pixelDelta(const IntSize& newSize, const IntSize& curSize);
 
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget
     // Returns true if the buffer will only fit if the oldest WebGL context is forcibly lost
