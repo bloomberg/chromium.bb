@@ -7,11 +7,21 @@ import sys
 _no_value = object()
 
 
-def Collect(futures):
+def Collect(futures, except_pass=None):
   '''Creates a Future which returns a list of results from each Future in
-  |futures|.
+  |futures|. |except_pass| should be one or more exceptions to ignore when
+  calling Get on the futures.
   '''
-  return Future(callback=lambda: [f.Get() for f in futures])
+  def resolve():
+    resolved = []
+    for f in futures:
+      try:
+        resolved.append(f.Get())
+      # "except None" will simply not catch any errors
+      except except_pass:
+        pass
+    return resolved
+  return Future(callback=resolve)
 
 
 class Future(object):

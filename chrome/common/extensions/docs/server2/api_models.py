@@ -7,7 +7,7 @@ import posixpath
 from compiled_file_system import SingleFile, Unicode
 from extensions_paths import API_PATHS
 from file_system import FileNotFoundError
-from future import Future
+from future import Collect, Future
 from schema_util import ProcessSchema
 from third_party.json_schema_compiler.model import Namespace, UnixName
 
@@ -16,7 +16,8 @@ from third_party.json_schema_compiler.model import Namespace, UnixName
 @Unicode
 def _CreateAPIModel(path, data):
   schema = ProcessSchema(path, data)[0]
-  if not schema: return None
+  if not schema:
+    raise FileNotFoundError('No schema for %s' % path)
   return Namespace(schema, schema['namespace'])
 
 
@@ -82,6 +83,10 @@ class APIModels(object):
       # Propagate the first FileNotFoundError if neither were found.
       futures[0].Get()
     return Future(callback=resolve)
+
+  def Cron(self):
+    futures = [self.GetModel(name) for name in self.GetNames()]
+    return Collect(futures, except_pass=FileNotFoundError)
 
   def IterModels(self):
     future_models = [(name, self.GetModel(name)) for name in self.GetNames()]

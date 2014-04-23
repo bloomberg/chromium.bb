@@ -79,8 +79,7 @@ class APIDataSourceTest(unittest.TestCase):
     return json.loads(self._ReadLocalFile(filename))
 
   def testCreateId(self):
-    dict_ = _JSCModel('tester',
-                      self._api_models,
+    dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -95,8 +94,7 @@ class APIDataSourceTest(unittest.TestCase):
   # TODO(kalman): re-enable this when we have a rebase option.
   def DISABLED_testToDict(self):
     expected_json = self._LoadJSON('expected_tester.json')
-    dict_ = _JSCModel('tester',
-                      self._api_models,
+    dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -119,8 +117,7 @@ class APIDataSourceTest(unittest.TestCase):
       'tabs': ChannelInfo('stable', CANNED_BRANCHES[18], 18)
     }
     for api_name, availability in api_availabilities.iteritems():
-      model = _JSCModel(api_name,
-                        self._avail_api_models,
+      model = _JSCModel(self._avail_api_models.GetModel(api_name).Get(),
                         self._avail_finder,
                         self._avail_json_cache,
                         _FakeTemplateCache(),
@@ -129,8 +126,7 @@ class APIDataSourceTest(unittest.TestCase):
       self.assertEquals(availability, model._GetApiAvailability())
 
   def testGetIntroList(self):
-    model = _JSCModel('tester',
-                      self._api_models,
+    model = _JSCModel(self._api_models.GetModel('tester').Get(),
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -200,8 +196,7 @@ class APIDataSourceTest(unittest.TestCase):
     return _GetEventByNameFromEvents(events)
 
   def testAddRules(self):
-    dict_ = _JSCModel('add_rules_tester',
-                      self._api_models,
+    dict_ = _JSCModel(self._api_models.GetModel('add_rules_tester').Get(),
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),

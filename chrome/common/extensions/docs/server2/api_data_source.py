@@ -69,8 +69,7 @@ class _JSCModel(object):
   '''
 
   def __init__(self,
-               api_name,
-               api_models,
+               namespace,
                availability_finder,
                json_cache,
                template_cache,
@@ -84,7 +83,7 @@ class _JSCModel(object):
     self._api_features = features_bundle.GetAPIFeatures()
     self._template_cache = template_cache
     self._event_byname_function = event_byname_function
-    self._namespace = api_models.GetModel(api_name).Get()
+    self._namespace = namespace
 
   def _GetLink(self, link):
     ref = link if '.' in link else (self._namespace.name + '.' + link)
@@ -488,38 +487,42 @@ class APIDataSource(DataSource):
     '''
     if self._event_byname is None:
       self._event_byname = _GetEventByNameFromEvents(
-          self._GetSchemaModel('events'))
+          self._GetSchemaModel('events').Get())
     return self._event_byname
 
   def _GetSchemaModel(self, api_name):
-    jsc_model = self._model_cache.Get(api_name).Get()
-    if jsc_model is not None:
+    jsc_model_future = self._model_cache.Get(api_name)
+    model_future = self._api_models.GetModel(api_name)
+    def resolve():
+      jsc_model = jsc_model_future.Get()
+      if jsc_model is None:
+        jsc_model = _JSCModel(
+            model_future.Get(),
+            self._availability_finder,
+            self._json_cache,
+            self._template_cache,
+            self._features_bundle,
+            self._LoadEventByName).ToDict()
+        self._model_cache.Set(api_name, jsc_model)
       return jsc_model
+    return Future(callback=resolve)
 
-    jsc_model = _JSCModel(
-        api_name,
-        self._api_models,
-        self._availability_finder,
-        self._json_cache,
-        self._template_cache,
-        self._features_bundle,
-        self._LoadEventByName).ToDict()
-
-    self._model_cache.Set(api_name, jsc_model)
-    return jsc_model
-
-
-  def _GenerateHandlebarContext(self, handlebar_dict):
-    # Parsing samples on the preview server takes seconds and doesn't add
-    # anything. Don't do it.
-    if not IsPreviewServer():
-      handlebar_dict['samples'] = _LazySamplesGetter(
-          handlebar_dict['name'],
-          self._samples)
-    return handlebar_dict
+  def _GetImpl(self, api_name):
+    handlebar_dict_future = self._GetSchemaModel(api_name)
+    def resolve():
+      handlebar_dict = handlebar_dict_future.Get()
+      # Parsing samples on the preview server takes seconds and doesn't add
+      # anything. Don't do it.
+      if not IsPreviewServer():
+        handlebar_dict['samples'] = _LazySamplesGetter(
+            handlebar_dict['name'],
+            self._samples)
+      return handlebar_dict
+    return Future(callback=resolve)
 
   def get(self, api_name):
-    return self._GenerateHandlebarContext(self._GetSchemaModel(api_name))
+    return self._GetImpl(api_name).Get()
 
   def Cron(self):
-    return Future(value=())
+    futures = [self._GetImpl(name) for name in self._api_models.GetNames()]
+    return Collect(futures, except_pass=FileNotFoundError)
