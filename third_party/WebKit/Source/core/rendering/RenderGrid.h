@@ -101,7 +101,7 @@ private:
 
     const GridTrackSize& gridTrackSize(GridTrackSizingDirection, size_t) const;
 
-    LayoutUnit logicalContentHeightForChild(RenderBox*, Vector<GridTrack>&);
+    LayoutUnit logicalHeightForChild(RenderBox*, Vector<GridTrack>&);
     LayoutUnit minContentForChild(RenderBox*, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutUnit maxContentForChild(RenderBox*, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutUnit startOfColumnForChild(const RenderBox* child) const;
