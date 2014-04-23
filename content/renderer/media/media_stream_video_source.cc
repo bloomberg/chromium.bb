@@ -300,11 +300,8 @@ bool MediaStreamVideoSource::IsConstraintSupported(const std::string& name) {
   return false;
 }
 
-MediaStreamVideoSource::MediaStreamVideoSource(
-    MediaStreamDependencyFactory* factory)
-    : state_(NEW),
-      factory_(factory),
-      capture_adapter_(NULL) {
+MediaStreamVideoSource::MediaStreamVideoSource()
+    : state_(NEW) {
 }
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
@@ -362,28 +359,6 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
     StopSource();
 }
 
-void MediaStreamVideoSource::InitAdapter() {
-  if (adapter_)
-    return;
-  // Create the webrtc::MediaStreamVideoSourceInterface adapter.
-  // It needs the constraints so that constraints used by a PeerConnection
-  // will be available such as constraints for CPU adaptation and a tab
-  // capture.
-  bool is_screencast =
-      device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
-      device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
-  capture_adapter_ = factory_->CreateVideoCapturer(is_screencast);
-  adapter_ = factory_->CreateVideoSource(capture_adapter_,
-                                         current_constraints_);
-}
-
-webrtc::VideoSourceInterface* MediaStreamVideoSource::GetAdapter() {
-  if (!adapter_) {
-    InitAdapter();
-  }
-  return adapter_;
-}
-
 void MediaStreamVideoSource::DoStopSource() {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "DoStopSource()";
@@ -413,12 +388,6 @@ void MediaStreamVideoSource::DeliverVideoFrame(
           output_rect.size(),
           base::Bind(&ReleaseOriginalFrame, frame));
     }
-  }
-
-  if ((frame->format() == media::VideoFrame::I420 ||
-       frame->format() == media::VideoFrame::YV12) &&
-      capture_adapter_) {
-    capture_adapter_->OnFrameCaptured(video_frame);
   }
 
   for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();

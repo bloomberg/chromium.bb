@@ -37,7 +37,7 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
                           blink::WebMediaStreamSource::TypeVideo,
                           "mock video source name");
   MockMediaStreamVideoSource* native_source =
-      new MockMediaStreamVideoSource(&dependency_factory_, false);
+      new MockMediaStreamVideoSource(false);
   blink_source.setExtraData(native_source);
   blink::WebMediaStreamTrack blink_track;
   blink_track.initialize(base::UTF8ToUTF16(track_id), blink_source);
@@ -48,8 +48,7 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
       new MediaStreamVideoTrack(native_source,
                                 constraints,
                                 MediaStreamVideoSource::ConstraintsCallback(),
-                                true,
-                                &dependency_factory_);
+                                true);
   blink_track.setExtraData(native_track);
   test_stream_.addTrack(blink_track);
 }

@@ -219,9 +219,8 @@ void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const StreamDeviceInfo& device_info,
     const SourceStoppedCallback& stop_callback,
-    const scoped_refptr<VideoCapturerDelegate>& delegate,
-    MediaStreamDependencyFactory* factory)
-    : MediaStreamVideoSource(factory),
+    const scoped_refptr<VideoCapturerDelegate>& delegate)
+    : MediaStreamVideoSource(),
       delegate_(delegate) {
   SetDeviceInfo(device_info);
   SetStopCallback(stop_callback);

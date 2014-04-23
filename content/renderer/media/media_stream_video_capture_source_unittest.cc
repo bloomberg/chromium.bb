@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,8 +34,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     source_ = new MediaStreamVideoCapturerSource(
         device_info,
         MediaStreamSource::SourceStoppedCallback(),
-        delegate_,
-        &factory_);
+        delegate_);
 
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
@@ -46,21 +45,19 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   blink::WebMediaStreamTrack StartSource() {
     MockMediaConstraintFactory factory;
     bool enabled = true;
-    MediaStreamDependencyFactory* dependency_factory = NULL;
     // CreateVideoTrack will trigger OnConstraintsApplied.
     return MediaStreamVideoTrack::CreateVideoTrack(
         source_, factory.CreateWebMediaConstraints(),
         base::Bind(
             &MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
             base::Unretained(this)),
-            enabled, dependency_factory);
+            enabled);
   }
 
  protected:
   void OnConstraintsApplied(MediaStreamSource* source, bool success) {
   }
 
-  MockMediaStreamDependencyFactory factory_;
   blink::WebMediaStreamSource webkit_source_;
   MediaStreamVideoCapturerSource* source_;  // owned by webkit_source.
   scoped_refptr<MockVideoCapturerDelegate> delegate_;

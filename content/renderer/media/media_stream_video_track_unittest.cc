@@ -4,7 +4,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
@@ -15,7 +14,7 @@ namespace content {
 class MediaStreamVideoTrackTest : public ::testing::Test {
  public:
   MediaStreamVideoTrackTest()
-      : mock_source_(new MockMediaStreamVideoSource(&factory_, false)),
+      : mock_source_(new MockMediaStreamVideoSource(false)),
         source_started_(false) {
     blink_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
@@ -32,7 +31,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     blink::WebMediaStreamTrack track =
         MediaStreamVideoTrack::CreateVideoTrack(
             mock_source_, constraints,
-            MediaStreamSource::ConstraintsCallback(), enabled, &factory_);
+            MediaStreamSource::ConstraintsCallback(), enabled);
     if (!source_started_) {
       mock_source_->StartMockedSource();
       source_started_ = true;
@@ -46,19 +45,11 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
  private:
-  MockMediaStreamDependencyFactory factory_;
   blink::WebMediaStreamSource blink_source_;
   // |mock_source_| is owned by |webkit_source_|.
   MockMediaStreamVideoSource* mock_source_;
   bool source_started_;
 };
-
-TEST_F(MediaStreamVideoTrackTest, GetAdapter) {
-  blink::WebMediaStreamTrack track = CreateTrack();
-  MediaStreamVideoTrack* video_track =
-      MediaStreamVideoTrack::GetVideoTrack(track);
-  EXPECT_TRUE(video_track->GetVideoAdapter() != NULL);
-}
 
 TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
   MockMediaStreamVideoSink sink;

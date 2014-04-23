@@ -446,8 +446,7 @@ MediaStreamVideoSource* MediaStreamImpl::CreateVideoSource(
   return new content::MediaStreamVideoCapturerSource(
       device,
       stop_callback,
-      new VideoCapturerDelegate(device),
-      dependency_factory_);
+      new VideoCapturerDelegate(device));
 }
 
 void MediaStreamImpl::CreateVideoTracks(
@@ -829,7 +828,7 @@ MediaStreamImpl::UserMediaRequestInfo::CreateAndStartVideoTrack(
       native_source, constraints, base::Bind(
           &MediaStreamImpl::UserMediaRequestInfo::OnTrackStarted,
           AsWeakPtr()),
-      true, factory);
+      true);
 }
 
 void MediaStreamImpl::UserMediaRequestInfo::CallbackOnTracksStarted(

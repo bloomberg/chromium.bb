@@ -53,14 +53,13 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
                               blink::WebMediaStreamSource::TypeVideo,
                               "video");
       MediaStreamVideoSource* native_source =
-          new MockMediaStreamVideoSource(dependency_factory_.get(), false);
+          new MockMediaStreamVideoSource(false);
       video_source.setExtraData(native_source);
       blink::WebMediaConstraints constraints;
       constraints.initialize();
       video_track_vector[0] = MediaStreamVideoTrack::CreateVideoTrack(
           native_source, constraints,
-          MediaStreamVideoSource::ConstraintsCallback(), true,
-          dependency_factory_.get());
+          MediaStreamVideoSource::ConstraintsCallback(), true);
     }
 
     blink::WebMediaStream stream_desc;

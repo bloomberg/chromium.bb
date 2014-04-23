@@ -8,7 +8,6 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_track.h"
-#include "content/renderer/media/media_stream_video_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -59,8 +58,17 @@ void WebRtcMediaStreamAdapter::TrackRemoved(
         webrtc_media_stream_->FindAudioTrack(track_id));
   } else {
     DCHECK_EQ(track.source().type(), blink::WebMediaStreamSource::TypeVideo);
-    webrtc_media_stream_->RemoveTrack(
-        webrtc_media_stream_->FindVideoTrack(track_id));
+    scoped_refptr<webrtc::VideoTrackInterface> webrtc_track =
+        webrtc_media_stream_->FindVideoTrack(track_id).get();
+    webrtc_media_stream_->RemoveTrack(webrtc_track.get());
+
+    for (ScopedVector<WebRtcVideoTrackAdapter>::iterator it =
+             video_adapters_.begin(); it != video_adapters_.end(); ++it) {
+      if ((*it)->webrtc_video_track() == webrtc_track) {
+        video_adapters_.erase(it);
+        break;
+      }
+    }
   }
 }
 
@@ -94,9 +102,10 @@ void WebRtcMediaStreamAdapter::CreateAudioTrack(
 void WebRtcMediaStreamAdapter::CreateVideoTrack(
     const blink::WebMediaStreamTrack& track) {
   DCHECK_EQ(track.source().type(), blink::WebMediaStreamSource::TypeVideo);
-  MediaStreamVideoTrack* native_track =
-      MediaStreamVideoTrack::GetVideoTrack(track);
-  webrtc_media_stream_->AddTrack(native_track->GetVideoAdapter());
+  WebRtcVideoTrackAdapter* adapter =
+      new WebRtcVideoTrackAdapter(track, factory_);
+  video_adapters_.push_back(adapter);
+  webrtc_media_stream_->AddTrack(adapter->webrtc_video_track());
 }
 
 }  // namespace content

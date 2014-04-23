@@ -689,6 +689,8 @@
         'renderer/media/video_source_handler.h',
         'renderer/media/webaudio_capturer_source.cc',
         'renderer/media/webaudio_capturer_source.h',
+        'renderer/media/webrtc/webrtc_video_track_adapter.cc',
+        'renderer/media/webrtc/webrtc_video_track_adapter.h',
         'renderer/media/webrtc/media_stream_remote_video_source.cc',
         'renderer/media/webrtc/media_stream_remote_video_source.h', 
         'renderer/media/webrtc/media_stream_track_metrics.cc',

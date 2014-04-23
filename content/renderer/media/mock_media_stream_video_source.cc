@@ -7,9 +7,8 @@
 namespace content {
 
 MockMediaStreamVideoSource::MockMediaStreamVideoSource(
-    MediaStreamDependencyFactory* factory,
     bool manual_get_supported_formats)
-    : MediaStreamVideoSource(factory),
+    : MediaStreamVideoSource(),
       manual_get_supported_formats_(manual_get_supported_formats),
       max_requested_height_(0),
       max_requested_width_(0),

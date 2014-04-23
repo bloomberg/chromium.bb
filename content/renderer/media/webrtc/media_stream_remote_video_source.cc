@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/media/native_handle_impl.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -15,7 +16,7 @@ namespace content {
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
     webrtc::VideoTrackInterface* remote_track)
-    : MediaStreamVideoSource(NULL),
+    : MediaStreamVideoSource(),
       message_loop_proxy_(base::MessageLoopProxy::current()),
       remote_track_(remote_track),
       last_state_(remote_track_->state()),
@@ -51,11 +52,6 @@ void MediaStreamRemoteVideoSource::StopSourceImpl() {
     remote_track_->RemoveRenderer(this);
     remote_track_->UnregisterObserver(this);
   }
-}
-
-webrtc::VideoSourceInterface* MediaStreamRemoteVideoSource::GetAdapter() {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  return remote_track_->GetSource();
 }
 
 void MediaStreamRemoteVideoSource::SetSize(int width, int height) {

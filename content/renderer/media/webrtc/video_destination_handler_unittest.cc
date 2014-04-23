@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/webrtc/video_destination_handler.h"
@@ -30,16 +29,15 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
   }
 
  protected:
-  MockMediaStreamDependencyFactory factory_;
   MockMediaStreamRegistry registry_;
 };
 
 TEST_F(VideoDestinationHandlerTest, Open) {
   FrameWriterInterface* frame_writer = NULL;
   // Unknow url will return false.
-  EXPECT_FALSE(VideoDestinationHandler::Open(&factory_, &registry_,
+  EXPECT_FALSE(VideoDestinationHandler::Open(&registry_,
                                              kUnknownStreamUrl, &frame_writer));
-  EXPECT_TRUE(VideoDestinationHandler::Open(&factory_, &registry_,
+  EXPECT_TRUE(VideoDestinationHandler::Open(&registry_,
                                             kTestStreamUrl, &frame_writer));
   // The |frame_writer| is a proxy and is owned by who call Open.
   delete frame_writer;
@@ -47,7 +45,7 @@ TEST_F(VideoDestinationHandlerTest, Open) {
 
 TEST_F(VideoDestinationHandlerTest, PutFrame) {
   FrameWriterInterface* frame_writer = NULL;
-  EXPECT_TRUE(VideoDestinationHandler::Open(&factory_, &registry_,
+  EXPECT_TRUE(VideoDestinationHandler::Open(&registry_,
                                             kTestStreamUrl, &frame_writer));
   ASSERT_TRUE(frame_writer);
 

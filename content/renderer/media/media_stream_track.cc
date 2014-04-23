@@ -44,9 +44,4 @@ webrtc::AudioTrackInterface* MediaStreamTrack::GetAudioAdapter() {
   return static_cast<webrtc::AudioTrackInterface*>(track_.get());
 }
 
-webrtc::VideoTrackInterface* MediaStreamTrack::GetVideoAdapter() {
-  NOTREACHED();
-  return NULL;
-}
-
 }  // namespace content

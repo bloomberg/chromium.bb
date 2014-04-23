@@ -110,8 +110,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   MediaStreamVideoCapturerSource(
       const StreamDeviceInfo& device_info,
       const SourceStoppedCallback& stop_callback,
-      const scoped_refptr<VideoCapturerDelegate>& delegate,
-      MediaStreamDependencyFactory* factory);
+      const scoped_refptr<VideoCapturerDelegate>& delegate);
 
   virtual ~MediaStreamVideoCapturerSource();
 

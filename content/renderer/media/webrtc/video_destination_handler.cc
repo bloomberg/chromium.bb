@@ -11,7 +11,6 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
@@ -25,8 +24,8 @@
 
 namespace content {
 
-PpFrameWriter::PpFrameWriter(MediaStreamDependencyFactory* factory)
-    : MediaStreamVideoSource(factory), first_frame_received_(false) {
+PpFrameWriter::PpFrameWriter()
+    : MediaStreamVideoSource(), first_frame_received_(false) {
   DVLOG(3) << "PpFrameWriter ctor";
 }
 
@@ -96,8 +95,8 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
   if (state() != MediaStreamVideoSource::STARTED)
     return;
 
-  const base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
-      time_stamp_ns / talk_base::kNumNanosecsPerMillisec);
+  const base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
+      time_stamp_ns / base::Time::kNanosecondsPerMicrosecond);
 
   // TODO(perkj): It would be more efficient to use I420 here. Using YV12 will
   // force a copy into a tightly packed I420 frame in
@@ -144,15 +143,10 @@ class PpFrameWriterProxy : public FrameWriterInterface {
 };
 
 bool VideoDestinationHandler::Open(
-    MediaStreamDependencyFactory* factory,
     MediaStreamRegistryInterface* registry,
     const std::string& url,
     FrameWriterInterface** frame_writer) {
   DVLOG(3) << "VideoDestinationHandler::Open";
-  if (!factory) {
-    factory = RenderThreadImpl::current()->GetMediaStreamDependencyFactory();
-    DCHECK(factory != NULL);
-  }
   blink::WebMediaStream stream;
   if (registry) {
     stream = registry->GetMediaStream(url);
@@ -173,7 +167,7 @@ bool VideoDestinationHandler::Open(
   // theoretically it's possible we can get an id that's duplicated with the
   // existing sources.
   base::Base64Encode(base::RandBytesAsString(64), &track_id);
-  PpFrameWriter* writer = new PpFrameWriter(factory);
+  PpFrameWriter* writer = new PpFrameWriter();
 
   // Create a new webkit video track.
   blink::WebMediaStreamSource webkit_source;
@@ -189,7 +183,7 @@ bool VideoDestinationHandler::Open(
 
   stream.addTrack(MediaStreamVideoTrack::CreateVideoTrack(
       writer, constraints, MediaStreamVideoSource::ConstraintsCallback(),
-      track_enabled, factory));
+      track_enabled));
 
   *frame_writer = new PpFrameWriterProxy(writer->AsWeakPtr());
   return true;

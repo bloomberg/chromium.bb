@@ -12,7 +12,6 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -28,12 +27,6 @@ void InitializeWebkitTrack(webrtc::MediaStreamTrackInterface* track,
   webkit_source.initialize(webkit_track_id, type, webkit_track_id);
   webkit_track->initialize(webkit_track_id, webkit_source);
 
-  MediaStreamDependencyFactory* factory = NULL;
-  // RenderThreadImpl::current() may be NULL in unit tests.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread)
-    factory = render_thread->GetMediaStreamDependencyFactory();
-
   if (type == blink::WebMediaStreamSource::TypeVideo) {
     MediaStreamRemoteVideoSource* video_source =
         new MediaStreamRemoteVideoSource(
@@ -46,7 +39,7 @@ void InitializeWebkitTrack(webrtc::MediaStreamTrackInterface* track,
     webkit_track->setExtraData(
         new MediaStreamVideoTrack(video_source, constraints,
                                   MediaStreamVideoSource::ConstraintsCallback(),
-                                  track->enabled(), factory));
+                                  track->enabled()));
   } else {
     DCHECK(type == blink::WebMediaStreamSource::TypeAudio);
     content::MediaStreamDependencyFactory::AddNativeAudioTrackToBlinkTrack(
@@ -79,7 +72,6 @@ class RemoteMediaStreamTrackAdapter {
  private:
   scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track_;
   blink::WebMediaStreamTrack webkit_track_;
-  bool sent_ended_message_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamTrackAdapter);
 };

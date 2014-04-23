@@ -23,9 +23,10 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
 
   int number_of_frames() const { return number_of_frames_; }
   media::VideoFrame::Format format() const { return format_; }
+  gfx::Size frame_size() const { return frame_size_; }
+
   bool enabled() const { return enabled_; }
   blink::WebMediaStreamSource::ReadyState state() const { return state_; }
-  gfx::Size frame_size() const { return frame_size_; }
 
  private:
   int number_of_frames_;

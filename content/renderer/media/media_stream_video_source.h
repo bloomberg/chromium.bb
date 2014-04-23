@@ -8,25 +8,18 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_pool.h"
 #include "media/video/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
-namespace media {
-class VideoFrame;
-}
-
 namespace content {
 
-class MediaStreamDependencyFactory;
 class MediaStreamVideoTrack;
-class WebRtcVideoCapturerAdapter;
 
 // MediaStreamVideoSource is an interface used for sending video frames to a
 // MediaStreamVideoTrack.
@@ -47,7 +40,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
     : public MediaStreamSource,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  explicit MediaStreamVideoSource(MediaStreamDependencyFactory* factory);
+  MediaStreamVideoSource();
   virtual ~MediaStreamVideoSource();
 
   // Returns the MediaStreamVideoSource object owned by |source|.
@@ -59,12 +52,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
                 const blink::WebMediaConstraints& constraints,
                 const ConstraintsCallback& callback);
   void RemoveTrack(MediaStreamVideoTrack* track);
-
-  // TODO(ronghuawu): Remove webrtc::VideoSourceInterface from the public
-  // interface of this class.
-  // This creates a VideoSourceInterface implementation if it does not already
-  // exist.
-  virtual webrtc::VideoSourceInterface* GetAdapter();
 
   // Return true if |name| is a constraint supported by MediaStreamVideoSource.
   static bool IsConstraintSupported(const std::string& name);
@@ -88,8 +75,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
  protected:
   virtual void DoStopSource() OVERRIDE;
-
-  MediaStreamDependencyFactory* factory() { return factory_; }
 
   // Sets ready state and notifies the ready state to all registered tracks.
   virtual void SetReadyState(blink::WebMediaStreamSource::ReadyState state);
@@ -178,12 +163,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Tracks that currently are receiving video frames.
   std::vector<MediaStreamVideoTrack*> tracks_;
-
-  // TODO(perkj): The below classes use webrtc/libjingle types. The goal is to
-  // get rid of them as far as possible.
-  MediaStreamDependencyFactory* factory_;
-  scoped_refptr<webrtc::VideoSourceInterface> adapter_;
-  WebRtcVideoCapturerAdapter* capture_adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoSource);
 };

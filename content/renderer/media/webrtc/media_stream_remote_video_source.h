@@ -39,8 +39,6 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 
   virtual void StopSourceImpl() OVERRIDE;
 
-  virtual webrtc::VideoSourceInterface* GetAdapter() OVERRIDE;
-
   // Implements webrtc::VideoRendererInterface used for receiving video frames
   // from the PeerConnection video track. May be called on
   // a different thread.

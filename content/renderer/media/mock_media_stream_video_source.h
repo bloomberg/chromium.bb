@@ -12,8 +12,7 @@ namespace content {
 class MockMediaStreamVideoSource
     : public MediaStreamVideoSource {
  public:
-  MockMediaStreamVideoSource(MediaStreamDependencyFactory* factory,
-                             bool manual_get_supported_formats);
+  MockMediaStreamVideoSource(bool manual_get_supported_formats);
   virtual ~MockMediaStreamVideoSource();
 
   // Simulate that the underlying source start successfully.

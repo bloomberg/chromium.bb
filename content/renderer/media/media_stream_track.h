@@ -13,7 +13,6 @@
 
 namespace webrtc {
 class AudioTrackInterface;
-class VideoTrackInterface;
 class MediaStreamTrackInterface;
 }  // namespace webrtc
 
@@ -40,7 +39,6 @@ class CONTENT_EXPORT MediaStreamTrack
   virtual void Stop();
 
   virtual webrtc::AudioTrackInterface* GetAudioAdapter();
-  virtual webrtc::VideoTrackInterface* GetVideoAdapter();
 
   bool is_local_track () const { return is_local_track_; }
 

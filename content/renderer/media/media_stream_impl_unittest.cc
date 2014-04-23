@@ -25,7 +25,7 @@ class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
       const StreamDeviceInfo& device,
       const SourceStoppedCallback& stop_callback,
       MediaStreamDependencyFactory* factory)
-  : MockMediaStreamVideoSource(factory, false) {
+  : MockMediaStreamVideoSource(false) {
     SetDeviceInfo(device);
     SetStopCallback(stop_callback);
   }

@@ -40,7 +40,7 @@ class CONTENT_EXPORT PpFrameWriter
       public FrameWriterInterface,
       NON_EXPORTED_BASE(public base::SupportsWeakPtr<PpFrameWriter>) {
  public:
-  explicit PpFrameWriter(MediaStreamDependencyFactory* factory);
+  PpFrameWriter();
   virtual ~PpFrameWriter();
 
   // FrameWriterInterface implementation.
@@ -71,14 +71,11 @@ class CONTENT_EXPORT VideoDestinationHandler {
   // Instantiates and adds a new video track to the MediaStream specified by
   // |url|. Returns a handler for delivering frames to the new video track as
   // |frame_writer|.
-  // If |factory| is NULL the MediaStreamDependencyFactory owned by
-  // RenderThreadImpl::current() will be used.
   // If |registry| is NULL the global blink::WebMediaStreamRegistry will be
   // used to look up the media stream.
   // The caller of the function takes the ownership of |frame_writer|.
   // Returns true on success and false on failure.
-  static bool Open(MediaStreamDependencyFactory* factory,
-                   MediaStreamRegistryInterface* registry,
+  static bool Open(MediaStreamRegistryInterface* registry,
                    const std::string& url,
                    FrameWriterInterface** frame_writer);
 

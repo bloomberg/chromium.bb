@@ -7,8 +7,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/webrtc/webrtc_video_track_adapter.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
@@ -55,6 +57,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
   MediaStreamDependencyFactory* factory_;
 
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_media_stream_;
+  ScopedVector<WebRtcVideoTrackAdapter> video_adapters_;
 
   DISALLOW_COPY_AND_ASSIGN (WebRtcMediaStreamAdapter);
 };

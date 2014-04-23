@@ -75,14 +75,13 @@ class MediaStreamRemoteVideoSourceTest
    bool enabled = true;
    blink::WebMediaConstraints constraints;
    constraints.initialize();
-   MediaStreamDependencyFactory* factory = NULL;
    return new MediaStreamVideoTrack(
        source(),
        constraints,
        base::Bind(
            &MediaStreamRemoteVideoSourceTest::OnConstraintsApplied,
            base::Unretained(this)),
-       enabled, factory);
+       enabled);
   }
 
   int NumberOfSuccessConstraintsCallbacks() const {

@@ -45,8 +45,7 @@ void CreateNativeAudioMediaStreamTrack(
 }
 
 void CreateNativeVideoMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track,
-    MediaStreamDependencyFactory* factory) {
+    const blink::WebMediaStreamTrack& track) {
   DCHECK(track.extraData() == NULL);
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
@@ -57,7 +56,7 @@ void CreateNativeVideoMediaStreamTrack(
   writable_track.setExtraData(
       new MediaStreamVideoTrack(native_source, source.constraints(),
                                 MediaStreamVideoSource::ConstraintsCallback(),
-                                track.isEnabled(), factory));
+                                track.isEnabled()));
 }
 
 void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
@@ -70,7 +69,7 @@ void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
       CreateNativeAudioMediaStreamTrack(track, factory);
       break;
     case blink::WebMediaStreamSource::TypeVideo:
-      CreateNativeVideoMediaStreamTrack(track, factory);
+      CreateNativeVideoMediaStreamTrack(track);
       break;
   }
 }

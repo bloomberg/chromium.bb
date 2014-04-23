@@ -4,8 +4,6 @@
 
 #include "content/renderer/media/media_stream_video_track.h"
 
-#include "content/renderer/media/media_stream_dependency_factory.h"
-
 namespace content {
 
 //static
@@ -13,15 +11,13 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     const blink::WebMediaConstraints& constraints,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
-    bool enabled,
-    MediaStreamDependencyFactory* factory) {
+    bool enabled) {
   blink::WebMediaStreamTrack track;
   track.initialize(source->owner());
   track.setExtraData(new MediaStreamVideoTrack(source,
                                                constraints,
                                                callback,
-                                               enabled,
-                                               factory));
+                                               enabled));
   return track;
 }
 
@@ -35,12 +31,11 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     MediaStreamVideoSource* source,
     const blink::WebMediaConstraints& constraints,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
-    bool enabled,
-    MediaStreamDependencyFactory* factory)
+    bool enabled)
     : MediaStreamTrack(NULL, true),
       enabled_(enabled),
-      source_(source),
-      factory_(factory) {
+      constraints_(constraints),
+      source_(source) {
   source->AddTrack(this, constraints, callback);
 }
 
@@ -61,21 +56,6 @@ void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
       std::find(sinks_.begin(), sinks_.end(), sink);
   DCHECK(it != sinks_.end());
   sinks_.erase(it);
-}
-
-webrtc::VideoTrackInterface* MediaStreamVideoTrack::GetVideoAdapter() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(owner().source().type(), blink::WebMediaStreamSource::TypeVideo);
-  if (!track_.get()) {
-    MediaStreamVideoSource* source =
-          static_cast<MediaStreamVideoSource*>(owner().source().extraData());
-    scoped_refptr<webrtc::VideoTrackInterface> video_track(
-        factory_->CreateLocalVideoTrack(owner().id().utf8(),
-                                        source->GetAdapter()));
-    video_track->set_enabled(owner().isEnabled());
-    track_ = video_track;
-  }
-  return static_cast<webrtc::VideoTrackInterface*>(track_.get());
 }
 
 void MediaStreamVideoTrack::SetEnabled(bool enabled) {

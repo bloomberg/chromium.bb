@@ -612,16 +612,23 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
       new talk_base::RefCountedObject<StatsResponse>(request));
   webrtc::MediaStreamTrackInterface* track = NULL;
   if (request->hasSelector()) {
-    MediaStreamTrack* native_track =
-        MediaStreamTrack::GetTrack(request->component());
-    if (native_track) {
-      blink::WebMediaStreamSource::Type type =
-          request->component().source().type();
-      if (type == blink::WebMediaStreamSource::TypeAudio)
-        track = native_track->GetAudioAdapter();
-      else {
-        DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, type);
-        track = native_track->GetVideoAdapter();
+    blink::WebMediaStreamSource::Type type =
+        request->component().source().type();
+    std::string track_id = request->component().id().utf8();
+    if (type == blink::WebMediaStreamSource::TypeAudio) {
+      track =
+          native_peer_connection_->local_streams()->FindAudioTrack(track_id);
+      if (!track) {
+        track =
+            native_peer_connection_->remote_streams()->FindAudioTrack(track_id);
+      }
+    } else {
+      DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, type);
+      track =
+          native_peer_connection_->local_streams()->FindVideoTrack(track_id);
+      if (!track) {
+        track =
+            native_peer_connection_->remote_streams()->FindVideoTrack(track_id);
       }
     }
     if (!track) {
