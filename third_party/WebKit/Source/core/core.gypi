@@ -2132,6 +2132,8 @@
             'dom/ViewportDescription.h',
             'dom/VisitedLinkState.cpp',
             'dom/VisitedLinkState.h',
+            'dom/WeakNodeMap.cpp',
+            'dom/WeakNodeMap.h',
             'dom/WheelController.cpp',
             'dom/WheelController.h',
             'dom/XMLDocument.cpp',

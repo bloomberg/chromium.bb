@@ -55,6 +55,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UserActionElementSet.h"
+#include "core/dom/WeakNodeMap.h"
 #include "core/dom/WheelController.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -282,6 +283,9 @@ Node::~Node()
         m_treeScope->guardDeref();
 
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
+
+    if (getFlag(HasWeakReferences))
+        WeakNodeMap::notifyNodeDestroyed(this);
 }
 
 void Node::willBeDeletedFromDocument()

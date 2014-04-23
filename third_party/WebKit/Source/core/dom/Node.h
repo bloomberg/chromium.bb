@@ -84,6 +84,7 @@ class ShadowRoot;
 class TagCollection;
 class Text;
 class TouchEvent;
+class WeakNodeMap;
 
 const int nodeStyleChangeShift = 14;
 
@@ -702,7 +703,7 @@ private:
 
         HasNameOrIsEditingTextFlag = 1 << 17,
 
-        // Bit 18 is available
+        HasWeakReferences = 1 << 18,
 
         HasSyntheticAttrChildNodesFlag = 1 << 19,
         HasCustomStyleCallbacksFlag = 1 << 20,
@@ -792,6 +793,7 @@ protected:
 
 private:
     friend class TreeShared<Node>;
+    friend class WeakNodeMap;
 
     virtual PseudoId customPseudoId() const
     {
