@@ -26,8 +26,7 @@ function setUpTest()
     }
 
     window.jsTestIsAsync = true;
-    iframe = document.getElementById('scrollable');
-    iframe.onload = testIt;
+    setTimeout(testIt, 0);
 }
 
 function testIt()
