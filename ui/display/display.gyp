@@ -23,7 +23,7 @@
         'types/chromeos/display_snapshot.cc',
         'types/chromeos/display_snapshot.h',
         'types/chromeos/native_display_delegate.h',
-        'types/chromeos/native_display_observer',
+        'types/chromeos/native_display_observer.h',
         'types/display_constants.h',
         'types/display_types_export.h',
       ],
