@@ -347,7 +347,6 @@ bool PDBSourceLineWriter::PrintFunctions() {
   ULONG count = 0;
   DWORD rva = 0;
   CComPtr<IDiaSymbol> global;
-  std::set<DWORD> rvas;
   HRESULT hr;
 
   if (FAILED(session_->get_globalScope(&global))) {
@@ -357,22 +356,8 @@ bool PDBSourceLineWriter::PrintFunctions() {
 
   CComPtr<IDiaEnumSymbols> symbols = NULL;
 
-  // Find all public symbols.
-  hr = global->findChildren(SymTagPublicSymbol, NULL, nsNone, &symbols);
-
-  if (SUCCEEDED(hr)) {
-    CComPtr<IDiaSymbol> symbol = NULL;
-
-    while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1) {
-      if (!PrintCodePublicSymbol(symbol))
-        return false;
-      symbol.Release();
-    }
-
-    symbols.Release();
-  }
-
-  // Find all function symbols.
+  // Find all function symbols first.
+  std::set<DWORD> rvas;
   hr = global->findChildren(SymTagFunction, NULL, nsNone, &symbols);
 
   if (SUCCEEDED(hr)) {
@@ -382,10 +367,31 @@ bool PDBSourceLineWriter::PrintFunctions() {
       if (SUCCEEDED(symbol->get_relativeVirtualAddress(&rva))) {
         // To maintain existing behavior of one symbol per address, place the
         // rva onto a set here to uniquify them.
+        rvas.insert(rva);
+      } else {
+        fprintf(stderr, "get_relativeVirtualAddress failed on the symbol\n");
+        return false;
+      }
+
+      symbol.Release();
+    }
+
+    symbols.Release();
+  }
+
+  // Find all public symbols.  Store public symbols that are not also private
+  // symbols for later.
+  std::set<DWORD> public_only_rvas;
+  hr = global->findChildren(SymTagPublicSymbol, NULL, nsNone, &symbols);
+
+  if (SUCCEEDED(hr)) {
+    CComPtr<IDiaSymbol> symbol = NULL;
+
+    while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1) {
+      if (SUCCEEDED(symbol->get_relativeVirtualAddress(&rva))) {
         if (rvas.count(rva) == 0) {
-          rvas.insert(rva);
-          if (!PrintFunction(symbol, symbol))
-            return false;
+          rvas.insert(rva); // Keep symbols in rva order.
+          public_only_rvas.insert(rva);
         }
       } else {
         fprintf(stderr, "get_relativeVirtualAddress failed on the symbol\n");
@@ -396,6 +402,42 @@ bool PDBSourceLineWriter::PrintFunctions() {
     }
 
     symbols.Release();
+  }
+
+  std::set<DWORD>::iterator it;
+
+  // For each rva, dump the first symbol DIA knows about at the address.
+  for (it = rvas.begin(); it != rvas.end(); ++it) {
+    CComPtr<IDiaSymbol> symbol = NULL;
+    // If the symbol is not in the public list, look for SymTagFunction. This is
+    // a workaround to a bug where DIA will hang if searching for a private
+    // symbol at an address where only a public symbol exists.
+    // See http://connect.microsoft.com/VisualStudio/feedback/details/722366
+    if (public_only_rvas.count(*it) == 0) {
+      if (SUCCEEDED(session_->findSymbolByRVA(*it, SymTagFunction, &symbol))) {
+        // Sometimes findSymbolByRVA returns S_OK, but NULL.
+        if (symbol) {
+          if (!PrintFunction(symbol, symbol))
+            return false;
+          symbol.Release();
+        }
+      } else {
+        fprintf(stderr, "findSymbolByRVA SymTagFunction failed\n");
+        return false;
+      }
+    } else if (SUCCEEDED(session_->findSymbolByRVA(*it,
+                                                   SymTagPublicSymbol,
+                                                   &symbol))) {
+      // Sometimes findSymbolByRVA returns S_OK, but NULL.
+      if (symbol) {
+        if (!PrintCodePublicSymbol(symbol))
+          return false;
+        symbol.Release();
+      }
+    } else {
+      fprintf(stderr, "findSymbolByRVA SymTagPublicSymbol failed\n");
+      return false;
+    }
   }
 
   // When building with PGO, the compiler can split functions into
