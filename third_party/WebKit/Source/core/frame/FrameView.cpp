@@ -786,7 +786,12 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
 
     TextAutosizer* textAutosizer = frame().document()->textAutosizer();
-    bool autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
+    bool autosized;
+    {
+        AllowRepaintScope repaintAllowed(this);
+        autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
+    }
+
     if (autosized && rootForThisLayout->needsLayout()) {
         TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
         UseCounter::count(*frame().document(), UseCounter::TextAutosizingLayout);
