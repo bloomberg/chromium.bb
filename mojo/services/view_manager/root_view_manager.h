@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "mojo/services/view_manager/view.h"
+#include "mojo/services/view_manager/view_delegate.h"
+#include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
 namespace services {
@@ -21,8 +23,25 @@ class ViewManagerConnection;
 
 // RootViewManager is responsible for managing the set of ViewManagerConnections
 // as well as providing the root of the View hierarchy.
-class RootViewManager : public NativeViewportClient {
+class MOJO_VIEW_MANAGER_EXPORT RootViewManager
+    : public NativeViewportClient,
+      public ViewDelegate {
  public:
+  // Create when a ViewManagerConnection is about to make a change. Ensures
+  // clients are notified of the correct change id.
+  class ScopedChange {
+   public:
+    ScopedChange(ViewManagerConnection* connection,
+                 RootViewManager* root,
+                 int32_t change_id);
+    ~ScopedChange();
+
+   private:
+    RootViewManager* root_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedChange);
+  };
+
   RootViewManager();
   virtual ~RootViewManager();
 
@@ -36,8 +55,35 @@ class RootViewManager : public NativeViewportClient {
   // one.
   View* GetView(int32_t manager_id, int32_t view_id);
 
+  // Notifies all ViewManagerConnections of a hierarchy change.
+  void NotifyViewHierarchyChanged(const ViewId& view,
+                                  const ViewId& new_parent,
+                                  const ViewId& old_parent);
+
  private:
+  // Tracks a change.
+  struct Change {
+    Change(int32_t connection_id, int32_t change_id)
+        : connection_id(connection_id),
+          change_id(change_id) {
+    }
+
+    int32_t connection_id;
+    int32_t change_id;
+  };
+
   typedef std::map<int32_t, ViewManagerConnection*> ConnectionMap;
+
+  // Invoked when a particular connection is about to make a change. Records
+  // the |change_id| so that it can be supplied to the clients by way of
+  // OnViewHierarchyChanged().
+  // Changes should never nest, meaning each PrepareForChange() must be
+  // balanced with a call to FinishChange() with no PrepareForChange()
+  // in between.
+  void PrepareForChange(ViewManagerConnection* connection, int32_t change_id);
+
+  // Balances a call to PrepareForChange().
+  void FinishChange();
 
   // Overridden from NativeViewportClient:
   virtual void OnCreated() OVERRIDE;
@@ -45,6 +91,12 @@ class RootViewManager : public NativeViewportClient {
   virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE;
   virtual void OnEvent(const Event& event,
                        const mojo::Callback<void()>& callback) OVERRIDE;
+
+  // Overriden from ViewDelegate:
+  virtual ViewId GetViewId(const View* view) const OVERRIDE;
+  virtual void OnViewHierarchyChanged(const ViewId& view,
+                                      const ViewId& new_parent,
+                                      const ViewId& old_parent) OVERRIDE;
 
   // ID to use for next ViewManagerConnection.
   int32_t next_connection_id_;
@@ -54,6 +106,9 @@ class RootViewManager : public NativeViewportClient {
 
   // Root of Views that are displayed.
   View root_;
+
+  // If non-null we're processing a change.
+  scoped_ptr<Change> change_;
 
   DISALLOW_COPY_AND_ASSIGN(RootViewManager);
 };

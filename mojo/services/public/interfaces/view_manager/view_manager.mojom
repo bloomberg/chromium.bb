@@ -6,25 +6,33 @@ module mojo.services.view_manager {
 
 // Each View is identified by the following pair. The |manager_id| is assigned
 // by the server and uniquely identifies the ViewManager. A value of 0 can be
-// used to indicate 'this' manager. The |view_id| is assigned by the client.
-// Non-negative values may be used. Server uses negative to identify special
-// values. For example, -1 is the root.
+// used to indicate 'this' manager. For received notifications a value of 0 for
+// |manager_id| indicates the view is owned by the ViewManager. The |view_id|
+// is assigned by the client. Non-negative values may be used. Server uses
+// negative to identify special values. For example, -1 is the root.
 struct ViewId {
   int32 manager_id;
   int32 view_id;
 };
 
+
+// Functions that mutate the hierarchy take a |change_id|. |change_id| is an
+// arbitrary value assigned by the client originating the change. It may be
+// used by the client originating the change to later identify the change in
+// an OnViewHierarchyChanged callback. |change_id| is only passed to the client
+// that originated the change. All other clients get a value of 0.
 [Peer=ViewManagerClient]
 interface ViewManager {
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
   CreateView(int32 view_id) => (bool success);
 
-  // Reparents a view.
-  AddView(ViewId parent, ViewId child) => (bool success);
+  // Reparents a view. See description above class for details of |change_id|.
+  AddView(ViewId parent, ViewId child, int32 change_id) => (bool success);
 
-  // Removes a view from its current parent.
-  RemoveFromParent(ViewId view) => (bool success);
+  // Removes a view from its current parent.  See description above class for
+  // details of |change_id|.
+  RemoveViewFromParent(ViewId view, int32 change_id) => (bool success);
 };
 
 [Peer=ViewManager]
@@ -32,6 +40,14 @@ interface ViewManagerClient {
   // Invoked once the connection has been established. |manager_id| is the id
   // used to uniquely identify the ViewManager.
   OnConnectionEstablished(int32 manager_id);
+
+  // Invoked when a change is done to the hierarchy. |new_parent| and/or
+  // |old_parent| may be NULL. See description above ViewManager for details on
+  // |change_id|.
+  OnViewHierarchyChanged(ViewId view,
+                         ViewId new_parent,
+                         ViewId old_parent,
+                         int32 change_id);
 };
 
 }

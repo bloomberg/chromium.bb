@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "mojo/public/cpp/shell/service.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/view_manager/view_delegate.h"
+#include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
 namespace services {
@@ -19,9 +21,10 @@ class RootViewManager;
 class View;
 
 // Manages a connection from the client.
-class ViewManagerConnection : public ServiceConnection<ViewManager,
-                                                       ViewManagerConnection,
-                                                       RootViewManager> {
+class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
+    : public ServiceConnection<ViewManager, ViewManagerConnection,
+                               RootViewManager>,
+      public ViewDelegate {
  public:
   ViewManagerConnection();
   virtual ~ViewManagerConnection();
@@ -36,6 +39,12 @@ class ViewManagerConnection : public ServiceConnection<ViewManager,
   // Returns the View by id.
   View* GetView(int32_t id);
 
+  // Notifies the client of a hierarchy change.
+  void NotifyViewHierarchyChanged(const ViewId& view,
+                                  const ViewId& new_parent,
+                                  const ViewId& old_parent,
+                                  int32_t change_id);
+
  private:
   typedef std::map<int32_t, View*> ViewMap;
 
@@ -44,13 +53,21 @@ class ViewManagerConnection : public ServiceConnection<ViewManager,
 
   // Overridden from ViewManager:
   virtual void CreateView(int32_t view_id,
-                          const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                          const Callback<void(bool)>& callback) OVERRIDE;
   virtual void AddView(const ViewId& parent_id,
                        const ViewId& child_id,
-                       const mojo::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void RemoveFromParent(
-      const ViewId& view_id,
-      const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                       int32_t change_id,
+                       const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void RemoveViewFromParent(
+      const ViewId& view,
+      int32_t change_id,
+      const Callback<void(bool)>& callback) OVERRIDE;
+
+  // Overriden from ViewDelegate:
+  virtual ViewId GetViewId(const View* view) const OVERRIDE;
+  virtual void OnViewHierarchyChanged(const ViewId& view,
+                                      const ViewId& new_parent,
+                                      const ViewId& old_parent) OVERRIDE;
 
   // Id of this connection as assigned by RootViewManager. Assigned in
   // Initialize().
