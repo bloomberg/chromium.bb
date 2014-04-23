@@ -398,6 +398,8 @@ DevToolsWindow::~DevToolsWindow() {
     jobs_it->second->Stop();
   }
   indexing_jobs_.clear();
+  if (device_listener_enabled_)
+    EnableRemoteDeviceCounter(false);
 }
 
 // static
@@ -785,6 +787,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       browser_(NULL),
       is_docked_(true),
       can_dock_(can_dock),
+      device_listener_enabled_(false),
       // This initialization allows external front-end to work without changes.
       // We don't wait for docking call, but instead immediately show undocked.
       // Passing "dockSide=undocked" parameter ensures proper UI.
@@ -1390,6 +1393,26 @@ void DevToolsWindow::StartRemoteDevicesListener() {
 
 void DevToolsWindow::StopRemoteDevicesListener() {
   remote_targets_handler_.reset();
+}
+
+void DevToolsWindow::EnableRemoteDeviceCounter(bool enable) {
+  DevToolsAndroidBridge* adb_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
+  if (!adb_bridge)
+    return;
+
+  DCHECK(device_listener_enabled_ != enable);
+  device_listener_enabled_ = enable;
+  if (enable)
+    adb_bridge->AddDeviceCountListener(this);
+  else
+    adb_bridge->RemoveDeviceCountListener(this);
+}
+
+void DevToolsWindow::DeviceCountChanged(int count) {
+  base::FundamentalValue value(count);
+  CallClientFunction(
+      "InspectorFrontendAPI.setRemoteDeviceCount", &value, NULL, NULL);
 }
 
 void DevToolsWindow::PopulateRemoteDevices(

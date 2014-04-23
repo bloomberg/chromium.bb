@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 #include "chrome/browser/devtools/devtools_embedder_message_dispatcher.h"
 #include "chrome/browser/devtools/devtools_file_helper.h"
@@ -55,7 +56,8 @@ class PrefRegistrySyncable;
 class DevToolsWindow : private content::NotificationObserver,
                        private content::WebContentsDelegate,
                        private content::DevToolsFrontendHostDelegate,
-                       private DevToolsEmbedderMessageDispatcher::Delegate {
+                       private DevToolsEmbedderMessageDispatcher::Delegate,
+                       private DevToolsAndroidBridge::DeviceCountListener {
  public:
   typedef base::Callback<void(bool)> InfoBarCallback;
 
@@ -345,6 +347,10 @@ class DevToolsWindow : private content::NotificationObserver,
                                                const std::string& url) OVERRIDE;
   virtual void StartRemoteDevicesListener() OVERRIDE;
   virtual void StopRemoteDevicesListener() OVERRIDE;
+  virtual void EnableRemoteDeviceCounter(bool enable) OVERRIDE;
+
+  // DevToolsAndroidBridge::DeviceCountListener override:
+  virtual void DeviceCountChanged(int count) OVERRIDE;
 
   // Forwards discovered devices to frontend.
   virtual void PopulateRemoteDevices(const std::string& source,
@@ -397,7 +403,8 @@ class DevToolsWindow : private content::NotificationObserver,
   content::WebContents* web_contents_;
   Browser* browser_;
   bool is_docked_;
-  bool can_dock_;
+  const bool can_dock_;
+  bool device_listener_enabled_;
   LoadState load_state_;
   DevToolsToggleAction action_on_load_;
   bool ignore_set_is_docked_;

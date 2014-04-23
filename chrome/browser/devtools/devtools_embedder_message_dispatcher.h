@@ -62,6 +62,7 @@ class DevToolsEmbedderMessageDispatcher {
                                                  const std::string& url) = 0;
     virtual void StartRemoteDevicesListener() = 0;
     virtual void StopRemoteDevicesListener() = 0;
+    virtual void EnableRemoteDeviceCounter(bool enable) = 0;
   };
 
   virtual ~DevToolsEmbedderMessageDispatcher() {}

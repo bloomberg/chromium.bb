@@ -270,5 +270,7 @@ DevToolsEmbedderMessageDispatcher*
                      &Delegate::StartRemoteDevicesListener, delegate);
   d->RegisterHandler("stopRemoteDevicesListener",
                      &Delegate::StopRemoteDevicesListener, delegate);
+  d->RegisterHandler("enableRemoteDeviceCounter",
+                     &Delegate::EnableRemoteDeviceCounter, delegate);
   return d;
 }
