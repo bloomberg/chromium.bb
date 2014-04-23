@@ -323,5 +323,8 @@ def GetPreferredTryMasters(project, change):
         'tryserver.chromium': {
             'blink_android_compile_dbg': set(['defaulttests']),
             'blink_android_compile_rel': set(['defaulttests']),
+        },
+        'tryserver.chromium.gpu': {
+            'linux_gpu': set(['defaulttests']),
         }
     }
