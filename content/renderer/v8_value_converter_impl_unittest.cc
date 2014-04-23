@@ -570,6 +570,17 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
     ASSERT_FALSE(array.IsEmpty());
   }
 
+  v8::Handle<v8::Array> sparse_array;
+  {
+    const char* source = "(function() {"
+        "return new Array(3);"
+        "})();";
+    v8::Handle<v8::Script> script(
+        v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
+    sparse_array = script->Run().As<v8::Array>();
+    ASSERT_FALSE(sparse_array.IsEmpty());
+  }
+
   V8ValueConverterImpl converter;
 
   scoped_ptr<base::Value> actual_object(
@@ -581,6 +592,12 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
   scoped_ptr<base::Value> actual_array(converter.FromV8Value(array, context));
   EXPECT_TRUE(base::Value::Equals(
       base::test::ParseJson("[ null, null, null ]").get(), actual_array.get()));
+
+  scoped_ptr<base::Value> actual_sparse_array(
+      converter.FromV8Value(sparse_array, context));
+  EXPECT_TRUE(
+      base::Value::Equals(base::test::ParseJson("[ null, null, null ]").get(),
+                          actual_sparse_array.get()));
 }
 
 TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {

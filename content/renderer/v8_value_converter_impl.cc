@@ -346,8 +346,10 @@ base::Value* V8ValueConverterImpl::FromV8Array(
       child_v8 = v8::Null(isolate);
     }
 
-    if (!val->HasRealIndexedProperty(i))
+    if (!val->HasRealIndexedProperty(i)) {
+      result->Append(base::Value::CreateNullValue());
       continue;
+    }
 
     base::Value* child = FromV8ValueImpl(state, child_v8, isolate);
     if (child)
