@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_
 
+#include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/dependency_graph.h"
 #include "components/keyed_service/core/keyed_service_export.h"
@@ -63,6 +65,14 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager {
   // associated with it.
   void DestroyBrowserContextServices(content::BrowserContext* context);
 
+  // Registers a |callback| that will be called just before executing
+  // CreateBrowserContextServices() or CreateBrowserContextServicesForTest().
+  // This can be useful in browser tests which wish to substitute test or mock
+  // builders for the keyed services.
+  scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
+  RegisterWillCreateBrowserContextServicesCallbackForTesting(
+      const base::Callback<void(content::BrowserContext*)>& callback);
+
 #ifndef NDEBUG
   // Debugging assertion called as part of GetServiceForBrowserContext in debug
   // mode. This will NOTREACHED() whenever the user is trying to access a stale
@@ -95,6 +105,11 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager {
 #endif
 
   DependencyGraph dependency_graph_;
+
+  // A list of callbacks to call just before executing
+  // CreateBrowserContextServices() or CreateBrowserContextServicesForTest().
+  base::CallbackList<void(content::BrowserContext*)>
+      will_create_browser_context_services_callbacks_;
 
 #ifndef NDEBUG
   // A list of context objects that have gone through the Shutdown()

@@ -77,6 +77,8 @@ void BrowserContextDependencyManager::DoCreateBrowserContextServices(
   MarkBrowserContextLiveForTesting(context);
 #endif
 
+  will_create_browser_context_services_callbacks_.Notify(context);
+
   std::vector<DependencyNode*> construction_order;
   if (!dependency_graph_.GetConstructionOrder(&construction_order)) {
     NOTREACHED();
@@ -125,6 +127,13 @@ void BrowserContextDependencyManager::DestroyBrowserContextServices(
         static_cast<BrowserContextKeyedBaseFactory*>(destruction_order[i]);
     factory->BrowserContextDestroyed(context);
   }
+}
+
+scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
+BrowserContextDependencyManager::
+RegisterWillCreateBrowserContextServicesCallbackForTesting(
+    const base::Callback<void(content::BrowserContext*)>& callback) {
+  return will_create_browser_context_services_callbacks_.Add(callback);
 }
 
 #ifndef NDEBUG
