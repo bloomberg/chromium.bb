@@ -155,6 +155,13 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
   scoped_ptr<media::AudioFifo> fifo_;
 };
 
+bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("MediaStreamAudioTrackProcessing");
+  return group_name == "Enabled" || CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAudioTrackProcessing);
+}
+
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::WebMediaConstraints& constraints,
     int effects,
@@ -506,13 +513,6 @@ void MediaStreamAudioProcessor::StopAudioProcessing() {
     playout_data_source_->RemovePlayoutSink(this);
 
   audio_processing_.reset();
-}
-
-bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() const {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("MediaStreamAudioTrackProcessing");
-  return group_name == "Enabled" || CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAudioTrackProcessing);
 }
 
 }  // namespace content

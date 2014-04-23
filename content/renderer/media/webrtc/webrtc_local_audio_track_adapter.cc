@@ -86,6 +86,14 @@ void WebRtcLocalAudioTrackAdapter::RemoveSink(
 
 bool WebRtcLocalAudioTrackAdapter::GetSignalLevel(int* level) {
   base::AutoLock auto_lock(lock_);
+  // It is required to provide the signal level after audio processing. In
+  // case the audio processing is not enabled for the track, we return
+  // false here in order not to overwrite the value from WebRTC.
+  // TODO(xians): Remove this after we turn on the APM in Chrome by default.
+  // http://crbug/365672 .
+  if (!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled())
+    return false;
+
   *level = signal_level_;
   return true;
 }

@@ -47,6 +47,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
     NON_EXPORTED_BASE(public WebRtcPlayoutDataSource::Sink),
     NON_EXPORTED_BASE(public AudioProcessorInterface) {
  public:
+  // Returns true if |kEnableAudioTrackProcessing| is on or if the
+  // |MediaStreamAudioTrackProcessing| finch experiment is enabled.
+  static bool IsAudioTrackProcessingEnabled();
+
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
   // |playout_data_source| won't be used.
@@ -84,8 +88,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                              bool key_pressed,
                              int* new_volume,
                              int16** out);
-
-  bool IsAudioTrackProcessingEnabled() const;
 
   // The audio format of the input to the processor.
   const media::AudioParameters& InputFormat() const;
