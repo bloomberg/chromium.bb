@@ -492,8 +492,10 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     if (layerConfigChanged)
         updateInternalHierarchy();
 
-    if (updateMaskLayer(renderer->hasMask()))
+    if (updateMaskLayer(renderer->hasMask())) {
+        layerConfigChanged = true;
         m_graphicsLayer->setMaskLayer(m_maskLayer.get());
+    }
 
     bool hasChildClippingLayer = compositor->clipsCompositingDescendants(&m_owningLayer) && (hasClippingLayer() || hasScrollingLayer());
     bool needsChildClippingMask = (renderer->style()->clipPath() || renderer->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(renderer));
@@ -537,6 +539,9 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     }
     if (renderer->isRenderPart())
         layerConfigChanged = RenderLayerCompositor::parentFrameContentLayers(toRenderPart(renderer));
+
+    if (layerConfigChanged)
+        updatePaintingPhases();
 
     return layerConfigChanged;
 }
@@ -961,6 +966,17 @@ void CompositedLayerMapping::updateInternalHierarchy()
     }
 }
 
+void CompositedLayerMapping::updatePaintingPhases()
+{
+    m_graphicsLayer->setPaintingPhase(paintingPhaseForPrimaryLayer());
+    if (m_scrollingContentsLayer) {
+        GraphicsLayerPaintingPhase paintPhase = GraphicsLayerPaintOverflowContents | GraphicsLayerPaintCompositedScroll;
+        if (!m_foregroundLayer)
+            paintPhase |= GraphicsLayerPaintForeground;
+        m_scrollingContentsLayer->setPaintingPhase(paintPhase);
+    }
+}
+
 void CompositedLayerMapping::updateContentsRect()
 {
     m_graphicsLayer->setContentsRect(pixelSnappedIntRect(contentsBox()));
@@ -1264,23 +1280,14 @@ bool CompositedLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
             m_foregroundLayer = createGraphicsLayer(CompositingReasonLayerForForeground);
             m_foregroundLayer->setDrawsContent(true);
             m_foregroundLayer->setPaintingPhase(GraphicsLayerPaintForeground);
-            // If the foreground layer pops content out of the graphics
-            // layer, then the graphics layer needs to be repainted.
-            // FIXME: This is conservative, as m_foregroundLayer could
-            // be smaller than m_graphicsLayer due to clipping.
-            m_graphicsLayer->setNeedsDisplay();
             layerChanged = true;
         }
     } else if (m_foregroundLayer) {
         FloatRect repaintRect(FloatPoint(), m_foregroundLayer->size());
-        m_graphicsLayer->setNeedsDisplayInRect(repaintRect);
         m_foregroundLayer->removeFromParent();
         m_foregroundLayer = nullptr;
         layerChanged = true;
     }
-
-    if (layerChanged)
-        m_graphicsLayer->setPaintingPhase(paintingPhaseForPrimaryLayer());
 
     return layerChanged;
 }
@@ -1332,9 +1339,6 @@ bool CompositedLayerMapping::updateMaskLayer(bool needsMaskLayer)
         layerChanged = true;
     }
 
-    if (layerChanged)
-        m_graphicsLayer->setPaintingPhase(paintingPhaseForPrimaryLayer());
-
     return layerChanged;
 }
 
@@ -1370,10 +1374,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
             // Inner layer which renders the content that scrolls.
             m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
             m_scrollingContentsLayer->setDrawsContent(true);
-            GraphicsLayerPaintingPhase paintPhase = GraphicsLayerPaintOverflowContents | GraphicsLayerPaintCompositedScroll;
-            if (!m_foregroundLayer)
-                paintPhase |= GraphicsLayerPaintForeground;
-            m_scrollingContentsLayer->setPaintingPhase(paintPhase);
             m_scrollingLayer->addChild(m_scrollingContentsLayer.get());
 
             layerChanged = true;
@@ -1390,8 +1390,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
 
     if (layerChanged) {
         updateInternalHierarchy();
-        m_graphicsLayer->setPaintingPhase(paintingPhaseForPrimaryLayer());
-        m_graphicsLayer->setNeedsDisplay();
         if (renderer()->view())
             compositor()->scrollingLayerDidChange(&m_owningLayer);
     }

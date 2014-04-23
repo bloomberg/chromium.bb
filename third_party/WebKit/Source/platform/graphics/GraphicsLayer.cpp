@@ -1156,6 +1156,14 @@ void GraphicsLayer::setBackgroundFilters(const FilterOperations& filters)
     m_layer->layer()->setBackgroundFilters(*webFilters);
 }
 
+void GraphicsLayer::setPaintingPhase(GraphicsLayerPaintingPhase phase)
+{
+    if (m_paintingPhase == phase)
+        return;
+    m_paintingPhase = phase;
+    setNeedsDisplay();
+}
+
 void GraphicsLayer::addLinkHighlight(LinkHighlightClient* linkHighlight)
 {
     ASSERT(linkHighlight && !m_linkHighlights.contains(linkHighlight));

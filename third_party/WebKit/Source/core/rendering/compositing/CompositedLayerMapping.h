@@ -209,6 +209,7 @@ private:
     RenderLayerCompositor* compositor() const { return m_owningLayer.compositor(); }
 
     void updateInternalHierarchy();
+    void updatePaintingPhases();
     bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
     bool updateChildTransformLayer(bool needsChildTransformLayer);
     bool updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer);

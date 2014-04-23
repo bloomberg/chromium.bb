@@ -216,7 +216,7 @@ public:
 
     // Some GraphicsLayers paint only the foreground or the background content
     GraphicsLayerPaintingPhase paintingPhase() const { return m_paintingPhase; }
-    void setPaintingPhase(GraphicsLayerPaintingPhase phase) { m_paintingPhase = phase; }
+    void setPaintingPhase(GraphicsLayerPaintingPhase);
 
     void setNeedsDisplay();
     // mark the given rect (in layer coords) as needing dispay. Never goes deep.
