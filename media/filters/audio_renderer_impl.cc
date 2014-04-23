@@ -601,6 +601,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     //   3) We are in the kPlaying state
     //
     // Otherwise the buffer has data we can send to the device.
+    const base::TimeDelta time_before_filling = algorithm_->GetTime();
     frames_written = algorithm_->FillBuffer(audio_bus, requested_frames);
     if (frames_written == 0) {
       const base::TimeTicks now = now_cb_.Run();
@@ -626,16 +627,15 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
                                         weak_factory_.GetWeakPtr()));
     }
 
+    // Adjust the delay according to playback rate.
+    base::TimeDelta adjusted_playback_delay = base::TimeDelta::FromMicroseconds(
+        ceil(playback_delay.InMicroseconds() * playback_rate));
+
     // The |audio_time_buffered_| is the ending timestamp of the last frame
     // buffered at the audio device. |playback_delay| is the amount of time
     // buffered at the audio device. The current time can be computed by their
     // difference.
     if (audio_time_buffered_ != kNoTimestamp()) {
-      // Adjust the delay according to playback rate.
-      base::TimeDelta adjusted_playback_delay =
-          base::TimeDelta::FromMicroseconds(ceil(
-              playback_delay.InMicroseconds() * playback_rate));
-
       base::TimeDelta previous_time = current_time_;
       current_time_ = audio_time_buffered_ - adjusted_playback_delay;
 
@@ -656,6 +656,11 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
       if (current_time_ > previous_time && !rendered_end_of_stream_) {
         current_time = current_time_;
       }
+    } else if (frames_written > 0) {
+      // Nothing has been buffered yet, so use the first buffer's timestamp.
+      DCHECK(time_before_filling != kNoTimestamp());
+      current_time_ = current_time =
+          time_before_filling - adjusted_playback_delay;
     }
 
     // The call to FillBuffer() on |algorithm_| has increased the amount of

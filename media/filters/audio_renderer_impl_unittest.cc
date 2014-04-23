@@ -60,7 +60,8 @@ class AudioRendererImplTest : public ::testing::Test {
       : hardware_config_(AudioParameters(), AudioParameters()),
         needs_stop_(true),
         demuxer_stream_(DemuxerStream::AUDIO),
-        decoder_(new MockAudioDecoder()) {
+        decoder_(new MockAudioDecoder()),
+        last_time_update_(kNoTimestamp()) {
     AudioDecoderConfig audio_config(kCodec,
                                     kSampleFormat,
                                     kChannelLayout,
@@ -122,6 +123,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void OnAudioTimeCallback(TimeDelta current_time, TimeDelta max_time) {
     CHECK(current_time <= max_time);
+    last_time_update_ = current_time;
   }
 
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
@@ -432,6 +434,10 @@ class AudioRendererImplTest : public ::testing::Test {
     return renderer_->splicer_->HasNextBuffer();
   }
 
+  base::TimeDelta last_time_update() const {
+    return last_time_update_;
+  }
+
   // Fixture members.
   base::MessageLoop message_loop_;
   scoped_ptr<AudioRendererImpl> renderer_;
@@ -500,6 +506,7 @@ class AudioRendererImplTest : public ::testing::Test {
   base::Closure stop_decoder_cb_;
 
   PipelineStatusCB init_decoder_cb_;
+  base::TimeDelta last_time_update_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
 };
@@ -947,6 +954,30 @@ TEST_F(AudioRendererImplTest, ConfigChangeDrainsConverter) {
   force_config_change();
   EXPECT_TRUE(splicer_has_next_buffer());
   EXPECT_EQ(0, converter_input_frames_left());
+}
+
+TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
+  Initialize();
+  Preroll();
+  Play();
+
+  AudioTimestampHelper timestamp_helper(kOutputSamplesPerSecond);
+  EXPECT_EQ(kNoTimestamp(), last_time_update());
+
+  // Preroll() should be buffered some data, consume half of it now.
+  const int kFramesToConsume = frames_buffered() / 2;
+  EXPECT_TRUE(ConsumeBufferedData(kFramesToConsume, NULL));
+  WaitForPendingRead();
+
+  // Ensure we received a time update for the first buffer and it's zero.
+  timestamp_helper.SetBaseTimestamp(base::TimeDelta());
+  EXPECT_EQ(timestamp_helper.base_timestamp(), last_time_update());
+  timestamp_helper.AddFrames(kFramesToConsume);
+
+  // ConsumeBufferedData() uses an audio delay of zero, so the next buffer
+  // should have a timestamp equal to the duration of |kFramesToConsume|.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
 }
 
 }  // namespace media
