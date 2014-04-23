@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
@@ -599,7 +600,13 @@ const char* NPN_UserAgent(NPP id) {
         "Gecko/20061103 Firefox/2.0a1";
 #endif
 
-  return content::GetContentClient()->GetUserAgent().c_str();
+  // Provide a consistent user-agent string with memory that lasts
+  // long enough for the caller to read it.
+  static base::LazyInstance<std::string>::Leaky leaky_user_agent =
+    LAZY_INSTANCE_INITIALIZER;
+  if (leaky_user_agent == NULL)
+    leaky_user_agent.Get() = content::GetContentClient()->GetUserAgent();
+  return leaky_user_agent.Get().c_str();
 }
 
 void NPN_Status(NPP id, const char* message) {
