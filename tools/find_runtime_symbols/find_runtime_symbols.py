@@ -201,7 +201,7 @@ def main():
   symbols_dict = find_runtime_symbols(FUNCTION_SYMBOLS,
                                       symbols_in_process,
                                       sys.stdin)
-  for address, symbol in symbols_dict:
+  for address, symbol in symbols_dict.iteritems():
     if symbol:
       print '%016x %s' % (address, symbol)
     else:
