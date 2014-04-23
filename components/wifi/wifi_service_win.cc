@@ -326,6 +326,10 @@ class WiFiServiceImpl : public WiFiService {
   // Deduce |onc::wifi| security from |alg|.
   std::string SecurityFromDot11AuthAlg(DOT11_AUTH_ALGORITHM alg) const;
 
+  // Deduce |onc::connection_state| from |wlan_state|.
+  std::string ConnectionStateFromInterfaceState(
+      WLAN_INTERFACE_STATE wlan_state) const;
+
   // Convert |EncryptionType| into WPA(2) encryption type string.
   std::string WpaEncryptionFromEncryptionType(
       EncryptionType encryption_type) const;
@@ -337,18 +341,23 @@ class WiFiServiceImpl : public WiFiService {
                                   std::string* encryption,
                                   std::string* key_type) const;
 
-  // Populate |properties| based on |wlan| and its corresponding bss info from
-  // |wlan_bss_list|.
+  // Populate |properties| based on |wlan|.
   void NetworkPropertiesFromAvailableNetwork(const WLAN_AVAILABLE_NETWORK& wlan,
-                                             const WLAN_BSS_LIST& wlan_bss_list,
                                              NetworkProperties* properties);
+
+  // Update |properties| based on bss info from |wlan_bss_list|. If |bssid| in
+  // |properties| is not empty, then it is not changed and |frequency| is set
+  // based on that bssid.
+  void UpdateNetworkPropertiesFromBssList(const std::string& network_guid,
+                                          const WLAN_BSS_LIST& wlan_bss_list,
+                                          NetworkProperties* properties);
 
   // Get the list of visible wireless networks.
   DWORD GetVisibleNetworkList(NetworkList* network_list);
 
-  // Find currently connected network if any. Populate |connected_network_guid|
+  // Find currently connected network if any. Populate |connected_properties|
   // on success.
-  DWORD FindConnectedNetwork(std::string* connected_network_guid);
+  DWORD GetConnectedProperties(NetworkProperties* connected_properties);
 
   // Connect to network |network_guid| using previosly stored profile if exists,
   // or just network sid. If |frequency| is not |kFrequencyUnknown| then
@@ -358,10 +367,6 @@ class WiFiServiceImpl : public WiFiService {
 
   // Disconnect from currently connected network if any.
   DWORD Disconnect();
-
-  // Get Frequency of currently connected network |network_guid|. If network is
-  // not connected, then return |kFrequencyUnknown|.
-  Frequency GetConnectedFrequency(const std::string& network_guid);
 
   // Get desired connection freqency if it was set using |SetProperties|.
   // Default to |kFrequencyAny|.
@@ -506,20 +511,28 @@ void WiFiServiceImpl::GetProperties(const std::string& network_guid,
                                     base::DictionaryValue* properties,
                                     std::string* error) {
   DWORD error_code = EnsureInitialized();
+  if (CheckError(error_code, kWiFiServiceError, error))
+    return;
+
+  NetworkProperties connected_properties;
+  error_code = GetConnectedProperties(&connected_properties);
+  if (error_code == ERROR_SUCCESS &&
+      connected_properties.guid == network_guid) {
+    properties->Swap(connected_properties.ToValue(false).get());
+    return;
+  }
+
+  NetworkList network_list;
+  error_code = GetVisibleNetworkList(&network_list);
   if (error_code == ERROR_SUCCESS) {
-    NetworkList network_list;
-    error_code = GetVisibleNetworkList(&network_list);
-    if (error_code == ERROR_SUCCESS && !network_list.empty()) {
-      NetworkList::const_iterator it = FindNetwork(network_list, network_guid);
-      if (it != network_list.end()) {
-        DVLOG(1) << "Get Properties: " << network_guid << ":"
-                   << it->connection_state;
-        properties->Swap(it->ToValue(false).get());
-        return;
-      } else {
-        error_code = ERROR_NOT_FOUND;
-      }
+    NetworkList::const_iterator it = FindNetwork(network_list, network_guid);
+    if (it != network_list.end()) {
+      DVLOG(1) << "Get Properties: " << network_guid << ":"
+                  << it->connection_state;
+      properties->Swap(it->ToValue(false).get());
+      return;
     }
+    error_code = ERROR_NOT_FOUND;
   }
 
   CheckError(error_code, kWiFiServiceError, error);
@@ -656,8 +669,11 @@ void WiFiServiceImpl::StartConnect(const std::string& network_guid,
       bool already_connected = (network_guid == connected_network_guid);
       Frequency frequency = GetFrequencyToConnect(network_guid);
       if (already_connected && frequency != kFrequencyAny) {
-        Frequency connected_frequency = GetConnectedFrequency(network_guid);
-        already_connected = (frequency == connected_frequency);
+        NetworkProperties connected_properties;
+        if (GetConnectedProperties(&connected_properties) == ERROR_SUCCESS) {
+          already_connected = frequency == connected_properties.frequency &&
+                              network_guid == connected_properties.guid;
+        }
       }
       // Connect only if network |network_guid| is not connected already.
       if (!already_connected)
@@ -878,9 +894,11 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     RestoreNwCategoryWizard();
     return;
   }
-  std::string connected_network_guid;
-  DWORD error = FindConnectedNetwork(&connected_network_guid);
-  if (network_guid == connected_network_guid) {
+  NetworkProperties connected_network_properties;
+  DWORD error = GetConnectedProperties(&connected_network_properties);
+  if (network_guid == connected_network_properties.guid &&
+      connected_network_properties.connection_state ==
+      onc::connection_state::kConnected) {
     DVLOG(1) << "WiFi Connected, Reset DHCP: " << network_guid;
     // Even though wireless network is now connected, it may still be unusable,
     // e.g. after Chromecast device reset. Reset DHCP on wireless network to
@@ -929,15 +947,15 @@ WiFiService::NetworkList::iterator WiFiServiceImpl::FindNetwork(
 DWORD WiFiServiceImpl::SaveCurrentConnectedNetwork(
     std::string* connected_network_guid) {
   // Find currently connected network.
-  DWORD error = FindConnectedNetwork(connected_network_guid);
-  if (error == ERROR_SUCCESS && !connected_network_guid->empty()) {
+  NetworkProperties connected_network_properties;
+  DWORD error = GetConnectedProperties(&connected_network_properties);
+  if (error == ERROR_SUCCESS && !connected_network_properties.guid.empty()) {
+    *connected_network_guid = connected_network_properties.guid;
+    SaveTempProfile(*connected_network_guid);
+    std::string profile_xml;
+    error = GetProfile(*connected_network_guid, false, &profile_xml);
     if (error == ERROR_SUCCESS) {
-      SaveTempProfile(*connected_network_guid);
-      std::string profile_xml;
-      error = GetProfile(*connected_network_guid, false, &profile_xml);
-      if (error == ERROR_SUCCESS) {
-        saved_profiles_xml_[*connected_network_guid] = profile_xml;
-      }
+      saved_profiles_xml_[*connected_network_guid] = profile_xml;
     }
   }
   return error;
@@ -1232,10 +1250,27 @@ std::string WiFiServiceImpl::SecurityFromDot11AuthAlg(
   }
 }
 
+std::string WiFiServiceImpl::ConnectionStateFromInterfaceState(
+    WLAN_INTERFACE_STATE wlan_state) const {
+  switch (wlan_state) {
+    case wlan_interface_state_connected:
+      // TODO(mef): Even if |wlan_state| is connected, the network may still
+      // not be reachable, and should be resported as |kConnecting|.
+      return onc::connection_state::kConnected;
+    case wlan_interface_state_associating:
+    case wlan_interface_state_discovering:
+    case wlan_interface_state_authenticating:
+      return onc::connection_state::kConnecting;
+    default:
+      return onc::connection_state::kNotConnected;
+  }
+}
+
 void WiFiServiceImpl::NetworkPropertiesFromAvailableNetwork(
     const WLAN_AVAILABLE_NETWORK& wlan,
-    const WLAN_BSS_LIST& wlan_bss_list,
     NetworkProperties* properties) {
+  // TODO(mef): It would be nice for the connection states in
+  // getVisibleNetworks and getProperties results to be consistent.
   if (wlan.dwFlags & WLAN_AVAILABLE_NETWORK_CONNECTED) {
     properties->connection_state = onc::connection_state::kConnected;
   } else {
@@ -1246,23 +1281,36 @@ void WiFiServiceImpl::NetworkPropertiesFromAvailableNetwork(
   properties->name = properties->ssid;
   properties->guid = GUIDFromWLAN(wlan);
   properties->type = onc::network_type::kWiFi;
-
-  for (size_t bss = 0; bss < wlan_bss_list.dwNumberOfItems; ++bss) {
-    const WLAN_BSS_ENTRY& bss_entry(wlan_bss_list.wlanBssEntries[bss]);
-    if (bss_entry.dot11Ssid.uSSIDLength == wlan.dot11Ssid.uSSIDLength &&
-        0 == memcmp(bss_entry.dot11Ssid.ucSSID,
-                    wlan.dot11Ssid.ucSSID,
-                    bss_entry.dot11Ssid.uSSIDLength)) {
-      properties->frequency = GetNormalizedFrequency(
-          bss_entry.ulChCenterFrequency / 1000);
-      properties->frequency_set.insert(properties->frequency);
-      properties->bssid = NetworkProperties::MacAddressAsString(
-          bss_entry.dot11Bssid);
-    }
-  }
   properties->security =
       SecurityFromDot11AuthAlg(wlan.dot11DefaultAuthAlgorithm);
   properties->signal_strength = wlan.wlanSignalQuality;
+}
+
+void WiFiServiceImpl::UpdateNetworkPropertiesFromBssList(
+    const std::string& network_guid,
+    const WLAN_BSS_LIST& wlan_bss_list,
+    NetworkProperties* properties) {
+  if (network_guid.empty())
+    return;
+
+  DOT11_SSID ssid = SSIDFromGUID(network_guid);
+  for (size_t bss = 0; bss < wlan_bss_list.dwNumberOfItems; ++bss) {
+    const WLAN_BSS_ENTRY& bss_entry(wlan_bss_list.wlanBssEntries[bss]);
+    if (bss_entry.dot11Ssid.uSSIDLength == ssid.uSSIDLength &&
+        0 == memcmp(bss_entry.dot11Ssid.ucSSID,
+                    ssid.ucSSID,
+                    bss_entry.dot11Ssid.uSSIDLength)) {
+      std::string bssid = NetworkProperties::MacAddressAsString(
+          bss_entry.dot11Bssid);
+      Frequency frequency = GetNormalizedFrequency(
+          bss_entry.ulChCenterFrequency / 1000);
+      properties->frequency_set.insert(frequency);
+      if (properties->bssid.empty() || properties->bssid == bssid) {
+        properties->frequency = frequency;
+        properties->bssid = bssid;
+      }
+    }
+  }
 }
 
 // Get the list of visible wireless networks
@@ -1303,8 +1351,10 @@ DWORD WiFiServiceImpl::GetVisibleNetworkList(NetworkList* network_list) {
         NetworkProperties network_properties;
         NetworkPropertiesFromAvailableNetwork(
             available_network_list->Network[i],
-            *bss_list,
             &network_properties);
+        UpdateNetworkPropertiesFromBssList(network_properties.guid,
+                                           *bss_list,
+                                           &network_properties);
         // Check for duplicate network guids.
         if (network_guids.count(network_properties.guid)) {
           // There should be no difference between properties except for
@@ -1335,49 +1385,17 @@ DWORD WiFiServiceImpl::GetVisibleNetworkList(NetworkList* network_list) {
   return error;
 }
 
-// Find currently connected network.
-DWORD WiFiServiceImpl::FindConnectedNetwork(
-    std::string* connected_network_guid) {
+DWORD WiFiServiceImpl::GetConnectedProperties(NetworkProperties* properties) {
   if (client_ == NULL) {
     NOTREACHED();
     return ERROR_NOINTERFACE;
-  }
-
-  DWORD error = ERROR_SUCCESS;
-  PWLAN_AVAILABLE_NETWORK_LIST available_network_list = NULL;
-  error = WlanGetAvailableNetworkList_function_(
-      client_, &interface_guid_, 0, NULL, &available_network_list);
-
-  if (error == ERROR_SUCCESS && NULL != available_network_list) {
-    for (DWORD i = 0; i < available_network_list->dwNumberOfItems; ++i) {
-      const WLAN_AVAILABLE_NETWORK& wlan = available_network_list->Network[i];
-      if (wlan.dwFlags & WLAN_AVAILABLE_NETWORK_CONNECTED) {
-        *connected_network_guid = GUIDFromWLAN(wlan);
-        break;
-      }
-    }
-  }
-
-  // Clean up.
-  if (available_network_list != NULL) {
-    WlanFreeMemory_function_(available_network_list);
-  }
-
-  return error;
-}
-
-WiFiService::Frequency WiFiServiceImpl::GetConnectedFrequency(
-    const std::string& network_guid) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return kFrequencyUnknown;
   }
 
   // TODO(mef): WlanGetNetworkBssList is not available on XP. If XP support is
   // needed, then different method of getting BSS (e.g. OID query) will have
   // to be used.
   if (WlanGetNetworkBssList_function_ == NULL)
-    return kFrequencyUnknown;
+    return ERROR_NOINTERFACE;
 
   Frequency frequency = kFrequencyUnknown;
   DWORD error = ERROR_SUCCESS;
@@ -1393,44 +1411,45 @@ WiFiService::Frequency WiFiServiceImpl::GetConnectedFrequency(
       reinterpret_cast<PVOID*>(&wlan_connection_attributes),
       NULL);
   if (error == ERROR_SUCCESS &&
-      wlan_connection_attributes != NULL &&
-      wlan_connection_attributes->isState == wlan_interface_state_connected) {
+      wlan_connection_attributes != NULL) {
     WLAN_ASSOCIATION_ATTRIBUTES& connected_wlan =
         wlan_connection_attributes->wlanAssociationAttributes;
-    // Try to find connected frequency based on bss.
-    if (GUIDFromSSID(connected_wlan.dot11Ssid) == network_guid &&
-        WlanGetNetworkBssList_function_ != NULL) {
-      error = WlanGetNetworkBssList_function_(client_,
-                                              &interface_guid_,
-                                              &connected_wlan.dot11Ssid,
-                                              connected_wlan.dot11BssType,
-                                              FALSE,
-                                              NULL,
-                                              &bss_list);
-      if (error == ERROR_SUCCESS && NULL != bss_list) {
-        // Go through bss_list and find matching BSSID.
-        for (size_t bss = 0; bss < bss_list->dwNumberOfItems; ++bss) {
-          const WLAN_BSS_ENTRY& bss_entry(bss_list->wlanBssEntries[bss]);
-          if (0 == memcmp(bss_entry.dot11Bssid,
-                          connected_wlan.dot11Bssid,
-                          sizeof(bss_entry.dot11Bssid))) {
-            frequency = GetNormalizedFrequency(
-                bss_entry.ulChCenterFrequency / 1000);
-            break;
-          }
-        }
-      }
+
+    properties->connection_state = ConnectionStateFromInterfaceState(
+        wlan_connection_attributes->isState);
+    properties->ssid = GUIDFromSSID(connected_wlan.dot11Ssid);
+    properties->name = properties->ssid;
+    properties->guid = GUIDFromSSID(connected_wlan.dot11Ssid);
+    properties->type = onc::network_type::kWiFi;
+    properties->bssid = NetworkProperties::MacAddressAsString(
+        connected_wlan.dot11Bssid);
+    properties->security = SecurityFromDot11AuthAlg(
+        wlan_connection_attributes->wlanSecurityAttributes.dot11AuthAlgorithm);
+    properties->signal_strength = connected_wlan.wlanSignalQuality;
+
+    // TODO(mef): WlanGetNetworkBssList is not available on XP. If XP support is
+    // needed, then different method of getting BSS (e.g. OID query) will have
+    // to be used.
+    error = WlanGetNetworkBssList_function_(client_,
+                                            &interface_guid_,
+                                            &connected_wlan.dot11Ssid,
+                                            connected_wlan.dot11BssType,
+                                            FALSE,
+                                            NULL,
+                                            &bss_list);
+    if (error == ERROR_SUCCESS && NULL != bss_list) {
+      UpdateNetworkPropertiesFromBssList(properties->guid,
+                                         *bss_list,
+                                         properties);
     }
   }
 
   // Clean up.
-  if (wlan_connection_attributes != NULL) {
+  if (wlan_connection_attributes != NULL)
     WlanFreeMemory_function_(wlan_connection_attributes);
-  }
 
-  if (bss_list != NULL) {
+  if (bss_list != NULL)
     WlanFreeMemory_function_(bss_list);
-  }
 
   return frequency;
 }
