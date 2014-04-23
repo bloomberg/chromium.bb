@@ -8,11 +8,10 @@
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_node.h"
 
 class BookmarkIndex;
 class BookmarkModel;
-class BookmarkPermanentNode;
 
 namespace base {
 class SequencedTaskRunner;

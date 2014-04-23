@@ -11,10 +11,9 @@
 #include "base/basictypes.h"
 #include "base/md5.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_node.h"
 
 class BookmarkModel;
-class BookmarkNode;
 
 namespace base {
 class DictionaryValue;
