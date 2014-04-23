@@ -58,7 +58,7 @@ VTTRegion* VTTRegionList::getRegionById(const String& id) const
     return 0;
 }
 
-void VTTRegionList::add(PassRefPtr<VTTRegion> region)
+void VTTRegionList::add(PassRefPtrWillBeRawPtr<VTTRegion> region)
 {
     m_list.append(region);
 }
@@ -73,9 +73,9 @@ bool VTTRegionList::remove(VTTRegion* region)
     return true;
 }
 
-void VTTRegionList::clear()
+void VTTRegionList::trace(Visitor* visitor)
 {
-    m_list.clear();
+    visitor->trace(m_list);
 }
 
 } // namespace WebCore

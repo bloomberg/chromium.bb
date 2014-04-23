@@ -89,7 +89,7 @@ public:
     bool get(const String&, RefPtr<ArrayBufferView>&) const;
     bool get(const String&, RefPtr<MIDIPort>&) const;
     bool get(const String&, RefPtr<MediaKeyError>&) const;
-    bool get(const String&, RefPtr<TrackBase>&) const;
+    bool get(const String&, RefPtrWillBeMember<TrackBase>&) const;
     bool get(const String&, RefPtrWillBeMember<SpeechRecognitionError>&) const;
     bool get(const String&, RefPtrWillBeMember<SpeechRecognitionResult>&) const;
     bool get(const String&, RefPtrWillBeMember<SpeechRecognitionResultList>&) const;

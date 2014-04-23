@@ -27,6 +27,7 @@
 #define InbandTextTrack_h
 
 #include "core/html/track/TextTrack.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebInbandTextTrackClient.h"
 #include "wtf/RefPtr.h"
 
@@ -43,7 +44,7 @@ class TextTrackCue;
 
 class InbandTextTrack FINAL : public TextTrack, public blink::WebInbandTextTrackClient {
 public:
-    static PassRefPtr<InbandTextTrack> create(Document&, blink::WebInbandTextTrack*);
+    static PassRefPtrWillBeRawPtr<InbandTextTrack> create(Document&, blink::WebInbandTextTrack*);
     virtual ~InbandTextTrack();
 
     size_t inbandTrackIndex();

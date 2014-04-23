@@ -35,6 +35,7 @@
 #include "core/html/track/TextTrack.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -45,11 +46,11 @@ class HTMLDivElement;
 class VTTCueBox;
 class VTTScanner;
 
-class VTTRegion : public RefCounted<VTTRegion> {
+class VTTRegion FINAL : public RefCountedWillBeGarbageCollectedFinalized<VTTRegion> {
 public:
-    static PassRefPtr<VTTRegion> create()
+    static PassRefPtrWillBeRawPtr<VTTRegion> create()
     {
-        return adoptRef(new VTTRegion());
+        return adoptRefWillBeNoop(new VTTRegion());
     }
 
     virtual ~VTTRegion();
@@ -94,6 +95,8 @@ public:
     void displayLastVTTCueBox();
     void willRemoveVTTCueBox(VTTCueBox*);
 
+    void trace(Visitor*);
+
 private:
     VTTRegion();
 
@@ -137,7 +140,7 @@ private:
     // reference a destroyed TextTrack, as this member variable
     // is cleared in the TextTrack destructor and it is generally
     // set/reset within the addRegion and removeRegion methods.
-    TextTrack* m_track;
+    RawPtrWillBeMember<TextTrack> m_track;
 
     // Keep track of the current numeric value of the css "top" property.
     double m_currentTop;

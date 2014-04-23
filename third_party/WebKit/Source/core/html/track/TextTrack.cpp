@@ -99,8 +99,7 @@ TextTrack::TextTrack(Document& document, const AtomicString& kind, const AtomicS
     : TrackBase(TrackBase::TextTrack, label, language, id)
     , m_cues(nullptr)
     , m_regions(nullptr)
-    , m_document(&document)
-    , m_trackList(0)
+    , m_trackList(nullptr)
     , m_mode(disabledKeyword())
     , m_trackType(type)
     , m_readinessState(NotLoaded)
@@ -114,17 +113,18 @@ TextTrack::TextTrack(Document& document, const AtomicString& kind, const AtomicS
 
 TextTrack::~TextTrack()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!m_trackList);
 
     if (m_cues) {
         for (size_t i = 0; i < m_cues->length(); ++i)
             m_cues->item(i)->setTrack(0);
     }
-
     if (m_regions) {
         for (size_t i = 0; i < m_regions->length(); ++i)
             m_regions->item(i)->setTrack(0);
     }
+#endif
 }
 
 bool TextTrack::isValidKindKeyword(const AtomicString& value)
@@ -224,12 +224,12 @@ TextTrackCueList* TextTrack::activeCues() const
     return 0;
 }
 
-void TextTrack::addCue(PassRefPtr<TextTrackCue> prpCue)
+void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
 {
     if (!prpCue)
         return;
 
-    RefPtr<TextTrackCue> cue = prpCue;
+    RefPtrWillBeRawPtr<TextTrackCue> cue = prpCue;
 
     // TODO(93143): Add spec-compliant behavior for negative time values.
     if (std::isnan(cue->startTime()) || std::isnan(cue->endTime()) || cue->startTime() < 0 || cue->endTime() < 0)
@@ -301,12 +301,12 @@ VTTRegionList* TextTrack::regions()
     return 0;
 }
 
-void TextTrack::addRegion(PassRefPtr<VTTRegion> prpRegion)
+void TextTrack::addRegion(PassRefPtrWillBeRawPtr<VTTRegion> prpRegion)
 {
     if (!prpRegion)
         return;
 
-    RefPtr<VTTRegion> region = prpRegion;
+    RefPtrWillBeRawPtr<VTTRegion> region = prpRegion;
     VTTRegionList* regionList = ensureVTTRegionList();
 
     // 1. If the given region is in a text track list of regions, then remove
@@ -425,7 +425,8 @@ const AtomicString& TextTrack::interfaceName() const
 
 ExecutionContext* TextTrack::executionContext() const
 {
-    return m_document;
+    HTMLMediaElement* owner = mediaElement();
+    return owner ? owner->executionContext() : 0;
 }
 
 HTMLMediaElement* TextTrack::mediaElement() const
@@ -436,6 +437,14 @@ HTMLMediaElement* TextTrack::mediaElement() const
 Node* TextTrack::owner() const
 {
     return mediaElement();
+}
+
+void TextTrack::trace(Visitor* visitor)
+{
+    visitor->trace(m_cues);
+    visitor->trace(m_regions);
+    visitor->trace(m_trackList);
+    TrackBase::trace(visitor);
 }
 
 } // namespace WebCore

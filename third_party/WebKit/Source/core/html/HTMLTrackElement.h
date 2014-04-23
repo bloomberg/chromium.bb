@@ -29,6 +29,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/track/LoadableTextTrack.h"
 #include "core/html/track/TextTrack.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -54,6 +55,8 @@ public:
 
     const AtomicString& mediaElementCrossOriginAttribute() const;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit HTMLTrackElement(Document&);
     virtual ~HTMLTrackElement();
@@ -72,7 +75,7 @@ private:
     LoadableTextTrack* ensureTrack();
     bool canLoadUrl(const KURL&);
 
-    RefPtr<LoadableTextTrack> m_track;
+    RefPtrWillBeMember<LoadableTextTrack> m_track;
     Timer<HTMLTrackElement> m_loadTimer;
 };
 

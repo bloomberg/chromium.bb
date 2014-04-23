@@ -67,14 +67,14 @@ TextTrackCueList* TextTrackCueList::activeCues()
 
     m_activeCues->clear();
     for (size_t i = 0; i < m_list.size(); ++i) {
-        RefPtr<TextTrackCue> cue = m_list[i];
+        RefPtrWillBeRawPtr<TextTrackCue> cue = m_list[i];
         if (cue->isActive())
             m_activeCues->add(cue);
     }
     return m_activeCues.get();
 }
 
-bool TextTrackCueList::add(PassRefPtr<TextTrackCue> cue)
+bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
 {
     ASSERT(cue->startTime() >= 0);
     ASSERT(cue->endTime() >= 0);
@@ -82,14 +82,14 @@ bool TextTrackCueList::add(PassRefPtr<TextTrackCue> cue)
     return add(cue, 0, m_list.size());
 }
 
-bool TextTrackCueList::add(PassRefPtr<TextTrackCue> prpCue, size_t start, size_t end)
+bool TextTrackCueList::add(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue, size_t start, size_t end)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(start <= m_list.size());
     ASSERT_WITH_SECURITY_IMPLICATION(end <= m_list.size());
 
     // Maintain text track cue order:
     // http://www.whatwg.org/specs/web-apps/current-work/#text-track-cue-order
-    RefPtr<TextTrackCue> cue = prpCue;
+    RefPtrWillBeRawPtr<TextTrackCue> cue = prpCue;
     if (start == end) {
         if (!m_list.isEmpty() && (start > 0) && (m_list[start - 1].get() == cue.get()))
             return false;
@@ -140,6 +140,12 @@ void TextTrackCueList::invalidateCueIndexes(size_t start)
 {
     for (size_t i = start; i < m_list.size(); ++i)
         m_list[i]->invalidateCueIndex();
+}
+
+void TextTrackCueList::trace(Visitor* visitor)
+{
+    visitor->trace(m_list);
+    visitor->trace(m_activeCues);
 }
 
 } // namespace WebCore

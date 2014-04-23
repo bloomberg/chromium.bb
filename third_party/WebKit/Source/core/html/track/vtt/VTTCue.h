@@ -32,6 +32,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/track/TextTrackCue.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -55,14 +56,17 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
+    // FIXME: Oilpan: once Node has been moved onto the heap fully,
+    // drop the raw pointer for a Member (and vice versa from
+    // VTTCue.)
     VTTCue* m_cue;
 };
 
 class VTTCue FINAL : public TextTrackCue, public ScriptWrappable {
 public:
-    static PassRefPtr<VTTCue> create(Document& document, double startTime, double endTime, const String& text)
+    static PassRefPtrWillBeRawPtr<VTTCue> create(Document& document, double startTime, double endTime, const String& text)
     {
-        return adoptRef(new VTTCue(document, startTime, endTime, text));
+        return adoptRefWillBeRefCountedGarbageCollected(new VTTCue(document, startTime, endTime, text));
     }
 
     virtual ~VTTCue();
@@ -136,6 +140,8 @@ public:
 #ifndef NDEBUG
     virtual String toString() const OVERRIDE;
 #endif
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     VTTCue(Document&, double startTime, double endTime, const String& text);

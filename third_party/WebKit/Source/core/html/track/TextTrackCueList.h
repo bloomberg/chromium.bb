@@ -34,11 +34,11 @@
 
 namespace WebCore {
 
-class TextTrackCueList : public RefCounted<TextTrackCueList>, public ScriptWrappable {
+class TextTrackCueList FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextTrackCueList>, public ScriptWrappable {
 public:
-    static PassRefPtr<TextTrackCueList> create()
+    static PassRefPtrWillBeRawPtr<TextTrackCueList> create()
     {
-        return adoptRef(new TextTrackCueList);
+        return adoptRefWillBeNoop(new TextTrackCueList);
     }
 
     ~TextTrackCueList() { }
@@ -50,20 +50,22 @@ public:
     TextTrackCue* getCueById(const AtomicString&) const;
     TextTrackCueList* activeCues();
 
-    bool add(PassRefPtr<TextTrackCue>);
+    bool add(PassRefPtrWillBeRawPtr<TextTrackCue>);
     bool remove(TextTrackCue*);
     bool contains(TextTrackCue*) const;
 
     bool updateCueIndex(TextTrackCue*);
 
+    void trace(Visitor*);
+
 private:
     TextTrackCueList();
-    bool add(PassRefPtr<TextTrackCue>, size_t, size_t);
+    bool add(PassRefPtrWillBeRawPtr<TextTrackCue>, size_t, size_t);
     void clear();
     void invalidateCueIndexes(size_t);
 
-    Vector<RefPtr<TextTrackCue> > m_list;
-    RefPtr<TextTrackCueList> m_activeCues;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue> > m_list;
+    RefPtrWillBeMember<TextTrackCueList> m_activeCues;
 
 };
 

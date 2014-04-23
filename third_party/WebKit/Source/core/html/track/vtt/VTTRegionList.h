@@ -33,28 +33,27 @@
 
 namespace WebCore {
 
-class VTTRegionList : public RefCounted<VTTRegionList> {
+class VTTRegionList FINAL : public RefCountedWillBeGarbageCollected<VTTRegionList> {
 public:
-    static PassRefPtr<VTTRegionList> create()
+    static PassRefPtrWillBeRawPtr<VTTRegionList> create()
     {
-        return adoptRef(new VTTRegionList());
+        return adoptRefWillBeNoop(new VTTRegionList());
     }
-
-    ~VTTRegionList() { }
 
     unsigned long length() const;
 
     VTTRegion* item(unsigned index) const;
     VTTRegion* getRegionById(const String&) const;
 
-    void add(PassRefPtr<VTTRegion>);
+    void add(PassRefPtrWillBeRawPtr<VTTRegion>);
     bool remove(VTTRegion*);
+
+    void trace(Visitor*);
 
 private:
     VTTRegionList();
-    void clear();
 
-    Vector<RefPtr<VTTRegion> > m_list;
+    WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > m_list;
 };
 
 } // namespace WebCore

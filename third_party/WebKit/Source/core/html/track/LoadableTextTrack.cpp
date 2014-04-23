@@ -46,13 +46,17 @@ LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
 
 LoadableTextTrack::~LoadableTextTrack()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!m_trackElement);
+#endif
 }
 
+#if !ENABLE(OILPAN)
 void LoadableTextTrack::clearTrackElement()
 {
-    m_trackElement = 0;
+    m_trackElement = nullptr;
 }
+#endif
 
 void LoadableTextTrack::setMode(const AtomicString& mode)
 {
@@ -111,7 +115,7 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
-    Vector<RefPtr<VTTCue> > newCues;
+    WillBeHeapVector<RefPtrWillBeMember<VTTCue> > newCues;
     m_loader->getNewCues(newCues);
 
     if (!m_cues)
@@ -119,7 +123,7 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
 
     for (size_t i = 0; i < newCues.size(); ++i) {
         newCues[i]->setTrack(this);
-        m_cues->add(newCues[i]);
+        m_cues->add(newCues[i].release());
     }
 
     if (mediaElement())
@@ -140,7 +144,7 @@ void LoadableTextTrack::newRegionsAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
-    Vector<RefPtr<VTTRegion> > newRegions;
+    WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > newRegions;
     m_loader->getNewRegions(newRegions);
 
     for (size_t i = 0; i < newRegions.size(); ++i) {
@@ -165,6 +169,13 @@ size_t LoadableTextTrack::trackElementIndex()
     ASSERT_NOT_REACHED();
 
     return 0;
+}
+
+void LoadableTextTrack::trace(Visitor* visitor)
+{
+    visitor->trace(m_trackElement);
+    visitor->trace(m_loader);
+    TextTrack::trace(visitor);
 }
 
 } // namespace WebCore

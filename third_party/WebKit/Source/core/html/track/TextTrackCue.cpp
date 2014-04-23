@@ -55,7 +55,7 @@ TextTrackCue::TextTrackCue(double start, double end)
     : m_startTime(start)
     , m_endTime(end)
     , m_cueIndex(invalidCueIndex)
-    , m_track(0)
+    , m_track(nullptr)
     , m_isActive(false)
     , m_pauseOnExit(false)
 {
@@ -177,6 +177,11 @@ void TextTrackCue::setIsActive(bool active)
 const AtomicString& TextTrackCue::interfaceName() const
 {
     return EventTargetNames::TextTrackCue;
+}
+
+void TextTrackCue::trace(Visitor* visitor)
+{
+    visitor->trace(m_track);
 }
 
 } // namespace WebCore

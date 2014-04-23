@@ -26,12 +26,13 @@
 #ifndef TrackBase_h
 #define TrackBase_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class TrackBase : public RefCounted<TrackBase> {
+class TrackBase : public RefCountedWillBeRefCountedGarbageCollected<TrackBase> {
 public:
     virtual ~TrackBase();
 
@@ -49,6 +50,8 @@ public:
 
     AtomicString id() const { return m_id; }
     void setId(const AtomicString& id) { m_id = id; }
+
+    virtual void trace(Visitor*) { }
 
 protected:
     TrackBase(Type, const AtomicString& label, const AtomicString& language, const AtomicString& id);

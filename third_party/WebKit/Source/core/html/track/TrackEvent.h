@@ -34,7 +34,7 @@ namespace WebCore {
 struct TrackEventInit : public EventInit {
     TrackEventInit();
 
-    RefPtr<TrackBase> track;
+    RefPtrWillBeMember<TrackBase> track;
 };
 
 class TrackEvent FINAL : public Event {

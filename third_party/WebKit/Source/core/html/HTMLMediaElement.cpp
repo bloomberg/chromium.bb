@@ -306,8 +306,10 @@ HTMLMediaElement::~HTMLMediaElement()
 
     setShouldDelayLoadEvent(false);
 
+#if !ENABLE(OILPAN)
     if (m_textTracks)
         m_textTracks->clearOwner();
+#endif
 
     if (m_mediaController) {
         m_mediaController->removeMediaElement(this);
@@ -1261,7 +1263,7 @@ void HTMLMediaElement::textTrackRemoveCues(TextTrack*, const TextTrackCueList* c
         textTrackRemoveCue(cues->item(i)->track(), cues->item(i));
 }
 
-void HTMLMediaElement::textTrackAddCue(TextTrack* track, PassRefPtr<TextTrackCue> cue)
+void HTMLMediaElement::textTrackAddCue(TextTrack* track, PassRefPtrWillBeRawPtr<TextTrackCue> cue)
 {
     if (track->mode() == TextTrack::disabledKeyword())
         return;
@@ -1276,7 +1278,7 @@ void HTMLMediaElement::textTrackAddCue(TextTrack* track, PassRefPtr<TextTrackCue
     updateActiveTextTrackCues(currentTime());
 }
 
-void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue> cue)
+void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue> cue)
 {
     // Negative duration cues need to be treated in the interval tree as
     // zero-length cues.
@@ -2227,7 +2229,7 @@ void HTMLMediaElement::mediaPlayerDidAddTextTrack(WebInbandTextTrack* webTrack)
 {
     // 4.8.10.12.2 Sourcing in-band text tracks
     // 1. Associate the relevant data with a new text track and its corresponding new TextTrack object.
-    RefPtr<InbandTextTrack> textTrack = InbandTextTrack::create(document(), webTrack);
+    RefPtrWillBeRawPtr<InbandTextTrack> textTrack = InbandTextTrack::create(document(), webTrack);
 
     // 2. Set the new text track's kind, label, and language based on the semantics of the relevant data,
     // as defined by the relevant specification. If there is no label in that data, then the label must
@@ -2262,7 +2264,7 @@ void HTMLMediaElement::mediaPlayerDidRemoveTextTrack(WebInbandTextTrack* webTrac
 
     // This cast is safe because we created the InbandTextTrack with the WebInbandTextTrack
     // passed to mediaPlayerDidAddTextTrack.
-    RefPtr<InbandTextTrack> textTrack = static_cast<InbandTextTrack*>(webTrack->client());
+    RefPtrWillBeRawPtr<InbandTextTrack> textTrack = static_cast<InbandTextTrack*>(webTrack->client());
     if (!textTrack)
         return;
 
@@ -2299,7 +2301,7 @@ void HTMLMediaElement::forgetResourceSpecificTracks()
     }
 }
 
-PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState& exceptionState)
 {
     // 4.8.10.12.4 Text track API
     // The addTextTrack(kind, label, language) method of media elements, when invoked, must run the following steps:
@@ -2316,7 +2318,7 @@ PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, c
 
     // 5. Create a new text track corresponding to the new object, and set its text track kind to kind, its text
     // track label to label, its text track language to language...
-    RefPtr<TextTrack> textTrack = TextTrack::create(document(), kind, label, language);
+    RefPtrWillBeRawPtr<TextTrack> textTrack = TextTrack::create(document(), kind, label, language);
 
     // Note, due to side effects when changing track parameters, we have to
     // first append the track to the text track list.
@@ -2347,7 +2349,7 @@ void HTMLMediaElement::didAddTrackElement(HTMLTrackElement* trackElement)
     // When a track element's parent element changes and the new parent is a media element,
     // then the user agent must add the track element's corresponding text track to the
     // media element's list of text tracks ... [continues in TextTrackList::append]
-    RefPtr<TextTrack> textTrack = trackElement->track();
+    RefPtrWillBeRawPtr<TextTrack> textTrack = trackElement->track();
     if (!textTrack)
         return;
 
@@ -2369,7 +2371,7 @@ void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement)
     WTF_LOG(Media, "HTMLMediaElement::didRemoveTrackElement - 'src' is %s", urlForLoggingMedia(url).utf8().data());
 #endif
 
-    RefPtr<TextTrack> textTrack = trackElement->track();
+    RefPtrWillBeRawPtr<TextTrack> textTrack = trackElement->track();
     if (!textTrack)
         return;
 
@@ -2431,13 +2433,13 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
     Settings* settings = document().settings();
 
     // First, find the track in the group that should be enabled (if any).
-    Vector<RefPtr<TextTrack> > currentlyEnabledTracks;
-    RefPtr<TextTrack> trackToEnable;
-    RefPtr<TextTrack> defaultTrack;
-    RefPtr<TextTrack> fallbackTrack;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > currentlyEnabledTracks;
+    RefPtrWillBeRawPtr<TextTrack> trackToEnable = nullptr;
+    RefPtrWillBeRawPtr<TextTrack> defaultTrack = nullptr;
+    RefPtrWillBeRawPtr<TextTrack> fallbackTrack = nullptr;
     int highestTrackScore = 0;
     for (size_t i = 0; i < group.tracks.size(); ++i) {
-        RefPtr<TextTrack> textTrack = group.tracks[i];
+        RefPtrWillBeRawPtr<TextTrack> textTrack = group.tracks[i];
 
         if (m_processingPreferenceChange && textTrack->mode() == TextTrack::showingKeyword())
             currentlyEnabledTracks.append(textTrack);
@@ -2483,7 +2485,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 
     if (currentlyEnabledTracks.size()) {
         for (size_t i = 0; i < currentlyEnabledTracks.size(); ++i) {
-            RefPtr<TextTrack> textTrack = currentlyEnabledTracks[i];
+            RefPtrWillBeRawPtr<TextTrack> textTrack = currentlyEnabledTracks[i];
             if (textTrack != trackToEnable)
                 textTrack->setMode(TextTrack::disabledKeyword());
         }
@@ -2505,7 +2507,7 @@ void HTMLMediaElement::configureTextTracks()
         return;
 
     for (size_t i = 0; i < m_textTracks->length(); ++i) {
-        RefPtr<TextTrack> textTrack = m_textTracks->item(i);
+        RefPtrWillBeRawPtr<TextTrack> textTrack = m_textTracks->item(i);
         if (!textTrack)
             continue;
 
@@ -3394,7 +3396,7 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
     // captions and non-default tracks should be displayed based on language
     // preferences if the user has turned captions on).
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-        RefPtr<TextTrack> textTrack = m_textTracks->item(i);
+        RefPtrWillBeRawPtr<TextTrack> textTrack = m_textTracks->item(i);
         String kind = textTrack->kind();
 
         if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword())
@@ -3647,6 +3649,8 @@ bool HTMLMediaElement::isInteractiveContent() const
 
 void HTMLMediaElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_textTracks);
+    visitor->trace(m_textTracksWhenResourceSelectionBegan);
     Supplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
 }

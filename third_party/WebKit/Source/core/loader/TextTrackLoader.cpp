@@ -149,18 +149,23 @@ void TextTrackLoader::fileFailedToParse()
     cancelLoad();
 }
 
-void TextTrackLoader::getNewCues(Vector<RefPtr<VTTCue> >& outputCues)
+void TextTrackLoader::getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue> >& outputCues)
 {
     ASSERT(m_cueParser);
     if (m_cueParser)
         m_cueParser->getNewCues(outputCues);
 }
 
-void TextTrackLoader::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
+void TextTrackLoader::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion> >& outputRegions)
 {
     ASSERT(m_cueParser);
     if (m_cueParser)
         m_cueParser->getNewRegions(outputRegions);
+}
+
+void TextTrackLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_cueParser);
 }
 
 }

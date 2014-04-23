@@ -30,6 +30,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/track/TrackBase.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -45,11 +46,11 @@ class VTTRegion;
 class VTTRegionList;
 
 class TextTrack : public TrackBase, public ScriptWrappable, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(TrackBase);
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<TrackBase>);
 public:
-    static PassRefPtr<TextTrack> create(Document& document, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
+    static PassRefPtrWillBeRawPtr<TextTrack> create(Document& document, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {
-        return adoptRef(new TextTrack(document, kind, label, language, emptyAtom, AddTrack));
+        return adoptRefWillBeRefCountedGarbageCollected(new TextTrack(document, kind, label, language, emptyAtom, AddTrack));
     }
     virtual ~TextTrack();
 
@@ -82,11 +83,11 @@ public:
     HTMLMediaElement* mediaElement() const;
     Node* owner() const;
 
-    void addCue(PassRefPtr<TextTrackCue>);
+    void addCue(PassRefPtrWillBeRawPtr<TextTrackCue>);
     void removeCue(TextTrackCue*, ExceptionState&);
 
     VTTRegionList* regions();
-    void addRegion(PassRefPtr<VTTRegion>);
+    void addRegion(PassRefPtrWillBeRawPtr<VTTRegion>);
     void removeRegion(VTTRegion*, ExceptionState&);
 
     void cueWillChange(TextTrackCue*);
@@ -111,11 +112,11 @@ public:
 
     void removeAllCues();
 
-    Document& document() const { return *m_document; }
-
     // EventTarget methods
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     TextTrack(Document&, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
@@ -123,18 +124,15 @@ protected:
     virtual bool isValidKind(const AtomicString& kind) const OVERRIDE { return isValidKindKeyword(kind); }
     virtual AtomicString defaultKind() const OVERRIDE { return subtitlesKeyword(); }
 
-    RefPtr<TextTrackCueList> m_cues;
+    RefPtrWillBeMember<TextTrackCueList> m_cues;
 
 private:
     VTTRegionList* ensureVTTRegionList();
-    RefPtr<VTTRegionList> m_regions;
+    RefPtrWillBeMember<VTTRegionList> m_regions;
 
     TextTrackCueList* ensureTextTrackCueList();
 
-    // FIXME: Remove this pointer and get the Document from m_client
-    Document* m_document;
-
-    TextTrackList* m_trackList;
+    RawPtrWillBeMember<TextTrackList> m_trackList;
     AtomicString m_mode;
     TextTrackType m_trackType;
     ReadinessState m_readinessState;

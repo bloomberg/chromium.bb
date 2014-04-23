@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <script src=../media-file.js></script>
+        <script src=../video-test.js></script>
+        <script>
+            var tracks;
+
+            function handler()
+            {
+                consoleWrite("PASS (no crash)");
+            }
+
+            function start()
+            {
+                var video = document.createElement("video");
+
+                consoleWrite("** Register an event handler on video element's TextTrackList.");
+                tracks = video.textTracks;
+                tracks.onaddtrack = handler;
+
+                // Clear 'video' to bring about its release (non-Oilpan.)
+                video = null;
+                consoleWrite("<br>** Force garbage collection.");
+                gc();
+                consoleWrite("** Inspect and invoke the handler.");
+                testExpected("tracks.onaddtrack", handler);
+                tracks.onaddtrack();
+                consoleWrite("");
+                endTest();
+            }
+
+        </script>
+    </head>
+    <body onload="start()">
+        <p>Test that a detached TextTrackList can still be used without crashing.</p>
+    </body>
+</html>

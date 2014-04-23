@@ -26,6 +26,7 @@
 [
     Custom=ToV8,
     SetWrapperReferenceFrom=owner,
+    WillBeGarbageCollected,
 ] interface TextTrackCue : EventTarget {
     readonly attribute TextTrack track;
 

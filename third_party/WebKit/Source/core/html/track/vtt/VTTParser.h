@@ -39,6 +39,7 @@
 #include "core/html/track/vtt/VTTCue.h"
 #include "core/html/track/vtt/VTTRegion.h"
 #include "core/html/track/vtt/VTTTokenizer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -56,7 +57,7 @@ public:
     virtual void fileFailedToParse() = 0;
 };
 
-class VTTParser FINAL {
+class VTTParser FINAL : public NoBaseWillBeGarbageCollectedFinalized<VTTParser> {
 public:
     enum ParseState {
         Initial,
@@ -67,9 +68,9 @@ public:
         BadCue
     };
 
-    static PassOwnPtr<VTTParser> create(VTTParserClient* client, Document& document)
+    static PassOwnPtrWillBeRawPtr<VTTParser> create(VTTParserClient* client, Document& document)
     {
-        return adoptPtr(new VTTParser(client, document));
+        return adoptPtrWillBeNoop(new VTTParser(client, document));
     }
 
     static inline bool isRecognizedTag(const AtomicString& tagName)
@@ -105,8 +106,10 @@ public:
     void flush();
 
     // Transfers ownership of last parsed cues to caller.
-    void getNewCues(Vector<RefPtr<VTTCue> >&);
-    void getNewRegions(Vector<RefPtr<VTTRegion> >&);
+    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue> >&);
+    void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion> >&);
+
+    void trace(Visitor*);
 
 private:
     VTTParser(VTTParserClient*, Document&);
@@ -141,9 +144,9 @@ private:
 
     VTTParserClient* m_client;
 
-    Vector<RefPtr<VTTCue> > m_cuelist;
+    WillBeHeapVector<RefPtrWillBeMember<VTTCue> > m_cueList;
 
-    Vector<RefPtr<VTTRegion> > m_regionList;
+    WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > m_regionList;
 };
 
 } // namespace WebCore

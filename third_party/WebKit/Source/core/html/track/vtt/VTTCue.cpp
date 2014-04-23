@@ -1075,4 +1075,9 @@ Document& VTTCue::document() const
     return m_cueBackgroundBox->document();
 }
 
+void VTTCue::trace(Visitor* visitor)
+{
+    TextTrackCue::trace(visitor);
+}
+
 } // namespace WebCore

@@ -88,7 +88,7 @@ VTTRegion::VTTRegion()
     , m_regionAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY))
     , m_viewportAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY))
     , m_scroll(defaultScroll)
-    , m_track(0)
+    , m_track(nullptr)
     , m_currentTop(0)
     , m_scrollTimer(this, &VTTRegion::scrollTimerFired)
 {
@@ -469,6 +469,11 @@ void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
 
     stopTimer();
     displayLastVTTCueBox();
+}
+
+void VTTRegion::trace(Visitor* visitor)
+{
+    visitor->trace(m_track);
 }
 
 } // namespace WebCore

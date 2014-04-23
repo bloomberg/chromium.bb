@@ -31,6 +31,7 @@
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -40,12 +41,12 @@ namespace WebCore {
 class GenericEventQueue;
 class TextTrack;
 
-class TextTrackList FINAL : public RefCounted<TextTrackList>, public ScriptWrappable, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(TextTrackList);
+class TextTrackList FINAL : public RefCountedWillBeRefCountedGarbageCollected<TextTrackList>, public ScriptWrappable, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<TextTrackList>);
 public:
-    static PassRefPtr<TextTrackList> create(HTMLMediaElement* owner)
+    static PassRefPtrWillBeRawPtr<TextTrackList> create(HTMLMediaElement* owner)
     {
-        return adoptRef(new TextTrackList(owner));
+        return adoptRefWillBeRefCountedGarbageCollected(new TextTrackList(owner));
     }
     virtual ~TextTrackList();
 
@@ -56,7 +57,7 @@ public:
 
     TextTrack* item(unsigned index);
     TextTrack* getTrackById(const AtomicString& id);
-    void append(PassRefPtr<TextTrack>);
+    void append(PassRefPtrWillBeRawPtr<TextTrack>);
     void remove(TextTrack*);
 
     // EventTarget
@@ -67,29 +68,33 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
+#if !ENABLE(OILPAN)
     void clearOwner();
+#endif
     HTMLMediaElement* owner() const;
 
     void scheduleChangeEvent();
     void removeAllInbandTracks();
 
+    void trace(Visitor*);
+
 private:
     explicit TextTrackList(HTMLMediaElement*);
 
-    void scheduleTrackEvent(const AtomicString& eventName, PassRefPtr<TextTrack>);
+    void scheduleTrackEvent(const AtomicString& eventName, PassRefPtrWillBeRawPtr<TextTrack>);
 
-    void scheduleAddTrackEvent(PassRefPtr<TextTrack>);
-    void scheduleRemoveTrackEvent(PassRefPtr<TextTrack>);
+    void scheduleAddTrackEvent(PassRefPtrWillBeRawPtr<TextTrack>);
+    void scheduleRemoveTrackEvent(PassRefPtrWillBeRawPtr<TextTrack>);
 
     void invalidateTrackIndexesAfterTrack(TextTrack*);
 
-    HTMLMediaElement* m_owner;
+    RawPtrWillBeMember<HTMLMediaElement> m_owner;
 
     OwnPtr<GenericEventQueue> m_asyncEventQueue;
 
-    Vector<RefPtr<TextTrack> > m_addTrackTracks;
-    Vector<RefPtr<TextTrack> > m_elementTracks;
-    Vector<RefPtr<TextTrack> > m_inbandTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_addTrackTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_elementTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_inbandTracks;
 };
 
 } // namespace WebCore

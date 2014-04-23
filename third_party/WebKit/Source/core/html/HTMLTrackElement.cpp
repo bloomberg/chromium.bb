@@ -60,8 +60,10 @@ inline HTMLTrackElement::HTMLTrackElement(Document& document)
 
 HTMLTrackElement::~HTMLTrackElement()
 {
+#if !ENABLE(OILPAN)
     if (m_track)
         m_track->clearTrackElement();
+#endif
 }
 
 PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(Document& document)
@@ -270,6 +272,12 @@ HTMLMediaElement* HTMLTrackElement::mediaElement() const
     if (isHTMLMediaElement(parent))
         return toHTMLMediaElement(parent);
     return 0;
+}
+
+void HTMLTrackElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_track);
+    HTMLElement::trace(visitor);
 }
 
 }

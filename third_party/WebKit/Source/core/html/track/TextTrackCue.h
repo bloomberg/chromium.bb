@@ -34,14 +34,15 @@
 
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLDivElement.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class ExceptionState;
 
-class TextTrackCue : public RefCounted<TextTrackCue>, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(TextTrackCue);
+class TextTrackCue : public RefCountedWillBeRefCountedGarbageCollected<TextTrackCue>, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<TextTrackCue>);
 public:
     static bool isInfiniteOrNonNumber(double value, ExceptionState&);
 
@@ -96,6 +97,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
+    virtual void trace(Visitor*);
+
 protected:
     TextTrackCue(double start, double end);
 
@@ -108,7 +111,7 @@ private:
     double m_endTime;
     int m_cueIndex;
 
-    TextTrack* m_track;
+    RawPtrWillBeMember<TextTrack> m_track;
 
     bool m_isActive : 1;
     bool m_pauseOnExit : 1;

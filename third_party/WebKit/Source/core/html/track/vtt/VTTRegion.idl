@@ -25,7 +25,8 @@
 
 [
     Constructor,
-    RuntimeEnabled=WebVTTRegions
+    RuntimeEnabled=WebVTTRegions,
+    WillBeGarbageCollected,
 ] interface VTTRegion {
     readonly attribute TextTrack track;
 

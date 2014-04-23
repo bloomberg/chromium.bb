@@ -163,9 +163,9 @@ public:
     bool togglePlayStateWillPlay() const;
     void togglePlayState();
 
-    PassRefPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
-    PassRefPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, ExceptionState& exceptionState) { return addTextTrack(kind, label, emptyAtom, exceptionState); }
-    PassRefPtr<TextTrack> addTextTrack(const AtomicString& kind, ExceptionState& exceptionState) { return addTextTrack(kind, emptyAtom, emptyAtom, exceptionState); }
+    PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
+    PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, ExceptionState& exceptionState) { return addTextTrack(kind, label, emptyAtom, exceptionState); }
+    PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, ExceptionState& exceptionState) { return addTextTrack(kind, emptyAtom, emptyAtom, exceptionState); }
 
     TextTrackList* textTracks();
     CueList currentlyActiveCues() const { return m_currentlyActiveCues; }
@@ -186,10 +186,12 @@ public:
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
     virtual KURL mediaPlayerPosterURL() OVERRIDE { return KURL(); }
 
-    struct TrackGroup {
+    class TrackGroup {
+        STACK_ALLOCATED();
+    public:
         enum GroupKind { CaptionsAndSubtitles, Description, Chapter, Metadata, Other };
 
-        TrackGroup(GroupKind kind)
+        explicit TrackGroup(GroupKind kind)
             : visibleTrack(nullptr)
             , defaultTrack(nullptr)
             , kind(kind)
@@ -197,9 +199,9 @@ public:
         {
         }
 
-        Vector<RefPtr<TextTrack> > tracks;
-        RefPtr<TextTrack> visibleTrack;
-        RefPtr<TextTrack> defaultTrack;
+        WillBeHeapVector<RefPtrWillBeMember<TextTrack> > tracks;
+        RefPtrWillBeMember<TextTrack> visibleTrack;
+        RefPtrWillBeMember<TextTrack> defaultTrack;
         GroupKind kind;
         bool hasSrcLang;
     };
@@ -221,8 +223,8 @@ public:
     void textTrackModeChanged(TextTrack*);
     void textTrackAddCues(TextTrack*, const TextTrackCueList*);
     void textTrackRemoveCues(TextTrack*, const TextTrackCueList*);
-    void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>);
-    void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>);
+    void textTrackAddCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue>);
+    void textTrackRemoveCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue>);
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
@@ -502,8 +504,8 @@ private:
     bool m_processingPreferenceChange : 1;
     double m_lastTextTrackUpdateTime;
 
-    RefPtr<TextTrackList> m_textTracks;
-    Vector<RefPtr<TextTrack> > m_textTracksWhenResourceSelectionBegan;
+    RefPtrWillBeMember<TextTrackList> m_textTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_textTracksWhenResourceSelectionBegan;
 
     CueIntervalTree m_cueTree;
 

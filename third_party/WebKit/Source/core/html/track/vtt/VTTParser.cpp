@@ -89,13 +89,13 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
 {
 }
 
-void VTTParser::getNewCues(Vector<RefPtr<VTTCue> >& outputCues)
+void VTTParser::getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue> >& outputCues)
 {
-    outputCues = m_cuelist;
-    m_cuelist.clear();
+    outputCues = m_cueList;
+    m_cueList.clear();
 }
 
-void VTTParser::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
+void VTTParser::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion> >& outputRegions)
 {
     outputRegions = m_regionList;
     m_regionList.clear();
@@ -363,11 +363,11 @@ PassRefPtr<DocumentFragment> VTTParser::createDocumentFragmentFromCueText(Docume
 
 void VTTParser::createNewCue()
 {
-    RefPtr<VTTCue> cue = VTTCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
+    RefPtrWillBeRawPtr<VTTCue> cue = VTTCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
     cue->setId(m_currentId);
     cue->parseSettings(m_currentSettings);
 
-    m_cuelist.append(cue);
+    m_cueList.append(cue);
     if (m_client)
         m_client->newCuesParsed();
 }
@@ -387,7 +387,7 @@ void VTTParser::createNewRegion(const String& headerValue)
         return;
 
     // Steps 12.5.1 - 12.5.9 - Construct and initialize a WebVTT Region object.
-    RefPtr<VTTRegion> region = VTTRegion::create();
+    RefPtrWillBeRawPtr<VTTRegion> region = VTTRegion::create();
     region->setRegionSettings(headerValue);
 
     // Step 12.5.10 If the text track list of regions regions contains a region
@@ -557,5 +557,10 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
     }
 }
 
+void VTTParser::trace(Visitor* visitor)
+{
+    visitor->trace(m_cueList);
+    visitor->trace(m_regionList);
 }
 
+}
