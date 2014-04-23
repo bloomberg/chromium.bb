@@ -442,6 +442,7 @@ private:
     bool m_layoutSchedulingEnabled;
     bool m_inPerformLayout;
     bool m_canRepaintDuringPerformLayout;
+    bool m_doingPreLayoutStyleUpdate;
     bool m_inSynchronousPostLayout;
     int m_layoutCount;
     unsigned m_nestedLayoutCount;

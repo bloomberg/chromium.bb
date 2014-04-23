@@ -222,6 +222,7 @@ void FrameView::reset()
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
     m_canRepaintDuringPerformLayout = false;
+    m_doingPreLayoutStyleUpdate = false;
     m_inSynchronousPostLayout = false;
     m_layoutCount = 0;
     m_nestedLayoutCount = 0;
@@ -615,8 +616,17 @@ void FrameView::updateAcceleratedCompositingSettings()
 
 void FrameView::updateCompositingLayersAfterStyleChange()
 {
-    if (RenderView* renderView = this->renderView())
-        renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterStyleChange);
+    RenderView* renderView = this->renderView();
+    if (!renderView)
+        return;
+
+    // FIXME: These early returns are probably not necessary anymore now that we
+    // just set dirty bits below.
+    // If we expect to update compositing after an incipient layout, don't do so here.
+    if (m_doingPreLayoutStyleUpdate || layoutPending() || renderView->needsLayout())
+        return;
+
+    renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterStyleChange);
 }
 
 bool FrameView::usesCompositedScrolling() const
@@ -746,6 +756,9 @@ void FrameView::performPreLayoutTasks()
         document->evaluateMediaQueryList();
     }
 
+    // Always ensure our style info is up-to-date. This can happen in situations where
+    // the layout beats any sort of style recalc update that needs to occur.
+    TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
     document->updateRenderTreeIfNeeded();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 }
