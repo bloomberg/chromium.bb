@@ -1891,9 +1891,7 @@ void Document::updateRenderTreeForNodeIfNeeded(Node* node)
 {
     bool needsRecalc = needsFullRenderTreeUpdate();
 
-    // FIXME: This needs to walk the composed tree instead. Right now we'll return the wrong
-    // answer when the composed parent style is dirty, but our DOM ancestors are not.
-    for (const Node* ancestor = node; ancestor && !needsRecalc; ancestor = ancestor->parentOrShadowHostNode())
+    for (const Node* ancestor = node; ancestor && !needsRecalc; ancestor = NodeRenderingTraversal::parent(ancestor))
         needsRecalc = ancestor->needsStyleRecalc() || ancestor->needsStyleInvalidation();
 
     if (needsRecalc)
