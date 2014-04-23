@@ -13,18 +13,21 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/native_theme/native_theme.h"
@@ -35,9 +38,9 @@
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
-#include "ui/views/event_utils.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/view.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
@@ -56,6 +59,7 @@
 #include "ui/views/controls/menu/menu_event_dispatcher_linux.h"
 #endif
 
+using aura::client::ScreenPositionClient;
 using base::Time;
 using base::TimeDelta;
 using ui::OSExchangeData;
@@ -973,14 +977,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
 #if defined(OS_WIN)
     // We're going to close and we own the mouse capture. We need to repost the
     // mouse down, otherwise the window the user clicked on won't get the event.
-    if (!state_.item) {
-      // We some times get an event after closing all the menus. Ignore it. Make
-      // sure the menu is in fact not visible. If the menu is visible, then
-      // we're in a bad state where we think the menu isn't visibile but it is.
-      DCHECK(!source->GetWidget()->IsVisible());
-    } else {
-      RepostEvent(source, event);
-    }
+    RepostEvent(source, event);
 #endif
 
     // And close.
@@ -2145,52 +2142,106 @@ bool MenuController::SelectByChar(base::char16 character) {
 
 void MenuController::RepostEvent(SubmenuView* source,
                                  const ui::LocatedEvent& event) {
+  if (!event.IsMouseEvent()) {
+    // TODO(rbyers): Gesture event repost is tricky to get right
+    // crbug.com/170987.
+    DCHECK(event.IsGestureEvent());
+    return;
+  }
+
+#if defined(OS_WIN)
+  if (!state_.item) {
+    // We some times get an event after closing all the menus. Ignore it. Make
+    // sure the menu is in fact not visible. If the menu is visible, then
+    // we're in a bad state where we think the menu isn't visibile but it is.
+    DCHECK(!source->GetWidget()->IsVisible());
+    return;
+  }
+
+  state_.item->GetRootMenuItem()->GetSubmenu()->ReleaseCapture();
+#endif
+
   gfx::Point screen_loc(event.location());
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
-
   gfx::NativeView native_view = source->GetWidget()->GetNativeView();
+  if (!native_view)
+    return;
+
   gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
   gfx::NativeWindow window = screen->GetWindowAtScreenPoint(screen_loc);
 
-  // On Windows, it is ok for window to be NULL. Please refer to the
-  // RepostLocatedEvent function for more information.
 #if defined(OS_WIN)
-  // Release the capture.
-  SubmenuView* submenu = state_.item->GetRootMenuItem()->GetSubmenu();
-  submenu->ReleaseCapture();
-
-  gfx::NativeView view = submenu->GetWidget()->GetNativeView();
-  if (view && window) {
-    DWORD view_tid = GetWindowThreadProcessId(HWNDForNativeView(view), NULL);
-    if (view_tid != GetWindowThreadProcessId(HWNDForNativeView(window), NULL)) {
+  // PostMessage() to metro windows isn't allowed (access will be denied). Don't
+  // try to repost with Win32 if the window under the mouse press is in metro.
+  if (!ViewsDelegate::views_delegate ||
+      !ViewsDelegate::views_delegate->IsWindowInMetro(window)) {
+    HWND target_window = window ? HWNDForNativeWindow(window) :
+                                  WindowFromPoint(screen_loc.ToPOINT());
+    HWND source_window = HWNDForNativeView(native_view);
+    if (!target_window || !source_window ||
+        GetWindowThreadProcessId(source_window, NULL) !=
+        GetWindowThreadProcessId(target_window, NULL)) {
       // Even though we have mouse capture, windows generates a mouse event if
       // the other window is in a separate thread. Only repost an event if
-      // |view| was created on the same thread, else the target window can get
-      // double events leading to bad behavior.
+      // |target_window| and |source_window| were created on the same thread,
+      // else double events can occur and lead to bad behavior.
       return;
     }
+
+    // Determine whether the click was in the client area or not.
+    // NOTE: WM_NCHITTEST coordinates are relative to the screen.
+    LPARAM coords = MAKELPARAM(screen_loc.x(), screen_loc.y());
+    LRESULT nc_hit_result = SendMessage(target_window, WM_NCHITTEST, 0, coords);
+    const bool client_area = nc_hit_result == HTCLIENT;
+
+    // TODO(sky): this isn't right. The event to generate should correspond with
+    // the event we just got. MouseEvent only tells us what is down, which may
+    // differ. Need to add ability to get changed button from MouseEvent.
+    int event_type;
+    int flags = event.flags();
+    if (flags & ui::EF_LEFT_MOUSE_BUTTON) {
+      event_type = client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
+    } else if (flags & ui::EF_MIDDLE_MOUSE_BUTTON) {
+      event_type = client_area ? WM_MBUTTONDOWN : WM_NCMBUTTONDOWN;
+    } else if (flags & ui::EF_RIGHT_MOUSE_BUTTON) {
+      event_type = client_area ? WM_RBUTTONDOWN : WM_NCRBUTTONDOWN;
+    } else {
+      NOTREACHED();
+      return;
+    }
+
+    int window_x = screen_loc.x();
+    int window_y = screen_loc.y();
+    if (client_area) {
+      POINT pt = { window_x, window_y };
+      ScreenToClient(target_window, &pt);
+      window_x = pt.x;
+      window_y = pt.y;
+    }
+
+    WPARAM target = client_area ? event.native_event().wParam : nc_hit_result;
+    LPARAM window_coords = MAKELPARAM(window_x, window_y);
+    PostMessage(target_window, event_type, target, window_coords);
+    return;
   }
-#else
+#endif
+  // Non-Windows Aura or |window| is in metro mode.
   if (!window)
     return;
-#endif
 
-  scoped_ptr<ui::LocatedEvent> clone;
-  if (event.IsMouseEvent()) {
-    clone.reset(new ui::MouseEvent(static_cast<const ui::MouseEvent&>(event)));
-  } else if (event.IsGestureEvent()) {
-    // TODO(rbyers): Gesture event repost is tricky to get right
-    // crbug.com/170987.
+  aura::Window* root = window->GetRootWindow();
+  ScreenPositionClient* spc = aura::client::GetScreenPositionClient(root);
+  if (!spc)
     return;
-  } else {
-    NOTREACHED();
-    return;
-  }
-  clone->set_location(screen_loc);
 
-  RepostLocatedEvent(window, *clone);
+  gfx::Point root_loc(screen_loc);
+  spc->ConvertPointFromScreen(root, &root_loc);
+
+  ui::MouseEvent clone(static_cast<const ui::MouseEvent&>(event));
+  clone.set_location(root_loc);
+  clone.set_root_location(root_loc);
+  root->GetHost()->dispatcher()->RepostEvent(clone);
 }
-
 
 void MenuController::SetDropMenuItem(
     MenuItemView* new_target,
