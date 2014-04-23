@@ -83,26 +83,67 @@ class ChannelReflectorListener : public IPC::Listener {
 
 class MessageCountFilter : public IPC::ChannelProxy::MessageFilter {
  public:
+  enum FilterEvent {
+    NONE,
+    FILTER_ADDED,
+    CHANNEL_CONNECTED,
+    CHANNEL_ERROR,
+    CHANNEL_CLOSING,
+    FILTER_REMOVED
+  };
   MessageCountFilter()
       : messages_received_(0),
         supported_message_class_(0),
         is_global_filter_(true),
-        filter_removed_(false),
+        last_filter_event_(NONE),
         message_filtering_enabled_(false) {}
 
   MessageCountFilter(uint32 supported_message_class)
       : messages_received_(0),
         supported_message_class_(supported_message_class),
         is_global_filter_(false),
-        filter_removed_(false),
+        last_filter_event_(NONE),
         message_filtering_enabled_(false) {}
 
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
+    EXPECT_TRUE(channel);
+    EXPECT_EQ(NONE, last_filter_event_);
+    last_filter_event_ = FILTER_ADDED;
+  }
+
+  virtual void OnChannelConnected(int32_t peer_pid) OVERRIDE {
+    EXPECT_EQ(FILTER_ADDED, last_filter_event_);
+    EXPECT_NE(static_cast<int32_t>(base::kNullProcessId), peer_pid);
+    last_filter_event_ = CHANNEL_CONNECTED;
+  }
+
+  virtual void OnChannelError() OVERRIDE {
+    EXPECT_EQ(CHANNEL_CONNECTED, last_filter_event_);
+    last_filter_event_ = CHANNEL_ERROR;
+  }
+
+  virtual void OnChannelClosing() OVERRIDE {
+    // We may or may not have gotten OnChannelError; if not, the last event has
+    // to be OnChannelConnected.
+    if (last_filter_event_ != CHANNEL_ERROR)
+      EXPECT_EQ(CHANNEL_CONNECTED, last_filter_event_);
+    last_filter_event_ = CHANNEL_CLOSING;
+  }
+
   virtual void OnFilterRemoved() OVERRIDE {
-    EXPECT_FALSE(filter_removed_);
-    filter_removed_ = true;
+    // If the channel didn't get a chance to connect, we might see the
+    // OnFilterRemoved event with no other events preceding it. We still want
+    // OnFilterRemoved to be called to allow for deleting the Filter.
+    if (last_filter_event_ != NONE)
+      EXPECT_EQ(CHANNEL_CLOSING, last_filter_event_);
+    last_filter_event_ = FILTER_REMOVED;
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    // We should always get the OnFilterAdded and OnChannelConnected events
+    // prior to any messages.
+    EXPECT_EQ(CHANNEL_CONNECTED, last_filter_event_);
+
     if (!is_global_filter_) {
       EXPECT_EQ(supported_message_class_, IPC_MESSAGE_CLASS(message));
     }
@@ -123,7 +164,7 @@ class MessageCountFilter : public IPC::ChannelProxy::MessageFilter {
   }
 
   size_t messages_received() const { return messages_received_; }
-  bool filter_removed() const { return filter_removed_; }
+  FilterEvent last_filter_event() const { return last_filter_event_; }
 
  private:
   virtual ~MessageCountFilter() {}
@@ -131,7 +172,8 @@ class MessageCountFilter : public IPC::ChannelProxy::MessageFilter {
   size_t messages_received_;
   uint32 supported_message_class_;
   bool is_global_filter_;
-  bool filter_removed_;
+
+  FilterEvent last_filter_event_;
   bool message_filtering_enabled_;
 };
 
@@ -248,8 +290,10 @@ TEST_F(IPCChannelProxyTest, FilterRemoval) {
 
   // Ensure that the filters were removed and did not receive any messages.
   SendQuitMessageAndWaitForIdle();
-  EXPECT_TRUE(global_filter->filter_removed());
-  EXPECT_TRUE(class_filter->filter_removed());
+  EXPECT_EQ(MessageCountFilter::FILTER_REMOVED,
+            global_filter->last_filter_event());
+  EXPECT_EQ(MessageCountFilter::FILTER_REMOVED,
+            class_filter->last_filter_event());
   EXPECT_EQ(0U, class_filter->messages_received());
   EXPECT_EQ(0U, global_filter->messages_received());
 }
