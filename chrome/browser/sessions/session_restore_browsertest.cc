@@ -625,6 +625,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   }
   window.tabs.push_back(&tab2);
 
+  // Leave tab3 empty. Should have no effect on restored session, but simulates
+  // partially complete foreign session data.
+  SessionTab tab3;
+  window.tabs.push_back(&tab3);
+
   session.push_back(static_cast<const SessionWindow*>(&window));
   ui_test_utils::BrowserAddedObserver window_observer;
   std::vector<Browser*> browsers =

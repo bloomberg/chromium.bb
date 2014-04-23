@@ -942,18 +942,27 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (initial_tab_count == 0) {
       for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
         const SessionTab& tab = *(window.tabs[i]);
+
         // Loads are scheduled for each restored tab unless the tab is going to
         // be selected as ShowBrowser() will load the selected tab.
-        if (i == selected_tab_index) {
-          ShowBrowser(browser,
-                      browser->tab_strip_model()->GetIndexOfWebContents(
-                          RestoreTab(tab, i, browser, false)));
-          tab_loader_->TabIsLoading(
-              &browser->tab_strip_model()->GetActiveWebContents()->
-                  GetController());
-        } else {
-          RestoreTab(tab, i, browser, true);
-        }
+        bool is_not_selected_tab = (i != selected_tab_index);
+        WebContents* restored_tab =
+            RestoreTab(tab, i, browser, is_not_selected_tab);
+
+        // RestoreTab can return NULL if |tab| doesn't have valid data.
+        if (!restored_tab)
+          continue;
+
+        // If this isn't the selected tab, there's nothing else to do.
+        if (is_not_selected_tab)
+          continue;
+
+        ShowBrowser(
+            browser,
+            browser->tab_strip_model()->GetIndexOfWebContents(restored_tab));
+        tab_loader_->TabIsLoading(&browser->tab_strip_model()
+                                       ->GetActiveWebContents()
+                                       ->GetController());
       }
     } else {
       // If the browser already has tabs, we want to restore the new ones after
