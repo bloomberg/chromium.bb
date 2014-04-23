@@ -49,13 +49,13 @@ void ExtensionUninstallDialogCocoa::Show() {
 
   NSButton* continueButton = [alert addButtonWithTitle:l10n_util::GetNSString(
       IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON)];
-  // Clear the key equivalent (currently 'Return') because cancel is the default
-  // button.
-  [continueButton setKeyEquivalent:@""];
-
   NSButton* cancelButton = [alert addButtonWithTitle:l10n_util::GetNSString(
       IDS_CANCEL)];
-  [cancelButton setKeyEquivalent:@"\r"];
+  // Default to accept when triggered via chrome://extensions page.
+  if (triggering_extension_) {
+    [continueButton setKeyEquivalent:@""];
+    [cancelButton setKeyEquivalent:@"\r"];
+  }
 
   [alert setMessageText:base::SysUTF8ToNSString(GetHeadingText())];
   [alert setAlertStyle:NSWarningAlertStyle];

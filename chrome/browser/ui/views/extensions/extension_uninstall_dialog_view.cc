@@ -84,7 +84,9 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE {
-    return ui::DIALOG_BUTTON_CANCEL;
+    // Default to accept when triggered via chrome://extensions page.
+    return triggered_by_extension_ ?
+        ui::DIALOG_BUTTON_CANCEL : ui::DIALOG_BUTTON_OK;
   }
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -104,6 +106,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
   views::ImageView* icon_;
   views::Label* heading_;
+  bool triggered_by_extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogDelegateView);
 };
@@ -158,7 +161,8 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     const extensions::Extension* extension,
     const extensions::Extension* triggering_extension,
     gfx::ImageSkia* icon)
-    : dialog_(dialog_view) {
+    : dialog_(dialog_view),
+      triggered_by_extension_(triggering_extension != NULL) {
   // Scale down to icon size, but allow smaller icons (don't scale up).
   gfx::Size size(icon->width(), icon->height());
   if (size.width() > kIconSize || size.height() > kIconSize)
