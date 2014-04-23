@@ -7,11 +7,6 @@ from measurements import rasterize_and_record_micro
 from telemetry import test
 
 
-# RasterizeAndRecord disabled on mac because Chrome DCHECKS.
-# TODO: Re-enable when unittests are happy: crbug.com/350684.
-# TODO(skyostil): Re-enable on windows (crbug.com/360666).
-
-@test.Disabled
 class RasterizeAndRecordMicroTop25(test.Test):
   """Measures rasterize and record performance on the top 25 web pages.
 
@@ -20,7 +15,6 @@ class RasterizeAndRecordMicroTop25(test.Test):
   page_set = 'page_sets/top_25.py'
 
 
-@test.Disabled('mac')
 class RasterizeAndRecordMicroKeyMobileSites(test.Test):
   """Measures rasterize and record performance on the key mobile sites.
 
@@ -29,7 +23,6 @@ class RasterizeAndRecordMicroKeyMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.py'
 
 
-@test.Disabled('mac')
 class RasterizeAndRecordMicroKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
@@ -38,7 +31,6 @@ class RasterizeAndRecordMicroKeySilkCases(test.Test):
   page_set = 'page_sets/key_silk_cases.py'
 
 
-@test.Disabled('mac')
 class RasterizeAndRecordMicroFastPathKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
