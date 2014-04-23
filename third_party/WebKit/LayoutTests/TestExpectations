@@ -185,6 +185,7 @@ crbug.com/229207 [ Win ] fast/forms/range/input-appearance-range.html [ ImageOnl
 crbug.com/229207 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ ImageOnlyFailure ]
 
 crbug.com/361729 compositing/geometry/layer-due-to-layer-children-deep-switch.html [ NeedsRebaseline ]
+crbug.com/361729 virtual/softwarecompositing/geometry/layer-due-to-layer-children-deep-switch.html [ NeedsRebaseline ]
 crbug.com/361729 compositing/geometry/layer-due-to-layer-children-switch.html [ NeedsRebaseline ]
 crbug.com/361729 compositing/overflow/overflow-auto-with-touch-no-overflow.html [ NeedsRebaseline ]
 crbug.com/361729 compositing/overflow/overflow-hidden-with-touch.html [ NeedsRebaseline ]
