@@ -158,11 +158,11 @@ void BuildCommitItem(
   sync_entry->set_ctime(TimeToProtoTime(meta_entry.GetCtime()));
   sync_entry->set_mtime(TimeToProtoTime(meta_entry.GetMtime()));
 
-  // Deletion is final on the server, let's move things and then delete them.
-  if (meta_entry.GetIsDel()) {
-    sync_entry->set_deleted(true);
-  } else {
-    if (meta_entry.GetSpecifics().has_bookmark()) {
+  // Handle bookmarks separately.
+  if (meta_entry.GetSpecifics().has_bookmark()) {
+    if (meta_entry.GetIsDel()) {
+      sync_entry->set_deleted(true);
+    } else {
       // Both insert_after_item_id and position_in_parent fields are set only
       // for legacy reasons.  See comments in sync.proto for more information.
       const Id& prev_id = meta_entry.GetPredecessorId();
@@ -174,10 +174,18 @@ void BuildCommitItem(
       meta_entry.GetUniquePosition().ToProto(
           sync_entry->mutable_unique_position());
     }
+    // Always send specifics for bookmarks.
+    SetEntrySpecifics(meta_entry, sync_entry);
+    return;
+  }
+
+  // Deletion is final on the server, let's move things and then delete them.
+  if (meta_entry.GetIsDel()) {
+    sync_entry->set_deleted(true);
+  } else {
     SetEntrySpecifics(meta_entry, sync_entry);
   }
 }
-
 
 // Helpers for ProcessSingleCommitResponse.
 namespace {
