@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromise.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptValue.h"
@@ -82,6 +83,8 @@ TEST_F(ScriptPromiseTest, constructFromNonPromise)
 
 TEST_F(ScriptPromiseTest, castPromise)
 {
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
+        return;
     ScriptPromise promise = ScriptPromiseResolver::create(m_isolate)->promise();
     ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(promise.v8Value(), m_isolate));
 
@@ -92,6 +95,8 @@ TEST_F(ScriptPromiseTest, castPromise)
 
 TEST_F(ScriptPromiseTest, castNonPromise)
 {
+    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
+        return;
     ScriptValue value = ScriptValue(v8String(m_isolate, "hello"), m_isolate);
     ScriptPromise promise1 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
     ScriptPromise promise2 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
