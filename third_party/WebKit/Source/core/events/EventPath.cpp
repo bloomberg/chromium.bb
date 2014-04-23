@@ -197,9 +197,10 @@ TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarge
     TreeScopeEventContext* treeScopeEventContext;
     bool isNewEntry;
     {
-        TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(treeScope, TreeScopeEventContext::create(*treeScope));
+        TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(treeScope, nullptr);
+        if ((isNewEntry = addResult.isNewEntry))
+            addResult.storedValue->value = TreeScopeEventContext::create(*treeScope);
         treeScopeEventContext = addResult.storedValue->value.get();
-        isNewEntry = addResult.isNewEntry;
     }
     if (isNewEntry) {
         TreeScopeEventContext* parentTreeScopeEventContext = ensureTreeScopeEventContext(0, treeScope->olderShadowRootOrParentTreeScope(), treeScopeEventContextMap);
