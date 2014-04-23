@@ -33,6 +33,11 @@ class CONTENT_EXPORT WebContentsAndroid
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
+  // Methods called from Java
+  base::android::ScopedJavaLocalRef<jstring> GetTitle(JNIEnv* env,
+                                                      jobject obj) const;
+  void Stop(JNIEnv* env, jobject obj);
+
  private:
   WebContents* web_contents_;
   NavigationControllerAndroid navigation_controller_;

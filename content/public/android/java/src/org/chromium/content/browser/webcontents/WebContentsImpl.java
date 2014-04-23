@@ -48,4 +48,17 @@ import org.chromium.content_public.browser.WebContents;
     public NavigationController getNavigationController() {
         return mNavigationController;
     }
+
+    @Override
+    public String getTitle() {
+        return nativeGetTitle(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void stop() {
+        nativeStop(mNativeWebContentsAndroid);
+    }
+
+    private native String nativeGetTitle(long nativeWebContentsAndroid);
+    private native void nativeStop(long nativeWebContentsAndroid);
 }

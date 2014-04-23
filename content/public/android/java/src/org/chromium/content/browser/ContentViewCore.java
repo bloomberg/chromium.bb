@@ -945,7 +945,7 @@ public class ContentViewCore
      * Stops loading the current web contents.
      */
     public void stopLoading() {
-        if (mNativeContentViewCore != 0) nativeStopLoading(mNativeContentViewCore);
+        if (mWebContents != null) mWebContents.stop();
     }
 
     /**
@@ -964,8 +964,7 @@ public class ContentViewCore
      * @return The title of the current page.
      */
     public String getTitle() {
-        if (mNativeContentViewCore != 0) return nativeGetTitle(mNativeContentViewCore);
-        return null;
+        return mWebContents == null ? null : mWebContents.getTitle();
     }
 
     /**
@@ -3187,8 +3186,6 @@ public class ContentViewCore
 
     private native String nativeGetURL(long nativeContentViewCoreImpl);
 
-    private native String nativeGetTitle(long nativeContentViewCoreImpl);
-
     private native void nativeShowInterstitialPage(
             long nativeContentViewCoreImpl, String url, long nativeInterstitialPageDelegateAndroid);
     private native boolean nativeIsShowingInterstitialPage(long nativeContentViewCoreImpl);
@@ -3259,8 +3256,6 @@ public class ContentViewCore
 
     private native void nativeLoadIfNecessary(long nativeContentViewCoreImpl);
     private native void nativeRequestRestoreLoad(long nativeContentViewCoreImpl);
-
-    private native void nativeStopLoading(long nativeContentViewCoreImpl);
 
     private native void nativeReload(long nativeContentViewCoreImpl, boolean checkForRepost);
     private native void nativeReloadIgnoringCache(

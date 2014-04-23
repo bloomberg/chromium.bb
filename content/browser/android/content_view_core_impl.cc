@@ -964,11 +964,6 @@ ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
   return ConvertUTF8ToJavaString(env, GetWebContents()->GetURL().spec());
 }
 
-ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetTitle(
-    JNIEnv* env, jobject obj) const {
-  return ConvertUTF16ToJavaString(env, GetWebContents()->GetTitle());
-}
-
 jboolean ContentViewCoreImpl::IsIncognito(JNIEnv* env, jobject obj) {
   return GetWebContents()->GetBrowserContext()->IsOffTheRecord();
 }
@@ -1246,10 +1241,6 @@ void ContentViewCoreImpl::LoadIfNecessary(JNIEnv* env, jobject obj) {
 
 void ContentViewCoreImpl::RequestRestoreLoad(JNIEnv* env, jobject obj) {
   web_contents_->GetController().SetNeedsReload();
-}
-
-void ContentViewCoreImpl::StopLoading(JNIEnv* env, jobject obj) {
-  web_contents_->Stop();
 }
 
 void ContentViewCoreImpl::Reload(JNIEnv* env,

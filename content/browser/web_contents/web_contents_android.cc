@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -53,6 +54,16 @@ WebContentsAndroid::~WebContentsAndroid() {
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(obj_);
+}
+
+ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
+    JNIEnv* env, jobject obj) const {
+  return base::android::ConvertUTF16ToJavaString(env,
+                                                 web_contents_->GetTitle());
+}
+
+void WebContentsAndroid::Stop(JNIEnv* env, jobject obj) {
+  web_contents_->Stop();
 }
 
 }  // namespace content
