@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 
 using namespace blink;
+using namespace content;
 using namespace std;
 
 namespace WebTestRunner {

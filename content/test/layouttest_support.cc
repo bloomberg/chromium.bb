@@ -28,9 +28,6 @@ using blink::WebGamepad;
 using blink::WebGamepads;
 using blink::WebRect;
 using blink::WebSize;
-using WebTestRunner::WebFrameTestProxy;
-using WebTestRunner::WebTestProxy;
-using WebTestRunner::WebTestProxyBase;
 
 namespace content {
 

@@ -10,14 +10,17 @@
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
 
+namespace content {
+class WebTestProxyBase;
+}
+
 namespace WebTestRunner {
 
 class WebTestDelegate;
-class WebTestProxyBase;
 
 class SpellCheckClient : public blink::WebSpellCheckClient {
 public:
-    explicit SpellCheckClient(WebTestProxyBase*);
+    explicit SpellCheckClient(content::WebTestProxyBase*);
     virtual ~SpellCheckClient();
 
     void setDelegate(WebTestDelegate*);
@@ -47,7 +50,7 @@ private:
 
     WebTestDelegate* m_delegate;
 
-    WebTestProxyBase* m_webTestProxy;
+    content::WebTestProxyBase* m_webTestProxy;
 
     DISALLOW_COPY_AND_ASSIGN(SpellCheckClient);
 };

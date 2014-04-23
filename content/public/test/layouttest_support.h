@@ -16,13 +16,10 @@ class WebGamepads;
 struct WebSize;
 }
 
-namespace WebTestRunner {
-class WebTestProxyBase;
-}
-
 namespace content {
 
 class RenderView;
+class WebTestProxyBase;
 
 // Turn the browser process into layout test mode.
 void EnableBrowserLayoutTestMode();
@@ -36,8 +33,8 @@ void EnableRendererLayoutTestMode();
 // Enable injecting of a WebTestProxy between WebViews and RenderViews.
 // |callback| is invoked with a pointer to WebTestProxyBase for each created
 // WebTestProxy.
-void EnableWebTestProxyCreation(const base::Callback<
-    void(RenderView*, WebTestRunner::WebTestProxyBase*)>& callback);
+void EnableWebTestProxyCreation(
+    const base::Callback<void(RenderView*, WebTestProxyBase*)>& callback);
 
 // Sets the WebGamepads that should be returned by
 // WebKitPlatformSupport::sampleGamepads().

@@ -30,19 +30,19 @@ class EventSender;
 class GamepadController;
 class TestRunner;
 class TextInputController;
+class WebTestProxyBase;
 }
 
 namespace WebTestRunner {
 
 class WebTestDelegate;
-class WebTestProxyBase;
 
 class TestInterfaces {
 public:
     TestInterfaces();
     ~TestInterfaces();
 
-    void setWebView(blink::WebView*, WebTestProxyBase*);
+    void setWebView(blink::WebView*, content::WebTestProxyBase*);
     void setDelegate(WebTestDelegate*);
     void bindTo(blink::WebFrame*);
     void resetTestHelperControllers();
@@ -50,15 +50,15 @@ public:
     void setTestIsRunning(bool);
     void configureForTestWithURL(const blink::WebURL&, bool generatePixels);
 
-    void windowOpened(WebTestProxyBase*);
-    void windowClosed(WebTestProxyBase*);
+    void windowOpened(content::WebTestProxyBase*);
+    void windowClosed(content::WebTestProxyBase*);
 
     content::AccessibilityController* accessibilityController();
     content::EventSender* eventSender();
     content::TestRunner* testRunner();
     WebTestDelegate* delegate();
-    WebTestProxyBase* proxy();
-    const std::vector<WebTestProxyBase*>& windowList();
+    content::WebTestProxyBase* proxy();
+    const std::vector<content::WebTestProxyBase*>& windowList();
     blink::WebThemeEngine* themeEngine();
 
 private:
@@ -68,9 +68,9 @@ private:
     scoped_ptr<content::TextInputController> m_textInputController;
     scoped_ptr<content::TestRunner> m_testRunner;
     WebTestDelegate* m_delegate;
-    WebTestProxyBase* m_proxy;
+    content::WebTestProxyBase* m_proxy;
 
-    std::vector<WebTestProxyBase*> m_windowList;
+    std::vector<content::WebTestProxyBase*> m_windowList;
 #if defined(__APPLE__)
     scoped_ptr<WebTestThemeEngineMac> m_themeEngine;
 #else

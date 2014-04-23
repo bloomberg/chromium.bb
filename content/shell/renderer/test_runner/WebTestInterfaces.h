@@ -21,11 +21,14 @@ class WebURL;
 class WebView;
 }
 
+namespace content {
+class WebTestProxyBase;
+}
+
 namespace WebTestRunner {
 
 class TestInterfaces;
 class WebTestDelegate;
-class WebTestProxyBase;
 class WebTestRunner;
 
 class WebTestInterfaces {
@@ -33,7 +36,7 @@ public:
     WebTestInterfaces();
     ~WebTestInterfaces();
 
-    void setWebView(blink::WebView*, WebTestProxyBase*);
+    void setWebView(blink::WebView*, content::WebTestProxyBase*);
     void setDelegate(WebTestDelegate*);
     void bindTo(blink::WebFrame*);
     void resetAll();

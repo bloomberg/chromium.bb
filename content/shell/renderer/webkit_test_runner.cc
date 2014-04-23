@@ -90,7 +90,6 @@ using blink::WebVector;
 using blink::WebView;
 using WebTestRunner::WebTask;
 using WebTestRunner::WebTestInterfaces;
-using WebTestRunner::WebTestProxyBase;
 
 namespace content {
 

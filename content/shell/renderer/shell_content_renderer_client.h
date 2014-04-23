@@ -16,14 +16,11 @@ class WebPlugin;
 struct WebPluginParams;
 }
 
-namespace WebTestRunner {
-class WebTestProxyBase;
-}
-
 namespace content {
 
 class MockWebClipboardImpl;
 class ShellRenderProcessObserver;
+class WebTestProxyBase;
 
 class ShellContentRendererClient : public ContentRendererClient {
  public:
@@ -54,8 +51,7 @@ class ShellContentRendererClient : public ContentRendererClient {
       blink::WebPluginContainer* container) OVERRIDE;
 
  private:
-   void WebTestProxyCreated(RenderView* render_view,
-                            WebTestRunner::WebTestProxyBase* proxy);
+  void WebTestProxyCreated(RenderView* render_view, WebTestProxyBase* proxy);
 
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
   scoped_ptr<MockWebClipboardImpl> clipboard_;

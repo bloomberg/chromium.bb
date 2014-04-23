@@ -44,10 +44,11 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
+using namespace WebTestRunner;
 using namespace blink;
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 
@@ -1357,4 +1358,4 @@ void WebTestProxyBase::resetInputMethod()
         m_webWidget->confirmComposition();
 }
 
-}
+}  // namespace content

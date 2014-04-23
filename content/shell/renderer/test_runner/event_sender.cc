@@ -1351,8 +1351,7 @@ void EventSender::TextZoomOut() {
 }
 
 void EventSender::ZoomPageIn() {
-  const std::vector<WebTestRunner::WebTestProxyBase*>& window_list =
-      interfaces_->windowList();
+  const std::vector<WebTestProxyBase*>& window_list = interfaces_->windowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
     window_list.at(i)->webView()->setZoomLevel(
@@ -1361,8 +1360,7 @@ void EventSender::ZoomPageIn() {
 }
 
 void EventSender::ZoomPageOut() {
-  const std::vector<WebTestRunner::WebTestProxyBase*>& window_list =
-      interfaces_->windowList();
+  const std::vector<WebTestProxyBase*>& window_list = interfaces_->windowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
     window_list.at(i)->webView()->setZoomLevel(

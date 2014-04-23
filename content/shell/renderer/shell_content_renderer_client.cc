@@ -47,7 +47,6 @@ using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebThemeEngine;
 using WebTestRunner::WebTestDelegate;
 using WebTestRunner::WebTestInterfaces;
-using WebTestRunner::WebTestProxyBase;
 
 namespace content {
 

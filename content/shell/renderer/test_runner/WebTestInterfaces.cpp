@@ -12,6 +12,7 @@
 #include "content/shell/renderer/test_runner/test_runner.h"
 
 using namespace blink;
+using namespace content;
 
 namespace WebTestRunner {
 

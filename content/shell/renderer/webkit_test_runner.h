@@ -26,13 +26,10 @@ class WebDeviceOrientationData;
 struct WebRect;
 }
 
-namespace WebTestRunner {
-class WebTestProxyBase;
-}
-
 namespace content {
 
 class LeakDetector;
+class WebTestProxyBase;
 struct LeakDetectionResult;
 
 // This is the renderer side of the webkit test runner.
@@ -97,8 +94,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void clearAllDatabases() OVERRIDE;
   virtual void setDatabaseQuota(int quota) OVERRIDE;
   virtual void setDeviceScaleFactor(float factor) OVERRIDE;
-  virtual void setFocus(WebTestRunner::WebTestProxyBase* proxy,
-                        bool focus) OVERRIDE;
+  virtual void setFocus(WebTestProxyBase* proxy, bool focus) OVERRIDE;
   virtual void setAcceptAllCookies(bool accept) OVERRIDE;
   virtual std::string pathToLocalResource(const std::string& resource) OVERRIDE;
   virtual void setLocale(const std::string& locale) OVERRIDE;
@@ -112,14 +108,14 @@ class WebKitTestRunner : public RenderViewObserver,
                                const std::string& frame_name) OVERRIDE;
   virtual bool allowExternalPages() OVERRIDE;
   virtual void captureHistoryForWindow(
-      WebTestRunner::WebTestProxyBase* proxy,
+      WebTestProxyBase* proxy,
       blink::WebVector<blink::WebHistoryItem>* history,
       size_t* currentEntryIndex) OVERRIDE;
 
   void Reset();
 
-  void set_proxy(::WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
-  ::WebTestRunner::WebTestProxyBase* proxy() const { return proxy_; }
+  void set_proxy(WebTestProxyBase* proxy) { proxy_ = proxy; }
+  WebTestProxyBase* proxy() const { return proxy_; }
 
   void ReportLeakDetectionResult(const LeakDetectionResult& result);
 
@@ -138,7 +134,7 @@ class WebKitTestRunner : public RenderViewObserver,
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();
 
-  ::WebTestRunner::WebTestProxyBase* proxy_;
+  WebTestProxyBase* proxy_;
 
   RenderView* focused_view_;
 

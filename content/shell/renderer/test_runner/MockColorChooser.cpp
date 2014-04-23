@@ -8,6 +8,7 @@
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 
 using namespace blink;
+using namespace content;
 using namespace std;
 
 namespace WebTestRunner {
