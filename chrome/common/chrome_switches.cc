@@ -1292,9 +1292,6 @@ const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 #endif
 
 #if defined(OS_ANDROID)
-// Disables the app banner <meta> tag.
-const char kDisableAppBanners[]              = "disable-app-banners";
-
 // Disables support for playing videos on Chromecast devices.
 const char kDisableCast[]                    = "disable-cast";
 

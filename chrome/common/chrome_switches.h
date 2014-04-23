@@ -355,7 +355,6 @@ extern const char kPluginsMetadataServerURL[];
 #endif
 
 #if defined(OS_ANDROID)
-extern const char kDisableAppBanners[];
 extern const char kDisableCast[];
 extern const char kDisableNewNTP[];
 extern const char kDisableZeroSuggest[];

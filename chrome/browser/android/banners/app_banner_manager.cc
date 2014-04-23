@@ -6,14 +6,12 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/android/banners/app_banner_metrics_ids.h"
 #include "chrome/browser/android/banners/app_banner_settings_helper.h"
 #include "chrome/browser/android/banners/app_banner_utilities.h"
 #include "chrome/browser/bitmap_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
@@ -152,8 +150,7 @@ jlong Init(JNIEnv* env, jobject obj) {
 }
 
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAppBanners);
+  return false;
 }
 
 // Register native methods
