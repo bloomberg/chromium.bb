@@ -294,6 +294,8 @@ void TouchActionTest::sendTouchEvent(WebView* webView, WebInputEvent::Type type,
 
     WebTouchEvent webTouchEvent;
     webTouchEvent.type = type;
+    if (type == WebInputEvent::TouchCancel)
+        webTouchEvent.cancelable = false;
     webTouchEvent.touchesLength = 1;
     webTouchEvent.touches[0].state = (type == WebInputEvent::TouchStart ?
         WebTouchPoint::StatePressed :

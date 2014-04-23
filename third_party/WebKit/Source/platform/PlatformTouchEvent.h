@@ -30,13 +30,17 @@ class PlatformTouchEvent : public PlatformEvent {
 public:
     PlatformTouchEvent()
         : PlatformEvent(PlatformEvent::TouchStart)
+        , m_cancelable(true)
     {
     }
 
     const Vector<PlatformTouchPoint>& touchPoints() const { return m_touchPoints; }
 
+    bool cancelable() const { return m_cancelable; }
+
 protected:
     Vector<PlatformTouchPoint> m_touchPoints;
+    bool m_cancelable;
 };
 
 }

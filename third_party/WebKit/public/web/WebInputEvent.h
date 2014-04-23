@@ -513,11 +513,17 @@ public:
     // List of all touches which are currently down and are targeting the event recipient.
     WebTouchPoint targetTouches[touchesLengthCap];
 
+    // Whether the event can be canceled (with preventDefault). If true then the browser
+    // must wait for an ACK for this event. If false then no ACK IPC is expected.
+    // See comment at the top for why an int is used here instead of a bool.
+    int cancelable;
+
     WebTouchEvent()
         : WebInputEvent(sizeof(WebTouchEvent))
         , touchesLength(0)
         , changedTouchesLength(0)
         , targetTouchesLength(0)
+        , cancelable(true)
     {
     }
 };

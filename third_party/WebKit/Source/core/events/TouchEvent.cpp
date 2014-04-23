@@ -40,8 +40,8 @@ TouchEvent::TouchEvent()
 TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
         PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int pageX, int pageY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
-    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY),
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable)
+    : MouseRelatedEvent(type, true, cancelable, view, 0, IntPoint(screenX, screenY),
                         IntPoint(pageX, pageY),
                         IntPoint(0, 0),
                         ctrlKey, altKey, shiftKey, metaKey)
@@ -64,7 +64,11 @@ void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,
     if (dispatched())
         return;
 
-    initUIEvent(type, true, true, view, 0);
+    bool cancelable = true;
+    if (type == EventTypeNames::touchcancel)
+        cancelable = false;
+
+    initUIEvent(type, true, cancelable, view, 0);
 
     m_touches = touches;
     m_targetTouches = targetTouches;

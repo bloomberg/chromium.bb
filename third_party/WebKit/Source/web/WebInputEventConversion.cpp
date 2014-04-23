@@ -457,6 +457,8 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTo
 
     for (unsigned i = 0; i < event.touchesLength; ++i)
         m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));
+
+    m_cancelable = event.cancelable;
 }
 
 static int getWebInputModifiers(const UIEventWithKeyState& event)
@@ -760,6 +762,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const WebCore::
 
     modifiers = getWebInputModifiers(event);
     timeStampSeconds = event.timeStamp() / millisPerSecond;
+    cancelable = event.cancelable();
 
     addTouchPoints(widget, event.type(), event.touches(), touches, &touchesLength, renderObject);
     addTouchPoints(widget, event.type(), event.changedTouches(), changedTouches, &changedTouchesLength, renderObject);
