@@ -36,7 +36,6 @@
 #include "WebMediaPlayerClientImpl.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Initializer.h"
-#include "bindings/v8/V8RecursionScope.h"
 #include "core/Init.h"
 #include "core/dom/Microtask.h"
 #include "core/page/Page.h"
@@ -94,13 +93,6 @@ static bool generateEntropy(unsigned char* buffer, size_t length)
     return false;
 }
 
-#ifndef NDEBUG
-static void assertV8RecursionScope()
-{
-    ASSERT(!isMainThread() || WebCore::V8RecursionScope::properlyUsed(v8::Isolate::GetCurrent()));
-}
-#endif
-
 void initialize(Platform* platform)
 {
     initializeWithoutV8(platform);
@@ -119,9 +111,6 @@ void initialize(Platform* platform)
 
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (WebThread* currentThread = platform->currentThread()) {
-#ifndef NDEBUG
-        v8::V8::AddCallCompletedCallback(&assertV8RecursionScope);
-#endif
         ASSERT(!s_endOfTaskRunner);
         s_endOfTaskRunner = new EndOfTaskRunner;
         currentThread->addTaskObserver(s_endOfTaskRunner);
@@ -199,9 +188,6 @@ void shutdown()
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread()) {
         ASSERT(s_endOfTaskRunner);
-#ifndef NDEBUG
-        v8::V8::RemoveCallCompletedCallback(&assertV8RecursionScope);
-#endif
         Platform::current()->currentThread()->removeTaskObserver(s_endOfTaskRunner);
         delete s_endOfTaskRunner;
         s_endOfTaskRunner = 0;
