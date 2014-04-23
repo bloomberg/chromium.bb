@@ -62,7 +62,7 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
     info.fHeight = size.height();
     info.fColorType = kPMColor_SkColorType;
     info.fAlphaType = kPremul_SkAlphaType;
-    return adoptRef(SkSurface::NewScratchRenderTarget(gr, info,  msaaSampleCount));
+    return adoptRef(SkSurface::NewRenderTarget(gr, info,  msaaSampleCount));
 }
 
 PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
