@@ -644,7 +644,6 @@
       'type': 'executable',
       'sources': [
         'shell/renderer/test_runner/helper/layout_test_helper_mac.mm',
-        'shell/renderer/test_runner/helper/layout_test_helper_win.cc',
       ],
       'conditions': [
         ['OS=="mac"', {
