@@ -448,6 +448,13 @@ void GetOptionStringsFromElement(const WebSelectElement& select_element,
   option_values->clear();
   option_contents->clear();
   WebVector<WebElement> list_items = select_element.listItems();
+
+  // Constrain the maximum list length to prevent a malicious site from DOS'ing
+  // the browser, without entirely breaking autocomplete for some extreme
+  // legitimate sites: http://crbug.com/49332 and http://crbug.com/363094
+  if (list_items.size() > kMaxListSize)
+    return;
+
   option_values->reserve(list_items.size());
   option_contents->reserve(list_items.size());
   for (size_t i = 0; i < list_items.size(); ++i) {

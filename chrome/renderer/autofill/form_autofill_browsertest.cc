@@ -13,6 +13,7 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_cache.h"
+#include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/web_element_descriptor.h"
 #include "components/variations/entropy_provider.h"
@@ -460,6 +461,29 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldSelect) {
   EXPECT_EQ(ASCIIToUTF16("California"), result3.option_contents[0]);
   EXPECT_EQ(ASCIIToUTF16("TX"), result3.option_values[1]);
   EXPECT_EQ(ASCIIToUTF16("Texas"), result3.option_contents[1]);
+}
+
+// When faced with <select> field with *many* options, we should trim them to a
+// reasonable number.
+TEST_F(FormAutofillTest, WebFormControlElementToFormFieldLongSelect) {
+  std::string html = "<SELECT id=\"element\"/>";
+  for (size_t i = 0; i < 2 * kMaxListSize; ++i) {
+    html += base::StringPrintf("<OPTION value=\"%" PRIuS "\">"
+                               "%" PRIuS "</OPTION>", i, i);
+  }
+  html += "</SELECT>";
+  LoadHTML(html.c_str());
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_TRUE(frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_OPTIONS, &result);
+
+  EXPECT_EQ(0U, result.option_values.size());
+  EXPECT_EQ(0U, result.option_contents.size());
 }
 
 // We should be able to extract a <textarea> field.
