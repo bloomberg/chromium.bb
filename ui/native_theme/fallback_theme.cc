@@ -36,6 +36,8 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   static const SkColor kButtonDisabledColor = SkColorSetRGB(0x99, 0x99, 0x99);
   static const SkColor kButtonHighlightColor = SkColorSetRGB(0, 0, 0);
   static const SkColor kButtonHoverColor = kButtonEnabledColor;
+  static const SkColor kButtonHoverBackgroundColor =
+      SkColorSetRGB(0xEA, 0xEA, 0xEA);
   // MenuItem:
   static const SkColor kEnabledMenuItemForegroundColor = kButtonEnabledColor;
   static const SkColor kDisabledMenuItemForegroundColor = kButtonDisabledColor;
@@ -135,6 +137,8 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       return kButtonHighlightColor;
     case kColorId_ButtonHoverColor:
       return kButtonHoverColor;
+    case kColorId_ButtonHoverBackgroundColor:
+      return kButtonHoverBackgroundColor;
 
     // MenuItem
     case kColorId_EnabledMenuItemForegroundColor:

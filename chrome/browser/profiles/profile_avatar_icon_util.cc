@@ -181,6 +181,8 @@ const int kAvatarIconHeight = 31;
 const int kAvatarIconPadding = 2;
 const SkColor kAvatarTutorialBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 const SkColor kAvatarTutorialContentTextColor = SkColorSetRGB(0xc6, 0xda, 0xfc);
+const SkColor kAvatarBubbleAccountsBackgroundColor =
+    SkColorSetRGB(0xf3, 0xf3, 0xf3);
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
@@ -251,9 +253,9 @@ const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
 // The first 8 icons are generic.
 const size_t kGenericAvatarIconsCount = 8;
 
-gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
-                                        bool is_rectangle,
-                                        int width, int height) {
+gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
+                              bool is_rectangle,
+                              int width, int height) {
   if (!is_rectangle)
     return image;
 
@@ -266,34 +268,21 @@ gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
           size,
           std::min(width, height),
           AvatarImageSource::POSITION_CENTER,
-          AvatarImageSource::BORDER_NORMAL));
+          AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), size));
 }
 
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
                                 bool is_rectangle) {
-  return GetSizedAvatarIconWithBorder(
+  return GetSizedAvatarIcon(
       image, is_rectangle, kAvatarIconWidth, kAvatarIconHeight);
 }
 
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
                                  bool is_rectangle) {
-  if (!is_rectangle)
-    return image;
-
-  gfx::Size size(kAvatarIconWidth, kAvatarIconHeight);
-
-  // Source for a centered, sized icon.
-  scoped_ptr<gfx::ImageSkiaSource> source(
-      new AvatarImageSource(
-          *image.ToImageSkia(),
-          size,
-          std::min(kAvatarIconWidth, kAvatarIconHeight),
-          AvatarImageSource::POSITION_CENTER,
-          AvatarImageSource::BORDER_NONE));
-
-  return gfx::Image(gfx::ImageSkia(source.release(), size));
+  return GetSizedAvatarIcon(image, is_rectangle,
+                            kAvatarIconWidth, kAvatarIconHeight);
 }
 
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,

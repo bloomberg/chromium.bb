@@ -109,7 +109,7 @@ std::string GetAvatarImageAtIndex(
     avatar_image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_USER_MANAGER_DEFAULT_AVATAR);
   }
-  gfx::Image resized_image = profiles::GetSizedAvatarIconWithBorder(
+  gfx::Image resized_image = profiles::GetSizedAvatarIcon(
       avatar_image, is_gaia_picture, kAvatarIconSize, kAvatarIconSize);
   return webui::GetBitmapDataUrl(resized_image.AsBitmap());
 }

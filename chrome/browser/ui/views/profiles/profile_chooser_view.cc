@@ -154,7 +154,7 @@ class EditableProfilePhoto : public views::ImageView {
       : views::ImageView(),
         change_photo_button_(NULL) {
     const int kLargeImageSide = 64;
-    gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
+    gfx::Image image = profiles::GetSizedAvatarIcon(
         icon, true,
         kLargeImageSide + profiles::kAvatarIconPadding,
         kLargeImageSide + profiles::kAvatarIconPadding);
@@ -919,7 +919,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
     const AvatarMenu::Item& item = avatar_menu_->GetItemAt(index);
     const int kSmallImageSide = 32;
 
-    gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
+    gfx::Image image = profiles::GetSizedAvatarIcon(
         item.icon, true,
         kSmallImageSide + profiles::kAvatarIconPadding,
         kSmallImageSide + profiles::kAvatarIconPadding);

@@ -46,8 +46,11 @@ bool IsEnableWebBasedSignin() {
 }
 
 bool IsFastUserSwitching() {
+  bool use_mirror_promo_menu =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu) &&
+      !IsNewProfileManagement();
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kFastUserSwitching);
+      switches::kFastUserSwitching) || use_mirror_promo_menu;
 }
 
 bool IsGoogleProfileInfo() {

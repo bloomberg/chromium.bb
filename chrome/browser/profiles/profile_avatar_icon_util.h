@@ -20,6 +20,7 @@ extern const int kAvatarIconHeight;
 extern const int kAvatarIconPadding;
 extern const SkColor kAvatarTutorialBackgroundColor;
 extern const SkColor kAvatarTutorialContentTextColor;
+extern const SkColor kAvatarBubbleAccountsBackgroundColor;
 
 // Gets the number of default avatar icons that exist.
 size_t GetDefaultAvatarIconCount();
@@ -42,12 +43,12 @@ bool IsDefaultAvatarIconIndex(size_t index);
 // Checks if the given URL points to one of the default avatar icons. If it
 // is, returns true and its index through |icon_index|. If not, returns false.
 bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
-// Returns a version of |image| of a specific size and with a grey border.
-// Note that no checks are done on the width/height so make sure they're
-// reasonable values; in the range of 16-256 is probably best.
-gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
-                                        bool is_rectangle,
-                                        int width, int height);
+// Returns a version of |image| of a specific size. Note that no checks are
+// done on the width/height so make sure they're reasonable values; in the
+// range of 16-256 is probably best.
+gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
+                              bool is_rectangle,
+                              int width, int height);
 
 // Returns a version of |image| suitable for use in menus.
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,

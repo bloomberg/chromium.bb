@@ -43,16 +43,7 @@ void ProfileListDesktop::RebuildMenu() {
       omitted_item_count_++;
       continue;
     }
-    bool is_gaia_picture =
-        profile_info_->IsUsingGAIAPictureOfProfileAtIndex(i) &&
-        profile_info_->GetGAIAPictureOfProfileAtIndex(i);
-
     gfx::Image icon = profile_info_->GetAvatarIconOfProfileAtIndex(i);
-    if (!switches::IsNewProfileManagement()) {
-      // The old avatar menu uses resized-small images.
-      icon = profiles::GetAvatarIconForMenu(icon, is_gaia_picture);
-    }
-
     AvatarMenu::Item* item = new AvatarMenu::Item(i - omitted_item_count_,
                                                   i,
                                                   icon);

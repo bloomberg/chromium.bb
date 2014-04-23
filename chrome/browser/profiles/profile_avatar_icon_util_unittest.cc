@@ -38,7 +38,7 @@ TEST(ProfileInfoUtilTest, SizedMenuIcon) {
   const gfx::Image& profile_image(
       ResourceBundle::GetSharedInstance().GetImageNamed(IDR_PROFILE_AVATAR_0));
   gfx::Image result =
-      profiles::GetSizedAvatarIconWithBorder(profile_image, false, 50, 50);
+      profiles::GetSizedAvatarIcon(profile_image, false, 50, 50);
 
   EXPECT_FALSE(gfx::test::IsEmpty(result));
   EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
@@ -47,9 +47,8 @@ TEST(ProfileInfoUtilTest, SizedMenuIcon) {
   gfx::Image rect_picture(gfx::test::CreateImage());
 
   gfx::Size size(30, 20);
-  gfx::Image result2 =
-      profiles::GetSizedAvatarIconWithBorder(
-          rect_picture, true, size.width(), size.height());
+  gfx::Image result2 = profiles::GetSizedAvatarIcon(
+      rect_picture, true, size.width(), size.height());
 
   VerifyScaling(result2, size);
 }

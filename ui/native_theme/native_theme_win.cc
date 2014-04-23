@@ -50,6 +50,7 @@ const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xd9, 0xd9, 0xd9);
 const SkColor kButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
 const SkColor kButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
 const SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
+const SkColor kButtonHoverBackgroundColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
 // MenuItem:
 const SkColor kEnabledMenuItemForegroundColor = SkColorSetRGB(6, 45, 117);
 const SkColor kDisabledMenuItemForegroundColor = SkColorSetRGB(161, 161, 146);
@@ -532,6 +533,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return kButtonHighlightColor;
     case kColorId_ButtonHoverColor:
       return kButtonHoverColor;
+    case kColorId_ButtonHoverBackgroundColor:
+      return kButtonHoverBackgroundColor;
 
     // MenuItem
     case kColorId_EnabledMenuItemForegroundColor:

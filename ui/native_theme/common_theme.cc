@@ -32,6 +32,8 @@ const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
 const SkColor kDisabledMenuItemForegroundColor = SkColorSetRGB(161, 161, 146);
 const SkColor kHoverMenuItemBackgroundColor =
     SkColorSetARGB(204, 255, 255, 255);
+// Button:
+const SkColor kButtonHoverBackgroundColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
 
 }  // namespace
 
@@ -78,6 +80,10 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       break;
     case NativeTheme::kColorId_ButtonDisabledColor:
       *color = kDisabledMenuItemForegroundColor;
+      break;
+    // Button
+    case NativeTheme::kColorId_ButtonHoverBackgroundColor:
+      *color = kButtonHoverBackgroundColor;
       break;
     default:
       return false;

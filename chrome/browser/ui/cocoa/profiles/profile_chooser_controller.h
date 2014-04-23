@@ -92,11 +92,17 @@ class WebContents;
 // Shows the account management view.
 - (IBAction)showAccountManagement:(id)sender;
 
+// Hides the account management view and shows the default view.
+- (IBAction)hideAccountManagement:(id)sender;
+
 // Locks the active profile.
 - (IBAction)lockProfile:(id)sender;
 
-// Shows the signin page.
-- (IBAction)showSigninPage:(id)sender;
+// Shows the inline signin page.
+- (IBAction)showInlineSigninPage:(id)sender;
+
+// Shows the signin tab in the browser.
+- (IBAction)showTabbedSigninPage:(id)sender;
 
 // Adds an account to the active profile.
 - (IBAction)addAccount:(id)sender;
