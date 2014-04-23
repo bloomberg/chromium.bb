@@ -46,6 +46,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -1785,25 +1786,24 @@ void RenderWidgetHostImpl::OnUnlockMouse() {
 void RenderWidgetHostImpl::OnShowDisambiguationPopup(
     const gfx::Rect& rect,
     const gfx::Size& size,
-    const TransportDIB::Id& id) {
+    const cc::SharedBitmapId& id) {
   DCHECK(!rect.IsEmpty());
   DCHECK(!size.IsEmpty());
 
-  TransportDIB* dib = process_->GetTransportDIB(id);
-  if (!dib) {
+  scoped_ptr<cc::SharedBitmap> bitmap =
+      HostSharedBitmapManager::current()->GetSharedBitmapFromId(size, id);
+  if (!bitmap) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH6"));
     GetProcess()->ReceivedBadMessage();
     return;
   }
 
-  DCHECK(dib->memory());
-  DCHECK(dib->size() == SkBitmap::ComputeSize(SkBitmap::kARGB_8888_Config,
-                                              size.width(), size.height()));
+  DCHECK(bitmap->pixels());
 
   SkBitmap zoomed_bitmap;
   zoomed_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
       size.width(), size.height());
-  zoomed_bitmap.setPixels(dib->memory());
+  zoomed_bitmap.setPixels(bitmap->pixels());
 
 #if defined(OS_ANDROID)
   if (view_)
@@ -1813,8 +1813,7 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
 #endif
 
   zoomed_bitmap.setPixels(0);
-  Send(new ViewMsg_ReleaseDisambiguationPopupDIB(GetRoutingID(),
-                                                 dib->handle()));
+  Send(new ViewMsg_ReleaseDisambiguationPopupBitmap(GetRoutingID(), id));
 }
 
 #if defined(OS_WIN)

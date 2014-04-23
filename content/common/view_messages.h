@@ -905,8 +905,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityMode,
 
 // An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
 // process to release the magnified image.
-IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupDIB,
-                    TransportDIB::Handle /* DIB handle */)
+IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
+                    cc::SharedBitmapId /* id */)
 
 // Notifies the renderer that a snapshot has been retrieved.
 IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
@@ -1665,7 +1665,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidAccessInitialDocument)
 IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,
                     gfx::Rect, /* Border of touched targets */
                     gfx::Size, /* Size of zoomed image */
-                    TransportDIB::Id /* DIB of zoomed image */)
+                    cc::SharedBitmapId /* id */)
 
 // Sent by the renderer process to check whether client 3D APIs
 // (Pepper 3D, WebGL) are explicitly blocked.
