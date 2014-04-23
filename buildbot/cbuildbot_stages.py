@@ -441,9 +441,10 @@ class CleanUpStage(bs.BuilderStage):
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
 
   def _DeleteArchivedTrybotImages(self):
-    """For trybots, clear all previus archive images to save space."""
-    archive_root = self._run.GetArchive().GetLocalArchiveRoot(trybot=True)
-    osutils.RmDir(archive_root, ignore_missing=True)
+    """Clear all previous archive images to save space."""
+    for trybot in (False, True):
+      archive_root = self._run.GetArchive().GetLocalArchiveRoot(trybot=trybot)
+      osutils.RmDir(archive_root, ignore_missing=True)
 
   def _DeleteArchivedPerfResults(self):
     """Clear any previously stashed perf results from hw testing."""
@@ -2924,7 +2925,7 @@ class UploadTestArtifactsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
         # shouldn't generate delta payloads for n-1->n testing.
         # TODO: Add a config flag for generating delta payloads instead.
         if self._run.config.build_type == constants.CANARY_TYPE:
-          commands.GenerateNPlus1Payloads(
+          commands.GenerateFullAndDeltaPayloads(
               self._build_root, self.bot_archive_root, image_path, tempdir)
         else:
           commands.GenerateFullPayload(self._build_root, image_path, tempdir)
@@ -3886,12 +3887,8 @@ class ArchiveStage(BoardSpecificBuilderStage, ArchivingStageMixin):
       with self.ArtifactUploader(self._upload_queue, archive=False):
         parallel.RunParallelSteps(steps)
 
-    try:
-      if not self._run.config.pgo_generate:
-        BuildAndArchiveArtifacts()
-    finally:
-      commands.RemoveOldArchives(self.bot_archive_root,
-                                 self._run.options.max_archive_builds)
+    if not self._run.config.pgo_generate:
+      BuildAndArchiveArtifacts()
 
   def _HandleStageException(self, exc_info):
     # Tell the HWTestStage not to wait for artifacts to be uploaded

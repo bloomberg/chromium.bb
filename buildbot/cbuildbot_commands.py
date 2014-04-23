@@ -1829,20 +1829,6 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir, image_dir):
   return '%s.tar.bz2' % hwqual_name
 
 
-def RemoveOldArchives(bot_archive_root, keep_max):
-  """Remove old archive directories in bot_archive_root.
-
-  Args:
-    bot_archive_root: Parent directory containing old directories.
-    keep_max: Maximum number of directories to keep.
-  """
-  # TODO(davidjames): Reimplement this in Python.
-  # +2 because line numbers start at 1 and need to skip LATEST file
-  cmd = 'ls -t1 | tail --lines=+%d | xargs rm -rf' % (keep_max + 2)
-  cros_build_lib.RunCommand(cmd, cwd=bot_archive_root, shell=True,
-                            capture_output=True)
-
-
 def CreateTestRoot(build_root):
   """Returns a temporary directory for test results in chroot.
 
@@ -1876,12 +1862,12 @@ def GenerateFullPayload(build_root, target_image_path, archive_dir):
   cros_build_lib.RunCommand(cmd, capture_output=True)
 
 
-def GenerateNPlus1Payloads(build_root, previous_versions_dir, target_image_path,
-                           archive_dir):
-  """Generates nplus1 payloads for hw testing.
+def GenerateFullAndDeltaPayloads(build_root, previous_versions_dir,
+                                 target_image_path, archive_dir):
+  """Generates full and n->n delta payloads.
 
-  We generate the nplus1 payloads for testing. These include the full and
-  stateful payloads. In addition we generate the n-1->n and n->n delta payloads.
+  These include the full and stateful payloads. We only end up using the full
+  payloads. The delta payloads are just generated for testing purposes.
 
   Args:
     build_root: The root of the chromium os checkout.

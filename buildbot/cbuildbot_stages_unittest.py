@@ -1783,7 +1783,7 @@ class ArchiveStageTest(AbstractStageTest):
     """Patch dependencies of ArchiveStage.PerformStage()."""
     to_patch = [
         (parallel, 'RunParallelSteps'), (commands, 'PushImages'),
-        (commands, 'RemoveOldArchives'), (commands, 'UploadArchivedFile')]
+        (commands, 'UploadArchivedFile')]
     self.AutoPatch(to_patch)
 
   def setUp(self):
@@ -1805,8 +1805,6 @@ class ArchiveStageTest(AbstractStageTest):
     """Simple did-it-run test."""
     # TODO(davidjames): Test the individual archive steps as well.
     self.RunStage()
-    # pylint: disable=E1101
-    self.assertTrue(commands.RemoveOldArchives.called)
 
   # TODO(build): This test is not actually testing anything real.  It confirms
   # that PushImages is not called, but the mock for RunParallelSteps already
