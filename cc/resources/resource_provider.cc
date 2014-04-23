@@ -600,16 +600,10 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
                            use_rgba_4444_texture_format,
                            id_allocation_chunk_size));
 
-  bool success = false;
-  if (resource_provider->ContextGL()) {
-    success = resource_provider->InitializeGL();
-  } else {
+  if (resource_provider->ContextGL())
+    resource_provider->InitializeGL();
+  else
     resource_provider->InitializeSoftware();
-    success = true;
-  }
-
-  if (!success)
-    return scoped_ptr<ResourceProvider>();
 
   DCHECK_NE(InvalidType, resource_provider->default_resource_type());
   return resource_provider.Pass();
@@ -1285,7 +1279,7 @@ void ResourceProvider::InitializeSoftware() {
   best_texture_format_ = RGBA_8888;
 }
 
-bool ResourceProvider::InitializeGL() {
+void ResourceProvider::InitializeGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!texture_uploader_);
   DCHECK_NE(GLTexture, default_resource_type_);
@@ -1315,8 +1309,6 @@ bool ResourceProvider::InitializeGL() {
       new TextureIdAllocator(gl, id_allocation_chunk_size_));
   buffer_id_allocator_.reset(
       new BufferIdAllocator(gl, id_allocation_chunk_size_));
-
-  return true;
 }
 
 void ResourceProvider::CleanUpGLIfNeeded() {

@@ -56,7 +56,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
                      const LayerTreeSettings* settings,
                      OutputSurface* output_surface,
                      ResourceProvider* resource_provider);
-  bool Initialize();
 
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;

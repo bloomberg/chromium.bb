@@ -1781,19 +1781,18 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
     renderer_ = SoftwareRenderer::Create(
         this, &settings_, output_surface, resource_provider);
   }
+  DCHECK(renderer_);
 
-  if (renderer_) {
-    renderer_->SetVisible(visible_);
-    SetFullRootLayerDamage();
+  renderer_->SetVisible(visible_);
+  SetFullRootLayerDamage();
 
-    // See note in LayerTreeImpl::UpdateDrawProperties.  Renderer needs to be
-    // initialized to get max texture size.  Also, after releasing resources,
-    // trees need another update to generate new ones.
-    active_tree_->set_needs_update_draw_properties();
-    if (pending_tree_)
-      pending_tree_->set_needs_update_draw_properties();
-    client_->UpdateRendererCapabilitiesOnImplThread();
-  }
+  // See note in LayerTreeImpl::UpdateDrawProperties.  Renderer needs to be
+  // initialized to get max texture size.  Also, after releasing resources,
+  // trees need another update to generate new ones.
+  active_tree_->set_needs_update_draw_properties();
+  if (pending_tree_)
+    pending_tree_->set_needs_update_draw_properties();
+  client_->UpdateRendererCapabilitiesOnImplThread();
 }
 
 void LayerTreeHostImpl::CreateAndSetTileManager(
@@ -1873,8 +1872,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                settings_.highp_threshold_min,
                                settings_.use_rgba_4444_textures,
                                settings_.texture_id_allocation_chunk_size);
-  if (!resource_provider)
-    return false;
 
   if (output_surface->capabilities().deferred_gl_initialization)
     EnforceZeroBudget(true);
@@ -1882,9 +1879,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
   bool skip_gl_renderer = false;
   CreateAndSetRenderer(
       output_surface.get(), resource_provider.get(), skip_gl_renderer);
-
-  if (!renderer_)
-    return false;
 
   if (settings_.impl_side_painting) {
     CreateAndSetTileManager(
@@ -1932,22 +1926,16 @@ bool LayerTreeHostImpl::DeferredInitialize(
   ReleaseTreeResources();
   renderer_.reset();
 
-  bool resource_provider_success = resource_provider_->InitializeGL();
+  resource_provider_->InitializeGL();
 
-  bool success = resource_provider_success;
-  if (success) {
-    bool skip_gl_renderer = false;
-    CreateAndSetRenderer(
-        output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
-    if (!renderer_)
-      success = false;
-  }
+  bool skip_gl_renderer = false;
+  CreateAndSetRenderer(
+      output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
 
-  if (success) {
-    if (offscreen_context_provider.get() &&
-        !offscreen_context_provider->BindToCurrentThread())
-      success = false;
-  }
+  bool success = true;
+  if (offscreen_context_provider.get() &&
+      !offscreen_context_provider->BindToCurrentThread())
+    success = false;
 
   if (success) {
     EnforceZeroBudget(false);
@@ -1961,19 +1949,18 @@ bool LayerTreeHostImpl::DeferredInitialize(
 
     client_->DidLoseOutputSurfaceOnImplThread();
 
-    if (resource_provider_success) {
-      // If this fails the context provider will be dropped from the output
-      // surface and destroyed. But the GLRenderer expects the output surface
-      // to stick around - and hold onto the context3d - as long as it is alive.
-      // TODO(danakj): Remove the need for this code path: crbug.com/276411
-      renderer_.reset();
+    // If this method fails, the context provider will be dropped from the
+    // output surface and destroyed. But the GLRenderer expects the output
+    // surface to stick around - and hold onto the context3d - as long as it is
+    // alive.
+    // TODO(danakj): Remove the need for this code path: crbug.com/276411
+    renderer_.reset();
 
-      // The resource provider can't stay in GL mode or it tries to clean up GL
-      // stuff, but the context provider is going away on the output surface
-      // which contradicts being in GL mode.
-      // TODO(danakj): Remove the need for this code path: crbug.com/276411
-      resource_provider_->InitializeSoftware();
-    }
+    // The resource provider can't stay in GL mode or it tries to clean up GL
+    // stuff, but the context provider is going away on the output surface
+    // which contradicts being in GL mode.
+    // TODO(danakj): Remove the need for this code path: crbug.com/276411
+    resource_provider_->InitializeSoftware();
   }
 
   SetOffscreenContextProvider(offscreen_context_provider);
@@ -1996,7 +1983,6 @@ void LayerTreeHostImpl::ReleaseGL() {
   bool skip_gl_renderer = true;
   CreateAndSetRenderer(
       output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
-  DCHECK(renderer_);
 
   EnforceZeroBudget(true);
   CreateAndSetTileManager(resource_provider_.get(),

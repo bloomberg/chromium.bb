@@ -79,7 +79,7 @@ class CC_EXPORT ResourceProvider {
   virtual ~ResourceProvider();
 
   void InitializeSoftware();
-  bool InitializeGL();
+  void InitializeGL();
 
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
