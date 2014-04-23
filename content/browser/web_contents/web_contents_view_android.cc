@@ -67,9 +67,8 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    *out = rwhv->GetViewBounds();
+  *out = content_view_core_ ? gfx::Rect(content_view_core_->GetViewSize())
+                            : gfx::Rect();
 }
 
 void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {
@@ -122,11 +121,10 @@ DropData* WebContentsViewAndroid::GetDropData() const {
 }
 
 gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    return rwhv->GetViewBounds();
-  else
-    return gfx::Rect();
+  if (content_view_core_)
+    return gfx::Rect(content_view_core_->GetViewSize());
+
+  return gfx::Rect();
 }
 
 void WebContentsViewAndroid::CreateView(

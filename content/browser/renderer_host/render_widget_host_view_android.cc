@@ -280,7 +280,6 @@ void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
   // Ignore the given size as only the Java code has the power to
   // resize the view on Android.
   default_size_ = size;
-  WasResized();
 }
 
 void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
@@ -449,11 +448,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!content_view_core_)
     return gfx::Rect(default_size_);
 
-  gfx::Size size = content_view_core_->GetViewportSizeDip();
-  gfx::Size offset = content_view_core_->GetViewportSizeOffsetDip();
-  size.Enlarge(-offset.width(), -offset.height());
-
-  return gfx::Rect(size);
+  return gfx::Rect(content_view_core_->GetViewSize());
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
@@ -1333,8 +1328,11 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     observing_root_window_ = false;
   }
 
-  if (content_view_core != content_view_core_)
+  bool resize = false;
+  if (content_view_core != content_view_core_) {
     ReleaseLocksOnSurface();
+    resize = true;
+  }
 
   content_view_core_ = content_view_core;
 
@@ -1351,6 +1349,9 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     content_view_core_->GetWindowAndroid()->AddObserver(this);
     observing_root_window_ = true;
   }
+
+  if (resize && content_view_core_)
+    WasResized();
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {

@@ -307,6 +307,12 @@ void ContentViewCoreImpl::Observe(int type,
                 switched_details->first->GetView());
         if (view)
           view->SetContentViewCore(NULL);
+
+        view = static_cast<RenderWidgetHostViewAndroid*>(
+            switched_details->second->GetView());
+
+        if (view)
+          view->SetContentViewCore(this);
       }
       int new_pid = GetRenderProcessIdFromRenderViewHost(
           web_contents_->GetRenderViewHost());
@@ -778,6 +784,13 @@ void ContentViewCoreImpl::DidStopFlinging() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
     Java_ContentViewCore_onNativeFlingStopped(env, obj.obj());
+}
+
+gfx::Size ContentViewCoreImpl::GetViewSize() const {
+  gfx::Size size = GetViewportSizeDip();
+  gfx::Size offset = GetViewportSizeOffsetDip();
+  size.Enlarge(-offset.width(), -offset.height());
+  return size;
 }
 
 gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {

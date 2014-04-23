@@ -294,6 +294,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void DidStopFlinging();
 
+  // Returns the viewport size after accounting for the viewport offset.
+  gfx::Size GetViewSize() const;
+
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------
