@@ -24,44 +24,44 @@
 // //so we want to parse it as early as possible.
 //<include src="metrics.js"/>
 //
-//<include src="../../../image_loader/image_loader_client.js"/>
+//<include src="../../../../../../ui/file_manager/image_loader/image_loader_client.js"/>
 //
-//<include src="../../../../webui/resources/js/load_time_data.js"/>
-//<include src="../../../../webui/resources/js/cr.js"/>
-//<include src="../../../../webui/resources/js/util.js"/>
-//<include src="../../../../webui/resources/js/i18n_template_no_process.js"/>
+//<include src="../../../../../../ui/webui/resources/js/load_time_data.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr.js"/>
+//<include src="../../../../../../ui/webui/resources/js/util.js"/>
+//<include src="../../../../../../ui/webui/resources/js/i18n_template_no_process.js"/>
 //
-//<include src="../../../../webui/resources/js/event_tracker.js"/>
-//<include src="../../../../webui/resources/js/cr/ui.js"/>
-//<include src="../../../../webui/resources/js/cr/event_target.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/touch_handler.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/array_data_model.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/dialogs.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/list_item.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/list_selection_model.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/list_single_selection_model.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/list_selection_controller.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/list.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/tree.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/autocomplete_list.js"/>
-
-//<include src="../../../../webui/resources/js/cr/ui/splitter.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/table/table_splitter.js"/>
+//<include src="../../../../../../ui/webui/resources/js/event_tracker.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/event_target.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/touch_handler.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/array_data_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/dialogs.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_item.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/list.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/tree.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/autocomplete_list.js"/>
 //
-//<include src="../../../../webui/resources/js/cr/ui/table/table_column.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/table/table_column_model.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/table/table_header.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/table/table_list.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/table.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/splitter.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_splitter.js"/>
 //
-//<include src="../../../../webui/resources/js/cr/ui/grid.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_column.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_column_model.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_header.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table/table_list.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/table.js"/>
 //
-//<include src="../../../../webui/resources/js/cr/ui/command.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/position_util.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/menu_item.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/menu.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/menu_button.js"/>
-//<include src="../../../../webui/resources/js/cr/ui/context_menu_handler.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js"/>
+//
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/command.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/position_util.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/menu_item.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/menu.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/menu_button.js"/>
+//<include src="../../../../../../ui/webui/resources/js/cr/ui/context_menu_handler.js"/>
 
 (function() {
 // 'strict mode' is invoked for this scope.

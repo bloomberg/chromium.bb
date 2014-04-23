@@ -16,9 +16,9 @@
 (function() {
 'use strict';
 
-//<include src="../../file_manager/common/js/util.js"/>
-//<include src="../../file_manager/foreground/js/media/media_controls.js"/>
-//<include src="../../file_manager/foreground/js/media/util.js"/>
+//<include src="../../../../chrome/browser/resources/file_manager/common/js/util.js"/>
+//<include src="../../../../chrome/browser/resources/file_manager/foreground/js/media/media_controls.js"/>
+//<include src="../../../../chrome/browser/resources/file_manager/foreground/js/media/util.js"/>
 
 //<include src="video_player.js"/>
 
