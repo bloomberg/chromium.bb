@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebBatteryListener_h
-#define WebBatteryListener_h
+#ifndef WebBatteryStatusListener_h
+#define WebBatteryStatusListener_h
 
 #include "WebBatteryStatus.h"
 
@@ -11,14 +11,14 @@ namespace blink {
 
 class WebBatteryStatus;
 
-class WebBatteryListener {
+class WebBatteryStatusListener {
 public:
     // This method is called when a new battery status is available.
     virtual void updateBatteryStatus(const WebBatteryStatus&) = 0;
 
-    virtual ~WebBatteryListener() { }
+    virtual ~WebBatteryStatusListener() { }
 };
 
 } // namespace blink
 
-#endif // WebBatteryListener_h
+#endif // WebBatteryStatusListener_h

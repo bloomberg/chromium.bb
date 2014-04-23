@@ -85,12 +85,12 @@ void BatteryDispatcher::didChangeBatteryStatus(const AtomicString& eventType)
 
 void BatteryDispatcher::startListening()
 {
-    notImplemented();
+    blink::Platform::current()->setBatteryStatusListener(this);
 }
 
 void BatteryDispatcher::stopListening()
 {
-    notImplemented();
+    blink::Platform::current()->setBatteryStatusListener(0);
 }
 
 }

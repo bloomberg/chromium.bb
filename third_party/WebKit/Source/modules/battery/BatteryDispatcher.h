@@ -8,7 +8,7 @@
 #include "core/frame/DeviceSensorEventDispatcher.h"
 #include "modules/battery/BatteryManager.h"
 #include "modules/battery/BatteryStatus.h"
-#include "public/platform/WebBatteryListener.h"
+#include "public/platform/WebBatteryStatusListener.h"
 
 namespace blink {
 class WebBatteryStatus;
@@ -16,7 +16,7 @@ class WebBatteryStatus;
 
 namespace WebCore {
 
-class BatteryDispatcher FINAL : public DeviceSensorEventDispatcher, public blink::WebBatteryListener {
+class BatteryDispatcher FINAL : public DeviceSensorEventDispatcher, public blink::WebBatteryStatusListener {
 public:
     static BatteryDispatcher& instance();
     virtual ~BatteryDispatcher();

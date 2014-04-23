@@ -55,6 +55,7 @@ class GrContext;
 namespace blink {
 
 class WebAudioBus;
+class WebBatteryStatusListener;
 class WebBlobRegistry;
 class WebContentDecryptionModule;
 class WebClipboard;
@@ -158,6 +159,12 @@ public:
     // Creates a platform dependent WebMIDIAccessor. MIDIAccessor under platform
     // creates and owns it.
     virtual WebMIDIAccessor* createMIDIAccessor(WebMIDIAccessorClient*) { return 0; }
+
+
+    // Battery -------------------------------------------------------------
+
+    // Sets the listener for watching battery status updates.
+    virtual void setBatteryStatusListener(blink::WebBatteryStatusListener*) { }
 
 
     // Blob ----------------------------------------------------------------

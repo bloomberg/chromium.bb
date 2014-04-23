@@ -5,6 +5,8 @@
 #ifndef WebBatteryStatus_h
 #define WebBatteryStatus_h
 
+#include <limits>
+
 namespace blink {
 
 class WebBatteryStatus {
