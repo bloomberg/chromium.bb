@@ -76,7 +76,6 @@ const char kBadManifest[] = "{\"version\": \"1\"}";
 const char kGoodServicesManifest[] =
     "{"
     "  \"version\": \"1.0\","
-    "  \"default_wallpaper\": \"http://somedomain.com/image.png\",\n"
     "  \"default_apps\": [\n"
     "    \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n"
     "    \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"\n"
@@ -323,19 +322,20 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
   RunUntilIdle();
   EXPECT_TRUE(doc->IsReady());
 
-  EXPECT_EQ(doc->GetDefaultWallpaperUrl().spec(),
-            "http://somedomain.com/image.png");
+  GURL wallpaper_url;
+  EXPECT_FALSE(doc->GetDefaultWallpaperUrl(&wallpaper_url));
+  EXPECT_EQ("", wallpaper_url.spec());
 
   std::vector<std::string> default_apps;
   EXPECT_TRUE(doc->GetDefaultApps(&default_apps));
   ASSERT_EQ(default_apps.size(), 2u);
 
-  EXPECT_EQ(default_apps[0], "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  EXPECT_EQ(default_apps[1], "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  EXPECT_EQ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", default_apps[0]);
+  EXPECT_EQ("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", default_apps[1]);
 
-  EXPECT_EQ(doc->GetOemAppsFolderName("en-US"), "EN-US OEM Name");
-  EXPECT_EQ(doc->GetOemAppsFolderName("en"), "EN OEM Name");
-  EXPECT_EQ(doc->GetOemAppsFolderName("ru"), "Default OEM Name");
+  EXPECT_EQ("EN-US OEM Name", doc->GetOemAppsFolderName("en-US"));
+  EXPECT_EQ("EN OEM Name", doc->GetOemAppsFolderName("en"));
+  EXPECT_EQ("Default OEM Name", doc->GetOemAppsFolderName("ru"));
 }
 
 TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
@@ -427,7 +427,7 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
   app_list::AppListSyncableService* service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile.get());
   ASSERT_TRUE(service);
-  EXPECT_EQ(service->GetOemFolderNameForTest(), "EN OEM Name");
+  EXPECT_EQ("EN OEM Name", service->GetOemFolderNameForTest());
 }
 
 TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {

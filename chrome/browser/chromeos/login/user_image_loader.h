@@ -42,10 +42,10 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // image from |filepath| on disk, the second processes |data| read into memory
   // already.
   void Start(const std::string& filepath,
-             int size,
+             int pixels_per_side,
              const LoadedCallback& loaded_cb);
   void Start(scoped_ptr<std::string> data,
-             int size,
+             int pixels_per_side,
              const LoadedCallback& loaded_cb);
 
  private:
@@ -53,10 +53,13 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // Contains attributes we need to know about each image we decode.
   struct ImageInfo {
-    ImageInfo(int size, const LoadedCallback& loaded_cb);
+    ImageInfo(const std::string& file_path,
+              int pixels_per_side,
+              const LoadedCallback& loaded_cb);
     ~ImageInfo();
 
-    const int size;
+    const std::string file_path;
+    const int pixels_per_side;
     const LoadedCallback loaded_cb;
   };
 
@@ -64,10 +67,9 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   virtual ~UserImageLoader();
 
-  // Reads the image from |filepath| and starts the decoding process. This
-  // method may only be invoked via the |background_task_runner_|.
-  void ReadAndDecodeImage(const std::string& filepath,
-                          const ImageInfo& image_info);
+  // Reads the image from |image_info.file_path| and starts the decoding
+  // process. This method may only be invoked via the |background_task_runner_|.
+  void ReadAndDecodeImage(const ImageInfo& image_info);
 
   // Decodes the image |data|. This method may only be invoked via the
   // |background_task_runner_|.

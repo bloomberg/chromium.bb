@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -22,7 +23,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/customization_wallpaper_downloader.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/external_loader.h"
@@ -30,7 +33,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
@@ -67,6 +72,14 @@ const char kAcceptedManifestVersion[] = "1.0";
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =
     "/opt/oem/etc/startup_manifest.json";
+
+// This is subdirectory relative to PathService(DIR_CHROMEOS_CUSTOM_WALLPAPERS),
+// where downloaded (and resized) wallpaper is stored.
+const char kCustomizationDefaultWallpaperDir[] = "customization";
+
+// The original downloaded image file is stored under this name.
+const char kCustomizationDefaultWallpaperDownloadedFile[] =
+    "default_downloaded_wallpaper.bin";
 
 // Name of local state option that tracks if services customization has been
 // applied.
@@ -130,6 +143,12 @@ std::string GetLocaleSpecificStringImpl(
   return std::string();
 }
 
+void CheckWallpaperCacheExists(const base::FilePath& path, bool* exists) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(exists);
+  *exists = base::PathExists(path);
+}
+
 }  // anonymous namespace
 
 // Template URL where to fetch OEM services customization manifest from.
@@ -160,7 +179,7 @@ class ServicesCustomizationExternalLoader
       ServicesCustomizationDocument::GetInstance()->StartFetching();
       // In case of missing customization ID, SetCurrentApps will be called
       // synchronously from StartFetching and this function will be called
-      // recursively so we need to return to don't call LoadFinished twice.
+      // recursively so we need to return to avoid calling LoadFinished twice.
       // In case of async load it is safe to return empty list because this
       // provider didn't install any app yet so no app can be removed due to
       // returning empty list.
@@ -341,20 +360,63 @@ std::string StartupCustomizationDocument::GetEULAPage(
 
 // ServicesCustomizationDocument implementation. -------------------------------
 
+class ServicesCustomizationDocument::ApplyingTask {
+ public:
+  // Registers in ServicesCustomizationDocument;
+  explicit ApplyingTask(ServicesCustomizationDocument* document);
+
+  // Do not automatically deregister as we might be called on invalid thread.
+  ~ApplyingTask();
+
+  // Mark task finished and check for customization applied.
+  void Finished(bool success);
+
+ private:
+  ServicesCustomizationDocument* document_;
+
+  // This is error-checking flag to prevent destroying unfinished task
+  // or double finish.
+  bool engaged_;
+};
+
+ServicesCustomizationDocument::ApplyingTask::ApplyingTask(
+    ServicesCustomizationDocument* document)
+    : document_(document), engaged_(true) {
+  document->ApplyingTaskStarted();
+}
+
+ServicesCustomizationDocument::ApplyingTask::~ApplyingTask() {
+  DCHECK(!engaged_);
+}
+
+void ServicesCustomizationDocument::ApplyingTask::Finished(bool success) {
+  DCHECK(engaged_);
+  if (engaged_) {
+    engaged_ = false;
+    document_->ApplyingTaskFinished(success);
+  }
+}
+
 ServicesCustomizationDocument::ServicesCustomizationDocument()
     : CustomizationDocument(kAcceptedManifestVersion),
       num_retries_(0),
       fetch_started_(false),
-      network_delay_(base::TimeDelta::FromMilliseconds(
-          kDefaultNetworkRetryDelayMS)),
+      network_delay_(
+          base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS)),
+      apply_tasks_started_(0),
+      apply_tasks_finished_(0),
+      apply_tasks_success_(0),
       weak_ptr_factory_(this) {
 }
 
 ServicesCustomizationDocument::ServicesCustomizationDocument(
     const std::string& manifest)
     : CustomizationDocument(kAcceptedManifestVersion),
-      network_delay_(base::TimeDelta::FromMilliseconds(
-          kDefaultNetworkRetryDelayMS)),
+      network_delay_(
+          base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS)),
+      apply_tasks_started_(0),
+      apply_tasks_finished_(0),
+      apply_tasks_success_(0),
       weak_ptr_factory_(this) {
   LoadManifestFromString(manifest);
 }
@@ -374,6 +436,8 @@ ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {
 void ServicesCustomizationDocument::RegisterPrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kServicesCustomizationAppliedPref, false);
+  registry->RegisterStringPref(prefs::kCustomizationDefaultWallpaperURL,
+                               std::string());
 }
 
 // static
@@ -402,6 +466,45 @@ void ServicesCustomizationDocument::SetApplied(bool val) {
     prefs->SetBoolean(kServicesCustomizationAppliedPref, val);
 }
 
+// static
+base::FilePath ServicesCustomizationDocument::GetCustomizedWallpaperCacheDir() {
+  base::FilePath custom_wallpaper_dir;
+  if (!PathService::Get(chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS,
+                        &custom_wallpaper_dir)) {
+    LOG(DFATAL) << "Unable to get custom wallpaper dir.";
+    return base::FilePath();
+  }
+  return custom_wallpaper_dir.Append(kCustomizationDefaultWallpaperDir);
+}
+
+// static
+base::FilePath
+ServicesCustomizationDocument::GetCustomizedWallpaperDownloadedFileName() {
+  const base::FilePath dir = GetCustomizedWallpaperCacheDir();
+  if (dir.empty()) {
+    NOTREACHED();
+    return dir;
+  }
+  return dir.Append(kCustomizationDefaultWallpaperDownloadedFile);
+}
+
+void ServicesCustomizationDocument::EnsureCustomizationApplied() {
+  if (WasOOBECustomizationApplied())
+    return;
+
+  // When customization manifest is fetched, applying will start automatically.
+  if (IsReady())
+    return;
+
+  StartFetching();
+}
+
+base::Closure
+ServicesCustomizationDocument::EnsureCustomizationAppliedClosure() {
+  return base::Bind(&ServicesCustomizationDocument::EnsureCustomizationApplied,
+                    weak_ptr_factory_.GetWeakPtr());
+}
+
 void ServicesCustomizationDocument::StartFetching() {
   if (IsReady() || fetch_started_)
     return;
@@ -416,7 +519,7 @@ void ServicesCustomizationDocument::StartFetching() {
       url_ = GURL(base::StringPrintf(
           kManifestUrl, StringToLowerASCII(customization_id).c_str()));
     } else {
-      // There is no customization ID in VPD remember that.
+      // Remember that there is no customization ID in VPD.
       OnCustomizationNotFound();
       return;
     }
@@ -493,7 +596,7 @@ bool ServicesCustomizationDocument::LoadManifestFromString(
 }
 
 void ServicesCustomizationDocument::OnManifestLoaded() {
-  if (!ServicesCustomizationDocument::WasOOBECustomizationApplied())
+  if (!WasOOBECustomizationApplied())
     ApplyOOBECustomization();
 
   scoped_ptr<base::DictionaryValue> prefs =
@@ -545,18 +648,24 @@ void ServicesCustomizationDocument::OnURLFetchComplete(
 }
 
 bool ServicesCustomizationDocument::ApplyOOBECustomization() {
-  // TODO(dpolukhin): apply default wallpaper, crbug.com/348136.
-  SetApplied(true);
-  return true;
+  if (apply_tasks_started_)
+    return false;
+
+  CheckAndApplyWallpaper();
+  return false;
 }
 
-GURL ServicesCustomizationDocument::GetDefaultWallpaperUrl() const {
+bool ServicesCustomizationDocument::GetDefaultWallpaperUrl(
+    GURL* out_url) const {
   if (!IsReady())
-    return GURL();
+    return false;
 
   std::string url;
-  root_->GetString(kDefaultWallpaperAttr, &url);
-  return GURL(url);
+  if (!root_->GetString(kDefaultWallpaperAttr, &url))
+    return false;
+
+  *out_url = GURL(url);
+  return true;
 }
 
 bool ServicesCustomizationDocument::GetDefaultApps(
@@ -687,6 +796,174 @@ void ServicesCustomizationDocument::InitializeForTesting() {
 void ServicesCustomizationDocument::ShutdownForTesting() {
   delete g_test_services_customization_document;
   g_test_services_customization_document = NULL;
+}
+
+void ServicesCustomizationDocument::StartOEMWallpaperDownload(
+    const GURL& wallpaper_url,
+    scoped_ptr<ServicesCustomizationDocument::ApplyingTask> applying) {
+  DCHECK(wallpaper_url.is_valid());
+
+  const base::FilePath dir = GetCustomizedWallpaperCacheDir();
+  const base::FilePath file = GetCustomizedWallpaperDownloadedFileName();
+  if (dir.empty() || file.empty()) {
+    NOTREACHED();
+    applying->Finished(false);
+    return;
+  }
+
+  wallpaper_downloader_.reset(new CustomizationWallpaperDownloader(
+      g_browser_process->system_request_context(),
+      wallpaper_url,
+      dir,
+      file,
+      base::Bind(&ServicesCustomizationDocument::OnOEMWallpaperDownloaded,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(applying.Pass()))));
+
+  wallpaper_downloader_->Start();
+}
+
+void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
+  if (wallpaper_downloader_.get()) {
+    VLOG(1) << "CheckAndApplyWallpaper(): download has already started.";
+    return;
+  }
+  scoped_ptr<ServicesCustomizationDocument::ApplyingTask> applying(
+      new ServicesCustomizationDocument::ApplyingTask(this));
+
+  GURL wallpaper_url;
+  if (!GetDefaultWallpaperUrl(&wallpaper_url)) {
+    PrefService* pref_service = g_browser_process->local_state();
+    std::string current_url =
+        pref_service->GetString(prefs::kCustomizationDefaultWallpaperURL);
+    if (!current_url.empty()) {
+      VLOG(1) << "ServicesCustomizationDocument::CheckAndApplyWallpaper() : "
+              << "No wallpaper URL attribute in customization document, "
+              << "but current value is non-empty: '" << current_url
+              << "'. Ignored.";
+    }
+    applying->Finished(true);
+    return;
+  }
+
+  // Should fail if this ever happens in tests.
+  DCHECK(wallpaper_url.is_valid());
+  if (!wallpaper_url.is_valid()) {
+    if (!wallpaper_url.is_empty()) {
+      LOG(WARNING) << "Invalid Customized Wallpaper URL '"
+                   << wallpaper_url.spec() << "'.";
+    }
+    applying->Finished(false);
+    return;
+  }
+
+  scoped_ptr<bool> exists(new bool(false));
+
+  base::Closure check_file_exists =
+      base::Bind(&CheckWallpaperCacheExists,
+                 GetCustomizedWallpaperDownloadedFileName(),
+                 base::Unretained(exists.get()));
+  base::Closure on_checked_closure =
+      base::Bind(&ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(exists.Pass()),
+                 base::Passed(applying.Pass()));
+  if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
+          FROM_HERE, check_file_exists, on_checked_closure)) {
+    LOG(WARNING) << "Failed to start check Wallpaper cache exists.";
+  }
+}
+
+void ServicesCustomizationDocument::OnCheckedWallpaperCacheExists(
+    scoped_ptr<bool> exists,
+    scoped_ptr<ServicesCustomizationDocument::ApplyingTask> applying) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(exists);
+  DCHECK(applying);
+
+  ApplyWallpaper(*exists, applying.Pass());
+}
+
+void ServicesCustomizationDocument::ApplyWallpaper(
+    bool default_wallpaper_file_exists,
+    scoped_ptr<ServicesCustomizationDocument::ApplyingTask> applying) {
+  GURL wallpaper_url;
+  const bool wallpaper_url_present = GetDefaultWallpaperUrl(&wallpaper_url);
+
+  PrefService* pref_service = g_browser_process->local_state();
+
+  std::string current_url =
+      pref_service->GetString(prefs::kCustomizationDefaultWallpaperURL);
+  if (current_url != wallpaper_url.spec()) {
+    if (wallpaper_url_present) {
+      VLOG(1) << "ServicesCustomizationDocument::ApplyWallpaper() : "
+              << "Wallpaper URL in customization document '"
+              << wallpaper_url.spec() << "' differs from current '"
+              << current_url << "'."
+              << (GURL(current_url).is_valid() && default_wallpaper_file_exists
+                      ? " Ignored."
+                      : " Will refetch.");
+    } else {
+      VLOG(1) << "ServicesCustomizationDocument::ApplyWallpaper() : "
+              << "No wallpaper URL attribute in customization document, "
+              << "but current value is non-empty: '" << current_url
+              << "'. Ignored.";
+    }
+  }
+  if (!wallpaper_url_present) {
+    applying->Finished(true);
+    return;
+  }
+
+  DCHECK(wallpaper_url.is_valid());
+
+  // Never update system-wide wallpaper (i.e. do not check
+  // current_url == wallpaper_url.spec() )
+  if (GURL(current_url).is_valid() && default_wallpaper_file_exists) {
+    VLOG(1)
+        << "ServicesCustomizationDocument::ApplyWallpaper() : reuse existing";
+    OnOEMWallpaperDownloaded(applying.Pass(), true, GURL(current_url));
+  } else {
+    VLOG(1)
+        << "ServicesCustomizationDocument::ApplyWallpaper() : start download";
+    StartOEMWallpaperDownload(wallpaper_url, applying.Pass());
+  }
+}
+
+void ServicesCustomizationDocument::OnOEMWallpaperDownloaded(
+    scoped_ptr<ServicesCustomizationDocument::ApplyingTask> applying,
+    bool success,
+    const GURL& wallpaper_url) {
+  if (success) {
+    DCHECK(wallpaper_url.is_valid());
+
+    VLOG(1) << "Setting default wallpaper to '"
+            << GetCustomizedWallpaperDownloadedFileName().value() << "' ('"
+            << wallpaper_url.spec() << "')";
+    WallpaperManager::Get()->SetCustomizedDefaultWallpaper(
+        wallpaper_url,
+        GetCustomizedWallpaperDownloadedFileName(),
+        GetCustomizedWallpaperCacheDir());
+  }
+  wallpaper_downloader_.reset();
+  applying->Finished(success);
+}
+
+void ServicesCustomizationDocument::ApplyingTaskStarted() {
+  ++apply_tasks_started_;
+}
+
+void ServicesCustomizationDocument::ApplyingTaskFinished(bool success) {
+  DCHECK_GT(apply_tasks_started_, apply_tasks_finished_);
+  ++apply_tasks_finished_;
+
+  apply_tasks_success_ += success;
+
+  if (apply_tasks_started_ != apply_tasks_finished_)
+    return;
+
+  if (apply_tasks_success_ == apply_tasks_finished_)
+    SetApplied(true);
 }
 
 }  // namespace chromeos

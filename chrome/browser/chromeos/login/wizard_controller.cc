@@ -679,6 +679,10 @@ void WizardController::PerformPostEulaActions() {
       base::Bind(&WizardController::StartTimezoneResolve,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS));
+  DelayNetworkCall(
+      ServicesCustomizationDocument::GetInstance()
+          ->EnsureCustomizationAppliedClosure(),
+      base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS));
 
   // Now that EULA has been accepted (for official builds), enable portal check.
   // ChromiumOS builds would go though this code path too.

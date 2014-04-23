@@ -93,8 +93,6 @@ void Resize(SkBitmap orig_bitmap,
 
 }  // namespace
 
-const int kInvalidResourceID = -1;
-
 // static
 uint32_t WallpaperResizer::GetImageId(const gfx::ImageSkia& image) {
   const gfx::ImageSkiaRep& image_rep = image.GetRepresentation(1.0f);
@@ -120,7 +118,7 @@ WallpaperResizer::WallpaperResizer(const gfx::ImageSkia& image,
                                    WallpaperLayout layout)
     : image_(image),
       original_image_id_(GetImageId(image_)),
-      resource_id_(kInvalidResourceID),
+      resource_id_(DesktopBackgroundController::kInvalidResourceID),
       target_size_(target_size),
       layout_(layout),
       weak_ptr_factory_(this) {

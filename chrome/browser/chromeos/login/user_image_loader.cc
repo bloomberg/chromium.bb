@@ -20,9 +20,11 @@
 
 namespace chromeos {
 
-UserImageLoader::ImageInfo::ImageInfo(int size,
+UserImageLoader::ImageInfo::ImageInfo(const std::string& file_path,
+                                      int pixels_per_side,
                                       const LoadedCallback& loaded_cb)
-    : size(size),
+    : file_path(file_path),
+      pixels_per_side(pixels_per_side),
       loaded_cb(loaded_cb) {
 }
 
@@ -41,33 +43,32 @@ UserImageLoader::~UserImageLoader() {
 }
 
 void UserImageLoader::Start(const std::string& filepath,
-                            int size,
+                            int pixels_per_side,
                             const LoadedCallback& loaded_cb) {
   background_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UserImageLoader::ReadAndDecodeImage,
                  this,
-                 filepath,
-                 ImageInfo(size, loaded_cb)));
+                 ImageInfo(filepath, pixels_per_side, loaded_cb)));
 }
 
 void UserImageLoader::Start(scoped_ptr<std::string> data,
-                            int size,
+                            int pixels_per_side,
                             const LoadedCallback& loaded_cb) {
-  background_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&UserImageLoader::DecodeImage,
-                                        this,
-                                        base::Passed(&data),
-                                        ImageInfo(size, loaded_cb)));
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&UserImageLoader::DecodeImage,
+                 this,
+                 base::Passed(&data),
+                 ImageInfo(std::string(), pixels_per_side, loaded_cb)));
 }
 
-void UserImageLoader::ReadAndDecodeImage(const std::string& filepath,
-                                         const ImageInfo& image_info) {
+void UserImageLoader::ReadAndDecodeImage(const ImageInfo& image_info) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   scoped_ptr<std::string> data(new std::string);
   const bool success =
-      base::ReadFileToString(base::FilePath(filepath), data.get());
+      base::ReadFileToString(base::FilePath(image_info.file_path), data.get());
   DCHECK(success);
 
   DecodeImage(data.Pass(), image_info);
@@ -92,7 +93,8 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
     NOTREACHED();
     return;
   }
-  const int target_size = it->second.size;
+  const std::string file_path = it->second.file_path;
+  const int target_size = it->second.pixels_per_side;
   const LoadedCallback loaded_cb = it->second.loaded_cb;
   image_info_map_.erase(it);
 
@@ -100,12 +102,13 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
 
   if (target_size > 0) {
     // Auto crop the image, taking the largest square in the center.
-    int size = std::min(decoded_image.width(), decoded_image.height());
-    int x = (decoded_image.width() - size) / 2;
-    int y = (decoded_image.height() - size) / 2;
-    SkBitmap cropped_image =
-        SkBitmapOperations::CreateTiledBitmap(decoded_image, x, y, size, size);
-    if (size > target_size) {
+    int pixels_per_side =
+        std::min(decoded_image.width(), decoded_image.height());
+    int x = (decoded_image.width() - pixels_per_side) / 2;
+    int y = (decoded_image.height() - pixels_per_side) / 2;
+    SkBitmap cropped_image = SkBitmapOperations::CreateTiledBitmap(
+        decoded_image, x, y, pixels_per_side, pixels_per_side);
+    if (pixels_per_side > target_size) {
       // Also downsize the image to save space and memory.
       final_image =
           skia::ImageOperations::Resize(cropped_image,
@@ -123,6 +126,7 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
       gfx::ImageSkia::CreateFrom1xBitmap(final_image);
   final_image_skia.MakeThreadSafe();
   UserImage user_image(final_image_skia, decoder->get_image_data());
+  user_image.set_file_path(file_path);
   if (image_codec_ == ImageDecoder::ROBUST_JPEG_CODEC)
     user_image.MarkAsSafe();
   foreground_task_runner_->PostTask(FROM_HERE,

@@ -42,6 +42,7 @@ void Test__InitStartupCustomizationDocument(const std::string& manifest);
 
 namespace chromeos {
 
+class CustomizationWallpaperDownloader;
 class ServicesCustomizationExternalLoader;
 
 namespace system {
@@ -135,7 +136,8 @@ class StartupCustomizationDocument : public CustomizationDocument {
 // OEM services customization document class.
 // ServicesCustomizationDocument is fetched from network therefore it is not
 // ready just after creation. Fetching of the manifest should be initiated
-// outside this class by calling StartFetching() method.
+// outside this class by calling StartFetching() or EnsureCustomizationApplied()
+// methods.
 // User of the file should check IsReady before use it.
 class ServicesCustomizationDocument : public CustomizationDocument,
                                       private net::URLFetcherDelegate {
@@ -152,6 +154,12 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // once per machine.
   static bool WasOOBECustomizationApplied();
 
+  // If customization has not been applied, start fetching and applying.
+  void EnsureCustomizationApplied();
+
+  // Returns Closure with the EnsureCustomizationApplied() method.
+  base::Closure EnsureCustomizationAppliedClosure();
+
   // Start fetching customization document.
   void StartFetching();
 
@@ -159,8 +167,9 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // applied successfully. Return true if customization was applied.
   bool ApplyOOBECustomization();
 
-  // Returns default wallpaper URL.
-  GURL GetDefaultWallpaperUrl() const;
+  // Returns true if default wallpaper URL attribute found in manifest.
+  // |out_url| is set to attribute value.
+  bool GetDefaultWallpaperUrl(GURL* out_url) const;
 
   // Returns list of default apps.
   bool GetDefaultApps(std::vector<std::string>* ids) const;
@@ -179,11 +188,20 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Remove instance of ServicesCustomizationDocument for tests.
   static void ShutdownForTesting();
 
+  // These methods are also called by WallpaperManager to get "global default"
+  // customized wallpaper path (and to init default wallpaper path from it)
+  // before first wallpaper is shown.
+  static base::FilePath GetCustomizedWallpaperCacheDir();
+  static base::FilePath GetCustomizedWallpaperDownloadedFileName();
+
  private:
   friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;
 
   typedef std::vector<base::WeakPtr<ServicesCustomizationExternalLoader> >
       ExternalLoaders;
+
+  // Guard for a single application task (wallpaper downloading, for example).
+  class ApplyingTask;
 
   // C-tor for singleton construction.
   ServicesCustomizationDocument();
@@ -237,6 +255,36 @@ class ServicesCustomizationDocument : public CustomizationDocument,
       const std::string& locale,
       const base::DictionaryValue& root) const;
 
+  // Start download of wallpaper image if needed.
+  void StartOEMWallpaperDownload(const GURL& wallpaper_url,
+                                 scoped_ptr<ApplyingTask> applying);
+
+  // Check that current customized wallpaper cache exists. Once wallpaper is
+  // downloaded, it's never updated (even if manifest is re-fetched).
+  // Start wallpaper download if needed.
+  void CheckAndApplyWallpaper();
+
+  // Intermediate function to pass the result of PathExists to ApplyWallpaper.
+  void OnCheckedWallpaperCacheExists(scoped_ptr<bool> exists,
+                                     scoped_ptr<ApplyingTask> applying);
+
+  // Called after downloaded wallpaper has been checked.
+  void ApplyWallpaper(bool default_wallpaper_file_exists,
+                      scoped_ptr<ApplyingTask> applying);
+
+  // Set Shell default wallpaper to customized.
+  // It's wrapped as a callback and passed as a parameter to
+  // CustomizationWallpaperDownloader.
+  void OnOEMWallpaperDownloaded(scoped_ptr<ApplyingTask> applying,
+                                bool success,
+                                const GURL& wallpaper_url);
+
+  // Register one of Customization applying tasks.
+  void ApplyingTaskStarted();
+
+  // Mark task finished and check for "all customization applied".
+  void ApplyingTaskFinished(bool success);
+
   // Services customization manifest URL.
   GURL url_;
 
@@ -254,6 +302,19 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // Known external loaders.
   ExternalLoaders external_loaders_;
+
+  scoped_ptr<CustomizationWallpaperDownloader> wallpaper_downloader_;
+
+  // This is barrier until customization is applied.
+  // When number of finished tasks match number of started - customization is
+  // applied.
+  size_t apply_tasks_started_;
+  size_t apply_tasks_finished_;
+
+  // This is the number of successfully finished customization tasks.
+  // If it matches number of tasks finished - customization is applied
+  // successfully.
+  size_t apply_tasks_success_;
 
   // Weak factory for callbacks.
   base::WeakPtrFactory<ServicesCustomizationDocument> weak_ptr_factory_;

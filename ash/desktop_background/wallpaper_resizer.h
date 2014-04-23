@@ -18,8 +18,6 @@ namespace ash {
 
 class WallpaperResizerObserver;
 
-extern const int kInvalidResourceID;
-
 // Stores the current wallpaper data and resize it to |target_size| if needed.
 class ASH_EXPORT WallpaperResizer {
  public:

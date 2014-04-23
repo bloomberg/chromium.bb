@@ -29,6 +29,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -123,6 +124,30 @@ bool MoveCustomWallpaperDirectory(const char* sub_dir,
   return false;
 }
 
+// These global default values are used to set customized default
+// wallpaper path in WallpaperManager::InitializeWallpaper().
+base::FilePath GetCustomizedWallpaperDefaultRescaledFileName(
+    const std::string& suffix) {
+  const base::FilePath default_downloaded_file_name =
+      ServicesCustomizationDocument::GetCustomizedWallpaperDownloadedFileName();
+  const base::FilePath default_cache_dir =
+      ServicesCustomizationDocument::GetCustomizedWallpaperCacheDir();
+  if (default_downloaded_file_name.empty() || default_cache_dir.empty())
+    return base::FilePath();
+  return default_cache_dir.Append(
+      default_downloaded_file_name.BaseName().value() + suffix);
+}
+
+// Whether DesktopBackgroundController should start with customized default
+// wallpaper in WallpaperManager::InitializeWallpaper() or not.
+bool ShouldUseCustomizedDefaultWallpaper() {
+  PrefService* pref_service = g_browser_process->local_state();
+
+  return !(pref_service->FindPreference(
+                             prefs::kCustomizationDefaultWallpaperURL)
+               ->IsDefaultValue());
+}
+
 }  // namespace
 
 const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
@@ -143,6 +168,77 @@ const int kWallpaperThumbnailWidth = 108;
 const int kWallpaperThumbnailHeight = 68;
 
 static WallpaperManager* g_wallpaper_manager = NULL;
+
+class WallpaperManager::CustomizedWallpaperRescaledFiles {
+ public:
+  CustomizedWallpaperRescaledFiles(const base::FilePath& path_downloaded,
+                                   const base::FilePath& path_rescaled_small,
+                                   const base::FilePath& path_rescaled_large);
+
+  bool AllSizesExist() const;
+
+  // Closure will hold unretained pointer to this object. So caller must
+  // make sure that the closure will be destoyed before this object.
+  // Closure must be called on BlockingPool.
+  base::Closure CreateCheckerClosure();
+
+  const base::FilePath& path_downloaded() const { return path_downloaded_; }
+  const base::FilePath& path_rescaled_small() const {
+    return path_rescaled_small_;
+  }
+  const base::FilePath& path_rescaled_large() const {
+    return path_rescaled_large_;
+  }
+
+  const bool downloaded_exists() const { return downloaded_exists_; }
+  const bool rescaled_small_exists() const { return rescaled_small_exists_; }
+  const bool rescaled_large_exists() const { return rescaled_large_exists_; }
+
+ private:
+  // Must be called on BlockingPool.
+  void CheckCustomizedWallpaperFilesExist();
+
+  const base::FilePath path_downloaded_;
+  const base::FilePath path_rescaled_small_;
+  const base::FilePath path_rescaled_large_;
+
+  bool downloaded_exists_;
+  bool rescaled_small_exists_;
+  bool rescaled_large_exists_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomizedWallpaperRescaledFiles);
+};
+
+WallpaperManager::CustomizedWallpaperRescaledFiles::
+    CustomizedWallpaperRescaledFiles(const base::FilePath& path_downloaded,
+                                     const base::FilePath& path_rescaled_small,
+                                     const base::FilePath& path_rescaled_large)
+    : path_downloaded_(path_downloaded),
+      path_rescaled_small_(path_rescaled_small),
+      path_rescaled_large_(path_rescaled_large),
+      downloaded_exists_(false),
+      rescaled_small_exists_(false),
+      rescaled_large_exists_(false) {
+}
+
+base::Closure
+WallpaperManager::CustomizedWallpaperRescaledFiles::CreateCheckerClosure() {
+  return base::Bind(&WallpaperManager::CustomizedWallpaperRescaledFiles::
+                        CheckCustomizedWallpaperFilesExist,
+                    base::Unretained(this));
+}
+
+void WallpaperManager::CustomizedWallpaperRescaledFiles::
+    CheckCustomizedWallpaperFilesExist() {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  downloaded_exists_ = base::PathExists(path_downloaded_);
+  rescaled_small_exists_ = base::PathExists(path_rescaled_small_);
+  rescaled_large_exists_ = base::PathExists(path_rescaled_large_);
+}
+
+bool WallpaperManager::CustomizedWallpaperRescaledFiles::AllSizesExist() const {
+  return rescaled_small_exists_ && rescaled_large_exists_;
+}
 
 // This object is passed between several threads while wallpaper is being
 // loaded. It will notify callback when last reference to it is removed
@@ -449,6 +545,15 @@ bool WallpaperManager::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
 void WallpaperManager::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UserManager* user_manager = UserManager::Get();
+
+  // Apply device customization.
+  if (ShouldUseCustomizedDefaultWallpaper()) {
+    SetDefaultWallpaperPath(
+        GetCustomizedWallpaperDefaultRescaledFileName(kSmallWallpaperSuffix),
+        scoped_ptr<gfx::ImageSkia>().Pass(),
+        GetCustomizedWallpaperDefaultRescaledFileName(kLargeWallpaperSuffix),
+        scoped_ptr<gfx::ImageSkia>().Pass());
+  }
 
   CommandLine* command_line = GetCommandLine();
   if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
@@ -803,7 +908,7 @@ void WallpaperManager::DoSetDefaultWallpaper(
                 : ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
   DCHECK(file);
   if (!default_wallpaper_image_.get() ||
-      default_wallpaper_image_->url().spec() != file->value()) {
+      default_wallpaper_image_->file_path() != file->value()) {
     default_wallpaper_image_.reset();
     if (!file->empty()) {
       loaded_wallpapers_++;
@@ -985,10 +1090,11 @@ void WallpaperManager::EnableSurpriseMe() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   DCHECK(extensions::EventRouter::Get(profile));
+
+  using namespace extensions::api::wallpaper_private;
   scoped_ptr<extensions::Event> event(
-      new extensions::Event(
-    extensions::api::wallpaper_private::OnRequestEnableSurpriseMe::kEventName,
-    extensions::api::wallpaper_private::OnRequestEnableSurpriseMe::Create()));
+      new extensions::Event(OnRequestEnableSurpriseMe::kEventName,
+                            OnRequestEnableSurpriseMe::Create()));
 
   extensions::EventRouter::Get(profile)->DispatchEventToExtension(
       extension_misc::kWallpaperManagerId, event.Pass());
@@ -1539,6 +1645,129 @@ base::TimeDelta WallpaperManager::GetWallpaperLoadDelay() const {
   return delay;
 }
 
+void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
+    const GURL& wallpaper_url,
+    const base::FilePath& downloaded_file,
+    scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files) {
+  PrefService* pref_service = g_browser_process->local_state();
+
+  std::string current_url =
+      pref_service->GetString(prefs::kCustomizationDefaultWallpaperURL);
+  if (current_url != wallpaper_url.spec() || !rescaled_files->AllSizesExist()) {
+    DCHECK(rescaled_files->downloaded_exists());
+
+    // Either resized images do not exist or cached version is incorrect.
+    // Need to start resize again.
+    wallpaper_loader_->Start(
+        downloaded_file.value(),
+        0,  // Do not crop.
+        base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(),
+                   wallpaper_url,
+                   base::Passed(rescaled_files.Pass())));
+  } else {
+    SetDefaultWallpaperPath(rescaled_files->path_rescaled_small(),
+                            scoped_ptr<gfx::ImageSkia>().Pass(),
+                            rescaled_files->path_rescaled_large(),
+                            scoped_ptr<gfx::ImageSkia>().Pass());
+  }
+}
+
+void WallpaperManager::OnCustomizedDefaultWallpaperDecoded(
+    const GURL& wallpaper_url,
+    scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
+    const UserImage& wallpaper) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If decoded wallpaper is empty, we have probably failed to decode the file.
+  if (wallpaper.image().isNull()) {
+    LOG(WARNING) << "Failed to decode customized wallpaper.";
+    return;
+  }
+
+  wallpaper.image().EnsureRepsForSupportedScales();
+  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
+
+  scoped_ptr<bool> success(new bool(false));
+  scoped_ptr<gfx::ImageSkia> small_wallpaper_image(new gfx::ImageSkia);
+  scoped_ptr<gfx::ImageSkia> large_wallpaper_image(new gfx::ImageSkia);
+
+  // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
+  base::Closure resize_closure =
+      base::Bind(&WallpaperManager::ResizeCustomizedDefaultWallpaper,
+                 base::Unretained(this),
+                 base::Passed(&deep_copy),
+                 wallpaper.raw_image(),
+                 base::Unretained(rescaled_files.get()),
+                 base::Unretained(success.get()),
+                 base::Unretained(small_wallpaper_image.get()),
+                 base::Unretained(large_wallpaper_image.get()));
+  base::Closure on_resized_closure =
+      base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperResized,
+                 weak_factory_.GetWeakPtr(),
+                 wallpaper_url,
+                 base::Passed(rescaled_files.Pass()),
+                 base::Passed(success.Pass()),
+                 base::Passed(small_wallpaper_image.Pass()),
+                 base::Passed(large_wallpaper_image.Pass()));
+
+  if (!task_runner_->PostTaskAndReply(
+          FROM_HERE, resize_closure, on_resized_closure)) {
+    LOG(WARNING) << "Failed to start Customized Wallpaper resize.";
+  }
+}
+
+void WallpaperManager::ResizeCustomizedDefaultWallpaper(
+    scoped_ptr<gfx::ImageSkia> image,
+    const UserImage::RawImage& raw_image,
+    const CustomizedWallpaperRescaledFiles* rescaled_files,
+    bool* success,
+    gfx::ImageSkia* small_wallpaper_image,
+    gfx::ImageSkia* large_wallpaper_image) {
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      sequence_token_));
+  UserImage wallpaper(*image.get(), raw_image);
+
+  *success = true;
+
+  *success &= ResizeAndSaveWallpaper(wallpaper,
+                                     rescaled_files->path_rescaled_small(),
+                                     ash::WALLPAPER_LAYOUT_STRETCH,
+                                     kSmallWallpaperMaxWidth,
+                                     kSmallWallpaperMaxHeight,
+                                     small_wallpaper_image);
+
+  *success &= ResizeAndSaveWallpaper(wallpaper,
+                                     rescaled_files->path_rescaled_large(),
+                                     ash::WALLPAPER_LAYOUT_STRETCH,
+                                     kLargeWallpaperMaxWidth,
+                                     kLargeWallpaperMaxHeight,
+                                     large_wallpaper_image);
+}
+
+void WallpaperManager::OnCustomizedDefaultWallpaperResized(
+    const GURL& wallpaper_url,
+    scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
+    scoped_ptr<bool> success,
+    scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
+    scoped_ptr<gfx::ImageSkia> large_wallpaper_image) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(rescaled_files);
+  DCHECK(success.get());
+  if (!*success) {
+    LOG(WARNING) << "Failed to save resized customized default wallpaper";
+    return;
+  }
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetString(prefs::kCustomizationDefaultWallpaperURL,
+                          wallpaper_url.spec());
+  SetDefaultWallpaperPath(rescaled_files->path_rescaled_small(),
+                          small_wallpaper_image.Pass(),
+                          rescaled_files->path_rescaled_large(),
+                          large_wallpaper_image.Pass());
+  VLOG(1) << "Customized default wallpaper applied.";
+}
+
 WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(
     const std::string& user_id,
     bool delayed) {
@@ -1550,6 +1779,41 @@ WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(
     pending_inactive_ = loading_.back();
   }
   return pending_inactive_;
+}
+
+void WallpaperManager::SetCustomizedDefaultWallpaper(
+    const GURL& wallpaper_url,
+    const base::FilePath& downloaded_file,
+    const base::FilePath& resized_directory) {
+  // Should fail if this ever happens in tests.
+  DCHECK(wallpaper_url.is_valid());
+  if (!wallpaper_url.is_valid()) {
+    if (!wallpaper_url.is_empty()) {
+      LOG(WARNING) << "Invalid Customized Wallpaper URL '"
+                   << wallpaper_url.spec() << "'";
+    }
+    return;
+  }
+  std::string downloaded_file_name = downloaded_file.BaseName().value();
+  scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files(
+      new CustomizedWallpaperRescaledFiles(
+          downloaded_file,
+          resized_directory.Append(downloaded_file_name +
+                                   kSmallWallpaperSuffix),
+          resized_directory.Append(downloaded_file_name +
+                                   kLargeWallpaperSuffix)));
+
+  base::Closure check_file_exists = rescaled_files->CreateCheckerClosure();
+  base::Closure on_checked_closure =
+      base::Bind(&WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck,
+                 weak_factory_.GetWeakPtr(),
+                 wallpaper_url,
+                 downloaded_file,
+                 base::Passed(rescaled_files.Pass()));
+  if (!BrowserThread::PostBlockingPoolTaskAndReply(
+          FROM_HERE, check_file_exists, on_checked_closure)) {
+    LOG(WARNING) << "Failed to start check CheckCustomizedWallpaperFilesExist.";
+  }
 }
 
 void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(
@@ -1571,8 +1835,7 @@ void WallpaperManager::OnDefaultWallpaperDecoded(
     scoped_ptr<chromeos::UserImage>* result_out,
     MovableOnDestroyCallbackHolder on_finish,
     const UserImage& wallpaper) {
-  result_out->reset(new UserImage(wallpaper.image()));
-  (*result_out)->set_url(GURL(path.value()));
+  result_out->reset(new UserImage(wallpaper));
   ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
       wallpaper.image(), layout);
 }
@@ -1597,6 +1860,51 @@ const char* WallpaperManager::GetCustomWallpaperSubdirForCurrentResolution() {
   WallpaperResolution resolution = GetAppropriateResolution();
   return resolution == WALLPAPER_RESOLUTION_SMALL ? kSmallWallpaperSubDir
                                                   : kLargeWallpaperSubDir;
+}
+
+void WallpaperManager::SetDefaultWallpaperPath(
+    const base::FilePath& default_small_wallpaper_file,
+    scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
+    const base::FilePath& default_large_wallpaper_file,
+    scoped_ptr<gfx::ImageSkia> large_wallpaper_image) {
+  default_small_wallpaper_file_ = default_small_wallpaper_file;
+  default_large_wallpaper_file_ = default_large_wallpaper_file;
+
+  ash::DesktopBackgroundController* dbc =
+      ash::Shell::GetInstance()->desktop_background_controller();
+
+  // |need_update_screen| is true if the previous default wallpaper is visible
+  // now, so we need to update wallpaper on the screen.
+  //
+  // Layout is ignored here, so ash::WALLPAPER_LAYOUT_CENTER is used
+  // as a placeholder only.
+  const bool need_update_screen =
+      default_wallpaper_image_.get() &&
+      dbc->WallpaperIsAlreadyLoaded(
+          &(default_wallpaper_image_->image()),
+          ash::DesktopBackgroundController::kInvalidResourceID,
+          false /* compare_layouts */,
+          ash::WALLPAPER_LAYOUT_CENTER);
+
+  default_wallpaper_image_.reset();
+  if (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL) {
+    if (small_wallpaper_image) {
+      default_wallpaper_image_.reset(new UserImage(*small_wallpaper_image));
+      default_wallpaper_image_->set_file_path(
+          default_small_wallpaper_file.value());
+    }
+  } else {
+    if (large_wallpaper_image) {
+      default_wallpaper_image_.reset(new UserImage(*large_wallpaper_image));
+      default_wallpaper_image_->set_file_path(
+          default_large_wallpaper_file.value());
+    }
+  }
+
+  if (need_update_screen) {
+    DoSetDefaultWallpaper(std::string(),
+                          MovableOnDestroyCallbackHolder().Pass());
+  }
 }
 
 }  // namespace chromeos

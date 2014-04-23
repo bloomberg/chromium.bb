@@ -48,6 +48,7 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
+#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -1184,6 +1185,13 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     display_host->StartWizard(chromeos::WizardController::kNetworkScreenName,
                               scoped_ptr<base::DictionaryValue>());
     return;
+  }
+
+  if (StartupUtils::IsEulaAccepted()) {
+    DelayNetworkCall(
+        ServicesCustomizationDocument::GetInstance()
+            ->EnsureCustomizationAppliedClosure(),
+        base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS));
   }
 
   bool show_login_screen =

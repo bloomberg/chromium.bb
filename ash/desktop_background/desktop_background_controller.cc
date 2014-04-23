@@ -43,6 +43,8 @@ const int kWallpaperReloadDelayMs = 2000;
 
 }  // namespace
 
+const int DesktopBackgroundController::kInvalidResourceID = -1;
+
 DesktopBackgroundController::DesktopBackgroundController()
     : locked_(false),
       desktop_background_mode_(BACKGROUND_NONE),
@@ -83,7 +85,8 @@ bool DesktopBackgroundController::SetWallpaperImage(const gfx::ImageSkia& image,
   VLOG(1) << "SetWallpaper: image_id=" << WallpaperResizer::GetImageId(image)
           << " layout=" << layout;
 
-  if (WallpaperIsAlreadyLoaded(&image, kInvalidResourceID, layout)) {
+  if (WallpaperIsAlreadyLoaded(
+          &image, kInvalidResourceID, true /* compare_layouts */, layout)) {
     VLOG(1) << "Wallpaper is already loaded";
     return false;
   }
@@ -104,7 +107,8 @@ bool DesktopBackgroundController::SetWallpaperResource(int resource_id,
   VLOG(1) << "SetWallpaper: resource_id=" << resource_id
           << " layout=" << layout;
 
-  if (WallpaperIsAlreadyLoaded(NULL, resource_id, layout)) {
+  if (WallpaperIsAlreadyLoaded(
+          NULL, resource_id, true /* compare_layouts */, layout)) {
     VLOG(1) << "Wallpaper is already loaded";
     return false;
   }
@@ -196,11 +200,13 @@ gfx::Size DesktopBackgroundController::GetMaxDisplaySizeInNative() {
 bool DesktopBackgroundController::WallpaperIsAlreadyLoaded(
     const gfx::ImageSkia* image,
     int resource_id,
+    bool compare_layouts,
     WallpaperLayout layout) const {
   if (!current_wallpaper_.get())
     return false;
 
-  if (layout != current_wallpaper_->layout())
+  // Compare layouts only if necessary.
+  if (compare_layouts && layout != current_wallpaper_->layout())
     return false;
 
   if (image) {

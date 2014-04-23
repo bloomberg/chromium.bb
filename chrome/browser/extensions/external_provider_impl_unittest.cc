@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -25,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chromeos/system/mock_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #endif
@@ -65,6 +68,13 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   virtual void SetUp() OVERRIDE {
     ExtensionServiceTestBase::SetUp();
     test_server_.reset(new EmbeddedTestServer());
+
+#if defined(OS_CHROMEOS)
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
+    chromeos::ServicesCustomizationDocument::RegisterPrefs(
+        local_state_.registry());
+#endif
+
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(
         base::Bind(&ExternalProviderImplTest::HandleRequest,
@@ -86,6 +96,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   virtual void TearDown() OVERRIDE {
 #if defined(OS_CHROMEOS)
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
 #endif
   }
 
@@ -128,6 +139,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   scoped_ptr<ExtensionCacheFake> test_extension_cache_;
 #if defined(OS_CHROMEOS)
   chromeos::system::MockStatisticsProvider mock_statistics_provider_;
+  TestingPrefServiceSimple local_state_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplTest);

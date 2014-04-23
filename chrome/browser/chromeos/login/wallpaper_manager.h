@@ -112,6 +112,10 @@ class WallpaperManager: public content::NotificationObserver {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
+  // This should be public to allow access from functions in anonymous
+  // namespace.
+  class CustomizedWallpaperRescaledFiles;
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -266,6 +270,17 @@ class WallpaperManager: public content::NotificationObserver {
                           const UserImage& wallpaper,
                           bool update_wallpaper);
 
+  // Use given files as new default wallpaper.
+  // Reloads current wallpaper, if old default was loaded.
+  // Current value of default_wallpaper_image_ is destroyed.
+  // Sets default_wallpaper_image_ either to |small_wallpaper_image| or
+  // |large_wallpaper_image| depending on GetAppropriateResolution().
+  void SetDefaultWallpaperPath(
+      const base::FilePath& customized_default_wallpaper_file_small,
+      scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
+      const base::FilePath& customized_default_wallpaper_file_large,
+      scoped_ptr<gfx::ImageSkia> large_wallpaper_image);
+
   // Sets wallpaper to default wallpaper (asynchronously with zero delay).
   void SetDefaultWallpaperNow(const std::string& user_id);
 
@@ -330,6 +345,13 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Enable surprise me wallpaper mode.
   void EnableSurpriseMe();
+
+  // This is called from CustomizationDocument.
+  // |resized_directory| is the directory where resized versions are stored and
+  // must be writable.
+  void SetCustomizedDefaultWallpaper(const GURL& wallpaper_url,
+                                     const base::FilePath& downloaded_file,
+                                     const base::FilePath& resized_directory);
 
  private:
   friend class TestApi;
@@ -492,6 +514,36 @@ class WallpaperManager: public content::NotificationObserver {
   // the time passed after last wallpaper load. So usual user experience results
   // in zero delay.
   base::TimeDelta GetWallpaperLoadDelay() const;
+
+  // This is called after we check that supplied default wallpaper files exist.
+  void SetCustomizedDefaultWallpaperAfterCheck(
+      const GURL& wallpaper_url,
+      const base::FilePath& downloaded_file,
+      scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files);
+
+  // Starts rescaling of customized wallpaper.
+  void OnCustomizedDefaultWallpaperDecoded(
+      const GURL& wallpaper_url,
+      scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
+      const UserImage& user_image);
+
+  // Resize and save customized default wallpaper.
+  void ResizeCustomizedDefaultWallpaper(
+      scoped_ptr<gfx::ImageSkia> image,
+      const UserImage::RawImage& raw_image,
+      const CustomizedWallpaperRescaledFiles* rescaled_files,
+      bool* success,
+      gfx::ImageSkia* small_wallpaper_image,
+      gfx::ImageSkia* large_wallpaper_image);
+
+  // Check the result of ResizeCustomizedDefaultWallpaper and finally
+  // apply Customized Default Wallpaper.
+  void OnCustomizedDefaultWallpaperResized(
+      const GURL& wallpaper_url,
+      scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
+      scoped_ptr<bool> success,
+      scoped_ptr<gfx::ImageSkia> small_wallpaper_image,
+      scoped_ptr<gfx::ImageSkia> large_wallpaper_image);
 
   // Init |*default_*_wallpaper_file_| from given command line and
   // clear |default_wallpaper_image_|.

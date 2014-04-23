@@ -37,7 +37,7 @@ enum WallpaperLayout {
   // desktop's size.
   WALLPAPER_LAYOUT_STRETCH,
   // Tile the wallpaper over the background without scaling it.
-  WALLPAPER_LAYOUT_TILE,
+  WALLPAPER_LAYOUT_TILE
 };
 
 const SkColor kLoginWallpaperColor = 0xFEFEFE;
@@ -56,6 +56,10 @@ class ASH_EXPORT DesktopBackgroundController
     BACKGROUND_NONE,
     BACKGROUND_IMAGE,
   };
+
+  // This is used to initialize Resource ID variables and to denote "no
+  // resource ID" in parameters.
+  static const int kInvalidResourceID;
 
   DesktopBackgroundController();
   virtual ~DesktopBackgroundController();
@@ -110,17 +114,19 @@ class ASH_EXPORT DesktopBackgroundController
   // maximum width of all displays, and the maximum height of all displays.
   static gfx::Size GetMaxDisplaySizeInNative();
 
+  // Returns true if the specified wallpaper is already stored
+  // in |current_wallpaper_|.
+  // If |image| is NULL, resource_id is compared.
+  // If |compare_layouts| is false, layout is ignored.
+  bool WallpaperIsAlreadyLoaded(const gfx::ImageSkia* image,
+                                int resource_id,
+                                bool compare_layouts,
+                                WallpaperLayout layout) const;
+
  private:
   friend class DesktopBackgroundControllerTest;
   //  friend class chromeos::WallpaperManagerBrowserTestDefaultWallpaper;
   FRIEND_TEST_ALL_PREFIXES(DesktopBackgroundControllerTest, GetMaxDisplaySize);
-
-  // Returns true if the specified wallpaper is already stored
-  // in |current_wallpaper_|.
-  // If |image| is NULL, resource_id is compared.
-  bool WallpaperIsAlreadyLoaded(const gfx::ImageSkia* image,
-                                int resource_id,
-                                WallpaperLayout layout) const;
 
   // Creates view for all root windows, or notifies them to repaint if they
   // already exist.

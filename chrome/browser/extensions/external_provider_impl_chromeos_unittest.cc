@@ -6,11 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/system/mock_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
@@ -52,6 +55,10 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   virtual void SetUp() OVERRIDE {
     ExtensionServiceTestBase::SetUp();
 
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
+    chromeos::ServicesCustomizationDocument::RegisterPrefs(
+        local_state_.registry());
+
     external_externsions_overrides_.reset(
         new base::ScopedPathOverride(chrome::DIR_EXTERNAL_EXTENSIONS,
                                      data_dir_.Append("external")));
@@ -64,9 +71,11 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
   virtual void TearDown() OVERRIDE {
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 
  private:
+  TestingPrefServiceSimple local_state_;
   scoped_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   chromeos::system::MockStatisticsProvider mock_statistics_provider_;
 

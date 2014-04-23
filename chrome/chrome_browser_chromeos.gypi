@@ -181,6 +181,8 @@
         'browser/chromeos/chrome_browser_main_chromeos.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
+        'browser/chromeos/customization_wallpaper_downloader.cc',
+        'browser/chromeos/customization_wallpaper_downloader.h',
         'browser/chromeos/display/display_configuration_observer.cc',
         'browser/chromeos/display/display_configuration_observer.h',
         'browser/chromeos/display/display_preferences.cc',

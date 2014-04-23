@@ -2077,6 +2077,12 @@ const char kUsedPolicyCertificates[] = "policy.used_policy_certificates";
 // after recovery.
 const char kServerBackedDeviceState[] = "server_backed_device_state";
 
+// Customized wallpaper URL, which is already downloaded and scaled.
+// The URL from this preference must never be fetched. It is compared to the
+// URL from customization document to check if wallpaper URL has changed
+// since wallpaper was cached.
+const char kCustomizationDefaultWallpaperURL[] =
+    "customization.default_wallpaper_url";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.
