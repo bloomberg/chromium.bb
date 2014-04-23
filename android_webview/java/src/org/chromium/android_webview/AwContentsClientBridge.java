@@ -75,8 +75,35 @@ public class AwContentsClientBridge {
             mPort = port;
         }
 
-        public void proceed(PrivateKey privateKey, X509Certificate[] chain) {
-            ThreadUtils.assertOnUiThread();
+        public void proceed(final PrivateKey privateKey, final X509Certificate[] chain) {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    proceedOnUiThread(privateKey, chain);
+                }
+            });
+        }
+
+        public void ignore() {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ignoreOnUiThread();
+                }
+            });
+        }
+
+        public void cancel() {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    cancelOnUiThread();
+                }
+
+            });
+        }
+
+        private void proceedOnUiThread(PrivateKey privateKey, X509Certificate[] chain) {
             checkIfCalled();
 
             AndroidPrivateKey key = mLocalKeyStore.createKey(privateKey);
@@ -101,19 +128,18 @@ public class AwContentsClientBridge {
             provideResponse(key, encodedChain);
         }
 
-        public void ignore() {
-            ThreadUtils.assertOnUiThread();
+        private void ignoreOnUiThread() {
             checkIfCalled();
             provideResponse(null, null);
         }
 
-        public void cancel() {
-            ThreadUtils.assertOnUiThread();
+        private void cancelOnUiThread() {
+            checkIfCalled();
             mLookupTable.deny(mHost, mPort);
             provideResponse(null, null);
         }
 
-        public void checkIfCalled() {
+        private void checkIfCalled() {
             if (mIsCalled) {
                 throw new IllegalStateException("The callback was already called.");
             }

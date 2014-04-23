@@ -31,6 +31,7 @@ namespace android_webview {
 typedef net::OpenSSLClientKeyStore::ScopedEVP_PKEY ScopedEVP_PKEY;
 
 namespace {
+
 // Must be called on the I/O thread to record a client certificate
 // and its private key in the OpenSSLClientKeyStore.
 void RecordClientCertificateKey(
@@ -130,8 +131,8 @@ void AwContentsClientBridge::SelectClientCertificate(
 
   // Build the |key_types| JNI parameter, as a String[]
   std::vector<std::string> key_types;
-  for (size_t n = 0; n < cert_request_info->cert_key_types.size(); ++n) {
-    switch (cert_request_info->cert_key_types[n]) {
+  for (size_t i = 0; i < cert_request_info->cert_key_types.size(); ++i) {
+    switch (cert_request_info->cert_key_types[i]) {
       case net::CLIENT_CERT_RSA_SIGN:
         key_types.push_back("RSA");
         break;
@@ -213,8 +214,8 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
   }
 
   std::vector<base::StringPiece> encoded_chain;
-  for (size_t n = 0; n < encoded_chain_strings.size(); ++n)
-    encoded_chain.push_back(encoded_chain_strings[n]);
+  for (size_t i = 0; i < encoded_chain_strings.size(); ++i)
+    encoded_chain.push_back(encoded_chain_strings[i]);
 
   // Create the X509Certificate object from the encoded chain.
   scoped_refptr<net::X509Certificate> client_cert(
