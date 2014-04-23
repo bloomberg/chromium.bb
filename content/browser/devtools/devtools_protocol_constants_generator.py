@@ -21,8 +21,14 @@ template_h = string.Template("""\
 //  third_party/WebKit/Source/devtools/protocol.json and
 //  content/browser/devtools/browser_protocol.json).
 
+#include <string>
+
 namespace content {
 namespace devtools {
+
+extern const char kProtocolVersion[];
+
+bool IsSupportedProtocolVersion(const std::string& version);
 
 extern const char kResult[];
 $contents
@@ -44,10 +50,23 @@ template_cc = string.Template("""\
 //  third_party/WebKit/Source/devtools/protocol.json and
 //  content/browser/devtools/browser_protocol.json).
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 
 namespace content {
 namespace devtools {
+
+const char kProtocolVersion[] = "$major.$minor";
+
+bool IsSupportedProtocolVersion(const std::string& version) {
+  std::vector<std::string> tokens;
+  Tokenize(version, ".", &tokens);
+  int major, minor;
+  return tokens.size() == 2 &&
+      base::StringToInt(tokens[0], &major) && major == $major &&
+      base::StringToInt(tokens[1], &minor) && minor <= $minor;
+}
 
 const char kResult[] = "result";
 $contents
@@ -113,15 +132,21 @@ def CreateHeader(tree, output_file):
   contents = FormatContents(tree, "", "extern const char {0}[];\n")
   output_file.write(template_h.substitute({"contents": contents}))
 
-def CreateBody(tree, output_file):
+def CreateBody(tree, version, output_file):
   contents = FormatContents(tree, "", "const char {0}[] = \"{1}\";\n")
-  output_file.write(template_cc.substitute({"contents": contents}))
+  output_file.write(template_cc.substitute({
+      "major": version["major"],
+      "minor": version["minor"],
+      "contents": contents
+  }))
 
 blink_protocol_data = open(sys.argv[1]).read()
 browser_protocol_data = open(sys.argv[2]).read()
 
 blink_protocol = json.loads(blink_protocol_data)
 browser_protocol = json.loads(browser_protocol_data)
+
+blink_version = blink_protocol["version"]
 
 domains = blink_protocol["domains"] + browser_protocol["domains"]
 
@@ -168,7 +193,7 @@ for (namespace_name, namespace) in namespace_tree.items():
   namespace["kName"] = namespace_name
 
 with open(sys.argv[3], "w") as f:
-  CreateBody(namespace_tree, f)
+  CreateBody(namespace_tree, blink_version, f)
 
 with open(sys.argv[4], "w") as f:
   CreateHeader(namespace_tree, f)

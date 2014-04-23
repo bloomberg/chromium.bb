@@ -48,8 +48,6 @@ namespace content {
 
 namespace {
 
-const char kProtocolVersion[] = "1.0";
-
 const char kDevToolsHandlerThreadName[] = "Chrome_DevToolsHandlerThread";
 
 const char kThumbUrlPrefix[] = "/thumb/";
@@ -135,7 +133,7 @@ static bool TimeComparator(const DevToolsTarget* target1,
 // static
 bool DevToolsHttpHandler::IsSupportedProtocolVersion(
     const std::string& version) {
-  return version == kProtocolVersion;
+  return devtools::IsSupportedProtocolVersion(version);
 }
 
 // static
@@ -450,7 +448,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
 
   if (command == "version") {
     base::DictionaryValue version;
-    version.SetString("Protocol-Version", kProtocolVersion);
+    version.SetString("Protocol-Version", devtools::kProtocolVersion);
     version.SetString("WebKit-Version", GetWebKitVersion());
     version.SetString("Browser", GetContentClient()->GetProduct());
     version.SetString("User-Agent", GetContentClient()->GetUserAgent());

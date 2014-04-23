@@ -7,7 +7,8 @@ var fail = chrome.test.callbackFail;
 
 var tabId;
 var debuggee;
-var protocolVersion = "1.0";
+var protocolVersion = "1.1";
+var protocolPreviousVersion = "1.0";
 
 var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
     "'silent-debugger-extension-api' flag is enabled.";
@@ -35,7 +36,16 @@ chrome.test.runTests([
     });
   },
 
-  function attach() {
+  function attachPreviousVersion() {
+    chrome.tabs.getSelected(null, function(tab) {
+      debuggee = {tabId: tab.id};
+      chrome.debugger.attach(debuggee, protocolPreviousVersion, function() {
+        chrome.debugger.detach(debuggee, pass());
+      });
+    });
+  },
+
+  function attachLatestVersion() {
     chrome.tabs.getSelected(null, function(tab) {
       tabId = tab.id;
       debuggee = {tabId: tab.id};
