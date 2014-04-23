@@ -516,12 +516,13 @@ void Window::AddChild(Window* child) {
 
   gfx::Vector2d offset;
   aura::Window* ancestor_with_layer = GetAncestorWithLayer(&offset);
+
+  child->parent_ = this;
+
   if (ancestor_with_layer) {
     offset += child->bounds().OffsetFromOrigin();
     child->ReparentLayers(ancestor_with_layer->layer(), offset);
   }
-
-  child->parent_ = this;
 
   children_.push_back(child);
   if (layout_manager_)

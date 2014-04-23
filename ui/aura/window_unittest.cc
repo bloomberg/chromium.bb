@@ -2206,6 +2206,57 @@ TEST_F(WindowTest, RootWindowAttachment) {
   EXPECT_EQ(2, observer.removed_count());
 }
 
+class BoundsChangedWindowObserver : public WindowObserver {
+ public:
+  BoundsChangedWindowObserver() : root_set_(false) {}
+
+  virtual void OnWindowBoundsChanged(Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    root_set_ = window->GetRootWindow() != NULL;
+  }
+
+  bool root_set() const { return root_set_; }
+
+ private:
+  bool root_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoundsChangedWindowObserver);
+};
+
+TEST_F(WindowTest, RootWindowSetWhenReparenting) {
+  Window parent1(NULL);
+  parent1.Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  Window parent2(NULL);
+  parent2.Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  ParentWindow(&parent1);
+  ParentWindow(&parent2);
+  parent1.SetBounds(gfx::Rect(10, 10, 300, 300));
+  parent2.SetBounds(gfx::Rect(20, 20, 300, 300));
+
+  Window child(NULL);
+  child.Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  child.SetBounds(gfx::Rect(5, 5, 100, 100));
+  parent1.AddChild(&child);
+
+  // We need animations to start in order to observe the bounds changes.
+  ui::ScopedAnimationDurationScaleMode animation_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedLayerAnimationSettings settings1(child.layer()->GetAnimator());
+  settings1.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
+  child.SetBounds(gfx::Rect(35, 35, 100, 100));
+
+  BoundsChangedWindowObserver observer;
+  child.AddObserver(&observer);
+
+  // Reparenting the |child| will cause it to get moved. During this move
+  // the window should still have root window set.
+  parent2.AddChild(&child);
+  EXPECT_TRUE(observer.root_set());
+
+  // TODO(varkha): Check that the target bounds didn't change after reparenting.
+}
+
 TEST_F(WindowTest, OwnedByParentFalse) {
   // By default, a window is owned by its parent. If this is set to false, the
   // window will not be destroyed when its parent is.
