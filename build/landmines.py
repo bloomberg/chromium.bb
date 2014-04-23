@@ -15,6 +15,7 @@ build is clobbered.
 """
 
 import difflib
+import errno
 import logging
 import optparse
 import os
@@ -57,8 +58,11 @@ def set_up_landmines(target, new_landmines):
                                  landmine_utils.platform() == 'ios')
 
   landmines_path = os.path.join(out_dir, '.landmines')
-  if not os.path.exists(out_dir):
+  try:
     os.makedirs(out_dir)
+  except OSError as e:
+    if e.errno == errno.EEXIST:
+      pass
 
   if not os.path.exists(landmines_path):
     with open(landmines_path, 'w') as f:
