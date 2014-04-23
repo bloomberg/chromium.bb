@@ -4,8 +4,6 @@
 
 #include "mojo/services/view_manager/view.h"
 
-#include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/services/view_manager/view_delegate.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(mojo::services::view_manager::View*);
@@ -16,14 +14,9 @@ namespace view_manager {
 
 DEFINE_WINDOW_PROPERTY_KEY(View*, kViewKey, NULL);
 
-View::View(ViewDelegate* delegate, const int32_t id)
-    : delegate_(delegate),
-      id_(id),
-      window_(NULL) {
-  DCHECK(delegate);  // Must provide a delegate.
+// TODO(sky): figure out window delegate.
+View::View(int32_t id) : id_(id), window_(NULL) {
   window_.set_owned_by_parent(false);
-  window_.AddObserver(this);
-  window_.SetProperty(kViewKey, this);
 }
 
 View::~View() {
@@ -41,25 +34,6 @@ void View::Add(View* child) {
 
 void View::Remove(View* child) {
   window_.RemoveChild(&child->window_);
-}
-
-ViewId View::GetViewId() const {
-  return delegate_->GetViewId(this);
-}
-
-void View::OnWindowHierarchyChanged(
-    const aura::WindowObserver::HierarchyChangeParams& params) {
-  if (params.target != &window_ || params.receiver != &window_)
-    return;
-  AllocationScope scope;
-  ViewId new_parent_id;
-  if (params.new_parent)
-    new_parent_id = params.new_parent->GetProperty(kViewKey)->GetViewId();
-  ViewId old_parent_id;
-  if (params.old_parent)
-    old_parent_id = params.old_parent->GetProperty(kViewKey)->GetViewId();
-  delegate_->OnViewHierarchyChanged(delegate_->GetViewId(this), new_parent_id,
-                                    old_parent_id);
 }
 
 }  // namespace view_manager

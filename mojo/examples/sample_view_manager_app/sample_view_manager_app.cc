@@ -47,13 +47,6 @@ class SampleApp : public Application,
   virtual void OnConnectionEstablished(int32_t manager_id) OVERRIDE {
   }
 
-  virtual void OnViewHierarchyChanged(
-      const services::view_manager::ViewId& view,
-      const services::view_manager::ViewId& new_parent,
-      const services::view_manager::ViewId& old_parent,
-      int32_t change_id) OVERRIDE {
-  }
-
  private:
   void OnCreatedView(bool success) {
     DCHECK(success);
