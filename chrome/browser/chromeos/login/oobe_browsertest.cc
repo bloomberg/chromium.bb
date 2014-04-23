@@ -79,12 +79,7 @@ class OobeTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(OobeTest);
 };
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_NewUser DISABLED_NewUser
-#else
-#define MAYBE_NewUser NewUser
-#endif
-IN_PROC_BROWSER_TEST_F(OobeTest, MAYBE_NewUser) {
+IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
@@ -104,12 +99,7 @@ IN_PROC_BROWSER_TEST_F(OobeTest, MAYBE_NewUser) {
     content::NotificationService::AllSources()).Wait();
 }
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_Accelerator DISABLED_Accelerator
-#else
-#define MAYBE_Accelerator Accelerator
-#endif
-IN_PROC_BROWSER_TEST_F(OobeTest, MAYBE_Accelerator) {
+IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
