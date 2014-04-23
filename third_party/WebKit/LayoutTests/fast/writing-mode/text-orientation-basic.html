@@ -1,4 +1,4 @@
-<body>
+<body style="overflow:hidden;">
 <p>This test shows the following bugs with text-orientation.  The far right test mis-renders differently in both the simple and complex text paths.
 The simple text path mis-renders because <tt>CTFontGetVerticalTranslationsForGlyphs</tt> returns incorrect values for horizontal glyphs that have vertical
 counterparts.  The complex text code path mis-renders because of API deficiency.  There is no way to tell CoreText to use upright horizontal glyphs when

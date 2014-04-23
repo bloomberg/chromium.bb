@@ -53,7 +53,7 @@ content="HTML Tidy for Mac OS, see www.w3.org" />
 
 </head>
 
-<body>
+<body style="overflow:hidden;">
 
 <table border="1">
 

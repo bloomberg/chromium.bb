@@ -8,7 +8,7 @@
 <link rel="help" href="http://www.w3.org/TR/CSS21/visudet.html#abs-non-replaced-width">
 <meta name="assert" content="The values of 'left', 'right', 'margin-left', 'margin-right', and 'width' are calculated correctly for absolutely positioned non-replaced elements according to CSS2.1 Section 10.3.7.">
 <style type="text/css">
-
+ 
 div { height: 1px; direction: ltr; }
 
 /*
@@ -25,7 +25,7 @@ div { height: 1px; direction: ltr; }
 /* totals for html and body: 21px on the left,  34px on the right */
 html, body { border: transparent medium solid; }
 html { margin: 0 3px 0 2px; padding: 0 4px 0 3px; border-width: 0 3px 0 8px; }
-body { margin: 0 6px 0 3px; padding: 0 7px 0 1px; border-width: 0 11px 0 4px; }
+body { margin: 0 6px 0 3px; padding: 0 7px 0 1px; border-width: 0 11px 0 4px; overflow: hidden; }
 
 body > div {
   position: relative;
