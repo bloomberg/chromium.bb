@@ -808,17 +808,19 @@ template<typename T> static inline void setTraceValue(const PassRefPtr<T>& ptr, 
 
 template<typename T> struct ConvertableToTraceFormatTraits {
     static const bool isConvertable = false;
-    static void assignIfConvertable(ConvertableToTraceFormat*&, const T&)
+    static void assignIfConvertable(ConvertableToTraceFormat*& left, const T&)
     {
+        left = 0;
     }
 };
 
 template<typename T> struct ConvertableToTraceFormatTraits<T*> {
     static const bool isConvertable = WTF::IsSubclass<T, TraceEvent::ConvertableToTraceFormat>::value;
-    static void assignIfConvertable(ConvertableToTraceFormat*&, ...)
+    static void assignIfConvertable(ConvertableToTraceFormat*& left, ...)
     {
+        left = 0;
     }
-    static void assignIfConvertable(ConvertableToTraceFormat*& left, ConvertableToTraceFormat*& right)
+    static void assignIfConvertable(ConvertableToTraceFormat*& left, ConvertableToTraceFormat* const& right)
     {
         left = right;
     }
@@ -826,7 +828,7 @@ template<typename T> struct ConvertableToTraceFormatTraits<T*> {
 
 template<typename T> struct ConvertableToTraceFormatTraits<PassRefPtr<T> > {
     static const bool isConvertable = WTF::IsSubclass<T, TraceEvent::ConvertableToTraceFormat>::value;
-    static void assignIfConvertable(ConvertableToTraceFormat*& left, const PassRefPtr<T> &right)
+    static void assignIfConvertable(ConvertableToTraceFormat*& left, const PassRefPtr<T>& right)
     {
         ConvertableToTraceFormatTraits<T*>::assignIfConvertable(left, right.get());
     }
