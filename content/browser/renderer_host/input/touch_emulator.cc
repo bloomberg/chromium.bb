@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/events/gesture_detection/gesture_config_helper.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/screen.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -47,8 +48,17 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
   DCHECK(client_);
   ResetState();
 
-  InitCursorFromResource(&touch_cursor_, IDR_DEVTOOLS_TOUCH_CURSOR_ICON);
-  InitCursorFromResource(&pinch_cursor_, IDR_DEVTOOLS_PINCH_CURSOR_ICON);
+  bool use_2x = gfx::Screen::GetNativeScreen()->
+      GetPrimaryDisplay().device_scale_factor() > 1.5f;
+  float cursor_scale_factor = use_2x ? 2.f : 1.f;
+  InitCursorFromResource(&touch_cursor_,
+      cursor_scale_factor,
+      use_2x ? IDR_DEVTOOLS_TOUCH_CURSOR_ICON_2X :
+          IDR_DEVTOOLS_TOUCH_CURSOR_ICON);
+  InitCursorFromResource(&pinch_cursor_,
+      cursor_scale_factor,
+      use_2x ? IDR_DEVTOOLS_PINCH_CURSOR_ICON_2X :
+          IDR_DEVTOOLS_PINCH_CURSOR_ICON);
 
   WebCursor::CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::TypePointer;
@@ -96,13 +106,13 @@ void TouchEmulator::Disable() {
   CancelTouch();
 }
 
-void TouchEmulator::InitCursorFromResource(WebCursor* cursor, int resource_id) {
+void TouchEmulator::InitCursorFromResource(
+    WebCursor* cursor, float scale, int resource_id) {
   gfx::Image& cursor_image =
       content::GetContentClient()->GetNativeImageNamed(resource_id);
   WebCursor::CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::TypeCustom;
-  // TODO(dgozman): Add HiDPI cursors.
-  cursor_info.image_scale_factor = 1.f;
+  cursor_info.image_scale_factor = scale;
   cursor_info.custom_image = cursor_image.AsBitmap();
   cursor_info.hotspot =
       gfx::Point(cursor_image.Width() / 2, cursor_image.Height() / 2);

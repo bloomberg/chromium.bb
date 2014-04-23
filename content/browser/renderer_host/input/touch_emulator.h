@@ -39,7 +39,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // ui::GestureProviderClient implementation.
   virtual void OnGestureEvent(const ui::GestureEventData& gesture) OVERRIDE;
 
-  void InitCursorFromResource(WebCursor* cursor, int resource_id);
+  void InitCursorFromResource(WebCursor* cursor, float scale, int resource_id);
   void ResetState();
   void UpdateCursor();
   bool UpdateShiftPressed(bool shift_pressed);
