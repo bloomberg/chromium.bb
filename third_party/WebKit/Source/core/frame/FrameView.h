@@ -256,7 +256,7 @@ public:
     void flushAnyPendingPostLayoutTasks();
 
     virtual bool shouldSuspendScrollAnimations() const OVERRIDE;
-    virtual void scrollbarStyleChanged(int newStyle, bool forceUpdate) OVERRIDE;
+    virtual void scrollbarStyleChanged() OVERRIDE;
 
     RenderBox* embeddedContentBox() const;
 

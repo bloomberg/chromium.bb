@@ -49,7 +49,7 @@ public:
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
     virtual void setScrollOffset(const IntPoint&) OVERRIDE;
     virtual bool isScrollCornerVisible() const OVERRIDE;
-    virtual void scrollbarStyleChanged(int newStyle, bool forceUpdate) OVERRIDE;
+    virtual void scrollbarStyleChanged() OVERRIDE;
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
 

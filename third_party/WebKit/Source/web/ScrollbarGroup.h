@@ -69,7 +69,7 @@ public:
     virtual WebCore::IntSize overhangAmount() const OVERRIDE;
     virtual WebCore::IntPoint lastKnownMousePosition() const OVERRIDE;
     virtual bool shouldSuspendScrollAnimations() const OVERRIDE;
-    virtual void scrollbarStyleChanged(int newStyle, bool forceUpdate) OVERRIDE;
+    virtual void scrollbarStyleChanged() OVERRIDE;
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
     virtual WebCore::IntRect scrollableAreaBoundingBox() const OVERRIDE;
     virtual bool userInputScrollable(WebCore::ScrollbarOrientation) const OVERRIDE;

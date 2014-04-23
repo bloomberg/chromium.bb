@@ -2413,13 +2413,12 @@ bool FrameView::shouldSuspendScrollAnimations() const
     return m_frame->loader().state() != FrameStateComplete;
 }
 
-void FrameView::scrollbarStyleChanged(int newStyle, bool forceUpdate)
+void FrameView::scrollbarStyleChanged()
 {
+    // FIXME: Why does this only apply to the main frame?
     if (!m_frame->isMainFrame())
         return;
-
-    if (forceUpdate)
-        ScrollView::scrollbarStyleChanged(newStyle, forceUpdate);
+    ScrollView::scrollbarStyleChanged();
 }
 
 void FrameView::notifyPageThatContentAreaWillPaint() const

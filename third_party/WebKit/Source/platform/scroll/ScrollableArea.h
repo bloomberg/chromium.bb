@@ -160,7 +160,7 @@ public:
     virtual IntPoint lastKnownMousePosition() const { return IntPoint(); }
 
     virtual bool shouldSuspendScrollAnimations() const { return true; }
-    virtual void scrollbarStyleChanged(int /*newStyle*/, bool /*forceUpdate*/) { }
+    virtual void scrollbarStyleChanged() { }
 
     virtual bool scrollbarsCanBeActive() const = 0;
 
