@@ -1331,7 +1331,6 @@ const char kCertRevocationCheckingRequiredLocalAnchors[] =
 const char kSSLVersionMin[] = "ssl.version_min";
 const char kSSLVersionMax[] = "ssl.version_max";
 const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
-const char kEnableOriginBoundCerts[] = "ssl.origin_bound_certs.enabled";
 const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 
 // A boolean pref of the EULA accepted flag.

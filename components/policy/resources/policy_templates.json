@@ -3496,16 +3496,19 @@
       'name': 'EnableOriginBoundCerts',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:17-'],
+      'supported_on': ['chrome.*:17-35'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'future': True,
       'example_value': True,
       'id': 114,
-      'caption': '''Enable TLS domain-bound certificates extension''',
-      'desc': '''Specifies whether the TLS domain-bound certificates extension should be enabled.
+      'caption': '''Enable TLS domain-bound certificates extension (deprecated)''',
+      'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 36.
+
+      Specifies whether the TLS domain-bound certificates extension should be enabled.
 
       This setting is used to enable the TLS domain-bound certificates extension for testing.  This experimental setting will be removed in the future.''',
     },

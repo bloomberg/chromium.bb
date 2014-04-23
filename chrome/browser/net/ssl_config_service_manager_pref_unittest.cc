@@ -34,15 +34,6 @@ class SSLConfigServiceManagerPrefTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_) {}
 
  protected:
-  bool IsChannelIdEnabled(SSLConfigService* config_service) {
-    // Pump the message loop to notify the SSLConfigServiceManagerPref that the
-    // preferences changed.
-    message_loop_.RunUntilIdle();
-    SSLConfig config;
-    config_service->GetSSLConfig(&config);
-    return config.channel_id_enabled;
-  }
-
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
@@ -52,8 +43,6 @@ class SSLConfigServiceManagerPrefTest : public testing::Test {
 TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-  local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
-                          base::Value::CreateBooleanValue(false));
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(&local_state));
@@ -62,14 +51,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
   ASSERT_TRUE(config_service.get());
 
   SSLConfig config;
-  config_service->GetSSLConfig(&config);
-  EXPECT_FALSE(config.channel_id_enabled);
-
-  local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
-                          base::Value::CreateBooleanValue(true));
-  // Pump the message loop to notify the SSLConfigServiceManagerPref that the
-  // preferences changed.
-  message_loop_.RunUntilIdle();
   config_service->GetSSLConfig(&config);
   EXPECT_TRUE(config.channel_id_enabled);
 }

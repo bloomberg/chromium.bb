@@ -416,7 +416,6 @@ extern const char kCertRevocationCheckingRequiredLocalAnchors[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
 extern const char kCipherSuiteBlacklist[];
-extern const char kEnableOriginBoundCerts[];
 extern const char kDisableSSLRecordSplitting[];
 
 extern const char kGLVendorString[];

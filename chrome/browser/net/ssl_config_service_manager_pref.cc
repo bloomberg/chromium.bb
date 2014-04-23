@@ -174,7 +174,6 @@ class SSLConfigServiceManagerPref
   BooleanPrefMember rev_checking_required_local_anchors_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
-  BooleanPrefMember channel_id_enabled_;
   BooleanPrefMember ssl_record_splitting_disabled_;
 
   // The cached list of disabled SSL cipher suites.
@@ -205,8 +204,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       prefs::kSSLVersionMin, local_state, local_state_callback);
   ssl_version_max_.Init(
       prefs::kSSLVersionMax, local_state, local_state_callback);
-  channel_id_enabled_.Init(
-      prefs::kEnableOriginBoundCerts, local_state, local_state_callback);
   ssl_record_splitting_disabled_.Init(
       prefs::kDisableSSLRecordSplitting, local_state, local_state_callback);
 
@@ -235,8 +232,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
       SSLProtocolVersionToString(default_config.version_max);
   registry->RegisterStringPref(prefs::kSSLVersionMin, version_min_str);
   registry->RegisterStringPref(prefs::kSSLVersionMax, version_max_str);
-  registry->RegisterBooleanPref(prefs::kEnableOriginBoundCerts,
-                                default_config.channel_id_enabled);
   registry->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
                                 !default_config.false_start_enabled);
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
@@ -294,7 +289,6 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->version_max = std::min(supported_version_max, version_max);
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
-  config->channel_id_enabled = channel_id_enabled_.GetValue();
   // disabling False Start also happens to disable record splitting.
   config->false_start_enabled = !ssl_record_splitting_disabled_.GetValue();
 }
