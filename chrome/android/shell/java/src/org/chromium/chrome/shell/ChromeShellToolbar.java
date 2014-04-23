@@ -71,7 +71,7 @@ public class ChromeShellToolbar extends LinearLayout {
 
     private void onLoadProgressChanged(int progress) {
         removeCallbacks(mClearProgressRunnable);
-        mProgressDrawable.setLevel((int) (100.0 * progress));
+        mProgressDrawable.setLevel(100 * progress);
         if (progress == 100) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
     }
 
