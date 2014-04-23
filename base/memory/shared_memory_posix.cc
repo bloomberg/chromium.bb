@@ -143,11 +143,14 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       fp.reset(CreateAndOpenTemporaryFileInDir(directory, &path));
 
     if (fp) {
-      // Also open as readonly so that we can ShareReadOnlyToProcess.
-      readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
-      if (!readonly_fd.is_valid()) {
-        DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
-        fp.reset();
+      if (options.share_read_only) {
+        // Also open as readonly so that we can ShareReadOnlyToProcess.
+        readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
+        if (!readonly_fd.is_valid()) {
+          DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
+          fp.reset();
+          return false;
+        }
       }
       // Deleting the file prevents anyone else from mapping it in (making it
       // private), and prevents the need for cleanup (once the last fd is
@@ -196,12 +199,15 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       fix_size = false;
     }
 
-    // Also open as readonly so that we can ShareReadOnlyToProcess.
-    readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
-    if (!readonly_fd.is_valid()) {
-      DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
-      close(fd);
-      fd = -1;
+    if (options.share_read_only) {
+      // Also open as readonly so that we can ShareReadOnlyToProcess.
+      readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
+      if (!readonly_fd.is_valid()) {
+        DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
+        close(fd);
+        fd = -1;
+        return false;
+      }
     }
     if (fd >= 0) {
       // "a+" is always appropriate: if it's a new file, a+ is similar to w+.
@@ -267,6 +273,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   ScopedFD readonly_fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
   if (!readonly_fd.is_valid()) {
     DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
+    return false;
   }
   return PrepareMapFile(fp.Pass(), readonly_fd.Pass());
 }
@@ -352,7 +359,8 @@ void SharedMemory::UnlockDeprecated() {
 bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
   DCHECK_EQ(-1, mapped_file_);
   DCHECK_EQ(-1, readonly_mapped_file_);
-  if (fp == NULL || !readonly_fd.is_valid()) return false;
+  if (fp == NULL)
+    return false;
 
   // This function theoretically can block on the disk, but realistically
   // the temporary files we create will just go into the buffer cache
@@ -360,14 +368,16 @@ bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   struct stat st = {};
-  struct stat readonly_st = {};
   if (fstat(fileno(fp.get()), &st))
     NOTREACHED();
-  if (fstat(readonly_fd.get(), &readonly_st))
-    NOTREACHED();
-  if (st.st_dev != readonly_st.st_dev || st.st_ino != readonly_st.st_ino) {
-    LOG(ERROR) << "writable and read-only inodes don't match; bailing";
-    return false;
+  if (readonly_fd.is_valid()) {
+    struct stat readonly_st = {};
+    if (fstat(readonly_fd.get(), &readonly_st))
+      NOTREACHED();
+    if (st.st_dev != readonly_st.st_dev || st.st_ino != readonly_st.st_ino) {
+      LOG(ERROR) << "writable and read-only inodes don't match; bailing";
+      return false;
+    }
   }
 
   mapped_file_ = dup(fileno(fp.get()));

@@ -42,9 +42,12 @@ typedef ino_t SharedMemoryId;
 
 // Options for creating a shared memory object.
 struct SharedMemoryCreateOptions {
-  SharedMemoryCreateOptions() : name_deprecated(NULL), size(0),
-                                open_existing_deprecated(false),
-                                executable(false) {}
+  SharedMemoryCreateOptions()
+      : name_deprecated(NULL),
+        size(0),
+        open_existing_deprecated(false),
+        executable(false),
+        share_read_only(false) {}
 
   // DEPRECATED (crbug.com/345734):
   // If NULL, the object is anonymous.  This pointer is owned by the caller
@@ -64,6 +67,9 @@ struct SharedMemoryCreateOptions {
 
   // If true, mappings might need to be made executable later.
   bool executable;
+
+  // If true, the file can be shared read-only to a process.
+  bool share_read_only;
 };
 
 // Platform abstraction for shared memory.  Provides a C++ wrapper
@@ -204,8 +210,8 @@ class BASE_EXPORT SharedMemory {
   // handle for use in the remote process.
   //
   // |*this| must have been initialized using one of the Create*() or Open()
-  // methods.  If it was constructed from a SharedMemoryHandle, this call will
-  // CHECK-fail.
+  // methods with share_read_only=true. If it was constructed from a
+  // SharedMemoryHandle, this call will CHECK-fail.
   //
   // Returns true on success, false otherwise.
   bool ShareReadOnlyToProcess(ProcessHandle process,

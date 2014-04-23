@@ -373,7 +373,11 @@ TEST(SharedMemoryTest, ShareReadOnly) {
   StringPiece contents = "Hello World";
 
   SharedMemory writable_shmem;
-  ASSERT_TRUE(writable_shmem.CreateAndMapAnonymous(contents.size()));
+  SharedMemoryCreateOptions options;
+  options.size = contents.size();
+  options.share_read_only = true;
+  ASSERT_TRUE(writable_shmem.Create(options));
+  ASSERT_TRUE(writable_shmem.Map(options.size));
   memcpy(writable_shmem.memory(), contents.data(), contents.size());
   EXPECT_TRUE(writable_shmem.Unmap());
 
