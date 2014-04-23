@@ -9,12 +9,9 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,15 +29,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
-#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/content_switches.h"
-#include "crypto/rsa_private_key.h"
 #include "net/base/escape.h"
-#include "net/base/net_errors.h"
 
 using content::BrowserThread;
 
@@ -1315,17 +1307,12 @@ void DevToolsAndroidBridge::ReceivedDeviceCount(int count) {
 void DevToolsAndroidBridge::CreateDeviceProviders() {
   device_providers_.clear();
 #if defined(DEBUG_DEVTOOLS)
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kRemoteDebuggingPort)) {
-    std::string port_str = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-    int port;
-    if (base::StringToInt(port_str, &port)) {
-      BrowserListTabContentsProvider::EnableTethering();
-      device_providers_.push_back(
-          AndroidDeviceManager::GetSelfAsDeviceProvider(port));
-    }
-  }
+  BrowserListTabContentsProvider::EnableTethering();
+  // We cannot rely on command line switch here as we might want to connect
+  // to another instance of Chrome. Using hard-coded port number instead.
+  const int kDefaultDebuggingPort = 9222;
+  device_providers_.push_back(
+      AndroidDeviceManager::GetSelfAsDeviceProvider(kDefaultDebuggingPort));
 #endif
   device_providers_.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
 
