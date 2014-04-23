@@ -7,6 +7,7 @@
 
 #include "base/cancelable_callback.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_deque.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
@@ -431,7 +432,11 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
 
-  scoped_refptr<ResourceProvider::Fence> last_swap_fence_;
+  class SyncQuery;
+  ScopedPtrDeque<SyncQuery> pending_sync_queries_;
+  ScopedPtrDeque<SyncQuery> available_sync_queries_;
+  scoped_ptr<SyncQuery> current_sync_query_;
+  bool use_sync_query_;
 
   SkBitmap on_demand_tile_raster_bitmap_;
   ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;

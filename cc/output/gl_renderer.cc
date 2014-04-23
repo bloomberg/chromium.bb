@@ -58,25 +58,34 @@
 using gpu::gles2::GLES2Interface;
 
 namespace cc {
-
 namespace {
 
-// TODO(epenner): This should probably be moved to output surface.
-//
-// This implements a simple fence based on client side swaps.
-// This is to isolate the ResourceProvider from 'frames' which
-// it shouldn't need to care about, while still allowing us to
-// enforce good texture recycling behavior strictly throughout
-// the compositor (don't recycle a texture while it's in use).
-class SimpleSwapFence : public ResourceProvider::Fence {
+class FallbackFence : public ResourceProvider::Fence {
  public:
-  SimpleSwapFence() : has_passed_(false) {}
-  virtual bool HasPassed() OVERRIDE { return has_passed_; }
-  void SetHasPassed() { has_passed_ = true; }
+  explicit FallbackFence(gpu::gles2::GLES2Interface* gl)
+      : gl_(gl), has_passed_(false) {}
+
+  // Overridden from ResourceProvider::Fence:
+  virtual bool HasPassed() OVERRIDE {
+    if (!has_passed_) {
+      has_passed_ = true;
+      Synchronize();
+    }
+    return true;
+  }
 
  private:
-  virtual ~SimpleSwapFence() {}
+  virtual ~FallbackFence() {}
+
+  void Synchronize() {
+    TRACE_EVENT0("cc", "FallbackFence::Synchronize");
+    gl_->Finish();
+  }
+
+  gpu::gles2::GLES2Interface* gl_;
   bool has_passed_;
+
+  DISALLOW_COPY_AND_ASSIGN(FallbackFence);
 };
 
 class OnDemandRasterTaskImpl : public Task {
@@ -179,6 +188,58 @@ struct GLRenderer::PendingAsyncReadPixels {
   DISALLOW_COPY_AND_ASSIGN(PendingAsyncReadPixels);
 };
 
+class GLRenderer::SyncQuery {
+ public:
+  explicit SyncQuery(gpu::gles2::GLES2Interface* gl)
+      : gl_(gl), query_id_(0u), weak_ptr_factory_(this) {
+    gl_->GenQueriesEXT(1, &query_id_);
+  }
+  virtual ~SyncQuery() { gl_->DeleteQueriesEXT(1, &query_id_); }
+
+  scoped_refptr<ResourceProvider::Fence> Begin() {
+    DCHECK(!weak_ptr_factory_.HasWeakPtrs() || !IsPending());
+    // Invalidate weak pointer held by old fence.
+    weak_ptr_factory_.InvalidateWeakPtrs();
+    gl_->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, query_id_);
+    return make_scoped_refptr<ResourceProvider::Fence>(
+        new Fence(weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void End() { gl_->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM); }
+
+  bool IsPending() {
+    unsigned available = 1;
+    gl_->GetQueryObjectuivEXT(
+        query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+    return !available;
+  }
+
+ private:
+  class Fence : public ResourceProvider::Fence {
+   public:
+    explicit Fence(base::WeakPtr<GLRenderer::SyncQuery> query)
+        : query_(query) {}
+
+    // Overridden from ResourceProvider::Fence:
+    virtual bool HasPassed() OVERRIDE {
+      return !query_ || !query_->IsPending();
+    }
+
+   private:
+    virtual ~Fence() {}
+
+    base::WeakPtr<SyncQuery> query_;
+
+    DISALLOW_COPY_AND_ASSIGN(Fence);
+  };
+
+  gpu::gles2::GLES2Interface* gl_;
+  unsigned query_id_;
+  base::WeakPtrFactory<SyncQuery> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncQuery);
+};
+
 scoped_ptr<GLRenderer> GLRenderer::Create(
     RendererClient* client,
     const LayerTreeSettings* settings,
@@ -214,6 +275,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       blend_shadow_(false),
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
+      use_sync_query_(false),
       on_demand_tile_raster_resource_id_(0) {
   DCHECK(gl_);
   DCHECK(context_support_);
@@ -247,6 +309,8 @@ GLRenderer::GLRenderer(RendererClient* client,
       context_caps.gpu.discard_framebuffer;
 
   capabilities_.allow_rasterize_on_demand = true;
+
+  use_sync_query_ = context_caps.gpu.sync_query;
 
   InitializeSharedObjects();
 }
@@ -348,6 +412,25 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
     return;
 
   TRACE_EVENT0("cc", "GLRenderer::BeginDrawingFrame");
+
+  scoped_refptr<ResourceProvider::Fence> read_lock_fence;
+  if (use_sync_query_) {
+    while (!pending_sync_queries_.empty()) {
+      if (pending_sync_queries_.front()->IsPending())
+        break;
+
+      available_sync_queries_.push_back(pending_sync_queries_.take_front());
+    }
+
+    current_sync_query_ = available_sync_queries_.empty()
+                              ? make_scoped_ptr(new SyncQuery(gl_))
+                              : available_sync_queries_.take_front();
+
+    read_lock_fence = current_sync_query_->Begin();
+  } else {
+    read_lock_fence = make_scoped_refptr(new FallbackFence(gl_));
+  }
+  resource_provider_->SetReadLockFence(read_lock_fence.get());
 
   // TODO(enne): Do we need to reinitialize all of this state per frame?
   ReinitializeGLState();
@@ -1997,6 +2080,12 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
 }
 
 void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
+  if (use_sync_query_) {
+    DCHECK(current_sync_query_);
+    current_sync_query_->End();
+    pending_sync_queries_.push_back(current_sync_query_.Pass());
+  }
+
   current_framebuffer_lock_.reset();
   swap_buffer_rect_.Union(gfx::ToEnclosingRect(frame->root_damage_rect));
 
@@ -2181,14 +2270,6 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   in_use_overlay_resources_.swap(pending_overlay_resources_);
 
   swap_buffer_rect_ = gfx::Rect();
-
-  // We don't have real fences, so we mark read fences as passed
-  // assuming a double-buffered GPU pipeline. A texture can be
-  // written to after one full frame has past since it was last read.
-  if (last_swap_fence_.get())
-    static_cast<SimpleSwapFence*>(last_swap_fence_.get())->SetHasPassed();
-  last_swap_fence_ = resource_provider_->GetReadLockFence();
-  resource_provider_->SetReadLockFence(new SimpleSwapFence());
 }
 
 void GLRenderer::EnforceMemoryPolicy() {
