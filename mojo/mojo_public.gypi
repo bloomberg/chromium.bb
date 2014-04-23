@@ -360,4 +360,18 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'mojo_public_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': 'public/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+      ],
+    }],
+  ],
 }
