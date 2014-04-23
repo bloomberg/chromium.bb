@@ -44,29 +44,6 @@ enum PrintColorAdjust {
     PrintColorAdjustExact
 };
 
-// FIXME: To be replaced by StyleDifference defined in StyleDifference.h.
-// The difference between two styles.  The following values are used:
-// - StyleDifferenceEqual - The two styles are identical.
-//   FIXME: When style difference is context sensitive, RenderStyle::visualInvalidationDiff() may return
-//   StyleDifferenceEqual even there is difference. Will resolve the issue when fixing crbug.com/358460.
-// - StyleDifferenceRecompositeLayer - The layer needs its position and transform updated, but no repaint.
-// - StyleDifferenceRepaint - The object just needs to be repainted.
-// - StyleDifferenceRepaintLayer - The layer and its descendant layers need to be repainted.
-// - StyleDifferenceLayoutPositionedMovementOnly - Only the position of this positioned object has been updated.
-// - StyleDifferenceSimplifiedLayout - Only overflow needs to be recomputed.
-// - StyleDifferenceSimplifiedLayoutAndPositionedMovement - Both positioned movement and simplified layout updates are required.
-// - StyleDifferenceLayout - A full layout is required.
-enum StyleDifferenceLegacy {
-    StyleDifferenceEqual,
-    StyleDifferenceRecompositeLayer,
-    StyleDifferenceRepaint,
-    StyleDifferenceRepaintLayer,
-    StyleDifferenceLayoutPositionedMovementOnly,
-    StyleDifferenceSimplifiedLayout,
-    StyleDifferenceSimplifiedLayoutAndPositionedMovement,
-    StyleDifferenceLayout
-};
-
 // When some style properties change, different amounts of work have to be done depending on
 // context (e.g. whether the property is changing on an element which has a compositing layer).
 // A simple StyleDifference does not provide enough information so we return a bit mask of

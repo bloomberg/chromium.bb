@@ -5,9 +5,6 @@
 #ifndef StyleDifference_h
 #define StyleDifference_h
 
-// FIXME: Remove this include after we finish migrating from StyleDifferenceLegacy.
-#include "core/rendering/style/RenderStyleConstants.h"
-
 namespace WebCore {
 
 // This class represents the difference between two computed styles (RenderStyle).
@@ -21,41 +18,6 @@ public:
         : m_needsRecompositeLayer(false)
         , m_repaintType(NoRepaint)
         , m_layoutType(NoLayout) { }
-
-    // Temporary constructor to convert StyleDifferenceLegacy to new StyleDifference.
-    // At this step, implicit requirements (e.g. StyleDifferenceLayout implies StyleDifferenceRepaint),
-    // is not handled by StyleDifference but need to be handled by the callers.
-    StyleDifference(StyleDifferenceLegacy legacyDiff)
-        : m_needsRecompositeLayer(false)
-        , m_repaintType(NoRepaint)
-        , m_layoutType(NoLayout)
-    {
-        switch (legacyDiff) {
-        case StyleDifferenceEqual:
-            break;
-        case StyleDifferenceRecompositeLayer:
-            m_needsRecompositeLayer = true;
-            break;
-        case StyleDifferenceRepaint:
-            m_repaintType = RepaintObjectOnly;
-            break;
-        case StyleDifferenceRepaintLayer:
-            m_repaintType = RepaintLayer;
-            break;
-        case StyleDifferenceLayoutPositionedMovementOnly:
-            m_layoutType = PositionedMovement;
-            break;
-        case StyleDifferenceSimplifiedLayout:
-            m_layoutType = SimplifiedLayout;
-            break;
-        case StyleDifferenceSimplifiedLayoutAndPositionedMovement:
-            m_layoutType = PositionedMovement | SimplifiedLayout;
-            break;
-        case StyleDifferenceLayout:
-            m_layoutType = FullLayout;
-            break;
-        }
-    }
 
     // The two styles are identical.
     bool hasNoChange() const { return !m_needsRecompositeLayer && !m_repaintType && !m_layoutType; }

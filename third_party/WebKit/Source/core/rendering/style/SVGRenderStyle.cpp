@@ -118,17 +118,27 @@ void SVGRenderStyle::copyNonInheritedFrom(const SVGRenderStyle* other)
     resources = other->resources;
 }
 
-StyleDifferenceLegacy SVGRenderStyle::diff(const SVGRenderStyle* other) const
+StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
 {
-    // NOTE: All comparisions that may return StyleDifferenceLayout have to go before those who return StyleDifferenceRepaint
+    StyleDifference styleDifference;
 
+    if (diffNeedsLayout(other))
+        styleDifference.setNeedsFullLayout();
+    else if (diffNeedsRepaintOnly(other))
+        styleDifference.setNeedsRepaintObject();
+
+    return styleDifference;
+}
+
+bool SVGRenderStyle::diffNeedsLayout(const SVGRenderStyle* other) const
+{
     // If resources change, we need a relayout, as the presence of resources influences the repaint rect.
     if (resources != other->resources)
-        return StyleDifferenceLayout;
+        return true;
 
     // If markers change, we need a relayout, as marker boundaries are cached in RenderSVGPath.
     if (inheritedResources != other->inheritedResources)
-        return StyleDifferenceLayout;
+        return true;
 
     // All text related properties influence layout.
     if (svg_inherited_flags._textAnchor != other->svg_inherited_flags._textAnchor
@@ -138,17 +148,20 @@ StyleDifferenceLegacy SVGRenderStyle::diff(const SVGRenderStyle* other) const
         || svg_noninherited_flags.f._alignmentBaseline != other->svg_noninherited_flags.f._alignmentBaseline
         || svg_noninherited_flags.f._dominantBaseline != other->svg_noninherited_flags.f._dominantBaseline
         || svg_noninherited_flags.f._baselineShift != other->svg_noninherited_flags.f._baselineShift)
-        return StyleDifferenceLayout;
+        return true;
 
     // Text related properties influence layout.
-    bool miscNotEqual = misc != other->misc;
-    if (miscNotEqual && misc->baselineShiftValue != other->misc->baselineShiftValue)
-        return StyleDifferenceLayout;
+    if (misc != other->misc && misc->baselineShiftValue != other->misc->baselineShiftValue)
+        return true;
 
     // These properties affect the cached stroke bounding box rects.
     if (svg_inherited_flags._capStyle != other->svg_inherited_flags._capStyle
         || svg_inherited_flags._joinStyle != other->svg_inherited_flags._joinStyle)
-        return StyleDifferenceLayout;
+        return true;
+
+    // vector-effect changes require a re-layout.
+    if (svg_noninherited_flags.f._vectorEffect != other->svg_noninherited_flags.f._vectorEffect)
+        return true;
 
     // Some stroke properties, requires relayouts, as the cached stroke boundaries need to be recalculated.
     if (stroke != other->stroke) {
@@ -162,35 +175,36 @@ StyleDifferenceLegacy SVGRenderStyle::diff(const SVGRenderStyle* other) const
             || stroke->visitedLinkPaintColor != other->stroke->visitedLinkPaintColor
             || stroke->visitedLinkPaintUri != other->stroke->visitedLinkPaintUri
             || stroke->visitedLinkPaintType != other->stroke->visitedLinkPaintType)
-            return StyleDifferenceLayout;
-
-        // Only the stroke-opacity case remains, where we only need a repaint.
-        ASSERT(stroke->opacity != other->stroke->opacity);
-        return StyleDifferenceRepaint;
+            return true;
     }
 
-    // vector-effect changes require a re-layout.
-    if (svg_noninherited_flags.f._vectorEffect != other->svg_noninherited_flags.f._vectorEffect)
-        return StyleDifferenceLayout;
+    return false;
+}
 
-    // NOTE: All comparisions below may only return StyleDifferenceRepaint
+bool SVGRenderStyle::diffNeedsRepaintOnly(const SVGRenderStyle* other) const
+{
+    if (stroke != other->stroke) {
+        // Only the stroke-opacity case remains, where we only need a repaint.
+        ASSERT(stroke->opacity != other->stroke->opacity);
+        return true;
+    }
 
     // Painting related properties only need repaints.
-    if (miscNotEqual) {
+    if (misc != other->misc) {
         if (misc->floodColor != other->misc->floodColor
             || misc->floodOpacity != other->misc->floodOpacity
             || misc->lightingColor != other->misc->lightingColor)
-            return StyleDifferenceRepaint;
+            return true;
     }
 
     // If fill changes, we just need to repaint. Fill boundaries are not influenced by this, only by the Path, that RenderSVGPath contains.
     if (fill->paintType != other->fill->paintType || fill->paintColor != other->fill->paintColor
         || fill->paintUri != other->fill->paintUri || fill->opacity != other->fill->opacity)
-        return StyleDifferenceRepaint;
+        return true;
 
     // If gradient stops change, we just need to repaint. Style updates are already handled through RenderSVGGradientSTop.
     if (stops != other->stops)
-        return StyleDifferenceRepaint;
+        return true;
 
     // Changes of these flags only cause repaints.
     if (svg_inherited_flags._colorRendering != other->svg_inherited_flags._colorRendering
@@ -200,15 +214,15 @@ StyleDifferenceLegacy SVGRenderStyle::diff(const SVGRenderStyle* other) const
         || svg_inherited_flags._colorInterpolation != other->svg_inherited_flags._colorInterpolation
         || svg_inherited_flags._colorInterpolationFilters != other->svg_inherited_flags._colorInterpolationFilters
         || svg_inherited_flags._paintOrder != other->svg_inherited_flags._paintOrder)
-        return StyleDifferenceRepaint;
+        return true;
 
     if (svg_noninherited_flags.f.bufferedRendering != other->svg_noninherited_flags.f.bufferedRendering)
-        return StyleDifferenceRepaint;
+        return true;
 
     if (svg_noninherited_flags.f.maskType != other->svg_noninherited_flags.f.maskType)
-        return StyleDifferenceRepaint;
+        return true;
 
-    return StyleDifferenceEqual;
+    return false;
 }
 
 EPaintOrderType SVGRenderStyle::paintOrderType(unsigned index) const

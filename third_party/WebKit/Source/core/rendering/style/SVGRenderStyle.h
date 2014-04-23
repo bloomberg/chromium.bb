@@ -28,6 +28,7 @@
 #include "core/rendering/style/DataRef.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
+#include "core/rendering/style/StyleDifference.h"
 #include "core/svg/SVGPaint.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Path.h"
@@ -48,7 +49,7 @@ public:
     void inheritFrom(const SVGRenderStyle*);
     void copyNonInheritedFrom(const SVGRenderStyle*);
 
-    StyleDifferenceLegacy diff(const SVGRenderStyle*) const;
+    StyleDifference diff(const SVGRenderStyle*) const;
 
     bool operator==(const SVGRenderStyle&) const;
     bool operator!=(const SVGRenderStyle& o) const { return !(*this == o); }
@@ -426,6 +427,9 @@ private:
     SVGRenderStyle();
     SVGRenderStyle(const SVGRenderStyle&);
     SVGRenderStyle(CreateDefaultType); // Used to create the default style.
+
+    bool diffNeedsLayout(const SVGRenderStyle* other) const;
+    bool diffNeedsRepaintOnly(const SVGRenderStyle* other) const;
 
     void setBitDefaults()
     {
