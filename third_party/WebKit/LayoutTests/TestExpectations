@@ -591,6 +591,9 @@ crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-restore.html [ Failure ]
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-small.html [ Failure ]
 
+# Mac sets NSUserDefault setting to turn off smooth scrolling, and it cannot be turned on for a single test.
+crbug.com/364614 [ Mac ] fast/scroll-behavior/sub-frame-scroll.html [ Failure ]
+
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 #crbug.com/316145 [ XP ] fast/text/justify-ideograph-complex.html [ Failure Pass ]
