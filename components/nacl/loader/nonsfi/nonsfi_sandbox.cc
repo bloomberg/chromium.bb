@@ -157,10 +157,6 @@ bool IsGracefullyDenied(int sysno) {
     case __NR_getgid:
     case __NR_getuid:
 #endif
-    // ASan internally uses getpid, ioctl, and readlink.
-    case __NR_getpid:
-    case __NR_ioctl:
-    case __NR_readlink:
     // tcmalloc calls madvise in TCMalloc_SystemRelease.
     case __NR_madvise:
     // EPERM instead of SIGSYS as glibc tries to open files in /proc.

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// ASan internally uses some syscalls which non-SFI NaCl disallows.
+// Seccomp-BPF tests die under TSan v2. See http://crbug.com/356588
+#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
+
 #include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
 
 #include <errno.h>
@@ -51,14 +55,9 @@ void DoSocketpair(base::ScopedFD* fds) {
 }
 
 TEST(NaClNonSfiSandboxTest, BPFIsSupported) {
-  bool seccomp_bpf_supported = false;
-  // Seccomp-BPF tests die under TSAN v2. See http://crbug.com/356588
-#if !defined(THREAD_SANITIZER)
-  seccomp_bpf_supported = (
+  bool seccomp_bpf_supported = (
       sandbox::SandboxBPF::SupportsSeccompSandbox(-1) ==
       sandbox::SandboxBPF::STATUS_AVAILABLE);
-#endif
-
   if (!seccomp_bpf_supported) {
     LOG(ERROR) << "Seccomp BPF is not supported, these tests "
                << "will pass without running";
@@ -80,7 +79,7 @@ void* SetValueInThread(void* test_val_ptr) {
 
 // To make this test pass, we need to allow sched_getaffinity and
 // mmap. We just disable this test not to complicate the sandbox.
-BPF_TEST(NaClNonSfiSandboxTest, DISABLE_ON_ASAN(clone_by_pthread_create),
+BPF_TEST(NaClNonSfiSandboxTest, clone_by_pthread_create,
          nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
   // clone call for thread creation is allowed.
   pthread_t th;
@@ -430,27 +429,6 @@ BPF_TEST(NaClNonSfiSandboxTest, getuid_EPERM,
 }
 #endif
 
-BPF_TEST(NaClNonSfiSandboxTest, getpid_EPERM,
-         nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
-  errno = 0;
-  BPF_ASSERT_EQ(-1, syscall(__NR_getpid));
-  BPF_ASSERT_EQ(EPERM, errno);
-}
-
-BPF_TEST(NaClNonSfiSandboxTest, ioctl_EPERM,
-         nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
-  errno = 0;
-  BPF_ASSERT_EQ(-1, syscall(__NR_ioctl));
-  BPF_ASSERT_EQ(EPERM, errno);
-}
-
-BPF_TEST(NaClNonSfiSandboxTest, readlink_EPERM,
-         nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
-  errno = 0;
-  BPF_ASSERT_EQ(-1, syscall(__NR_readlink));
-  BPF_ASSERT_EQ(EPERM, errno);
-}
-
 BPF_TEST(NaClNonSfiSandboxTest, madvise_EPERM,
          nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
   errno = 0;
@@ -489,3 +467,5 @@ BPF_TEST(NaClNonSfiSandboxTest, time_EPERM,
 #endif
 
 }  // namespace
+
+#endif  // !ADDRESS_SANITIZER && !THREAD_SANITIZER

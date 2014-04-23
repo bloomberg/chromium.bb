@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// ASAN internally uses some syscalls which non-SFI NaCl disallows.
+// Seccomp-BPF tests die under TSAN v2. See http://crbug.com/356588
+#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
+
 #include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
 
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
@@ -163,6 +167,7 @@ RESTRICT_SYSCALL_DEATH_TEST(getpeername);
 #endif
 RESTRICT_SYSCALL_DEATH_TEST(getpgid);
 RESTRICT_SYSCALL_DEATH_TEST(getpgrp);
+RESTRICT_SYSCALL_DEATH_TEST(getpid);
 #if defined(__i386__) || defined(__x86_64__)
 RESTRICT_SYSCALL_DEATH_TEST(getpmsg);
 #endif
@@ -204,6 +209,7 @@ RESTRICT_SYSCALL_DEATH_TEST(io_destroy);
 RESTRICT_SYSCALL_DEATH_TEST(io_getevents);
 RESTRICT_SYSCALL_DEATH_TEST(io_setup);
 RESTRICT_SYSCALL_DEATH_TEST(io_submit);
+RESTRICT_SYSCALL_DEATH_TEST(ioctl);
 #if defined(__i386__) || defined(__x86_64__)
 RESTRICT_SYSCALL_DEATH_TEST(ioperm);
 #endif
@@ -351,6 +357,7 @@ RESTRICT_SYSCALL_DEATH_TEST(readahead);
 #if defined(__i386__)
 RESTRICT_SYSCALL_DEATH_TEST(readdir);
 #endif
+RESTRICT_SYSCALL_DEATH_TEST(readlink);
 RESTRICT_SYSCALL_DEATH_TEST(readlinkat);
 RESTRICT_SYSCALL_DEATH_TEST(readv);
 RESTRICT_SYSCALL_DEATH_TEST(reboot);
@@ -604,3 +611,5 @@ RESTRICT_ARM_SYSCALL_DEATH_TEST(set_tls);
 #endif
 
 }  // namespace
+
+#endif  // !ADDRESS_SANITIZER && !THREAD_SANITIZER
