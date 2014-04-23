@@ -168,7 +168,13 @@ TEST_F(CrxDownloaderTest, OneUrl) {
 
 // Tests that specifying from two urls has no side effects. Expect a successful
 // download, and only one download request be made.
-TEST_F(CrxDownloaderTest, TwoUrls) {
+// This test is flaky on Android. crbug.com/329883
+#if defined(OS_ANDROID)
+#define MAYBE_TwoUrls DISABLED_TwoUrls
+#else
+#define MAYBE_TwoUrls TwoUrls
+#endif
+TEST_F(CrxDownloaderTest, MAYBE_TwoUrls) {
   const GURL expected_crx_url =
     GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
@@ -234,7 +240,13 @@ TEST_F(CrxDownloaderTest, OneUrl_InvalidPath) {
 }
 
 // Tests that the fallback to a valid url is successful.
-TEST_F(CrxDownloaderTest, TwoUrls_FirstInvalid) {
+// This test is flaky on Android. crbug.com/329883
+#if defined(OS_ANDROID)
+#define MAYBE_TwoUrls_FirstInvalid DISABLED_TwoUrls_FirstInvalid
+#else
+#define MAYBE_TwoUrls_FirstInvalid TwoUrls_FirstInvalid
+#endif
+TEST_F(CrxDownloaderTest, MAYBE_TwoUrls_FirstInvalid) {
   const GURL expected_crx_url =
     GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx");
 
