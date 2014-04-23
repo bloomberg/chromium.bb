@@ -31,6 +31,7 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
   Task();
   virtual ~Task();
 
+  bool will_run_;
   bool did_run_;
 };
 

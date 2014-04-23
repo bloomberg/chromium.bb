@@ -96,15 +96,24 @@ class DependencyMismatchComparator {
 
 }  // namespace
 
-Task::Task() : did_run_(false) {}
-
-Task::~Task() {}
-
-void Task::WillRun() {
-  DCHECK(!did_run_);
+Task::Task() : will_run_(false), did_run_(false) {
 }
 
-void Task::DidRun() { did_run_ = true; }
+Task::~Task() {
+  DCHECK(!will_run_);
+}
+
+void Task::WillRun() {
+  DCHECK(!will_run_);
+  DCHECK(!did_run_);
+  will_run_ = true;
+}
+
+void Task::DidRun() {
+  DCHECK(will_run_);
+  will_run_ = false;
+  did_run_ = true;
+}
 
 bool Task::HasFinishedRunning() const { return did_run_; }
 
