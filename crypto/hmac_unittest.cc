@@ -281,7 +281,7 @@ TEST(HMACTest, EmptyKey) {
   const char* kExpectedDigest =
       "\xFB\xDB\x1D\x1B\x18\xAA\x6C\x08\x32\x4B\x7D\x64\xB7\x1F\xB7\x63"
       "\x70\x69\x0E\x1D";
-  base::StringPiece data("", 0u);
+  base::StringPiece data("");
 
   crypto::HMAC hmac(crypto::HMAC::SHA1);
   ASSERT_TRUE(hmac.Init(NULL, 0));
