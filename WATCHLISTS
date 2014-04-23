@@ -215,6 +215,11 @@
     'content': {
       'filepath': 'content/',
     },
+    'content_input': {
+      'filepath': 'content/browser/renderer_host/input/|'\
+                  'content/common/input/|'\
+                  'content/renderer/input/',
+    },
     'content_shell': {
       'filepath': 'content/shell/',
     },
@@ -759,6 +764,7 @@
     'clipboard': ['dcheng@chromium.org'],
     'content': ['jam@chromium.org',
                 'darin-cc@chromium.org'],
+    'content_input': ['jdduke+watch@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
     'deep_memory_profiler': ['dmikurube+memory@chromium.org'],
