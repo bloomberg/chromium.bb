@@ -1355,8 +1355,6 @@ util.getEntryLabel = function(volumeManager, entry) {
 
   if (locationInfo && locationInfo.isRootEntry) {
     switch (locationInfo.rootType) {
-      case RootType.DOWNLOADS:
-        return str('DOWNLOADS_DIRECTORY_LABEL');
       case RootType.DRIVE:
         return str('DRIVE_MY_DRIVE_LABEL');
       case RootType.DRIVE_OFFLINE:
@@ -1365,12 +1363,14 @@ util.getEntryLabel = function(volumeManager, entry) {
         return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
       case RootType.DRIVE_RECENT:
         return str('DRIVE_RECENT_COLLECTION_LABEL');
+      case RootType.DOWNLOADS:
       case RootType.ARCHIVE:
       case RootType.REMOVABLE:
-        return entry.filesystem.name;
+      case RootType.MTP:
+        return locationInfo.volumeInfo.label;
       default:
         console.error('Unsupported root type: ' + locationInfo.rootType);
-        return entry.filesystem.name;
+        return locationInfo.volumeInfo.label;
     }
   }
 
