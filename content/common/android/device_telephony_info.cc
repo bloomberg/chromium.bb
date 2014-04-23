@@ -31,6 +31,13 @@ std::string DeviceTelephonyInfo::GetNetworkCountryIso() {
   return ConvertJavaStringToUTF8(result);
 }
 
+std::string DeviceTelephonyInfo::GetNetworkOperator() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> result =
+      Java_DeviceTelephonyInfo_getNetworkOperator(env, j_device_info_.obj());
+  return ConvertJavaStringToUTF8(result);
+}
+
 // static
 bool DeviceTelephonyInfo::RegisterDeviceTelephonyInfo(JNIEnv* env) {
   return RegisterNativesImpl(env);

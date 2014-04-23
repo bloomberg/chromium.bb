@@ -27,7 +27,22 @@ public class DeviceTelephonyInfo {
      */
     @CalledByNative
     public String getNetworkCountryIso() {
-        return mTelManager.getNetworkCountryIso();
+        if (mTelManager != null) {
+            return mTelManager.getNetworkCountryIso();
+        }
+        return "";
+    }
+
+    /**
+     * @return MCC+MNC (mobile country code + mobile network code) as
+     * the numeric name of the current registered operator.
+     */
+    @CalledByNative
+    public String getNetworkOperator() {
+        if (mTelManager != null) {
+            return mTelManager.getNetworkOperator();
+        }
+        return "";
     }
 
     /**

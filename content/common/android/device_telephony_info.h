@@ -23,6 +23,10 @@ class DeviceTelephonyInfo {
   // Returns the ISO country code equivalent of the current MCC.
   std::string GetNetworkCountryIso();
 
+  // Returns MCC+MNC (mobile country code + mobile network code) as
+  // the numeric name of the current registered operator.
+  std::string GetNetworkOperator();
+
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterDeviceTelephonyInfo(JNIEnv* env);
 
