@@ -32,6 +32,23 @@ cr.define('chrome.sync.about_tab', function() {
     refreshAboutInfo(e.details);
   }
 
+  /**
+   * Helper to determine if an element is scrolled to its bottom limit.
+   * @param {Element} elem element to check
+   * @return {boolean} true if the element is scrolled to the bottom
+   */
+  function isScrolledToBottom(elem) {
+    return elem.scrollHeight - elem.scrollTop == elem.clientHeight;
+  }
+
+  /**
+   * Helper to scroll an element to its bottom limit.
+   * @param {Element} elem element to be scrolled
+   */
+  function scrollToBottom(elem) {
+    elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+  }
+
   /** Container for accumulated sync protocol events. */
   var protocolEvents = [];
 
@@ -54,8 +71,17 @@ cr.define('chrome.sync.about_tab', function() {
     knownEventTimestamps[details.time] = true;
     protocolEvents.push(details);
 
+    var trafficContainer = $('traffic-event-container');
+
+    // Scroll to the bottom if we were already at the bottom.  Otherwise, leave
+    // the scrollbar alone.
+    var shouldScrollDown = isScrolledToBottom(trafficContainer);
+
     var context = new JsEvalContext({ events: protocolEvents });
-    jstProcess(context, $('traffic-event-container'));
+    jstProcess(context, trafficContainer);
+
+    if (shouldScrollDown)
+      scrollToBottom(trafficContainer);
   }
 
   /**
@@ -124,10 +150,10 @@ cr.define('chrome.sync.about_tab', function() {
 
   /**
    * Toggles the given traffic event entry div's "expanded" state.
-   * @param {HTMLElement} element the element to toggle.
+   * @param {MouseEvent} e the click event that triggered the toggle.
    */
-  function expandListener(element) {
-    element.target.classList.toggle('traffic-event-entry-expanded');
+  function expandListener(e) {
+    e.target.classList.toggle('traffic-event-entry-expanded');
   }
 
   /**
