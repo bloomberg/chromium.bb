@@ -97,10 +97,25 @@ class GIT(object):
   current_version = None
 
   @staticmethod
-  def Capture(args, cwd, strip_out=True, **kwargs):
-    env = os.environ.copy()
+  def ApplyEnvVars(kwargs):
+    env = kwargs.pop('env', None) or os.environ.copy()
+    # Don't prompt for passwords; just fail quickly and noisily.
+    # By default, git will use an interactive terminal prompt when a username/
+    # password is needed.  That shouldn't happen in the chromium workflow,
+    # and if it does, then gclient may hide the prompt in the midst of a flood
+    # of terminal spew.  The only indication that something has gone wrong
+    # will be when gclient hangs unresponsively.  Instead, we disable the
+    # password prompt and simply allow git to fail noisily.  The error
+    # message produced by git will be copied to gclient's output.
+    env.setdefault('GIT_ASKPASS', 'true')
+    env.setdefault('SSH_ASKPASS', 'true')
     # 'cat' is a magical git string that disables pagers on all platforms.
-    env['GIT_PAGER'] = 'cat'
+    env.setdefault('GIT_PAGER', 'cat')
+    return env
+
+  @staticmethod
+  def Capture(args, cwd, strip_out=True, **kwargs):
+    env = GIT.ApplyEnvVars(kwargs)
     output = subprocess2.check_output(
         ['git'] + args,
         cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs)

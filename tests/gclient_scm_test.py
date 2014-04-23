@@ -1308,13 +1308,13 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
                                   options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
-    gclient_scm.subprocess2.check_output(['git', 'ls-files'],
-                                         cwd=self.base_path,
-                                         stderr=-1,
-                                         ).AndReturn('')
+    gclient_scm.subprocess2.check_output(
+        ['git', 'ls-files'], cwd=self.base_path,
+        env=gclient_scm.scm.GIT.ApplyEnvVars({}), stderr=-1,).AndReturn('')
     gclient_scm.subprocess2.check_output(
         ['git', 'rev-parse', '--verify', 'HEAD'],
         cwd=self.base_path,
+        env=gclient_scm.scm.GIT.ApplyEnvVars({}),
         stderr=-1,
         ).AndReturn('')
 
@@ -1342,13 +1342,13 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
                                   options)
     # pylint: disable=E1120
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
-    gclient_scm.subprocess2.check_output(['git', 'ls-files'],
-                                         cwd=self.base_path,
-                                         stderr=-1,
-                                         ).AndReturn('')
+    gclient_scm.subprocess2.check_output(
+        ['git', 'ls-files'], cwd=self.base_path,
+        env=gclient_scm.scm.GIT.ApplyEnvVars({}), stderr=-1,).AndReturn('')
     gclient_scm.subprocess2.check_output(
         ['git', 'rev-parse', '--verify', 'HEAD'],
         cwd=self.base_path,
+        env=gclient_scm.scm.GIT.ApplyEnvVars({}),
         stderr=-1,
         ).AndReturn('')
 

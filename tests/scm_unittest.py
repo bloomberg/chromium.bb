@@ -73,6 +73,7 @@ class RootTestCase(BaseSCMTestCase):
 class GitWrapperTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     members = [
+        'ApplyEnvVars',
         'AssertVersion',
         'Capture',
         'CaptureStatus',

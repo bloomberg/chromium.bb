@@ -962,7 +962,8 @@ class GitWrapper(SCMWrapper):
   def _Capture(self, args, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stderr', subprocess2.PIPE)
-    return subprocess2.check_output(['git'] + args, **kwargs).strip()
+    env = scm.GIT.ApplyEnvVars(kwargs)
+    return subprocess2.check_output(['git'] + args, env=env, **kwargs).strip()
 
   def _UpdateBranchHeads(self, options, fetch=False):
     """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
@@ -983,22 +984,11 @@ class GitWrapper(SCMWrapper):
     kwargs.setdefault('stdout', self.out_fh)
     kwargs['filter_fn'] = self.filter
     kwargs.setdefault('print_stdout', False)
-    # Don't prompt for passwords; just fail quickly and noisily.
-    # By default, git will use an interactive terminal prompt when a username/
-    # password is needed.  That shouldn't happen in the chromium workflow,
-    # and if it does, then gclient may hide the prompt in the midst of a flood
-    # of terminal spew.  The only indication that something has gone wrong
-    # will be when gclient hangs unresponsively.  Instead, we disable the
-    # password prompt and simply allow git to fail noisily.  The error
-    # message produced by git will be copied to gclient's output.
-    env = kwargs.get('env') or kwargs.setdefault('env', os.environ.copy())
-    env.setdefault('GIT_ASKPASS', 'true')
-    env.setdefault('SSH_ASKPASS', 'true')
-
+    env = scm.GIT.ApplyEnvVars(kwargs)
     cmd = ['git'] + args
     header = "running '%s' in '%s'" % (' '.join(cmd), cwd)
     self.filter(header)
-    return gclient_utils.CheckCallAndFilter(cmd, **kwargs)
+    return gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
 
 
 class SVNWrapper(SCMWrapper):
