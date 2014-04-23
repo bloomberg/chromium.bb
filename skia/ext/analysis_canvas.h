@@ -59,25 +59,6 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                               const SkPaint* paint = NULL) OVERRIDE;
   virtual void drawSprite(const SkBitmap&, int left, int top,
                           const SkPaint* paint = NULL) OVERRIDE;
-  virtual void drawText(const void* text,
-                        size_t byteLength,
-                        SkScalar x,
-                        SkScalar y,
-                        const SkPaint&) OVERRIDE;
-  virtual void drawPosText(const void* text,
-                           size_t byteLength,
-                           const SkPoint pos[],
-                           const SkPaint&) OVERRIDE;
-  virtual void drawPosTextH(const void* text,
-                            size_t byteLength,
-                            const SkScalar xpos[],
-                            SkScalar constY,
-                            const SkPaint&) OVERRIDE;
-  virtual void drawTextOnPath(const void* text,
-                              size_t byteLength,
-                              const SkPath& path,
-                              const SkMatrix* matrix,
-                              const SkPaint&) OVERRIDE;
   virtual void drawVertices(VertexMode,
                             int vertexCount,
                             const SkPoint vertices[],
@@ -105,7 +86,27 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                           SkRegion::Op op,
                           ClipEdgeStyle edge_style) OVERRIDE;
 
- private:
+  virtual void onDrawText(const void* text,
+                          size_t byteLength,
+                          SkScalar x,
+                          SkScalar y,
+                          const SkPaint&) OVERRIDE;
+  virtual void onDrawPosText(const void* text,
+                             size_t byteLength,
+                             const SkPoint pos[],
+                             const SkPaint&) OVERRIDE;
+  virtual void onDrawPosTextH(const void* text,
+                              size_t byteLength,
+                              const SkScalar xpos[],
+                              SkScalar constY,
+                              const SkPaint&) OVERRIDE;
+  virtual void onDrawTextOnPath(const void* text,
+                                size_t byteLength,
+                                const SkPath& path,
+                                const SkMatrix* matrix,
+                                const SkPaint&) OVERRIDE;
+
+private:
   typedef SkCanvas INHERITED;
 
   int saved_stack_size_;

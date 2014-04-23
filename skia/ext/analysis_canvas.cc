@@ -214,40 +214,40 @@ void AnalysisCanvas::drawSprite(const SkBitmap& bitmap,
   is_transparent_ = false;
 }
 
-void AnalysisCanvas::drawText(const void* text,
-                              size_t len,
-                              SkScalar x,
-                              SkScalar y,
-                              const SkPaint& paint) {
+void AnalysisCanvas::onDrawText(const void* text,
+                                size_t len,
+                                SkScalar x,
+                                SkScalar y,
+                                const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   has_text_ = true;
 }
 
-void AnalysisCanvas::drawPosText(const void* text,
-                                 size_t byteLength,
-                                 const SkPoint pos[],
-                                 const SkPaint& paint) {
+void AnalysisCanvas::onDrawPosText(const void* text,
+                                   size_t byteLength,
+                                   const SkPoint pos[],
+                                   const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   has_text_ = true;
 }
 
-void AnalysisCanvas::drawPosTextH(const void* text,
-                                  size_t byteLength,
-                                  const SkScalar xpos[],
-                                  SkScalar constY,
-                                  const SkPaint& paint) {
-  is_solid_color_ = false;
-  is_transparent_ = false;
-  has_text_ = true;
-}
-
-void AnalysisCanvas::drawTextOnPath(const void* text,
-                                    size_t len,
-                                    const SkPath& path,
-                                    const SkMatrix* matrix,
+void AnalysisCanvas::onDrawPosTextH(const void* text,
+                                    size_t byteLength,
+                                    const SkScalar xpos[],
+                                    SkScalar constY,
                                     const SkPaint& paint) {
+  is_solid_color_ = false;
+  is_transparent_ = false;
+  has_text_ = true;
+}
+
+void AnalysisCanvas::onDrawTextOnPath(const void* text,
+                                      size_t len,
+                                      const SkPath& path,
+                                      const SkMatrix* matrix,
+                                      const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
   has_text_ = true;

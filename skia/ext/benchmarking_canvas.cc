@@ -114,33 +114,6 @@ public:
     SkProxyCanvas::drawSprite(bitmap, left, top, paint);
   }
 
-  virtual void drawText(const void* text, size_t byteLength, SkScalar x,
-                        SkScalar y, const SkPaint& paint) OVERRIDE {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawText(text, byteLength, x, y, paint);
-  }
-
-  virtual void drawPosText(const void* text, size_t byteLength,
-                           const SkPoint pos[],
-                           const SkPaint& paint) OVERRIDE {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawPosText(text, byteLength, pos, paint);
-  }
-
-  virtual void drawPosTextH(const void* text, size_t byteLength,
-                            const SkScalar xpos[], SkScalar constY,
-                            const SkPaint& paint) OVERRIDE {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawPosTextH(text, byteLength, xpos, constY, paint);
-  }
-
-  virtual void drawTextOnPath(const void* text, size_t byteLength,
-                              const SkPath& path, const SkMatrix* matrix,
-                              const SkPaint& paint) OVERRIDE {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawTextOnPath(text, byteLength, path, matrix, paint);
-  }
-
   virtual void drawPicture(SkPicture& picture) OVERRIDE {
     AutoStamper stamper(this);
     SkProxyCanvas::drawPicture(picture);
@@ -162,6 +135,33 @@ public:
   }
 
 protected:
+  virtual void onDrawText(const void* text, size_t byteLength, SkScalar x,
+                          SkScalar y, const SkPaint& paint) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawText(text, byteLength, x, y, paint);
+  }
+
+  virtual void onDrawPosText(const void* text, size_t byteLength,
+                             const SkPoint pos[],
+                             const SkPaint& paint) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawPosText(text, byteLength, pos, paint);
+  }
+
+  virtual void onDrawPosTextH(const void* text, size_t byteLength,
+                              const SkScalar xpos[], SkScalar constY,
+                              const SkPaint& paint) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawPosTextH(text, byteLength, xpos, constY, paint);
+  }
+
+  virtual void onDrawTextOnPath(const void* text, size_t byteLength,
+                                const SkPath& path, const SkMatrix* matrix,
+                                const SkPaint& paint) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
+  }
+
   virtual void onClipRect(const SkRect& rect, SkRegion::Op op,
                           ClipEdgeStyle edge_style) OVERRIDE {
     AutoStamper stamper(this);

@@ -51,7 +51,16 @@ class TestDiscardableShader : public SkShader {
   }
 
   // Pure virtual implementaiton.
-  virtual void shadeSpan(int x, int y, SkPMColor[], int count) OVERRIDE {}
+  virtual SkShader::Context* createContext(const SkBitmap& device,
+                                           const SkPaint& paint,
+                                           const SkMatrix& matrix,
+                                           void* storage) const OVERRIDE {
+    return NULL;
+  };
+  virtual size_t contextSize() const OVERRIDE {
+    return sizeof(SkShader::Context);
+  }
+
   SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(TestDiscardableShader);
 
  private:
