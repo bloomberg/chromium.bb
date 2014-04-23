@@ -24,8 +24,9 @@ namespace {
     class ClientArray {
     public:
         typedef blink::WebServiceWorkerClientsInfo WebType;
-        static Vector<RefPtr<Client> > from(NewScriptState*, WebType* webClients)
+        static Vector<RefPtr<Client> > from(NewScriptState*, WebType* webClientsRaw)
         {
+            OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);
             Vector<RefPtr<Client> > clients;
             for (size_t i = 0; i < webClients->clientIDs.size(); ++i) {
                 clients.append(Client::create(webClients->clientIDs[i]));
@@ -34,7 +35,8 @@ namespace {
         }
 
     private:
-        ClientArray();
+        WTF_MAKE_NONCOPYABLE(ClientArray);
+        ClientArray() WTF_DELETED_FUNCTION;
     };
 
 } // namespace
