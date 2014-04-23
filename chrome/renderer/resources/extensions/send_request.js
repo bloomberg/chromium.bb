@@ -76,7 +76,8 @@ function handleResponse(requestId, name, success, responseList, error) {
       safeCallbackApply(name, request, request.callback, responseList);
     }
 
-    if (!lastError.hasAccessed(chrome) &&
+    if (error &&
+        !lastError.hasAccessed(chrome) &&
         !lastError.hasAccessed(callerChrome)) {
       // The native call caused an error, but the developer didn't check
       // runtime.lastError.
