@@ -4,31 +4,31 @@
     "linux_x86": [
       {
         "extract_dir": "",
-        "hash": "eeb7086aea40abb23239290ba2d61c2667be8ef3",
+        "hash": "b701faf589009556cd2875c14ce59f6587eab143",
         "name": "pnacl-toolchain.tgz",
         "tar_src_dir": "",
-        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13060/naclsdk_pnacl_linux_x86.tgz"
+        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13072/naclsdk_pnacl_linux_x86.tgz"
       }
     ],
     "mac_x86": [
       {
         "extract_dir": "",
-        "hash": "19c1e1e8a44d4cac18b7d1f44d143c019afc688a",
+        "hash": "7a9224b5f36d724c06629824c7fb3f12a2c8ee8f",
         "name": "pnacl-toolchain.tgz",
         "tar_src_dir": "",
-        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13060/naclsdk_pnacl_mac_x86.tgz"
+        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13072/naclsdk_pnacl_mac_x86.tgz"
       }
     ],
     "win_x86": [
       {
         "extract_dir": "",
-        "hash": "a412ebecb2c66eeb8e41fbded315f6818de4bee1",
+        "hash": "1dffdbb2b3002c0a5045f4481ca66403360d0b79",
         "name": "pnacl-toolchain.tgz",
         "tar_src_dir": "",
-        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13060/naclsdk_pnacl_win_x86.tgz"
+        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13072/naclsdk_pnacl_win_x86.tgz"
       }
     ]
   },
-  "revision": 13060,
-  "revision_hash": "e8eff4d347548e51a646d877124dbcb58a55e11f"
+  "revision": 13072,
+  "revision_hash": "ce0926b8a91773d6b7a8e1dacfeda42434603919"
 }
