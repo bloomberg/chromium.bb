@@ -662,6 +662,7 @@ class HWTestConfig(object):
 
     qav_kwargs = kwargs.copy()
     qav_kwargs.update(qav_dict)
+    qav_kwargs['priority'] = constants.HWTEST_DEFAULT_PRIORITY
 
     # BVT + AU suite.
     return [cls(cls.DEFAULT_HW_TEST, **kwargs),

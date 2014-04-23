@@ -4001,7 +4001,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -4108,7 +4108,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -4211,7 +4211,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -4298,7 +4298,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -4878,7 +4878,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -5651,7 +5651,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -6896,7 +6896,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -7016,7 +7016,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -7119,7 +7119,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -7222,7 +7222,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -7309,7 +7309,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -7429,7 +7429,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -7538,7 +7538,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -7631,7 +7631,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -7740,7 +7740,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -7849,7 +7849,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -8519,7 +8519,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -9194,7 +9194,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -10150,7 +10150,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -10825,7 +10825,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -11411,7 +11411,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -11706,7 +11706,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -12860,7 +12860,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -13535,7 +13535,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -14146,7 +14146,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -14253,7 +14253,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -14340,7 +14340,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -15015,7 +15015,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -15690,7 +15690,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -16367,7 +16367,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -17339,7 +17339,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -17463,7 +17463,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -17572,7 +17572,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -17665,7 +17665,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -17774,7 +17774,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -17883,7 +17883,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -18756,7 +18756,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -19521,7 +19521,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -19641,7 +19641,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -19744,7 +19744,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -19930,7 +19930,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -20219,7 +20219,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -20987,7 +20987,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -21763,7 +21763,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -21887,7 +21887,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -21994,7 +21994,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -22081,7 +22081,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -22205,7 +22205,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -22314,7 +22314,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -22407,7 +22407,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -22516,7 +22516,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -22625,7 +22625,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -22922,7 +22922,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -23325,7 +23325,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -23428,7 +23428,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -23515,7 +23515,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -23901,7 +23901,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -24384,7 +24384,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -24869,7 +24869,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -25562,7 +25562,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -25669,7 +25669,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -25772,7 +25772,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -26057,7 +26057,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -27309,7 +27309,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -28002,7 +28002,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -28109,7 +28109,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -28212,7 +28212,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -28315,7 +28315,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -28418,7 +28418,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -28505,7 +28505,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -29198,7 +29198,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -29305,7 +29305,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -29408,7 +29408,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -29511,7 +29511,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -29614,7 +29614,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -29701,7 +29701,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -30473,7 +30473,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -31243,7 +31243,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -32505,7 +32505,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -32612,7 +32612,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -32715,7 +32715,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -32818,7 +32818,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -32921,7 +32921,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -33024,7 +33024,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -33111,7 +33111,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -33235,7 +33235,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -33342,7 +33342,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -33445,7 +33445,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -33548,7 +33548,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -33635,7 +33635,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -34691,7 +34691,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -34815,7 +34815,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -34922,7 +34922,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -35025,7 +35025,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -35128,7 +35128,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -35231,7 +35231,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -35318,7 +35318,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -36279,7 +36279,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -36768,7 +36768,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -37257,7 +37257,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -38316,7 +38316,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -39464,7 +39464,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -39951,7 +39951,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -40816,7 +40816,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -40940,7 +40940,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -41130,7 +41130,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -41254,7 +41254,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -41363,7 +41363,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
@@ -41456,7 +41456,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -41565,7 +41565,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -41674,7 +41674,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 4,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 7800\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 7800\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
@@ -43695,7 +43695,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -44275,7 +44275,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -44399,7 +44399,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -44589,7 +44589,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
@@ -45456,7 +45456,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
