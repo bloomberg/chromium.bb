@@ -902,6 +902,8 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 
     scrollToSelection();
 
+    setNeedsValidityCheck();
+
     if (usesMenuList()) {
         m_isProcessingUserDrivenChange = flags & UserDriven;
         if (flags & DispatchInputAndChangeEvent)
@@ -914,7 +916,6 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         }
     }
 
-    setNeedsValidityCheck();
     notifyFormStateChanged();
 }
 
