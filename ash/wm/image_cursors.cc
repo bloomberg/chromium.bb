@@ -6,9 +6,6 @@
 
 #include <float.h>
 
-#include "ash/display/display_info.h"
-#include "ash/display/display_manager.h"
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
@@ -59,54 +56,41 @@ const int kAnimatedCursorIds[] = {
   ui::kCursorProgress
 };
 
-ImageCursors::ImageCursors() : cursor_set_(ui::CURSOR_SET_NORMAL) {
+ImageCursors::ImageCursors() : scale_(1.f), cursor_set_(ui::CURSOR_SET_NORMAL) {
 }
 
 ImageCursors::~ImageCursors() {
 }
 
-float ImageCursors::GetScale() const {
+gfx::Display ImageCursors::GetDisplay() const {
   if (!cursor_loader_) {
     NOTREACHED();
     // Returning default on release build as it's not serious enough to crash
     // even if this ever happens.
-    return 1.0f;
+    return gfx::Display();
   }
-  return cursor_loader_->scale();
-}
-
-gfx::Display::Rotation ImageCursors::GetRotation() const {
-  if (!cursor_loader_) {
-    NOTREACHED();
-    // Returning default on release build as it's not serious enough to crash
-    // even if this ever happens.
-    return gfx::Display::ROTATE_0;
-  }
-  return cursor_loader_->rotation();
+  return cursor_loader_->display();
 }
 
 bool ImageCursors::SetDisplay(const gfx::Display& display) {
-  DCHECK(display.is_valid());
-  // Use the platform's device scale factor instead of display's
-  // that might have been adjusted for UI scale.
-  float scale_factor = Shell::GetInstance()->display_manager()->
-      GetDisplayInfo(display.id()).device_scale_factor();
-
+  float device_scale_factor = display.device_scale_factor();
   if (!cursor_loader_) {
     cursor_loader_.reset(ui::CursorLoader::Create());
-  } else if (cursor_loader_->rotation() == display.rotation() &&
-             cursor_loader_->scale() == scale_factor) {
+    cursor_loader_->set_scale(scale_);
+  } else if (cursor_loader_->display().rotation() == display.rotation() &&
+             cursor_loader_->display().device_scale_factor() ==
+             device_scale_factor) {
     return false;
   }
 
-  cursor_loader_->set_rotation(display.rotation());
-  cursor_loader_->set_scale(scale_factor);
+  cursor_loader_->set_display(display);
   ReloadCursors();
   return true;
 }
 
 void ImageCursors::ReloadCursors() {
-  float device_scale_factor = cursor_loader_->scale();
+  const gfx::Display& display = cursor_loader_->display();
+  float device_scale_factor = display.device_scale_factor();
 
   cursor_loader_->UnloadAll();
 
@@ -134,6 +118,20 @@ void ImageCursors::ReloadCursors() {
                                        resource_id,
                                        hot_point,
                                        ui::kAnimatedCursorFrameDelayMs);
+  }
+}
+
+void ImageCursors::SetScale(float scale) {
+  if (scale < FLT_EPSILON) {
+    NOTREACHED() << "Scale must be bigger than 0.";
+    scale = 1.0f;
+  }
+
+  scale_ = scale;
+
+  if (cursor_loader_.get()) {
+    cursor_loader_->set_scale(scale);
+    ReloadCursors();
   }
 }
 

@@ -838,8 +838,6 @@ bool DisplayManager::IsMirrored() const {
 }
 
 const DisplayInfo& DisplayManager::GetDisplayInfo(int64 display_id) const {
-  DCHECK_NE(gfx::Display::kInvalidDisplayID, display_id);
-
   std::map<int64, DisplayInfo>::const_iterator iter =
       display_info_.find(display_id);
   CHECK(iter != display_info_.end()) << display_id;

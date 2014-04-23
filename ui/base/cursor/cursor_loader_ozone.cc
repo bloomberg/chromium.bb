@@ -21,7 +21,7 @@ void CursorLoaderOzone::LoadImageCursor(int id,
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   const gfx::ImageSkiaRep& image_rep =
-      image->GetRepresentation(scale());
+      image->GetRepresentation(display().device_scale_factor());
   SkBitmap bitmap = image_rep.sk_bitmap();
   cursors_[id] =
       CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap, hot);
