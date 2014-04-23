@@ -262,7 +262,9 @@ void WebMediaPlayerAndroid::play() {
 #endif  // defined(VIDEO_HOLE)
 
   TryCreateStreamTextureProxyIfNeeded();
-  if (hasVideo() && needs_establish_peer_)
+  // There is no need to establish the surface texture peer for fullscreen
+  // video.
+  if (hasVideo() && needs_establish_peer_ && !manager_->IsInFullscreen(frame_))
     EstablishSurfaceTexturePeer();
 
   if (paused())

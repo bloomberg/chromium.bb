@@ -518,8 +518,13 @@ void BrowserMediaPlayerManager::OnInitialize(
 
 void BrowserMediaPlayerManager::OnStart(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->Start();
+  if (!player)
+    return;
+  player->Start();
+  if (fullscreen_player_id_ == player_id && fullscreen_player_is_released_) {
+    video_view_->OpenVideo();
+    fullscreen_player_is_released_ = false;
+  }
 }
 
 void BrowserMediaPlayerManager::OnSeek(
