@@ -1102,7 +1102,7 @@ crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
 crbug.com/365865 virtual/softwarecompositing/repaint/should-not-repaint-composited-descendants.html [ Failure ]
-crbug.com/365865 compositing/repaint/should-not-repaint-composited-descendants.html [ Failure ]
+crbug.com/365865 [ Linux XP ] compositing/repaint/should-not-repaint-composited-descendants.html [ Failure ]
 
 # Test will need updating once Chromium change crrev.com/247773004 lands
 crbug.com/365926 virtual/serviceworker/http/tests/serviceworker/unregister.html [ Failure Pass ]
