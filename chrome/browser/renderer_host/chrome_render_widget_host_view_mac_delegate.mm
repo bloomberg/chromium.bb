@@ -106,8 +106,19 @@ class SpellCheckObserver : public content::WebContentsObserver {
   return [historySwiper_ handleEvent:event];
 }
 
-- (void)gotWheelEventConsumed:(BOOL)consumed {
-  [historySwiper_ gotWheelEventConsumed:consumed];
+// Notification that a wheel event was unhandled.
+- (void)gotUnhandledWheelEvent {
+  [historySwiper_ gotUnhandledWheelEvent];
+}
+
+// Notification of scroll offset pinning.
+- (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
+  [historySwiper_ scrollOffsetPinnedToLeft:left toRight:right];
+}
+
+// Notification of whether the view has a horizontal scrollbar.
+- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar {
+  [historySwiper_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
 }
 
 // NSWindow events.
