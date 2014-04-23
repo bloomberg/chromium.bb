@@ -3065,9 +3065,6 @@ touch_handle_frame(void *data, struct wl_touch *wl_touch)
 		if (tp->widget->touch_frame_handler)
 			(*tp->widget->touch_frame_handler)(tp->widget, input, 
 							   tp->widget->user_data);
-
-		wl_list_remove(&tp->link);
-		free(tp);
 	}
 }
 
