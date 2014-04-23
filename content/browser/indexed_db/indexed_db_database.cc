@@ -477,6 +477,7 @@ void IndexedDBDatabase::Commit(int64 transaction_id) {
 void IndexedDBDatabase::Abort(int64 transaction_id) {
   // If the transaction is unknown, then it has already been aborted by the
   // backend before this call so it is safe to ignore it.
+  IDB_TRACE("IndexedDBDatabase::Abort");
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (transaction)
     transaction->Abort();
@@ -484,6 +485,7 @@ void IndexedDBDatabase::Abort(int64 transaction_id) {
 
 void IndexedDBDatabase::Abort(int64 transaction_id,
                               const IndexedDBDatabaseError& error) {
+  IDB_TRACE("IndexedDBDatabase::Abort");
   // If the transaction is unknown, then it has already been aborted by the
   // backend before this call so it is safe to ignore it.
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
@@ -1454,6 +1456,7 @@ void IndexedDBDatabase::CreateTransaction(
     const std::vector<int64>& object_store_ids,
     uint16 mode) {
 
+  IDB_TRACE("IndexedDBDatabase::CreateTransaction");
   DCHECK(connections_.count(connection));
   DCHECK(transactions_.find(transaction_id) == transactions_.end());
   if (transactions_.find(transaction_id) != transactions_.end())
@@ -1696,6 +1699,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   DCHECK(connection->IsConnected());
   DCHECK(connection->database() == this);
 
+  IDB_TRACE("IndexedDBDatabase::Close");
   // Abort outstanding transactions from the closing connection. This
   // can not happen if the close is requested by the connection itself
   // as the front-end defers the close until all transactions are
