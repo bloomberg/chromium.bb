@@ -1095,3 +1095,5 @@ crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
 # Test will need updating once Chromium change crrev.com/247773004 lands
 crbug.com/365926 virtual/serviceworker/http/tests/serviceworker/unregister.html [ Failure Pass ]
+
+crbug.com/366185 inspector/split-view.html [ Pass Timeout ]
