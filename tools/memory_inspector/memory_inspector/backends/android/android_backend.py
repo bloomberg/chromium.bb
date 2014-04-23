@@ -8,19 +8,25 @@ See core/backends.py for more docs.
 """
 
 import datetime
+import glob
 import hashlib
 import json
 import os
+import posixpath
 
 from memory_inspector import constants
 from memory_inspector.backends import prebuilts_fetcher
 from memory_inspector.backends.android import dumpheap_native_parser
 from memory_inspector.backends.android import memdump_parser
 from memory_inspector.core import backends
+from memory_inspector.core import exceptions
+from memory_inspector.core import native_heap
+from memory_inspector.core import symbol
 
-# The embedder of this module (unittest runner, web server, ...) is expected
-# to add the <CHROME_SRC>/build/android to the PYTHONPATH for pylib.
+# The memory_inspector/__init__ module will add the <CHROME_SRC>/build/android
+# deps to the PYTHONPATH for pylib.
 from pylib import android_commands  # pylint: disable=F0401
+from pylib.symbols import elf_symbolizer  # pylint: disable=F0401
 
 
 _MEMDUMP_PREBUILT_PATH = os.path.join(constants.PROJECT_SRC,
@@ -59,6 +65,86 @@ class AndroidBackend(backends.Backend):
           self, android_commands.AndroidCommands(device_id))
         self._devices[device_id] = device
       yield device
+
+  def ExtractSymbols(self, native_heaps, sym_paths):
+    """Performs symbolization. Returns a |symbol.Symbols| from |NativeHeap|s.
+
+    This method performs the symbolization but does NOT decorate (i.e. add
+    symbol/source info) to the stack frames of |native_heaps|. The heaps
+    can be decorated as needed using the native_heap.SymbolizeUsingSymbolDB()
+    method. Rationale: the most common use case in this application is:
+    symbolize-and-store-symbols and load-symbols-and-decorate-heaps (in two
+    different stages at two different times).
+
+    Args:
+      native_heaps: a collection of native_heap.NativeHeap instances.
+      sym_paths: either a list of or a string of comma-separated symbol paths.
+    """
+    assert(all(isinstance(x, native_heap.NativeHeap) for x in native_heaps))
+    symbols = symbol.Symbols()
+
+    # Find addr2line in toolchain_path.
+    if isinstance(sym_paths, basestring):
+      sym_paths = sym_paths.split(',')
+    matches = glob.glob(os.path.join(self.settings['toolchain_path'],
+                                     '*addr2line'))
+    if not matches:
+      raise exceptions.MemoryInspectorException('Cannot find addr2line')
+    addr2line_path = matches[0]
+
+    # First group all the stack frames together by lib path.
+    frames_by_lib = {}
+    for nheap in native_heaps:
+      for stack_frame in nheap.stack_frames.itervalues():
+        frames = frames_by_lib.setdefault(stack_frame.exec_file_rel_path, set())
+        frames.add(stack_frame)
+
+    # The symbolization process is asynchronous (but yet single-threaded). This
+    # callback is invoked every time the symbol info for a stack frame is ready.
+    def SymbolizeAsyncCallback(sym_info, stack_frame):
+      if not sym_info.name:
+        return
+      sym = symbol.Symbol(name=sym_info.name,
+                          source_file_path=sym_info.source_path,
+                          line_number=sym_info.source_line)
+      symbols.Add(stack_frame.exec_file_rel_path, stack_frame.offset, sym)
+      # TODO(primiano): support inline sym info (i.e. |sym_info.inlined_by|).
+
+    # Perform the actual symbolization (ordered by lib).
+    for exec_file_rel_path, frames in frames_by_lib.iteritems():
+      # Look up the full path of the symbol in the sym paths.
+      exec_file_name = posixpath.basename(exec_file_rel_path)
+      if exec_file_rel_path.startswith('/'):
+        exec_file_rel_path = exec_file_rel_path[1:]
+      exec_file_abs_path = ''
+      for sym_path in sym_paths:
+        # First try to locate the symbol file following the full relative path
+        # e.g. /host/syms/ + /system/lib/foo.so => /host/syms/system/lib/foo.so.
+        exec_file_abs_path = os.path.join(sym_path, exec_file_rel_path)
+        if os.path.exists(exec_file_abs_path):
+          break
+
+        # If no luck, try looking just for the file name in the sym path,
+        # e.g. /host/syms/ + (/system/lib/)foo.so => /host/syms/foo.so
+        exec_file_abs_path = os.path.join(sym_path, exec_file_name)
+        if os.path.exists(exec_file_abs_path):
+          break
+
+      if not os.path.exists(exec_file_abs_path):
+        continue
+
+      symbolizer = elf_symbolizer.ELFSymbolizer(
+          elf_file_path=exec_file_abs_path,
+          addr2line_path=addr2line_path,
+          callback=SymbolizeAsyncCallback,
+          inlines=False)
+
+      # Kick off the symbolizer and then wait that all callbacks are issued.
+      for stack_frame in sorted(frames, key=lambda x: x.offset):
+        symbolizer.SymbolizeAsync(stack_frame.offset, stack_frame)
+      symbolizer.Join()
+
+    return symbols
 
   @property
   def name(self):

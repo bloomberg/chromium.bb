@@ -61,6 +61,10 @@ class Backend(object):
     """
     raise NotImplementedError()
 
+  def ExtractSymbols(self, native_heaps, sym_paths):
+    """Performs symbolization. Returns a |symbol.Symbols| from |NativeHeap|s."""
+    raise NotImplementedError()
+
   @property
   def name(self):
     """A unique name which identifies the backend.

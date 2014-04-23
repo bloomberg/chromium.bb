@@ -32,6 +32,9 @@ class MockBackend(backends.Backend):
     yield MockDevice(self, 'device-1')
     yield MockDevice(self, 'device-2')
 
+  def ExtractSymbols(self, native_heaps, sym_paths):
+    raise NotImplementedError()
+
   @property
   def name(self):
     return self.backend_name

@@ -37,8 +37,8 @@ class Symbol(object):
   def __init__(self, name, source_file_path=None, line_number=None):
     self.name = name
     self.source_info = []
-    if source_file_path and line_number:
-      self.AddSourceLineInfo(source_file_path, line_number)
+    if source_file_path:
+      self.AddSourceLineInfo(source_file_path, line_number or 0)
 
   def AddSourceLineInfo(self, source_file_path, line_number):
     self.source_info += [SourceInfo(source_file_path, line_number)]
