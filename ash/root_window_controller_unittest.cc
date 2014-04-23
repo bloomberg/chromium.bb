@@ -654,13 +654,13 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard_window->SetBounds(gfx::Rect());
   keyboard_window->Show();
 
-  ui::test::TestEventHandler* handler = new ui::test::TestEventHandler;
-  root_window->SetEventFilter(handler);
+  ui::test::TestEventHandler handler;
+  root_window->AddPreTargetHandler(&handler);
 
   aura::test::EventGenerator event_generator(root_window, keyboard_window);
   event_generator.ClickLeftButton();
   int expected_mouse_presses = 1;
-  EXPECT_EQ(expected_mouse_presses, handler->num_mouse_events() / 2);
+  EXPECT_EQ(expected_mouse_presses, handler.num_mouse_events() / 2);
 
   for (int block_reason = FIRST_BLOCK_REASON;
        block_reason < NUMBER_OF_BLOCK_REASONS;
@@ -668,9 +668,10 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
     event_generator.ClickLeftButton();
     expected_mouse_presses++;
-    EXPECT_EQ(expected_mouse_presses, handler->num_mouse_events() / 2);
+    EXPECT_EQ(expected_mouse_presses, handler.num_mouse_events() / 2);
     UnblockUserSession();
   }
+  root_window->RemovePreTargetHandler(&handler);
 }
 
 // Test for http://crbug.com/299787. RootWindowController should delete
@@ -736,8 +737,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(keyboard::KeyboardBoundsFromWindowBounds(
       keyboard_container->bounds(), 100));
-  ui::test::TestEventHandler* handler = new ui::test::TestEventHandler;
-  root_window->SetEventFilter(handler);
+
+  ui::test::TestEventHandler handler;
+  root_window->AddPreTargetHandler(&handler);
   aura::test::EventGenerator root_window_event_generator(root_window);
   aura::test::EventGenerator keyboard_event_generator(root_window,
                                                       keyboard_window);
@@ -748,17 +750,18 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   // Verify that mouse events to the root window are block with a visble modal
   // dialog.
   root_window_event_generator.ClickLeftButton();
-  EXPECT_EQ(0, handler->num_mouse_events());
+  EXPECT_EQ(0, handler.num_mouse_events());
 
   // Verify that event dispatch to the virtual keyboard is unblocked.
   keyboard_event_generator.ClickLeftButton();
-  EXPECT_EQ(1, handler->num_mouse_events() / 2);
+  EXPECT_EQ(1, handler.num_mouse_events() / 2);
 
   modal_widget->Close();
 
   // Verify that mouse events are now unblocked to the root window.
   root_window_event_generator.ClickLeftButton();
-  EXPECT_EQ(2, handler->num_mouse_events() / 2);
+  EXPECT_EQ(2, handler.num_mouse_events() / 2);
+  root_window->RemovePreTargetHandler(&handler);
 }
 
 }  // namespace test

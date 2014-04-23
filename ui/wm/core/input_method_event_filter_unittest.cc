@@ -27,35 +27,36 @@ namespace wm {
 typedef aura::test::AuraTestBase InputMethodEventFilterTest;
 
 TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
-  CompoundEventFilter* root_filter = new CompoundEventFilter;
-  root_window()->SetEventFilter(root_filter);
+  CompoundEventFilter root_filter;
+  root_window()->AddPreTargetHandler(&root_filter);
 
   InputMethodEventFilter input_method_event_filter(
       host()->GetAcceleratedWidget());
-  root_filter->AddHandler(&input_method_event_filter);
+  root_filter.AddHandler(&input_method_event_filter);
 
   // Tests if InputMethodEventFilter adds a window property on its
   // construction.
   EXPECT_TRUE(root_window()->GetProperty(
       aura::client::kRootWindowInputMethodKey));
 
-  root_filter->RemoveHandler(&input_method_event_filter);
+  root_filter.RemoveHandler(&input_method_event_filter);
+  root_window()->RemovePreTargetHandler(&root_filter);
 }
 
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
 // the root window.
 TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
-  CompoundEventFilter* root_filter = new CompoundEventFilter;
-  root_window()->SetEventFilter(root_filter);
+  CompoundEventFilter root_filter;
+  root_window()->AddPreTargetHandler(&root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.
   InputMethodEventFilter input_method_event_filter(
       host()->GetAcceleratedWidget());
-  root_filter->AddHandler(&input_method_event_filter);
+  root_filter.AddHandler(&input_method_event_filter);
 
   // Add TestEventFilter to the RootWindow.
   ui::test::TestEventHandler test_filter;
-  root_filter->AddHandler(&test_filter);
+  root_filter.AddHandler(&test_filter);
 
   // We need an active window. Otherwise, the root window will not forward a key
   // event to event filters.
@@ -79,11 +80,12 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
   EXPECT_EQ(2, test_filter.num_key_events());
 
-  root_filter->RemoveHandler(&input_method_event_filter);
-  root_filter->RemoveHandler(&test_filter);
+  root_filter.RemoveHandler(&input_method_event_filter);
+  root_filter.RemoveHandler(&test_filter);
 
   // Reset window before |test_delegate| gets deleted.
   window.reset();
+  root_window()->RemovePreTargetHandler(&root_filter);
 }
 
 }  // namespace wm

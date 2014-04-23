@@ -147,7 +147,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // |aura::client::ScreenPositionClient| interface.
   gfx::Rect GetBoundsInScreen() const;
 
-  virtual void SetTransform(const gfx::Transform& transform);
+  void SetTransform(const gfx::Transform& transform);
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
@@ -219,12 +219,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Returns the cursor for the specified point, in window coordinates.
   gfx::NativeCursor GetCursor(const gfx::Point& point) const;
-
-  // Sets an 'event filter' for the window. An 'event filter' for a Window is
-  // a pre-target event handler, where the window owns the handler. A window
-  // can have only one such event filter. Setting a new filter removes and
-  // destroys any previously installed filter.
-  void SetEventFilter(ui::EventHandler* event_filter);
 
   // Add/remove observer.
   void AddObserver(WindowObserver* observer);
@@ -518,7 +512,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Whether layer is initialized as non-opaque.
   bool transparent_;
 
-  scoped_ptr<ui::EventHandler> event_filter_;
   scoped_ptr<LayoutManager> layout_manager_;
   scoped_ptr<ui::EventTargeter> targeter_;
 

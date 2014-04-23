@@ -636,14 +636,6 @@ gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
   return delegate_ ? delegate_->GetCursor(point) : gfx::kNullCursor;
 }
 
-void Window::SetEventFilter(ui::EventHandler* event_filter) {
-  if (event_filter_)
-    RemovePreTargetHandler(event_filter_.get());
-  event_filter_.reset(event_filter);
-  if (event_filter)
-    AddPreTargetHandler(event_filter);
-}
-
 void Window::AddObserver(WindowObserver* observer) {
   observers_.AddObserver(observer);
 }

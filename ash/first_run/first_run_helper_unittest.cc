@@ -137,10 +137,12 @@ TEST_F(FirstRunHelperTest, ModalWindowDoesNotBlock) {
   overlay_window->Focus();
   EXPECT_TRUE(overlay_window->HasFocus());
   int mouse_events;
-  overlay_window->SetEventFilter(new CountingEventHandler(&mouse_events));
+  CountingEventHandler handler(&mouse_events);
+  overlay_window->AddPreTargetHandler(&handler);
   GetEventGenerator().PressLeftButton();
   GetEventGenerator().ReleaseLeftButton();
   EXPECT_EQ(mouse_events, 2);
+  overlay_window->RemovePreTargetHandler(&handler);
 }
 
 }  // namespace test

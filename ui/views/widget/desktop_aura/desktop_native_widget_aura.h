@@ -83,7 +83,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
     return input_method_event_filter_.get();
   }
   wm::CompoundEventFilter* root_window_event_filter() {
-    return root_window_event_filter_;
+    return root_window_event_filter_.get();
   }
   aura::WindowTreeHost* host() {
     return host_.get();
@@ -280,7 +280,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<FocusManagerEventHandler> focus_manager_event_handler_;
 
   // Toplevel event filter which dispatches to other event filters.
-  wm::CompoundEventFilter* root_window_event_filter_;
+  scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
 
   scoped_ptr<wm::InputMethodEventFilter> input_method_event_filter_;
 

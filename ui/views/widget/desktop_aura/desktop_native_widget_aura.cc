@@ -437,9 +437,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   //             handed way of accomplishing focus.
   // No event filter for aura::Env. Create CompoundEvnetFilter per
   // WindowEventDispatcher.
-  root_window_event_filter_ = new wm::CompoundEventFilter;
-  // Pass ownership of the filter to the root_window.
-  host_->window()->SetEventFilter(root_window_event_filter_);
+  root_window_event_filter_.reset(new wm::CompoundEventFilter);
+  host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
 
   // The host's dispatcher must be added to |native_cursor_manager_| before
   // OnNativeWidgetCreated() is called.
