@@ -570,12 +570,9 @@ crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
-crbug.com/298188 [ Win ] virtual/implsidepainting/inspector/timeline [ Skip ]
-crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass ]
 # Test results depends on image caching behavior in Blink/Skia. This is being
 # worked on actively. Rebaseline after impl-side painting becomes stable.
 crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass ]
-crbug.com/298188 [ Linux Debug ] virtual/implsidepainting/inspector/timeline/timeline-dom-content-loaded-event.html [ Pass Crash ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
