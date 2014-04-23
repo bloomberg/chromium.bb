@@ -27,7 +27,7 @@ from chromite.lib import toolchain
 MAX_PARALLEL = 40
 
 ARCHIVE_ROOT = 'gs://chromeos-image-archive/%(target)s'
-METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT, 'R%(milestone)s**metadata.json')
+METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT, 'R%(milestone)s*/metadata.json')
 LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
 
