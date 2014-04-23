@@ -296,12 +296,6 @@ private:
 
 } // namespace WebCore
 
-namespace WTF {
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::InspectorStyleProperty);
 
-template <> struct VectorTraits<WebCore::InspectorStyleProperty> : VectorTraitsBase<WebCore::InspectorStyleProperty> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-}
 #endif // !defined(InspectorStyleSheet_h)

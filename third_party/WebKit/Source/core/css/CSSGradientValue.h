@@ -74,14 +74,7 @@ public:
 
 // We have to declare the VectorTraits specialization before CSSGradientValue
 // declares its inline capacity vector below.
-namespace WTF {
-
-template <> struct VectorTraits<WebCore::CSSGradientColorStop> : VectorTraitsBase<WebCore::CSSGradientColorStop> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-}
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::CSSGradientColorStop);
 
 namespace WebCore {
 

@@ -95,11 +95,6 @@ private:
 
 } // namespace WebCore
 
-namespace WTF {
-template <> struct VectorTraits<WebCore::FormDataList::Item> : VectorTraitsBase<WebCore::FormDataList::Item> {
-    static const bool canInitializeWithMemset = true;
-};
-
-}
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::FormDataList::Item);
 
 #endif // FormDataList_h

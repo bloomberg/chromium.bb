@@ -190,11 +190,6 @@ inline CSSPropertyID prefixingVariantForPropertyId(CSSPropertyID propId)
 
 } // namespace WebCore
 
-namespace WTF {
-template <> struct VectorTraits<WebCore::CSSProperty> : VectorTraitsBase<WebCore::CSSProperty> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-}
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::CSSProperty);
 
 #endif // CSSProperty_h

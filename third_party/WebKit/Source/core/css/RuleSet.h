@@ -235,18 +235,7 @@ private:
 
 } // namespace WebCore
 
-namespace WTF {
-
-template <> struct VectorTraits<WebCore::RuleData> : VectorTraitsBase<WebCore::RuleData> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-template <> struct VectorTraits<WebCore::MinimalRuleData> : VectorTraitsBase<WebCore::MinimalRuleData> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-}
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::RuleData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::MinimalRuleData);
 
 #endif // RuleSet_h

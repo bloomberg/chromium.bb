@@ -143,18 +143,7 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
 
 } // namespace WebCore
 
-namespace WTF {
-
-template <> struct VectorTraits<WebCore::SourceRange> : VectorTraitsBase<WebCore::SourceRange> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-template <> struct VectorTraits<WebCore::CSSPropertySourceData> : VectorTraitsBase<WebCore::CSSPropertySourceData> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-}
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::SourceRange);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::CSSPropertySourceData);
 
 #endif // CSSPropertySourceData_h

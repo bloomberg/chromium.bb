@@ -85,15 +85,7 @@ private:
 
 } // namespace WebCore
 
-
-namespace WTF {
-
-template <> struct VectorTraits<WebCore::MatchedRule> : VectorTraitsBase<WebCore::MatchedRule> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-} // namespace WTF
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::MatchedRule);
 
 namespace WebCore {
 

@@ -100,6 +100,16 @@ namespace WTF { \
     struct VectorTraits<ClassName> : SimpleClassVectorTraits<ClassName> { }; \
 }
 
+#define WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(ClassName) \
+namespace WTF { \
+    template<> \
+    struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
+    { \
+        static const bool canInitializeWithMemset = true; \
+        static const bool canMoveWithMemcpy = true; \
+    }; \
+}
+
 using WTF::VectorTraits;
 using WTF::SimpleClassVectorTraits;
 
