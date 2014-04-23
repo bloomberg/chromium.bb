@@ -33,7 +33,6 @@
 
 #include "InspectorBackendDispatcher.h"
 #include "InspectorFrontend.h"
-#include "InspectorProtocolVersion.h"
 #include "RuntimeEnabledFeatures.h"
 #include "WebDataSource.h"
 #include "WebDevToolsAgentClient.h"
@@ -684,16 +683,6 @@ void WebDevToolsAgentImpl::didProcessTask()
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
     flushPendingFrontendMessages();
-}
-
-WebString WebDevToolsAgent::inspectorProtocolVersion()
-{
-    return WebCore::inspectorProtocolVersion();
-}
-
-bool WebDevToolsAgent::supportsInspectorProtocolVersion(const WebString& version)
-{
-    return WebCore::supportsInspectorProtocolVersion(version);
 }
 
 void WebDevToolsAgent::interruptAndDispatch(MessageDescriptor* rawDescriptor)
