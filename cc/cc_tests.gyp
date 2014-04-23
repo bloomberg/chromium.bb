@@ -354,6 +354,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../gpu/gpu.gyp:gles2_c_lib',
         '../gpu/gpu.gyp:gles2_implementation',
+        '../gpu/gpu.gyp:gl_in_process_context',
         '../gpu/gpu.gyp:gpu_unittest_utils',
         '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
         '../skia/skia.gyp:skia',

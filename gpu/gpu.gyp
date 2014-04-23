@@ -16,25 +16,40 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../third_party/khronos/khronos.gyp:khronos_headers',
-        '../ui/gl/gl.gyp:gl',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
-        'gpu',
       ],
       'defines': [
         'GLES2_IMPL_IMPLEMENTATION',
       ],
       'sources': [
         '<@(gles2_implementation_source_files)',
-        'command_buffer/client/gl_in_process_context.h',
-        'command_buffer/client/gl_in_process_context.cc',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
+    },
+    {
+      'target_name': 'gl_in_process_context',
+      'type': '<(component)',
+      'dependencies': [
+        'gles2_implementation',
+        'gpu',
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gl/gl.gyp:gl',
+      ],
+      'defines': [
+        'GL_IN_PROCESS_CONTEXT_IMPLEMENTATION',
+      ],
+      'sources': [
+        'command_buffer/client/gl_in_process_context.h',
+        'command_buffer/client/gl_in_process_context.cc',
+        'command_buffer/client/gl_in_process_context_export.h',
+      ],
     },
     {
       # Library emulates GLES2 using command_buffers.

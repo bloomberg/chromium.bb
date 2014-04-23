@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "gles2_impl_export.h"
+#include "gl_in_process_context_export.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
@@ -30,7 +30,7 @@ class GLES2Implementation;
 }
 
 // The default uninitialized value is -1.
-struct GLES2_IMPL_EXPORT GLInProcessContextAttribs {
+struct GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContextAttribs {
   GLInProcessContextAttribs();
 
   int32 alpha_size;
@@ -45,7 +45,7 @@ struct GLES2_IMPL_EXPORT GLInProcessContextAttribs {
   int32 lose_context_when_out_of_memory;
 };
 
-class GLES2_IMPL_EXPORT GLInProcessContext {
+class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
  public:
   virtual ~GLInProcessContext() {}
 
