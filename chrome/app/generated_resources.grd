@@ -7903,18 +7903,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_PEPPER_FLASH_CHANGE_LINK" desc="The link to change Pepper Flash camera and microphone settings.">
         Change
       </message>
-      <message name="IDS_MEDIA_GALLERY_SECTION_LABEL" desc="The label for the section of content settings that relates to media galleries.">
-        Media galleries
-      </message>
-      <message name="IDS_MEDIA_GALLERY_MANAGE_TITLE" desc="The title of the media gallery manager overlay.">
-        Media galleries
-      </message>
-      <message name="IDS_MEDIA_GALLERY_MANAGE_BUTTON" desc="The text for the button that opens the media gallery manager overlay.">
-        Manage galleries
-      </message>
-      <message name="IDS_MEDIA_GALLERY_ADD_NEW_BUTTON" desc="The text for the button that opens a dialog to select a new media gallery.">
-        Add...
-      </message>
       <message name="IDS_MEDIA_AUDIO_EXCEPTION_HEADER" desc="A column header for the action column of the media audio exceptions dialog">
         Audio
       </message>
@@ -14153,9 +14141,6 @@ Do you accept?
       </message>
       <message name="IDS_MEDIA_GALLERIES_UNATTACHED_LOCATIONS" desc="Header for media gallery permissions to locations not currently attached, i.e. removable devices which aren't plugged in">
         Unattached locations
-      </message>
-      <message name="IDS_MEDIA_GALLERIES_UNLABELED_DEVICE" desc="Default name used for a device for which we can't find a better label.">
-        Unlabeled device
       </message>
       <message name="IDS_MEDIA_GALLERIES_LAST_ATTACHED" desc="Explanatory text indicating to the user when a particular location was last attached, i.e. a removable device that isn't plugged in. The date presented will be a day in a localized format providing year, month, and day.">
         last attached on <ph name="DATE">$1<ex>1/22/11</ex></ph>
