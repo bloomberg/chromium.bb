@@ -13,7 +13,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -404,10 +403,15 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   static scoped_refptr<TextureRef> Create(TextureManager* manager,
                                           GLuint client_id,
                                           GLuint service_id);
+
+  void AddObserver() { num_observers_++; }
+  void RemoveObserver() { num_observers_--; }
+
   const Texture* texture() const { return texture_; }
   Texture* texture() { return texture_; }
   GLuint client_id() const { return client_id_; }
   GLuint service_id() const { return texture_->service_id(); }
+  GLint num_observers() const { return num_observers_; }
 
  private:
   friend class base::RefCounted<TextureRef>;
@@ -422,6 +426,7 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   TextureManager* manager_;
   Texture* texture_;
   GLuint client_id_;
+  GLint num_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureRef);
 };
@@ -682,11 +687,18 @@ class GPU_EXPORT TextureManager {
       std::string* signature) const;
 
   void AddObserver(DestructionObserver* observer) {
-    destruction_observers_.AddObserver(observer);
+    destruction_observers_.push_back(observer);
   }
 
   void RemoveObserver(DestructionObserver* observer) {
-    destruction_observers_.RemoveObserver(observer);
+    for (unsigned int i = 0; i < destruction_observers_.size(); i++) {
+      if (destruction_observers_[i] == observer) {
+        std::swap(destruction_observers_[i], destruction_observers_.back());
+        destruction_observers_.pop_back();
+        return;
+      }
+    }
+    NOTREACHED();
   }
 
   struct DoTextImage2DArguments {
@@ -796,7 +808,7 @@ class GPU_EXPORT TextureManager {
   // The default textures for each target (texture name = 0)
   scoped_refptr<TextureRef> default_textures_[kNumDefaultTextures];
 
-  ObserverList<DestructionObserver> destruction_observers_;
+  std::vector<DestructionObserver*> destruction_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };

@@ -8389,6 +8389,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   // AsyncTexImage2D
   {
     // Create transfer state since it doesn't exist.
+    EXPECT_EQ(texture_ref->num_observers(), 0);
     EXPECT_CALL(*manager, CreatePixelTransferDelegateImpl(texture_ref, _))
         .WillOnce(Return(
             delegate = new StrictMock<gpu::MockAsyncPixelTransferDelegate>))
@@ -8408,6 +8409,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_TRUE(texture->SafeToRenderFrom());
     GLsizei width, height;
     EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+    EXPECT_EQ(texture_ref->num_observers(), 1);
   }
   {
     // Async redefinitions are not allowed!
@@ -8441,8 +8443,10 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   }
 
   // AsyncTexSubImage2D
+  EXPECT_CALL(*delegate, Destroy()).RetiresOnSaturation();
   decoder_->GetAsyncPixelTransferManager()
       ->ClearPixelTransferDelegateForTest(texture_ref);
+  EXPECT_EQ(texture_ref->num_observers(), 0);
   texture->SetImmutable(false);
   {
     // Create transfer state since it doesn't exist.
@@ -8498,11 +8502,13 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
 
   // Delete delegate on DeleteTexture.
   {
+    EXPECT_EQ(texture_ref->num_observers(), 1);
     EXPECT_CALL(*delegate, Destroy()).RetiresOnSaturation();
     DoDeleteTexture(client_texture_id_, kServiceTextureId);
     EXPECT_FALSE(
         decoder_->GetAsyncPixelTransferManager()->GetPixelTransferDelegate(
             texture_ref));
+    EXPECT_EQ(texture_ref->num_observers(), 0);
     texture = NULL;
     texture_ref = NULL;
     delegate = NULL;
@@ -8581,6 +8587,11 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_EQ(error::kNoError, ExecuteCmd(wait_all_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
+
+  // Remove PixelTransferManager before the decoder destroys.
+  EXPECT_CALL(*delegate, Destroy()).RetiresOnSaturation();
+  decoder_->ResetAsyncPixelTransferManagerForTest();
+  manager = NULL;
 }
 
 TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
@@ -8631,11 +8642,14 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
 
   // Delete delegate on manager teardown.
   {
+    EXPECT_EQ(texture_ref->num_observers(), 1);
     EXPECT_CALL(*delegate, Destroy()).RetiresOnSaturation();
     decoder_->ResetAsyncPixelTransferManagerForTest();
+    manager = NULL;
 
     // Texture ref still valid.
     EXPECT_EQ(texture_ref, GetTexture(client_texture_id_));
+    EXPECT_EQ(texture_ref->num_observers(), 0);
   }
 }
 
