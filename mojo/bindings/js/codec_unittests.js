@@ -42,7 +42,8 @@ define([
        5, 6, 7, 8,
     ]);
 
-    expect(message.memory).toEqual(expectedMemory);
+    var actualMemory = new Uint8Array(message.buffer.arrayBuffer);
+    expect(actualMemory).toEqual(expectedMemory);
 
     var reader = new codec.MessageReader(message);
 
@@ -100,7 +101,7 @@ define([
       /* 40: */   56,    0,    0,    0,    0,    0,    0,    0,
     ]);
     // TODO(abarth): Test more of the message's raw memory.
-    var actualMemory = new Uint8Array(message.memory.buffer,
+    var actualMemory = new Uint8Array(message.buffer.arrayBuffer,
                                       0, expectedMemory.length);
     expect(actualMemory).toEqual(expectedMemory);
 
@@ -176,7 +177,7 @@ define([
       /* 24: */   14,    0,    0,    0,    6,    0,    0,    0,
       /* 32: */ 0x42, 0xCE, 0xBA, 0xE1, 0xBD, 0xB9,    0,    0,
     ]);
-    var actualMemory = new Uint8Array(message.memory.buffer);
+    var actualMemory = new Uint8Array(message.buffer.arrayBuffer);
     expect(actualMemory.length).toEqual(expectedMemory.length);
     expect(actualMemory).toEqual(expectedMemory);
 

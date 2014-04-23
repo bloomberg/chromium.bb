@@ -74,11 +74,11 @@ this.{{packed_field.field.name}} = {{result}};
   {{struct.name}}.decode = function(decoder) {
     var packed;
     var val = new {{struct.name}}();
-    var numberOfBytes = decoder.read32();
-    var numberOfFields = decoder.read32();
+    var numberOfBytes = decoder.readUint32();
+    var numberOfFields = decoder.readUint32();
 {%- for byte in struct.bytes %}
 {%-   if byte.packed_fields|length > 1 %}
-    packed = decoder.read8();
+    packed = decoder.readUint8();
 {%-     for packed_field in byte.packed_fields %}
     val.{{packed_field.field.name}} = (packed >> {{packed_field.bit}}) & 1 ? true : false;
 {%-     endfor %}
@@ -96,8 +96,8 @@ this.{{packed_field.field.name}} = {{result}};
 
   {{struct.name}}.encode = function(encoder, val) {
     var packed;
-    encoder.write32({{struct.name}}.encodedSize);
-    encoder.write32({{struct.packed.packed_fields|length}});
+    encoder.writeUint32({{struct.name}}.encodedSize);
+    encoder.writeUint32({{struct.packed.packed_fields|length}});
 
 {%- for byte in struct.bytes %}
 {%-   if byte.packed_fields|length > 1 %}
@@ -105,7 +105,7 @@ this.{{packed_field.field.name}} = {{result}};
 {%-     for packed_field in byte.packed_fields %}
     packed |= (val.{{packed_field.field.name}} & 1) << {{packed_field.bit}}
 {%-     endfor %}
-    encoder.write8(packed);
+    encoder.writeUint8(packed);
 {%-   else %}
 {%-     for packed_field in byte.packed_fields %}
     encoder.{{packed_field.field.kind|encode_snippet}}val.{{packed_field.field.name}});

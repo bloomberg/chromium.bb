@@ -31,14 +31,21 @@ namespace {
 bool got_message = false;
 int message_count = 0;
 
-const int kExpectedMessageCount = 1000;
+const int kExpectedMessageCount = 100;
+
+// Negative numbers with different values in each byte, the last of
+// which can survive promotion to double and back.
+const int8  kExpectedInt8Value = -65;
+const int16 kExpectedInt16Value = -16961;
+const int32 kExpectedInt32Value = -1145258561;
+const int64 kExpectedInt64Value = -77263311946305LL;
 
 // Positive numbers with different values in each byte, the last of
 // which can survive promotion to double and back.
-const int8  kExpectedInt8Value = 65;
-const int16 kExpectedInt16Value = 16961;
-const int32 kExpectedInt32Value = 1145258561;
-const int64 kExpectedInt64Value = 77263311946305LL;
+const uint8  kExpectedUInt8Value = 65;
+const uint16 kExpectedUInt16Value = 16961;
+const uint32 kExpectedUInt32Value = 1145258561;
+const uint64 kExpectedUInt64Value = 77263311946305LL;
 
 // Returns the path to the mojom js bindings file.
 base::FilePath GetFilePathForJSResource(const std::string& path) {
@@ -129,10 +136,14 @@ class EchoBrowserTargetImpl : public BrowserTargetImpl {
       : BrowserTargetImpl(handle, run_loop) {
     mojo::AllocationScope scope;
     mojo::EchoArgs::Builder builder;
-    builder.set_w(kExpectedInt64Value);
-    builder.set_x(kExpectedInt32Value);
-    builder.set_y(kExpectedInt16Value);
-    builder.set_z(kExpectedInt8Value);
+    builder.set_si64(kExpectedInt64Value);
+    builder.set_si32(kExpectedInt32Value);
+    builder.set_si16(kExpectedInt16Value);
+    builder.set_si8(kExpectedInt8Value);
+    builder.set_ui64(kExpectedUInt64Value);
+    builder.set_ui32(kExpectedUInt32Value);
+    builder.set_ui16(kExpectedUInt16Value);
+    builder.set_ui8(kExpectedUInt8Value);
     builder.set_name("coming");
     client_->Echo(builder.Finish());
   }
@@ -143,16 +154,20 @@ class EchoBrowserTargetImpl : public BrowserTargetImpl {
   // Check the response, and quit the RunLoop after N calls.
   virtual void EchoResponse(const mojo::EchoArgs& arg1,
                             const mojo::EchoArgs& arg2) OVERRIDE {
-    EXPECT_EQ(kExpectedInt64Value, arg1.w());
-    EXPECT_EQ(kExpectedInt32Value, arg1.x());
-    EXPECT_EQ(kExpectedInt16Value, arg1.y());
-    EXPECT_EQ(kExpectedInt8Value, arg1.z());
+    EXPECT_EQ(kExpectedInt64Value, arg1.si64());
+    EXPECT_EQ(kExpectedInt32Value, arg1.si32());
+    EXPECT_EQ(kExpectedInt16Value, arg1.si16());
+    EXPECT_EQ(kExpectedInt8Value, arg1.si8());
+    EXPECT_EQ(kExpectedUInt64Value, arg1.ui64());
+    EXPECT_EQ(kExpectedUInt32Value, arg1.ui32());
+    EXPECT_EQ(kExpectedUInt16Value, arg1.ui16());
+    EXPECT_EQ(kExpectedUInt8Value, arg1.ui8());
     EXPECT_EQ(std::string("coming"), arg1.name().To<std::string>());
 
-    EXPECT_EQ(-1LL, arg2.w());
-    EXPECT_EQ(-1, arg2.x());
-    EXPECT_EQ(-1, arg2.y());
-    EXPECT_EQ(-1, arg2.z());
+    EXPECT_EQ(-1, arg2.si64());
+    EXPECT_EQ(-1, arg2.si32());
+    EXPECT_EQ(-1, arg2.si16());
+    EXPECT_EQ(-1, arg2.si8());
     EXPECT_EQ(std::string("going"), arg2.name().To<std::string>());
 
     message_count += 1;

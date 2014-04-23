@@ -38,10 +38,9 @@ define("mojo/public/js/bindings/connector", [
       return true;
 
     var result = core.writeMessage(this.handle_,
-                                   message.memory,
+                                   new Uint8Array(message.buffer.arrayBuffer),
                                    message.handles,
                                    core.WRITE_MESSAGE_FLAG_NONE);
-
     switch (result) {
       case core.RESULT_OK:
         // The handles were successfully transferred, so we don't own them
@@ -96,11 +95,11 @@ define("mojo/public/js/bindings/connector", [
           this.errorHandler_.onError(read.result);
         return;
       }
-      // TODO(abarth): Should core.readMessage return a Uint8Array?
-      var memory = new Uint8Array(read.buffer);
-      var message = new codec.Message(memory, read.handles);
-      if (this.incomingReceiver_)
-        this.incomingReceiver_.accept(message);
+      var buffer = new codec.Buffer(read.buffer);
+      var message = new codec.Message(buffer, read.handles);
+      if (this.incomingReceiver_) {
+          this.incomingReceiver_.accept(message);
+      }
     }
   };
 

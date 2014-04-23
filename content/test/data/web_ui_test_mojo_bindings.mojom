@@ -1,10 +1,14 @@
 module mojo {
 
 struct EchoArgs {
-  int64 w;
-  int32 x;
-  int16 y;
-  int8  z;
+  int64 si64;
+  int32 si32;
+  int16 si16;
+  int8  si8;
+  uint64 ui64;
+  uint32 ui32;
+  uint16 ui16;
+  uint8  ui8;
   string name;
 };
 

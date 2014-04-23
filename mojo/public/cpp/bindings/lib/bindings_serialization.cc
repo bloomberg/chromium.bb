@@ -37,7 +37,7 @@ const void* DecodePointerRaw(const uint64_t* offset) {
 
 bool ValidatePointer(const void* ptr, const Message& message) {
   const uint8_t* data = static_cast<const uint8_t*>(ptr);
-  if (reinterpret_cast<ptrdiff_t>(data) % 8 != 0)
+  if (reinterpret_cast<uintptr_t>(data) % 8 != 0)
     return false;
 
   const uint8_t* data_start = message.data();

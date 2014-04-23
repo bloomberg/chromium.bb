@@ -140,8 +140,10 @@ define([
   }
 
   SimpleMessageReceiver.prototype.accept = function(message) {
-    if (dumpMessageAsHex)
-      console.log(hexdump.dumpArray(message.memory));
+    if (dumpMessageAsHex) {
+      var uint8Array = new Uint8Array(message.buffer.arrayBuffer);
+      console.log(hexdump.dumpArray(uint8Array));
+    }
     // Imagine some IPC happened here.
     var serviceImpl = new ServiceImpl();
     serviceImpl.accept(message);

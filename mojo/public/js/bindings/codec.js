@@ -2,82 +2,111 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define("mojo/public/js/bindings/codec",
-       ["mojo/public/js/bindings/unicode"],
-       function(unicode) {
+define("mojo/public/js/bindings/codec", [
+  "mojo/public/js/bindings/unicode"
+], function(unicode) {
+
+  var kErrorUnsigned = "Passing negative value to unsigned";
+
   // Memory -------------------------------------------------------------------
 
-  function store8(memory, pointer, val) {
-    memory[pointer] = val;
-  }
-
-  function store16(memory, pointer, val) {
-    memory[pointer + 0] = val >>  0;
-    memory[pointer + 1] = val >>  8;
-  }
-
-  function store32(memory, pointer, val) {
-    memory[pointer + 0] = val >>  0;
-    memory[pointer + 1] = val >>  8;
-    memory[pointer + 2] = val >> 16;
-    memory[pointer + 3] = val >> 24;
-  }
-
-  function store64(memory, pointer, val) {
-    store32(memory, pointer, val);
-    var high = Math.floor(val / 0x100000000);
-    store32(memory, pointer + 4, high);
-  }
-
-  function load8(memory, pointer) {
-    return memory[pointer];
-  }
-
-  function load16(memory, pointer) {
-    return (memory[pointer + 0] <<  0) +
-           (memory[pointer + 1] <<  8);
-  }
-
-  function load32(memory, pointer) {
-    return (memory[pointer + 0] <<  0) +
-           (memory[pointer + 1] <<  8) +
-           (memory[pointer + 2] << 16) +
-           (memory[pointer + 3] << 24);
-  }
-
   var kAlignment = 8;
+  var kHighWordMultiplier = 0x100000000;
+  var kHostIsLittleEndian = (function () {
+    var endianArrayBuffer = new ArrayBuffer(2);
+    var endianUint8Array = new Uint8Array(endianArrayBuffer);
+    var endianUint16Array = new Uint16Array(endianArrayBuffer);
+    endianUint16Array[0] = 1;
+    return endianUint8Array[0] == 1;
+  })();
 
   function align(size) {
     return size + (kAlignment - (size % kAlignment)) % kAlignment;
   }
 
+  function getInt64(dataView, byteOffset, value) {
+    var lo, hi;
+    if (kHostIsLittleEndian) {
+      lo = dataView.getUint32(byteOffset, kHostIsLittleEndian);
+      hi = dataView.getInt32(byteOffset + 4, kHostIsLittleEndian);
+    } else {
+      hi = dataView.getInt32(byteOffset, kHostIsLittleEndian);
+      lo = dataView.getUint32(byteOffset + 4, kHostIsLittleEndian);
+    }
+    return lo + hi * kHighWordMultiplier;
+  }
+
+  function getUint64(dataView, byteOffset, value) {
+    var lo, hi;
+    if (kHostIsLittleEndian) {
+      lo = dataView.getUint32(byteOffset, kHostIsLittleEndian);
+      hi = dataView.getUint32(byteOffset + 4, kHostIsLittleEndian);
+    } else {
+      hi = dataView.getUint32(byteOffset, kHostIsLittleEndian);
+      lo = dataView.getUint32(byteOffset + 4, kHostIsLittleEndian);
+    }
+    return lo + hi * kHighWordMultiplier;
+  }
+
+  function setInt64(dataView, byteOffset, value) {
+    var hi = Math.floor(value / kHighWordMultiplier);
+    if (kHostIsLittleEndian) {
+      dataView.setInt32(byteOffset, value, kHostIsLittleEndian);
+      dataView.setInt32(byteOffset + 4, hi, kHostIsLittleEndian);
+    } else {
+      dataView.setInt32(byteOffset, hi, kHostIsLittleEndian);
+      dataView.setInt32(byteOffset + 4, value, kHostIsLittleEndian);
+    }
+  }
+
+  function setUint64(dataView, byteOffset, value) {
+    var hi = (value / kHighWordMultiplier) | 0;
+    if (kHostIsLittleEndian) {
+      dataView.setInt32(byteOffset, value, kHostIsLittleEndian);
+      dataView.setInt32(byteOffset + 4, hi, kHostIsLittleEndian);
+    } else {
+      dataView.setInt32(byteOffset, hi, kHostIsLittleEndian);
+      dataView.setInt32(byteOffset + 4, value, kHostIsLittleEndian);
+    }
+  }
+
+  function copyArrayBuffer(dstArrayBuffer, srcArrayBuffer) {
+    (new Uint8Array(dstArrayBuffer)).set(new Uint8Array(srcArrayBuffer));
+  }
+
   // Buffer -------------------------------------------------------------------
 
-  function Buffer(size) {
-    this.memory = new Uint8Array(size);
+  function Buffer(sizeOrArrayBuffer) {
+    if (sizeOrArrayBuffer instanceof ArrayBuffer) {
+      this.arrayBuffer = sizeOrArrayBuffer;
+    } else {
+      this.arrayBuffer = new ArrayBuffer(sizeOrArrayBuffer);
+    };
+
+    this.dataView = new DataView(this.arrayBuffer);
     this.next = 0;
   }
 
   Buffer.prototype.alloc = function(size) {
     var pointer = this.next;
     this.next += size;
-    if (this.next > this.memory.length) {
-      var newSize = (1.5 * (this.memory.length + size)) | 0;
+    if (this.next > this.arrayBuffer.byteLength) {
+      var newSize = (1.5 * (this.arrayBuffer.byteLength + size)) | 0;
       this.grow(newSize);
     }
     return pointer;
   };
 
   Buffer.prototype.grow = function(size) {
-    var newMemory = new Uint8Array(size);
-    var oldMemory = this.memory;
-    for (var i = 0; i < oldMemory.length; ++i)
-      newMemory[i] = oldMemory[i];
-    this.memory = newMemory;
+    var newArrayBuffer = new ArrayBuffer(size);
+    copyArrayBuffer(newArrayBuffer, this.arrayBuffer);
+    this.arrayBuffer = newArrayBuffer;
+    this.dataView = new DataView(this.arrayBuffer);
   };
 
-  Buffer.prototype.createViewOfAllocatedMemory = function() {
-    return new Uint8Array(this.memory.buffer, 0, this.next);
+  Buffer.prototype.trim = function() {
+    this.arrayBuffer = this.arrayBuffer.slice(0, this.next);
+    this.dataView = new DataView(this.arrayBuffer);
   };
 
   // Constants ----------------------------------------------------------------
@@ -89,50 +118,77 @@ define("mojo/public/js/bindings/codec",
 
   // Decoder ------------------------------------------------------------------
 
-  function Decoder(memory, handles, base) {
-    this.memory = memory;
+  function Decoder(buffer, handles, base) {
+    this.buffer = buffer;
     this.handles = handles;
     this.base = base;
     this.next = base;
-    this.viewU32 = new Uint32Array(
-        this.memory.buffer, 0,
-        Math.floor(this.memory.length / Uint32Array.BYTES_PER_ELEMENT));
-    this.viewFloat = new Float32Array(
-        this.memory.buffer, 0,
-        Math.floor(this.memory.length / Float32Array.BYTES_PER_ELEMENT));
   }
 
   Decoder.prototype.skip = function(offset) {
     this.next += offset;
   };
 
-  Decoder.prototype.read8 = function() {
-    var result = load8(this.memory, this.next);
+  Decoder.prototype.readInt8 = function() {
+    var result = this.buffer.dataView.getInt8(this.next, kHostIsLittleEndian);
     this.next += 1;
     return result;
   };
 
-  Decoder.prototype.read16 = function() {
-    var result = load16(this.memory, this.next);
+  Decoder.prototype.readUint8 = function() {
+    var result = this.buffer.dataView.getUint8(this.next, kHostIsLittleEndian);
+    this.next += 1;
+    return result;
+  };
+
+  Decoder.prototype.readInt16 = function() {
+    var result = this.buffer.dataView.getInt16(this.next, kHostIsLittleEndian);
     this.next += 2;
     return result;
   };
 
-  Decoder.prototype.read32 = function() {
-    var result = this.viewU32[this.next / this.viewU32.BYTES_PER_ELEMENT];
-    this.next += this.viewU32.BYTES_PER_ELEMENT;
+  Decoder.prototype.readUint16 = function() {
+    var result = this.buffer.dataView.getUint16(this.next, kHostIsLittleEndian);
+    this.next += 2;
     return result;
   };
 
-  Decoder.prototype.read64 = function() {
-    var low = this.read32();
-    var high = this.read32();
-    return low + high * 0x100000000;
+  Decoder.prototype.readInt32 = function() {
+    var result = this.buffer.dataView.getInt32(this.next, kHostIsLittleEndian);
+    this.next += 4;
+    return result;
   };
 
-  Decoder.prototype.decodeFloat = function() {
-    var result = this.viewFloat[this.next / this.viewFloat.BYTES_PER_ELEMENT];
-    this.next += this.viewFloat.BYTES_PER_ELEMENT;
+  Decoder.prototype.readUint32 = function() {
+    var result = this.buffer.dataView.getUint32(this.next, kHostIsLittleEndian);
+    this.next += 4;
+    return result;
+  };
+
+  Decoder.prototype.readInt64 = function() {
+    var result = getInt64(this.buffer.dataView, this.next, kHostIsLittleEndian);
+    this.next += 8;
+    return result;
+  };
+
+  Decoder.prototype.readUint64 = function() {
+    var result = getUint64(
+        this.buffer.dataView, this.next, kHostIsLittleEndian);
+    this.next += 8;
+    return result;
+  };
+
+  Decoder.prototype.readFloat32 = function() {
+    var result = this.buffer.dataView.readFloat32(
+        this.next, kHostIsLittleEndian);
+    this.next += 4;
+    return result;
+  };
+
+  Decoder.prototype.readFloat64 = function() {
+    var result = this.buffer.dataView.readFloat64(
+        this.next, kHostIsLittleEndian);
+    this.next += 8;
     return result;
   };
 
@@ -140,32 +196,32 @@ define("mojo/public/js/bindings/codec",
     // TODO(abarth): To correctly decode a pointer, we need to know the real
     // base address of the array buffer.
     var offsetPointer = this.next;
-    var offset = this.read64();
+    var offset = this.readUint64();
     if (!offset)
       return 0;
     return offsetPointer + offset;
   };
 
   Decoder.prototype.decodeAndCreateDecoder = function() {
-    return new Decoder(this.memory, this.handles, this.decodePointer());
+    return new Decoder(this.buffer, this.handles, this.decodePointer());
   };
 
   Decoder.prototype.decodeHandle = function() {
-    return this.handles[this.read32()];
+    return this.handles[this.readUint32()];
   };
 
   Decoder.prototype.decodeString = function() {
-    var numberOfBytes = this.read32();
-    var numberOfElements = this.read32();
+    var numberOfBytes = this.readUint32();
+    var numberOfElements = this.readUint32();
     var base = this.next;
     this.next += numberOfElements;
     return unicode.decodeUtf8String(
-        new Uint8Array(this.memory.buffer, base, numberOfElements));
+        new Uint8Array(this.buffer.arrayBuffer, base, numberOfElements));
   };
 
   Decoder.prototype.decodeArray = function(cls) {
-    var numberOfBytes = this.read32();
-    var numberOfElements = this.read32();
+    var numberOfBytes = this.readUint32();
+    var numberOfElements = this.readUint32();
     var val = new Array(numberOfElements);
     for (var i = 0; i < numberOfElements; ++i) {
       val[i] = cls.decode(this);
@@ -198,41 +254,77 @@ define("mojo/public/js/bindings/codec",
     this.next += offset;
   };
 
-  Encoder.prototype.write8 = function(val) {
-    store8(this.buffer.memory, this.next, val);
+  Encoder.prototype.writeInt8 = function(val) {
+    // NOTE: Endianness doesn't come into play for single bytes.
+    this.buffer.dataView.setInt8(this.next, val);
     this.next += 1;
   };
 
-  Encoder.prototype.write16 = function(val) {
-    store16(this.buffer.memory, this.next, val);
+  Encoder.prototype.writeUint8 = function(val) {
+    if (val < 0) {
+      throw new Error(kErrorUnsigned);
+    }
+    // NOTE: Endianness doesn't come into play for single bytes.
+    this.buffer.dataView.setUint8(this.next, val);
+    this.next += 1;
+  };
+
+  Encoder.prototype.writeInt16 = function(val) {
+    this.buffer.dataView.setInt16(this.next, val, kHostIsLittleEndian);
     this.next += 2;
   };
 
-  Encoder.prototype.write32 = function(val) {
-    store32(this.buffer.memory, this.next, val);
+  Encoder.prototype.writeUint16 = function(val) {
+    if (val < 0) {
+      throw new Error(kErrorUnsigned);
+    }
+    this.buffer.dataView.setUint16(this.next, val, kHostIsLittleEndian);
+    this.next += 2;
+  };
+
+  Encoder.prototype.writeInt32 = function(val) {
+    this.buffer.dataView.setInt32(this.next, val, kHostIsLittleEndian);
     this.next += 4;
   };
 
-  Encoder.prototype.write64 = function(val) {
-    store64(this.buffer.memory, this.next, val);
+  Encoder.prototype.writeUint32 = function(val) {
+    if (val < 0) {
+      throw new Error(kErrorUnsigned);
+    }
+    this.buffer.dataView.setUint32(this.next, val, kHostIsLittleEndian);
+    this.next += 4;
+  };
+
+  Encoder.prototype.writeInt64 = function(val) {
+    setInt64(this.buffer.dataView, this.next, val);
     this.next += 8;
   };
 
-  Encoder.prototype.encodeFloat = function(val) {
-    var floatBuffer = new Float32Array(1);
-    floatBuffer[0] = val;
-    var buffer = new Uint8Array(floatBuffer.buffer, 0);
-    for (var i = 0; i < buffer.length; ++i)
-      this.buffer.memory[this.next++] = buffer[i];
+  Encoder.prototype.writeUint64 = function(val) {
+    if (val < 0) {
+      throw new Error(kErrorUnsigned);
+    }
+    setUint64(this.buffer.dataView, this.next, val);
+    this.next += 8;
+  };
+
+  Encoder.prototype.writeFloat32 = function(val) {
+    this.buffer.dataView.setFloat32(val, kHostIsLittleEndian);
+    this.next += 4;
+  };
+
+  Encoder.prototype.writeFloat64 = function(val) {
+    this.buffer.dataView.setFloat64(val, kHostIsLittleEndian);
+    this.next += 8;
   };
 
   Encoder.prototype.encodePointer = function(pointer) {
     if (!pointer)
-      return this.write64(0);
+      return this.writeUint64(0);
     // TODO(abarth): To correctly encode a pointer, we need to know the real
     // base address of the array buffer.
     var offset = pointer - this.next;
-    this.write64(offset);
+    this.writeUint64(offset);
   };
 
   Encoder.prototype.createAndEncodeEncoder = function(size) {
@@ -243,24 +335,24 @@ define("mojo/public/js/bindings/codec",
 
   Encoder.prototype.encodeHandle = function(handle) {
     this.handles.push(handle);
-    this.write32(this.handles.length - 1);
+    this.writeUint32(this.handles.length - 1);
   };
 
   Encoder.prototype.encodeString = function(val) {
     var base = this.next + kArrayHeaderSize;
     var numberOfElements = unicode.encodeUtf8String(
-        val, new Uint8Array(this.buffer.memory.buffer, base));
+        val, new Uint8Array(this.buffer.arrayBuffer, base));
     var numberOfBytes = kArrayHeaderSize + numberOfElements;
-    this.write32(numberOfBytes);
-    this.write32(numberOfElements);
+    this.writeUint32(numberOfBytes);
+    this.writeUint32(numberOfElements);
     this.next += numberOfElements;
   };
 
   Encoder.prototype.encodeArray = function(cls, val) {
     var numberOfElements = val.length;
     var numberOfBytes = kArrayHeaderSize + cls.encodedSize * numberOfElements;
-    this.write32(numberOfBytes);
-    this.write32(numberOfElements);
+    this.writeUint32(numberOfBytes);
+    this.writeUint32(numberOfElements);
     for (var i = 0; i < numberOfElements; ++i) {
       cls.encode(this, val[i]);
     }
@@ -288,19 +380,24 @@ define("mojo/public/js/bindings/codec",
   var kMessageExpectsResponse = 1 << 0;
   var kMessageIsResponse      = 1 << 1;
 
-  function Message(memory, handles) {
-    this.memory = memory;
+  // Skip over num_bytes, num_fields, and message_name.
+  var kFlagsOffset = 4 + 4 + 4;
+
+  // Skip over num_bytes, num_fields, message_name, and flags.
+  var kRequestIDOffset = 4 + 4 + 4 + 4;
+
+  function Message(buffer, handles) {
+    this.buffer = buffer;
     this.handles = handles;
   }
 
   Message.prototype.setRequestID = function(requestID) {
     // TODO(darin): Verify that space was reserved for this field!
-    store64(this.memory, 4 + 4 + 4 + 4, requestID);
+    setUint64(this.buffer.dataView, kRequestIDOffset, requestID);
   };
 
   Message.prototype.getFlags = function() {
-    // Skip over num_bytes, num_fields, and message_name.
-    return load32(this.memory, 4 + 4 + 4);
+    return this.buffer.dataView.getUint32(kFlagsOffset, kHostIsLittleEndian);
   };
 
   // MessageBuilder -----------------------------------------------------------
@@ -312,10 +409,10 @@ define("mojo/public/js/bindings/codec",
     this.buffer = new Buffer(numberOfBytes);
     this.handles = [];
     var encoder = this.createEncoder(kMessageHeaderSize);
-    encoder.write32(kMessageHeaderSize);
-    encoder.write32(2);  // num_fields.
-    encoder.write32(messageName);
-    encoder.write32(0);  // flags.
+    encoder.writeUint32(kMessageHeaderSize);
+    encoder.writeUint32(2);  // num_fields.
+    encoder.writeUint32(messageName);
+    encoder.writeUint32(0);  // flags.
   }
 
   MessageBuilder.prototype.createEncoder = function(size) {
@@ -330,8 +427,8 @@ define("mojo/public/js/bindings/codec",
   MessageBuilder.prototype.finish = function() {
     // TODO(abarth): Rather than resizing the buffer at the end, we could
     // compute the size we need ahead of time, like we do in C++.
-    var memory = this.buffer.createViewOfAllocatedMemory();
-    var message = new Message(memory, this.handles);
+    this.buffer.trim();
+    var message = new Message(this.buffer, this.handles);
     this.buffer = null;
     this.handles = null;
     this.encoder = null;
@@ -348,29 +445,31 @@ define("mojo/public/js/bindings/codec",
     this.buffer = new Buffer(numberOfBytes);
     this.handles = [];
     var encoder = this.createEncoder(kMessageWithRequestIDHeaderSize);
-    encoder.write32(kMessageWithRequestIDHeaderSize);
-    encoder.write32(3);  // num_fields.
-    encoder.write32(messageName);
-    encoder.write32(flags);
-    encoder.write64(requestID);
+    encoder.writeUint32(kMessageWithRequestIDHeaderSize);
+    encoder.writeUint32(3);  // num_fields.
+    encoder.writeUint32(messageName);
+    encoder.writeUint32(flags);
+    encoder.writeUint64(requestID);
   }
 
   MessageWithRequestIDBuilder.prototype =
       Object.create(MessageBuilder.prototype);
+
   MessageWithRequestIDBuilder.prototype.constructor =
       MessageWithRequestIDBuilder;
 
   // MessageReader ------------------------------------------------------------
 
   function MessageReader(message) {
-    this.decoder = new Decoder(message.memory, message.handles, 0);
-    var messageHeaderSize = this.decoder.read32();
-    this.payloadSize = message.memory.length - messageHeaderSize;
-    var numFields = this.decoder.read32();
-    this.messageName = this.decoder.read32();
-    this.flags = this.decoder.read32();
+    this.decoder = new Decoder(message.buffer, message.handles, 0);
+    var messageHeaderSize = this.decoder.readUint32();
+    this.payloadSize =
+        message.buffer.arrayBuffer.byteLength - messageHeaderSize;
+    var numFields = this.decoder.readUint32();
+    this.messageName = this.decoder.readUint32();
+    this.flags = this.decoder.readUint32();
     if (numFields >= 3)
-      this.requestID = this.decoder.read64();
+      this.requestID = this.decoder.readUint64();
     this.decoder.skip(messageHeaderSize - this.decoder.next);
   }
 
@@ -380,17 +479,43 @@ define("mojo/public/js/bindings/codec",
 
   // Built-in types -----------------------------------------------------------
 
+  function Int8() {
+  }
+
+  Int8.encodedSize = 1;
+
+  Int8.decode = function(decoder) {
+    return decoder.readInt8();
+  };
+
+  Uint8.encode = function(encoder, val) {
+    encoder.writeUint8(val);
+  };
+
   function Uint8() {
   }
 
   Uint8.encodedSize = 1;
 
   Uint8.decode = function(decoder) {
-    return decoder.read8();
+    return decoder.readUint8();
   };
 
   Uint8.encode = function(encoder, val) {
-    encoder.write8(val);
+    encoder.writeUint8(val);
+  };
+
+  function Int16() {
+  }
+
+  Int16.encodedSize = 2;
+
+  Int16.decode = function(decoder) {
+    return decoder.readInt16();
+  };
+
+  Int16.encode = function(encoder, val) {
+    encoder.writeInt16(val);
   };
 
   function Uint16() {
@@ -399,11 +524,24 @@ define("mojo/public/js/bindings/codec",
   Uint16.encodedSize = 2;
 
   Uint16.decode = function(decoder) {
-    return decoder.read16();
+    return decoder.readUint16();
   };
 
   Uint16.encode = function(encoder, val) {
-    encoder.write16(val);
+    encoder.writeUint16(val);
+  };
+
+  function Int32() {
+  }
+
+  Int32.encodedSize = 4;
+
+  Int32.decode = function(decoder) {
+    return decoder.readInt32();
+  };
+
+  Int32.encode = function(encoder, val) {
+    encoder.writeInt32(val);
   };
 
   function Uint32() {
@@ -412,11 +550,24 @@ define("mojo/public/js/bindings/codec",
   Uint32.encodedSize = 4;
 
   Uint32.decode = function(decoder) {
-    return decoder.read32();
+    return decoder.readUint32();
   };
 
   Uint32.encode = function(encoder, val) {
-    encoder.write32(val);
+    encoder.writeUint32(val);
+  };
+
+  function Int64() {
+  };
+
+  Int64.encodedSize = 8;
+
+  Int64.decode = function(decoder) {
+    return decoder.readInt64();
+  };
+
+  Int64.encode = function(encoder, val) {
+    encoder.writeInt64(val);
   };
 
   function Uint64() {
@@ -425,11 +576,11 @@ define("mojo/public/js/bindings/codec",
   Uint64.encodedSize = 8;
 
   Uint64.decode = function(decoder) {
-    return decoder.read64();
+    return decoder.readUint64();
   };
 
   Uint64.encode = function(encoder, val) {
-    encoder.write64(val);
+    encoder.writeUint64(val);
   };
 
   function PointerTo(cls) {
@@ -482,6 +633,7 @@ define("mojo/public/js/bindings/codec",
 
   var exports = {};
   exports.align = align;
+  exports.Buffer = Buffer;
   exports.Message = Message;
   exports.MessageBuilder = MessageBuilder;
   exports.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
@@ -491,9 +643,13 @@ define("mojo/public/js/bindings/codec",
   exports.kMessageHeaderSize = kMessageHeaderSize;
   exports.kMessageExpectsResponse = kMessageExpectsResponse;
   exports.kMessageIsResponse = kMessageIsResponse;
+  exports.Int8 = Int8;
   exports.Uint8 = Uint8;
+  exports.Int16 = Int16;
   exports.Uint16 = Uint16;
+  exports.Int32 = Int32;
   exports.Uint32 = Uint32;
+  exports.Int64 = Int64;
   exports.Uint64 = Uint64;
   exports.PointerTo = PointerTo;
   exports.ArrayOf = ArrayOf;
