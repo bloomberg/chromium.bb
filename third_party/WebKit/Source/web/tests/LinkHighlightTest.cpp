@@ -130,9 +130,27 @@ class FakeWebFrameClient : public WebFrameClient {
     // To make the destructor public.
 };
 
-class FakeCompositingWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class FakeCompositingWebViewClient : public WebViewClient {
 public:
+    virtual ~FakeCompositingWebViewClient()
+    {
+    }
+
+    virtual void initializeLayerTreeView() OVERRIDE
+    {
+        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
+        ASSERT(m_layerTreeView);
+    }
+
+    virtual WebLayerTreeView* layerTreeView() OVERRIDE
+    {
+        return m_layerTreeView.get();
+    }
+
     FakeWebFrameClient m_fakeWebFrameClient;
+
+private:
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
 };
 
 static WebViewClient* compositingWebViewClient()

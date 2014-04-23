@@ -62,7 +62,7 @@ using blink::FrameTestHelpers::runPendingTasks;
 
 namespace {
 
-class TouchActionTrackingWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class TouchActionTrackingWebViewClient : public WebViewClient {
 public:
     TouchActionTrackingWebViewClient() :
         m_actionSetCount(0),

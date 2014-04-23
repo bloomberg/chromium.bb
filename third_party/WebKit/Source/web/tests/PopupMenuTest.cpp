@@ -152,10 +152,10 @@ private:
     TestWebPopupMenuImpl(WebWidgetClient* client) : WebPopupMenuImpl(client) { }
 };
 
-class PopupTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class TestWebViewClient : public WebViewClient {
 public:
-    PopupTestWebViewClient() : m_webPopupMenu(TestWebPopupMenuImpl::create(&m_webWidgetClient)) { }
-    ~PopupTestWebViewClient() { }
+    TestWebViewClient() : m_webPopupMenu(TestWebPopupMenuImpl::create(&m_webWidgetClient)) { }
+    ~TestWebViewClient() { }
 
     virtual WebWidget* createPopupMenu(WebPopupType) { return m_webPopupMenu.get(); }
 
@@ -267,7 +267,7 @@ protected:
     WebLocalFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
 
 protected:
-    PopupTestWebViewClient m_webviewClient;
+    TestWebViewClient m_webviewClient;
     TestPopupMenuClient m_popupMenuClient;
     RefPtr<PopupMenu> m_popupMenu;
     std::string baseURL;

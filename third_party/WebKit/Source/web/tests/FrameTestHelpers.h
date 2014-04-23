@@ -33,7 +33,6 @@
 
 #include "WebViewImpl.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebViewClient.h"
 #include "wtf/PassOwnPtr.h"
 #include <string>
 
@@ -78,16 +77,6 @@ class TestWebFrameClient : public WebFrameClient {
 public:
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) OVERRIDE;
     virtual void frameDetached(WebFrame*) OVERRIDE;
-};
-
-class TestWebViewClient : public WebViewClient {
-public:
-    virtual ~TestWebViewClient() { }
-    virtual void initializeLayerTreeView() OVERRIDE;
-    virtual WebLayerTreeView* layerTreeView() OVERRIDE { return m_layerTreeView.get(); }
-
-private:
-    OwnPtr<WebLayerTreeView> m_layerTreeView;
 };
 
 } // namespace FrameTestHelpers

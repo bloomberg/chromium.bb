@@ -3874,9 +3874,8 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         } else {
             // FIXME: It appears that only unittests, <webview> and android webview
             // printing can hit this code. We should make them not hit this code and
-            // then delete this else clause and allowsBrokenNullLayerTreeView.
+            // then delete this else clause.
             // crbug.com/322276 and crbug.com/364716.
-            ASSERT(m_client->allowsBrokenNullLayerTreeView());
             m_isAcceleratedCompositingActive = false;
             m_client->didDeactivateCompositor();
             setCompositorCreationFailed();

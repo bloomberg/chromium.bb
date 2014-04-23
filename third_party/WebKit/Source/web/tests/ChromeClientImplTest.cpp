@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#include "FrameTestHelpers.h"
 #include "WebFrameClient.h"
 #include "WebInputEvent.h"
 #include "WebLocalFrame.h"
@@ -53,7 +52,12 @@ void setCurrentInputEventForTest(const WebInputEvent* event)
 
 namespace {
 
-class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class TestWebWidgetClient : public WebWidgetClient {
+public:
+    ~TestWebWidgetClient() { }
+};
+
+class TestWebViewClient : public WebViewClient {
 public:
     explicit TestWebViewClient(WebNavigationPolicy* target) : m_target(target) { }
     ~TestWebViewClient() { }
