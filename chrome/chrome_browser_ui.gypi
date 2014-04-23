@@ -2758,6 +2758,8 @@
           ],
           'dependencies!': [
              '../third_party/libusb/libusb.gyp:libusb',
+             '../ui/events/events.gyp:events',
+             'chrome_browser_ui_views.gyp:browser_ui_views',
           ],
           'sources': [
             'browser/ui/webui/ntp/android/bookmarks_handler.cc',

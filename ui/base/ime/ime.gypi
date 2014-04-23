@@ -114,5 +114,10 @@
         'chromeos/character_composer.h',
       ],
     }],
+    ['OS=="android"', {
+      'dependencies!' : [
+        '<(DEPTH)/ui/events/events.gyp:events',
+      ],
+    }]
   ],
 }
