@@ -35,8 +35,7 @@ public interface PKCS11AuthenticationManager {
     public X509Certificate[] getCertificateChain(String alias);
 
     /**
-     * Performs necessary initializing for using a PKCS11-based KeysStore. Note that this can
-     * perform expensive operations and cannot be done on the UI thread.
+     * Performs necessary initializing for using a PKCS11-based KeysStore.
      */
     public void initialize(Context context);
 
