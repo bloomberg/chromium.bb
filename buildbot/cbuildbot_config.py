@@ -2207,17 +2207,17 @@ _AddGroupConfig('rambi-a', 'rambi', (
     'clapper',
     'enguarde',
     'expresso',
-    'glimmer',
 ))
 
-_AddGroupConfig('rambi-b', 'gnawty', (
+_AddGroupConfig('rambi-b', 'glimmer', (
+    'gnawty',
     'kip',
     'quawks',
-    'squawks',
-    'winky',
 ))
 
-_AddGroupConfig('rambi-c', 'swanky', (
+_AddGroupConfig('rambi-c', 'squawks', (
+    'swanky',
+    'winky',
 ))
 
 # daisy-based boards
