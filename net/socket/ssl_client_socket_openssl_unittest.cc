@@ -49,6 +49,8 @@ namespace net {
 
 namespace {
 
+// These client auth tests are currently dependent on OpenSSL's struct X509.
+#if defined(USE_OPENSSL_CERTS)
 typedef OpenSSLClientKeyStore::ScopedEVP_PKEY ScopedEVP_PKEY;
 
 // BIO_free is a macro, it can't be used as a template parameter.
@@ -360,6 +362,7 @@ TEST_F(SSLClientSocketOpenSSLClientAuthTest, FailingChannelID) {
   EXPECT_EQ(ERR_UNEXPECTED, rv);
   EXPECT_FALSE(sock_->IsConnected());
 }
+#endif  // defined(USE_OPENSSL_CERTS)
 
 }  // namespace
 }  // namespace net
