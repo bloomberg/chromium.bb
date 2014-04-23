@@ -1,10 +1,9 @@
 dpolukhin@chromium.org
 nkostylev@chromium.org
+stevenjb@chromium.org
 
 # Display options.
 mukai@chromium.org
 
 per-file bluetooth_options_handler.*=keybuk@chromium.org
 per-file bluetooth_options_handler.*=armansito@chromium.org
-per-file internet_options_handler.*=stevenjb@chromium.org
-per-file internet_options_handler.*=rkc@chromium.org

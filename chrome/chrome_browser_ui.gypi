@@ -2238,6 +2238,8 @@
         'browser/ui/webui/options/chromeos/display_overscan_handler.h',
         'browser/ui/webui/options/chromeos/internet_options_handler.cc',
         'browser/ui/webui/options/chromeos/internet_options_handler.h',
+        'browser/ui/webui/options/chromeos/internet_options_handler_strings.cc',
+        'browser/ui/webui/options/chromeos/internet_options_handler_strings.h',
         'browser/ui/webui/options/chromeos/keyboard_handler.cc',
         'browser/ui/webui/options/chromeos/keyboard_handler.h',
         'browser/ui/webui/options/chromeos/pointer_handler.cc',

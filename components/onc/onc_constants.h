@@ -4,6 +4,8 @@
 #ifndef COMPONENTS_ONC_ONC_CONSTANTS_H_
 #define COMPONENTS_ONC_ONC_CONSTANTS_H_
 
+#include <string>
+
 #include "components/onc/onc_export.h"
 
 // Constants for ONC properties.
@@ -68,6 +70,11 @@ ONC_EXPORT extern const char kConnectionState[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
+
+ONC_EXPORT extern std::string CellularProperty(const std::string& property);
+ONC_EXPORT extern std::string VpnProperty(const std::string& property);
+ONC_EXPORT extern std::string WifiProperty(const std::string& property);
+
 }  // namespace network_config
 
 namespace network_type {
@@ -334,4 +341,3 @@ ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToAutoconnect[];
 }  // namespace onc
 
 #endif  // COMPONENTS_ONC_ONC_CONSTANTS_H_
-

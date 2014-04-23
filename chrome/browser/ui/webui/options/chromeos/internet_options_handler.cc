@@ -16,11 +16,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -36,6 +33,7 @@
 #include "chrome/browser/chromeos/ui/mobile_config_ui.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/favorite_state.h"
@@ -59,9 +57,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -69,10 +64,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
-#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 namespace options {
@@ -186,7 +178,7 @@ const char kTagImsi[] = "imsi";
 const char kTagLanguage[] = "language";
 const char kTagLastGoodApn[] = "lastGoodApn";
 const char kTagLocalizedName[] = "localizedName";
-const char kTagManufacturer[] = "manufacturer";
+const char kTagCellularManufacturer[] = "cellularManufacturer";
 const char kTagMdn[] = "mdn";
 const char kTagMeid[] = "meid";
 const char kTagMin[] = "min";
@@ -240,6 +232,14 @@ const char kTagWimaxAvailable[] = "wimaxAvailable";
 const char kTagWimaxEnabled[] = "wimaxEnabled";
 const char kTagWiredList[] = "wiredList";
 const char kTagWirelessList[] = "wirelessList";
+const char kTagLoggedInUserNone[] = "none";
+const char kTagLoggedInUserRegular[] = "regular";
+const char kTagLoggedInUserOwner[] = "owner";
+const char kTagLoggedInUserGuest[] = "guest";
+const char kTagLoggedInUserRetailMode[] = "retail-mode";
+const char kTagLoggedInUserPublicAccount[] = "public-account";
+const char kTagLoggedInUserLocallyManaged[] = "locally-managed";
+const char kTagLoggedInUserKioskApp[] = "kiosk-app";
 
 const int kPreferredPriority = 1;
 
@@ -272,130 +272,27 @@ void SetNetworkProperty(const std::string& service_path,
       base::Bind(&ShillError, "SetNetworkProperty"));
 }
 
-std::string ActivationStateString(const std::string& activation_state) {
-  int id;
-  if (activation_state == shill::kActivationStateActivated)
-    id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATED;
-  else if (activation_state == shill::kActivationStateActivating)
-    id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATING;
-  else if (activation_state == shill::kActivationStateNotActivated)
-    id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_NOT_ACTIVATED;
-  else if (activation_state == shill::kActivationStatePartiallyActivated)
-    id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_PARTIALLY_ACTIVATED;
-  else
-    id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_UNKNOWN;
-  return l10n_util::GetStringUTF8(id);
-}
-
-std::string RoamingStateString(const std::string& roaming_state) {
-  int id;
-  if (roaming_state == shill::kRoamingStateHome)
-    id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_HOME;
-  else if (roaming_state == shill::kRoamingStateRoaming)
-    id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_ROAMING;
-  else
-    id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN;
-  return l10n_util::GetStringUTF8(id);
-}
-
-std::string ConnectionStateString(const std::string& state) {
-  int id;
-  if (state == shill::kUnknownString)
-    id = IDS_CHROMEOS_NETWORK_STATE_UNKNOWN;
-  else if (state == shill::kStateIdle)
-    id = IDS_CHROMEOS_NETWORK_STATE_IDLE;
-  else if (state == shill::kStateCarrier)
-    id = IDS_CHROMEOS_NETWORK_STATE_CARRIER;
-  else if (state == shill::kStateAssociation)
-    id = IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION;
-  else if (state == shill::kStateConfiguration)
-    id = IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION;
-  else if (state == shill::kStateReady)
-    id = IDS_CHROMEOS_NETWORK_STATE_READY;
-  else if (state == shill::kStateDisconnect)
-    id = IDS_CHROMEOS_NETWORK_STATE_DISCONNECT;
-  else if (state == shill::kStateFailure)
-    id = IDS_CHROMEOS_NETWORK_STATE_FAILURE;
-  else if (state == shill::kStateActivationFailure)
-    id = IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE;
-  else if (state == shill::kStatePortal)
-    id = IDS_CHROMEOS_NETWORK_STATE_PORTAL;
-  else if (state == shill::kStateOnline)
-    id = IDS_CHROMEOS_NETWORK_STATE_ONLINE;
-  else
-    id = IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED;
-  return l10n_util::GetStringUTF8(id);
-}
-
-std::string LoggedInUserTypeToString(
-    LoginState::LoggedInUserType type) {
+std::string LoggedInUserTypeToJSString(LoginState::LoggedInUserType type) {
   switch (type) {
     case LoginState::LOGGED_IN_USER_NONE:
-      return "none";
+      return kTagLoggedInUserNone;
     case LoginState::LOGGED_IN_USER_REGULAR:
-      return "regular";
+      return kTagLoggedInUserRegular;
     case LoginState::LOGGED_IN_USER_OWNER:
-      return "owner";
+      return kTagLoggedInUserOwner;
     case LoginState::LOGGED_IN_USER_GUEST:
-      return "guest";
+      return kTagLoggedInUserGuest;
     case LoginState::LOGGED_IN_USER_RETAIL_MODE:
-      return "retail-mode";
+      return kTagLoggedInUserRetailMode;
     case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
-      return "public-account";
+      return kTagLoggedInUserPublicAccount;
     case LoginState::LOGGED_IN_USER_LOCALLY_MANAGED:
-      return "locally-managed";
+      return kTagLoggedInUserLocallyManaged;
     case LoginState::LOGGED_IN_USER_KIOSK_APP:
-      return "kiosk-app";
-    default:
-      return "";
+      return kTagLoggedInUserKioskApp;
   }
-}
-
-std::string EncryptionString(const std::string& security,
-                             const std::string& eap_method) {
-  if (security == shill::kSecurityNone)
-    return "";
-  if (security == shill::kSecurityWpa)
-    return "WPA";
-  if (security == shill::kSecurityWep)
-    return "WEP";
-  if (security == shill::kSecurityRsn)
-    return "RSN";
-  if (security == shill::kSecurityPsk)
-    return "PSK";
-  if (security == shill::kSecurity8021x) {
-    std::string result = "8021X";
-    if (eap_method == shill::kEapMethodPEAP)
-      result += "PEAP";
-    else if (eap_method == shill::kEapMethodTLS)
-      result += "TLS";
-    else if (eap_method == shill::kEapMethodTTLS)
-      result += "TTLS";
-    else if (eap_method == shill::kEapMethodLEAP)
-      result += "LEAP";
-    return result;
-  }
-  return "Unknown";
-}
-
-std::string ProviderTypeString(
-    const std::string& provider_type,
-    const base::DictionaryValue& provider_properties) {
-  int id;
-  if (provider_type == shill::kProviderL2tpIpsec) {
-    std::string client_cert_id;
-    provider_properties.GetStringWithoutPathExpansion(
-        shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
-    if (client_cert_id.empty())
-      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK;
-    else
-      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT;
-  } else if (provider_type == shill::kProviderOpenVpn) {
-    id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN;
-  } else {
-    id = IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN;
-  }
-  return l10n_util::GetStringUTF8(id);
+  NOTREACHED();
+  return std::string();
 }
 
 bool HasPolicyForFavorite(const FavoriteState* favorite,
@@ -425,8 +322,10 @@ void SetCommonNetworkInfo(const ManagedState* state,
   network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
 
   std::string name = state->name();
-  if (state->Matches(NetworkTypePattern::Ethernet()))
-    name = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  if (state->Matches(NetworkTypePattern::Ethernet())) {
+    name = internet_options_strings::NetworkDeviceTypeString(
+        shill::kTypeEthernet);
+  }
   network_info->SetString(kNetworkInfoKeyNetworkName, name);
   network_info->SetString(kNetworkInfoKeyNetworkType, state->type());
   network_info->SetString(kNetworkInfoKeyServicePath, state->path());
@@ -617,8 +516,7 @@ void CopyIntegerFromDictionary(const base::DictionaryValue& source,
   if (!source.GetIntegerWithoutPathExpansion(src_key, &int_value))
     return;
   if (as_string) {
-    std::string str = base::StringPrintf("%d", int_value);
-    dest->SetStringWithoutPathExpansion(dest_key, str);
+    dest->SetStringWithoutPathExpansion(dest_key, base::IntToString(int_value));
   } else {
     dest->SetIntegerWithoutPathExpansion(dest_key, int_value);
   }
@@ -641,8 +539,9 @@ void PopulateVPNDetails(const NetworkState* vpn,
   provider_properties->GetStringWithoutPathExpansion(
       shill::kTypeProperty, &provider_type);
   dictionary->SetString(kTagProviderType,
-                        ProviderTypeString(provider_type,
-                                           *provider_properties));
+                        internet_options_strings::ProviderTypeString(
+                            provider_type,
+                            *provider_properties));
 
   std::string username;
   if (provider_type == shill::kProviderOpenVpn) {
@@ -662,8 +561,7 @@ void PopulateVPNDetails(const NetworkState* vpn,
   hostname_ui_data.ParseOncProperty(
       onc_source,
       onc,
-      base::StringPrintf("%s.%s", ::onc::network_config::kVPN,
-                         ::onc::vpn::kHost));
+      ::onc::network_config::VpnProperty(::onc::vpn::kHost));
   std::string provider_host;
   provider_properties->GetStringWithoutPathExpansion(
       shill::kHostProperty, &provider_host);
@@ -708,7 +606,8 @@ void PopulateWifiDetails(const NetworkState* wifi,
   dictionary->SetString(kTagSsid, wifi->name());
   dictionary->SetInteger(kTagStrength, wifi->signal_strength());
   dictionary->SetString(kTagEncryption,
-                        EncryptionString(wifi->security(), wifi->eap_method()));
+                        internet_options_strings::EncryptionString(
+                            wifi->security(), wifi->eap_method()));
   CopyStringFromDictionary(
       shill_properties, shill::kWifiBSsid, kTagBssid, dictionary);
   CopyIntegerFromDictionary(shill_properties,
@@ -751,15 +650,15 @@ void PopulateCellularDetails(const NetworkState* cellular,
   // Cellular network / connection settings.
   dictionary->SetString(kTagNetworkTechnology, cellular->network_technology());
   dictionary->SetString(kTagActivationState,
-                        ActivationStateString(cellular->activation_state()));
+                        internet_options_strings::ActivationStateString(
+                            cellular->activation_state()));
   dictionary->SetString(kTagRoamingState,
-                        RoamingStateString(cellular->roaming()));
-  bool restricted = cellular->connection_state() == shill::kStatePortal;
+                        internet_options_strings::RoamingStateString(
+                            cellular->roaming()));
   dictionary->SetString(
       kTagRestrictedPool,
-      restricted
-          ? l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)
-          : l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
+      internet_options_strings::RestrictedStateString(
+          cellular->connection_state()));
 
   const base::DictionaryValue* serving_operator = NULL;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
@@ -814,7 +713,7 @@ void PopulateCellularDetails(const NetworkState* cellular,
         cellular->ui_data().onc_source());
     CopyStringFromDictionary(device_properties,
                              shill::kManufacturerProperty,
-                             kTagManufacturer,
+                             kTagCellularManufacturer,
                              dictionary);
     CopyStringFromDictionary(
         device_properties, shill::kModelIDProperty, kTagModelId, dictionary);
@@ -966,7 +865,8 @@ void PopulateConnectionDetails(const NetworkState* network,
   dictionary->SetBoolean(kTagConnecting, network->IsConnectingState());
   dictionary->SetBoolean(kTagConnected, network->IsConnectedState());
   dictionary->SetString(kTagConnectionState,
-                        ConnectionStateString(network->connection_state()));
+                        internet_options_strings::ConnectionStateString(
+                            network->connection_state()));
   dictionary->SetString(kTagNetworkName, network->name());
   dictionary->SetString(
       kTagErrorState,
@@ -1063,162 +963,7 @@ InternetOptionsHandler::~InternetOptionsHandler() {
 void InternetOptionsHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-
-  static OptionsStringResource resources[] = {
-
-    // Main settings page.
-
-    { "ethernetTitle", IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET },
-    { "wifiTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK },
-    { "wimaxTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIMAX_NETWORK },
-    { "cellularTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK },
-    { "vpnTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK },
-    { "networkNotConnected", IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED },
-    { "networkConnected", IDS_CHROMEOS_NETWORK_STATE_READY },
-    { "joinOtherNetwork", IDS_OPTIONS_SETTINGS_NETWORK_OTHER },
-    { "networkOffline", IDS_OPTIONS_SETTINGS_NETWORK_OFFLINE },
-    { "networkDisabled", IDS_OPTIONS_SETTINGS_NETWORK_DISABLED },
-    { "networkOnline", IDS_OPTIONS_SETTINGS_NETWORK_ONLINE },
-    { "networkOptions", IDS_OPTIONS_SETTINGS_NETWORK_OPTIONS },
-    { "turnOffWifi", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI },
-    { "turnOffWimax", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIMAX },
-    { "turnOffCellular", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR },
-    { "disconnectNetwork", IDS_OPTIONS_SETTINGS_DISCONNECT },
-    { "preferredNetworks", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL },
-    { "preferredNetworksPage", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_TITLE },
-    { "useSharedProxies", IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES },
-    { "addConnectionTitle",
-      IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION },
-    { "addConnectionWifi", IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI },
-    { "addConnectionVPN", IDS_STATUSBAR_NETWORK_ADD_VPN },
-    { "otherCellularNetworks", IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS },
-    { "enableDataRoaming", IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING },
-    { "disableDataRoaming", IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING },
-    { "dataRoamingDisableToggleTooltip",
-      IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION },
-    { "activateNetwork", IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE },
-
-    // Internet details dialog.
-
-    { "changeProxyButton",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON },
-    { "managedNetwork", IDS_OPTIONS_SETTINGS_MANAGED_NETWORK },
-    { "wifiNetworkTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION },
-    { "vpnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN },
-    { "cellularConnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION },
-    { "cellularDeviceTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE },
-    { "networkTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK },
-    { "securityTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY },
-    { "proxyTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_PROXY },
-    { "connectionState", IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE },
-    { "inetAddress", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS },
-    { "inetNetmask", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK },
-    { "inetGateway", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY },
-    { "inetNameServers", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER },
-    { "ipAutomaticConfiguration",
-        IDS_OPTIONS_SETTINGS_INTERNET_IP_AUTOMATIC_CONFIGURATION },
-    { "automaticNameServers",
-        IDS_OPTIONS_SETTINGS_INTERNET_AUTOMATIC_NAME_SERVERS },
-    { "userNameServer1", IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_1 },
-    { "userNameServer2", IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_2 },
-    { "userNameServer3", IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_3 },
-    { "userNameServer4", IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_4 },
-    { "googleNameServers", IDS_OPTIONS_SETTINGS_INTERNET_GOOGLE_NAME_SERVERS },
-    { "userNameServers", IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVERS },
-    { "hardwareAddress",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS },
-    { "detailsInternetDismiss", IDS_CLOSE },
-    { "activateButton", IDS_OPTIONS_SETTINGS_ACTIVATE },
-    { "buyplanButton", IDS_OPTIONS_SETTINGS_BUY_PLAN },
-    { "connectButton", IDS_OPTIONS_SETTINGS_CONNECT },
-    { "configureButton", IDS_OPTIONS_SETTINGS_CONFIGURE },
-    { "disconnectButton", IDS_OPTIONS_SETTINGS_DISCONNECT },
-    { "viewAccountButton", IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT },
-    { "wimaxConnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIMAX },
-
-    // Wifi Tab.
-
-    { "inetSsid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID },
-    { "inetBssid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_BSSID },
-    { "inetEncryption",
-      IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION },
-    { "inetFrequency",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY },
-    { "inetFrequencyFormat",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY_MHZ },
-    { "inetSignalStrength",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH },
-    { "inetSignalStrengthFormat",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH_PERCENTAGE },
-    { "inetPassProtected",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED },
-    { "inetNetworkShared",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED },
-    { "inetPreferredNetwork",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK },
-    { "inetAutoConnectNetwork",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT },
-    { "inetLogin", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN },
-    { "inetShowPass", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD },
-    { "inetPassPrompt", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD },
-    { "inetSsidPrompt", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID },
-    { "inetStatus", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE },
-    { "inetConnect", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE },
-
-    // VPN Tab.
-
-    { "inetServiceName",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME },
-    { "inetServerHostname",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME },
-    { "inetProviderType",
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE },
-    { "inetUsername", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME },
-
-    // Cellular Tab.
-
-    { "serviceName", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME },
-    { "networkTechnology",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY },
-    { "operatorName", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR },
-    { "operatorCode", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE },
-    { "activationState",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE },
-    { "roamingState", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE },
-    { "restrictedPool",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL },
-    { "errorState", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE },
-    { "manufacturer", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER },
-    { "modelId", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID },
-    { "firmwareRevision",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION },
-    { "hardwareRevision",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION },
-    { "prlVersion", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION },
-    { "cellularApnLabel", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN },
-    { "cellularApnOther", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER },
-    { "cellularApnUsername",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME },
-    { "cellularApnPassword",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD },
-    { "cellularApnUseDefault",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR },
-    { "cellularApnSet", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET },
-    { "cellularApnCancel", IDS_CANCEL },
-
-    // Security Tab.
-
-    { "accessSecurityTabLink",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACCESS_SECURITY_TAB },
-    { "lockSimCard", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD },
-    { "changePinButton",
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON },
-
-    // Proxy Tab.
-    { "webProxyAutoDiscoveryUrl", IDS_PROXY_WEB_PROXY_AUTO_DISCOVERY },
-  };
-
-  RegisterStrings(localized_strings, resources, arraysize(resources));
+  internet_options_strings::RegisterLocalizedStrings(localized_strings);
 
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
@@ -1589,9 +1334,8 @@ void InternetOptionsHandler::UpdateLoggedInUserType() {
   if (!web_ui())
     return;
   base::StringValue login_type(
-      LoggedInUserTypeToString(LoginState::Get()->GetLoggedInUserType()));
-  web_ui()->CallJavascriptFunction(
-      kUpdateLoggedInUserTypeFunction, login_type);
+      LoggedInUserTypeToJSString(LoginState::Get()->GetLoggedInUserType()));
+  web_ui()->CallJavascriptFunction(kUpdateLoggedInUserTypeFunction, login_type);
 }
 
 void InternetOptionsHandler::Observe(
@@ -1856,10 +1600,8 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
       content::RecordAction(
           base::UserMetricsAction("Options_NetworkShowDetailsWifiConnected"));
     }
-    onc_path_to_auto_connect = base::StringPrintf(
-        "%s.%s",
-        ::onc::network_config::kWiFi,
-        ::onc::wifi::kAutoConnect);
+    onc_path_to_auto_connect =
+        ::onc::network_config::WifiProperty(::onc::wifi::kAutoConnect);
   } else if (type == shill::kTypeVPN) {
     content::RecordAction(
         base::UserMetricsAction("Options_NetworkShowDetailsVPN"));
@@ -1867,9 +1609,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
       content::RecordAction(
           base::UserMetricsAction("Options_NetworkShowDetailsVPNConnected"));
     }
-    onc_path_to_auto_connect = base::StringPrintf(
-        "%s.%s",
-        ::onc::network_config::kVPN,
+    onc_path_to_auto_connect = ::onc::network_config::VpnProperty(
         ::onc::vpn::kAutoConnect);
   } else if (type == shill::kTypeCellular) {
     content::RecordAction(

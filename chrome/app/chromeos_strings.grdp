@@ -1716,17 +1716,11 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
     Disabled
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_ONLINE" desc="Message displayed at the top of a network popup menu indiating that the user is online.">
-    You are online.
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_OTHER" desc="Menu option for connecting to a network that is not listed in the menu.">
     Join other...
   </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED" desc="Displayed for a network control when not connected.">
     Not connected
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_OPTIONS" desc="Menu option for configuring a network.">
-    Network options...
   </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
     Disable Wi-Fi
@@ -2247,9 +2241,6 @@ Press any key to continue exploring.
   <message name="IDS_IMAGE_SCREEN_SYNCING_PREFERENCES" desc="The message displayed on the image screen while user preferences are syncing.">
     Syncing your preferences
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for the wifi tab.">
-    Wi-Fi
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIMAX" desc="In settings Internet options, the title for the WiMAX tab.">
     WiMAX
   </message>
@@ -2349,9 +2340,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings Internet options, the x509 certificate to use.">
     User certificate:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings Internet options, the prompt on the certificate-selection button.">
-    Select certificate file
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY" desc="In settings Internet options, the label for the security.">
     Security:
   </message>
@@ -2373,14 +2361,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_SUBJECT_MATCH" desc="In settings Internet options, the label for the EAP Subject Match field.">
     Subject Match:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE" desc="In settings Internet options, the label for the bad passphrase.">
-    Incorrect password.
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED" desc="In settings Internet options, the message in network details page for password protected networks.">
     Access to this network is protected.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY" desc="In settings Internet options, the label for the bad WEP key.">
-    Password format is incorrect.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK" desc="In settings Internet options, the label for prefer network checkbox.">
     Prefer this network
@@ -2393,48 +2375,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED" desc="In settings Internet options, text for when a network is shared.">
     This network is shared with other users.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings Internet options, the title for buy cellular data plan button.">
-    Buy data plan...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNKNOWN_ERROR" desc="In settings Internet options, the label for an unknown connection error.">
-    Failed to connect to network.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME" desc="In settings Internet options, the label displayed next to cellular plan name.">
-    Plan name:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings Internet options, the message displayed while cellular data plan information is being loaded.">
-    Loading mobile data plan information, please wait...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND" desc="In settings Internet options, the message displayed while cellular data plans are missing or could not be found.">
-    Plan information not available.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings Internet options, the label for mobile plan remaining data info.">
-    Data remaining:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED" desc="In settings Internet options, the label of data info for mobile unlimited data plan.">
-    Unlimited
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES" desc="In settings Internet options, the label for mobile plan expiration time info.">
-    Expires:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION" desc="In settings Internet options, the label for show mobile plan data notification checkbox.">
-    Show notifications when data is low or nearing expiration
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA" desc="In settings Internet options, the label that tells user free data received.">
-    You received <ph name="DATA_AMOUNT">$1<ex>100MB</ex></ph> free usage on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA" desc="In settings Internet options, the label that shows user has purchased a mobile data plan.">
-    You purchased <ph name="DATA_AMOUNT">$1<ex>3GB</ex></ph> of data on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA" desc="In settings Internet options, the label that shows user has purchased an unliminted mobile data plan.">
-    You purchased unlimited data on <ph name="DATE">$1<ex>January 1, 2011</ex></ph>
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings Internet options, the text for customer support hyper link.">
-    Customer support
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings Internet options, the label for the button to sign in.">
-    Sign in
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
     Connection status:
@@ -2475,9 +2415,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings Internet options, the label dns server.">
     DNS server:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON" desc="In settings Internet options, the button to configure proxy settings.">
-    Change proxy settings...
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_POLICY" desc="In settings Internet options, banner displayed when the proxy settings are enforced by a policy.">
     The proxy is enforced by your administrator.
   </message>
@@ -2501,21 +2438,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_PSK" desc="In settings Internet options, a string specifying security PSK (either WPA-PSK or RSN-PSK).">
     PSK (WPA or RSN)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
-    Password
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
-    SSID
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
-    Show password
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE" desc="In settings Internet options, Title of the overlay when the user is connected.">
-    Connection details
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings Internet options, Title of the overlay when the user is not connected and can.">
-    Connect to network
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK" desc="In settings Internet options, a string specifying L2TP/IPsec + PSK.">
     L2TP/IPsec + pre-shared key
@@ -2571,15 +2493,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION" desc="description label for verified access about premium contents">
     Enable Verified Access
   </message>
-  <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
-    Reconnect
-  </message>
-  <message name="IDS_NETWORK_SSID_HINT" desc="In network menu, hint text for network name field.">
-    network name
-  </message>
-  <message name="IDS_NETWORK_PASSWORD_HINT" desc="In network menu, hint text for network password field.">
-    network password
-  </message>
 
   <message name="IDS_NETWORK_CHOOSE_MOBILE_NETWORK" desc="Title of the window for choosing mobile network.">
     Choose a mobile network
@@ -2612,9 +2525,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET" desc="Cellular device set APN settings button under network details in chrome:settings/internet.">
     Save
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACCESS_SECURITY_TAB" desc="In settings Internet options, the text of the link shown when SIM card is locked, to access security tab.">
-    To access Security settings enter the SIM card PIN
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD" desc="Cellular device enable SIM card PIN lock checkbox label in chrome:settings/internet.">
     Lock SIM card (require PIN to use mobile data)
   </message>
@@ -2626,9 +2536,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE" desc="Cellular device change PIN dialog message in chrome:settings/internet.">
     Please enter old and new PIN.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_INCORRECT_ERROR" desc="Cellular device change PIN dialog error message in chrome:settings/internet.">
-    Incorrect PIN, please try again.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN" desc="Cellular device change PIN dialog old PIN label text in chrome:settings/internet.">
     Old PIN:
@@ -2642,18 +2549,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PINS_DONT_MATCH_ERROR" desc="Cellular device change PIN dialog message shown when entered new PINs don't match in chrome:settings/internet.">
     PINs don't match!
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CANCEL" desc="Cellular device cancel APN settings edit button under network details in chrome:settings/internet.">
-    Cancel
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER" desc="Select user defined APN in the lost of predefined APNs under network details in chrome:settings/internet.">
     Other...
-  </message>
-
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings Internet options, Title of the section which houses the enable/disable buttons.">
-    General
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE" desc="In settings system options, the label for the customize button for modifier keys">
-    Modifier keys...
   </message>
 
   <message name="IDS_SIM_UNLOCK_ENTER_PIN_TITLE" desc="Title of the SIM card unlock dialog in chrome:sim-unlock.">
@@ -3496,14 +3393,17 @@ Press any key to continue exploring.
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable ChromeVox (spoken feedback)
   </message>
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="Label for an ethernet network device.">
     Ethernet
   </message>
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_WIFI" desc="The wifi network device.">
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_WIFI" desc="Label for a wifi network device.">
     Wi-Fi
   </message>
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="The cellular network device.">
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="Label for a cellular network device.">
     Mobile Data
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_UNKNOWN" desc="Label for an unknown network device.">
+    Unknown
   </message>
   <message name="IDS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
     Ethernet
@@ -3538,12 +3438,6 @@ Press any key to continue exploring.
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLED" desc="The network device status disabled.">
     Off
   </message>
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATING" desc="The network device is activating.">
-    Activating...
-  </message>
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE" desc="Activate the network device.">
-    Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
-  </message>
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_ENABLE" desc="Enable the network device.">
     Enable <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>
   </message>
@@ -3556,26 +3450,14 @@ Press any key to continue exploring.
   <message name="IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT" desc="A menu item label with an indentation. For left-to-right languages, we use 3 spaces on the left.">
     '''   <ph name="LABEL">$1<ex>Wifi SSID</ex></ph>'''
   </message>
-  <message name="IDS_STATUSBAR_NETWORK_OFFLINE_MODE" desc="The offline mode.">
-    Offline mode
-  </message>
-  <message name="IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG" desc="The menu item in the network menu button for opening the options dialog">
-    Network settings...
-  </message>
   <message name="IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG" desc="The menu item in the network menu button at login screen for opening the options dialog">
     Proxy settings...
   </message>
   <message name="IDS_STATUSBAR_NETWORK_MORE" desc="Message for last link in the network menu requesting more technical and less common stuff (proxy settings, IP and hardware addresses)">
     More...
   </message>
-  <message name="IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS" desc="In the network status menu, the text for submenu of private networks.">
-    Private networks
-  </message>
   <message name="IDS_STATUSBAR_NETWORK_ADD_VPN" desc="In the network status menu, the text in Private networks submenu to add a private network.">
     Add private network...
-  </message>
-  <message name="IDS_STATUSBAR_NETWORK_DISCONNECT_VPN" desc="In the network status menu, the text in Private networks submenu to disconnect from a private network.">
-    Disconnect private network
   </message>
   <message name="IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT" desc="In the network status menu, the text of the top-up URL link.">
     View account

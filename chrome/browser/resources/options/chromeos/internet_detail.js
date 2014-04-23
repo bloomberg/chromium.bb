@@ -1120,7 +1120,7 @@ cr.define('options.internet', function() {
       $('roaming-state').textContent = data.roamingState;
       $('restricted-pool').textContent = data.restrictedPool;
       $('error-state').textContent = data.errorState;
-      $('manufacturer').textContent = data.manufacturer;
+      $('manufacturer').textContent = data.cellularManufacturer;
       $('model-id').textContent = data.modelId;
       $('firmware-revision').textContent = data.firmwareRevision;
       $('hardware-revision').textContent = data.hardwareRevision;

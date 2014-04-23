@@ -46,6 +46,19 @@ const char kConnectionState[] = "ConnectionState";
 const char kType[] = "Type";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
+
+std::string CellularProperty(const std::string& property) {
+  return std::string(kCellular) + "." + property;
+}
+
+std::string VpnProperty(const std::string& property) {
+  return std::string(kVPN) + "." + property;
+}
+
+std::string WifiProperty(const std::string& property) {
+  return std::string(kWiFi) + "." + property;
+}
+
 }  // namespace network_config
 
 namespace network_type {
@@ -310,4 +323,3 @@ const char kAllowOnlyPolicyNetworksToAutoconnect[] =
 }  // global_network_config
 
 }  // namespace onc
-
