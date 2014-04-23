@@ -195,21 +195,26 @@ def main():
                              verbose=options.verbose,
                              ignore_temp_rules=options.ignore_temp_rules,
                              skip_tests=options.skip_tests)
+  base_directory = deps_checker.base_directory  # Default if needed, normalized
 
   # Figure out which directory we have to check.
-  start_dir = deps_checker.base_directory
+  start_dir = base_directory
   if len(args) == 1:
     # Directory specified. Start here. It's supposed to be relative to the
     # base directory.
-    start_dir = os.path.abspath(
-        os.path.join(deps_checker.base_directory, args[0]))
+    start_dir = os.path.abspath(os.path.join(base_directory, args[0]))
   elif len(args) >= 2 or (options.generate_temp_rules and
                           options.count_violations):
     # More than one argument, or incompatible flags, we don't handle this.
     PrintUsage()
     return 1
 
-  print 'Using base directory:', deps_checker.base_directory
+  if not start_dir.startswith(deps_checker.base_directory):
+    print 'Directory to check must be a subdirectory of the base directory,'
+    print 'but %s is not a subdirectory of %s' % (start_dir, base_directory)
+    return 1
+
+  print 'Using base directory:', base_directory
   print 'Checking:', start_dir
 
   if options.generate_temp_rules:

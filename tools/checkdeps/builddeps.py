@@ -120,15 +120,13 @@ class DepsBuilder(object):
       being_tested: Set to true to ignore the DEPS file at tools/checkdeps/DEPS.
       ignore_temp_rules: Ignore rules that start with Rule.TEMP_ALLOW ("!").
     """
-    self.base_directory = base_directory
+    base_directory = (base_directory or
+                      os.path.join(os.path.dirname(__file__), '..', '..'))
+    self.base_directory = os.path.abspath(base_directory)
     self.verbose = verbose
     self._under_test = being_tested
     self._ignore_temp_rules = ignore_temp_rules
     self._ignore_specific_rules = ignore_specific_rules
-
-    if not base_directory:
-      self.base_directory = os.path.abspath(
-        os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '..'))
 
     self.git_source_directories = set()
     self._AddGitSourceDirectories()
