@@ -616,32 +616,17 @@ void FrameView::updateAcceleratedCompositingSettings()
 
 void FrameView::updateCompositingLayersAfterStyleChange()
 {
-    TRACE_EVENT0("webkit", "FrameView::updateCompositingLayersAfterStyleChange");
     RenderView* renderView = this->renderView();
     if (!renderView)
         return;
 
+    // FIXME: These early returns are probably not necessary anymore now that we
+    // just set dirty bits below.
     // If we expect to update compositing after an incipient layout, don't do so here.
     if (m_doingPreLayoutStyleUpdate || layoutPending() || renderView->needsLayout())
         return;
 
-    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-    // https://code.google.com/p/chromium/issues/detail?id=343756
-    DisableCompositingQueryAsserts disabler;
     renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterStyleChange);
-}
-
-void FrameView::updateCompositingLayersAfterLayout()
-{
-    TRACE_EVENT0("webkit", "FrameView::updateCompositingLayersAfterLayout");
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return;
-
-    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-    // https://code.google.com/p/chromium/issues/detail?id=343756
-    DisableCompositingQueryAsserts disabler;
-    renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
 }
 
 bool FrameView::usesCompositedScrolling() const
@@ -968,8 +953,7 @@ void FrameView::layout(bool allowSubtree)
         adjustViewSize();
 
     layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
-
-    updateCompositingLayersAfterLayout();
+    renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
 
     m_layoutCount++;
 

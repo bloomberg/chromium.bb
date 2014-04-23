@@ -115,7 +115,6 @@ public:
 
     void updateAcceleratedCompositingSettings();
     void updateCompositingLayersAfterStyleChange();
-    void updateCompositingLayersAfterLayout();
 
     bool hasCompositedContent() const;
     bool isEnclosedInCompositingLayer() const;
