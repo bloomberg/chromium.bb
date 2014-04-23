@@ -21,6 +21,8 @@ namespace net {
 class NetLogLogger;
 }  // namespace net
 
+namespace cronet {
+
 // Implementation of the Chromium NetLog observer interface.
 class NetLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
@@ -88,5 +90,7 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextPeer);
 };
+
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_

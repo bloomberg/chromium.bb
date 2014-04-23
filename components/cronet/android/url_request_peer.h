@@ -14,6 +14,8 @@
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 
+namespace cronet {
+
 // An adapter from the JNI |UrlRequest| object and the Chromium |URLRequest|
 // object.
 class URLRequestPeer : public net::URLRequest::Delegate {
@@ -112,13 +114,7 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   int64 expected_size_;
   bool streaming_upload_;
 
-  static void OnInitiateConnectionWrapper(URLRequestPeer* self);
-  static void OnCancelRequestWrapper(URLRequestPeer* self);
   static void OnDestroyRequest(URLRequestPeer* self);
-  static void OnAppendChunkWrapper(URLRequestPeer* self,
-                                   const char* bytes,
-                                   int bytes_len,
-                                   bool is_last_chunk);
 
   void OnInitiateConnection();
   void OnCancelRequest();
@@ -133,5 +129,7 @@ class URLRequestPeer : public net::URLRequest::Delegate {
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestPeer);
 };
+
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_

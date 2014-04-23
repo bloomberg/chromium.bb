@@ -23,7 +23,7 @@ import java.util.concurrent.Semaphore;
 /**
  * Network request using the native http stack implementation.
  */
-@JNINamespace("net")
+@JNINamespace("cronet")
 public class UrlRequest {
     private static final class ContextLock {
     }

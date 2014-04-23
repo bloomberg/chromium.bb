@@ -14,7 +14,7 @@ import org.chromium.base.JNINamespace;
 /**
  * Provides context for the native HTTP operations.
  */
-@JNINamespace("net")
+@JNINamespace("cronet")
 public class UrlRequestContext {
     protected static final int LOG_NONE = 0;
     protected static final int LOG_DEBUG = 1;

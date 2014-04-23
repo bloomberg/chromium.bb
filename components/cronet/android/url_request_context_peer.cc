@@ -107,6 +107,8 @@ class BasicNetworkDelegate : public net::NetworkDelegate {
 
 }  // namespace
 
+namespace cronet {
+
 URLRequestContextPeer::URLRequestContextPeer(
     URLRequestContextPeerDelegate* delegate,
     std::string user_agent,
@@ -202,3 +204,5 @@ void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
             << ", phase=" << entry.phase();
   }
 }
+
+}  // namespace cronet

@@ -23,25 +23,26 @@ namespace {
 const char kVersion[] = CHROMIUM_VERSION "/" CHROMIUM_NET_VERSION;
 
 const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
-  {"BaseAndroid", base::android::RegisterJni},
-  {"NetAndroid", net::android::RegisterJni},
-  {"UrlRequest", net::UrlRequestRegisterJni},
-  {"UrlRequestContext", net::RegisterNativesImpl},
+    {"BaseAndroid", base::android::RegisterJni},
+    {"NetAndroid", net::android::RegisterJni},
+    {"UrlRequest", cronet::UrlRequestRegisterJni},
+    {"UrlRequestContext", cronet::RegisterNativesImpl},
 };
 
 base::AtExitManager* g_at_exit_manager = NULL;
 
 // Delegate of URLRequestContextPeer that delivers callbacks to the Java layer.
 class JniURLRequestContextPeerDelegate
-    : public URLRequestContextPeer::URLRequestContextPeerDelegate {
+    : public cronet::URLRequestContextPeer::URLRequestContextPeerDelegate {
  public:
   JniURLRequestContextPeerDelegate(JNIEnv* env, jobject owner)
       : owner_(env->NewGlobalRef(owner)) {
   }
 
-  virtual void OnContextInitialized(URLRequestContextPeer* context) OVERRIDE {
+  virtual void OnContextInitialized(
+      cronet::URLRequestContextPeer* context) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    net::Java_UrlRequestContext_initNetworkThread(env, owner_);
+    cronet::Java_UrlRequestContext_initNetworkThread(env, owner_);
     // TODO(dplotnikov): figure out if we need to detach from the thread.
     // The documentation says we should detach just before the thread exits.
   }
@@ -86,7 +87,7 @@ extern "C" void JNIEXPORT JNICALL JNI_OnUnLoad(JavaVM* jvm, void* reserved) {
   }
 }
 
-namespace net {
+namespace cronet {
 
 static jstring GetVersion(JNIEnv* env, jclass unused) {
   return env->NewStringUTF(kVersion);
@@ -165,4 +166,4 @@ static void StopNetLog(JNIEnv* env,
   peer->StopNetLog();
 }
 
-}  // namespace net
+}  // namespace cronet

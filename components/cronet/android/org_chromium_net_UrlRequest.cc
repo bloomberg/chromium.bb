@@ -12,7 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 
-namespace net {
+namespace cronet {
 namespace {
 
 net::RequestPriority ConvertRequestPriority(jint request_priority) {
@@ -59,12 +59,12 @@ class JniURLRequestPeerDelegate
 
   virtual void OnAppendChunkCompleted(URLRequestPeer* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    net::Java_UrlRequest_onAppendChunkCompleted(env, owner_);
+    cronet::Java_UrlRequest_onAppendChunkCompleted(env, owner_);
   }
 
   virtual void OnResponseStarted(URLRequestPeer* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    net::Java_UrlRequest_onResponseStarted(env, owner_);
+    cronet::Java_UrlRequest_onResponseStarted(env, owner_);
   }
 
   virtual void OnBytesRead(URLRequestPeer* request) OVERRIDE {
@@ -72,14 +72,14 @@ class JniURLRequestPeerDelegate
     if (bytes_read != 0) {
       JNIEnv* env = base::android::AttachCurrentThread();
       jobject bytebuf = env->NewDirectByteBuffer(request->Data(), bytes_read);
-      net::Java_UrlRequest_onBytesRead(env, owner_, bytebuf);
+      cronet::Java_UrlRequest_onBytesRead(env, owner_, bytebuf);
       env->DeleteLocalRef(bytebuf);
     }
   }
 
   virtual void OnRequestFinished(URLRequestPeer* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    net::Java_UrlRequest_finish(env, owner_);
+    cronet::Java_UrlRequest_finish(env, owner_);
   }
 
  protected:
@@ -298,4 +298,4 @@ static jlong GetContentLength(JNIEnv* env,
   return request->content_length();
 }
 
-}  // namespace net
+}  // namespace cronet

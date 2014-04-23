@@ -8,6 +8,8 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 
+namespace cronet {
+
 static const size_t kBufferSizeIncrement = 8192;
 
 // Fragment automatically inserted in the User-Agent header to indicate
@@ -61,8 +63,8 @@ void URLRequestPeer::AppendChunk(const char* bytes,
 
   context_->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestPeer::OnAppendChunkWrapper,
-                 this,
+      base::Bind(&URLRequestPeer::OnAppendChunk,
+                 base::Unretained(this),
                  bytes,
                  bytes_len,
                  is_last_chunk));
@@ -71,15 +73,8 @@ void URLRequestPeer::AppendChunk(const char* bytes,
 void URLRequestPeer::Start() {
   context_->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestPeer::OnInitiateConnectionWrapper, this));
-}
-
-// static
-void URLRequestPeer::OnAppendChunkWrapper(URLRequestPeer* self,
-                                          const char* bytes,
-                                          int bytes_len,
-                                          bool is_last_chunk) {
-  self->OnAppendChunk(bytes, bytes_len, is_last_chunk);
+      base::Bind(&URLRequestPeer::OnInitiateConnection,
+                 base::Unretained(this)));
 }
 
 void URLRequestPeer::OnAppendChunk(const char* bytes,
@@ -89,11 +84,6 @@ void URLRequestPeer::OnAppendChunk(const char* bytes,
     url_request_->AppendChunkToUpload(bytes, bytes_len, is_last_chunk);
     delegate_->OnAppendChunkCompleted(this);
   }
-}
-
-// static
-void URLRequestPeer::OnInitiateConnectionWrapper(URLRequestPeer* self) {
-  self->OnInitiateConnection();
 }
 
 void URLRequestPeer::OnInitiateConnection() {
@@ -146,12 +136,8 @@ void URLRequestPeer::Cancel() {
   canceled_ = true;
 
   context_->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestPeer::OnCancelRequestWrapper, this));
-}
-
-// static
-void URLRequestPeer::OnCancelRequestWrapper(URLRequestPeer* self) {
-  self->OnCancelRequest();
+      FROM_HERE,
+      base::Bind(&URLRequestPeer::OnCancelRequest, base::Unretained(this)));
 }
 
 void URLRequestPeer::OnCancelRequest() {
@@ -294,3 +280,5 @@ void URLRequestPeer::OnRequestCompleted() {
 unsigned char* URLRequestPeer::Data() const {
   return reinterpret_cast<unsigned char*>(read_buffer_->StartOfBuffer());
 }
+
+}  // namespace cronet

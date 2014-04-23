@@ -7,7 +7,7 @@
 
 #include <jni.h>
 
-namespace net {
+namespace cronet {
 
 // Define request priority values like REQUEST_PRIORITY_IDLE in a
 // way that ensures they're always the same than their Java counterpart.
@@ -27,6 +27,6 @@ enum UrlRequestError {
 
 bool UrlRequestRegisterJni(JNIEnv* env);
 
-}  // namespace net
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_ANDROID_URLREQUEST_H_
