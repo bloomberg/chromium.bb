@@ -1863,14 +1863,6 @@ def _InitNinjaFlavor(options, target_list, target_dicts):
         'clean',
         '$(ProjectName)',
       ]
-    if not spec.get('msvs_external_builder_clcompile_cmd'):
-      spec['msvs_external_builder_clcompile_cmd'] = [
-        sys.executable,
-        '$(OutDir)/gyp-win-tool',
-        'cl-compile',
-        '$(ProjectDir)',
-        '$(SelectedFiles)',
-      ]
 
 
 def CalculateVariables(default_variables, params):
