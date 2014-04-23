@@ -34,7 +34,7 @@ def _CreatePageSetFromPath(path):
     if '../' in open(path, 'r').read():
       # If the page looks like it references its parent dir, include it.
       serving_dirs.add(os.path.dirname(os.path.dirname(path)))
-      page_urls.append('file://' + path.replace('\\', '/'))
+    page_urls.append('file://' + path.replace('\\', '/'))
 
   def _AddDir(dir_path, skipped):
     for candidate_path in os.listdir(dir_path):
