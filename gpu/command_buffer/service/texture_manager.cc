@@ -66,9 +66,8 @@ TextureManager::DestructionObserver::DestructionObserver() {}
 TextureManager::DestructionObserver::~DestructionObserver() {}
 
 TextureManager::~TextureManager() {
-  FOR_EACH_OBSERVER(DestructionObserver,
-                    destruction_observers_,
-                    OnTextureManagerDestroying(this));
+  for (unsigned int i = 0; i < destruction_observers_.size(); i++)
+    destruction_observers_[i]->OnTextureManagerDestroying(this);
 
   DCHECK(textures_.empty());
 
@@ -873,7 +872,8 @@ TextureRef::TextureRef(TextureManager* manager,
                        Texture* texture)
     : manager_(manager),
       texture_(texture),
-      client_id_(client_id) {
+      client_id_(client_id),
+      num_observers_(0) {
   DCHECK(manager_);
   DCHECK(texture_);
   texture_->AddTextureRef(this);
@@ -1222,9 +1222,12 @@ void TextureManager::StartTracking(TextureRef* ref) {
 }
 
 void TextureManager::StopTracking(TextureRef* ref) {
-  FOR_EACH_OBSERVER(DestructionObserver,
-                    destruction_observers_,
-                    OnTextureRefDestroying(ref));
+  if (ref->num_observers()) {
+    for (unsigned int i = 0; i < destruction_observers_.size(); i++) {
+      destruction_observers_[i]->OnTextureRefDestroying(ref);
+    }
+    DCHECK_EQ(ref->num_observers(), 0);
+  }
 
   Texture* texture = ref->texture();
 
