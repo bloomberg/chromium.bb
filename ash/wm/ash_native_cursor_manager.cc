@@ -95,8 +95,7 @@ void AshNativeCursorManager::SetCursor(
       new_cursor.SetPlatformCursor(invisible_cursor.platform());
     }
   }
-  new_cursor.set_device_scale_factor(
-      image_cursors_->GetDisplay().device_scale_factor());
+  new_cursor.set_device_scale_factor(image_cursors_->GetScale());
 
   delegate->CommitCursor(new_cursor);
 

@@ -4,6 +4,8 @@
 
 #include "ash/wm/ash_native_cursor_manager.h"
 
+#include "ash/display/display_info.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
@@ -54,18 +56,16 @@ typedef test::AshTestBase AshNativeCursorManagerTest;
 TEST_F(AshNativeCursorManagerTest, LockCursor) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
-  gfx::Display display(0);
+
 #if defined(OS_WIN)
   ui::CursorLoaderWin::SetCursorResourceModule(L"ash_unittests.exe");
 #endif
   cursor_manager->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
-  display.set_device_scale_factor(2.0f);
-  display.set_rotation(gfx::Display::ROTATE_90);
-  cursor_manager->SetDisplay(display);
-  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
+  UpdateDisplay("800x800*2/r");
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_EQ(ui::CURSOR_SET_NORMAL, test_api.GetCurrentCursorSet());
-  EXPECT_EQ(gfx::Display::ROTATE_90, test_api.GetDisplay().rotation());
+  EXPECT_EQ(gfx::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 
   cursor_manager->LockCursor();
@@ -85,18 +85,16 @@ TEST_F(AshNativeCursorManagerTest, LockCursor) {
   EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
 
   // Device scale factor and rotation do change even while cursor is locked.
-  display.set_device_scale_factor(1.0f);
-  display.set_rotation(gfx::Display::ROTATE_180);
-  cursor_manager->SetDisplay(display);
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
-  EXPECT_EQ(gfx::Display::ROTATE_180, test_api.GetDisplay().rotation());
+  UpdateDisplay("800x800/u");
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(gfx::Display::ROTATE_180, test_api.GetCurrentCursorRotation());
 
   cursor_manager->UnlockCursor();
   EXPECT_FALSE(cursor_manager->IsCursorLocked());
 
   // Cursor type changes to the one specified while cursor is locked.
   EXPECT_EQ(ui::kCursorPointer, test_api.GetCurrentCursor().native_type());
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
@@ -133,18 +131,47 @@ TEST_F(AshNativeCursorManagerTest, SetCursorSet) {
 TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
   ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
+  UpdateDisplay("800x100*2");
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(gfx::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
-  gfx::Display display(0);
-  display.set_device_scale_factor(2.0f);
-  cursor_manager->SetDisplay(display);
-  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
-  EXPECT_EQ(gfx::Display::ROTATE_0, test_api.GetDisplay().rotation());
+  UpdateDisplay("800x100/l");
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(gfx::Display::ROTATE_270, test_api.GetCurrentCursorRotation());
+}
 
-  display.set_device_scale_factor(1.0f);
-  display.set_rotation(gfx::Display::ROTATE_270);
-  cursor_manager->SetDisplay(display);
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
-  EXPECT_EQ(gfx::Display::ROTATE_270, test_api.GetDisplay().rotation());
+TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
+  int64 display_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  gfx::Display::SetInternalDisplayId(display_id);
+
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  CursorManagerTestApi test_api(cursor_manager);
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  DisplayInfo::SetAllowUpgradeToHighDPI(false);
+  display_manager->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(1.0f,
+            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+
+  display_manager->SetDisplayUIScale(display_id, 1.0f);
+
+  DisplayInfo::SetAllowUpgradeToHighDPI(true);
+  // 1x display should keep using 1x cursor even if the DSF is upgraded to 2x.
+  display_manager->SetDisplayUIScale(display_id, 0.5f);
+  EXPECT_EQ(2.0f,
+            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+
+  // 2x display should keep using 2x cursor regardless of the UI scale.
+  UpdateDisplay("800x800*2");
+  EXPECT_EQ(2.0f,
+            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  display_manager->SetDisplayUIScale(display_id, 2.0f);
+  EXPECT_EQ(1.0f,
+            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
 }
 
 TEST_F(AshNativeCursorManagerTest, DisabledQueryMouseLocation) {

@@ -7,11 +7,8 @@
 
 #include "base/basictypes.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace gfx {
-class Display;
-}
 
 namespace wm {
 class CursorManager;
@@ -28,7 +25,8 @@ class CursorManagerTestApi {
 
   ui::CursorSetType GetCurrentCursorSet() const;
   gfx::NativeCursor GetCurrentCursor() const;
-  gfx::Display GetDisplay() const;
+  gfx::Display::Rotation GetCurrentCursorRotation() const;
+  float GetCurrentCursorScale() const;
 
  private:
   ::wm::CursorManager* cursor_manager_;
