@@ -294,6 +294,54 @@ void PrepareDragForDownload(
 }
 #endif  // defined(OS_WIN)
 
+// Returns the CustomFormat to store file system files.
+const ui::OSExchangeData::CustomFormat& GetFileSystemFileCustomFormat() {
+  static const char kFormatString[] = "chromium/x-file-system-files";
+  CR_DEFINE_STATIC_LOCAL(ui::OSExchangeData::CustomFormat,
+                         format,
+                         (ui::Clipboard::GetFormatType(kFormatString)));
+  return format;
+}
+
+// Writes file system files to the pickle.
+void WriteFileSystemFilesToPickle(
+    const std::vector<DropData::FileSystemFileInfo>& file_system_files,
+    Pickle* pickle) {
+  pickle->WriteUInt64(file_system_files.size());
+  for (size_t i = 0; i < file_system_files.size(); ++i) {
+    pickle->WriteString(file_system_files[i].url.spec());
+    pickle->WriteInt64(file_system_files[i].size);
+  }
+}
+
+// Reads file system files from the pickle.
+bool ReadFileSystemFilesFromPickle(
+    const Pickle& pickle,
+    std::vector<DropData::FileSystemFileInfo>* file_system_files) {
+  PickleIterator iter(pickle);
+
+  uint64 num_files = 0;
+  if (!pickle.ReadUInt64(&iter, &num_files))
+    return false;
+  file_system_files->resize(num_files);
+
+  for (uint64 i = 0; i < num_files; ++i) {
+    std::string url_string;
+    int64 size = 0;
+    if (!pickle.ReadString(&iter, &url_string) ||
+        !pickle.ReadInt64(&iter, &size))
+      return false;
+
+    GURL url(url_string);
+    if (!url.is_valid())
+      return false;
+
+    (*file_system_files)[i].url = url;
+    (*file_system_files)[i].size = size;
+  }
+  return true;
+}
+
 // Utility to fill a ui::OSExchangeDataProvider object from DropData.
 void PrepareDragData(const DropData& drop_data,
                      ui::OSExchangeData::Provider* provider,
@@ -320,6 +368,11 @@ void PrepareDragData(const DropData& drop_data,
     provider->SetHtml(drop_data.html.string(), drop_data.html_base_url);
   if (!drop_data.filenames.empty())
     provider->SetFilenames(drop_data.filenames);
+  if (!drop_data.file_system_files.empty()) {
+    Pickle pickle;
+    WriteFileSystemFilesToPickle(drop_data.file_system_files, &pickle);
+    provider->SetPickledData(GetFileSystemFileCustomFormat(), pickle);
+  }
   if (!drop_data.custom_data.empty()) {
     Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
@@ -357,6 +410,11 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
   data.GetFilenames(&drop_data->filenames);
 
   Pickle pickle;
+  std::vector<DropData::FileSystemFileInfo> file_system_files;
+  if (data.GetPickledData(GetFileSystemFileCustomFormat(), &pickle) &&
+      ReadFileSystemFilesFromPickle(pickle, &file_system_files))
+    drop_data->file_system_files = file_system_files;
+
   if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(), &pickle))
     ui::ReadCustomDataIntoMap(
         pickle.data(), pickle.size(), &drop_data->custom_data);

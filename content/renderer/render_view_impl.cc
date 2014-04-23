@@ -611,6 +611,17 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item_list.push_back(item);
   }
 
+  for (std::vector<DropData::FileSystemFileInfo>::const_iterator it =
+           drop_data.file_system_files.begin();
+       it != drop_data.file_system_files.end();
+       ++it) {
+    WebDragData::Item item;
+    item.storageType = WebDragData::Item::StorageTypeFileSystemFile;
+    item.fileSystemURL = it->url;
+    item.fileSystemFileSize = it->size;
+    item_list.push_back(item);
+  }
+
   for (std::map<base::string16, base::string16>::const_iterator it =
            drop_data.custom_data.begin();
        it != drop_data.custom_data.end();

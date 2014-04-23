@@ -22,6 +22,14 @@
 namespace content {
 
 struct CONTENT_EXPORT DropData {
+  struct FileSystemFileInfo {
+    FileSystemFileInfo() : size(0) {}
+    ~FileSystemFileInfo() {}
+
+    GURL url;
+    int64 size;
+  };
+
   DropData();
   ~DropData();
 
@@ -46,6 +54,9 @@ struct CONTENT_EXPORT DropData {
 
   // Isolated filesystem ID for the files being dragged on the webview.
   base::string16 filesystem_id;
+
+  // User is dragging files specified with filesystem: URLs.
+  std::vector<FileSystemFileInfo> file_system_files;
 
   // User is dragging plain text into the webview.
   base::NullableString16 text;

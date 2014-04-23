@@ -59,8 +59,13 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
             base::FilePath::FromUTF16Unsafe(item.filenameData),
             base::FilePath::FromUTF16Unsafe(item.displayNameData)));
         break;
-      default:  // TODO(hashimoto): Remove this "default".
-        NOTREACHED();
+      case WebDragData::Item::StorageTypeFileSystemFile: {
+        DropData::FileSystemFileInfo info;
+        info.url = item.fileSystemURL;
+        info.size = item.fileSystemFileSize;
+        result.file_system_files.push_back(info);
+        break;
+      }
     }
   }
 

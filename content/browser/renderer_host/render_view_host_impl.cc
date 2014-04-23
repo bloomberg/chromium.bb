@@ -62,6 +62,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
@@ -775,6 +776,28 @@ void RenderViewHostImpl::DragTargetDragEnter(
   }
   filtered_data.filesystem_id = base::UTF8ToUTF16(filesystem_id);
 
+  fileapi::FileSystemContext* file_system_context =
+      BrowserContext::GetStoragePartition(
+          GetProcess()->GetBrowserContext(),
+          GetSiteInstance())->GetFileSystemContext();
+  for (size_t i = 0; i < filtered_data.file_system_files.size(); ++i) {
+    fileapi::FileSystemURL file_system_url =
+        file_system_context->CrackURL(filtered_data.file_system_files[i].url);
+
+    std::string register_name;
+    std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
+        file_system_url.type(), file_system_url.path(), &register_name);
+    policy->GrantReadFileSystem(renderer_id, filesystem_id);
+
+    // Note: We are using the origin URL provided by the sender here. It may be
+    // different from the receiver's.
+    filtered_data.file_system_files[i].url = GURL(
+        fileapi::GetIsolatedFileSystemRootURIString(
+            file_system_url.origin(),
+            filesystem_id,
+            std::string()).append(register_name));
+  }
+
   Send(new DragMsg_TargetDragEnter(GetRoutingID(), filtered_data, client_pt,
                                    screen_pt, operations_allowed,
                                    key_modifiers));
@@ -1324,6 +1347,19 @@ void RenderViewHostImpl::OnStartDragging(
     if (policy->CanReadFile(GetProcess()->GetID(), it->path))
       filtered_data.filenames.push_back(*it);
   }
+
+  fileapi::FileSystemContext* file_system_context =
+      BrowserContext::GetStoragePartition(
+          GetProcess()->GetBrowserContext(),
+          GetSiteInstance())->GetFileSystemContext();
+  filtered_data.file_system_files.clear();
+  for (size_t i = 0; i < drop_data.file_system_files.size(); ++i) {
+    fileapi::FileSystemURL file_system_url =
+        file_system_context->CrackURL(drop_data.file_system_files[i].url);
+    if (policy->CanReadFileSystemFile(GetProcess()->GetID(), file_system_url))
+      filtered_data.file_system_files.push_back(drop_data.file_system_files[i]);
+  }
+
   float scale = ui::GetImageScale(GetScaleFactorForView(GetView()));
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale));
   view->StartDragging(filtered_data, drag_operations_mask, image,
