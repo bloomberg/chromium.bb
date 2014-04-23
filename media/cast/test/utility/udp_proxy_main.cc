@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "media/cast/test/utility/udp_proxy.h"
 
 int main(int argc, char** argv) {
@@ -56,8 +57,6 @@ int main(int argc, char** argv) {
                                           in_pipe.Pass(),
                                           out_pipe.Pass(),
                                           NULL));
-  while (true) {
-    sleep(1000);
-  }
+  base::MessageLoop().Run();  // Run forever.
   return 1;
 }

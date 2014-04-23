@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "media/cast/test/utility/audio_utility.h"
 
 const size_t kSamplingFrequency = 48000;

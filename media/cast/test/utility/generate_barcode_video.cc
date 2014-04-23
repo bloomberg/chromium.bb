@@ -5,13 +5,14 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/cast/test/utility/barcode.h"
 
 void DumpPlane(scoped_refptr<media::VideoFrame> frame,
                int plane) {
   for (int row = 0; row < frame->rows(plane); row++) {
-    CHECK_EQ(frame->row_bytes(plane),
+    CHECK_EQ(static_cast<size_t>(frame->row_bytes(plane)),
              fwrite(frame->data(plane) + frame->stride(plane) * row,
                     1,
                     frame->row_bytes(plane),

@@ -45,7 +45,7 @@
         '<(DEPTH)/content/content.gyp:content_common',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
-        '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
+        '<(DEPTH)/media/cast/cast.gyp:cast_transport',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

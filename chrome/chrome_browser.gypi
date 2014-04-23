@@ -62,7 +62,6 @@
         '../google_apis/gcm/gcm.gyp:gcm',
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
-        '../media/cast/logging/logging.gyp:cast_common_logging',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
         '../sync/sync.gyp:sync',
@@ -2589,7 +2588,7 @@
             '../components/components.gyp:visitedlink_browser',
             '../components/components.gyp:visitedlink_common',
             '../components/components.gyp:web_modal',
-            '../media/cast/transport/cast_transport.gyp:cast_transport',
+            '../media/cast/cast.gyp:cast_transport',
             '../media/media.gyp:media',
             '../net/net.gyp:net_with_v8',
             # TODO(tonyg): Remove this dependency (crbug.com/280157).
