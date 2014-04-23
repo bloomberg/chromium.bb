@@ -28,6 +28,7 @@
 #include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -702,6 +703,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   aura::Window* keyboard_window = controller->proxy()->GetKeyboardWindow();
   keyboard_container->AddChild(keyboard_window);
   keyboard_window->set_owned_by_parent(false);
+  keyboard_window->SetBounds(keyboard::KeyboardBoundsFromWindowBounds(
+      keyboard_container->bounds(), 100));
   keyboard_window->Show();
 
   gfx::Rect before = ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
@@ -731,9 +734,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
       proxy()->GetKeyboardWindow();
   keyboard_container->AddChild(keyboard_window);
   keyboard_window->set_owned_by_parent(false);
-  keyboard_window->SetBounds(gfx::Rect());
-  keyboard_window->Show();
-
+  keyboard_window->SetBounds(keyboard::KeyboardBoundsFromWindowBounds(
+      keyboard_container->bounds(), 100));
   ui::test::TestEventHandler* handler = new ui::test::TestEventHandler;
   root_window->SetEventFilter(handler);
   aura::test::EventGenerator root_window_event_generator(root_window);

@@ -32,8 +32,6 @@ class KeyboardLayoutManager : public aura::LayoutManager {
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
  private:
-  void ResizeKeyboardToDefault(aura::Window* child);
-
   KeyboardController* controller_;
   aura::Window* keyboard_;
 

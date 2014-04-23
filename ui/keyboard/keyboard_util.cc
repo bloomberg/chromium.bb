@@ -43,26 +43,6 @@ bool g_accessibility_keyboard_enabled = false;
 
 base::LazyInstance<GURL> g_override_content_url = LAZY_INSTANCE_INITIALIZER;
 
-// The ratio between the height of the keyboard and the screen when using the
-// usability keyboard.
-const float kUsabilityKeyboardHeightRatio = 1.0f;
-
-// The default ratio between the height of the keyboard and the screen.
-const float kDefaultKeyboardHeightRatio = 0.41f;
-
-// The ratio between the height of the keyboard and the screen when using the
-// accessibility keyboard.
-const float kAccessibilityKeyboardHeightRatio = 0.3f;
-
-float GetKeyboardHeightRatio(){
-  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
-    return kUsabilityKeyboardHeightRatio;
-  } else if (keyboard::GetAccessibilityKeyboardEnabled()) {
-    return kAccessibilityKeyboardHeightRatio;
-  }
-  return kDefaultKeyboardHeightRatio;
-}
-
 bool g_touch_keyboard_enabled = false;
 
 }  // namespace
@@ -71,12 +51,23 @@ namespace keyboard {
 
 gfx::Rect DefaultKeyboardBoundsFromWindowBounds(
     const gfx::Rect& window_bounds) {
-  const float kKeyboardHeightRatio = GetKeyboardHeightRatio();
+  // Initialize default keyboard height to 0. The keyboard window height should
+  // only be set by window.resizeTo in virtual keyboard web contents. Otherwise,
+  // the default height may conflict with the new height and causing some
+  // strange animation issues. For keyboard usability experiments, a full screen
+  // virtual keyboard window is always preferred.
   int keyboard_height =
-      static_cast<int>(window_bounds.height() * kKeyboardHeightRatio);
+      keyboard::IsKeyboardUsabilityExperimentEnabled() ?
+          window_bounds.height() : 0;
+
+  return KeyboardBoundsFromWindowBounds(window_bounds, keyboard_height);
+}
+
+gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds,
+                                         int keyboard_height) {
   return gfx::Rect(
       window_bounds.x(),
-      window_bounds.y() + window_bounds.height() - keyboard_height,
+      window_bounds.bottom() - keyboard_height,
       window_bounds.width(),
       keyboard_height);
 }

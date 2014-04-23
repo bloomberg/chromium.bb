@@ -275,9 +275,9 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void KeyboardController::ShowAndLockKeyboard() {
-  set_lock_keyboard(true);
-  OnShowImeIfNeeded();
+void KeyboardController::ShowKeyboard(bool lock) {
+  set_lock_keyboard(lock);
+  ShowKeyboardInternal();
 }
 
 void KeyboardController::OnWindowHierarchyChanged(
@@ -298,7 +298,7 @@ void KeyboardController::OnTextInputStateChanged(
     return;
 
   if (IsKeyboardUsabilityExperimentEnabled()) {
-    OnShowImeIfNeeded();
+    ShowKeyboardInternal();
     return;
   }
 
@@ -337,6 +337,10 @@ void KeyboardController::OnInputMethodDestroyed(
 }
 
 void KeyboardController::OnShowImeIfNeeded() {
+  ShowKeyboardInternal();
+}
+
+void KeyboardController::ShowKeyboardInternal() {
   if (!container_.get())
     return;
 
@@ -350,7 +354,7 @@ void KeyboardController::OnShowImeIfNeeded() {
 
   proxy_->ReloadKeyboardIfNeeded();
 
-  if (keyboard_visible_)
+  if (keyboard_visible_ || proxy_->GetKeyboardWindow()->bounds().height() == 0)
     return;
 
   keyboard_visible_ = true;
@@ -370,10 +374,6 @@ void KeyboardController::OnShowImeIfNeeded() {
       !container_->layer()->GetAnimator()->is_animating())
     return;
 
-  ShowKeyboard();
-}
-
-void KeyboardController::ShowKeyboard() {
   ToggleTouchEventLogging(false);
   ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
 
@@ -394,6 +394,8 @@ void KeyboardController::ShowKeyboard() {
                  base::Unretained(this))));
   container_animator->AddObserver(animation_observer_.get());
 
+  proxy_->ShowKeyboardContainer(container_.get());
+
   {
     // Scope the following animation settings as we don't want to animate
     // visibility change that triggered by a call to the base class function
@@ -406,8 +408,6 @@ void KeyboardController::ShowKeyboard() {
     container_->SetTransform(gfx::Transform());
     container_->layer()->SetOpacity(1.0);
   }
-
-  proxy_->ShowKeyboardContainer(container_.get());
 }
 
 bool KeyboardController::WillHideKeyboard() const {

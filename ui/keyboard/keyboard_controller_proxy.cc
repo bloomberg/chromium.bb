@@ -54,9 +54,7 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
     int new_height = pos.height();
     bounds.set_y(bounds.y() + bounds.height() - new_height);
     bounds.set_height(new_height);
-    proxy_->set_resizing_from_contents(true);
     keyboard->SetBounds(bounds);
-    proxy_->set_resizing_from_contents(false);
   }
 
   // Overridden from content::WebContentsDelegate:
@@ -81,7 +79,7 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
 namespace keyboard {
 
 KeyboardControllerProxy::KeyboardControllerProxy()
-    : default_url_(kKeyboardURL), resizing_from_contents_(false) {
+    : default_url_(kKeyboardURL) {
 }
 
 KeyboardControllerProxy::~KeyboardControllerProxy() {

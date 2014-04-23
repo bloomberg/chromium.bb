@@ -27,6 +27,7 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace keyboard {
 namespace {
@@ -193,8 +194,15 @@ class KeyboardControllerTest : public testing::Test {
   void SetFocus(ui::TextInputClient* client) {
     ui::InputMethod* input_method = proxy()->GetInputMethod();
     input_method->SetFocusedTextInputClient(client);
-    if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
+    if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
       input_method->ShowImeIfNeeded();
+      if (proxy_->GetKeyboardWindow()->bounds().height() == 0) {
+        // Set initial bounds for test keyboard window.
+        proxy_->GetKeyboardWindow()->SetBounds(
+            KeyboardBoundsFromWindowBounds(
+                controller()->GetContainerWindow()->bounds(), 100));
+      }
+    }
   }
 
   bool WillHideKeyboard() {
@@ -214,17 +222,27 @@ class KeyboardControllerTest : public testing::Test {
 
 TEST_F(KeyboardControllerTest, KeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
-  gfx::Rect bounds(0, 0, 100, 100);
-  container->SetBounds(bounds);
+  aura::Window* keyboard(proxy()->GetKeyboardWindow());
+  container->SetBounds(gfx::Rect(0, 0, 200, 100));
 
-  const gfx::Rect& before_bounds = proxy()->GetKeyboardWindow()->bounds();
+  container->AddChild(keyboard);
+  const gfx::Rect& before_bounds = keyboard->bounds();
+  // The initial keyboard should be positioned at the bottom of container and
+  // has 0 height.
+  ASSERT_EQ(gfx::Rect(0, 100, 200, 0), before_bounds);
+
   gfx::Rect new_bounds(
-      before_bounds.x(), before_bounds.y(),
-      before_bounds.width() / 2, before_bounds.height() / 2);
+      before_bounds.x(), before_bounds.y() - 50,
+      before_bounds.width(), 50);
 
-  // The KeyboardController's LayoutManager shouldn't let this happen
-  proxy()->GetKeyboardWindow()->SetBounds(new_bounds);
-  ASSERT_EQ(before_bounds, proxy()->GetKeyboardWindow()->bounds());
+  keyboard->SetBounds(new_bounds);
+  ASSERT_EQ(new_bounds, keyboard->bounds());
+
+  // Mock a screen rotation.
+  container->SetBounds(gfx::Rect(0, 0, 100, 200));
+  // The above call should resize keyboard to new width while keeping the old
+  // height.
+  ASSERT_EQ(gfx::Rect(0, 150, 100, 50), keyboard->bounds());
 }
 
 // Tests that tapping/clicking inside the keyboard does not give it focus.
@@ -391,33 +409,6 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   // Wait for hide keyboard to finish.
   base::MessageLoop::current()->Run();
   EXPECT_FALSE(keyboard_container->IsVisible());
-}
-
-TEST_F(KeyboardControllerTest, KeyboardResizingFromContents) {
-  aura::Window* keyboard_container = controller()->GetContainerWindow();
-  aura::Window* keyboard_window = proxy()->GetKeyboardWindow();
-  keyboard_container->SetBounds(gfx::Rect(800, 600));
-  keyboard_container->AddChild(keyboard_window);
-
-  int original_height = keyboard_window->bounds().height();
-
-  // Resizes from contents when flag is unset.
-  keyboard_window->SetBounds(gfx::Rect(100, 80));
-  EXPECT_EQ(original_height, keyboard_window->bounds().height());
-
-  // Resizes from contents when flag is set.
-  proxy()->set_resizing_from_contents(true);
-  keyboard_window->SetBounds(gfx::Rect(100, 80));
-  EXPECT_EQ(80, keyboard_window->bounds().height());
-
-  // Resizes from container when flag is set.
-  keyboard_container->SetBounds(gfx::Rect(400, 300));
-  EXPECT_EQ(80, keyboard_window->bounds().height());
-
-  // Resizes from container when flag is unset.
-  proxy()->set_resizing_from_contents(false);
-  keyboard_container->SetBounds(gfx::Rect(800, 600));
-  EXPECT_EQ(original_height, keyboard_window->bounds().height());
 }
 
 class KeyboardControllerAnimationTest : public KeyboardControllerTest,

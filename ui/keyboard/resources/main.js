@@ -205,9 +205,14 @@
    * @return {Array.<String, number>} The bounds of the keyboard container.
    */
   function getKeyboardBounds_() {
+    var keyboard = $('keyboard');
+    var ratio = DEFAULT_KEYBOARD_ASPECT_RATIO;
+    if (keyboard.config && keyboard.config.a11ymode) {
+      ratio = DEFAULT_A11Y_KEYBOARD_ASPECT_RATIO;
+    }
     return {
-      "width": window.innerWidth,
-      "height": window.innerHeight,
+      "width": screen.width,
+      "height": screen.height * ratio
     };
   }
 
@@ -566,8 +571,7 @@
    */
   function resizeKeyboardContainer(opt_params) {
     var params = opt_params ? opt_params : new AlignmentOptions();
-    var bounds = getKeyboardBounds();
-    if (Math.abs(bounds.height - params.height) > RESIZE_THRESHOLD) {
+    if (Math.abs(window.innerHeight - params.height) > RESIZE_THRESHOLD) {
       // Cannot resize more than 50% of screen height due to crbug.com/338829.
       window.resizeTo(params.width, params.height);
     }

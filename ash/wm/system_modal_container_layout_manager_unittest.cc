@@ -149,8 +149,8 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
  public:
   virtual void SetUp() OVERRIDE {
     // Allow a virtual keyboard (and initialize it per default).
-   CommandLine::ForCurrentProcess()->AppendSwitch(
-       keyboard::switches::kEnableVirtualKeyboard);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
         keyboard::KeyboardController::GetInstance());
@@ -184,31 +184,20 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
     if (show == keyboard->keyboard_visible())
       return;
 
-    // The animation has to run in order to get the notification. Run the
-    // animation and wait until its finished.
-    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
-    if (show)
-      keyboard->ShowAndLockKeyboard();
-    else
+    if (show) {
+      keyboard->ShowKeyboard(true);
+      if (keyboard->proxy()->GetKeyboardWindow()->bounds().height() == 0) {
+        keyboard->proxy()->GetKeyboardWindow()->SetBounds(
+            keyboard::KeyboardBoundsFromWindowBounds(
+                keyboard->GetContainerWindow()->bounds(), 100));
+      }
+    } else {
       keyboard->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_MANUAL);
-
-    WaitForWindowAnimationToBeFinished(keyboard->GetContainerWindow());
+    }
 
     DCHECK_EQ(show, keyboard->keyboard_visible());
   }
 
-  void WaitForWindowAnimationToBeFinished(aura::Window* window) {
-    DCHECK(window);
-    ui::Layer* layer = window->layer();
-    ui::LayerAnimatorTestController controller(layer->GetAnimator());
-    gfx::AnimationContainerElement* element = layer->GetAnimator();
-    while (controller.animator()->is_animating()) {
-      controller.StartThreadedAnimationsIfNeeded();
-      base::TimeTicks step_time = controller.animator()->last_step_time();
-      element->Step(step_time + base::TimeDelta::FromMilliseconds(1000));
-    }
-  }
 };
 
 TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
