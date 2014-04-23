@@ -3797,7 +3797,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
         m_scrollableArea->updateAfterStyleChange(oldStyle);
 
     if (!oldStyle || oldStyle->visibility() != renderer()->style()->visibility()) {
-        ASSERT(!oldStyle || diff >= StyleDifferenceRepaint);
+        ASSERT(!oldStyle || diff.needsRepaint() || diff.needsLayout());
         compositor()->setNeedsUpdateCompositingRequirementsState();
     }
 
@@ -3806,12 +3806,12 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     updateSelfPaintingLayer();
 
     if (!oldStyle || renderer()->style()->position() != oldStyle->position()) {
-        ASSERT(!oldStyle || diff >= StyleDifferenceLayout);
+        ASSERT(!oldStyle || diff.needsFullLayout());
         updateOutOfFlowPositioned(oldStyle);
     }
 
     if (!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle)) {
-        ASSERT(!oldStyle || diff >= StyleDifferenceLayout);
+        ASSERT(!oldStyle || diff.needsFullLayout());
         updateReflectionInfo(oldStyle);
     }
 

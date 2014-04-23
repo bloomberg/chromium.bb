@@ -282,9 +282,10 @@ void RenderSVGRoot::willBeDestroyed()
 
 void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    if (diff == StyleDifferenceLayout)
+    if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();
-    if (diff == StyleDifferenceRepaint) {
+    // FIXME: How about other diff flags?
+    if (diff.needsRepaintObjectOnly()) {
         // Box decorations may have appeared/disappeared - recompute status.
         m_hasBoxDecorations = calculateHasBoxDecorations();
     }

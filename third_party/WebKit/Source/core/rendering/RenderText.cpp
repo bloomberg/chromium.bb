@@ -193,7 +193,7 @@ void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
     // we already did this for the parent of the text run.
     // We do have to schedule layouts, though, since a style change can force us to
     // need to relayout.
-    if (diff == StyleDifferenceLayout) {
+    if (diff.needsFullLayout()) {
         setNeedsLayoutAndPrefWidthsRecalc();
         m_knownToHaveNoOverflowAndNoFallbackFonts = false;
     }

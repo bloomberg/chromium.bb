@@ -44,6 +44,7 @@ enum PrintColorAdjust {
     PrintColorAdjustExact
 };
 
+// FIXME: To be replaced by StyleDifference defined in StyleDifference.h.
 // The difference between two styles.  The following values are used:
 // - StyleDifferenceEqual - The two styles are identical.
 //   FIXME: When style difference is context sensitive, RenderStyle::visualInvalidationDiff() may return
@@ -55,7 +56,7 @@ enum PrintColorAdjust {
 // - StyleDifferenceSimplifiedLayout - Only overflow needs to be recomputed.
 // - StyleDifferenceSimplifiedLayoutAndPositionedMovement - Both positioned movement and simplified layout updates are required.
 // - StyleDifferenceLayout - A full layout is required.
-enum StyleDifference {
+enum StyleDifferenceLegacy {
     StyleDifferenceEqual,
     StyleDifferenceRecompositeLayer,
     StyleDifferenceRepaint,

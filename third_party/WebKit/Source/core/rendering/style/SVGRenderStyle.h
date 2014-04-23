@@ -48,7 +48,7 @@ public:
     void inheritFrom(const SVGRenderStyle*);
     void copyNonInheritedFrom(const SVGRenderStyle*);
 
-    StyleDifference diff(const SVGRenderStyle*) const;
+    StyleDifferenceLegacy diff(const SVGRenderStyle*) const;
 
     bool operator==(const SVGRenderStyle&) const;
     bool operator!=(const SVGRenderStyle& o) const { return !(*this == o); }
