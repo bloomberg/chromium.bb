@@ -128,7 +128,6 @@ hyperlinkAuditingEnabled initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
 mediaPlaybackRequiresUserGesture initial=false
-visualWordMovementEnabled initial=false
 shouldDisplaySubtitles initial=false
 shouldDisplayCaptions initial=false
 shouldDisplayTextDescriptions initial=false

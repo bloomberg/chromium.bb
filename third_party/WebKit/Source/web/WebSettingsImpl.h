@@ -178,9 +178,6 @@ public:
     virtual void setWideViewportQuirkEnabled(bool) OVERRIDE;
     virtual void setXSSAuditorEnabled(bool) OVERRIDE;
 
-    // FIXME: Make chromium stop calling this and delete the method.
-    virtual void setVisualWordMovementEnabled(bool) OVERRIDE { }
-
     bool showFPSCounter() const { return m_showFPSCounter; }
     bool showPaintRects() const { return m_showPaintRects; }
     bool renderVSyncNotificationEnabled() const { return m_renderVSyncNotificationEnabled; }
