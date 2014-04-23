@@ -79,7 +79,18 @@ TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
 
   const string core_file = crash_generator.GetCoreFilePath();
   const string procfs_path = crash_generator.GetDirectoryOfProcFilesCopy();
+
+#if defined(__ANDROID__)
+  struct stat st;
+  if (stat(core_file.c_str(), &st) != 0) {
+    fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test is "
+            "skipped due to no core file being generated");
+    return;
+  }
+#endif
+
   LinuxCoreDumper dumper(child_pid, core_file.c_str(), procfs_path.c_str());
+
   EXPECT_TRUE(dumper.Init());
 
   EXPECT_TRUE(dumper.IsPostMortem());

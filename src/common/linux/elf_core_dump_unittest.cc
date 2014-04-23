@@ -146,6 +146,15 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
     expected_thread_ids.insert(crash_generator.GetThreadId(i));
   }
 
+#if defined(__ANDROID__)
+  struct stat st;
+  if (stat(crash_generator.GetCoreFilePath().c_str(), &st) != 0) {
+    fprintf(stderr, "ElfCoreDumpTest.ValidCoreFile test is skipped "
+            "due to no core file being generated");
+    return;
+  }
+#endif
+
   MemoryMappedFile mapped_core_file;
   ASSERT_TRUE(mapped_core_file.Map(crash_generator.GetCoreFilePath().c_str()));
 
