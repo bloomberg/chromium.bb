@@ -13177,52 +13177,70 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.ConnectionEstablish" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>The time from the connection start to connection establish.</summary>
 </histogram>
 
 <histogram name="Net.SocketStream.ConnectionLatency" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>The time waiting to be ready to start connecting.</summary>
 </histogram>
 
 <histogram name="Net.SocketStream.ConnectionType"
     enum="SocketStreamConnectionType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>
     Each bucket is the number of connection type of socket stream.
   </summary>
 </histogram>
 
 <histogram name="Net.SocketStream.Duration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>The time a socket stream was open.</summary>
 </histogram>
 
 <histogram name="Net.SocketStream.ProtocolType" enum="SocketStreamProtocolType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>
     Each bucket is the number of protocol type on socket stream.
   </summary>
 </histogram>
 
 <histogram name="Net.SocketStream.ReceivedBytes" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>Number of bytes on a socket stream.</summary>
 </histogram>
 
 <histogram name="Net.SocketStream.ReceivedCounts">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>Number of reads on a socket stream.</summary>
 </histogram>
 
 <histogram name="Net.SocketStream.SentBytes" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>Number of bytes on a socket stream.</summary>
 </histogram>
 
 <histogram name="Net.SocketStream.SentCounts">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>Number of Write on a socket stream.</summary>
 </histogram>
 
@@ -29723,7 +29741,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebCore.WebSocket.HandshakeResult"
     enum="WebSocketHandshakeResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>
     Count the number of WebSocket handshake for each result. Use this histogram
     as a baseline for investigating feature usage counters.
