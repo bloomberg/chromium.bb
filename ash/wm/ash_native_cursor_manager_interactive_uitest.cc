@@ -102,10 +102,10 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_CursorChangeOnEnterNotify) {
   display_manager->OnNativeDisplaysChanged(display_info_list);
 
   MoveMouseSync(Shell::GetAllRootWindows()[0], 10, 10);
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
   MoveMouseSync(Shell::GetAllRootWindows()[0], 600, 10);
-  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
 }
 
 }  // namespace ash

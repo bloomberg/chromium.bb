@@ -159,12 +159,11 @@ void CursorLoaderX11::LoadImageCursor(int id,
                                       const gfx::Point& hot) {
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-      display().device_scale_factor());
+  const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(scale());
   SkBitmap bitmap = image_rep.sk_bitmap();
   gfx::Point hotpoint = hot;
   ScaleAndRotateCursorBitmapAndHotpoint(
-      scale(), display().rotation(), &bitmap, &hotpoint);
+      scale(), rotation(), &bitmap, &hotpoint);
 
   XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotpoint);
   cursors_[id] = CreateReffedCustomXCursor(x_image);
@@ -177,8 +176,7 @@ void CursorLoaderX11::LoadAnimatedCursor(int id,
                                          int frame_delay_ms) {
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-      display().device_scale_factor());
+  const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(scale());
   SkBitmap bitmap = image_rep.sk_bitmap();
   int frame_width = bitmap.height();
   int frame_height = frame_width;
@@ -233,8 +231,7 @@ void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
     xcursor =  invisible_cursor_.get();
   else if (*cursor == kCursorCustom)
     xcursor = cursor->platform();
-  else if (display().device_scale_factor() == 1.0f &&
-           display().rotation() == gfx::Display::ROTATE_0) {
+  else if (scale() == 1.0f && rotation() == gfx::Display::ROTATE_0) {
     xcursor = GetXCursor(CursorShapeFromNative(*cursor));
   } else {
     xcursor = ImageCursorFromNative(kCursorPointer);

@@ -9,11 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace gfx {
-class Display;
-}
 
 namespace ui {
 class CursorLoader;
@@ -28,18 +25,15 @@ class ASH_EXPORT ImageCursors {
   ImageCursors();
   ~ImageCursors();
 
-  // Returns the display the cursors are loaded for. The display must
-  // be set by SetDisplay before using this.
-  gfx::Display GetDisplay() const;
+  // Returns the scale and rotation of the currently loaded cursor.
+  float GetScale() const;
+  gfx::Display::Rotation GetRotation() const;
 
   // Sets the display the cursors are loaded for. The device scale factor
   // determines the size of the image to load, and the rotation of the display
   // determines if the image and its host point has to be retated.
   // Returns true if the cursor image is reloaded.
   bool SetDisplay(const gfx::Display& display);
-
-  // Sets the scale of the mouse cursor icon.
-  void SetScale(float scale);
 
   // Sets the type of the mouse cursor icon.
   void SetCursorSet(ui::CursorSetType cursor_set);
@@ -52,7 +46,6 @@ class ASH_EXPORT ImageCursors {
   void ReloadCursors();
 
   scoped_ptr<ui::CursorLoader> cursor_loader_;
-  float scale_;
   ui::CursorSetType cursor_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCursors);

@@ -19,14 +19,12 @@ class UI_BASE_EXPORT CursorLoader {
   CursorLoader() : scale_(1.f) {}
   virtual ~CursorLoader() {}
 
-  // Returns the display the loader loads images for.
-  const gfx::Display& display() const {
-    return display_;
+  gfx::Display::Rotation rotation() const {
+    return rotation_;
   }
 
-  // Sets the display the loader loads images for.
-  void set_display(const gfx::Display& display) {
-    display_ = display;
+  void set_rotation(gfx::Display::Rotation rotation) {
+    rotation_ = rotation;
   }
 
   // Returns the current scale of the mouse cursor icon.
@@ -64,8 +62,8 @@ class UI_BASE_EXPORT CursorLoader {
   static CursorLoader* Create();
 
  private:
-  // The display the loader loads images for.
-  gfx::Display display_;
+  // The current rotation of the mouse cursor icon.
+  gfx::Display::Rotation rotation_;
 
   // The current scale of the mouse cursor icon.
   float scale_;

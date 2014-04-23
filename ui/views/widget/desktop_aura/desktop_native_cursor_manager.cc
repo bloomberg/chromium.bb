@@ -40,7 +40,8 @@ void DesktopNativeCursorManager::SetDisplay(
     const gfx::Display& display,
     wm::NativeCursorManagerDelegate* delegate) {
   cursor_loader_->UnloadAll();
-  cursor_loader_->set_display(display);
+  cursor_loader_->set_rotation(display.rotation());
+  cursor_loader_->set_scale(display.device_scale_factor());
 
   if (cursor_loader_updater_.get())
     cursor_loader_updater_->OnDisplayUpdated(display, cursor_loader_.get());

@@ -935,11 +935,11 @@ TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
   EXPECT_EQ(1.0f, primary_root->GetHost()->compositor()->
       device_scale_factor());
   primary_root->MoveCursorTo(gfx::Point(50, 50));
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_EQ(2.0f, secondary_root->GetHost()->compositor()->
       device_scale_factor());
   secondary_root->MoveCursorTo(gfx::Point(50, 50));
-  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
 
   // Switch primary and secondary
   display_controller->SetPrimaryDisplay(secondary_display);
@@ -949,23 +949,23 @@ TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
   EXPECT_EQ(1.0f, secondary_root->GetHost()->compositor()->
       device_scale_factor());
   secondary_root->MoveCursorTo(gfx::Point(50, 50));
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
   primary_root->MoveCursorTo(gfx::Point(50, 50));
   EXPECT_EQ(2.0f, primary_root->GetHost()->compositor()->
       device_scale_factor());
-  EXPECT_EQ(2.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
 
   // Deleting 2nd display.
   UpdateDisplay("200x200");
   RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
 
   // Cursor's device scale factor should be updated even without moving cursor.
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 
   primary_root->MoveCursorTo(gfx::Point(50, 50));
   EXPECT_EQ(1.0f, primary_root->GetHost()->compositor()->
       device_scale_factor());
-  EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 }
 
 TEST_F(DisplayControllerTest, OverscanInsets) {
