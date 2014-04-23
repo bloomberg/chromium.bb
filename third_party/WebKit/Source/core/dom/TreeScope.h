@@ -151,6 +151,9 @@ public:
     bool isInclusiveAncestorOf(const TreeScope&) const;
     unsigned short comparePosition(const TreeScope&) const;
 
+    const TreeScope* commonAncestorTreeScope(const TreeScope& other) const;
+    TreeScope* commonAncestorTreeScope(TreeScope& other);
+
     Element* getElementByAccessKey(const String& key) const;
 
 protected:

@@ -3364,6 +3364,7 @@
             'dom/DocumentTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
             'dom/RangeTest.cpp',
+            'dom/TreeScopeTest.cpp',
             'editing/TextIteratorTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
             'fetch/ImageResourceTest.cpp',

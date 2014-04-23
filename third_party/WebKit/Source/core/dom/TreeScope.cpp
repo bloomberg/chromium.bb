@@ -408,6 +408,32 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
         Node::DOCUMENT_POSITION_PRECEDING | Node::DOCUMENT_POSITION_CONTAINS;
 }
 
+const TreeScope* TreeScope::commonAncestorTreeScope(const TreeScope& other) const
+{
+    Vector<const TreeScope*, 16> thisChain;
+    for (const TreeScope* tree = this; tree; tree = tree->parentTreeScope())
+        thisChain.append(tree);
+
+    Vector<const TreeScope*, 16> otherChain;
+    for (const TreeScope* tree = &other; tree; tree = tree->parentTreeScope())
+        otherChain.append(tree);
+
+    // Keep popping out the last elements of these chains until a mismatched pair is found. If |this| and |other|
+    // belong to different documents, null will be returned.
+    const TreeScope* lastAncestor = 0;
+    while (!thisChain.isEmpty() && !otherChain.isEmpty() && thisChain.last() == otherChain.last()) {
+        lastAncestor = thisChain.last();
+        thisChain.removeLast();
+        otherChain.removeLast();
+    }
+    return lastAncestor;
+}
+
+TreeScope* TreeScope::commonAncestorTreeScope(TreeScope& other)
+{
+    return const_cast<TreeScope*>(static_cast<const TreeScope&>(*this).commonAncestorTreeScope(other));
+}
+
 static void listTreeScopes(Node* node, Vector<TreeScope*, 5>& treeScopes)
 {
     while (true) {
