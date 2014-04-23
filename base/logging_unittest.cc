@@ -54,11 +54,7 @@ class MockLogSource {
 
 TEST_F(LoggingTest, BasicLogging) {
   MockLogSource mock_log_source;
-  const int kExpectedDebugOrReleaseCalls = 6;
-  const int kExpectedDebugCalls = 6;
-  const int kExpectedCalls =
-      kExpectedDebugOrReleaseCalls + (DEBUG_MODE ? kExpectedDebugCalls : 0);
-  EXPECT_CALL(mock_log_source, Log()).Times(kExpectedCalls).
+  EXPECT_CALL(mock_log_source, Log()).Times(DEBUG_MODE ? 16 : 8).
       WillRepeatedly(Return("log message"));
 
   SetMinLogLevel(LOG_INFO);
@@ -76,6 +72,8 @@ TEST_F(LoggingTest, BasicLogging) {
   PLOG_IF(INFO, true) << mock_log_source.Log();
   VLOG(0) << mock_log_source.Log();
   VLOG_IF(0, true) << mock_log_source.Log();
+  VPLOG(0) << mock_log_source.Log();
+  VPLOG_IF(0, true) << mock_log_source.Log();
 
   DLOG(INFO) << mock_log_source.Log();
   DLOG_IF(INFO, true) << mock_log_source.Log();
@@ -83,6 +81,8 @@ TEST_F(LoggingTest, BasicLogging) {
   DPLOG_IF(INFO, true) << mock_log_source.Log();
   DVLOG(0) << mock_log_source.Log();
   DVLOG_IF(0, true) << mock_log_source.Log();
+  DVPLOG(0) << mock_log_source.Log();
+  DVPLOG_IF(0, true) << mock_log_source.Log();
 }
 
 TEST_F(LoggingTest, LogIsOn) {
@@ -159,6 +159,8 @@ TEST_F(LoggingTest, LoggingIsLazy) {
   PLOG_IF(INFO, false) << mock_log_source.Log();
   VLOG(1) << mock_log_source.Log();
   VLOG_IF(1, true) << mock_log_source.Log();
+  VPLOG(1) << mock_log_source.Log();
+  VPLOG_IF(1, true) << mock_log_source.Log();
 
   DLOG(INFO) << mock_log_source.Log();
   DLOG_IF(INFO, true) << mock_log_source.Log();
@@ -166,6 +168,8 @@ TEST_F(LoggingTest, LoggingIsLazy) {
   DPLOG_IF(INFO, true) << mock_log_source.Log();
   DVLOG(1) << mock_log_source.Log();
   DVLOG_IF(1, true) << mock_log_source.Log();
+  DVPLOG(1) << mock_log_source.Log();
+  DVPLOG_IF(1, true) << mock_log_source.Log();
 }
 
 // Official builds have CHECKs directly call BreakDebugger.

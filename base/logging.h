@@ -426,29 +426,13 @@ const LogSeverity LOG_0 = LOG_ERROR;
   SYSLOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
 
 #if defined(OS_WIN)
-#define LOG_GETLASTERROR_STREAM(severity) \
+#define PLOG_STREAM(severity) \
   COMPACT_GOOGLE_LOG_EX_ ## severity(Win32ErrorLogMessage, \
       ::logging::GetLastSystemErrorCode()).stream()
-#define LOG_GETLASTERROR(severity) \
-  LAZY_STREAM(LOG_GETLASTERROR_STREAM(severity), LOG_IS_ON(severity))
-#define LOG_GETLASTERROR_MODULE_STREAM(severity, module) \
-  COMPACT_GOOGLE_LOG_EX_ ## severity(Win32ErrorLogMessage, \
-      ::logging::GetLastSystemErrorCode(), module).stream()
-#define LOG_GETLASTERROR_MODULE(severity, module)                       \
-  LAZY_STREAM(LOG_GETLASTERROR_STREAM(severity, module),                \
-              LOG_IS_ON(severity))
-// PLOG_STREAM is used by PLOG, which is the usual error logging macro
-// for each platform.
-#define PLOG_STREAM(severity) LOG_GETLASTERROR_STREAM(severity)
 #elif defined(OS_POSIX)
-#define LOG_ERRNO_STREAM(severity) \
+#define PLOG_STREAM(severity) \
   COMPACT_GOOGLE_LOG_EX_ ## severity(ErrnoLogMessage, \
       ::logging::GetLastSystemErrorCode()).stream()
-#define LOG_ERRNO(severity) \
-  LAZY_STREAM(LOG_ERRNO_STREAM(severity), LOG_IS_ON(severity))
-// PLOG_STREAM is used by PLOG, which is the usual error logging macro
-// for each platform.
-#define PLOG_STREAM(severity) LOG_ERRNO_STREAM(severity)
 #endif
 
 #define PLOG(severity)                                          \
@@ -622,23 +606,21 @@ enum { DEBUG_MODE = ENABLE_DLOG };
 #define DLOG(severity)                                          \
   LAZY_STREAM(LOG_STREAM(severity), DLOG_IS_ON(severity))
 
-#if defined(OS_WIN)
-#define DLOG_GETLASTERROR(severity) \
-  LAZY_STREAM(LOG_GETLASTERROR_STREAM(severity), DLOG_IS_ON(severity))
-#define DLOG_GETLASTERROR_MODULE(severity, module)                      \
-  LAZY_STREAM(LOG_GETLASTERROR_STREAM(severity, module),                \
-              DLOG_IS_ON(severity))
-#elif defined(OS_POSIX)
-#define DLOG_ERRNO(severity)                                    \
-  LAZY_STREAM(LOG_ERRNO_STREAM(severity), DLOG_IS_ON(severity))
-#endif
-
 #define DPLOG(severity)                                         \
   LAZY_STREAM(PLOG_STREAM(severity), DLOG_IS_ON(severity))
 
 #define DVLOG(verboselevel) DVLOG_IF(verboselevel, VLOG_IS_ON(verboselevel))
 
 #define DVPLOG(verboselevel) DVPLOG_IF(verboselevel, VLOG_IS_ON(verboselevel))
+
+// TODO(vitalybuka): following should be removed and replaced with PLOG.
+#if defined(OS_WIN)
+#define LOG_GETLASTERROR(severity) PLOG(severity)
+#define DLOG_GETLASTERROR(severity) DPLOG(severity)
+#elif defined(OS_POSIX)
+#define LOG_ERRNO(severity) PLOG(severity)
+#define DLOG_ERRNO(severity) DPLOG(severity)
+#endif
 
 // Definitions for DCHECK et al.
 
@@ -823,17 +805,12 @@ typedef int SystemErrorCode;
 // Alias for ::GetLastError() on Windows and errno on POSIX. Avoids having to
 // pull in windows.h just for GetLastError() and DWORD.
 BASE_EXPORT SystemErrorCode GetLastSystemErrorCode();
+BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code);
 
 #if defined(OS_WIN)
 // Appends a formatted system message of the GetLastError() type.
 class BASE_EXPORT Win32ErrorLogMessage {
  public:
-  Win32ErrorLogMessage(const char* file,
-                       int line,
-                       LogSeverity severity,
-                       SystemErrorCode err,
-                       const char* module);
-
   Win32ErrorLogMessage(const char* file,
                        int line,
                        LogSeverity severity,
@@ -846,8 +823,6 @@ class BASE_EXPORT Win32ErrorLogMessage {
 
  private:
   SystemErrorCode err_;
-  // Optional name of the module defining the error.
-  const char* module_;
   LogMessage log_message_;
 
   DISALLOW_COPY_AND_ASSIGN(Win32ErrorLogMessage);

@@ -43,6 +43,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include <ctime>
 #include <iomanip>
 #include <ostream>
+#include <string>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -51,6 +52,8 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/debug/stack_trace.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock_impl.h"
 #include "base/threading/platform_thread.h"
@@ -729,61 +732,40 @@ SystemErrorCode GetLastSystemErrorCode() {
 }
 
 #if defined(OS_WIN)
-Win32ErrorLogMessage::Win32ErrorLogMessage(const char* file,
-                                           int line,
-                                           LogSeverity severity,
-                                           SystemErrorCode err,
-                                           const char* module)
-    : err_(err),
-      module_(module),
-      log_message_(file, line, severity) {
+BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
+  const int error_message_buffer_size = 256;
+  char msgbuf[error_message_buffer_size];
+  DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+  DWORD len = FormatMessageA(flags, NULL, error_code, 0, msgbuf,
+                             arraysize(msgbuf), NULL);
+  if (len) {
+    // Messages returned by system end with line breaks.
+    return base::CollapseWhitespaceASCII(msgbuf, true) +
+        base::StringPrintf(" (0x%X)", error_code);
+  }
+  return base::StringPrintf("Error (0x%X) while retrieving error. (0x%X)",
+                            GetLastError(), error_code);
 }
+#elif defined(OS_POSIX)
+BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
+  return safe_strerror(error_code);
+}
+#else
+#error Not implemented
+#endif
 
+
+#if defined(OS_WIN)
 Win32ErrorLogMessage::Win32ErrorLogMessage(const char* file,
                                            int line,
                                            LogSeverity severity,
                                            SystemErrorCode err)
     : err_(err),
-      module_(NULL),
       log_message_(file, line, severity) {
 }
 
 Win32ErrorLogMessage::~Win32ErrorLogMessage() {
-  const int error_message_buffer_size = 256;
-  char msgbuf[error_message_buffer_size];
-  DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-  HMODULE hmod;
-  if (module_) {
-    hmod = GetModuleHandleA(module_);
-    if (hmod) {
-      flags |= FORMAT_MESSAGE_FROM_HMODULE;
-    } else {
-      // This makes a nested Win32ErrorLogMessage. It will have module_ of NULL
-      // so it will not call GetModuleHandle, so recursive errors are
-      // impossible.
-      DPLOG(WARNING) << "Couldn't open module " << module_
-          << " for error message query";
-    }
-  } else {
-    hmod = NULL;
-  }
-  DWORD len = FormatMessageA(flags,
-                             hmod,
-                             err_,
-                             0,
-                             msgbuf,
-                             sizeof(msgbuf) / sizeof(msgbuf[0]),
-                             NULL);
-  if (len) {
-    while ((len > 0) &&
-           isspace(static_cast<unsigned char>(msgbuf[len - 1]))) {
-      msgbuf[--len] = 0;
-    }
-    stream() << ": " << msgbuf;
-  } else {
-    stream() << ": Error " << GetLastError() << " while retrieving error "
-        << err_;
-  }
+  stream() << ": " << SystemErrorCodeToString(err_);
   // We're about to crash (CHECK). Put |err_| on the stack (by placing it in a
   // field) and use Alias in hopes that it makes it into crash dumps.
   DWORD last_error = err_;
@@ -799,7 +781,7 @@ ErrnoLogMessage::ErrnoLogMessage(const char* file,
 }
 
 ErrnoLogMessage::~ErrnoLogMessage() {
-  stream() << ": " << safe_strerror(err_);
+  stream() << ": " << SystemErrorCodeToString(err_);
 }
 #endif  // OS_WIN
 
