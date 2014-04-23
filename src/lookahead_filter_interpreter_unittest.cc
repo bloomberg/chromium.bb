@@ -621,6 +621,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
               2));  // dy
   interpreter.reset(new LookaheadFilterInterpreter(
       NULL, base_interpreter, NULL));
+  interpreter->min_delay_.val_ = 0.017;
   wrapper.Reset(interpreter.get());
 
   stime_t timeout = -1.0;
