@@ -26,6 +26,8 @@ libdbus-1-dev
 libdbus-glib-1-2
 libdbus-glib-1-dev
 libcomerr2
+libexif12
+libexif-dev
 libexpat1
 libexpat1-dev
 libffi5

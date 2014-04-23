@@ -46,7 +46,7 @@ readonly GDB_SHA1SUM="79b61152813e5730fa670c89e5fc3c04b670b02c"
 readonly EGLIBC_SVN_URL="svn://svn.eglibc.org/branches/eglibc-2_14"
 readonly EGLIBC_REVISION="20996"
 
-readonly DOWNLOAD_QEMU_URL="http://wiki.qemu-project.org/download/qemu-2.0.0-rc0.tar.bz2"
+readonly DOWNLOAD_QEMU_URL="http://wiki.qemu-project.org/download/qemu-2.0.0.tar.bz2"
 
 readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86/mips_trusted
 
@@ -643,7 +643,7 @@ FixLibs() {
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu-mips.nacl"
-  local tarball="qemu-2.0.0-rc0.tar.bz2"
+  local tarball="qemu-2.0.0.tar.bz2"
 
   Banner "Building qemu in ${tmpdir}"
 
@@ -656,7 +656,7 @@ BuildAndInstallQemu() {
 
   SubBanner "Untarring"
   tar xf ${tarball}
-  cd qemu-2.0.0-rc0
+  cd qemu-2.0.0
 
   SubBanner "Configuring"
   env -i PATH=/usr/bin/:/bin \
