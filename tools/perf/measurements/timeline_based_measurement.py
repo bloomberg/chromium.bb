@@ -64,7 +64,7 @@ class _TimelineBasedMetrics(object):
       wrapped_results = _ResultsWrapper(results, interaction)
       for m in metrics:
         m.AddResults(self._model, self._renderer_thread,
-                     interaction, wrapped_results)
+                     [interaction], wrapped_results)
 
 
 class TimelineBasedMeasurement(page_measurement.PageMeasurement):

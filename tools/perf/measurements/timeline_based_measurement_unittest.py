@@ -56,13 +56,14 @@ class TimelineBasedMetricsTests(unittest.TestCase):
     results = page_measurement_results.PageMeasurementResults()
     class FakeSmoothMetric(timeline_based_metric.TimelineBasedMetric):
       def AddResults(self, model, renderer_thread,
-                     interaction_record, results):
+                     interaction_records, results):
         results.Add('FakeSmoothMetric', 'ms', 1)
 
     class FakeLoadingMetric(timeline_based_metric.TimelineBasedMetric):
       def AddResults(self, model, renderer_thread,
-                     interaction_record, results):
-        assert interaction_record.logical_name == 'LogicalName2'
+                     interaction_records, results):
+        for r in interaction_records:
+          assert r.logical_name == 'LogicalName2'
         results.Add('FakeLoadingMetric', 'ms', 2)
 
     def CreateMetricsForTimelineInteractionRecord(interaction):

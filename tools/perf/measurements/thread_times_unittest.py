@@ -29,5 +29,20 @@ class ThreadTimesUnitTest(
       cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
       self.assertEquals(len(cpu_time), 1)
 
+  def testBasicForPageWithNoGesture(self):
+    ps = self.CreatePageSetFromFileInUnittestDataDir('animated_page.html')
+    setattr(ps.pages[0], 'RunSmoothness', {'action': 'wait', 'seconds' : 1})
+
+    measurement = thread_times.ThreadTimes()
+    timeline_options = self._options
+    results = self.RunMeasurement(measurement, ps, options = timeline_options)
+    self.assertEquals(0, len(results.failures))
+
+    for category in timeline.TimelineThreadCategories.values():
+      cpu_time_name = timeline.ThreadCpuTimeResultName(category)
+      cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
+      self.assertEquals(len(cpu_time), 1)
+
+
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(thread_times.ThreadTimes, self._options)

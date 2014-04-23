@@ -5,6 +5,7 @@
 from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.web_perf import timeline_interaction_record as tir_module
 
 
 class KeySilkCasesPage(page_module.PageWithDefaultRunNavigate):
@@ -291,9 +292,6 @@ class Page16(KeySilkCasesPage):
         'left_start_percentage': 0.8,
         'distance': 200,
         'direction': 'left',
-        'wait_after': {
-          'javascript': 'document.getElementsByClassName("message").length < 18'
-        },
         'top_start_percentage': 0.2,
         'element_function': '''
           function(callback) {
@@ -301,6 +299,11 @@ class Page16(KeySilkCasesPage):
           }''',
         'speed': 5000
       }))
+    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    action_runner.RunAction(WaitAction({
+      'javascript': 'document.getElementsByClassName("message").length < 18'
+    }))
+    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
 
   def RunSmoothness(self, action_runner):
     self.SwipeToDismiss(action_runner)
@@ -371,9 +374,11 @@ class Page18(KeySilkCasesPage):
   def ToggleDrawer(self, action_runner):
     action_runner.RunAction(TapAction(
       {
-        'wait_after': {'seconds': 1},
         'selector': '#menu-button'
       }))
+    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    action_runner.RunAction(WaitAction({'seconds': 1}))
+    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
 
 
 class Page19(KeySilkCasesPage):
@@ -386,11 +391,14 @@ class Page19(KeySilkCasesPage):
   def ToggleDrawer(self, action_runner):
     action_runner.RunAction(TapAction(
       {
-        'wait_after': {
-          'javascript': 'document.getElementById("nav-drawer").active'
-        },
         'selector': '#menu-button'
       }))
+    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    action_runner.RunAction(WaitAction({
+      'javascript': 'document.getElementById("nav-drawer").active'
+    }))
+    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
+
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
@@ -406,15 +414,17 @@ class Page19(KeySilkCasesPage):
         'left_start_percentage': 0.8,
         'distance': 200,
         'direction': 'left',
-        'wait_after': {
-          'javascript': '!document.getElementById("nav-drawer").active'
-        },
         'top_start_percentage': 0.2,
         'element_function': '''
           function(callback) {
             callback(document.getElementById('nav-drawer').children[0]);
           }'''
       }))
+    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    action_runner.RunAction(WaitAction({
+      'javascript': '!document.getElementById("nav-drawer").active'
+    }))
+    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
 
 
 class Page20(KeySilkCasesPage):
@@ -464,9 +474,12 @@ class Page21(KeySilkCasesPage):
         'element_function': '''
           function(callback) {
             callback(document.getElementsByClassName("vk_arc")[0]);
-          }''',
-       'wait_after': { 'seconds': 2 }
+          }'''
       }))
+    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    action_runner.RunAction(WaitAction({'seconds' : 2}))
+    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
+
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
@@ -525,10 +538,12 @@ class Page23(KeySilkCasesPage):
       {
         'direction': 'down',
         'scroll_requires_touch': True,
-        'wait_after': { 'seconds': 1 },
         'scroll_distance_function':
           'function() { return window.innerHeight / 2; }'
       }))
+    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    action_runner.RunAction(WaitAction({'seconds' : 1}))
+    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
 
 
 class Page24(KeySilkCasesPage):
@@ -589,9 +604,11 @@ class Page25(KeySilkCasesPage):
         'element_function': '''
           function(callback) {
             callback(document.getElementById(':f'));
-          }''',
-        'wait_after': { 'seconds': 1 }
+          }'''
       }))
+    action_runner.BeginInteraction('Wait', [tir_module.IS_SMOOTH])
+    action_runner.RunAction(WaitAction({'seconds' : 1}))
+    action_runner.EndInteraction('Wait', [tir_module.IS_SMOOTH])
 
 
 class Page26(KeySilkCasesPage):

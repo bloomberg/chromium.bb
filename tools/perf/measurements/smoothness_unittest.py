@@ -108,5 +108,16 @@ class SmoothnessUnitTest(
       self.assertGreater(
           mean_touch_scroll_latency[0].GetRepresentativeNumber(), 0)
 
+  def testSmoothnessForPageWithNoGesture(self):
+    ps = self.CreatePageSetFromFileInUnittestDataDir('animated_page.html')
+    setattr(ps.pages[0], 'RunSmoothness', {'action': 'wait', 'seconds' : 1})
+    measurement = smoothness.Smoothness()
+    results = self.RunMeasurement(measurement, ps, options=self._options)
+    self.assertEquals(0, len(results.failures))
+
+    mostly_smooth = results.FindAllPageSpecificValuesNamed('mostly_smooth')
+    self.assertEquals(len(mostly_smooth), 1)
+    self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
+
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(smoothness.Smoothness, self._options)

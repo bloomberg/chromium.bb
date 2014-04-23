@@ -11,8 +11,12 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
     super(LoadTimesTimelineMetric, self).__init__()
     self.report_main_thread_only = True
 
-  def AddResults(self, model, renderer_thread, interaction_record, results):
+  def AddResults(self, model, renderer_thread, interaction_records, results):
     assert model
+    assert len(interaction_records) == 1, (
+      'LoadTimesTimelineMetric cannot compute metrics for more than 1 time '
+      'range.')
+    interaction_record = interaction_records[0]
     if self.report_main_thread_only:
       thread_filter = 'CrRendererMain'
     else:
@@ -210,12 +214,12 @@ class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
         count += 1
     return count
 
-  def AddResults(self, model, _, interaction_record, results):
+  def AddResults(self, model, _, interaction_records, results):
     # Set up each thread category for consistant results.
     thread_category_results = {}
     for name in TimelineThreadCategories.values():
       thread_category_results[name] = ResultsForThread(
-        model, [interaction_record.GetBounds()], name)
+        model, [r.GetBounds() for r in interaction_records], name)
 
     # Group the slices by their thread category.
     for thread in model.GetAllThreads():

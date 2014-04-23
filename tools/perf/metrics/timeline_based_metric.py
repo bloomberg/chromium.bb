@@ -10,15 +10,14 @@ class TimelineBasedMetric(object):
     """
     super(TimelineBasedMetric, self).__init__()
 
-  def AddResults(self, model, renderer_thread,
-                 interaction_record, results):
-    """Computes and adds metrics for the interaction_record's time range.
+  def AddResults(self, model, renderer_thread, interaction_records, results):
+    """Computes and adds metrics for the interaction_records' time ranges.
 
     The override of this method should compute results on the data **only**
-    within the interaction_record's start and end time.
+    within the interaction_records' start and end time ranges.
 
     model is an instance of telemetry.core.timeline.model.TimelineModel.
-    interaction_record is an instance of TimelineInteractionRecord.
+    interaction_records is a list of instances of TimelineInteractionRecord.
     results is an instance of page.PageTestResults.
 
     """

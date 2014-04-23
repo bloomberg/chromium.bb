@@ -6,20 +6,17 @@ from metrics import timeline_based_metric
 from metrics import rendering_stats
 from telemetry.page.perf_tests_helper import FlattenList
 from telemetry.util import statistics
-from telemetry.core.timeline import bounds
 
 
 class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
   def __init__(self):
     super(SmoothnessMetric, self).__init__()
 
-  def AddResults(self, model, renderer_thread, interaction_record, results):
+  def AddResults(self, model, renderer_thread, interaction_records, results):
     renderer_process = renderer_thread.parent
-    time_bounds = bounds.Bounds()
-    time_bounds.AddValue(interaction_record.start)
-    time_bounds.AddValue(interaction_record.end)
     stats = rendering_stats.RenderingStats(
-      renderer_process, model.browser_process, [time_bounds])
+      renderer_process, model.browser_process,
+      [r.GetBounds() for r in interaction_records])
     if stats.mouse_wheel_scroll_latency:
       mean_mouse_wheel_scroll_latency = statistics.ArithmeticMean(
         stats.mouse_wheel_scroll_latency)

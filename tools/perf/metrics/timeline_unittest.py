@@ -10,15 +10,13 @@ from telemetry.core.timeline import model as model_module
 from telemetry.web_perf import timeline_interaction_record as tir_module
 
 def _GetInteractionRecord(start, end):
-  return tir_module.TimelineInteractionRecord("test-record",
-                                                               start, end)
-
+  return tir_module.TimelineInteractionRecord("test-record", start, end)
 
 
 class LoadTimesTimelineMetric(unittest.TestCase):
-  def GetResults(self, metric, model, renderer_thread, interaction_record):
+  def GetResults(self, metric, model, renderer_thread, interaction_records):
     results = test_page_measurement_results.TestPageMeasurementResults(self)
-    metric.AddResults(model, renderer_thread, interaction_record, results)
+    metric.AddResults(model, renderer_thread, interaction_records, results)
     return results
 
   def testSanitizing(self):
@@ -35,7 +33,7 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     metric = timeline.LoadTimesTimelineMetric()
     results = self.GetResults(
       metric, model=model, renderer_thread=renderer_main,
-      interaction_record=_GetInteractionRecord(0, float('inf')))
+      interaction_records=[_GetInteractionRecord(0, float('inf'))])
     results.AssertHasPageSpecificScalarValue(
       'CrRendererMain|x_y', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
@@ -58,9 +56,9 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     model.FinalizeImport()
 
     metric = timeline.LoadTimesTimelineMetric()
-    results = self.GetResults(metric, model=model,
-                              renderer_thread=renderer_main,
-                              interaction_record=_GetInteractionRecord(10, 20))
+    results = self.GetResults(
+      metric, model=model, renderer_thread=renderer_main,
+      interaction_records=[_GetInteractionRecord(10, 20)])
     results.AssertHasPageSpecificScalarValue(
       'CrRendererMain|x_y', 'ms', 10)
     results.AssertHasPageSpecificScalarValue(
@@ -83,7 +81,7 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     metric = timeline.LoadTimesTimelineMetric()
     results = self.GetResults(
       metric, model=model, renderer_thread=renderer_main,
-      interaction_record=_GetInteractionRecord(0, float('inf')))
+      interaction_records=[_GetInteractionRecord(0, float('inf'))])
     results.AssertHasPageSpecificScalarValue(
       'cat_x_y', 'count', 3)
     results.AssertHasPageSpecificScalarValue(
@@ -105,7 +103,7 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     metric = timeline.ThreadTimesTimelineMetric()
     metric.details_to_report = timeline.ReportMainThreadOnly
     results = self.GetResults(metric, model, renderer_main.parent,
-                              _GetInteractionRecord(1,2))
+                              [_GetInteractionRecord(1,2)])
 
     # Test that all result thread categories exist
     for name in timeline.TimelineThreadCategories.values():
@@ -138,7 +136,7 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     metric = timeline.ThreadTimesTimelineMetric()
     metric.details_to_report = timeline.ReportMainThreadOnly
     results = self.GetResults(metric, model, renderer_main.parent,
-                              _GetInteractionRecord(10, 30))
+                              [_GetInteractionRecord(10, 30)])
 
 
     # Test a couple specific results.
@@ -176,7 +174,7 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     metric = timeline.ThreadTimesTimelineMetric()
     metric.details_to_report = timeline.ReportMainThreadOnly
     results = self.GetResults(metric, model, renderer_main.parent,
-                              _GetInteractionRecord(10, 30))
+                              [_GetInteractionRecord(10, 30)])
 
     # Test a couple specific results.
     assert_results = {

@@ -39,14 +39,12 @@ class ThreadTimes(page_measurement.PageMeasurement):
     metric = timeline.ThreadTimesTimelineMetric()
     renderer_thread = \
         self._timeline_controller.model.GetRendererThreadFromTab(tab)
-    assert len(self._timeline_controller.action_ranges) == 1
     if self.options.report_silk_results:
       metric.results_to_report = timeline.ReportSilkResults
     if self.options.report_silk_details:
       metric.details_to_report = timeline.ReportSilkDetails
     metric.AddResults(self._timeline_controller.model, renderer_thread,
-                      self._timeline_controller.interaction_record, results)
-
+                      self._timeline_controller.smooth_records, results)
 
   def CleanUpAfterPage(self, _, tab):
     self._timeline_controller.CleanUp(tab)
