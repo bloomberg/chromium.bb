@@ -32,17 +32,6 @@
 #include "base/message_loop/message_pump_io_ios.h"
 #elif defined(OS_POSIX)
 #include "base/message_loop/message_pump_libevent.h"
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-
-#if defined(OS_CHROMEOS) && !defined(OS_NACL) && !defined(USE_GLIB)
-#include "base/message_loop/message_pump_libevent.h"
-#elif defined(USE_GLIB) && !defined(OS_NACL)
-#include "base/message_loop/message_pump_glib.h"
-#elif !defined(OS_ANDROID_HOST)
-#include "base/message_loop/message_pump_glib.h"
-#endif
-
-#endif
 #endif
 
 namespace base {
@@ -51,11 +40,6 @@ class HistogramBase;
 class MessagePumpObserver;
 class RunLoop;
 class ThreadTaskRunnerHandle;
-#if defined(OS_ANDROID)
-class MessagePumpForUI;
-#elif defined(OS_ANDROID_HOST) || (defined(OS_CHROMEOS) && !defined(USE_GLIB))
-typedef MessagePumpLibevent MessagePumpForUI;
-#endif
 class WaitableEvent;
 
 // A MessageLoop is used to process events for a particular thread.  There is
@@ -91,10 +75,6 @@ class WaitableEvent;
 //
 class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
  public:
-#if defined(OS_WIN)
-  typedef MessagePumpObserver Observer;
-#endif
-
   // A MessageLoop has a particular type, which indicates the set of
   // asynchronous events it may process in addition to tasks and timers.
   //
@@ -392,17 +372,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   //----------------------------------------------------------------------------
  protected:
-
-#if defined(OS_WIN)
-  MessagePumpWin* pump_win() {
-    return static_cast<MessagePumpWin*>(pump_.get());
-  }
-#elif defined(OS_POSIX) && !defined(OS_IOS)
-  MessagePumpLibevent* pump_libevent() {
-    return static_cast<MessagePumpLibevent*>(pump_.get());
-  }
-#endif
-
   scoped_ptr<MessagePump> pump_;
 
  private:
@@ -518,6 +487,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MessageLoop);
 };
 
+#if !defined(OS_NACL)
+
 //-----------------------------------------------------------------------------
 // MessageLoopForUI extends MessageLoop with methods that are particular to a
 // MessageLoop instantiated with TYPE_UI.
@@ -557,14 +528,15 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   void Start();
 #endif
 
-#if !defined(OS_NACL) && defined(OS_WIN)
+#if defined(OS_WIN)
+  typedef MessagePumpObserver Observer;
+
   // Please see message_pump_win for definitions of these methods.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 #endif
 
-#if !defined(OS_NACL) && \
-    (defined(USE_OZONE) || (defined(OS_CHROMEOS) && !defined(USE_GLIB)))
+#if defined(USE_OZONE) || (defined(OS_CHROMEOS) && !defined(USE_GLIB))
   // Please see MessagePumpLibevent for definition.
   bool WatchFileDescriptor(
       int fd,
@@ -573,14 +545,6 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
       MessagePumpLibevent::FileDescriptorWatcher* controller,
       MessagePumpLibevent::Watcher* delegate);
 #endif
-
- protected:
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // TODO(rvargas): Make this platform independent.
-  MessagePumpForUI* pump_ui() {
-    return static_cast<MessagePumpForUI*>(pump_.get());
-  }
-#endif
 };
 
 // Do not add any member variables to MessageLoopForUI!  This is important b/c
@@ -588,6 +552,8 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 // data that you need should be stored on the MessageLoop's pump_ instance.
 COMPILE_ASSERT(sizeof(MessageLoop) == sizeof(MessageLoopForUI),
                MessageLoopForUI_should_not_have_extra_member_variables);
+
+#endif  // !defined(OS_NACL)
 
 //-----------------------------------------------------------------------------
 // MessageLoopForIO extends MessageLoop with methods that are particular to a
@@ -598,6 +564,23 @@ COMPILE_ASSERT(sizeof(MessageLoop) == sizeof(MessageLoopForUI),
 //
 class BASE_EXPORT MessageLoopForIO : public MessageLoop {
  public:
+  MessageLoopForIO() : MessageLoop(TYPE_IO) {
+  }
+
+  // Returns the MessageLoopForIO of the current thread.
+  static MessageLoopForIO* current() {
+    MessageLoop* loop = MessageLoop::current();
+    DCHECK_EQ(MessageLoop::TYPE_IO, loop->type());
+    return static_cast<MessageLoopForIO*>(loop);
+  }
+
+  static bool IsCurrent() {
+    MessageLoop* loop = MessageLoop::current();
+    return loop && loop->type() == MessageLoop::TYPE_IO;
+  }
+
+#if !defined(OS_NACL)
+
 #if defined(OS_WIN)
   typedef MessagePumpForIO::IOHandler IOHandler;
   typedef MessagePumpForIO::IOContext IOContext;
@@ -624,70 +607,25 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
     WATCH_WRITE = MessagePumpLibevent::WATCH_WRITE,
     WATCH_READ_WRITE = MessagePumpLibevent::WATCH_READ_WRITE
   };
-
 #endif
 
-  MessageLoopForIO() : MessageLoop(TYPE_IO) {
-  }
-
-  // Returns the MessageLoopForIO of the current thread.
-  static MessageLoopForIO* current() {
-    MessageLoop* loop = MessageLoop::current();
-    DCHECK_EQ(MessageLoop::TYPE_IO, loop->type());
-    return static_cast<MessageLoopForIO*>(loop);
-  }
-
-  static bool IsCurrent() {
-    MessageLoop* loop = MessageLoop::current();
-    return loop && loop->type() == MessageLoop::TYPE_IO;
-  }
-
-  void AddIOObserver(IOObserver* io_observer) {
-    pump_io()->AddIOObserver(io_observer);
-  }
-
-  void RemoveIOObserver(IOObserver* io_observer) {
-    pump_io()->RemoveIOObserver(io_observer);
-  }
+  void AddIOObserver(IOObserver* io_observer);
+  void RemoveIOObserver(IOObserver* io_observer);
 
 #if defined(OS_WIN)
   // Please see MessagePumpWin for definitions of these methods.
   void RegisterIOHandler(HANDLE file, IOHandler* handler);
   bool RegisterJobObject(HANDLE job, IOHandler* handler);
   bool WaitForIOCompletion(DWORD timeout, IOHandler* filter);
-
- protected:
-  // TODO(rvargas): Make this platform independent.
-  MessagePumpForIO* pump_io() {
-    return static_cast<MessagePumpForIO*>(pump_.get());
-  }
-
-#elif defined(OS_IOS)
-  // Please see MessagePumpIOSForIO for definition.
+#elif defined(OS_POSIX)
+  // Please see MessagePumpIOSForIO/MessagePumpLibevent for definition.
   bool WatchFileDescriptor(int fd,
                            bool persistent,
                            Mode mode,
                            FileDescriptorWatcher *controller,
                            Watcher *delegate);
-
- private:
-  MessagePumpIOSForIO* pump_io() {
-    return static_cast<MessagePumpIOSForIO*>(pump_.get());
-  }
-
-#elif defined(OS_POSIX)
-  // Please see MessagePumpLibevent for definition.
-  bool WatchFileDescriptor(int fd,
-                           bool persistent,
-                           Mode mode,
-                           FileDescriptorWatcher* controller,
-                           Watcher* delegate);
-
- private:
-  MessagePumpLibevent* pump_io() {
-    return static_cast<MessagePumpLibevent*>(pump_.get());
-  }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_IOS) || defined(OS_POSIX)
+#endif  // !defined(OS_NACL)
 };
 
 // Do not add any member variables to MessageLoopForIO!  This is important b/c

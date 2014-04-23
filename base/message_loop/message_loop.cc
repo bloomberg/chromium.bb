@@ -32,6 +32,9 @@
 #if defined(OS_ANDROID)
 #include "base/message_loop/message_pump_android.h"
 #endif
+#if defined(USE_GLIB)
+#include "base/message_loop/message_pump_glib.h"
+#endif
 
 namespace base {
 
@@ -93,6 +96,18 @@ bool AlwaysNotifyPump(MessageLoop::Type type) {
 #else
   return false;
 #endif
+}
+
+#if defined(OS_IOS)
+typedef MessagePumpIOSForIO MessagePumpForIO;
+#elif defined(OS_NACL)
+typedef MessagePumpDefault MessagePumpForIO;
+#elif defined(OS_POSIX)
+typedef MessagePumpLibevent MessagePumpForIO;
+#endif
+
+MessagePumpForIO* ToPumpIO(MessagePump* pump) {
+  return static_cast<MessagePumpForIO*>(pump);
 }
 
 }  // namespace
@@ -198,30 +213,20 @@ bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
 // static
 scoped_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
 // TODO(rvargas): Get rid of the OS guards.
-#if defined(OS_WIN)
-#define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(new MessagePumpForUI())
-#define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpForIO())
-#elif defined(OS_IOS)
+#if defined(USE_GLIB) && !defined(OS_NACL)
+  typedef MessagePumpGlib MessagePumpForUI;
+#elif defined(OS_LINUX) && !defined(OS_NACL)
+  typedef MessagePumpLibevent MessagePumpForUI;
+#endif
+
+#if defined(OS_IOS) || defined(OS_MACOSX)
 #define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(MessagePumpMac::Create())
-#define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpIOSForIO())
-#elif defined(OS_MACOSX)
-#define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(MessagePumpMac::Create())
-#define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpLibevent())
 #elif defined(OS_NACL)
 // Currently NaCl doesn't have a UI MessageLoop.
 // TODO(abarth): Figure out if we need this.
 #define MESSAGE_PUMP_UI scoped_ptr<MessagePump>()
-// ipc_channel_nacl.cc uses a worker thread to do socket reads currently, and
-// doesn't require extra support for watching file descriptors.
-#define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpDefault())
-#elif defined(USE_OZONE)
-#define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(new MessagePumpLibevent())
-#define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpLibevent())
-#elif defined(OS_POSIX)  // POSIX but not MACOSX.
-#define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(new MessagePumpForUI())
-#define MESSAGE_PUMP_IO scoped_ptr<MessagePump>(new MessagePumpLibevent())
 #else
-#error Not implemented
+#define MESSAGE_PUMP_UI scoped_ptr<MessagePump>(new MessagePumpForUI())
 #endif
 
   if (type == MessageLoop::TYPE_UI) {
@@ -230,11 +235,13 @@ scoped_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
     return MESSAGE_PUMP_UI;
   }
   if (type == MessageLoop::TYPE_IO)
-    return MESSAGE_PUMP_IO;
+    return scoped_ptr<MessagePump>(new MessagePumpForIO());
+
 #if defined(OS_ANDROID)
   if (type == MessageLoop::TYPE_JAVA)
-    return MESSAGE_PUMP_UI;
+    return scoped_ptr<MessagePump>(new MessagePumpForUI());
 #endif
+
   DCHECK_EQ(MessageLoop::TYPE_DEFAULT, type);
   return scoped_ptr<MessagePump>(new MessagePumpDefault());
 }
@@ -644,6 +651,7 @@ void MessageLoop::ReleaseSoonInternal(
   PostNonNestableTask(from_here, Bind(releaser, object));
 }
 
+#if !defined(OS_NACL)
 //------------------------------------------------------------------------------
 // MessageLoopForUI
 
@@ -660,25 +668,24 @@ void MessageLoopForUI::Attach() {
 }
 #endif
 
-#if !defined(OS_NACL) && defined(OS_WIN)
+#if defined(OS_WIN)
 void MessageLoopForUI::AddObserver(Observer* observer) {
-  pump_ui()->AddObserver(observer);
+  static_cast<MessagePumpWin*>(pump_.get())->AddObserver(observer);
 }
 
 void MessageLoopForUI::RemoveObserver(Observer* observer) {
-  pump_ui()->RemoveObserver(observer);
+  static_cast<MessagePumpWin*>(pump_.get())->RemoveObserver(observer);
 }
-#endif  // !defined(OS_NACL) && defined(OS_WIN)
+#endif  // defined(OS_WIN)
 
-#if !defined(OS_NACL) && \
-    (defined(USE_OZONE) || (defined(OS_CHROMEOS) && !defined(USE_GLIB)))
+#if defined(USE_OZONE) || (defined(OS_CHROMEOS) && !defined(USE_GLIB))
 bool MessageLoopForUI::WatchFileDescriptor(
     int fd,
     bool persistent,
     MessagePumpLibevent::Mode mode,
     MessagePumpLibevent::FileDescriptorWatcher *controller,
     MessagePumpLibevent::Watcher *delegate) {
-  return pump_libevent()->WatchFileDescriptor(
+  return static_cast<MessagePumpLibevent*>(pump_.get())->WatchFileDescriptor(
       fd,
       persistent,
       mode,
@@ -686,54 +693,50 @@ bool MessageLoopForUI::WatchFileDescriptor(
       delegate);
 }
 #endif
+
+#endif  // !defined(OS_NACL)
 
 //------------------------------------------------------------------------------
 // MessageLoopForIO
 
-#if defined(OS_WIN)
+#if !defined(OS_NACL)
+void MessageLoopForIO::AddIOObserver(
+    MessageLoopForIO::IOObserver* io_observer) {
+  ToPumpIO(pump_.get())->AddIOObserver(io_observer);
+}
 
+void MessageLoopForIO::RemoveIOObserver(
+    MessageLoopForIO::IOObserver* io_observer) {
+  ToPumpIO(pump_.get())->RemoveIOObserver(io_observer);
+}
+
+#if defined(OS_WIN)
 void MessageLoopForIO::RegisterIOHandler(HANDLE file, IOHandler* handler) {
-  pump_io()->RegisterIOHandler(file, handler);
+  ToPumpIO(pump_.get())->RegisterIOHandler(file, handler);
 }
 
 bool MessageLoopForIO::RegisterJobObject(HANDLE job, IOHandler* handler) {
-  return pump_io()->RegisterJobObject(job, handler);
+  return ToPumpIO(pump_.get())->RegisterJobObject(job, handler);
 }
 
 bool MessageLoopForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
-  return pump_io()->WaitForIOCompletion(timeout, filter);
+  return ToPumpIO(pump_.get())->WaitForIOCompletion(timeout, filter);
 }
-
-#elif defined(OS_IOS)
-
+#elif defined(OS_POSIX)
 bool MessageLoopForIO::WatchFileDescriptor(int fd,
                                            bool persistent,
                                            Mode mode,
                                            FileDescriptorWatcher *controller,
                                            Watcher *delegate) {
-  return pump_io()->WatchFileDescriptor(
+  return ToPumpIO(pump_.get())->WatchFileDescriptor(
       fd,
       persistent,
       mode,
       controller,
       delegate);
 }
-
-#elif defined(OS_POSIX) && !defined(OS_NACL)
-
-bool MessageLoopForIO::WatchFileDescriptor(int fd,
-                                           bool persistent,
-                                           Mode mode,
-                                           FileDescriptorWatcher *controller,
-                                           Watcher *delegate) {
-  return pump_libevent()->WatchFileDescriptor(
-      fd,
-      persistent,
-      mode,
-      controller,
-      delegate);
-}
-
 #endif
+
+#endif  // !defined(OS_NACL)
 
 }  // namespace base

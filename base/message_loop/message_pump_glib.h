@@ -73,8 +73,6 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
   DISALLOW_COPY_AND_ASSIGN(MessagePumpGlib);
 };
 
-typedef MessagePumpGlib MessagePumpForUI;
-
 }  // namespace base
 
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_GLIB_H_
