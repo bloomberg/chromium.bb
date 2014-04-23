@@ -7,20 +7,11 @@
 <div id="div-without-class">This div will have background image set from JavaScript.</div>
 <style>@import "style.css";</style>
 <script>
-function resourceLoaded()
-{
-    console.log("Done.");
-}
-
 function loadData() {
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function()
-    {
-        if (xhr.readyState === XMLHttpRequest.DONE)
-            resourceLoaded();
-    };
     xhr.open("GET", "resource.php?type=image&random=1&size=400", true);
     xhr.send(null);
+    console.log("Done.");
 }
 
 loadData();
