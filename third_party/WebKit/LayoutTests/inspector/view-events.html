@@ -71,18 +71,6 @@ function test()
         onResize: function()
         {
             InspectorTest.addResult("  " + this._viewName + ".onResize()");
-        },
-
-        _applyCacheSize: function()
-        {
-            InspectorTest.addResult("  " + this._viewName + ".cacheSize()");
-            WebInspector.View.prototype._applyCacheSize.call(this);
-        },
-
-        _processDiscardCachedSize: function()
-        {
-            InspectorTest.addResult("  " + this._viewName + ".discardCachedSize()");
-            WebInspector.View.prototype._processDiscardCachedSize.call(this);
         }
     };
 
