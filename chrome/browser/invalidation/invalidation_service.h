@@ -10,12 +10,13 @@
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator_state.h"
 
+class IdentityProvider;
+
 namespace syncer {
 class InvalidationHandler;
 }  // namespace syncer
 
 namespace invalidation {
-class InvalidationAuthProvider;
 class InvalidationLogger;
 
 // Interface for classes that handle invalidation registrations and send out
@@ -109,8 +110,8 @@ class InvalidationService : public KeyedService {
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> post_caller) const = 0;
 
-  // Returns the authentication provider.
-  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() = 0;
+  // Returns the identity provider.
+  virtual IdentityProvider* GetIdentityProvider() = 0;
 
  protected:
   virtual ~InvalidationService() { }

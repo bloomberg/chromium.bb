@@ -850,6 +850,8 @@
         'browser/chromeos/session_length_limiter.h',
         'browser/chromeos/settings/cros_settings.cc',
         'browser/chromeos/settings/cros_settings.h',
+        'browser/chromeos/settings/device_identity_provider.cc',
+        'browser/chromeos/settings/device_identity_provider.h',
         'browser/chromeos/settings/device_oauth2_token_service.cc',
         'browser/chromeos/settings/device_oauth2_token_service.h',
         'browser/chromeos/settings/device_oauth2_token_service_factory.cc',

@@ -5,9 +5,9 @@
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "google_apis/gaia/identity_provider.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -20,10 +20,10 @@ class URLRequestContextGetter;
 namespace invalidation {
 
 P2PInvalidationService::P2PInvalidationService(
-    scoped_ptr<InvalidationAuthProvider> auth_provider,
+    scoped_ptr<IdentityProvider> identity_provider,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     syncer::P2PNotificationTarget notification_target)
-    : auth_provider_(auth_provider.Pass()) {
+    : identity_provider_(identity_provider.Pass()) {
   notifier::NotifierOptions notifier_options =
       ParseNotifierOptions(*CommandLine::ForCurrentProcess());
   notifier_options.request_context_getter = request_context;
@@ -85,9 +85,8 @@ void P2PInvalidationService::RequestDetailedStatus(
   caller.Run(value);
 }
 
-InvalidationAuthProvider*
-P2PInvalidationService::GetInvalidationAuthProvider() {
-  return auth_provider_.get();
+IdentityProvider* P2PInvalidationService::GetIdentityProvider() {
+  return identity_provider_.get();
 }
 
 }  // namespace invalidation

@@ -10,25 +10,11 @@
 
 namespace invalidation {
 
-FakeInvalidationAuthProvider::FakeInvalidationAuthProvider() {
-  token_service_.set_auto_post_fetch_response_on_message_loop(true);
-}
-
-FakeInvalidationAuthProvider::~FakeInvalidationAuthProvider() {}
-
-OAuth2TokenService* FakeInvalidationAuthProvider::GetTokenService() {
-  return &token_service_;
-}
-
-std::string FakeInvalidationAuthProvider::GetAccountId() {
-  return "fake@example.com";
-}
-
-bool FakeInvalidationAuthProvider::ShowLoginUI() { return false; }
-
 FakeInvalidationService::FakeInvalidationService()
-    : client_id_(GenerateInvalidatorClientId()) {
+    : client_id_(GenerateInvalidatorClientId()),
+      identity_provider_(&token_service_) {
   invalidator_registrar_.UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
+  token_service_.set_auto_post_fetch_response_on_message_loop(true);
 }
 
 FakeInvalidationService::~FakeInvalidationService() {
@@ -73,9 +59,8 @@ void FakeInvalidationService::RequestDetailedStatus(
   caller.Run(value);
 }
 
-InvalidationAuthProvider*
-FakeInvalidationService::GetInvalidationAuthProvider() {
-  return &auth_provider_;
+IdentityProvider* FakeInvalidationService::GetIdentityProvider() {
+  return &identity_provider_;
 }
 
 void FakeInvalidationService::SetInvalidatorState(

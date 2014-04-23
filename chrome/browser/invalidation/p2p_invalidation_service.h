@@ -32,7 +32,7 @@ class P2PInvalidationService
       public InvalidationService {
  public:
   P2PInvalidationService(
-      scoped_ptr<InvalidationAuthProvider> auth_provider,
+      scoped_ptr<IdentityProvider> identity_provider,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       syncer::P2PNotificationTarget notification_target);
   virtual ~P2PInvalidationService();
@@ -54,7 +54,7 @@ class P2PInvalidationService
   virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const OVERRIDE;
-  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() OVERRIDE;
+  virtual IdentityProvider* GetIdentityProvider() OVERRIDE;
 
   void UpdateCredentials(const std::string& username,
                          const std::string& password);
@@ -62,7 +62,7 @@ class P2PInvalidationService
   void SendInvalidation(const syncer::ObjectIdSet& ids);
 
  private:
-  scoped_ptr<InvalidationAuthProvider> auth_provider_;
+  scoped_ptr<IdentityProvider> identity_provider_;
   scoped_ptr<syncer::P2PInvalidator> invalidator_;
   std::string invalidator_id_;
 

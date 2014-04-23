@@ -11,10 +11,10 @@
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_android.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
-#include "chrome/browser/invalidation/profile_invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/ticl_invalidation_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -35,8 +35,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/device_identity_provider.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/browser/invalidation/device_invalidation_auth_provider_chromeos.h"
 #endif
 
 namespace invalidation {
@@ -98,7 +98,7 @@ KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
                                         new InvalidationControllerAndroid());
 #else
 
-  scoped_ptr<InvalidationAuthProvider> auth_provider;
+  scoped_ptr<IdentityProvider> identity_provider;
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -106,20 +106,20 @@ KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
   if (chromeos::UserManager::IsInitialized() &&
       chromeos::UserManager::Get()->IsLoggedInAsKioskApp() &&
       connector->IsEnterpriseManaged()) {
-    auth_provider.reset(new DeviceInvalidationAuthProvider(
+    identity_provider.reset(new chromeos::DeviceIdentityProvider(
         chromeos::DeviceOAuth2TokenServiceFactory::Get()));
   }
 #endif
 
-  if (!auth_provider) {
-    auth_provider.reset(new ProfileInvalidationAuthProvider(
+  if (!identity_provider) {
+    identity_provider.reset(new ProfileIdentityProvider(
         SigninManagerFactory::GetForProfile(profile),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         LoginUIServiceFactory::GetForProfile(profile)));
   }
 
   TiclInvalidationService* service = new TiclInvalidationService(
-      auth_provider.Pass(),
+      identity_provider.Pass(),
       profile->GetRequestContext(),
       profile);
   service->Init(scoped_ptr<syncer::InvalidationStateTracker>(

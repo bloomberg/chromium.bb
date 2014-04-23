@@ -55,7 +55,7 @@ class InvalidationServiceAndroid
   virtual void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const
       OVERRIDE;
-  virtual InvalidationAuthProvider* GetInvalidationAuthProvider() OVERRIDE;
+  virtual IdentityProvider* GetIdentityProvider() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

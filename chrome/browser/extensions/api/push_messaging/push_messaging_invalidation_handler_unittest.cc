@@ -38,8 +38,7 @@ class MockInvalidationService : public invalidation::InvalidationService {
   MOCK_METHOD0(GetInvalidationLogger, invalidation::InvalidationLogger*());
   MOCK_CONST_METHOD1(RequestDetailedStatus,
                      void(base::Callback<void(const base::DictionaryValue&)>));
-  MOCK_METHOD0(GetInvalidationAuthProvider,
-               invalidation::InvalidationAuthProvider*());
+  MOCK_METHOD0(GetIdentityProvider, IdentityProvider*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInvalidationService);

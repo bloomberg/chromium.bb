@@ -4,15 +4,14 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
-#include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,27 +43,6 @@ class FakeGCMProfileService : public gcm::GCMProfileService {
   DISALLOW_COPY_AND_ASSIGN(FakeGCMProfileService);
 };
 
-// Fake invalidation auth provider implementation.
-class FakeInvalidationAuthProvider : public InvalidationAuthProvider {
- public:
-  explicit FakeInvalidationAuthProvider(
-      ProfileOAuth2TokenService* token_service)
-      : token_service_(token_service) {}
-  virtual ~FakeInvalidationAuthProvider() {}
-
-  // InvalidationAuthProvider:
-  virtual OAuth2TokenService* GetTokenService() OVERRIDE {
-    return token_service_;
-  }
-  virtual std::string GetAccountId() OVERRIDE { return std::string(); }
-  virtual bool ShowLoginUI() OVERRIDE { return false; }
-
- private:
-  OAuth2TokenService* token_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeInvalidationAuthProvider);
-};
-
 class GCMInvalidationBridgeTest : public ::testing::Test {
  protected:
   GCMInvalidationBridgeTest() {}
@@ -87,9 +65,9 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
         (FakeGCMProfileService*)gcm::GCMProfileServiceFactory::GetForProfile(
             profile_.get());
 
-    auth_provider_.reset(new FakeInvalidationAuthProvider(token_service));
-    bridge_.reset(
-        new GCMInvalidationBridge(gcm_profile_service_, auth_provider_.get()));
+    identity_provider_.reset(new FakeIdentityProvider(token_service));
+    bridge_.reset(new GCMInvalidationBridge(gcm_profile_service_,
+                                            identity_provider_.get()));
 
     delegate_ = bridge_->CreateDelegate();
     delegate_->Initialize();
@@ -112,7 +90,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<Profile> profile_;
   FakeGCMProfileService* gcm_profile_service_;
-  scoped_ptr<FakeInvalidationAuthProvider> auth_provider_;
+  scoped_ptr<FakeIdentityProvider> identity_provider_;
 
   std::vector<std::string> issued_tokens_;
   std::vector<GoogleServiceAuthError> request_token_errors_;

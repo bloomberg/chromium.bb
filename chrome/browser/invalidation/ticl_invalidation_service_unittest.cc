@@ -8,9 +8,9 @@
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
-#include "chrome/browser/invalidation/profile_invalidation_auth_provider.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -42,11 +42,10 @@ class TiclInvalidationServiceTestDelegate {
     profile_.reset(new TestingProfile());
     token_service_.reset(new FakeProfileOAuth2TokenService);
     invalidation_service_.reset(new TiclInvalidationService(
-        scoped_ptr<InvalidationAuthProvider>(
-            new ProfileInvalidationAuthProvider(
-                SigninManagerFactory::GetForProfile(profile_.get()),
-                token_service_.get(),
-                NULL)),
+        scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+            SigninManagerFactory::GetForProfile(profile_.get()),
+            token_service_.get(),
+            NULL)),
         profile_->GetRequestContext(),
         profile_.get()));
   }
@@ -100,11 +99,10 @@ class TiclInvalidationServiceChannelTest : public ::testing::Test {
         SigninManagerFactory::GetForProfile(profile_.get()));
     token_service_.reset(new FakeProfileOAuth2TokenService);
 
-    scoped_ptr<InvalidationAuthProvider> auth_provider(
-        new ProfileInvalidationAuthProvider(
-            fake_signin_manager_, token_service_.get(), NULL));
+    scoped_ptr<IdentityProvider> identity_provider(new ProfileIdentityProvider(
+        fake_signin_manager_, token_service_.get(), NULL));
     invalidation_service_.reset(new TiclInvalidationService(
-        auth_provider.Pass(),
+        identity_provider.Pass(),
         profile_->GetRequestContext(),
         profile_.get()));
     invalidation_service_->Init(scoped_ptr<syncer::InvalidationStateTracker>(

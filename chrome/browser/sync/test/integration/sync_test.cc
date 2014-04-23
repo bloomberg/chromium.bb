@@ -26,12 +26,12 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
-#include "chrome/browser/invalidation/profile_invalidation_auth_provider.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -141,11 +141,10 @@ KeyedService* BuildP2PInvalidationService(
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
   return new invalidation::P2PInvalidationService(
-      scoped_ptr<invalidation::InvalidationAuthProvider>(
-          new invalidation::ProfileInvalidationAuthProvider(
-              SigninManagerFactory::GetForProfile(profile),
-              ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-              LoginUIServiceFactory::GetForProfile(profile))),
+      scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+          SigninManagerFactory::GetForProfile(profile),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          LoginUIServiceFactory::GetForProfile(profile))),
       profile->GetRequestContext(),
       notification_target);
 }

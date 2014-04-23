@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +33,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/identity_provider.h"
 
 using content::BrowserThread;
 
@@ -111,12 +111,12 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
     return false;
   }
 
-  invalidation::InvalidationAuthProvider* auth_provider =
-      invalidation_service->GetInvalidationAuthProvider();
-  if (!auth_provider->GetTokenService()->RefreshTokenIsAvailable(
-          auth_provider->GetAccountId())) {
-    if (interactive_ && auth_provider->ShowLoginUI()) {
-      auth_provider->GetTokenService()->AddObserver(this);
+  IdentityProvider* identity_provider =
+      invalidation_service->GetIdentityProvider();
+  if (!identity_provider->GetTokenService()->RefreshTokenIsAvailable(
+          identity_provider->GetActiveAccountId())) {
+    if (interactive_ && identity_provider->RequestLogin()) {
+      identity_provider->AddActiveAccountRefreshTokenObserver(this);
       return true;
     } else {
       error_ = kUserNotSignedIn;
@@ -135,15 +135,15 @@ void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
   invalidation::InvalidationService* invalidation_service =
       invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
   CHECK(invalidation_service);
-  invalidation::InvalidationAuthProvider* auth_provider =
-      invalidation_service->GetInvalidationAuthProvider();
+  IdentityProvider* identity_provider =
+      invalidation_service->GetIdentityProvider();
 
   std::vector<std::string> scope_vector =
       extensions::ObfuscatedGaiaIdFetcher::GetScopes();
   OAuth2TokenService::ScopeSet scopes(scope_vector.begin(), scope_vector.end());
   fetcher_access_token_request_ =
-      auth_provider->GetTokenService()->StartRequest(
-          auth_provider->GetAccountId(), scopes, this);
+      identity_provider->GetTokenService()->StartRequest(
+          identity_provider->GetActiveAccountId(), scopes, this);
 }
 
 void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
@@ -151,8 +151,8 @@ void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
   invalidation::InvalidationService* invalidation_service =
       invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
   CHECK(invalidation_service);
-  invalidation_service->GetInvalidationAuthProvider()->GetTokenService()->
-      RemoveObserver(this);
+  invalidation_service->GetIdentityProvider()->
+      RemoveActiveAccountRefreshTokenObserver(this);
   DVLOG(2) << "Newly logged in: " << GetProfile()->GetProfileName();
   StartAccessTokenFetch();
 }
@@ -274,7 +274,7 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
           invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
       CHECK(invalidation_service);
       if (!interactive_ ||
-          !invalidation_service->GetInvalidationAuthProvider()->ShowLoginUI()) {
+          !invalidation_service->GetIdentityProvider()->RequestLogin()) {
         ReportResult(std::string(), error_text);
       }
       return;
