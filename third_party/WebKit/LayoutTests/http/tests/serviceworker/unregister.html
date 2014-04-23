@@ -3,19 +3,30 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 (function() {
-    var t = async_test('Unregistering with no existing registration');
-    navigator.serviceWorker.unregister('/nothing-here/*').then(
+    var t = async_test('Unregistering out of origin');
+    navigator.serviceWorker.unregister('http://example.com/*').then(
         t.step_func(function() {
-            assert_unreached('unregistering with no existing registration ' +
-                             'should not succeed.');
+            assert_unreached('unregistering out of origin should fail');
         }),
         t.step_func(function(reason) {
-            // FIXME: Make this check for NotFoundError exclusively when Chrome
-            // starts generating that error
-            assert_in_array(reason.name, ['UnknownError', 'NotFoundError'],
-                            'unregistering with no existing registration ' +
-                            'should fail with a NotFoundError');
+            assert_equals(reason.name, 'SecurityError',
+                          'unregistering out of origins should fail');
             t.done();
+        }));
+}());
+
+(function() {
+    var t = async_test('Unregistering with no existing registration');
+    navigator.serviceWorker.unregister('/nothing-here/*').then(
+        t.step_func(function(value) {
+            assert_equals(value, undefined,
+                          'unregistering with no existing registration ' +
+                          'should succeed with no value');
+            t.done();
+        }),
+        t.step_func(function(reason) {
+            assert_unreached('unregistering with no existing registration ' +
+                             'should not fail: ' + reason.name);
         }));
 }());
 
@@ -34,7 +45,10 @@
             assert_unreached('registration should succeed.');
         })
     ).then(
-        function() {
+        function(value) {
+            assert_equals(value, undefined,
+                          'successful unregistration should succeed ' +
+                          'with no value');
             t.done();
         },
         t.step_func(function(reason) {
