@@ -1,6 +1,11 @@
+// setMockScrollbarsEnabled doesn't actually invalidate scrollbars
+// so if we don't set it immediately, they won't repaint/relayout
+// correctly!  http://crbug.com/365509
+if (window.internals)
+    window.internals.settings.setMockScrollbarsEnabled(true);
+
 function runNonFastScrollableRegionTest(scale) {
     var invScale;
-    window.internals.settings.setMockScrollbarsEnabled(true);
     if (scale != undefined) {
         if (window.eventSender)
             eventSender.setPageScaleFactor(scale, 0, 0);

@@ -167,7 +167,6 @@ navigateOnDragDrop initial=true
 DOMPasteAllowed initial=false
 
 threadedHTMLParser initial=false
-useThreadedHTMLParserForDataURLs initial=false
 
 allowCustomScrollbarInMainFrame initial=true
 webSecurityEnabled initial=true

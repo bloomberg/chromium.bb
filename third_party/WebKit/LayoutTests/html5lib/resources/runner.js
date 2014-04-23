@@ -53,9 +53,6 @@ var ignoreTitle = iframe.contentWindow.document.getElementsByTagName("title")[0]
 if (window.forceDataURLs)
     write = false;
 
-if (!write && window.internals && internals.settings.setUseThreadedHTMLParserForDataURLs)
-    internals.settings.setUseThreadedHTMLParserForDataURLs(true);
-
 window.onload = function()
 {
     stat.data = "Running";
