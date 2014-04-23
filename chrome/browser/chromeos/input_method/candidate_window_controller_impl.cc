@@ -49,7 +49,7 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
       new ash::ime::CandidateWindowView(ash::Shell::GetContainer(
           active_window ? active_window->GetRootWindow()
                         : ash::Shell::GetTargetRootWindow(),
-          ash::kShellWindowId_InputMethodContainer));
+          ash::kShellWindowId_SettingBubbleContainer));
   candidate_window_view_->AddObserver(this);
   candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
   views::Widget* widget = candidate_window_view_->InitWidget();

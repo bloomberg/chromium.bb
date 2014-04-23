@@ -106,7 +106,7 @@ void ModeIndicatorController::ShowModeIndicator() {
 
   aura::Window* parent =
       ash::Shell::GetContainer(ash::wm::GetActiveWindow()->GetRootWindow(),
-                               ash::kShellWindowId_InputMethodContainer);
+                               ash::kShellWindowId_SettingBubbleContainer);
   ash::ime::ModeIndicatorView* mi_view = new ash::ime::ModeIndicatorView(
       parent, cursor_bounds_, short_name);
   views::BubbleDelegateView::CreateBubble(mi_view);
