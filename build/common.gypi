@@ -1385,20 +1385,18 @@
       # TODO(glider): set clang to 1 earlier for ASan and TSan builds so that
       # it takes effect here.
       ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
+        'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
         'conditions': [
           ['OS=="android"', {
             # We directly set the gcc versions since we know what we use.
             'conditions': [
               ['target_arch=="x64" or target_arch=="arm64"', {
-                'host_gcc_version%': 48,
                 'gcc_version%': 48,
               }, {
-                'host_gcc_version%': 46,
                 'gcc_version%': 46,
               }],
             ],
           }, {
-            'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
             'gcc_version%': '<!pymod_do_main(compiler_version target compiler)',
           }],
         ],
