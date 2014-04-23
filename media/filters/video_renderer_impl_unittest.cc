@@ -10,6 +10,8 @@
 #include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
@@ -38,8 +40,8 @@ MATCHER_P(HasTimestamp, ms, "") {
   return arg->timestamp().InMilliseconds() == ms;
 }
 
-static const int kFrameDurationInMs = 10;
-static const int kVideoDurationInMs = kFrameDurationInMs * 100;
+// Arbitrary value. Has to be larger to cover any timestamp value used in tests.
+static const int kVideoDurationInMs = 1000;
 
 class VideoRendererImplTest : public ::testing::Test {
  public:
@@ -77,12 +79,6 @@ class VideoRendererImplTest : public ::testing::Test {
   MOCK_METHOD1(OnTimeUpdate, void(base::TimeDelta));
 
   void Initialize() {
-    InitializeWithDuration(kVideoDurationInMs);
-  }
-
-  void InitializeWithDuration(int duration_ms) {
-    duration_ = base::TimeDelta::FromMilliseconds(duration_ms);
-
     // Monitor decodes from the decoder.
     EXPECT_CALL(*decoder_, Decode(_, _))
         .WillRepeatedly(Invoke(this, &VideoRendererImplTest::FrameRequested));
@@ -100,11 +96,6 @@ class VideoRendererImplTest : public ::testing::Test {
 
     // Initialize, we shouldn't have any reads.
     InitializeRenderer(PIPELINE_OK);
-
-    // Start prerolling.
-    QueuePrerollFrames(0);
-    EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
-    Preroll(0, PIPELINE_OK);
   }
 
   void InitializeRenderer(PipelineStatus expected) {
@@ -172,53 +163,56 @@ class VideoRendererImplTest : public ::testing::Test {
     Stop();
   }
 
-  // Queues a VideoFrame with |next_frame_timestamp_|.
-  void QueueNextFrame() {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
-    DCHECK_LT(next_frame_timestamp_.InMicroseconds(),
-              duration_.InMicroseconds());
+  // Parses a string representation of video frames and generates corresponding
+  // VideoFrame objects in |decode_results_|.
+  //
+  // Syntax:
+  //   nn - Queue a decoder buffer with timestamp nn * 1000us
+  //   abort - Queue an aborted read
+  //   error - Queue a decoder error
+  //   eos - Queue an end of stream decoder buffer
+  //
+  // Examples:
+  //   A clip that is four frames long: "0 10 20 30 eos"
+  //   A clip that has a decode error: "60 70 error"
+  void QueueFrames(const std::string& str) {
+    std::vector<std::string> tokens;
+    base::SplitString(str, ' ', &tokens);
+    for (size_t i = 0; i < tokens.size(); ++i) {
+      if (tokens[i] == "abort") {
+        scoped_refptr<VideoFrame> null_frame;
+        decode_results_.push_back(
+            std::make_pair(VideoDecoder::kAborted, null_frame));
+        continue;
+      }
 
-    gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
-    scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
-        VideoFrame::YV12, natural_size, gfx::Rect(natural_size), natural_size,
-        next_frame_timestamp_);
-    decode_results_.push_back(std::make_pair(
-        VideoDecoder::kOk, frame));
-    next_frame_timestamp_ +=
-        base::TimeDelta::FromMilliseconds(kFrameDurationInMs);
-  }
+      if (tokens[i] == "error") {
+        scoped_refptr<VideoFrame> null_frame;
+        decode_results_.push_back(
+            std::make_pair(VideoDecoder::kDecodeError, null_frame));
+        continue;
+      }
 
-  void QueueEndOfStream() {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
-    decode_results_.push_back(std::make_pair(
-        VideoDecoder::kOk, VideoFrame::CreateEOSFrame()));
-  }
+      if (tokens[i] == "eos") {
+        decode_results_.push_back(
+            std::make_pair(VideoDecoder::kOk, VideoFrame::CreateEOSFrame()));
+        continue;
+      }
 
-  void QueueDecodeError() {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
-    scoped_refptr<VideoFrame> null_frame;
-    decode_results_.push_back(std::make_pair(
-        VideoDecoder::kDecodeError, null_frame));
-  }
+      int timestamp_in_ms = 0;
+      if (base::StringToInt(tokens[i], &timestamp_in_ms)) {
+        gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
+        scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
+            VideoFrame::YV12,
+            natural_size,
+            gfx::Rect(natural_size),
+            natural_size,
+            base::TimeDelta::FromMilliseconds(timestamp_in_ms));
+        decode_results_.push_back(std::make_pair(VideoDecoder::kOk, frame));
+        continue;
+      }
 
-  void QueueAbortedRead() {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
-    scoped_refptr<VideoFrame> null_frame;
-    decode_results_.push_back(std::make_pair(
-        VideoDecoder::kAborted, null_frame));
-  }
-
-  void QueuePrerollFrames(int timestamp_ms) {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
-    next_frame_timestamp_ = base::TimeDelta();
-    base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(timestamp_ms);
-    while (next_frame_timestamp_ < timestamp) {
-      QueueNextFrame();
-    }
-
-    // Queue the frame at |timestamp| plus additional ones for prerolling.
-    for (int i = 0; i < limits::kMaxVideoFrames; ++i) {
-      QueueNextFrame();
+      CHECK(false) << "Unrecognized decoder buffer token: " << tokens[i];
     }
   }
 
@@ -265,7 +259,7 @@ class VideoRendererImplTest : public ::testing::Test {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     base::AutoLock l(lock_);
     time_ += base::TimeDelta::FromMilliseconds(time_ms);
-    DCHECK_LE(time_.InMicroseconds(), duration_.InMicroseconds());
+    DCHECK_LE(time_.InMicroseconds(), GetDuration().InMicroseconds());
   }
 
  protected:
@@ -289,7 +283,7 @@ class VideoRendererImplTest : public ::testing::Test {
   }
 
   base::TimeDelta GetDuration() {
-    return duration_;
+    return base::TimeDelta::FromMilliseconds(kVideoDurationInMs);
   }
 
   void FrameRequested(const scoped_refptr<DecoderBuffer>& buffer,
@@ -312,7 +306,7 @@ class VideoRendererImplTest : public ::testing::Test {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     decode_results_.clear();
     if (!read_cb_.is_null()) {
-      QueueAbortedRead();
+      QueueFrames("abort");
       SatisfyPendingRead();
     }
 
@@ -323,7 +317,7 @@ class VideoRendererImplTest : public ::testing::Test {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     decode_results_.clear();
     if (!read_cb_.is_null()) {
-      QueueAbortedRead();
+      QueueFrames("abort");
       SatisfyPendingRead();
     }
   }
@@ -337,7 +331,6 @@ class VideoRendererImplTest : public ::testing::Test {
   // Used for satisfying reads.
   VideoDecoder::DecodeCB read_cb_;
   base::TimeDelta next_frame_timestamp_;
-  base::TimeDelta duration_;
 
   WaitableMessageLoopEvent error_event_;
   WaitableMessageLoopEvent ended_event_;
@@ -362,6 +355,14 @@ TEST_F(VideoRendererImplTest, StopWithoutInitialize) {
 
 TEST_F(VideoRendererImplTest, Initialize) {
   Initialize();
+  Shutdown();
+}
+
+TEST_F(VideoRendererImplTest, InitializeAndPreroll) {
+  Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Shutdown();
 }
 
@@ -390,30 +391,28 @@ TEST_F(VideoRendererImplTest, StopWhileFlushing) {
 
 TEST_F(VideoRendererImplTest, Play) {
   Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, EndOfStream_ClipDuration) {
-  int duration = kVideoDurationInMs + kFrameDurationInMs / 2;
-  InitializeWithDuration(duration);
+  Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
 
-  // Render all frames except for the last |limits::kMaxVideoFrames| frames
-  // and deliver all the frames between the start and |duration|. The preroll
-  // inside Initialize() makes this a little confusing, but |timestamp| is
-  // the current render time and QueueNextFrame() delivers a frame with a
-  // timestamp that is |timestamp| + limits::kMaxVideoFrames *
-  // kFrameDurationInMs.
-  int timestamp = kFrameDurationInMs;
-  int end_timestamp = duration - limits::kMaxVideoFrames * kFrameDurationInMs;
-  for (; timestamp < end_timestamp; timestamp += kFrameDurationInMs) {
-    QueueNextFrame();
-  }
+  // Next frame has timestamp way past duration. Its timestamp will be adjusted
+  // to match the duration of the video.
+  QueueFrames(base::IntToString(kVideoDurationInMs + 1000));
 
   // Queue the end of stream frame and wait for the last frame to be rendered.
-  QueueEndOfStream();
-  AdvanceTimeInMs(duration);
+  QueueFrames("eos");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kVideoDurationInMs)));
+  AdvanceTimeInMs(kVideoDurationInMs);
   WaitForEnded();
 
   Shutdown();
@@ -421,81 +420,75 @@ TEST_F(VideoRendererImplTest, EndOfStream_ClipDuration) {
 
 TEST_F(VideoRendererImplTest, DecodeError_Playing) {
   Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
 
-  QueueDecodeError();
-  AdvanceTimeInMs(kVideoDurationInMs);
+  QueueFrames("error");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(10)));
+  AdvanceTimeInMs(10);
   WaitForError(PIPELINE_ERROR_DECODE);
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, DecodeError_DuringPreroll) {
   Initialize();
-  Pause();
-  Flush();
-
-  QueueDecodeError();
-  Preroll(kFrameDurationInMs * 6, PIPELINE_ERROR_DECODE);
+  QueueFrames("error");
+  Preroll(0, PIPELINE_ERROR_DECODE);
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, Preroll_Exact) {
   Initialize();
-  Pause();
-  Flush();
-  QueuePrerollFrames(kFrameDurationInMs * 6);
+  QueueFrames("50 60 70 80 90");
 
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 6)));
-  Preroll(kFrameDurationInMs * 6, PIPELINE_OK);
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(60)));
+  Preroll(60, PIPELINE_OK);
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, Preroll_RightBefore) {
   Initialize();
-  Pause();
-  Flush();
-  QueuePrerollFrames(kFrameDurationInMs * 6);
+  QueueFrames("50 60 70 80 90");
 
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 5)));
-  Preroll(kFrameDurationInMs * 6 - 1, PIPELINE_OK);
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(50)));
+  Preroll(59, PIPELINE_OK);
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, Preroll_RightAfter) {
   Initialize();
-  Pause();
-  Flush();
-  QueuePrerollFrames(kFrameDurationInMs * 6);
+  QueueFrames("50 60 70 80 90");
 
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 6)));
-  Preroll(kFrameDurationInMs * 6 + 1, PIPELINE_OK);
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(60)));
+  Preroll(61, PIPELINE_OK);
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, PlayAfterPreroll) {
   Initialize();
-  Pause();
-  Flush();
-  QueuePrerollFrames(kFrameDurationInMs * 4);
-
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 4)));
-  Preroll(kFrameDurationInMs * 4, PIPELINE_OK);
-
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
+
   // Advance time past prerolled time to trigger a Read().
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 5)));
-  AdvanceTimeInMs(5 * kFrameDurationInMs);
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(10)));
+  AdvanceTimeInMs(10);
   WaitForPendingRead();
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, Rebuffer) {
   Initialize();
-
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
 
   // Advance time past prerolled time drain the ready frame queue.
-  AdvanceTimeInMs(5 * kFrameDurationInMs);
+  AdvanceTimeInMs(50);
   WaitForPendingRead();
 
   // Simulate a Pause/Preroll/Play rebuffer sequence.
@@ -506,14 +499,12 @@ TEST_F(VideoRendererImplTest, Rebuffer) {
                      event.GetPipelineStatusCB());
 
   // Queue enough frames to satisfy preroll.
-  for (int i = 0; i < limits::kMaxVideoFrames; ++i)
-    QueueNextFrame();
-
+  QueueFrames("40 50 60 70");
   SatisfyPendingRead();
 
   // TODO(scherkus): We shouldn't display the next ready frame in a rebuffer
   // situation, see http://crbug.com/365516
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 4)));
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(40)));
 
   event.RunAndWaitForStatus(PIPELINE_OK);
 
@@ -524,10 +515,13 @@ TEST_F(VideoRendererImplTest, Rebuffer) {
 
 TEST_F(VideoRendererImplTest, Rebuffer_AlreadyHaveEnoughFrames) {
   Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
 
   // Queue an extra frame so that we'll have enough frames to satisfy
   // preroll even after the first frame is painted.
-  QueueNextFrame();
+  QueueFrames("40");
   Play();
 
   // Simulate a Pause/Preroll/Play rebuffer sequence.
@@ -535,7 +529,7 @@ TEST_F(VideoRendererImplTest, Rebuffer_AlreadyHaveEnoughFrames) {
 
   // TODO(scherkus): We shouldn't display the next ready frame in a rebuffer
   // situation, see http://crbug.com/365516
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 1)));
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(10)));
 
   WaitableMessageLoopEvent event;
   renderer_->Preroll(kNoTimestamp(),
@@ -551,46 +545,53 @@ TEST_F(VideoRendererImplTest, Rebuffer_AlreadyHaveEnoughFrames) {
 // Verify that a late decoder response doesn't break invariants in the renderer.
 TEST_F(VideoRendererImplTest, StopDuringOutstandingRead) {
   Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
 
   // Advance time a bit to trigger a Read().
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 1)));
-  AdvanceTimeInMs(kFrameDurationInMs);
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(10)));
+  AdvanceTimeInMs(10);
   WaitForPendingRead();
 
   WaitableMessageLoopEvent event;
   renderer_->Stop(event.GetClosure());
-
   event.RunAndWait();
 }
 
 TEST_F(VideoRendererImplTest, AbortPendingRead_Playing) {
   Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
 
   // Advance time a bit to trigger a Read().
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 1)));
-  AdvanceTimeInMs(kFrameDurationInMs);
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(10)));
+  AdvanceTimeInMs(10);
   WaitForPendingRead();
-
-  QueueAbortedRead();
+  QueueFrames("abort");
   SatisfyPendingRead();
 
   Pause();
   Flush();
-  QueuePrerollFrames(kFrameDurationInMs * 6);
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 6)));
-  Preroll(kFrameDurationInMs * 6, PIPELINE_OK);
+  QueueFrames("60 70 80 90");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(60)));
+  Preroll(60, PIPELINE_OK);
   Shutdown();
 }
 
 TEST_F(VideoRendererImplTest, AbortPendingRead_Flush) {
   Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Play();
 
   // Advance time a bit to trigger a Read().
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(kFrameDurationInMs * 1)));
-  AdvanceTimeInMs(kFrameDurationInMs);
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(10)));
+  AdvanceTimeInMs(10);
   WaitForPendingRead();
 
   Pause();
@@ -600,11 +601,9 @@ TEST_F(VideoRendererImplTest, AbortPendingRead_Flush) {
 
 TEST_F(VideoRendererImplTest, AbortPendingRead_Preroll) {
   Initialize();
-  Pause();
-  Flush();
-
-  QueueAbortedRead();
-  Preroll(kFrameDurationInMs * 6, PIPELINE_OK);
+  QueueFrames("0 10 abort");
+  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(0)));
+  Preroll(0, PIPELINE_OK);
   Shutdown();
 }
 
