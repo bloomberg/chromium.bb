@@ -18,6 +18,33 @@ import sys
 compiler_version_cache = {}  # Map from (compiler, tool) -> version.
 
 
+def Usage(program_name):
+  print '%s MODE TOOL' % os.path.basename(program_name)
+  print 'MODE: host or target.'
+  print 'TOOL: assembler or compiler or linker.'
+  return 1
+
+
+def ParseArgs(args):
+  if len(args) != 2:
+    raise Exception('Invalid number of arguments')
+  mode = args[0]
+  tool = args[1]
+  if mode not in ('host', 'target'):
+    raise Exception('Invalid mode: %s' % mode)
+  if tool not in ('assembler', 'compiler', 'linker'):
+    raise Exception('Invalid tool: %s' % tool)
+  return mode, tool
+
+
+def GetEnvironFallback(var_list, default):
+  """Look up an environment variable from a possible list of variable names."""
+  for var in var_list:
+    if var in os.environ:
+      return os.environ[var]
+  return default
+
+
 def GetVersion(compiler, tool):
   tool_output = tool_error = None
   cache_key = (compiler, tool)
@@ -73,7 +100,13 @@ def GetVersion(compiler, tool):
 
 
 def main(args):
-  ret_code, result = ExtractVersion(args)
+  try:
+    (mode, tool) = ParseArgs(args[1:])
+  except Exception, e:
+    sys.stderr.write(e.message + '\n\n')
+    return Usage(args[0])
+
+  ret_code, result = ExtractVersion(mode, tool)
   if ret_code == 0:
     print result
   return ret_code
@@ -82,29 +115,29 @@ def main(args):
 def DoMain(args):
   """Hook to be called from gyp without starting a separate python
   interpreter."""
-  ret_code, result = ExtractVersion(args)
+  (mode, tool) = ParseArgs(args)
+  ret_code, result = ExtractVersion(mode, tool)
   if ret_code == 0:
     return result
   raise Exception("Failed to extract compiler version for args: %s" % args)
 
 
-def ExtractVersion(args):
-  tool = "compiler"
-  if len(args) == 1:
-    tool = args[0]
-  elif len(args) > 1:
-    print "Unknown arguments!"
+def ExtractVersion(mode, tool):
+  # Check if various CXX environment variables exist and use them if they
+  # exist. The preferences and fallback order is a close approximation of
+  # GenerateOutputForConfig() in GYP's ninja generator.
+  # The main difference being not supporting GYP's make_global_settings.
+  environments = ['CXX_target', 'CXX']
+  if mode == 'host':
+    environments = ['CXX_host'] + environments;
+  compiler = GetEnvironFallback(environments, 'c++')
 
-  # Check if CXX environment variable exists and if it does use that
-  # compiler, otherwise check g++.
-  compiler = os.getenv("CXX", "g++")
   if compiler:
     compiler_version = GetVersion(compiler, tool)
     if compiler_version != "":
       return (0, compiler_version)
-
   return (1, None)
 
 
 if __name__ == "__main__":
-  sys.exit(main(sys.argv[1:]))
+  sys.exit(main(sys.argv))

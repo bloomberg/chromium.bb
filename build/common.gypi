@@ -1359,7 +1359,7 @@
           # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
           # that it takes effect here.
           ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
-            'binutils_version%': '<!pymod_do_main(compiler_version assembler)',
+            'binutils_version%': '<!pymod_do_main(compiler_version target assembler)',
           }],
           # On Android we know the binutils version in the toolchain.
           ['OS=="android"', {
@@ -1387,19 +1387,23 @@
       ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
         'conditions': [
           ['OS=="android"', {
-            # We directly set the gcc_version since we know what we use.
+            # We directly set the gcc versions since we know what we use.
             'conditions': [
               ['target_arch=="x64" or target_arch=="arm64"', {
+                'host_gcc_version%': 48,
                 'gcc_version%': 48,
               }, {
+                'host_gcc_version%': 46,
                 'gcc_version%': 46,
               }],
             ],
           }, {
-            'gcc_version%': '<!pymod_do_main(compiler_version)',
+            'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
+            'gcc_version%': '<!pymod_do_main(compiler_version target compiler)',
           }],
         ],
       }, {
+        'host_gcc_version%': 0,
         'gcc_version%': 0,
       }],
       ['OS=="win" and "<!pymod_do_main(dir_exists <(windows_sdk_default_path))"=="True"', {
@@ -3850,13 +3854,29 @@
               # TODO(mithro): Watch for clang support at following thread:
               # http://clang-developers.42468.n3.nabble.com/Adding-fuse-ld-support-to-clang-td4032180.html
               ['gcc_version>=48', {
-                'cflags': [
-                  '-fuse-ld=gold',
+                'target_conditions': [
+                  ['_toolset=="target"', {
+                    'cflags': [
+                      '-fuse-ld=gold',
+                    ],
+                    'ldflags': [
+                      '-fuse-ld=gold',
+                    ],
+                  }],
                 ],
-                'ldflags': [
-                  '-fuse-ld=gold',
+              }],
+              ['host_gcc_version>=48', {
+                'target_conditions': [
+                  ['_toolset=="host"', {
+                    'cflags': [
+                      '-fuse-ld=gold',
+                    ],
+                    'ldflags': [
+                      '-fuse-ld=gold',
+                    ],
+                  }],
                 ],
-              }]
+              }],
             ],
           }],
           ['linux_use_bundled_binutils==1', {
