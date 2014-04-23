@@ -11,16 +11,16 @@ namespace net {
 
 namespace testing {
 
-MockFileStream::MockFileStream(net::NetLog* net_log)
-    : net::FileStream(net_log),
+MockFileStream::MockFileStream()
+    : net::FileStream(),
       forced_error_(net::OK),
       async_error_(false),
       throttled_(false),
       weak_factory_(this) {
 }
 
-MockFileStream::MockFileStream(base::File file, net::NetLog* net_log)
-    : net::FileStream(file.Pass(), net_log),
+MockFileStream::MockFileStream(base::File file)
+    : net::FileStream(file.Pass()),
       forced_error_(net::OK),
       async_error_(false),
       throttled_(false),
@@ -29,9 +29,8 @@ MockFileStream::MockFileStream(base::File file, net::NetLog* net_log)
 
 MockFileStream::MockFileStream(
     base::File file,
-    net::NetLog* net_log,
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : net::FileStream(file.Pass(), net_log, task_runner),
+    : net::FileStream(file.Pass(), task_runner),
       forced_error_(net::OK),
       async_error_(false),
       throttled_(false),

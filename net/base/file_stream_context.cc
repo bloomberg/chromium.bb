@@ -23,37 +23,6 @@ void CallInt64ToInt(const CompletionCallback& callback, int64 result) {
   callback.Run(static_cast<int>(result));
 }
 
-const char* FileErrorSourceStrings[] = {
-  "OPEN",
-  "WRITE",
-  "READ",
-  "SEEK",
-  "FLUSH",
-  "SET_EOF",
-  "GET_SIZE",
-  "CLOSE"
-};
-
-COMPILE_ASSERT(ARRAYSIZE_UNSAFE(FileErrorSourceStrings) ==
-                   FILE_ERROR_SOURCE_COUNT,
-               file_error_source_enum_has_changed);
-
-// Creates NetLog parameters when a FileStream has an error.
-base::Value* NetLogFileStreamErrorCallback(
-    FileErrorSource source,
-    int os_error,
-    Error net_error,
-    NetLog::LogLevel /* log_level */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-
-  DCHECK_NE(FILE_ERROR_SOURCE_COUNT, source);
-  dict->SetString("operation", FileErrorSourceStrings[source]);
-  dict->SetInteger("os_error", os_error);
-  dict->SetInteger("net_error", net_error);
-
-  return dict;
-}
-
 }  // namespace
 
 FileStream::Context::IOResult::IOResult()
@@ -103,8 +72,6 @@ void FileStream::Context::Orphan() {
   DCHECK(!orphaned_);
 
   orphaned_ = true;
-  if (file_.IsValid())
-    bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_OPEN);
 
   if (!async_in_progress_) {
     CloseAndDelete();
@@ -117,7 +84,6 @@ void FileStream::Context::OpenAsync(const base::FilePath& path,
                                     int open_flags,
                                     const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
-  BeginOpenEvent(path);
 
   bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(),
@@ -136,10 +102,9 @@ void FileStream::Context::CloseAsync(const CompletionCallback& callback) {
       task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::CloseFileImpl, base::Unretained(this)),
-      base::Bind(&Context::ProcessAsyncResult,
+      base::Bind(&Context::OnAsyncCompleted,
                  base::Unretained(this),
-                 IntToInt64(callback),
-                 FILE_ERROR_SOURCE_CLOSE));
+                 IntToInt64(callback)));
   DCHECK(posted);
 
   async_in_progress_ = true;
@@ -155,10 +120,9 @@ void FileStream::Context::SeekAsync(Whence whence,
       FROM_HERE,
       base::Bind(
           &Context::SeekFileImpl, base::Unretained(this), whence, offset),
-      base::Bind(&Context::ProcessAsyncResult,
+      base::Bind(&Context::OnAsyncCompleted,
                  base::Unretained(this),
-                 callback,
-                 FILE_ERROR_SOURCE_SEEK));
+                 callback));
   DCHECK(posted);
 
   async_in_progress_ = true;
@@ -171,35 +135,12 @@ void FileStream::Context::FlushAsync(const CompletionCallback& callback) {
       task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::FlushFileImpl, base::Unretained(this)),
-      base::Bind(&Context::ProcessAsyncResult,
+      base::Bind(&Context::OnAsyncCompleted,
                  base::Unretained(this),
-                 IntToInt64(callback),
-                 FILE_ERROR_SOURCE_FLUSH));
+                 IntToInt64(callback)));
   DCHECK(posted);
 
   async_in_progress_ = true;
-}
-
-void FileStream::Context::RecordError(const IOResult& result,
-                                      FileErrorSource source) const {
-  if (result.result >= 0) {
-    // |result| is not an error.
-    return;
-  }
-
-  if (!orphaned_) {
-    bound_net_log_.AddEvent(
-        NetLog::TYPE_FILE_STREAM_ERROR,
-        base::Bind(&NetLogFileStreamErrorCallback,
-                   source, result.os_error,
-                   static_cast<net::Error>(result.result)));
-  }
-}
-
-void FileStream::Context::BeginOpenEvent(const base::FilePath& path) {
-  std::string file_name = path.AsUTF8Unsafe();
-  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_OPEN,
-                            NetLog::StringCallback("file_name", &file_name));
 }
 
 FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
@@ -239,20 +180,13 @@ FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
   return IOResult(OK, 0);
 }
 
-void FileStream::Context::ProcessOpenError(const IOResult& error_code) {
-  bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_OPEN);
-  RecordError(error_code, FILE_ERROR_SOURCE_OPEN);
-}
-
 void FileStream::Context::OnOpenCompleted(const CompletionCallback& callback,
                                           OpenResult open_result) {
-  if (!open_result.file.IsValid()) {
-    ProcessOpenError(open_result.error_code);
-  } else if (!orphaned_) {
+  if (open_result.file.IsValid() && !orphaned_) {
     file_ = open_result.file.Pass();
     OnAsyncFileOpened();
   }
-  OnAsyncCompleted(IntToInt64(callback), open_result.error_code.result);
+  OnAsyncCompleted(IntToInt64(callback), open_result.error_code);
 }
 
 void FileStream::Context::CloseAndDelete() {
@@ -274,17 +208,9 @@ Int64CompletionCallback FileStream::Context::IntToInt64(
   return base::Bind(&CallInt64ToInt, callback);
 }
 
-void FileStream::Context::ProcessAsyncResult(
-    const Int64CompletionCallback& callback,
-    FileErrorSource source,
-    const IOResult& result) {
-  RecordError(result, source);
-  OnAsyncCompleted(callback, result.result);
-}
-
 void FileStream::Context::OnAsyncCompleted(
     const Int64CompletionCallback& callback,
-    int64 result) {
+    const IOResult& result) {
   // Reset this before Run() as Run() may issue a new async operation. Also it
   // should be reset before CloseAsync() because it shouldn't run if any async
   // operation is in progress.
@@ -292,7 +218,7 @@ void FileStream::Context::OnAsyncCompleted(
   if (orphaned_)
     CloseAndDelete();
   else
-    callback.Run(result);
+    callback.Run(result.result);
 }
 
 }  // namespace net

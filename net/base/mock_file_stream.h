@@ -22,9 +22,9 @@ namespace testing {
 
 class MockFileStream : public net::FileStream {
  public:
-  explicit MockFileStream(net::NetLog* net_log);
-  MockFileStream(base::File file, net::NetLog* net_log);
-  MockFileStream(base::File file, net::NetLog* net_log,
+  MockFileStream();
+  explicit MockFileStream(base::File file);
+  MockFileStream(base::File file,
                  const scoped_refptr<base::TaskRunner>& task_runner);
   virtual ~MockFileStream();
 

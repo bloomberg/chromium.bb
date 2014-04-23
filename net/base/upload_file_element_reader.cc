@@ -50,7 +50,7 @@ int UploadFileElementReader::Init(const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   Reset();
 
-  file_stream_.reset(new FileStream(NULL, task_runner_.get()));
+  file_stream_.reset(new FileStream(task_runner_.get()));
   int result = file_stream_->Open(
       path_,
       base::File::FLAG_OPEN | base::File::FLAG_READ |

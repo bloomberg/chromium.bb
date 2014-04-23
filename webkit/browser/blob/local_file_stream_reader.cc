@@ -89,7 +89,7 @@ void LocalFileStreamReader::DidVerifyForOpen(
     return;
   }
 
-  stream_impl_.reset(new net::FileStream(NULL, task_runner_));
+  stream_impl_.reset(new net::FileStream(task_runner_));
   const int result = stream_impl_->Open(
       file_path_, kOpenFlagsForRead,
       base::Bind(&LocalFileStreamReader::DidOpenFileStream,

@@ -64,7 +64,7 @@ URLFetcherFileWriter::~URLFetcherFileWriter() {
 }
 
 int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
-  file_stream_.reset(new FileStream(NULL));
+  file_stream_.reset(new FileStream());
 
   int result = ERR_IO_PENDING;
   if (file_path_.empty()) {

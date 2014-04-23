@@ -16,7 +16,7 @@ namespace util {
 
 LocalFileReader::LocalFileReader(
     base::SequencedTaskRunner* sequenced_task_runner)
-    : file_stream_(NULL, sequenced_task_runner),
+    : file_stream_(sequenced_task_runner),
       weak_ptr_factory_(this) {
 }
 

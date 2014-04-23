@@ -200,11 +200,11 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
 
   read_stream_.reset(new net::FileStream(
       read_file.TakePlatformFile(),
-      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC, NULL,
+      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC,
       task_runner));
   write_stream_.reset(new net::FileStream(
       write_file.TakePlatformFile(),
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC, NULL,
+      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC,
       task_runner));
 
   WaitRead();

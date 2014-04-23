@@ -14,54 +14,37 @@
 
 namespace net {
 
-FileStream::FileStream(NetLog* net_log,
-                       const scoped_refptr<base::TaskRunner>& task_runner)
-    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(bound_net_log_, task_runner)) {
-  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+FileStream::FileStream(const scoped_refptr<base::TaskRunner>& task_runner)
+    : context_(new Context(task_runner)) {
 }
 
-FileStream::FileStream(NetLog* net_log)
-    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(bound_net_log_,
-                           base::WorkerPool::GetTaskRunner(true /* slow */))) {
-  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+FileStream::FileStream()
+    : context_(new Context(base::WorkerPool::GetTaskRunner(true /* slow */))) {
 }
 
 FileStream::FileStream(base::PlatformFile file,
                        int flags,
-                       NetLog* net_log,
                        const scoped_refptr<base::TaskRunner>& task_runner)
-    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(base::File(file), bound_net_log_, task_runner)) {
-  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+    : context_(new Context(base::File(file), task_runner)) {
 }
 
-FileStream::FileStream(base::PlatformFile file, int flags, NetLog* net_log)
-    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(base::File(file), bound_net_log_,
+FileStream::FileStream(base::PlatformFile file, int flags)
+    : context_(new Context(base::File(file),
                            base::WorkerPool::GetTaskRunner(true /* slow */))) {
-  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 FileStream::FileStream(base::File file,
-                       net::NetLog* net_log,
                        const scoped_refptr<base::TaskRunner>& task_runner)
-    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(file.Pass(), bound_net_log_, task_runner)) {
-  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+    : context_(new Context(file.Pass(), task_runner)) {
 }
 
-FileStream::FileStream(base::File file, net::NetLog* net_log)
-    : bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(file.Pass(), bound_net_log_,
+FileStream::FileStream(base::File file)
+    : context_(new Context(file.Pass(),
                            base::WorkerPool::GetTaskRunner(true /* slow */))) {
-  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 FileStream::~FileStream() {
   context_.release()->Orphan();
-  bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 int FileStream::Open(const base::FilePath& path, int open_flags,

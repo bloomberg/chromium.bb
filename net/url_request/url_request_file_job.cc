@@ -60,7 +60,7 @@ URLRequestFileJob::URLRequestFileJob(
     const scoped_refptr<base::TaskRunner>& file_task_runner)
     : URLRequestJob(request, network_delegate),
       file_path_(file_path),
-      stream_(new FileStream(NULL, file_task_runner)),
+      stream_(new FileStream(file_task_runner)),
       file_task_runner_(file_task_runner),
       remaining_bytes_(0),
       weak_ptr_factory_(this) {}

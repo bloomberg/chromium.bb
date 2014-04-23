@@ -37,27 +37,21 @@ void IncrementOffset(OVERLAPPED* overlapped, DWORD count) {
 
 }  // namespace
 
-FileStream::Context::Context(const BoundNetLog& bound_net_log,
-                             const scoped_refptr<base::TaskRunner>& task_runner)
+FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
       async_in_progress_(false),
       orphaned_(false),
-      bound_net_log_(bound_net_log),
-      error_source_(FILE_ERROR_SOURCE_COUNT),
       task_runner_(task_runner) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
 }
 
 FileStream::Context::Context(base::File file,
-                             const BoundNetLog& bound_net_log,
                              const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
       file_(file.Pass()),
       async_in_progress_(false),
       orphaned_(false),
-      bound_net_log_(bound_net_log),
-      error_source_(FILE_ERROR_SOURCE_COUNT),
       task_runner_(task_runner) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
@@ -74,7 +68,6 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
                                    int buf_len,
                                    const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
-  error_source_ = FILE_ERROR_SOURCE_READ;
 
   DWORD bytes_read;
   if (!ReadFile(file_.GetPlatformFile(), buf->data(), buf_len,
@@ -86,7 +79,6 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
       return 0;  // Report EOF by returning 0 bytes read.
     } else {
       LOG(WARNING) << "ReadFile failed: " << error.os_error;
-      RecordError(error, FILE_ERROR_SOURCE_READ);
     }
     return error.result;
   }
@@ -98,8 +90,6 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
 int FileStream::Context::WriteAsync(IOBuffer* buf,
                                     int buf_len,
                                     const CompletionCallback& callback) {
-  error_source_ = FILE_ERROR_SOURCE_WRITE;
-
   DWORD bytes_written = 0;
   if (!WriteFile(file_.GetPlatformFile(), buf->data(), buf_len,
                  &bytes_written, &io_context_.overlapped)) {
@@ -108,7 +98,6 @@ int FileStream::Context::WriteAsync(IOBuffer* buf,
       IOCompletionIsPending(callback, buf);
     } else {
       LOG(WARNING) << "WriteFile failed: " << error.os_error;
-      RecordError(error, FILE_ERROR_SOURCE_WRITE);
     }
     return error.result;
   }
@@ -172,7 +161,6 @@ void FileStream::Context::OnIOCompleted(
     result = 0;
   } else if (error) {
     IOResult error_result = IOResult::FromOSError(error);
-    RecordError(error_result, error_source_);
     result = error_result.result;
   } else {
     result = bytes_read;

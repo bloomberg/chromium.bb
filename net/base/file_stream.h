@@ -16,7 +16,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream_whence.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 
 namespace base {
 class FilePath;
@@ -28,21 +27,17 @@ class IOBuffer;
 
 class NET_EXPORT FileStream {
  public:
-  // Creates a |FileStream| with a new |BoundNetLog| (based on |net_log|)
-  // attached.  |net_log| may be NULL if no logging is needed.
+  // Creates a FileStream.
   // Uses |task_runner| for asynchronous operations.
-  FileStream(net::NetLog* net_log,
-             const scoped_refptr<base::TaskRunner>& task_runner);
+  explicit FileStream(const scoped_refptr<base::TaskRunner>& task_runner);
 
   // Same as above, but runs async tasks in base::WorkerPool.
-  explicit FileStream(net::NetLog* net_log);
+  FileStream();
 
   // Construct a FileStream with an existing file handle and opening flags.
   // |file| is valid file handle.
   // |flags| is a bitfield of base::PlatformFileFlags when the file handle was
   // opened.
-  // |net_log| is the net log pointer to use to create a |BoundNetLog|.  May be
-  // NULL if logging is not needed.
   // Uses |task_runner| for asynchronous operations.
   // Note: the new FileStream object takes ownership of the PlatformFile and
   // will close it on destruction.
@@ -50,18 +45,16 @@ class NET_EXPORT FileStream {
   // TODO(rvargas): remove all references to PlatformFile.
   FileStream(base::PlatformFile file,
              int flags,
-             net::NetLog* net_log,
              const scoped_refptr<base::TaskRunner>& task_runner);
 
   // Same as above, but runs async tasks in base::WorkerPool.
   // This constructor is deprecated.
-  FileStream(base::PlatformFile file, int flags, net::NetLog* net_log);
+  FileStream(base::PlatformFile file, int flags);
 
   // Non-deprecated versions of the previous two constructors.
   FileStream(base::File file,
-             net::NetLog* net_log,
              const scoped_refptr<base::TaskRunner>& task_runner);
-  FileStream(base::File file, net::NetLog* net_log);
+  explicit FileStream(base::File file);
 
   // The underlying file is closed automatically.
   virtual ~FileStream();
@@ -174,8 +167,6 @@ class NET_EXPORT FileStream {
 
  private:
   class Context;
-
-  net::BoundNetLog bound_net_log_;
 
   // Context performing I/O operations. It was extracted into a separate class
   // to perform asynchronous operations because FileStream can be destroyed

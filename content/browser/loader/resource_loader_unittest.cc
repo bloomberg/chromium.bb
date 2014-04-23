@@ -515,7 +515,7 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
 
     // Create mock file streams and a ShareableFileReference.
     scoped_ptr<net::testing::MockFileStream> file_stream(
-        new net::testing::MockFileStream(file.Pass(), NULL,
+        new net::testing::MockFileStream(file.Pass(),
                                          base::MessageLoopProxy::current()));
     file_stream_ = file_stream.get();
     deletable_file_ = ShareableFileReference::GetOrCreate(

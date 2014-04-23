@@ -44,21 +44,17 @@ COMPILE_ASSERT(FROM_BEGIN   == SEEK_SET &&
                FROM_CURRENT == SEEK_CUR &&
                FROM_END     == SEEK_END, whence_matches_system);
 
-FileStream::Context::Context(const BoundNetLog& bound_net_log,
-                             const scoped_refptr<base::TaskRunner>& task_runner)
+FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
     : async_in_progress_(false),
       orphaned_(false),
-      bound_net_log_(bound_net_log),
       task_runner_(task_runner) {
 }
 
 FileStream::Context::Context(base::File file,
-                             const BoundNetLog& bound_net_log,
                              const scoped_refptr<base::TaskRunner>& task_runner)
     : file_(file.Pass()),
       async_in_progress_(false),
       orphaned_(false),
-      bound_net_log_(bound_net_log),
       task_runner_(task_runner) {
 }
 
@@ -75,10 +71,9 @@ int FileStream::Context::ReadAsync(IOBuffer* in_buf,
       task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::ReadFileImpl, base::Unretained(this), buf, buf_len),
-      base::Bind(&Context::ProcessAsyncResult,
+      base::Bind(&Context::OnAsyncCompleted,
                  base::Unretained(this),
-                 IntToInt64(callback),
-                 FILE_ERROR_SOURCE_READ));
+                 IntToInt64(callback)));
   DCHECK(posted);
 
   async_in_progress_ = true;
@@ -95,10 +90,9 @@ int FileStream::Context::WriteAsync(IOBuffer* in_buf,
       task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::WriteFileImpl, base::Unretained(this), buf, buf_len),
-      base::Bind(&Context::ProcessAsyncResult,
+      base::Bind(&Context::OnAsyncCompleted,
                  base::Unretained(this),
-                 IntToInt64(callback),
-                 FILE_ERROR_SOURCE_WRITE));
+                 IntToInt64(callback)));
   DCHECK(posted);
 
   async_in_progress_ = true;

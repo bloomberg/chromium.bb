@@ -101,7 +101,7 @@ int LocalFileStreamWriter::InitiateOpen(
   DCHECK(has_pending_operation_);
   DCHECK(!stream_impl_.get());
 
-  stream_impl_.reset(new net::FileStream(NULL, task_runner_));
+  stream_impl_.reset(new net::FileStream(task_runner_));
 
   int open_flags = 0;
   switch (open_or_create_) {

@@ -40,8 +40,7 @@ void DidCreateTemporaryFile(
 
   scoped_ptr<net::FileStream> file_stream(new net::FileStream(
       file_handle.ReleaseValue(),
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC,
-      NULL));
+      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC));
 
   callback.Run(error_code, file_stream.Pass(), deletable_file);
 }

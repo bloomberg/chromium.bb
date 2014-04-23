@@ -34,7 +34,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
 #include "net/base/file_stream_whence.h"
-#include "net/base/net_log.h"
 
 #if defined(OS_POSIX)
 #include <errno.h>
@@ -48,18 +47,6 @@ namespace net {
 
 class IOBuffer;
 
-enum FileErrorSource {
-  FILE_ERROR_SOURCE_OPEN = 0,
-  FILE_ERROR_SOURCE_WRITE,
-  FILE_ERROR_SOURCE_READ,
-  FILE_ERROR_SOURCE_SEEK,
-  FILE_ERROR_SOURCE_FLUSH,
-  FILE_ERROR_SOURCE_SET_EOF,
-  FILE_ERROR_SOURCE_GET_SIZE,
-  FILE_ERROR_SOURCE_CLOSE,
-  FILE_ERROR_SOURCE_COUNT,
-};
-
 #if defined(OS_WIN)
 class FileStream::Context : public base::MessageLoopForIO::IOHandler {
 #elif defined(OS_POSIX)
@@ -71,11 +58,8 @@ class FileStream::Context {
   // file_stream_context_{win,posix}.cc.
   ////////////////////////////////////////////////////////////////////////////
 
-  Context(const BoundNetLog& bound_net_log,
-          const scoped_refptr<base::TaskRunner>& task_runner);
-  Context(base::File file,
-          const BoundNetLog& bound_net_log,
-          const scoped_refptr<base::TaskRunner>& task_runner);
+  explicit Context(const scoped_refptr<base::TaskRunner>& task_runner);
+  Context(base::File file, const scoped_refptr<base::TaskRunner>& task_runner);
 #if defined(OS_WIN)
   virtual ~Context();
 #elif defined(OS_POSIX)
@@ -145,16 +129,10 @@ class FileStream::Context {
     IOResult error_code;
   };
 
-  // Log the error from |result| to |bound_net_log_|.
-  void RecordError(const IOResult& result, FileErrorSource source) const;
-
-  void BeginOpenEvent(const base::FilePath& path);
-
   OpenResult OpenFileImpl(const base::FilePath& path, int open_flags);
 
   IOResult CloseFileImpl();
 
-  void ProcessOpenError(const IOResult& result);
   void OnOpenCompleted(const CompletionCallback& callback,
                        OpenResult open_result);
 
@@ -162,15 +140,10 @@ class FileStream::Context {
 
   Int64CompletionCallback IntToInt64(const CompletionCallback& callback);
 
-  // Called when asynchronous Seek() is completed.
-  // Reports error if needed and calls callback.
-  void ProcessAsyncResult(const Int64CompletionCallback& callback,
-                          FileErrorSource source,
-                          const IOResult& result);
-
   // Called when asynchronous Open() or Seek()
   // is completed. |result| contains the result or a network error code.
-  void OnAsyncCompleted(const Int64CompletionCallback& callback, int64 result);
+  void OnAsyncCompleted(const Int64CompletionCallback& callback,
+                        const IOResult& result);
 
   ////////////////////////////////////////////////////////////////////////////
   // Helper stuff which is platform-dependent but is used in the platform-
@@ -220,14 +193,12 @@ class FileStream::Context {
   base::File file_;
   bool async_in_progress_;
   bool orphaned_;
-  BoundNetLog bound_net_log_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
 #if defined(OS_WIN)
   base::MessageLoopForIO::IOContext io_context_;
   CompletionCallback callback_;
   scoped_refptr<IOBuffer> in_flight_buf_;
-  FileErrorSource error_source_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Context);

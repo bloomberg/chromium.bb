@@ -42,8 +42,7 @@ bool PipeReader::StartIO() {
   // Pass ownership of pipe_fds[0] to data_stream_, which will will close it.
   data_stream_.reset(new net::FileStream(
       data_file_,
-      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC,
-      NULL));
+      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC));
 
   // Post an initial async read to setup data collection
   int rv = data_stream_->Read(
