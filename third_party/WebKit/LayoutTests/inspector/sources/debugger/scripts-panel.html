@@ -39,12 +39,12 @@ function test()
 
     function addNetworkFile(workspace, url)
     {
-        return InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, createContentProvider(url), false);
+        return InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, createContentProvider(url));
     }
 
     function addDebuggerFile(workspace, url)
     {
-        var path = InspectorTest.testDebuggerProjectDelegate.addContentProvider("", url, url, createContentProvider(url), false);
+        var path = InspectorTest.testDebuggerProjectDelegate.addContentProvider("", url, url, createContentProvider(url));
         return InspectorTest.testWorkspace.uiSourceCode("debugger:", path)
     }
 

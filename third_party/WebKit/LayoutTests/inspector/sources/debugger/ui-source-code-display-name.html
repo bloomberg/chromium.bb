@@ -22,7 +22,7 @@ function test()
 
     function addNetworkFile(url)
     {
-        return workspace.networkWorkspaceBinding.addFileForURL(url, createContentProvider(url), false);
+        return workspace.networkWorkspaceBinding.addFileForURL(url, createContentProvider(url));
     }
 
     function dumpUISourceCodeDisplayName(url)

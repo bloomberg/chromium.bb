@@ -48,9 +48,8 @@ InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, coun
 
 InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 {
-    var isDocument = type === WebInspector.resourceTypes.Document;
     var mockContentProvider = new WebInspector.StaticContentProvider(type, content);
-    InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, mockContentProvider, !isDocument);
+    InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, mockContentProvider);
 }
 
 InspectorTest._defaultWorkspaceEventHandler = function(event)
@@ -65,7 +64,6 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
 {
     var url = uiSourceCode.originURL().replace(/.*LayoutTests/, "LayoutTests");
     InspectorTest.addResult("UISourceCode: " + url);
-    InspectorTest.addResult("UISourceCode is editable: " + uiSourceCode.isEditable());
     if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
         InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts));
     uiSourceCode.requestContent(didRequestContent);

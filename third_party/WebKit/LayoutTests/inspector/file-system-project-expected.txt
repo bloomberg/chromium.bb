@@ -8,21 +8,18 @@ Adding file mappings.
 Adding files to file systems.
 
 UISourceCode: file:///var/www/localhost/foo.js
-UISourceCode is editable: true
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <foo content>
 modificationTime=1000000, size=13
 
 UISourceCode: file:///var/www/bar.js
-UISourceCode is editable: true
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <bark content>
 modificationTime=1000000, size=14
 
 UISourceCode: file:///foo/bar/baz.js
-UISourceCode is editable: true
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <bazzz content>
@@ -40,7 +37,6 @@ UISourceCode url to uri mappings:
     http://www.example.com/baz.js -> filesystem:/foo/bar/baz.js
 After revision added:
 UISourceCode: file:///var/www/localhost/foo.js
-UISourceCode is editable: true
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <Modified UISourceCode content>

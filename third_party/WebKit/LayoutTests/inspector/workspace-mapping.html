@@ -18,12 +18,13 @@ function test()
 
         var parentPath = path.substring(0, path.lastIndexOf("/"));
         var name = path.substring(path.lastIndexOf("/") + 1);
-        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, path, path, WebInspector.resourceTypes.Script, true);
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, path, path, WebInspector.resourceTypes.Script);
         projectStore.addFile(fileDescriptor);
     }
 
     function MockProjectDelegate() {}
     MockProjectDelegate.prototype.displayName = function() {};
+    MockProjectDelegate.prototype.type = function() { return WebInspector.projectTypes.Network };
 
     var fileSystemMapping = new WebInspector.FileSystemMapping();
     var fileSystemPath = "/var/www";

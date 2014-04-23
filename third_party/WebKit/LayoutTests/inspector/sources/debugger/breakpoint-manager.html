@@ -243,7 +243,7 @@ function test()
             breakpointManager._debuggerModel._addScript(url, url);
         InspectorTest.addResult("  Adding UISourceCode: " + url);
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = breakpointManager._networkWorkspaceBinding.addFileForURL(url, contentProvider, true);
+        var uiSourceCode = breakpointManager._networkWorkspaceBinding.addFileForURL(url, contentProvider);
         uiSourceCodes[url] = uiSourceCode;
         if (!doNotSetSourceMapping)
             uiSourceCode.setSourceMapping(defaultMapping);
@@ -255,7 +255,7 @@ function test()
         breakpointManager._debuggerModel._addScript(url, url);
         InspectorTest.addResult("  Adding temporary UISourceCode: " + url);
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var path = breakpointManager._debuggerProjectDelegate.addContentProvider("", url, url, contentProvider, true);
+        var path = breakpointManager._debuggerProjectDelegate.addContentProvider("", url, url, contentProvider);
         var uiSourceCode = workspace.uiSourceCode("debugger:", path);
         uiSourceCode.setSourceMapping(defaultMapping);
         uiSourceCodes[url] = uiSourceCode;

@@ -12,11 +12,12 @@ function test()
         InspectorTest.addResult("Content is requested from SourceCodeProvider.");
         setTimeout(callback.bind(null, "var x = 0;"), 0);
     }
+    MockProject.prototype.isServiceProject = function() { return false; };
 
     InspectorTest.runTestSuite([
         function testUISourceCode(next)
         {
-            var uiSourceCode = new WebInspector.UISourceCode(new MockProject(), "parentPath", "name", "originURL", "url", WebInspector.resourceTypes.Script, true);
+            var uiSourceCode = new WebInspector.UISourceCode(new MockProject(), "parentPath", "name", "originURL", "url", WebInspector.resourceTypes.Script);
             function didRequestContent(callNumber, content)
             {
                 InspectorTest.addResult("Callback " + callNumber + " is invoked.");
