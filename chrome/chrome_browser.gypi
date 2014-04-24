@@ -891,7 +891,6 @@
         'browser/importer/firefox_profile_lock_win.cc',
         'browser/importer/importer_list.cc',
         'browser/importer/importer_list.h',
-        'browser/importer/importer_list_observer.h',
         'browser/importer/importer_lock_dialog.h',
         'browser/importer/importer_progress_observer.h',
         'browser/importer/importer_uma.cc',

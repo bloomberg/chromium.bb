@@ -5,11 +5,11 @@
 #include "chrome/browser/importer/importer_list.h"
 
 #include "base/bind.h"
-#include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,7 +26,8 @@ namespace {
 
 #if defined(OS_WIN)
 void DetectIEProfiles(std::vector<importer::SourceProfile*>* profiles) {
-    // IE always exists and doesn't have multiple profiles.
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  // IE always exists and doesn't have multiple profiles.
   importer::SourceProfile* ie = new importer::SourceProfile;
   ie->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE);
   ie->importer_type = importer::TYPE_IE;
@@ -40,6 +41,7 @@ void DetectIEProfiles(std::vector<importer::SourceProfile*>* profiles) {
 
 #if defined(OS_MACOSX)
 void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   uint16 items = importer::NONE;
   if (!SafariImporterCanImport(base::mac::GetUserLibraryPath(), &items))
     return;
@@ -59,6 +61,7 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
 // details).
 void DetectFirefoxProfiles(const std::string locale,
                            std::vector<importer::SourceProfile*>* profiles) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath profile_path = GetFirefoxProfilePath();
   if (profile_path.empty())
     return;
@@ -95,68 +98,10 @@ void DetectFirefoxProfiles(const std::string locale,
   profiles->push_back(firefox);
 }
 
-}  // namespace
-
-ImporterList::ImporterList()
-    : source_thread_id_(BrowserThread::UI),
-      observer_(NULL),
-      is_observed_(false),
-      source_profiles_loaded_(false) {
-}
-
-void ImporterList::DetectSourceProfiles(
-    const std::string& locale,
-    bool include_interactive_profiles,
-    importer::ImporterListObserver* observer) {
-  DCHECK(observer);
-  observer_ = observer;
-  is_observed_ = true;
-
-  bool res = BrowserThread::GetCurrentThreadIdentifier(&source_thread_id_);
-  DCHECK(res);
-
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&ImporterList::DetectSourceProfilesWorker,
-                                     this,
-                                     locale,
-                                     include_interactive_profiles));
-}
-
-void ImporterList::DetectSourceProfilesHack(const std::string& locale,
-                                            bool include_interactive_profiles) {
-  DetectSourceProfilesWorker(locale, include_interactive_profiles);
-}
-
-const importer::SourceProfile& ImporterList::GetSourceProfileAt(
-    size_t index) const {
-  DCHECK(source_profiles_loaded_);
-  DCHECK_LT(index, count());
-  return *source_profiles_[index];
-}
-
-const importer::SourceProfile& ImporterList::GetSourceProfileForImporterType(
-    int importer_type) const {
-  DCHECK(source_profiles_loaded_);
-
-  for (size_t i = 0; i < count(); ++i) {
-    if (source_profiles_[i]->importer_type == importer_type)
-      return *source_profiles_[i];
-  }
-  NOTREACHED();
-  return *(new importer::SourceProfile);
-}
-
-ImporterList::~ImporterList() {
-}
-
-void ImporterList::DetectSourceProfilesWorker(
+std::vector<importer::SourceProfile*> DetectSourceProfilesWorker(
     const std::string& locale,
     bool include_interactive_profiles) {
-  // TODO(jhawkins): Remove this condition once DetectSourceProfilesHack is
-  // removed.
-  if (is_observed_)
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   std::vector<importer::SourceProfile*> profiles;
 
@@ -190,36 +135,47 @@ void ImporterList::DetectSourceProfilesWorker(
     profiles.push_back(bookmarks_profile);
   }
 
-  // TODO(jhawkins): Remove this condition once DetectSourceProfilesHack is
-  // removed.
-  if (is_observed_) {
-    BrowserThread::PostTask(
-        source_thread_id_,
-        FROM_HERE,
-        base::Bind(&ImporterList::SourceProfilesLoaded, this, profiles));
-  } else {
-    source_profiles_.assign(profiles.begin(), profiles.end());
-    source_profiles_loaded_ = true;
-  }
+  return profiles;
+}
+
+}  // namespace
+
+ImporterList::ImporterList()
+    : weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+ImporterList::~ImporterList() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+void ImporterList::DetectSourceProfiles(
+    const std::string& locale,
+    bool include_interactive_profiles,
+    const base::Closure& profiles_loaded_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&DetectSourceProfilesWorker,
+                 locale,
+                 include_interactive_profiles),
+      base::Bind(&ImporterList::SourceProfilesLoaded,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 profiles_loaded_callback));
+}
+
+const importer::SourceProfile& ImporterList::GetSourceProfileAt(
+    size_t index) const {
+  DCHECK_LT(index, count());
+  return *source_profiles_[index];
 }
 
 void ImporterList::SourceProfilesLoaded(
+    const base::Closure& profiles_loaded_callback,
     const std::vector<importer::SourceProfile*>& profiles) {
-  // |observer_| may be NULL if it removed itself before being notified.
-  if (!observer_)
-    return;
-
-  BrowserThread::ID current_thread_id;
-  BrowserThread::GetCurrentThreadIdentifier(&current_thread_id);
-  DCHECK_EQ(current_thread_id, source_thread_id_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   source_profiles_.assign(profiles.begin(), profiles.end());
-  source_profiles_loaded_ = true;
-  source_thread_id_ = BrowserThread::UI;
-
-  observer_->OnSourceProfilesLoaded();
-  observer_ = NULL;
-
-  // TODO(jhawkins): Remove once DetectSourceProfilesHack is removed.
-  is_observed_ = false;
+  profiles_loaded_callback.Run();
 }

@@ -24,20 +24,24 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
 namespace options {
 
-ImportDataHandler::ImportDataHandler() : importer_host_(NULL),
-                                         import_did_succeed_(false) {
+ImportDataHandler::ImportDataHandler()
+    : importer_host_(NULL),
+      import_did_succeed_(false) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 ImportDataHandler::~ImportDataHandler() {
-  if (importer_list_)
-    importer_list_->set_observer(NULL);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (importer_host_)
     importer_host_->set_observer(NULL);
@@ -48,6 +52,7 @@ ImportDataHandler::~ImportDataHandler() {
 
 void ImportDataHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -72,12 +77,18 @@ void ImportDataHandler::GetLocalizedValues(
 }
 
 void ImportDataHandler::InitializeHandler() {
-  importer_list_ = new ImporterList();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  importer_list_.reset(new ImporterList());
   importer_list_->DetectSourceProfiles(
-      g_browser_process->GetApplicationLocale(), true, this);
+      g_browser_process->GetApplicationLocale(),
+      true,  // include_interactive_profiles?
+      base::Bind(&ImportDataHandler::InitializePage, base::Unretained(this)));
 }
 
 void ImportDataHandler::RegisterMessages() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   web_ui()->RegisterMessageCallback(
       "importData",
       base::Bind(&ImportDataHandler::ImportData, base::Unretained(this)));
@@ -90,6 +101,8 @@ void ImportDataHandler::RegisterMessages() {
 void ImportDataHandler::StartImport(
     const importer::SourceProfile& source_profile,
     uint16 imported_items) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!imported_items)
     return;
 
@@ -114,6 +127,8 @@ void ImportDataHandler::StartImport(
 }
 
 void ImportDataHandler::ImportData(const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   std::string string_value;
 
   int browser_index;
@@ -150,13 +165,8 @@ void ImportDataHandler::ImportData(const base::ListValue* args) {
   }
 }
 
-void ImportDataHandler::OnSourceProfilesLoaded() {
-  InitializePage();
-}
-
 void ImportDataHandler::InitializePage() {
-  if (!importer_list_->source_profiles_loaded())
-    return;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::ListValue browser_profiles;
   for (size_t i = 0; i < importer_list_->count(); ++i) {
@@ -191,18 +201,25 @@ void ImportDataHandler::InitializePage() {
 }
 
 void ImportDataHandler::ImportStarted() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void ImportDataHandler::ImportItemStarted(importer::ImportItem item) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // TODO(csilv): show progress detail in the web view.
 }
 
 void ImportDataHandler::ImportItemEnded(importer::ImportItem item) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // TODO(csilv): show progress detail in the web view.
   import_did_succeed_ = true;
 }
 
 void ImportDataHandler::ImportEnded() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   importer_host_->set_observer(NULL);
   importer_host_ = NULL;
 
@@ -219,6 +236,7 @@ void ImportDataHandler::ImportEnded() {
 void ImportDataHandler::FileSelected(const base::FilePath& path,
                                      int /*index*/,
                                      void* /*params*/) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
@@ -228,6 +246,8 @@ void ImportDataHandler::FileSelected(const base::FilePath& path,
 }
 
 void ImportDataHandler::HandleChooseBookmarksFile(const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   DCHECK(args && args->empty());
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));

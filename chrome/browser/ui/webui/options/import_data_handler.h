@@ -7,8 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
-#include "chrome/browser/importer/importer_list_observer.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/importer/importer_data_types.h"
@@ -21,7 +20,6 @@ namespace options {
 
 // Chrome personal stuff import data overlay UI handler.
 class ImportDataHandler : public OptionsPageUIHandler,
-                          public importer::ImporterListObserver,
                           public importer::ImporterProgressObserver,
                           public ui::SelectFileDialog::Listener {
  public:
@@ -43,9 +41,6 @@ class ImportDataHandler : public OptionsPageUIHandler,
 
   void ImportData(const base::ListValue* args);
 
-  // importer::ImporterListObserver:
-  virtual void OnSourceProfilesLoaded() OVERRIDE;
-
   // importer::ImporterProgressObserver:
   virtual void ImportStarted() OVERRIDE;
   virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
@@ -60,7 +55,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
   // Opens a file selection dialog to choose the bookmarks HTML file.
   void HandleChooseBookmarksFile(const base::ListValue* args);
 
-  scoped_refptr<ImporterList> importer_list_;
+  scoped_ptr<ImporterList> importer_list_;
 
   // If non-null it means importing is in progress. ImporterHost takes care
   // of deleting itself when import is complete.
