@@ -37,7 +37,7 @@ class ServiceWorkerScriptContext {
       blink::WebServiceWorkerContextProxy* proxy);
   ~ServiceWorkerScriptContext();
 
-  void OnMessageReceived(int request_id, const IPC::Message& message);
+  void OnMessageReceived(const IPC::Message& message);
 
   void DidHandleActivateEvent(int request_id,
                               blink::WebServiceWorkerEventResult);
@@ -57,17 +57,13 @@ class ServiceWorkerScriptContext {
   // Send a message to the browser.
   void Send(IPC::Message* message);
 
-  // Send a reply message (for |request_id|) back to the browser.
-  // TODO(kinuko): Deprecate this.
-  void Reply(int request_id, const IPC::Message& message);
-
-  void OnActivateEvent();
-  void OnInstallEvent(int active_version_id);
-  void OnFetchEvent(const ServiceWorkerFetchRequest& request);
+  void OnActivateEvent(int request_id);
+  void OnInstallEvent(int request_id, int active_version_id);
+  void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
+  void OnSyncEvent(int request_id);
   void OnPostMessage(const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
-  void OnSyncEvent();
   void OnDidGetClientDocuments(
       int request_id, const std::vector<int>& client_ids);
 

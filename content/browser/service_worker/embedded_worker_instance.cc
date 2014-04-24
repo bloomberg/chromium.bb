@@ -46,13 +46,11 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
-    int request_id,
     const IPC::Message& message) {
   DCHECK(status_ == RUNNING);
   return registry_->Send(process_id_,
                          new EmbeddedWorkerContextMsg_MessageToWorker(
-                             thread_id_, embedded_worker_id_,
-                             request_id, message));
+                             thread_id_, embedded_worker_id_, message));
 }
 
 void EmbeddedWorkerInstance::AddProcessReference(int process_id) {
@@ -103,16 +101,6 @@ bool EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {
   ListenerList::Iterator it(listener_list_);
   while (Listener* listener = it.GetNext()) {
     if (listener->OnMessageReceived(message))
-      return true;
-  }
-  return false;
-}
-
-bool EmbeddedWorkerInstance::OnReplyReceived(int request_id,
-                                             const IPC::Message& message) {
-  ListenerList::Iterator it(listener_list_);
-  while (Listener* listener = it.GetNext()) {
-    if (listener->OnReplyReceived(request_id, message))
       return true;
   }
   return false;

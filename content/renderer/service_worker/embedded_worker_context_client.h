@@ -100,7 +100,6 @@ class EmbeddedWorkerContextClient
  private:
   void OnMessageToWorker(int thread_id,
                          int embedded_worker_id,
-                         int request_id,
                          const IPC::Message& message);
   void SendWorkerStarted();
 

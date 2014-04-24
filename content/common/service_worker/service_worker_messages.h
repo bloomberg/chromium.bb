@@ -103,15 +103,19 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_RemoveScriptClient,
                      int /* provider_id */)
 
 // Informs the browser that event handling has finished.
-// Sent via EmbeddedWorker.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_InstallEventFinished,
-                     blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ActivateEventFinished,
-                     blink::WebServiceWorkerEventResult);
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
-                     content::ServiceWorkerFetchEventResult,
-                     content::ServiceWorkerResponse)
-IPC_MESSAGE_CONTROL0(ServiceWorkerHostMsg_SyncEventFinished)
+// Routed to the target ServiceWorkerVersion.
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_InstallEventFinished,
+                    int /* request_id */,
+                    blink::WebServiceWorkerEventResult)
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_ActivateEventFinished,
+                    int /* request_id */,
+                    blink::WebServiceWorkerEventResult);
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventFinished,
+                    int /* request_id */,
+                    content::ServiceWorkerFetchEventResult,
+                    content::ServiceWorkerResponse)
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SyncEventFinished,
+                    int /* request_id */)
 
 // Asks the browser to retrieve documents controlled by the sender
 // ServiceWorker.
@@ -159,16 +163,20 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetCurrentServiceWorker,
                      content::ServiceWorkerObjectInfo)
 
 // Sent via EmbeddedWorker to dispatch events.
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_InstallEvent,
+                     int /* request_id */,
                      int /* active_version_id */)
-IPC_MESSAGE_CONTROL0(ServiceWorkerMsg_ActivateEvent)
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_FetchEvent,
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ActivateEvent,
+                     int /* request_id */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FetchEvent,
+                     int /* request_id */,
                      content::ServiceWorkerFetchRequest)
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_SyncEvent,
+                     int /* request_id */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_Message,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
-IPC_MESSAGE_CONTROL0(ServiceWorkerMsg_SyncEvent)
 
 // Sent via EmbeddedWorker as a response of GetClientDocuments.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,

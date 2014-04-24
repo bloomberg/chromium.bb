@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 
 class GURL;
 
@@ -125,18 +126,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // calling StartWorker internally.
   // |callback| can be null if the sender does not need to know if the
   // message is successfully sent or not.
-  // (If the sender expects the receiver to respond please use
-  // SendMessageAndRegisterCallback instead)
   void SendMessage(const IPC::Message& message, const StatusCallback& callback);
-
-  // Sends an IPC message to the worker and registers |callback| to
-  // be notified when a response message is received.
-  // The |callback| will be also fired with an error code if the worker
-  // is unexpectedly (being) stopped.
-  // If the worker is not running this first tries to start it by
-  // calling StartWorker internally.
-  void SendMessageAndRegisterCallback(const IPC::Message& message,
-                                      const MessageCallback& callback);
 
   // Sends install event to the associated embedded worker and asynchronously
   // calls |callback| when it errors out or it gets response from the worker
@@ -213,8 +203,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                       int line_number,
                                       const GURL& source_url) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual bool OnReplyReceived(int request_id,
-                               const IPC::Message& message) OVERRIDE;
 
  private:
   typedef ServiceWorkerVersion self;
@@ -226,6 +214,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Message handlers.
   void OnGetClientDocuments(int request_id);
+  void OnActivateEventFinished(int request_id,
+                               blink::WebServiceWorkerEventResult result);
+  void OnInstallEventFinished(int request_id,
+                              blink::WebServiceWorkerEventResult result);
+  void OnFetchEventFinished(int request_id,
+                            ServiceWorkerFetchEventResult result,
+                            const ServiceWorkerResponse& response);
+  void OnSyncEventFinished(int request_id);
 
   const int64 version_id_;
   int64 registration_id_;
@@ -236,7 +232,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;
-  IDMap<MessageCallback, IDMapOwnPointer> message_callbacks_;
+
+  // Message callbacks.
+  IDMap<StatusCallback, IDMapOwnPointer> activate_callbacks_;
+  IDMap<StatusCallback, IDMapOwnPointer> install_callbacks_;
+  IDMap<FetchCallback, IDMapOwnPointer> fetch_callbacks_;
+  IDMap<StatusCallback, IDMapOwnPointer> sync_callbacks_;
+
   ControlleeMap controllee_map_;
   ControlleeByIDMap controllee_by_id_;
   base::WeakPtr<ServiceWorkerContextCore> context_;

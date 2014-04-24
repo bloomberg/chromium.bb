@@ -58,10 +58,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // ServiceWorkerDispatcherHost.
   void OnWorkerStarted(int process_id, int thread_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
-  bool OnReplyToBrowser(int embedded_worker_id,
-                        int request_id,
-                        const IPC::Message& message);
-
   void OnReportException(int embedded_worker_id,
                          const base::string16& error_message,
                          int line_number,

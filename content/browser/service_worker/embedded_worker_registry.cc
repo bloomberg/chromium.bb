@@ -81,16 +81,6 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
   found->second->OnStopped();
 }
 
-bool EmbeddedWorkerRegistry::OnReplyToBrowser(
-    int embedded_worker_id, int request_id, const IPC::Message& message) {
-  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
-  if (found == worker_map_.end()) {
-    LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
-    return false;
-  }
-  return found->second->OnReplyReceived(request_id, message);
-}
-
 void EmbeddedWorkerRegistry::OnReportException(
     int embedded_worker_id,
     const base::string16& error_message,

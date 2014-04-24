@@ -75,7 +75,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnStopWorker(int embedded_worker_id);
   virtual bool OnMessageToWorker(int thread_id,
                                  int embedded_worker_id,
-                                 int request_id,
                                  const IPC::Message& message);
 
   // On*Event handlers. Called by the default implementation of
@@ -95,9 +94,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void SimulateWorkerStarted(int thread_id, int embedded_worker_id);
   void SimulateWorkerStopped(int embedded_worker_id);
   void SimulateSend(IPC::Message* message);
-  void SimulateSendReplyToBrowser(int embedded_worker_id,
-                                  int request_id,
-                                  const IPC::Message& message);
 
  protected:
   EmbeddedWorkerRegistry* registry();
@@ -110,11 +106,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
                              int embedded_worker_id,
-                             int request_id,
                              const IPC::Message& message);
-  void OnActivateEventStub();
-  void OnInstallEventStub(int active_version_id);
-  void OnFetchEventStub(const ServiceWorkerFetchRequest& request);
+  void OnActivateEventStub(int request_id);
+  void OnInstallEventStub(int request_id, int active_version_id);
+  void OnFetchEventStub(int request_id,
+                        const ServiceWorkerFetchRequest& request);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
@@ -125,7 +121,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;
-  int current_request_id_;
 
   base::WeakPtrFactory<EmbeddedWorkerTestHelper> weak_factory_;
 

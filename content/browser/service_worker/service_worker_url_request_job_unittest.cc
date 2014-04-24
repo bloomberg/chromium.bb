@@ -159,7 +159,6 @@ TEST_F(ServiceWorkerURLRequestJobTest, WaitForActivation) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
   version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, version_->status());
 
   TestRequest();
 

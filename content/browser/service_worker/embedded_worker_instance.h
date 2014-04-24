@@ -58,8 +58,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     // listener. (TODO(kinuko): consider using IPC::Listener interface)
     // TODO(kinuko): Deprecate OnReplyReceived.
     virtual bool OnMessageReceived(const IPC::Message& message) = 0;
-    virtual bool OnReplyReceived(int request_id,
-                                 const IPC::Message& message) = 0;
   };
 
   ~EmbeddedWorkerInstance();
@@ -78,11 +76,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Sends |message| to the embedded worker running in the child process.
   // It is invalid to call this while the worker is not in RUNNING status.
-  // |request_id| can be optionally used to establish 2-way request-response
-  // messaging (e.g. the receiver can send back a response using the same
-  // request_id).
-  ServiceWorkerStatusCode SendMessage(
-      int request_id, const IPC::Message& message);
+  ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
 
   // Add or remove |process_id| to the internal process set where this
   // worker can be started.
@@ -127,7 +121,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // to the browser (i.e. EmbeddedWorker observers).
   // Returns false if the message is not handled.
   bool OnMessageReceived(const IPC::Message& message);
-  bool OnReplyReceived(int request_id, const IPC::Message& message);
 
   // Called back from Registry when the worker instance reports the exception.
   void OnReportException(const base::string16& error_message,

@@ -215,10 +215,6 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     return false;
   }
-  virtual bool OnReplyReceived(int request_id,
-                               const IPC::Message& message) OVERRIDE {
-    return false;
-  }
 
   scoped_ptr<EmbeddedWorkerInstance> worker_;
   EmbeddedWorkerInstance::Status last_worker_status_;

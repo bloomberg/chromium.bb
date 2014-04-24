@@ -90,10 +90,9 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
   virtual void OnInstallEvent(int embedded_worker_id,
                               int request_id,
                               int active_version_id) OVERRIDE {
-    SimulateSendReplyToBrowser(
-        embedded_worker_id,
-        request_id,
-        ServiceWorkerHostMsg_InstallEventFinished(
+    SimulateSend(
+        new ServiceWorkerHostMsg_InstallEventFinished(
+            embedded_worker_id, request_id,
             blink::WebServiceWorkerEventResultRejected));
   }
 };
@@ -106,10 +105,9 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
 
   virtual void OnActivateEvent(int embedded_worker_id,
                                int request_id) OVERRIDE {
-    SimulateSendReplyToBrowser(
-        embedded_worker_id,
-        request_id,
-        ServiceWorkerHostMsg_ActivateEventFinished(
+    SimulateSend(
+        new ServiceWorkerHostMsg_ActivateEventFinished(
+            embedded_worker_id, request_id,
             blink::WebServiceWorkerEventResultRejected));
   }
 };
