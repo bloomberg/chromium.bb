@@ -250,8 +250,8 @@ shouldBe(eval('defaultstatus == marker'), "eval('defaultstatus == marker')", tru
 try {
     eval("var screen = marker");
 } catch(e) { }
-shouldBe(screen == marker, "screen == marker", false);
-shouldBe(eval('screen == marker'), "eval('screen == marker')", false);
+shouldBe(screen == marker, "screen == marker", true);
+shouldBe(eval('screen == marker'), "eval('screen == marker')", true);
 
 try {
     eval("var history = marker");

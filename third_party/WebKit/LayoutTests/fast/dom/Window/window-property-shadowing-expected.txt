@@ -14,6 +14,7 @@ PASS: innerWidth successfully shadowed
 PASS: length successfully shadowed
 PASS: name successfully shadowed
 PASS: clientInformation successfully shadowed
+PASS: screen successfully shadowed
 PASS: offscreenBuffering successfully shadowed
 PASS: opener successfully shadowed
 PASS: outerHeight successfully shadowed

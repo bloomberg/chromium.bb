@@ -27,16 +27,14 @@ function makeRect(x, y, width, height) {
 }
 
 function test() {
-    Object.defineProperty(popupWindow, 'screen', {
-        value: {
-            width: 80,
-            height: 60,
-            availLeft: 0,
-            availTop: 0,
-            availWidth: 80,
-            availHeight: 60
-        }
-    });
+    popupWindow.screen = {
+        width: 80,
+        height: 60,
+        availLeft: 0,
+        availTop: 0,
+        availWidth: 80,
+        availHeight: 60,
+    };
 
     debug("Move anchor element along the vertical axis.");
 
