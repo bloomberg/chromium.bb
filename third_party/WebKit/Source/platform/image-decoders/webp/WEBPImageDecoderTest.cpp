@@ -158,6 +158,37 @@ void testDecodeAfterReallocatingData(const char* webpFile)
     }
 }
 
+void testByteByByteDecode(const char* webpFile, size_t expectedFrameCount, int expectedRepetitionCount)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    RefPtr<SharedBuffer> data = readFile(webpFile);
+    ASSERT_TRUE(data.get());
+
+    size_t frameCount = 0;
+    size_t framesDecoded = 0;
+
+    // Pass data to decoder byte by byte.
+    for (size_t length = 1; length <= data->size(); ++length) {
+        RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
+        decoder->setData(tempData.get(), length == data->size());
+
+        EXPECT_LE(frameCount, decoder->frameCount());
+        frameCount = decoder->frameCount();
+
+        ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
+        if (frame && frame->status() == ImageFrame::FrameComplete && framesDecoded < frameCount)
+            ++framesDecoded;
+
+        if (decoder->failed())
+            break;
+    }
+
+    EXPECT_FALSE(decoder->failed());
+    EXPECT_EQ(expectedFrameCount, decoder->frameCount());
+    EXPECT_EQ(expectedFrameCount, framesDecoded);
+    EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount());
+}
+
 // If 'parseErrorExpected' is true, error is expected during parse (frameCount()
 // call); else error is expected during decode (frameBufferAtIndex() call).
 void testInvalidImage(const char* webpFile, bool parseErrorExpected)
@@ -325,40 +356,8 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
 
 TEST(AnimatedWebPTests, parseAndDecodeByteByByte)
 {
-    const struct TestImage {
-        const char* filename;
-        unsigned frameCount;
-        int repetitionCount;
-    } testImages[] = {
-        { "/LayoutTests/fast/images/resources/webp-animated.webp", 3u, cAnimationLoopInfinite },
-        { "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 32000 },
-    };
-
-    for (size_t i = 0; i < ARRAY_SIZE(testImages); ++i) {
-        OwnPtr<WEBPImageDecoder> decoder = createDecoder();
-        RefPtr<SharedBuffer> data = readFile(testImages[i].filename);
-        ASSERT_TRUE(data.get());
-
-        size_t frameCount = 0;
-        size_t framesDecoded = 0;
-
-        // Pass data to decoder byte by byte.
-        for (size_t length = 1; length <= data->size(); ++length) {
-            RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
-            decoder->setData(tempData.get(), length == data->size());
-
-            EXPECT_LE(frameCount, decoder->frameCount());
-            frameCount = decoder->frameCount();
-
-            ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
-            if (frame && frame->status() == ImageFrame::FrameComplete && framesDecoded < frameCount)
-                ++framesDecoded;
-        }
-
-        EXPECT_EQ(testImages[i].frameCount, decoder->frameCount());
-        EXPECT_EQ(testImages[i].frameCount, framesDecoded);
-        EXPECT_EQ(testImages[i].repetitionCount, decoder->repetitionCount());
-    }
+    testByteByByteDecode("/LayoutTests/fast/images/resources/webp-animated.webp", 3u, cAnimationLoopInfinite);
+    testByteByByteDecode("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 32000);
 }
 
 TEST(AnimatedWebPTests, invalidImages)
@@ -377,7 +376,7 @@ TEST(AnimatedWebPTests, truncatedLastFrame)
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
-    unsigned frameCount = 8;
+    size_t frameCount = 8;
     EXPECT_EQ(frameCount, decoder->frameCount());
     ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
     EXPECT_FALSE(frame);
@@ -515,7 +514,7 @@ TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode)
     } while (!decoder->frameCount() || decoder->frameBufferAtIndex(0)->status() == ImageFrame::FrameEmpty);
 
     EXPECT_EQ(kNotFound, decoder->frameBufferAtIndex(0)->requiredPreviousFrameIndex());
-    unsigned frameCount = decoder->frameCount();
+    size_t frameCount = decoder->frameCount();
     for (size_t i = 1; i < frameCount; ++i)
         EXPECT_EQ(i - 1, decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
 
@@ -583,6 +582,12 @@ TEST(StaticWebPTests, truncatedImage)
     testInvalidImage("/LayoutTests/fast/images/resources/truncated.webp", false);
     // Chunk size in RIFF header doesn't match the file size.
     testInvalidImage("/LayoutTests/fast/images/resources/truncated2.webp", true);
+}
+
+TEST(StaticWebPTests, incrementalDecode)
+{
+    // Regression test for a bug where some valid images were failing to decode incrementally.
+    testByteByByteDecode("/LayoutTests/fast/images/resources/crbug.364830.webp", 1u, cAnimationNone);
 }
 
 TEST(StaticWebPTests, notAnimated)
