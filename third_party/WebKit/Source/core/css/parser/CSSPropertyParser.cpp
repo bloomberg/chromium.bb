@@ -2852,7 +2852,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID 
 
     if (!parsedValue2)
         return parsedValue1;
-    return createPrimitiveValuePair(parsedValue1.release(), parsedValue2.release());
+
+    Pair::IdenticalValuesPolicy policy = propId == CSSPropertyWebkitBackgroundSize ?
+        Pair::DropIdenticalValues : Pair::KeepIdenticalValues;
+
+    return createPrimitiveValuePair(parsedValue1.release(), parsedValue2.release(), policy);
 }
 
 bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,
