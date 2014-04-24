@@ -40,6 +40,7 @@ namespace WebCore {
 class Event;
 class FormAssociatedElement;
 class FormData;
+class GenericEventQueue;
 class HTMLFormControlElement;
 class HTMLImageElement;
 class HTMLInputElement;
@@ -175,10 +176,7 @@ private:
 
     bool m_wasDemoted;
 
-    void requestAutocompleteTimerFired(Timer<HTMLFormElement>*);
-
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_pendingAutocompleteEvents;
-    Timer<HTMLFormElement> m_requestAutocompleteTimer;
+    OwnPtr<GenericEventQueue> m_pendingAutocompleteEventsQueue;
 };
 
 } // namespace WebCore

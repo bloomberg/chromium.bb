@@ -36,6 +36,7 @@
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
+#include "core/events/GenericEventQueue.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDialogElement.h"
@@ -69,7 +70,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_wasUserSubmitted(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
-    , m_requestAutocompleteTimer(this, &HTMLFormElement::requestAutocompleteTimerFired)
+    , m_pendingAutocompleteEventsQueue(GenericEventQueue::create(this))
 {
     ScriptWrappable::init(this);
 }
@@ -450,19 +451,7 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
         ASSERT_NOT_REACHED();
 
     event->setTarget(this);
-    m_pendingAutocompleteEvents.append(event.release());
-
-    // Dispatch events later as this API is meant to work asynchronously in all situations and implementations.
-    if (!m_requestAutocompleteTimer.isActive())
-        m_requestAutocompleteTimer.startOneShot(0, FROM_HERE);
-}
-
-void HTMLFormElement::requestAutocompleteTimerFired(Timer<HTMLFormElement>*)
-{
-    WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
-    m_pendingAutocompleteEvents.swap(pendingEvents);
-    for (size_t i = 0; i < pendingEvents.size(); ++i)
-        dispatchEvent(pendingEvents[i].release());
+    m_pendingAutocompleteEventsQueue->enqueueEvent(event.release());
 }
 
 void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
