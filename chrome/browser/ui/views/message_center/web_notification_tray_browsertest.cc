@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotifications) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
   tray->message_center();
 
   // Adding a notification should show the popup bubble.
@@ -162,7 +162,7 @@ using message_center::NotificationList;
 // Flaky, see http://crbug.com/222500 .
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
                        DISABLED_ManyMessageCenterNotifications) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible notifications +1, ensure the correct visible number.
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
-  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray(NULL));
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible popup notifications +1, ensure the correct num visible.

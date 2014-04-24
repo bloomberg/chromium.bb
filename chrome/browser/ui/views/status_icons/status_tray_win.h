@@ -8,34 +8,50 @@
 #include <windows.h>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/status_icons/status_tray.h"
+
+class StatusIconWin;
+
+// A class that's responsible for increasing, if possible, the visibility
+// of a status tray icon on the taskbar. The default implementation sends
+// a task to a worker thread each time EnqueueChange is called.
+class StatusTrayStateChangerProxy {
+ public:
+  // Called by StatusTrayWin to request upgraded visibility on the icon
+  // represented by the |icon_id|, |window| pair.
+  virtual void EnqueueChange(UINT icon_id, HWND window) = 0;
+};
 
 class StatusTrayWin : public StatusTray {
  public:
   StatusTrayWin();
   ~StatusTrayWin();
 
+  void UpdateIconVisibilityInBackground(StatusIconWin* status_icon);
+
   // Exposed for testing.
-  LRESULT CALLBACK WndProc(HWND hwnd,
-                           UINT message,
-                           WPARAM wparam,
-                           LPARAM lparam);
+  LRESULT CALLBACK
+      WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreatePlatformStatusIcon(
-      StatusIconType type,
-      const gfx::ImageSkia& image,
-      const base::string16& tool_tip) OVERRIDE;
+  virtual StatusIcon* CreatePlatformStatusIcon(StatusIconType type,
+                                               const gfx::ImageSkia& image,
+                                               const base::string16& tool_tip)
+      OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(StatusTrayWinTest, EnsureVisibleTest);
+
   // Static callback invoked when a message comes in to our messaging window.
-  static LRESULT CALLBACK WndProcStatic(HWND hwnd,
-                                        UINT message,
-                                        WPARAM wparam,
-                                        LPARAM lparam);
+  static LRESULT CALLBACK
+      WndProcStatic(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
   UINT NextIconId();
+
+  void SetStatusTrayStateChangerProxyForTest(
+      scoped_ptr<StatusTrayStateChangerProxy> proxy);
 
   // The unique icon ID we will assign to the next icon.
   UINT next_icon_id_;
@@ -52,6 +68,10 @@ class StatusTrayWin : public StatusTray {
   // The message ID of the "TaskbarCreated" message, sent to us when we need to
   // reset our status icons.
   UINT taskbar_created_message_;
+
+  // Manages changes performed on a background thread to manipulate visibility
+  // of notification icons.
+  scoped_ptr<StatusTrayStateChangerProxy> state_changer_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusTrayWin);
 };

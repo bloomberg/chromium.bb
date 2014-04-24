@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
 #include "base/i18n/number_formatting.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/browser/status_icons/status_tray.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
@@ -121,10 +123,10 @@ Alignment GetAnchorAlignment(const gfx::Rect& work_area, gfx::Point corner) {
 }  // namespace internal
 
 MessageCenterTrayDelegate* CreateMessageCenterTray() {
-  return new WebNotificationTray();
+  return new WebNotificationTray(g_browser_process->local_state());
 }
 
-WebNotificationTray::WebNotificationTray()
+WebNotificationTray::WebNotificationTray(PrefService* local_state)
     : message_center_delegate_(NULL),
       status_icon_(NULL),
       status_icon_menu_(NULL),
@@ -134,6 +136,15 @@ WebNotificationTray::WebNotificationTray()
   last_quiet_mode_state_ = message_center()->IsQuietMode();
   popup_collection_.reset(new message_center::MessagePopupCollection(
       NULL, message_center(), message_center_tray_.get(), false));
+
+#if defined(OS_WIN)
+  // |local_state| can be NULL in tests.
+  if (local_state) {
+    did_force_tray_visible_.reset(new BooleanPrefMember());
+    did_force_tray_visible_->Init(prefs::kMessageCenterForcedOnTaskbar,
+                                  local_state);
+  }
+#endif
 }
 
 WebNotificationTray::~WebNotificationTray() {
@@ -340,6 +351,12 @@ void WebNotificationTray::CreateStatusIcon(const gfx::ImageSkia& image,
 
   status_icon_->AddObserver(this);
   AddQuietModeMenu(status_icon_);
+#if defined(OS_WIN)
+  if (did_force_tray_visible_.get() && !did_force_tray_visible_->GetValue()) {
+    EnforceStatusIconVisible();
+    did_force_tray_visible_->SetValue(true);
+  }
+#endif
 }
 
 void WebNotificationTray::DestroyStatusIcon() {

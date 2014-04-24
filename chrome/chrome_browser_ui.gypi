@@ -1863,6 +1863,8 @@
         'browser/ui/views/status_icons/status_tray_linux.h',
         'browser/ui/views/status_icons/status_tray_win.cc',
         'browser/ui/views/status_icons/status_tray_win.h',
+        'browser/ui/views/status_icons/status_tray_state_changer_win.cc',
+        'browser/ui/views/status_icons/status_tray_state_changer_win.h',
         'browser/ui/views/stubs_aura.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view.h',
