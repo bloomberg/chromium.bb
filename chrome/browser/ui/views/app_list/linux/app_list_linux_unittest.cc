@@ -52,7 +52,6 @@ class AppListLinuxUnitTest : public testing::Test {
     display_.set_work_area(
         gfx::Rect(0, kMenuBarSize, kScreenWidth, kScreenHeight - kMenuBarSize));
     cursor_ = gfx::Point();
-    shelf_edge_ = AppListPositioner::SCREEN_EDGE_UNKNOWN;
   }
 
   // Set the display work area.
@@ -63,7 +62,6 @@ class AppListLinuxUnitTest : public testing::Test {
   // Sets up the test environment with the shelf along a given edge of the
   // work area.
   void PlaceShelf(AppListPositioner::ScreenEdge edge) {
-    shelf_edge_ = edge;
     switch (edge) {
       case AppListPositioner::SCREEN_EDGE_LEFT:
         display_.set_work_area(gfx::Rect(kShelfSize,
@@ -102,18 +100,48 @@ class AppListLinuxUnitTest : public testing::Test {
     cursor_ = gfx::Point(x, y);
   }
 
+  AppListPositioner::ScreenEdge ShelfEdge() const {
+    return AppListLinux::ShelfLocationInDisplay(display_);
+  }
+
   gfx::Point DoFindAnchorPoint() const {
     return AppListLinux::FindAnchorPoint(gfx::Size(kWindowWidth, kWindowHeight),
                                          display_,
                                          cursor_,
-                                         shelf_edge_);
+                                         ShelfEdge());
   }
 
  private:
   gfx::Display display_;
   gfx::Point cursor_;
-  AppListPositioner::ScreenEdge shelf_edge_;
 };
+
+TEST_F(AppListLinuxUnitTest, ShelfLocationInDisplay) {
+  SetWorkArea(0, 0, kScreenWidth, kScreenHeight);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_UNKNOWN, ShelfEdge());
+
+  // The BOTTOM, LEFT and RIGHT tests test the case where there are two bars:
+  // one at the top and one at the bottom/left/right. The bigger one should be
+  // chosen, so TOP should not win in these cases.
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_BOTTOM, ShelfEdge());
+
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_TOP, ShelfEdge());
+
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_LEFT);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_LEFT, ShelfEdge());
+
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_RIGHT);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_RIGHT, ShelfEdge());
+
+  // Bar at top and bottom, same size. Top should win.
+  SetWorkArea(0,
+              kMenuBarSize,
+              kScreenWidth,
+              kScreenHeight - kMenuBarSize - kMenuBarSize);
+  EXPECT_EQ(AppListPositioner::SCREEN_EDGE_TOP, ShelfEdge());
+}
 
 TEST_F(AppListLinuxUnitTest, FindAnchorPointNoShelf) {
   // Position the app list when there is no shelf on the display.

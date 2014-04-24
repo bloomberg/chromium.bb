@@ -13,6 +13,7 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/widget.h"
 
 AppListLinux::AppListLinux(app_list::AppListView* view,
@@ -25,6 +26,45 @@ AppListLinux::AppListLinux(app_list::AppListView* view,
 
 AppListLinux::~AppListLinux() {
   view_->RemoveObserver(this);
+}
+
+// static
+AppListPositioner::ScreenEdge AppListLinux::ShelfLocationInDisplay(
+    const gfx::Display& display) {
+  // On Linux, it is difficult to find the shelf (due to the large variety of
+  // desktop environments). The shelf can usually be found on the edge where the
+  // display edge and work area do not match up, but there can be more than one
+  // such edge. The shelf is assumed to be on the side of the screen with the
+  // largest delta between the display edge and the work area edge. Ties are
+  // broken in the order: top, left, right, bottom.
+  const gfx::Rect work_area = display.work_area();
+  const gfx::Rect display_bounds = display.bounds();
+
+  int winning_margin = 0;
+  AppListPositioner::ScreenEdge winning_edge =
+      AppListPositioner::SCREEN_EDGE_UNKNOWN;
+
+  if (work_area.y() - display_bounds.y() > winning_margin) {
+    winning_margin = work_area.y() - display_bounds.y();
+    winning_edge = AppListPositioner::SCREEN_EDGE_TOP;
+  }
+
+  if (work_area.x() - display_bounds.x() > winning_margin) {
+    winning_margin = work_area.x() - display_bounds.x();
+    winning_edge = AppListPositioner::SCREEN_EDGE_LEFT;
+  }
+
+  if (display_bounds.right() - work_area.right() > winning_margin) {
+    winning_margin = display_bounds.right() - work_area.right();
+    winning_edge = AppListPositioner::SCREEN_EDGE_RIGHT;
+  }
+
+  if (display_bounds.bottom() - work_area.bottom() > winning_margin) {
+    winning_margin = display_bounds.bottom() - work_area.bottom();
+    winning_edge = AppListPositioner::SCREEN_EDGE_BOTTOM;
+  }
+
+  return winning_edge;
 }
 
 // static
@@ -78,13 +118,21 @@ void AppListLinux::MoveNearCursor() {
   gfx::Display display = screen->GetDisplayNearestPoint(cursor);
 
   view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
-  // Find which edge of the screen the shelf is attached to. For now, just
-  // assume Ubuntu Unity (fixed to left edge).
-  // TODO(mgiuca): Support other window manager configurations, and multiple
-  // monitors (where the current display may not have an edge).
-  AppListPositioner::ScreenEdge edge = AppListPositioner::SCREEN_EDGE_LEFT;
-  view_->SetAnchorPoint(FindAnchorPoint(view_->GetPreferredSize(), display,
-                                        cursor, edge));
+
+  // In the Unity desktop environment, special case SCREEN_EDGE_LEFT. It is
+  // always on the left side in Unity, but ShelfLocationInDisplay will not
+  // detect this if the shelf is hidden.
+  // TODO(mgiuca): Apply this special case in Gnome Shell also. The same logic
+  // applies, but we currently have no way to detect whether Gnome Shell is
+  // running.
+  views::LinuxUI* ui = views::LinuxUI::instance();
+  AppListPositioner::ScreenEdge edge;
+  if (ui && ui->UnityIsRunning())
+    edge = AppListPositioner::SCREEN_EDGE_LEFT;
+  else
+    edge = ShelfLocationInDisplay(display);
+  view_->SetAnchorPoint(
+      FindAnchorPoint(view_->GetPreferredSize(), display, cursor, edge));
 }
 
 bool AppListLinux::IsVisible() {

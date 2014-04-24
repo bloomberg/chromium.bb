@@ -30,6 +30,12 @@ class AppListLinux : public AppList,
                const base::Closure& on_should_dismiss);
   virtual ~AppListLinux();
 
+  // Determines which screen edge the shelf is aligned to. This tries to find
+  // the edge of the surface where the user normally launches apps from (so, for
+  // example, on Gnome Classic, this is the applications menu, not the taskbar).
+  static AppListPositioner::ScreenEdge ShelfLocationInDisplay(
+      const gfx::Display& display);
+
   // Finds the position for a window to anchor it to the shelf. This chooses the
   // most appropriate position for the window based on whether the shelf exists,
   // the position of the shelf, and the mouse cursor. Returns the intended
