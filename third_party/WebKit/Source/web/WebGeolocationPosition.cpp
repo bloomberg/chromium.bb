@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebGeolocationPosition.h"
+#include "public/web/WebGeolocationPosition.h"
 
 #include "modules/geolocation/GeolocationPosition.h"
 

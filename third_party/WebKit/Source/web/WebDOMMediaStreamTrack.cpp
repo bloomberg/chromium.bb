@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMMediaStreamTrack.h"
+#include "public/web/WebDOMMediaStreamTrack.h"
 
 #include "V8MediaStreamTrack.h"
 #include "modules/mediastream/MediaStreamTrack.h"

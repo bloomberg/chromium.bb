@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMError.h"
+#include "public/web/WebDOMError.h"
 
 #include "V8DOMError.h"
 #include "bindings/v8/V8Binding.h"

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebWorkerInfo.h"
+#include "public/web/WebWorkerInfo.h"
 
 #include "core/workers/WorkerThread.h"
 

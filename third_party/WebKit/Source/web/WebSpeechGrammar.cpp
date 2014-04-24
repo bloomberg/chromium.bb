@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebSpeechGrammar.h"
+#include "public/web/WebSpeechGrammar.h"
 
 #include "modules/speech/SpeechGrammar.h"
 #include "wtf/PassRefPtr.h"

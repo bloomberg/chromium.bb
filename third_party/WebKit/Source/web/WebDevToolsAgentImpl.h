@@ -34,9 +34,9 @@
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 
-#include "WebPageOverlay.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
+#include "public/web/WebPageOverlay.h"
 #include "web/WebDevToolsAgentPrivate.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"

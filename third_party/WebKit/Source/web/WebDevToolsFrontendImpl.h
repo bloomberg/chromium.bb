@@ -31,8 +31,8 @@
 #ifndef WebDevToolsFrontendImpl_h
 #define WebDevToolsFrontendImpl_h
 
-#include "WebDevToolsFrontend.h"
 #include "platform/Timer.h"
+#include "public/web/WebDevToolsFrontend.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"

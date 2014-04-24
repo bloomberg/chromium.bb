@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebColorName.h"
+#include "public/web/WebColorName.h"
 
 #include "CSSValueKeywords.h"
 #include "core/rendering/RenderTheme.h"

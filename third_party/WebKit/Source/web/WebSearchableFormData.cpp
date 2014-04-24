@@ -29,11 +29,9 @@
  */
 
 #include "config.h"
-#include "WebSearchableFormData.h"
+#include "public/web/WebSearchableFormData.h"
 
 #include "HTMLNames.h"
-#include "WebFormElement.h"
-#include "WebInputElement.h"
 #include "core/dom/Document.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormControlElement.h"
@@ -42,6 +40,8 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "platform/network/FormDataBuilder.h"
+#include "public/web/WebFormElement.h"
+#include "public/web/WebInputElement.h"
 #include "wtf/text/TextEncoding.h"
 
 using namespace WebCore;

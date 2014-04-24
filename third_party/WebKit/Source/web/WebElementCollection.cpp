@@ -30,11 +30,11 @@
  */
 
 #include "config.h"
-#include "WebElementCollection.h"
+#include "public/web/WebElementCollection.h"
 
-#include "WebElement.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLCollection.h"
+#include "public/web/WebElement.h"
 #include "wtf/PassRefPtr.h"
 
 using namespace WebCore;

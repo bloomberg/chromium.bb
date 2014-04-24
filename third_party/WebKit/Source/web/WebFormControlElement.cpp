@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebFormControlElement.h"
+#include "public/web/WebFormControlElement.h"
 
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"

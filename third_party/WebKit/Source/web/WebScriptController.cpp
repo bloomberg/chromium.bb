@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebScriptController.h"
+#include "public/web/WebScriptController.h"
 
 #include "bindings/v8/ScriptController.h"
 

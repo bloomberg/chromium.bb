@@ -31,11 +31,6 @@
 #include "config.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 
-#include "WebContentSecurityPolicy.h"
-#include "WebFrameClient.h"
-#include "WebKit.h"
-#include "WebSharedWorker.h"
-#include "WebSharedWorkerRepositoryClient.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -50,6 +45,11 @@
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebContentSecurityPolicy.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebKit.h"
+#include "public/web/WebSharedWorker.h"
+#include "public/web/WebSharedWorkerRepositoryClient.h"
 #include "web/WebLocalFrameImpl.h"
 
 using namespace WebCore;

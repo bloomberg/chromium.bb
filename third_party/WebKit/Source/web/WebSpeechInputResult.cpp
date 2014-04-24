@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebSpeechInputResult.h"
+#include "public/web/WebSpeechInputResult.h"
 
 #if ENABLE(INPUT_SPEECH)
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDocumentType.h"
+#include "public/web/WebDocumentType.h"
 
 #include "core/dom/DocumentType.h"
 #include "public/platform/WebString.h"

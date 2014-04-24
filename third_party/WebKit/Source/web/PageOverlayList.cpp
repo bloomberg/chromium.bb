@@ -29,7 +29,7 @@
 #include "config.h"
 #include "web/PageOverlayList.h"
 
-#include "WebPageOverlay.h"
+#include "public/web/WebPageOverlay.h"
 #include "web/PageOverlay.h"
 #include "web/WebViewImpl.h"
 

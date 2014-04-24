@@ -29,7 +29,8 @@
  */
 
 #include "config.h"
-#include "WebInputEvent.h"
+#include "public/web/WebInputEvent.h"
+
 #include "platform/KeyboardCodes.h"
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"

@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "WebDOMCustomEvent.h"
+#include "public/web/WebDOMCustomEvent.h"
 
-#include "WebSerializedScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/events/CustomEvent.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebSerializedScriptValue.h"
 
 using namespace WebCore;
 

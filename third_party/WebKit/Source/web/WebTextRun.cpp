@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebTextRun.h"
+#include "public/web/WebTextRun.h"
 
 #include "platform/text/TextRun.h"
 

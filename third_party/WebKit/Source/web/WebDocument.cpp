@@ -29,15 +29,8 @@
  */
 
 #include "config.h"
-#include "WebDocument.h"
+#include "public/web/WebDocument.h"
 
-#include "WebAXObject.h"
-#include "WebDOMEvent.h"
-#include "WebDocumentType.h"
-#include "WebElement.h"
-#include "WebElementCollection.h"
-#include "WebFormElement.h"
-#include "WebNodeList.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/NewScriptState.h"
@@ -62,6 +55,13 @@
 #include "core/rendering/RenderObject.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebAXObject.h"
+#include "public/web/WebDOMEvent.h"
+#include "public/web/WebDocumentType.h"
+#include "public/web/WebElement.h"
+#include "public/web/WebElementCollection.h"
+#include "public/web/WebFormElement.h"
+#include "public/web/WebNodeList.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/PassRefPtr.h"
 #include <v8.h>

@@ -31,10 +31,6 @@
 #include "config.h"
 #include "web/ExternalPopupMenu.h"
 
-#include "WebExternalPopupMenu.h"
-#include "WebMenuItemInfo.h"
-#include "WebPopupMenuInfo.h"
-#include "WebViewClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/PopupMenuClient.h"
@@ -42,6 +38,10 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/text/TextDirection.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebExternalPopupMenu.h"
+#include "public/web/WebMenuItemInfo.h"
+#include "public/web/WebPopupMenuInfo.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
 using namespace WebCore;

@@ -31,8 +31,8 @@
 #ifndef WebHelperPluginImpl_h
 #define WebHelperPluginImpl_h
 
-#include "WebHelperPlugin.h"
 #include "platform/Timer.h"
+#include "public/web/WebHelperPlugin.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"

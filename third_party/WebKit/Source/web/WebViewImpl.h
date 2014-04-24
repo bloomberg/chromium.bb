@@ -31,9 +31,6 @@
 #ifndef WebViewImpl_h
 #define WebViewImpl_h
 
-#include "WebInputEvent.h"
-#include "WebNavigationPolicy.h"
-#include "WebView.h"
 #include "core/page/PagePopupDriver.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -44,6 +41,9 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/WebNavigationPolicy.h"
+#include "public/web/WebView.h"
 #include "web/BackForwardClientImpl.h"
 #include "web/ChromeClientImpl.h"
 #include "web/ContextMenuClientImpl.h"

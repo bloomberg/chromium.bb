@@ -5,8 +5,6 @@
 #include "config.h"
 #include "web/WebMediaPlayerClientImpl.h"
 
-#include "WebDocument.h"
-#include "WebFrameClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
@@ -34,6 +32,8 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 

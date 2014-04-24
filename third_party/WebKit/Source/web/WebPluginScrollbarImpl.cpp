@@ -25,8 +25,6 @@
 #include "config.h"
 #include "web/WebPluginScrollbarImpl.h"
 
-#include "WebInputEvent.h"
-#include "WebPluginScrollbarClient.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/ScrollAnimator.h"
@@ -36,6 +34,8 @@
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/WebPluginScrollbarClient.h"
 #include "web/ScrollbarGroup.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebPluginContainerImpl.h"

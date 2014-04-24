@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMActivityLogger.h"
+#include "public/web/WebDOMActivityLogger.h"
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMActivityLogger.h"

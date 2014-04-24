@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebSecurityPolicy.h"
+#include "public/web/WebSecurityPolicy.h"
 
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/SchemeRegistry.h"

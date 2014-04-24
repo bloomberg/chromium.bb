@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebStorageEventDispatcher.h"
+#include "public/web/WebStorageEventDispatcher.h"
 
 #include "core/storage/StorageArea.h"
 #include "platform/weborigin/KURL.h"

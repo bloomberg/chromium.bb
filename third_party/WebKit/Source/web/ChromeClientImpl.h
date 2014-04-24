@@ -32,12 +32,12 @@
 #ifndef ChromeClientImpl_h
 #define ChromeClientImpl_h
 
-#include "WebNavigationPolicy.h"
 #include "core/page/ChromeClient.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/PopupMenu.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebColor.h"
+#include "public/web/WebNavigationPolicy.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

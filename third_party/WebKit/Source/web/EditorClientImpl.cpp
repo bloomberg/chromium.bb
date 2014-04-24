@@ -27,10 +27,10 @@
 #include "config.h"
 #include "web/EditorClientImpl.h"
 
-#include "WebFrameClient.h"
-#include "WebPermissionClient.h"
-#include "WebViewClient.h"
 #include "core/editing/SelectionType.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebPermissionClient.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 

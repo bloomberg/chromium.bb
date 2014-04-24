@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebTextCheckingResult.h"
+#include "public/web/WebTextCheckingResult.h"
 
 #include "platform/text/TextCheckerClient.h"
 

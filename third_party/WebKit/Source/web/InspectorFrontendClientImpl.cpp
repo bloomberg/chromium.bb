@@ -32,7 +32,6 @@
 #include "web/InspectorFrontendClientImpl.h"
 
 #include "V8InspectorFrontendHost.h"
-#include "WebDevToolsFrontendClient.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -40,6 +39,7 @@
 #include "core/page/Page.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebDevToolsFrontendClient.h"
 #include "web/WebDevToolsFrontendImpl.h"
 #include "wtf/text/WTFString.h"
 

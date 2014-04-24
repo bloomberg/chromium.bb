@@ -31,10 +31,10 @@
 #ifndef WebLocalFrameImpl_h
 #define WebLocalFrameImpl_h
 
-#include "WebLocalFrame.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
+#include "public/web/WebLocalFrame.h"
 #include "web/FrameLoaderClientImpl.h"
 #include "web/NotificationPresenterImpl.h"
 #include "wtf/Compiler.h"

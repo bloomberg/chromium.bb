@@ -31,11 +31,11 @@
 #ifndef WebDataSourceImpl_h
 #define WebDataSourceImpl_h
 
-#include "WebDataSource.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/weborigin/KURL.h"
+#include "public/web/WebDataSource.h"
 #include "web/WebPluginLoadObserver.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

@@ -29,13 +29,10 @@
  */
 
 #include "config.h"
-#include "WebBindings.h"
+#include "public/web/WebBindings.h"
 
 #include "V8Element.h"
 #include "V8Range.h"
-#include "WebArrayBufferView.h"
-#include "WebElement.h"
-#include "WebRange.h"
 #include "bindings/v8/NPV8Object.h"  // for PrivateIdentifier
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -48,6 +45,9 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "public/platform/WebArrayBuffer.h"
+#include "public/web/WebArrayBufferView.h"
+#include "public/web/WebElement.h"
+#include "public/web/WebRange.h"
 #include "wtf/ArrayBufferView.h"
 
 using namespace WebCore;

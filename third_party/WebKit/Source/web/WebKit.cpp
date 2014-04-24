@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebKit.h"
+#include "public/web/WebKit.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/V8Binding.h"

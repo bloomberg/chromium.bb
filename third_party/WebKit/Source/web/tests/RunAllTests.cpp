@@ -35,8 +35,8 @@
 // FIXME: Avoid this source dependency on Chromium's base module.
 #include <base/test/test_suite.h>
 
-#include "WebKit.h"
 #include "public/platform/Platform.h"
+#include "public/web/WebKit.h"
 #include <content/test/webkit_unit_test_support.h>
 
 #if defined(BLINK_DLL_UNITTEST)

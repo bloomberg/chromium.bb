@@ -26,12 +26,12 @@
 #include "config.h"
 #include "web/ColorChooserUIController.h"
 
-#include "WebColorChooser.h"
-#include "WebColorSuggestion.h"
-#include "WebFrameClient.h"
 #include "platform/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/WebColor.h"
+#include "public/web/WebColorChooser.h"
+#include "public/web/WebColorSuggestion.h"
+#include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
 
 using namespace WebCore;

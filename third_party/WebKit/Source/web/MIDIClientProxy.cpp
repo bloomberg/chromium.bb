@@ -31,9 +31,9 @@
 #include "config.h"
 #include "web/MIDIClientProxy.h"
 
-#include "WebMIDIClient.h"
-#include "WebMIDIPermissionRequest.h"
 #include "modules/webmidi/MIDIAccess.h"
+#include "public/web/WebMIDIClient.h"
+#include "public/web/WebMIDIPermissionRequest.h"
 
 using WebCore::MIDIAccess;
 

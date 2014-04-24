@@ -29,9 +29,8 @@
  */
 
 #include "config.h"
-#include "WebHistoryItem.h"
+#include "public/web/WebHistoryItem.h"
 
-#include "WebSerializedScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/loader/HistoryItem.h"
 #include "platform/network/FormData.h"
@@ -40,6 +39,7 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebSerializedScriptValue.h"
 #include "wtf/text/StringHash.h"
 
 using namespace WebCore;

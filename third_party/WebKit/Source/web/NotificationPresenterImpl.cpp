@@ -31,13 +31,13 @@
 #include "config.h"
 #include "web/NotificationPresenterImpl.h"
 
-#include "WebNotification.h"
-#include "WebNotificationPermissionCallback.h"
-#include "WebNotificationPresenter.h"
-#include "WebSecurityOrigin.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/web/WebNotification.h"
+#include "public/web/WebNotificationPermissionCallback.h"
+#include "public/web/WebNotificationPresenter.h"
+#include "public/web/WebSecurityOrigin.h"
 
 using namespace WebCore;
 

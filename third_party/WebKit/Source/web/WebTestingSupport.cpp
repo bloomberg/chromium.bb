@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "WebTestingSupport.h"
+#include "public/web/WebTestingSupport.h"
 
 #include "WebCoreTestSupport.h"
-#include "WebLocalFrame.h"
+#include "public/web/WebLocalFrame.h"
 #include <v8/include/v8.h>
 
 namespace blink {

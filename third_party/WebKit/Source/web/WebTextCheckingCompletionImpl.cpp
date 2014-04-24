@@ -31,9 +31,9 @@
 #include "config.h"
 #include "web/WebTextCheckingCompletionImpl.h"
 
-#include "WebTextCheckingResult.h"
 #include "platform/text/TextCheckerClient.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebTextCheckingResult.h"
 #include "web/EditorClientImpl.h"
 #include "wtf/Assertions.h"
 

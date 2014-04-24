@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebColorSuggestion.h"
+#include "public/web/WebColorSuggestion.h"
 
 #include "platform/ColorSuggestion.h"
 #include "public/platform/WebColor.h"

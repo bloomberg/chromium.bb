@@ -29,8 +29,8 @@
  */
 
 #include "config.h"
-#include "WebDocument.h"
-#include "WebElement.h"
+#include "public/web/WebElement.h"
+
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodeMap.h"
@@ -39,6 +39,7 @@
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderObject.h"
 #include "public/platform/WebRect.h"
+#include "public/web/WebDocument.h"
 #include "wtf/PassRefPtr.h"
 
 

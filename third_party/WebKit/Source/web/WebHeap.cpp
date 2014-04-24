@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebHeap.h"
+#include "public/web/WebHeap.h"
 
 #include "platform/heap/ThreadState.h"
 

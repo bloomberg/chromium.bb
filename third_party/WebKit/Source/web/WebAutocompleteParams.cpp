@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebAutocompleteParams.h"
+#include "public/web/WebAutocompleteParams.h"
 
 #include "bindings/v8/Dictionary.h"
 #include "public/platform/WebString.h"

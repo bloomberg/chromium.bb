@@ -26,12 +26,6 @@
 #include "config.h"
 #include "web/SpeechRecognitionClientProxy.h"
 
-#include "WebSecurityOrigin.h"
-#include "WebSpeechGrammar.h"
-#include "WebSpeechRecognitionHandle.h"
-#include "WebSpeechRecognitionParams.h"
-#include "WebSpeechRecognitionResult.h"
-#include "WebSpeechRecognizer.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognition.h"
@@ -39,6 +33,12 @@
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/web/WebSecurityOrigin.h"
+#include "public/web/WebSpeechGrammar.h"
+#include "public/web/WebSpeechRecognitionHandle.h"
+#include "public/web/WebSpeechRecognitionParams.h"
+#include "public/web/WebSpeechRecognitionResult.h"
+#include "public/web/WebSpeechRecognizer.h"
 #include "wtf/PassRefPtr.h"
 
 using namespace WebCore;

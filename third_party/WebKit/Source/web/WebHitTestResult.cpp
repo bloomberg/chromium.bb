@@ -24,10 +24,8 @@
  */
 
 #include "config.h"
-#include "WebHitTestResult.h"
+#include "public/web/WebHitTestResult.h"
 
-#include "WebElement.h"
-#include "WebNode.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/editing/VisiblePosition.h"
@@ -36,6 +34,8 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebElement.h"
+#include "public/web/WebNode.h"
 
 using namespace WebCore;
 

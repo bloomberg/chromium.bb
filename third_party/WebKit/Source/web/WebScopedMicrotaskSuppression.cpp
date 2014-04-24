@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebScopedMicrotaskSuppression.h"
+#include "public/web/WebScopedMicrotaskSuppression.h"
 
 #include "bindings/v8/V8RecursionScope.h"
 #include "wtf/OwnPtr.h"

@@ -28,7 +28,6 @@
 #include "web/LinkHighlight.h"
 
 #include "SkMatrix44.h"
-#include "WebKit.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -46,6 +45,7 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
+#include "public/web/WebKit.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"

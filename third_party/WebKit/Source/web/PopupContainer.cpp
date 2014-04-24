@@ -31,9 +31,6 @@
 #include "config.h"
 #include "web/PopupContainer.h"
 
-#include "WebPopupMenuInfo.h"
-#include "WebPopupType.h"
-#include "WebViewClient.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -51,6 +48,9 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/FramelessScrollViewClient.h"
+#include "public/web/WebPopupMenuInfo.h"
+#include "public/web/WebPopupType.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebPopupMenuImpl.h"
 #include "web/WebViewImpl.h"
 #include <limits>

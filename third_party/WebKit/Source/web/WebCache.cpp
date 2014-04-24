@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebCache.h"
+#include "public/web/WebCache.h"
 
 #include "core/fetch/MemoryCache.h"
 

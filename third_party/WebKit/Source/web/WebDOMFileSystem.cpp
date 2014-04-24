@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMFileSystem.h"
+#include "public/web/WebDOMFileSystem.h"
 
 #include "V8DOMFileSystem.h"
 #include "V8DirectoryEntry.h"

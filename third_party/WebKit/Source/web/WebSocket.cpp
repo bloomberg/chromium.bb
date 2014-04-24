@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebSocket.h"
+#include "public/web/WebSocket.h"
 
 #include "web/WebSocketImpl.h"
 

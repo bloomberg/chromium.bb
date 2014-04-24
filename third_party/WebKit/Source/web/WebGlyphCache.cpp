@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebGlyphCache.h"
+#include "public/web/WebGlyphCache.h"
 
 #include "platform/fonts/GlyphPageTreeNode.h"
 

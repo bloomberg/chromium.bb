@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebPasswordFormData.h"
+#include "public/web/WebPasswordFormData.h"
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"

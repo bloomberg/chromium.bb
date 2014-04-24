@@ -31,13 +31,13 @@
 #include "config.h"
 #include "web/WebPluginContainerImpl.h"
 
-#include "WebElement.h"
-#include "WebInputEvent.h"
-#include "WebPlugin.h"
-#include "WebViewClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "platform/exported/WrappedResourceResponse.h"
+#include "public/web/WebElement.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/WebPlugin.h"
+#include "public/web/WebViewClient.h"
 #include "web/ChromeClientImpl.h"
 #include "web/ScrollbarGroup.h"
 #include "web/WebDataSourceImpl.h"
@@ -45,7 +45,6 @@
 #include "web/WebViewImpl.h"
 
 #include "HTMLNames.h"
-#include "WebPrintParams.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
@@ -87,6 +86,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebPrintParams.h"
 
 using namespace WebCore;
 

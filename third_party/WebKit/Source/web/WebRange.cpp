@@ -29,10 +29,8 @@
  */
 
 #include "config.h"
-#include "WebRange.h"
+#include "public/web/WebRange.h"
 
-#include "WebExceptionCode.h"
-#include "WebNode.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -45,6 +43,8 @@
 #include "core/frame/LocalFrame.h"
 #include "public/platform/WebFloatQuad.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebExceptionCode.h"
+#include "public/web/WebNode.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/PassRefPtr.h"
 

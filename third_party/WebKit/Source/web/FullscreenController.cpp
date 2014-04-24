@@ -32,13 +32,13 @@
 #include "web/FullscreenController.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "WebFrame.h"
-#include "WebViewClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/LayoutTestSupport.h"
+#include "public/web/WebFrame.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
 using namespace WebCore;

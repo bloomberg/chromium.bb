@@ -29,11 +29,9 @@
  */
 
 #include "config.h"
-#include "WebAXObject.h"
+#include "public/web/WebAXObject.h"
 
 #include "HTMLNames.h"
-#include "WebDocument.h"
-#include "WebNode.h"
 #include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AXTable.h"
@@ -52,6 +50,8 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebNode.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace WebCore;

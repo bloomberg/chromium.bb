@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "WebUserGestureIndicator.h"
+#include "public/web/WebUserGestureIndicator.h"
 
-#include "WebUserGestureToken.h"
 #include "platform/UserGestureIndicator.h"
+#include "public/web/WebUserGestureToken.h"
 
 using namespace WebCore;
 

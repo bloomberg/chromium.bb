@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebSelector.h"
 
-#include "../platform/WebString.h"
+#include "public/platform/WebString.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include <gtest/gtest.h>
 

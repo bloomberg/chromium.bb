@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "WebArrayBufferView.h"
+#include "public/web/WebArrayBufferView.h"
 
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "wtf/ArrayBufferView.h"

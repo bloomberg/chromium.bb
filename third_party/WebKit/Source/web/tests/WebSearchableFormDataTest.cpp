@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "WebSearchableFormData.h"
+#include "public/web/WebSearchableFormData.h"
 
-#include "WebDocument.h"
-#include "WebFrame.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebFrame.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/URLTestHelpers.h"
 

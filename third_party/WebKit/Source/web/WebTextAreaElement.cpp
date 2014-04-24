@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebTextAreaElement.h"
+#include "public/web/WebTextAreaElement.h"
 
 #include "HTMLNames.h"
 #include "core/html/HTMLTextAreaElement.h"

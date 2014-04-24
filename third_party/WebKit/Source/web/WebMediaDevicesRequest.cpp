@@ -25,16 +25,16 @@
 
 #include "config.h"
 
-#include "WebMediaDevicesRequest.h"
+#include "public/web/WebMediaDevicesRequest.h"
 
-#include "WebDocument.h"
-#include "WebSecurityOrigin.h"
 #include "core/dom/Document.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebMediaDeviceInfo.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebSecurityOrigin.h"
 #include "wtf/Vector.h"
 
 using namespace WebCore;

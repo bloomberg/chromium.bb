@@ -32,8 +32,6 @@
 
 #include "web/WebInputEventConversion.h"
 
-#include "WebFrame.h"
-#include "WebSettings.h"
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"
 #include "core/events/GestureEvent.h"
@@ -43,6 +41,8 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "public/web/WebFrame.h"
+#include "public/web/WebSettings.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/URLTestHelpers.h"

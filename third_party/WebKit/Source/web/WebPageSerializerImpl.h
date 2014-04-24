@@ -38,10 +38,10 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-#include "WebPageSerializer.h"
-#include "WebPageSerializerClient.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebPageSerializer.h"
+#include "public/web/WebPageSerializerClient.h"
 #include "web/WebEntities.h"
 
 namespace WTF{

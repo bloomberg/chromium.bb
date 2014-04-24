@@ -31,7 +31,6 @@
 #include "config.h"
 #include "web/WorkerGlobalScopeProxyProviderImpl.h"
 
-#include "WebPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/Worker.h"
@@ -41,6 +40,7 @@
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebPermissionClient.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
 #include "web/DatabaseClientImpl.h"
 #include "web/LocalFileSystemClient.h"

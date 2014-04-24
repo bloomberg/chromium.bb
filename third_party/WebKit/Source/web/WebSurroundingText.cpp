@@ -23,9 +23,8 @@
  */
 
 #include "config.h"
-#include "WebSurroundingText.h"
+#include "public/web/WebSurroundingText.h"
 
-#include "WebHitTestResult.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
@@ -34,6 +33,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/rendering/RenderObject.h"
 #include "public/platform/WebPoint.h"
+#include "public/web/WebHitTestResult.h"
 
 using namespace WebCore;
 

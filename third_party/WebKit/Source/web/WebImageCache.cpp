@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebImageCache.h"
+#include "public/web/WebImageCache.h"
 
 #include "platform/graphics/ImageDecodingStore.h"
 

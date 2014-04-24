@@ -31,10 +31,10 @@
 #ifndef WebFileChooserCompletionImpl_h
 #define WebFileChooserCompletionImpl_h
 
-#include "WebFileChooserCompletion.h"
 #include "platform/FileChooser.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebFileChooserCompletion.h"
 #include "wtf/PassRefPtr.h"
 
 using blink::WebFileChooserCompletion;

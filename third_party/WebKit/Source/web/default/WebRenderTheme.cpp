@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "WebRenderTheme.h"
+#include "public/web/default/WebRenderTheme.h"
 
-#include "WebView.h"
 #include "core/rendering/RenderThemeChromiumDefault.h"
+#include "public/web/WebView.h"
 
 using WebCore::RenderTheme;
 using WebCore::RenderThemeChromiumDefault;

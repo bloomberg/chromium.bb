@@ -30,10 +30,8 @@
 
 #include "config.h"
 
-#include "WebUserMediaRequest.h"
+#include "public/web/WebUserMediaRequest.h"
 
-#include "WebDocument.h"
-#include "WebSecurityOrigin.h"
 #include "core/dom/Document.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
@@ -44,6 +42,8 @@
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebSecurityOrigin.h"
 #include "wtf/Vector.h"
 
 using namespace WebCore;

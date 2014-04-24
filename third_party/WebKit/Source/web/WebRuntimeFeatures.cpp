@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebRuntimeFeatures.h"
+#include "public/web/WebRuntimeFeatures.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "web/WebMediaPlayerClientImpl.h"

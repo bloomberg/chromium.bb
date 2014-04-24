@@ -30,11 +30,6 @@
 
 #include "config.h"
 
-#include "WebConsoleMessage.h"
-#include "WebFrame.h"
-#include "WebScriptSource.h"
-#include "WebSettings.h"
-#include "WebViewClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -48,6 +43,11 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebConsoleMessage.h"
+#include "public/web/WebFrame.h"
+#include "public/web/WebScriptSource.h"
+#include "public/web/WebSettings.h"
+#include "public/web/WebViewClient.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/URLTestHelpers.h"
 #include <gmock/gmock.h>

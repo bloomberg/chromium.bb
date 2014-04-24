@@ -6,8 +6,6 @@
 
 #include "core/frame/PinchViewport.h"
 
-#include "WebSettings.h"
-#include "WebViewClient.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderView.h"
@@ -16,6 +14,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebSettings.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/URLTestHelpers.h"

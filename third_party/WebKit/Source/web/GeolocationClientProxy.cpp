@@ -26,11 +26,11 @@
 #include "config.h"
 #include "web/GeolocationClientProxy.h"
 
-#include "WebGeolocationClient.h"
-#include "WebGeolocationPermissionRequest.h"
-#include "WebGeolocationPosition.h"
 #include "modules/geolocation/Geolocation.h"
 #include "modules/geolocation/GeolocationPosition.h"
+#include "public/web/WebGeolocationClient.h"
+#include "public/web/WebGeolocationPermissionRequest.h"
+#include "public/web/WebGeolocationPosition.h"
 
 namespace blink {
 

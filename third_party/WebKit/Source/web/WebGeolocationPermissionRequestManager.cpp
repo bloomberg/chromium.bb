@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "WebGeolocationPermissionRequestManager.h"
+#include "public/web/WebGeolocationPermissionRequestManager.h"
 
-#include "WebGeolocationPermissionRequest.h"
+#include "public/web/WebGeolocationPermissionRequest.h"
 #include "wtf/HashMap.h"
 
 namespace blink {

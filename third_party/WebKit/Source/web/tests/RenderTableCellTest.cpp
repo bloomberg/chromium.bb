@@ -27,10 +27,10 @@
 
 #include "core/rendering/RenderTableCell.h"
 
-#include "WebFrame.h"
-#include "WebView.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "public/web/WebFrame.h"
+#include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 

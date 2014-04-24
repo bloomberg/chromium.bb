@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMEventListener.h"
+#include "public/web/WebDOMEventListener.h"
 
 #include "web/WebDOMEventListenerPrivate.h"
 

@@ -26,8 +26,6 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
-#include "WebSettings.h"
-#include "WebViewClient.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -37,6 +35,8 @@
 #include "public/platform/WebLayerPositionConstraint.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebSettings.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"

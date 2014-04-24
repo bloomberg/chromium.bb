@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebTextInputInfo.h"
+#include "public/web/WebTextInputInfo.h"
 
 namespace blink {
 

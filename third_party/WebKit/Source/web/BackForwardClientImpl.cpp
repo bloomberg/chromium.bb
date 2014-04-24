@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/BackForwardClientImpl.h"
 
-#include "WebViewClient.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
 using namespace WebCore;

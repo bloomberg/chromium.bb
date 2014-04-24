@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebUserGestureToken.h"
+#include "public/web/WebUserGestureToken.h"
 
 #include "platform/UserGestureIndicator.h"
 

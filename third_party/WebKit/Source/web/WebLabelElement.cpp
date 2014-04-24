@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebLabelElement.h"
+#include "public/web/WebLabelElement.h"
 
 #include "HTMLNames.h"
 #include "core/html/HTMLLabelElement.h"

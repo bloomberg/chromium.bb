@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebHelperPlugin.h"
+#include "public/web/WebHelperPlugin.h"
 
-#include "WebFrameClient.h"
-#include "WebLocalFrame.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebLocalFrame.h"
 #include "web/tests/FakeWebPlugin.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>

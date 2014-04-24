@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebGeolocationError.h"
+#include "public/web/WebGeolocationError.h"
 
 #include "modules/geolocation/GeolocationError.h"
 #include "public/platform/WebString.h"

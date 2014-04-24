@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#include "WebSettings.h"
 #include "core/page/Page.h"
 #include "core/page/PageSerializer.h"
 #include "platform/SerializedResource.h"
@@ -41,6 +40,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebSettings.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"

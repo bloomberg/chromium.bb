@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "WebMIDIPermissionRequest.h"
+#include "public/web/WebMIDIPermissionRequest.h"
 
-#include "WebSecurityOrigin.h"
 #include "core/dom/Document.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/web/WebSecurityOrigin.h"
 
 using namespace WebCore;
 

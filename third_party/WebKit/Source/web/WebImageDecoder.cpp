@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebImageDecoder.h"
+#include "public/web/WebImageDecoder.h"
 
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"

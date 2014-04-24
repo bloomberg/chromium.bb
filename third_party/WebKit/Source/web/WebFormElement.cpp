@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "WebFormElement.h"
+#include "public/web/WebFormElement.h"
 
 #include "HTMLNames.h"
-#include "WebFormControlElement.h"
-#include "WebInputElement.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebFormControlElement.h"
+#include "public/web/WebInputElement.h"
 #include "wtf/PassRefPtr.h"
 
 using namespace WebCore;

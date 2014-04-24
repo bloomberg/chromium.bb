@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "WebView.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebView.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>

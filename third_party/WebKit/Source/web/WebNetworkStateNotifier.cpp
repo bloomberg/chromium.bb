@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebNetworkStateNotifier.h"
+#include "public/web/WebNetworkStateNotifier.h"
 
 #include "core/page/NetworkStateNotifier.h"
 

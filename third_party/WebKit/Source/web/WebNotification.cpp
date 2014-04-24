@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebNotification.h"
+#include "public/web/WebNotification.h"
 
 #include "core/events/Event.h"
 #include "modules/notifications/Notification.h"

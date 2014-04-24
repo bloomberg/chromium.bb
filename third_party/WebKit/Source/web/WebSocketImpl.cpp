@@ -32,7 +32,6 @@
 #include "web/WebSocketImpl.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "WebDocument.h"
 #include "core/dom/Document.h"
 #include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
@@ -41,6 +40,7 @@
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebDocument.h"
 #include "wtf/ArrayBuffer.h"
 
 using namespace WebCore;

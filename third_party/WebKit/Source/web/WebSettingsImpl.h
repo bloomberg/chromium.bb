@@ -31,7 +31,7 @@
 #ifndef WebSettingsImpl_h
 #define WebSettingsImpl_h
 
-#include "WebSettings.h"
+#include "public/web/WebSettings.h"
 
 namespace WebCore {
 class InspectorController;

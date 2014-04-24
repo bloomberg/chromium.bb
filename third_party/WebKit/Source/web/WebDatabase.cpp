@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDatabase.h"
+#include "public/web/WebDatabase.h"
 
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseManager.h"

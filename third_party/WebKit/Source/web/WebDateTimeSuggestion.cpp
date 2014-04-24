@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebDateTimeSuggestion.h"
+#include "public/web/WebDateTimeSuggestion.h"
 
 #include "platform/DateTimeChooser.h"
 

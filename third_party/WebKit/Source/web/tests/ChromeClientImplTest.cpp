@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "WebFrameClient.h"
-#include "WebInputEvent.h"
-#include "WebLocalFrame.h"
-#include "WebView.h"
-#include "WebViewClient.h"
 #include "core/page/Chrome.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/WebLocalFrame.h"
+#include "public/web/WebView.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 #include <gtest/gtest.h>
 

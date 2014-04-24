@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/WebPluginLoadObserver.h"
 
-#include "WebPlugin.h"
+#include "public/web/WebPlugin.h"
 #include "web/WebPluginContainerImpl.h"
 
 namespace blink {

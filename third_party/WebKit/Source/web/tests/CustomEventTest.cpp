@@ -31,8 +31,6 @@
 #include "config.h"
 
 #include "V8Event.h"
-#include "WebFrame.h"
-#include "WebView.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
@@ -40,6 +38,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDOMCustomEvent.h"
+#include "public/web/WebFrame.h"
+#include "public/web/WebView.h"
 #include "v8.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"

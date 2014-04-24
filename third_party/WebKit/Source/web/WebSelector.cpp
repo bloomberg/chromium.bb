@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "WebSelector.h"
+#include "public/web/WebSelector.h"
 
-#include "../platform/WebString.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/parser/BisonCSSParser.h"
+#include "public/platform/WebString.h"
 
 using namespace WebCore;
 

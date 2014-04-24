@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebPluginDocument.h"
+#include "public/web/WebPluginDocument.h"
 
 #include "core/dom/Document.h"
 #include "core/html/PluginDocument.h"

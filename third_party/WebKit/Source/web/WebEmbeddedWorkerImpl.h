@@ -31,10 +31,10 @@
 #ifndef WebEmbeddedWorkerImpl_h
 #define WebEmbeddedWorkerImpl_h
 
-#include "WebContentSecurityPolicy.h"
-#include "WebEmbeddedWorker.h"
-#include "WebEmbeddedWorkerStartData.h"
-#include "WebFrameClient.h"
+#include "public/web/WebContentSecurityPolicy.h"
+#include "public/web/WebEmbeddedWorker.h"
+#include "public/web/WebEmbeddedWorkerStartData.h"
+#include "public/web/WebFrameClient.h"
 
 namespace WebCore {
 class WorkerScriptLoader;

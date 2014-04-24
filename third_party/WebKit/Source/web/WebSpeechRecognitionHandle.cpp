@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebSpeechRecognitionHandle.h"
+#include "public/web/WebSpeechRecognitionHandle.h"
 
 #include "modules/speech/SpeechRecognition.h"
 

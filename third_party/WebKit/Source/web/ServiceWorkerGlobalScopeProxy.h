@@ -31,8 +31,8 @@
 #ifndef ServiceWorkerGlobalScopeProxy_h
 #define ServiceWorkerGlobalScopeProxy_h
 
-#include "WebServiceWorkerContextProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
+#include "public/web/WebServiceWorkerContextProxy.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 

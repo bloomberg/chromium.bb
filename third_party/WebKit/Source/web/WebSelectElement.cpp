@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebSelectElement.h"
+#include "public/web/WebSelectElement.h"
 
 #include "HTMLNames.h"
 #include "core/html/HTMLOptionElement.h"

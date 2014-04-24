@@ -32,10 +32,10 @@
 
 #include "web/FrameLoaderClientImpl.h"
 
-#include "WebFrameClient.h"
-#include "WebView.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"

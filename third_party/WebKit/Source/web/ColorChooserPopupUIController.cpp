@@ -28,10 +28,10 @@
 
 #include "ColorSuggestionPicker.h"
 #include "PickerCommon.h"
-#include "WebColorChooser.h"
 #include "core/frame/FrameView.h"
 #include "platform/ColorChooserClient.h"
 #include "platform/geometry/IntRect.h"
+#include "public/web/WebColorChooser.h"
 #include "web/ChromeClientImpl.h"
 #include "web/WebViewImpl.h"
 

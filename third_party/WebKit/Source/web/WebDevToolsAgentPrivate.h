@@ -31,7 +31,7 @@
 #ifndef WebDevToolsAgentPrivate_h
 #define WebDevToolsAgentPrivate_h
 
-#include "WebDevToolsAgent.h"
+#include "public/web/WebDevToolsAgent.h"
 
 namespace WebCore {
 class Page;

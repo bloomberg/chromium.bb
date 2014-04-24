@@ -29,11 +29,10 @@
  */
 
 #include "config.h"
-#include "WebInputElement.h"
+#include "public/web/WebInputElement.h"
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "WebElementCollection.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
@@ -41,6 +40,7 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebElementCollection.h"
 #include "wtf/PassRefPtr.h"
 
 using namespace WebCore;

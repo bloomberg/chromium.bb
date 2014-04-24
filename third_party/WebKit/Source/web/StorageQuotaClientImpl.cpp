@@ -31,7 +31,6 @@
 #include "config.h"
 #include "web/StorageQuotaClientImpl.h"
 
-#include "WebFrameClient.h"
 #include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
@@ -45,6 +44,7 @@
 #include "modules/quota/StorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "public/platform/WebStorageQuotaType.h"
+#include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/Threading.h"
 

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "web/UserMediaClientImpl.h"
 
-#include "WebMediaDevicesRequest.h"
-#include "WebUserMediaClient.h"
-#include "WebUserMediaRequest.h"
-#include "WebViewClient.h"
+#include "public/web/WebMediaDevicesRequest.h"
+#include "public/web/WebUserMediaClient.h"
+#include "public/web/WebUserMediaRequest.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 #include "wtf/RefPtr.h"
 

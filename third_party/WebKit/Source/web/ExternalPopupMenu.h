@@ -31,11 +31,11 @@
 #ifndef ExternalPopupMenu_h
 #define ExternalPopupMenu_h
 
-#include "WebExternalPopupMenuClient.h"
 #include "platform/PopupMenu.h"
 #include "platform/Timer.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebScrollbar.h"
+#include "public/web/WebExternalPopupMenuClient.h"
 
 namespace WebCore {
 class FloatQuad;

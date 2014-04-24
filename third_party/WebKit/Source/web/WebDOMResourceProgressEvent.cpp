@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMResourceProgressEvent.h"
+#include "public/web/WebDOMResourceProgressEvent.h"
 
 #include "core/events/ResourceProgressEvent.h"
 #include "public/platform/WebString.h"

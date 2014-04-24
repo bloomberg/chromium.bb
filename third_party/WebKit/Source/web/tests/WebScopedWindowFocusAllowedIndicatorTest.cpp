@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebScopedWindowFocusAllowedIndicator.h"
+#include "public/web/WebScopedWindowFocusAllowedIndicator.h"
 
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include <gtest/gtest.h>

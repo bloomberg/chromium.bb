@@ -5,10 +5,10 @@
 #include "config.h"
 #include "web/MediaKeysClientImpl.h"
 
-#include "WebFrameClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "public/platform/WebContentDecryptionModule.h"
+#include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
 
 using namespace WebCore;

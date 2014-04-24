@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "WebScopedUserGesture.h"
+#include "public/web/WebScopedUserGesture.h"
 
-#include "WebUserGestureToken.h"
 #include "platform/UserGestureIndicator.h"
+#include "public/web/WebUserGestureToken.h"
 
 namespace blink {
 

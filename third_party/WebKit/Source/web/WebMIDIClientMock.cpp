@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebMIDIClientMock.h"
+#include "public/web/WebMIDIClientMock.h"
 
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIClientMock.h"

@@ -31,7 +31,7 @@
 #ifndef FakeWebPlugin_h
 #define FakeWebPlugin_h
 
-#include "WebPlugin.h"
+#include "public/web/WebPlugin.h"
 
 namespace blink {
 

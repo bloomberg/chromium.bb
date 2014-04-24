@@ -29,13 +29,13 @@
 #include "config.h"
 #include "web/PageOverlay.h"
 
-#include "WebPageOverlay.h"
-#include "WebViewClient.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "public/platform/WebLayer.h"
+#include "public/web/WebPageOverlay.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
 using namespace WebCore;

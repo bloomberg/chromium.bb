@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebCachedURLRequest.h"
+#include "public/web/WebCachedURLRequest.h"
 
 #include "core/fetch/FetchRequest.h"
 #include "platform/exported/WrappedResourceRequest.h"

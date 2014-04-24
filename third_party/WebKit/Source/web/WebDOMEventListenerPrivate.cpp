@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/WebDOMEventListenerPrivate.h"
 
-#include "WebDOMEventListener.h"
+#include "public/web/WebDOMEventListener.h"
 #include "web/EventListenerWrapper.h"
 
 using namespace WebCore;

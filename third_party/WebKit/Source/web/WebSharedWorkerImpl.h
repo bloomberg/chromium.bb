@@ -31,16 +31,16 @@
 #ifndef WebSharedWorkerImpl_h
 #define WebSharedWorkerImpl_h
 
-#include "WebSharedWorker.h"
+#include "public/web/WebSharedWorker.h"
 
-#include "WebContentSecurityPolicy.h"
-#include "WebFrameClient.h"
-#include "WebSharedWorkerClient.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
 #include "core/workers/WorkerThread.h"
+#include "public/web/WebContentSecurityPolicy.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebSharedWorkerClient.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"

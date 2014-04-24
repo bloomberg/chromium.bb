@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebBlob.h"
+#include "public/web/WebBlob.h"
 
 #include "V8Blob.h"
 #include "bindings/v8/V8Binding.h"

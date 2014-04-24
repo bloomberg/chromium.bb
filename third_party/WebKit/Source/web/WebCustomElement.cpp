@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "WebCustomElement.h"
+#include "public/web/WebCustomElement.h"
 
-#include "../platform/WebString.h"
 #include "core/dom/custom/CustomElement.h"
+#include "public/platform/WebString.h"
 
 using namespace WebCore;
 

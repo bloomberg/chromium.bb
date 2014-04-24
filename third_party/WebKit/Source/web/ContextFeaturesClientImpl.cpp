@@ -31,10 +31,10 @@
 #include "config.h"
 #include "web/ContextFeaturesClientImpl.h"
 
-#include "WebDocument.h"
-#include "WebPermissionClient.h"
 #include "core/dom/Document.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebPermissionClient.h"
 #include "web/WebLocalFrameImpl.h"
 
 using namespace WebCore;

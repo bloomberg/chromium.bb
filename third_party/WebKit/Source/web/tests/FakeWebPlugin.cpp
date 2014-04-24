@@ -31,7 +31,7 @@
 #include "config.h"
 #include "web/tests/FakeWebPlugin.h"
 
-#include "WebPluginParams.h"
+#include "public/web/WebPluginParams.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {

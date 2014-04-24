@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "WebMediaStreamRegistry.h"
+#include "public/web/WebMediaStreamRegistry.h"
 
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"

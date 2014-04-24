@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMEvent.h"
+#include "public/web/WebDOMEvent.h"
 
 #include "EventNames.h"
 #include "core/dom/Node.h"

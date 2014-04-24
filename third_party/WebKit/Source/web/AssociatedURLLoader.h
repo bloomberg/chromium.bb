@@ -31,8 +31,8 @@
 #ifndef AssociatedURLLoader_h
 #define AssociatedURLLoader_h
 
-#include "WebURLLoaderOptions.h"
 #include "public/platform/WebURLLoader.h"
+#include "public/web/WebURLLoaderOptions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"

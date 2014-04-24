@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebPerformance.h"
+#include "public/web/WebPerformance.h"
 
 #include "core/timing/Performance.h"
 

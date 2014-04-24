@@ -28,10 +28,10 @@
 #include "web/ExternalDateTimeChooser.h"
 
 #include "InputTypeNames.h"
-#include "WebDateTimeChooserCompletion.h"
-#include "WebDateTimeChooserParams.h"
-#include "WebViewClient.h"
 #include "platform/DateTimeChooserClient.h"
+#include "public/web/WebDateTimeChooserCompletion.h"
+#include "public/web/WebDateTimeChooserParams.h"
+#include "public/web/WebViewClient.h"
 #include "web/ChromeClientImpl.h"
 #include "wtf/text/AtomicString.h"
 

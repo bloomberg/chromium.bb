@@ -25,7 +25,7 @@
 #ifndef WebPluginScrollbarImpl_h
 #define WebPluginScrollbarImpl_h
 
-#include "WebPluginScrollbar.h"
+#include "public/web/WebPluginScrollbar.h"
 
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

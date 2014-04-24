@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDOMMouseEvent.h"
+#include "public/web/WebDOMMouseEvent.h"
 
 #include "core/events/MouseEvent.h"
 

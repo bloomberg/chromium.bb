@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebFontDescription.h"
+#include "public/web/WebFontDescription.h"
 
 #include "platform/fonts/FontDescription.h"
 

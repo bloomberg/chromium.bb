@@ -31,11 +31,11 @@
 #ifndef WebPopupMenuImpl_h
 #define WebPopupMenuImpl_h
 
-#include "WebPopupMenu.h"
 #include "platform/scroll/FramelessScrollViewClient.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
+#include "public/web/WebPopupMenu.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 
