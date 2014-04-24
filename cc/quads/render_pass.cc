@@ -114,10 +114,9 @@ void RenderPass::SetNew(Id id,
                         const gfx::Transform& transform_to_root_target) {
   DCHECK_GT(id.layer_id, 0);
   DCHECK_GE(id.index, 0);
-  DCHECK_GE(damage_rect.x(), output_rect.x());
-  DCHECK_GE(damage_rect.y(), output_rect.y());
-  DCHECK_LE(damage_rect.bottom(), output_rect.bottom());
-  DCHECK_LE(damage_rect.right(), output_rect.right());
+  DCHECK(damage_rect.IsEmpty() || output_rect.Contains(damage_rect))
+      << "damage_rect: " << damage_rect.ToString()
+      << " output_rect: " << output_rect.ToString();
 
   this->id = id;
   this->output_rect = output_rect;
