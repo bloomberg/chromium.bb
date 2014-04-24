@@ -600,7 +600,7 @@ void WebPluginProxy::URLRedirectResponse(bool allow, int resource_id) {
 bool WebPluginProxy::CheckIfRunInsecureContent(const GURL& url) {
   bool result = true;
   Send(new PluginHostMsg_CheckIfRunInsecureContent(
-      host_render_view_routing_id_, url, &result));
+      route_id_, url, &result));
   return result;
 }
 
