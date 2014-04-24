@@ -20,7 +20,7 @@ GestureEventDataPacket::GestureSource ToGestureSource(
     case ui::MotionEvent::ACTION_MOVE:
       return GestureEventDataPacket::TOUCH_MOVE;
     case ui::MotionEvent::ACTION_CANCEL:
-      return GestureEventDataPacket::TOUCH_SEQUENCE_END;
+      return GestureEventDataPacket::TOUCH_SEQUENCE_CANCEL;
     case ui::MotionEvent::ACTION_POINTER_DOWN:
       return GestureEventDataPacket::TOUCH_START;
     case ui::MotionEvent::ACTION_POINTER_UP:

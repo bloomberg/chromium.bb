@@ -21,6 +21,7 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
     INVALID,               // The source of the gesture was invalid.
     TOUCH_SEQUENCE_START,  // The start of a new gesture sequence.
     TOUCH_SEQUENCE_END,    // The end of a gesture sequence.
+    TOUCH_SEQUENCE_CANCEL, // The gesture sequence was cancelled.
     TOUCH_START,           // A touch down occured during a gesture sequence.
     TOUCH_MOVE,            // A touch move occured during a gesture sequence.
     TOUCH_END,             // A touch up occured during a gesture sequence.

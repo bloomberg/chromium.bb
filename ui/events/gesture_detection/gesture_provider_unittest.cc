@@ -149,6 +149,10 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return GetDefaultConfig().gesture_detector_config.showpress_timeout;
   }
 
+  base::TimeDelta GetDoubleTapTimeout() const {
+    return GetDefaultConfig().gesture_detector_config.double_tap_timeout;
+  }
+
   void SetBeginEndTypesEnabled(bool enabled) {
     GestureProvider::Config config = GetDefaultConfig();
     config.gesture_begin_end_types_enabled = true;
@@ -284,6 +288,8 @@ TEST_F(GestureProviderTest, GestureTapTapWithDelay) {
             GetMostRecentGestureEvent().details.bounding_box());
 
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_TAP));
+  RunTasksAndWait(GetDoubleTapTimeout());
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_TAP));
 }
 
 // Verify that a DOWN followed by a MOVE will trigger fling (but not LONG).
