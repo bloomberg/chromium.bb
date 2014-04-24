@@ -504,7 +504,7 @@ TEST_F(VideoRendererImplTest, Rebuffer) {
 
   // TODO(scherkus): We shouldn't display the next ready frame in a rebuffer
   // situation, see http://crbug.com/365516
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(40)));
+  EXPECT_CALL(mock_display_cb_, Display(_));
 
   event.RunAndWaitForStatus(PIPELINE_OK);
 
@@ -529,7 +529,7 @@ TEST_F(VideoRendererImplTest, Rebuffer_AlreadyHaveEnoughFrames) {
 
   // TODO(scherkus): We shouldn't display the next ready frame in a rebuffer
   // situation, see http://crbug.com/365516
-  EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(10)));
+  EXPECT_CALL(mock_display_cb_, Display(_));
 
   WaitableMessageLoopEvent event;
   renderer_->Preroll(kNoTimestamp(),
