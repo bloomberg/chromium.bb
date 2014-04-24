@@ -175,8 +175,13 @@ public class AwContentsClientBridge {
         final SslError sslError = SslUtil.sslErrorFromNetErrorCode(certError, cert, url);
         ValueCallback<Boolean> callback = new ValueCallback<Boolean>() {
             @Override
-            public void onReceiveValue(Boolean value) {
-                proceedSslError(value.booleanValue(), id);
+            public void onReceiveValue(final Boolean value) {
+                ThreadUtils.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        proceedSslError(value.booleanValue(), id);
+                    }
+                });
             }
         };
         mClient.onReceivedSslError(callback, sslError);
