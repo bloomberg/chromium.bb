@@ -28,7 +28,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "net/base/data_url.h"
-#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
@@ -486,18 +486,26 @@ int32_t GetNexeFd(PP_Instance instance,
   if (!InitializePnaclResourceHost())
     return enter.SetResult(PP_ERROR_FAILED);
 
-  scoped_refptr<net::HttpResponseHeaders> http_headers(
-      new net::HttpResponseHeaders(http_headers_param));
+  std::string http_headers(http_headers_param);
+  net::HttpUtil::HeadersIterator iter(
+      http_headers.begin(), http_headers.end(), "\r\n");
+
   std::string last_modified;
   std::string etag;
-  http_headers->EnumerateHeader(NULL, "last-modified", &last_modified);
-  http_headers->EnumerateHeader(NULL, "etag", &etag);
-
-  std::string cache_control;
   bool has_no_store_header = false;
-  if (http_headers->EnumerateHeader(NULL, "cache-control", &cache_control)) {
-    if (cache_control.find("no-store") != std::string::npos)
-      has_no_store_header = true;
+  while (iter.GetNext()) {
+    if (StringToLowerASCII(iter.name()) == "last-modified")
+      last_modified = iter.values();
+    if (StringToLowerASCII(iter.name()) == "etag")
+      etag = iter.values();
+    if (StringToLowerASCII(iter.name()) == "cache-control") {
+      net::HttpUtil::ValuesIterator values_iter(
+          iter.values_begin(), iter.values_end(), ',');
+      while (values_iter.GetNext()) {
+        if (StringToLowerASCII(values_iter.value()) == "no-store")
+          has_no_store_header = true;
+      }
+    }
   }
 
   base::Time last_modified_time;
