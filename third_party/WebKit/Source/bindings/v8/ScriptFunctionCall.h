@@ -73,17 +73,6 @@ namespace WebCore {
         String m_name;
     };
 
-    class ScriptCallback : public ScriptCallArgumentHandler {
-    public:
-        ScriptCallback(ScriptState*, const ScriptValue&);
-
-        ScriptValue call();
-
-    private:
-        ScriptState* m_scriptState;
-        ScriptValue m_function;
-    };
-
 } // namespace WebCore
 
 #endif // ScriptFunctionCall

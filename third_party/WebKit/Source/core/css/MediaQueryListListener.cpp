@@ -21,22 +21,24 @@
 #include "core/css/MediaQueryListListener.h"
 
 #include "V8MediaQueryList.h"
-#include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/V8Callback.h"
 
 namespace WebCore {
 
-void MediaQueryListListener::queryChanged(ScriptState* state, MediaQueryList* query)
+MediaQueryListListener::MediaQueryListListener(const ScriptValue& function)
+    : m_scriptState(NewScriptState::current(function.isolate()))
+    , m_function(function)
 {
-    ScriptCallback callback(state, m_value);
-    v8::HandleScope handleScope(state->isolate());
+    ASSERT(m_function.isFunction());
+}
 
-    v8::Handle<v8::Context> context = state->context();
-    if (context.IsEmpty())
-        return; // JS may not be enabled.
-
-    v8::Context::Scope scope(context);
-    callback.appendArgument(ScriptValue(toV8(query, v8::Handle<v8::Object>(), context->GetIsolate()), context->GetIsolate()));
-    callback.call();
+void MediaQueryListListener::queryChanged(MediaQueryList* query)
+{
+    if (m_scriptState->contextIsEmpty())
+        return;
+    NewScriptState::Scope scope(m_scriptState.get());
+    v8::Handle<v8::Value> args[] = { toV8(query, m_scriptState->context()->Global(), m_scriptState->isolate()) };
+    invokeCallback(v8::Handle<v8::Function>::Cast(m_function.v8Value()), WTF_ARRAY_LENGTH(args), args, m_scriptState->executionContext(), m_scriptState->isolate());
 }
 
 }

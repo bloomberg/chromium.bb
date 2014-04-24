@@ -191,30 +191,4 @@ ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExcept
     return ScriptObject(m_scriptState, result);
 }
 
-ScriptCallback::ScriptCallback(ScriptState* state, const ScriptValue& function)
-    : ScriptCallArgumentHandler(state)
-    , m_scriptState(state)
-    , m_function(function)
-{
-}
-
-ScriptValue ScriptCallback::call()
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    ASSERT(isolate->InContext());
-    ASSERT(m_function.v8Value()->IsFunction());
-
-    v8::TryCatch exceptionCatcher;
-    exceptionCatcher.SetVerbose(true);
-    v8::Handle<v8::Object> object = isolate->GetCurrentContext()->Global();
-    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(m_function.v8Value());
-
-    OwnPtr<v8::Handle<v8::Value>[]> info = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
-    for (size_t i = 0; i < m_arguments.size(); ++i)
-        info[i] = m_arguments[i].v8Value();
-
-    v8::Handle<v8::Value> result = ScriptController::callFunction(m_scriptState->executionContext(), function, object, m_arguments.size(), info.get(), m_scriptState->isolate());
-    return ScriptValue(result, m_scriptState->isolate());
-}
-
 } // namespace WebCore

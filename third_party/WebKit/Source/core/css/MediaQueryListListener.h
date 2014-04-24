@@ -20,7 +20,7 @@
 #ifndef MediaQueryListListener_h
 #define MediaQueryListListener_h
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -39,16 +39,17 @@ public:
             return nullptr;
         return adoptRefWillBeNoop(new MediaQueryListListener(value));
     }
-    void queryChanged(ScriptState*, MediaQueryList*);
+    void queryChanged(MediaQueryList*);
 
-    bool operator==(const MediaQueryListListener& other) const { return m_value == other.m_value; }
+    bool operator==(const MediaQueryListListener& other) const { return m_function == other.m_function; }
 
     void trace(Visitor*) { }
 
 private:
-    explicit MediaQueryListListener(const ScriptValue& value) : m_value(value) { }
+    explicit MediaQueryListListener(const ScriptValue&);
 
-    ScriptValue m_value;
+    RefPtr<NewScriptState> m_scriptState;
+    ScriptValue m_function;
 };
 
 }
