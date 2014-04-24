@@ -137,6 +137,53 @@ static bool createImageBuffer(const Filter* filter, OwnPtr<ImageBuffer>& imageBu
     return true;
 }
 
+static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
+{
+    SkiaImageFilterBuilder builder(context);
+    RefPtr<ImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
+    filterData->filter->beginApply(context);
+    FloatRect boundaries = enclosingIntRect(filterData->boundaries);
+    context->save();
+    // Clip drawing of filtered image to primitive boundaries.
+    context->clipRect(boundaries);
+    if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
+        // Get boundaries in device coords.
+        FloatSize size = context->getCTM().mapSize(boundaries.size());
+        // Compute the scale amount required so that the resulting offscreen is exactly filterResX by filterResY pixels.
+        FloatSize filterResScale(
+            filterElement->filterResX()->currentValue()->value() / size.width(),
+            filterElement->filterResY()->currentValue()->value() / size.height());
+        // Scale the CTM so the primitive is drawn to filterRes.
+        context->scale(filterResScale);
+        // Create a resize filter with the inverse scale.
+        AffineTransform resizeMatrix;
+        resizeMatrix.scale(1 / filterResScale.width(), 1 / filterResScale.height());
+        imageFilter = builder.buildTransform(resizeMatrix, imageFilter.get());
+    }
+    // If the CTM contains rotation or shearing, apply the filter to
+    // the unsheared/unrotated matrix, and do the shearing/rotation
+    // as a final pass.
+    AffineTransform ctm = context->getCTM();
+    if (ctm.b() || ctm.c()) {
+        AffineTransform scaleAndTranslate;
+        scaleAndTranslate.translate(ctm.e(), ctm.f());
+        scaleAndTranslate.scale(ctm.xScale(), ctm.yScale());
+        ASSERT(scaleAndTranslate.isInvertible());
+        AffineTransform shearAndRotate = scaleAndTranslate.inverse();
+        shearAndRotate.multiply(ctm);
+        context->setCTM(scaleAndTranslate);
+        imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
+    }
+    context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
+}
+
+static void endDeferredFilter(GraphicsContext* context, FilterData* filterData)
+{
+    context->endLayer();
+    context->restore();
+    filterData->filter->endApply(context);
+}
+
 bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, GraphicsContext*& context, unsigned short resourceMode)
 {
     ASSERT(object);
@@ -146,13 +193,15 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     clearInvalidationMask();
 
     bool deferredFiltersEnabled = object->document().settings()->deferredFiltersEnabled();
-    if (deferredFiltersEnabled) {
-        if (m_objects.contains(object))
-            return false; // We're in a cycle.
-    } else if (m_filter.contains(object)) {
+    if (m_filter.contains(object)) {
         FilterData* filterData = m_filter.get(object);
         if (filterData->state == FilterData::PaintingSource || filterData->state == FilterData::Applying)
             filterData->state = FilterData::CycleDetected;
+        if (deferredFiltersEnabled && filterData->state == FilterData::Built) {
+            SVGFilterElement* filterElement = toSVGFilterElement(element());
+            beginDeferredFilter(context, filterData, filterElement);
+            return true;
+        }
         return false; // Already built, or we're in a cycle, or we're marked for removal. Regardless, just do nothing more now.
     }
 
@@ -215,42 +264,9 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
 
     if (deferredFiltersEnabled) {
-        SkiaImageFilterBuilder builder(context);
-        m_objects.add(object);
-        RefPtr<ImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
-        FloatRect boundaries = enclosingIntRect(filterData->boundaries);
-        context->save();
-        // Clip drawing of filtered image to primitive boundaries.
-        context->clipRect(boundaries);
-        if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
-            // Get boundaries in device coords.
-            FloatSize size = context->getCTM().mapSize(boundaries.size());
-            // Compute the scale amount required so that the resulting offscreen is exactly filterResX by filterResY pixels.
-            FloatSize filterResScale(
-                filterElement->filterResX()->currentValue()->value() / size.width(),
-                filterElement->filterResY()->currentValue()->value() / size.height());
-            // Scale the CTM so the primitive is drawn to filterRes.
-            context->scale(filterResScale);
-            // Create a resize filter with the inverse scale.
-            AffineTransform resizeMatrix;
-            resizeMatrix.scale(1 / filterResScale.width(), 1 / filterResScale.height());
-            imageFilter = builder.buildTransform(resizeMatrix, imageFilter.get());
-        }
-        // If the CTM contains rotation or shearing, apply the filter to
-        // the unsheared/unrotated matrix, and do the shearing/rotation
-        // as a final pass.
-        AffineTransform ctm = context->getCTM();
-        if (ctm.b() || ctm.c()) {
-            AffineTransform scaleAndTranslate;
-            scaleAndTranslate.translate(ctm.e(), ctm.f());
-            scaleAndTranslate.scale(ctm.xScale(), ctm.yScale());
-            ASSERT(scaleAndTranslate.isInvertible());
-            AffineTransform shearAndRotate = scaleAndTranslate.inverse();
-            shearAndRotate.multiply(ctm);
-            context->setCTM(scaleAndTranslate);
-            imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
-        }
-        context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
+        FilterData* data = filterData.get();
+        m_filter.set(object, filterData.release());
+        beginDeferredFilter(context, data, filterElement);
         return true;
     }
 
@@ -291,16 +307,15 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
     ASSERT(context);
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
 
-    if (object->document().settings()->deferredFiltersEnabled()) {
-        context->endLayer();
-        context->restore();
-        m_objects.remove(object);
-        return;
-    }
-
     FilterData* filterData = m_filter.get(object);
     if (!filterData)
         return;
+
+    if (object->document().settings()->deferredFiltersEnabled()) {
+        endDeferredFilter(context, filterData);
+        filterData->state = FilterData::Built;
+        return;
+    }
 
     switch (filterData->state) {
     case FilterData::MarkedForRemoval:
@@ -365,12 +380,6 @@ FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* objec
 
 void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, const QualifiedName& attribute)
 {
-    if (object->document().settings()->deferredFiltersEnabled()) {
-        markAllClientsForInvalidation(RepaintInvalidation);
-        markAllClientLayersForInvalidation();
-        return;
-    }
-
     FilterMap::iterator it = m_filter.begin();
     FilterMap::iterator end = m_filter.end();
     SVGFilterPrimitiveStandardAttributes* primitve = static_cast<SVGFilterPrimitiveStandardAttributes*>(object->node());

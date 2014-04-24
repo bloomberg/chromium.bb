@@ -89,8 +89,6 @@ private:
 
     typedef HashMap<RenderObject*, OwnPtr<FilterData> > FilterMap;
     FilterMap m_filter;
-
-    HashSet<RenderObject*> m_objects;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGResourceFilter, isSVGResourceFilter());

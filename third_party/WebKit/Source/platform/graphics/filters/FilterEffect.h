@@ -90,6 +90,10 @@ public:
             || m_unmultipliedImageResult
             || m_premultipliedImageResult;
     }
+    inline bool hasImageFilter() const
+    {
+        return m_imageFilters[0] || m_imageFilters[1] || m_imageFilters[2] || m_imageFilters[3];
+    }
 
     IntRect drawingRegionOfInputImage(const IntRect&) const;
     IntRect requestedRegionOfInputImageData(const IntRect&) const;
@@ -183,6 +187,9 @@ public:
     // alpha in [0,255] and each color component in [0, alpha].
     virtual bool mayProduceInvalidPreMultipliedPixels() { return false; }
 
+    SkImageFilter* getImageFilter(ColorSpace, bool requiresPMColorValidation) const;
+    void setImageFilter(ColorSpace, bool requiresPMColorValidation, PassRefPtr<SkImageFilter>);
+
 protected:
     FilterEffect(Filter*);
     ImageBuffer* createImageBufferResult();
@@ -237,6 +244,8 @@ private:
 
     ColorSpace m_operatingColorSpace;
     ColorSpace m_resultColorSpace;
+
+    RefPtr<SkImageFilter> m_imageFilters[4];
 };
 
 } // namespace WebCore

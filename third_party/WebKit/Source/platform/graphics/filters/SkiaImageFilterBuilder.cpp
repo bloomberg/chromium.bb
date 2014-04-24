@@ -60,17 +60,17 @@ PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::build(FilterEffect* effect, Co
         return nullptr;
 
     bool requiresPMColorValidation = effect->mayProduceInvalidPreMultipliedPixels() && destinationRequiresValidPreMultipliedPixels;
-    FilterHashKey key(effect, static_cast<int>(colorSpace) | (requiresPMColorValidation ? static_cast<int>(PMColorValidationFlag) : 0));
-    FilterBuilderHashMap::iterator it = m_map.find(key);
-    if (it != m_map.end()) {
-        return it->value;
-    } else {
-        // Note that we may still need the color transform even if the filter is null
-        RefPtr<SkImageFilter> origFilter = requiresPMColorValidation ? effect->createImageFilter(this) : effect->createImageFilterWithoutValidation(this);
-        RefPtr<SkImageFilter> filter = transformColorSpace(origFilter.get(), effect->operatingColorSpace(), colorSpace);
-        m_map.set(key, filter);
-        return filter.release();
-    }
+
+    if (SkImageFilter* filter = effect->getImageFilter(colorSpace, requiresPMColorValidation))
+        return filter;
+
+    // Note that we may still need the color transform even if the filter is null
+    RefPtr<SkImageFilter> origFilter = requiresPMColorValidation ? effect->createImageFilter(this) : effect->createImageFilterWithoutValidation(this);
+    RefPtr<SkImageFilter> filter = transformColorSpace(origFilter.get(), effect->operatingColorSpace(), colorSpace);
+    effect->setImageFilter(colorSpace, requiresPMColorValidation, filter.get());
+    if (filter.get() != origFilter.get())
+        effect->setImageFilter(effect->operatingColorSpace(), requiresPMColorValidation, origFilter.get());
+    return filter.release();
 }
 
 PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::transformColorSpace(
@@ -99,32 +99,22 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
             ReferenceFilter* referenceFilter = toReferenceFilterOperation(op).filter();
             if (referenceFilter && referenceFilter->lastEffect()) {
                 FilterEffect* filterEffect = referenceFilter->lastEffect();
-                // Prepopulate the map with two entries for SourceGraphic: one with a null
-                // image filter, and the other with a colorspace conversion filter.
+                // Prepopulate SourceGraphic with two image filters: one with a null image
+                // filter, and the other with a colorspace conversion filter.
                 // We don't know what color space the interior nodes will request, so we have to
-                // populate the map with both options.
-                FilterHashKey deviceKey(referenceFilter->sourceGraphic(), ColorSpaceDeviceRGB);
-                FilterHashKey linearKey(referenceFilter->sourceGraphic(), ColorSpaceLinearRGB);
-                FilterHashKey deviceKeyWithValidation(referenceFilter->sourceGraphic(), static_cast<int>(ColorSpaceDeviceRGB) | static_cast<int>(PMColorValidationFlag));
-                FilterHashKey linearKeyWithValidation(referenceFilter->sourceGraphic(), static_cast<int>(ColorSpaceLinearRGB) | static_cast<int>(PMColorValidationFlag));
+                // initialize SourceGraphic with both options.
+                // Since we know SourceGraphic is always PM-valid, we also use
+                // these for the PM-validated options.
                 RefPtr<SkImageFilter> deviceFilter = transformColorSpace(nullFilter, currentColorSpace, ColorSpaceDeviceRGB);
                 RefPtr<SkImageFilter> linearFilter = transformColorSpace(nullFilter, currentColorSpace, ColorSpaceLinearRGB);
-                m_map.set(deviceKey, deviceFilter);
-                m_map.set(linearKey, linearFilter);
-                // The PM color validated filters might be requested, but the SourceGraphic inputs are always valid,
-                // so the filters are the same in this case, there's no extra step necessary.
-                m_map.set(deviceKeyWithValidation, deviceFilter);
-                m_map.set(linearKeyWithValidation, linearFilter);
+                FilterEffect* sourceGraphic = referenceFilter->sourceGraphic();
+                sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, false, deviceFilter.get());
+                sourceGraphic->setImageFilter(ColorSpaceLinearRGB, false, linearFilter.get());
+                sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, true, deviceFilter.get());
+                sourceGraphic->setImageFilter(ColorSpaceLinearRGB, true, linearFilter.get());
 
                 currentColorSpace = filterEffect->operatingColorSpace();
                 filter = SkiaImageFilterBuilder::build(filterEffect, currentColorSpace);
-
-                // We might have no reference to the SourceGraphic's Skia filter now, so make
-                // sure we don't keep it in the map anymore.
-                m_map.remove(deviceKey);
-                m_map.remove(linearKey);
-                m_map.remove(deviceKeyWithValidation);
-                m_map.remove(linearKeyWithValidation);
                 filters->appendReferenceFilter(filter.get());
             }
             break;

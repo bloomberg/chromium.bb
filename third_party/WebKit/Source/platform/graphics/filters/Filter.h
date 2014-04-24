@@ -25,6 +25,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -81,6 +82,23 @@ public:
         m_absoluteFilterRegion = m_absoluteTransform.mapRect(m_filterRegion);
     }
 
+    void beginApply(GraphicsContext* context)
+    {
+        if (!m_cache)
+            m_cache = adoptRef(SkImageFilter::Cache::Create(1));
+        SkImageFilter::SetExternalCache(m_cache.get());
+    }
+
+    void endApply(GraphicsContext* context)
+    {
+        SkImageFilter::SetExternalCache(0);
+    }
+
+    void removeFromCache(SkImageFilter* filter)
+    {
+        if (m_cache)
+            m_cache->remove(filter);
+    }
 
 private:
     OwnPtr<ImageBuffer> m_sourceImage;
@@ -88,6 +106,7 @@ private:
     AffineTransform m_inverseTransform;
     FloatRect m_absoluteFilterRegion;
     FloatRect m_filterRegion;
+    RefPtr<SkImageFilter::Cache> m_cache;
 };
 
 } // namespace WebCore

@@ -30,7 +30,6 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/ColorSpace.h"
 #include "public/platform/WebFilterOperations.h"
-#include "wtf/HashMap.h"
 
 class SkImageFilter;
 
@@ -58,22 +57,10 @@ public:
     GraphicsContext* context() { return m_context; }
 
 private:
-    enum { PMColorValidationFlag = 0x100 };
-    typedef std::pair<FilterEffect*, unsigned> FilterHashKey;
-    typedef HashMap<FilterHashKey, RefPtr<SkImageFilter> > FilterBuilderHashMap;
-    FilterBuilderHashMap m_map;
     FloatSize m_cropOffset;
     GraphicsContext* m_context;
 };
 
 } // namespace WebCore
-
-namespace WTF {
-
-template<> struct DefaultHash<WebCore::ColorSpace> {
-    typedef IntHash<unsigned> Hash;
-};
-
-} // namespace WTF
 
 #endif

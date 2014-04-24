@@ -89,7 +89,7 @@ void SVGFilterBuilder::clearEffects()
 
 void SVGFilterBuilder::clearResultsRecursive(FilterEffect* effect)
 {
-    if (!effect->hasResult())
+    if (!effect->hasResult() && !effect->hasImageFilter())
         return;
 
     effect->clearResult();
