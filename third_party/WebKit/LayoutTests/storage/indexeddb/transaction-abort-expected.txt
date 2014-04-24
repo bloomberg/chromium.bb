@@ -25,7 +25,7 @@ Expecting exception from store.add({x: 'value4', y: 'zzz4'}, 'key4')
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
-Exception message: Failed to execute 'add' on 'IDBObjectStore': The transaction is not active.
+Exception message: Failed to execute 'add' on 'IDBObjectStore': The transaction has finished.
 PASS event.target.error.name is 'AbortError'
 PASS trans.error is null
 PASS firstError is true

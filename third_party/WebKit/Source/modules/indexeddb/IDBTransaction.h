@@ -70,6 +70,7 @@ public:
     int64_t id() const { return m_id; }
     bool isActive() const { return m_state == Active; }
     bool isFinished() const { return m_state == Finished; }
+    bool isFinishing() const { return m_state == Finishing; }
     bool isReadOnly() const { return m_mode == blink::WebIDBDatabase::TransactionReadOnly; }
     bool isVersionChange() const { return m_mode == blink::WebIDBDatabase::TransactionVersionChange; }
 

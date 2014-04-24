@@ -109,6 +109,7 @@ public:
         return findObjectStoreId(name) != IDBObjectStoreMetadata::InvalidId;
     }
 
+    // Will return nullptr if this database is stopped.
     blink::WebIDBDatabase* backend() const { return m_backend.get(); }
 
     static int64_t nextTransactionId();
@@ -127,6 +128,7 @@ public:
     static const char transactionFinishedErrorMessage[];
     static const char transactionInactiveErrorMessage[];
     static const char transactionReadOnlyErrorMessage[];
+    static const char databaseClosedErrorMessage[];
 
 private:
     IDBDatabase(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
