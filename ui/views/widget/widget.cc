@@ -216,13 +216,13 @@ Widget* Widget::CreateWindowWithBounds(WidgetDelegate* delegate,
 
 // static
 Widget* Widget::CreateWindowWithParent(WidgetDelegate* delegate,
-                                       gfx::NativeWindow parent) {
+                                       gfx::NativeView parent) {
   return CreateWindowWithParentAndBounds(delegate, parent, gfx::Rect());
 }
 
 // static
 Widget* Widget::CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
-                                                gfx::NativeWindow parent,
+                                                gfx::NativeView parent,
                                                 const gfx::Rect& bounds) {
   Widget* widget = new Widget;
   Widget::InitParams params;

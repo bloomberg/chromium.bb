@@ -293,7 +293,6 @@
         'touchui/touch_selection_controller_impl.h',
         'view.cc',
         'view.h',
-        'view_aura.cc',
         'view_constants.cc',
         'view_constants.h',
         'view_constants_aura.cc',

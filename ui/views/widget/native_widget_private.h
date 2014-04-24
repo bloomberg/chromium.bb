@@ -12,6 +12,7 @@
 #include "ui/views/widget/native_widget.h"
 
 namespace gfx {
+class FontList;
 class ImageSkia;
 class Rect;
 }
@@ -71,6 +72,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
 
   // Returns true if any touch device is currently down.
   static bool IsTouchDown();
+
+  static gfx::FontList GetWindowTitleFontList();
 
   // Initializes the NativeWidget.
   virtual void InitNativeWidget(const Widget::InitParams& params) = 0;

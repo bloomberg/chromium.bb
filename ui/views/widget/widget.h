@@ -256,9 +256,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Creates a decorated window Widget with the specified properties.
   static Widget* CreateWindowWithParent(WidgetDelegate* delegate,
-                                        gfx::NativeWindow parent);
+                                        gfx::NativeView parent);
   static Widget* CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
-                                                 gfx::NativeWindow parent,
+                                                 gfx::NativeView parent,
                                                  const gfx::Rect& bounds);
 
   // Creates a decorated window Widget in the same desktop context as |context|.

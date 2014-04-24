@@ -83,19 +83,6 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
 }
 
 // static
-gfx::FontList NativeWidgetAura::GetWindowTitleFontList() {
-#if defined(OS_WIN)
-  NONCLIENTMETRICS ncm;
-  base::win::GetNonClientMetrics(&ncm);
-  l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
-  base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
-  return gfx::FontList(gfx::Font(caption_font));
-#else
-  return gfx::FontList();
-#endif
-}
-
-// static
 void NativeWidgetAura::RegisterNativeWidgetForWindow(
       internal::NativeWidgetPrivate* native_widget,
       aura::Window* window) {
@@ -1137,6 +1124,19 @@ bool NativeWidgetPrivate::IsMouseButtonDown() {
 // static
 bool NativeWidgetPrivate::IsTouchDown() {
   return aura::Env::GetInstance()->is_touch_down();
+}
+
+// static
+gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
+#if defined(OS_WIN)
+  NONCLIENTMETRICS ncm;
+  base::win::GetNonClientMetrics(&ncm);
+  l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
+  base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
+  return gfx::FontList(gfx::Font(caption_font));
+#else
+  return gfx::FontList();
+#endif
 }
 
 }  // namespace internal
