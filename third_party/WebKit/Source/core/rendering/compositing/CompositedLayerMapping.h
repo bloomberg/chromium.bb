@@ -198,6 +198,8 @@ public:
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
+    LayoutSize contentOffsetInCompositingLayer() const;
+
 private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
@@ -234,7 +236,6 @@ private:
 
     GraphicsLayerPaintingPhase paintingPhaseForPrimaryLayer() const;
 
-    LayoutSize contentOffsetInCompostingLayer() const;
     // Result is transform origin in pixels.
     FloatPoint3D computeTransformOrigin(const IntRect& borderBox) const;
 

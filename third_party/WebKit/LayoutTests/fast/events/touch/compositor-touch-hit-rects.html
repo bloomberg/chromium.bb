@@ -37,6 +37,21 @@
   margin-top: 15px;
   margin-bottom: 10px;
 }
+#withNegativeOffsetChild {
+    position: relative;
+    width: 100px;
+    height: 10px;
+    border: 1px dotted blue;
+    transform: translateX(calc(120%)) translateZ(0);
+    clear: both;
+}
+#negativeOffsetChild {
+    position: absolute;
+    width: 100px;
+    height: 10px;
+    left: calc(-110%);
+    top: 0px;
+}
 #transform3dChild {
   -webkit-transform: rotate3d(0.2, 1, 0, 50grad);
 }
@@ -91,6 +106,9 @@ to quickly validate graphically.</p>
   <div style="clear: both;"></div>
   <div class="testcase" id="transform3d">
     <div id="transform3dChild">Transformed 3D</div>
+  </div>
+  <div id="withNegativeOffsetChild">
+      <div id="negativeOffsetChild" class="testcase"></div>
   </div>
   <div>
     <b class="testcase" id="continuation">

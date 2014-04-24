@@ -1310,8 +1310,12 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& e
 static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)
 {
     *layerOffset = IntSize();
-    if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer())
+    if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer()) {
+        CompositedLayerMappingPtr compositedLayerMapping = searchRoot->compositedLayerMapping();
+        LayoutSize offset = compositedLayerMapping->contentOffsetInCompositingLayer();
+        *layerOffset = IntSize(offset.width(), offset.height());
         return searchRoot;
+    }
 
     GraphicsLayer* layerForScrolling = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForScrolling() : 0;
     if (graphicsLayer == layerForScrolling) {

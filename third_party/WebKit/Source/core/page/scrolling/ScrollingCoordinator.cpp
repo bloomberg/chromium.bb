@@ -447,6 +447,12 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
         } else {
             ASSERT(compositedLayer->hasCompositedLayerMapping());
             CompositedLayerMappingPtr compositedLayerMapping = compositedLayer->compositedLayerMapping();
+            // The origin for the graphics layer does not have to be the same
+            // as the composited layer (e.g. when a child layer has negative
+            // offset and paints into this layer), so when projecting rects to
+            // graphics layer space they have to be offset by the origin for
+            // the composited layer.
+            extraOffset = compositedLayerMapping->contentOffsetInCompositingLayer();
             // If the layer is using composited scrolling, then it's the contents that these
             // rects apply to.
             graphicsLayer = compositedLayerMapping->scrollingContentsLayer();

@@ -747,7 +747,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     } else if (m_childTransformLayer) {
         const IntRect borderBox = toRenderBox(m_owningLayer.renderer())->pixelSnappedBorderBoxRect();
         m_childTransformLayer->setSize(borderBox.size());
-        m_childTransformLayer->setPosition(FloatPoint(contentOffsetInCompostingLayer()));
+        m_childTransformLayer->setPosition(FloatPoint(contentOffsetInCompositingLayer()));
     }
 
     if (m_maskLayer) {
@@ -1700,7 +1700,7 @@ FloatPoint3D CompositedLayerMapping::computeTransformOrigin(const IntRect& borde
 }
 
 // Return the offset from the top-left of this compositing layer at which the renderer's contents are painted.
-LayoutSize CompositedLayerMapping::contentOffsetInCompostingLayer() const
+LayoutSize CompositedLayerMapping::contentOffsetInCompositingLayer() const
 {
     return LayoutSize(-m_compositedBounds.x(), -m_compositedBounds.y());
 }
@@ -1708,7 +1708,7 @@ LayoutSize CompositedLayerMapping::contentOffsetInCompostingLayer() const
 LayoutRect CompositedLayerMapping::contentsBox() const
 {
     LayoutRect contentsBox = contentsRect(renderer());
-    contentsBox.move(contentOffsetInCompostingLayer());
+    contentsBox.move(contentOffsetInCompositingLayer());
     return contentsBox;
 }
 
