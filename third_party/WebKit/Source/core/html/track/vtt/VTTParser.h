@@ -32,7 +32,6 @@
 #define VTTParser_h
 
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/track/vtt/BufferedLineReader.h"

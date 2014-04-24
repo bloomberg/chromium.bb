@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/html/track/vtt/VTTParser.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
