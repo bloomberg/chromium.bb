@@ -38,7 +38,7 @@ class TemplateDataSource(DataSource):
     futures = []
     for root, _, files in self._file_system.Walk(self._dir):
       futures += [self._template_cache.GetFromFile(
-                      posixpath.join(self._dir, root, f))
+                      posixpath.join(self._dir, root, FormatKey(f)))
                   for f in files
                   if posixpath.splitext(f)[1] == '.html']
     return Collect(futures)
