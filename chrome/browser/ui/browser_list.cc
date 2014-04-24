@@ -156,12 +156,8 @@ bool BrowserList::IsOffTheRecordSessionActive() {
 
 // static
 bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
-  #if defined(OS_CHROMEOS)
-  // In ChromeOS, we assume that the default profile is always valid, so if
-  // we are in guest mode, keep the OTR profile active so it won't be deleted.
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+  if (profile->IsGuestSession())
     return true;
-#endif
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     if (it->profile()->IsSameProfile(profile) &&
         it->profile()->IsOffTheRecord()) {
