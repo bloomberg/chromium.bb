@@ -780,7 +780,7 @@ void ThreadState::copyStackUntilSafePointScope()
     Address* to = reinterpret_cast<Address*>(m_safePointScopeMarker);
     Address* from = reinterpret_cast<Address*>(m_endOfStack);
     RELEASE_ASSERT(from < to);
-    RELEASE_ASSERT(to < reinterpret_cast<Address*>(m_startOfStack));
+    RELEASE_ASSERT(to <= reinterpret_cast<Address*>(m_startOfStack));
     size_t slotCount = static_cast<size_t>(to - from);
     ASSERT(slotCount < 1024); // Catch potential performance issues.
 
