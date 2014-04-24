@@ -6,6 +6,7 @@
 
 #include <cstring>
 
+#include "base/files/file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -110,6 +111,17 @@ HidConnectionWin::HidConnectionWin(const HidDeviceInfo& device_info)
                         OPEN_EXISTING,
                         FILE_FLAG_OVERLAPPED,
                         NULL));
+
+  if (!file_.IsValid() &&
+      GetLastError() == base::File::FILE_ERROR_ACCESS_DENIED) {
+    file_.Set(CreateFileA(device_info.device_id.c_str(),
+                          GENERIC_READ,
+                          FILE_SHARE_READ,
+                          NULL,
+                          OPEN_EXISTING,
+                          FILE_FLAG_OVERLAPPED,
+                          NULL));
+  }
 }
 
 bool HidConnectionWin::available() const {
