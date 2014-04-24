@@ -15,6 +15,8 @@ const char kAppListModeId[] = "app_list";
 
 const char kLaunchedByChromeProcessId[] = "launched-by-chrome-process-id";
 
+const char kAppShimError[] = "app-shim-error";
+
 NSString* const kCFBundleDisplayNameKey = @"CFBundleDisplayName";
 NSString* const kLSHasLocalizedDisplayNameKey = @"LSHasLocalizedDisplayName";
 NSString* const kBrowserBundleIDKey = @"CrBundleIdentifier";
