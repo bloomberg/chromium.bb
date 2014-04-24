@@ -23,6 +23,7 @@ group("root") {
     "//components/onc",
     "//components/os_crypt",
     "//components/startup_metric_utils",
+    "//components/resources:components_resources",
     #"//components/translate:translate_core_browser",
     #"//components/translate:translate_core_common",
     "//components/url_matcher",
