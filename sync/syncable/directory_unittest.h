@@ -41,6 +41,11 @@ class SyncableDirectoryTest : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
+  // Destroys any currently opened directory, creates and opens a new one.
+  //
+  // Returns result of the Open call.
+  DirOpenResult ReopenDirectory();
+
   // Creates an empty entry and sets the ID field to a default one.
   void CreateEntry(const std::string& entryname);
 
@@ -83,14 +88,12 @@ class SyncableDirectoryTest : public testing::Test {
                      int64 server_version,
                      bool is_del);
 
-  // A helper function for Simulate{Save,Crash}AndReloadDir.
-  DirOpenResult ReloadDirImpl();
-
   base::MessageLoop message_loop_;
   scoped_ptr<Directory> dir_;
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
+  sql::Connection connection_;
 };
 
 }  // namespace syncable

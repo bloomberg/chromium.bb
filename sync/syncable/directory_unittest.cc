@@ -4,10 +4,16 @@
 
 #include "sync/syncable/directory_unittest.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/test/values_test_util.h"
 #include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/engine/test_syncable_utils.h"
+#include "sync/test/test_directory_backing_store.h"
+
+using base::ExpectDictBooleanValue;
+using base::ExpectDictStringValue;
 
 namespace syncer {
 
@@ -17,6 +23,27 @@ namespace {
 
 bool IsLegalNewParent(const Entry& a, const Entry& b) {
   return IsLegalNewParent(a.trans(), a.GetId(), b.GetId());
+}
+
+void PutDataAsBookmarkFavicon(WriteTransaction* wtrans,
+                              MutableEntry* e,
+                              const char* bytes,
+                              size_t bytes_length) {
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_bookmark()->set_url("http://demo/");
+  specifics.mutable_bookmark()->set_favicon(bytes, bytes_length);
+  e->PutSpecifics(specifics);
+}
+
+void ExpectDataFromBookmarkFaviconEquals(BaseTransaction* trans,
+                                         Entry* e,
+                                         const char* bytes,
+                                         size_t bytes_length) {
+  ASSERT_TRUE(e->good());
+  ASSERT_TRUE(e->GetSpecifics().has_bookmark());
+  ASSERT_EQ("http://demo/", e->GetSpecifics().bookmark().url());
+  ASSERT_EQ(std::string(bytes, bytes_length),
+            e->GetSpecifics().bookmark().favicon());
 }
 
 }  // namespace
@@ -30,21 +57,30 @@ SyncableDirectoryTest::~SyncableDirectoryTest() {
 }
 
 void SyncableDirectoryTest::SetUp() {
-  dir_.reset(new Directory(new InMemoryDirectoryBackingStore(kDirectoryName),
-                           &handler_,
-                           NULL,
-                           NULL,
-                           NULL));
-  ASSERT_TRUE(dir_.get());
-  ASSERT_EQ(OPENED,
-            dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver()));
-  ASSERT_TRUE(dir_->good());
+  ASSERT_TRUE(connection_.OpenInMemory());
+  ASSERT_EQ(OPENED, ReopenDirectory());
 }
 
 void SyncableDirectoryTest::TearDown() {
   if (dir_)
     dir_->SaveChanges();
   dir_.reset();
+}
+
+DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
+  // Use a TestDirectoryBackingStore and sql::Connection so we can have test
+  // data persist across Directory object lifetimes while getting the
+  // performance benefits of not writing to disk.
+  dir_.reset(
+      new Directory(new TestDirectoryBackingStore(kDirectoryName, &connection_),
+                    &handler_,
+                    NULL,
+                    NULL,
+                    NULL));
+
+  DirOpenResult open_result =
+      dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver());
+  return open_result;
 }
 
 // Creates an empty entry and sets the ID field to a default one.
@@ -69,11 +105,11 @@ DirOpenResult SyncableDirectoryTest::SimulateSaveAndReloadDir() {
   if (!dir_->SaveChanges())
     return FAILED_IN_UNITTEST;
 
-  return ReloadDirImpl();
+  return ReopenDirectory();
 }
 
 DirOpenResult SyncableDirectoryTest::SimulateCrashAndReloadDir() {
-  return ReloadDirImpl();
+  return ReopenDirectory();
 }
 
 void SyncableDirectoryTest::GetAllMetaHandles(BaseTransaction* trans,
@@ -161,27 +197,6 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans,
   ASSERT_TRUE(base_version == e.GetBaseVersion());
   ASSERT_TRUE(server_version == e.GetServerVersion());
   ASSERT_TRUE(is_del == e.GetIsDel());
-}
-
-DirOpenResult SyncableDirectoryTest::ReloadDirImpl() {  // Do some tricky things
-                                                        // to preserve the
-                                                        // backing store.
-  DirectoryBackingStore* saved_store = dir_->store_.release();
-
-  // Close the current directory.
-  dir_->Close();
-  dir_.reset();
-
-  dir_.reset(new Directory(saved_store, &handler_, NULL, NULL, NULL));
-  DirOpenResult result =
-      dir_->OpenImpl(kDirectoryName, &delegate_, NullTransactionObserver());
-
-  // If something went wrong, we need to clear this member.  If we don't,
-  // TearDown() will be guaranteed to crash when it calls SaveChanges().
-  if (result != OPENED)
-    dir_.reset();
-
-  return result;
 }
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
@@ -1180,6 +1195,329 @@ TEST_F(SyncableDirectoryTest, PositionWithNullSurvivesSaveAndReload) {
     Entry null_ordinal_child(&trans, GET_BY_ID, null_child_id);
     EXPECT_TRUE(null_pos.Equals(null_ordinal_child.GetUniquePosition()));
     EXPECT_TRUE(null_pos.Equals(null_ordinal_child.GetServerUniquePosition()));
+  }
+}
+
+TEST_F(SyncableDirectoryTest, General) {
+  int64 written_metahandle;
+  const Id id = TestIdFactory::FromNumber(99);
+  std::string name = "Jeff";
+  // Test simple read operations on an empty DB.
+  {
+    ReadTransaction rtrans(FROM_HERE, dir().get());
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_FALSE(e.good());  // Hasn't been written yet.
+
+    Directory::Metahandles child_handles;
+    dir()->GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
+    EXPECT_TRUE(child_handles.empty());
+  }
+
+  // Test creating a new meta entry.
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry me(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), name);
+    ASSERT_TRUE(me.good());
+    me.PutId(id);
+    me.PutBaseVersion(1);
+    written_metahandle = me.GetMetahandle();
+  }
+
+  // Test GetChildHandles* after something is now in the DB.
+  // Also check that GET_BY_ID works.
+  {
+    ReadTransaction rtrans(FROM_HERE, dir().get());
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_TRUE(e.good());
+
+    Directory::Metahandles child_handles;
+    dir()->GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
+    EXPECT_EQ(1u, child_handles.size());
+
+    for (Directory::Metahandles::iterator i = child_handles.begin();
+         i != child_handles.end(); ++i) {
+      EXPECT_EQ(*i, written_metahandle);
+    }
+  }
+
+  // Test writing data to an entity. Also check that GET_BY_HANDLE works.
+  static const char s[] = "Hello World.";
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
+    ASSERT_TRUE(e.good());
+    PutDataAsBookmarkFavicon(&trans, &e, s, sizeof(s));
+  }
+
+  // Test reading back the contents that we just wrote.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
+    ASSERT_TRUE(e.good());
+    ExpectDataFromBookmarkFaviconEquals(&trans, &e, s, sizeof(s));
+  }
+
+  // Verify it exists in the folder.
+  {
+    ReadTransaction rtrans(FROM_HERE, dir().get());
+    EXPECT_EQ(1, CountEntriesWithName(&rtrans, rtrans.root_id(), name));
+  }
+
+  // Now delete it.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
+    e.PutIsDel(true);
+
+    EXPECT_EQ(0, CountEntriesWithName(&trans, trans.root_id(), name));
+  }
+
+  dir()->SaveChanges();
+}
+
+TEST_F(SyncableDirectoryTest, ChildrenOps) {
+  int64 written_metahandle;
+  const Id id = TestIdFactory::FromNumber(99);
+  std::string name = "Jeff";
+  {
+    ReadTransaction rtrans(FROM_HERE, dir().get());
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_FALSE(e.good());  // Hasn't been written yet.
+
+    Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(root.good());
+    EXPECT_FALSE(dir()->HasChildren(&rtrans, rtrans.root_id()));
+    EXPECT_TRUE(root.GetFirstChildId().IsRoot());
+  }
+
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry me(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), name);
+    ASSERT_TRUE(me.good());
+    me.PutId(id);
+    me.PutBaseVersion(1);
+    written_metahandle = me.GetMetahandle();
+  }
+
+  // Test children ops after something is now in the DB.
+  {
+    ReadTransaction rtrans(FROM_HERE, dir().get());
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_TRUE(e.good());
+
+    Entry child(&rtrans, GET_BY_HANDLE, written_metahandle);
+    ASSERT_TRUE(child.good());
+
+    Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(root.good());
+    EXPECT_TRUE(dir()->HasChildren(&rtrans, rtrans.root_id()));
+    EXPECT_EQ(e.GetId(), root.GetFirstChildId());
+  }
+
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry me(&wtrans, GET_BY_HANDLE, written_metahandle);
+    ASSERT_TRUE(me.good());
+    me.PutIsDel(true);
+  }
+
+  // Test children ops after the children have been deleted.
+  {
+    ReadTransaction rtrans(FROM_HERE, dir().get());
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_TRUE(e.good());
+
+    Entry root(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(root.good());
+    EXPECT_FALSE(dir()->HasChildren(&rtrans, rtrans.root_id()));
+    EXPECT_TRUE(root.GetFirstChildId().IsRoot());
+  }
+
+  dir()->SaveChanges();
+}
+
+TEST_F(SyncableDirectoryTest, ClientIndexRebuildsProperly) {
+  int64 written_metahandle;
+  TestIdFactory factory;
+  const Id id = factory.NewServerId();
+  std::string name = "cheesepuffs";
+  std::string tag = "dietcoke";
+
+  // Test creating a new meta entry.
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry me(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), name);
+    ASSERT_TRUE(me.good());
+    me.PutId(id);
+    me.PutBaseVersion(1);
+    me.PutUniqueClientTag(tag);
+    written_metahandle = me.GetMetahandle();
+  }
+  dir()->SaveChanges();
+
+  // Close and reopen, causing index regeneration.
+  ReopenDirectory();
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    Entry me(&trans, GET_BY_CLIENT_TAG, tag);
+    ASSERT_TRUE(me.good());
+    EXPECT_EQ(me.GetId(), id);
+    EXPECT_EQ(me.GetBaseVersion(), 1);
+    EXPECT_EQ(me.GetUniqueClientTag(), tag);
+    EXPECT_EQ(me.GetMetahandle(), written_metahandle);
+  }
+}
+
+TEST_F(SyncableDirectoryTest, ClientIndexRebuildsDeletedProperly) {
+  TestIdFactory factory;
+  const Id id = factory.NewServerId();
+  std::string tag = "dietcoke";
+
+  // Test creating a deleted, unsynced, server meta entry.
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry me(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), "deleted");
+    ASSERT_TRUE(me.good());
+    me.PutId(id);
+    me.PutBaseVersion(1);
+    me.PutUniqueClientTag(tag);
+    me.PutIsDel(true);
+    me.PutIsUnsynced(true);  // Or it might be purged.
+  }
+  dir()->SaveChanges();
+
+  // Close and reopen, causing index regeneration.
+  ReopenDirectory();
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    Entry me(&trans, GET_BY_CLIENT_TAG, tag);
+    // Should still be present and valid in the client tag index.
+    ASSERT_TRUE(me.good());
+    EXPECT_EQ(me.GetId(), id);
+    EXPECT_EQ(me.GetUniqueClientTag(), tag);
+    EXPECT_TRUE(me.GetIsDel());
+    EXPECT_TRUE(me.GetIsUnsynced());
+  }
+}
+
+TEST_F(SyncableDirectoryTest, ToValue) {
+  const Id id = TestIdFactory::FromNumber(99);
+  {
+    ReadTransaction rtrans(FROM_HERE, dir().get());
+    Entry e(&rtrans, GET_BY_ID, id);
+    EXPECT_FALSE(e.good());  // Hasn't been written yet.
+
+    scoped_ptr<base::DictionaryValue> value(e.ToValue(NULL));
+    ExpectDictBooleanValue(false, *value, "good");
+    EXPECT_EQ(1u, value->size());
+  }
+
+  // Test creating a new meta entry.
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry me(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), "new");
+    ASSERT_TRUE(me.good());
+    me.PutId(id);
+    me.PutBaseVersion(1);
+
+    scoped_ptr<base::DictionaryValue> value(me.ToValue(NULL));
+    ExpectDictBooleanValue(true, *value, "good");
+    EXPECT_TRUE(value->HasKey("kernel"));
+    ExpectDictStringValue("Bookmarks", *value, "modelType");
+    ExpectDictBooleanValue(true, *value, "existsOnClientBecauseNameIsNonEmpty");
+    ExpectDictBooleanValue(false, *value, "isRoot");
+  }
+
+  dir()->SaveChanges();
+}
+
+// Test that the bookmark tag generation algorithm remains unchanged.
+TEST_F(SyncableDirectoryTest, BookmarkTagTest) {
+  // This test needs its own InMemoryDirectoryBackingStore because it needs to
+  // call request_consistent_cache_guid().
+  InMemoryDirectoryBackingStore* store = new InMemoryDirectoryBackingStore("x");
+
+  // The two inputs that form the bookmark tag are the directory's cache_guid
+  // and its next_id value.  We don't need to take any action to ensure
+  // consistent next_id values, but we do need to explicitly request that our
+  // InMemoryDirectoryBackingStore always return the same cache_guid.
+  store->request_consistent_cache_guid();
+
+  Directory dir(store, unrecoverable_error_handler(), NULL, NULL, NULL);
+  ASSERT_EQ(
+      OPENED,
+      dir.Open("x", directory_change_delegate(), NullTransactionObserver()));
+
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
+    MutableEntry bm(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), "bm");
+    bm.PutIsUnsynced(true);
+
+    // If this assertion fails, that might indicate that the algorithm used to
+    // generate bookmark tags has been modified.  This could have implications
+    // for bookmark ordering.  Please make sure you know what you're doing if
+    // you intend to make such a change.
+    ASSERT_EQ("6wHRAb3kbnXV5GHrejp4/c1y5tw=", bm.GetUniqueBookmarkTag());
+  }
+}
+
+// A thread that creates a bunch of directory entries.
+class StressTransactionsDelegate : public base::PlatformThread::Delegate {
+ public:
+  StressTransactionsDelegate(Directory* dir, int thread_number)
+      : dir_(dir), thread_number_(thread_number) {}
+
+ private:
+  Directory* const dir_;
+  const int thread_number_;
+
+  // PlatformThread::Delegate methods:
+  virtual void ThreadMain() OVERRIDE {
+    int entry_count = 0;
+    std::string path_name;
+
+    for (int i = 0; i < 20; ++i) {
+      const int rand_action = rand() % 10;
+      if (rand_action < 4 && !path_name.empty()) {
+        ReadTransaction trans(FROM_HERE, dir_);
+        CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
+        base::PlatformThread::Sleep(
+            base::TimeDelta::FromMilliseconds(rand() % 10));
+      } else {
+        std::string unique_name =
+            base::StringPrintf("%d.%d", thread_number_, entry_count++);
+        path_name.assign(unique_name.begin(), unique_name.end());
+        WriteTransaction trans(FROM_HERE, UNITTEST, dir_);
+        MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), path_name);
+        CHECK(e.good());
+        base::PlatformThread::Sleep(
+            base::TimeDelta::FromMilliseconds(rand() % 20));
+        e.PutIsUnsynced(true);
+        if (e.PutId(TestIdFactory::FromNumber(rand())) &&
+            e.GetId().ServerKnows() && !e.GetId().IsRoot()) {
+          e.PutBaseVersion(1);
+        }
+      }
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StressTransactionsDelegate);
+};
+
+// Stress test Directory by accessing it from several threads concurrently.
+TEST_F(SyncableDirectoryTest, StressTransactions) {
+  const int kThreadCount = 7;
+  base::PlatformThreadHandle threads[kThreadCount];
+  scoped_ptr<StressTransactionsDelegate> thread_delegates[kThreadCount];
+
+  for (int i = 0; i < kThreadCount; ++i) {
+    thread_delegates[i].reset(new StressTransactionsDelegate(dir().get(), i));
+    ASSERT_TRUE(base::PlatformThread::Create(
+        0, thread_delegates[i].get(), &threads[i]));
+  }
+
+  for (int i = 0; i < kThreadCount; ++i) {
+    base::PlatformThread::Join(threads[i]);
   }
 }
 
