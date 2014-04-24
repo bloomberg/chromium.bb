@@ -330,16 +330,6 @@ bool GraphicsContext::hasShadow() const
     return !!immutableState()->drawLooper();
 }
 
-FloatRect GraphicsContext::getClipBounds() const
-{
-    if (paintingDisabled())
-        return FloatRect();
-    SkRect rect;
-    if (!m_canvas->getClipBounds(&rect))
-        return FloatRect();
-    return FloatRect(rect);
-}
-
 bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
 {
     if (paintingDisabled())

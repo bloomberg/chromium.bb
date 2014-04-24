@@ -135,7 +135,6 @@ public:
 
     SkDrawLooper* drawLooper() const { return immutableState()->drawLooper(); }
 
-    FloatRect getClipBounds() const;
     bool getTransformedClipBounds(FloatRect* bounds) const;
     SkMatrix getTotalMatrix() const;
 
