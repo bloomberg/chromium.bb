@@ -208,6 +208,9 @@ class NET_EXPORT WebSocketChannel {
   // Handshake to the renderer.
   void ScheduleOpeningHandshakeNotification();
 
+  // Sets |state_| to |new_state| and updates UMA if necessary.
+  void SetState(State new_state);
+
   // Returns true if state_ is SEND_CLOSED, CLOSE_WAIT or CLOSED.
   bool InClosingState() const;
 
@@ -391,6 +394,10 @@ class NET_EXPORT WebSocketChannel {
   // True if we have already sent the type (Text or Binary) of the current
   // message to the renderer. This can be false if the message is empty so far.
   bool initial_frame_forwarded_;
+
+  // For UMA. The time when OnConnectSuccess() method was called and |stream_|
+  // was set.
+  base::TimeTicks established_on_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
