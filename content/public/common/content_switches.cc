@@ -296,9 +296,6 @@ const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
-// Disables the threaded HTML parser in Blink
-const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
-
 // Disable accelerated overflow scrolling in corner cases (that would not be
 // handled by enable-accelerated-overflow-scroll).
 const char kDisableUniversalAcceleratedOverflowScroll[] =

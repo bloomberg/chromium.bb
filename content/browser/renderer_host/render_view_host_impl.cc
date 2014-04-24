@@ -436,8 +436,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
       command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   prefs.region_based_columns_enabled =
       command_line.HasSwitch(switches::kEnableRegionBasedColumns);
-  prefs.threaded_html_parser =
-      !command_line.HasSwitch(switches::kDisableThreadedHTMLParser);
   if (command_line.HasSwitch(cc::switches::kEnablePinchVirtualViewport)) {
     prefs.pinch_virtual_viewport_enabled = true;
     prefs.pinch_overlay_scrollbar_thickness = 10;
