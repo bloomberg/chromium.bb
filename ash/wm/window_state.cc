@@ -276,6 +276,12 @@ void WindowState::RemoveObserver(WindowStateObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
+  bounds_changed_by_user_ = bounds_changed_by_user;
+  if (bounds_changed_by_user)
+    pre_auto_manage_window_bounds_.reset();
+}
+
 void WindowState::CreateDragDetails(aura::Window* window,
                                     const gfx::Point& point_in_parent,
                                     int window_component,

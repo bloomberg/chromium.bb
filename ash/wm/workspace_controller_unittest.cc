@@ -20,6 +20,7 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
@@ -1028,6 +1029,59 @@ TEST_F(WorkspaceControllerTest, TestUserHandledWindowRestore) {
   ASSERT_TRUE(window1_state->pre_auto_manage_window_bounds());
   EXPECT_EQ(user_pos.ToString(),
             window1_state->pre_auto_manage_window_bounds()->ToString());
+}
+
+// Solo window should be restored to the bounds where a user moved to.
+TEST_F(WorkspaceControllerTest, TestRestoreToUserModifiedBounds) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  UpdateDisplay("400x300");
+  gfx::Rect default_bounds(10, 0, 100, 100);
+  scoped_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(default_bounds));
+  wm::WindowState* window1_state = wm::GetWindowState(window1.get());
+  window1->Hide();
+  window1_state->set_window_position_managed(true);
+  window1->Show();
+  // First window is centered.
+  EXPECT_EQ("150,0 100x100", window1->bounds().ToString());
+  scoped_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(default_bounds));
+  wm::WindowState* window2_state = wm::GetWindowState(window2.get());
+  window2->Hide();
+  window2_state->set_window_position_managed(true);
+  window2->Show();
+
+  // Auto positioning pushes windows to each sides.
+  EXPECT_EQ("0,0 100x100", window1->bounds().ToString());
+  EXPECT_EQ("300,0 100x100", window2->bounds().ToString());
+
+  window2->Hide();
+  // Restores to the center.
+  EXPECT_EQ("150,0 100x100", window1->bounds().ToString());
+
+  // A user moved the window.
+  scoped_ptr<WindowResizer> resizer(CreateWindowResizer(
+      window1.get(),
+      gfx::Point(),
+      HTCAPTION,
+      aura::client::WINDOW_MOVE_SOURCE_MOUSE).release());
+  gfx::Point location = resizer->GetInitialLocation();
+  location.Offset(-50, 0);
+  resizer->Drag(location, 0);
+  resizer->CompleteDrag();
+
+  window1_state->set_bounds_changed_by_user(true);
+  window1->SetBounds(gfx::Rect(100, 0, 100, 100));
+
+  window2->Show();
+  EXPECT_EQ("0,0 100x100", window1->bounds().ToString());
+  EXPECT_EQ("300,0 100x100", window2->bounds().ToString());
+
+  // Window 1 should be restored to the user modified bounds.
+  window2->Hide();
+  EXPECT_EQ("100,0 100x100", window1->bounds().ToString());
 }
 
 // Test that a window from normal to minimize will repos the remaining.

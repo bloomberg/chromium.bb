@@ -233,9 +233,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Whether or not the window's position or size was changed by a user.
   bool bounds_changed_by_user() const { return bounds_changed_by_user_; }
-  void set_bounds_changed_by_user(bool bounds_changed_by_user) {
-    bounds_changed_by_user_ = bounds_changed_by_user;
-  }
+  void set_bounds_changed_by_user(bool bounds_changed_by_user);
 
   // True if this window is an attached panel.
   bool panel_attached() const {
