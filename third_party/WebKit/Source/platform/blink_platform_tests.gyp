@@ -48,8 +48,7 @@
         '<@(platform_heap_test_files)',
       ],
       'conditions': [
-        # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
+        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and use_allocator!="none"', {
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',
@@ -102,8 +101,7 @@
         '<@(platform_test_files)',
       ],
       'conditions': [
-        # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
+        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and use_allocator!="none"', {
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',
