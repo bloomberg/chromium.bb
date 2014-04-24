@@ -1,0 +1,37 @@
+
+Tests the async call stacks and framework black-boxing features working together.
+
+Debugger was enabled.
+Set timer for test function.
+Call stack:
+    0) callback2 (async-callstack-and-framework-black-box.html:30)
+    1) Framework_inner1 (framework.js:59)
+    [setTimeout]
+    0) Framework.schedule (framework.js:45)
+    1) Framework_willSchedule (framework.js:51)
+    2) window.callbackFromFramework (async-callstack-and-framework-black-box.html:10)
+    3) Framework_inner2 (framework.js:63)
+    [setTimeout]
+    0) Framework.schedule (framework.js:45)
+    1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+    0) Framework.schedule (framework.js:45)
+    1) Framework.doSomeAsyncChainCalls (framework.js:67)
+    2) callback1 (async-callstack-and-framework-black-box.html:25)
+    3) Framework.safeRun (framework.js:8)
+    4) Framework.safeRun (framework.js:10)
+    5) timeout1 (async-callstack-and-framework-black-box.html:20)
+    [setTimeout]
+    0) testFunction (async-callstack-and-framework-black-box.html:15)
+
+Visible call stack:
+    1) callback2 (async-callstack-and-framework-black-box.html:30)
+    [setTimeout (async)]
+    2) window.callbackFromFramework (async-callstack-and-framework-black-box.html:10)
+    [setTimeout (async)]
+    3) callback1 (async-callstack-and-framework-black-box.html:25)
+    4) timeout1 (async-callstack-and-framework-black-box.html:20)
+    [setTimeout (async)]
+    5) testFunction (async-callstack-and-framework-black-box.html:15)
+Debugger was disabled.
+

@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/framework.js"></script>
+<script>
+
+window.callbackFromFramework = function(next)
+{
+    return next();
+}
+
+function testFunction()
+{
+    setTimeout(timeout1, 0);
+}
+
+function timeout1()
+{
+    Framework.safeRun(Framework.empty, callback1);
+}
+
+function callback1()
+{
+    Framework.doSomeAsyncChainCalls(callback2);
+}
+
+function callback2()
+{
+    debugger;
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    var maxAsyncCallStackDepth = 4;
+
+    WebInspector.experimentsSettings.frameworksDebuggingSupport.enableForTest();
+    WebInspector.settings.skipStackFramesSwitch.set(true);
+    WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        InspectorTest.captureStackTrace(callFrames, asyncStackTrace);
+
+        InspectorTest.addResult("\nVisible call stack:");
+
+        var callStackPane = WebInspector.panels.sources.sidebarPanes.callstack;
+        var placards = callStackPane.placards;
+        var lastPlacard = null;
+        for (var i = 0, index = 0; i < placards.length; ++i) {
+            var placard = placards[i];
+            if (placard.isHidden())
+                continue;
+            if (lastPlacard && placard._asyncPlacard !== lastPlacard._asyncPlacard)
+                InspectorTest.addResult("    [" + placard._asyncPlacard.title + "]");
+            InspectorTest.addResult("    " + (++index) + ") " + placard.title + " (" + placard.subtitle + ")");
+            lastPlacard = placard;
+        }
+
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests the async call stacks and framework black-boxing features working together.
+</p>
+</body>
+</html>

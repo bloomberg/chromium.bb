@@ -39,3 +39,30 @@ Framework.doSomeWork = function()
         Framework.safeRun(Framework.empty, Framework.empty, Framework.empty, true);
     }
 }
+
+Framework.schedule = function(callback, delay)
+{
+    setTimeout(callback, delay || 0);
+}
+
+Framework.willSchedule = function(callback, delay)
+{
+    return function Framework_willSchedule() {
+        return Framework.schedule(callback, delay);
+    };
+}
+
+Framework.doSomeAsyncChainCalls = function(callback)
+{
+    var func1 = Framework.willSchedule(function Framework_inner1() {
+        if (callback)
+            callback();
+    });
+    var func2 = Framework.willSchedule(function Framework_inner2() {
+        if (window.callbackFromFramework)
+            window.callbackFromFramework(func1);
+        else
+            func1();
+    });
+    Framework.schedule(func2);
+}
