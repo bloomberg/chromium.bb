@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
@@ -19,7 +21,6 @@
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
-#include "ui/message_center/message_center_util.h"
 
 namespace message_center {
 
@@ -34,10 +35,11 @@ MessageCenterTrayBridge::MessageCenterTrayBridge(
     : message_center_(message_center),
       tray_(new message_center::MessageCenterTray(this, message_center)),
       weak_ptr_factory_(this) {
-  if (message_center::GetMessageCenterShowState() ==
-          message_center::MESSAGE_CENTER_SHOW_ALWAYS) {
-    UpdateStatusItem();
-  }
+  show_status_item_.Init(
+      prefs::kMessageCenterShowIcon,
+      g_browser_process->local_state(),
+      base::Bind(&MessageCenterTrayBridge::OnShowStatusItemChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 MessageCenterTrayBridge::~MessageCenterTrayBridge() {
@@ -97,14 +99,9 @@ MessageCenterTrayBridge::GetMessageCenterTray() {
 
 void MessageCenterTrayBridge::UpdateStatusItem() {
   // Only show the status item if there are notifications.
-  message_center::MessageCenterShowState show_state =
-      message_center::GetMessageCenterShowState();
-  if (show_state == message_center::MESSAGE_CENTER_SHOW_UNREAD &&
-      message_center_->NotificationCount() == 0) {
+  if (!ShouldShowStatusItem()) {
     [status_item_view_ removeItem];
     status_item_view_.reset();
-    return;
-  } else if (show_state == message_center::MESSAGE_CENTER_SHOW_NEVER) {
     return;
   }
 
@@ -149,4 +146,13 @@ void MessageCenterTrayBridge::OpenTrayWindow() {
                                                   NSMinY(frame))
                              atLeftOf:NSMakePoint(NSMaxX(frame),
                                                   NSMinY(frame))];
+}
+
+bool MessageCenterTrayBridge::ShouldShowStatusItem() const {
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kMessageCenterShowIcon);
+}
+
+void MessageCenterTrayBridge::OnShowStatusItemChanged() {
+  UpdateStatusItem();
 }

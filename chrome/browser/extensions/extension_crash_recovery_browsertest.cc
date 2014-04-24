@@ -24,8 +24,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_switches.h"
-#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_list.h"
 
 using content::NavigationController;

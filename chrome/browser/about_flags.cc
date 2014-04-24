@@ -36,7 +36,6 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/keyboard_switches.h"
-#include "ui/message_center/message_center_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/views/views_switches.h"
 
@@ -378,16 +377,6 @@ const Experiment::Choice kOriginChipV2Choices[] = {
     switches::kEnableOriginChipV2HideOnMouseRelease, ""},
   { IDS_FLAGS_ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT,
     switches::kEnableOriginChipV2HideOnUserInput, ""}
-};
-
-const Experiment::Choice kNotificationCenterTrayBehaviorChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_NEVER,
-    message_center::switches::kNotificationCenterTrayBehavior, "never" },
-  { IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_ALWAYS,
-    message_center::switches::kNotificationCenterTrayBehavior, "always" },
-  { IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_UNREAD,
-    message_center::switches::kNotificationCenterTrayBehavior, "unread" }
 };
 
 const Experiment::Choice kTouchScrollingModeChoices[] = {
@@ -1678,13 +1667,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,
     kOsCrOS | kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnablePermissionsBubbles)
-  },
-  {
-    "notification-center-tray-behavior",
-    IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_NAME,
-    IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_DESCRIPTION,
-    kOsMac,
-    MULTI_VALUE_TYPE(kNotificationCenterTrayBehaviorChoices)
   },
   {
     "out-of-process-pdf",

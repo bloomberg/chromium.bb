@@ -17,7 +17,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
 
 using syncer::SyncData;

@@ -48,6 +48,8 @@
         '../ui/base/cocoa/hover_image_button.mm',
         '../ui/base/cocoa/menu_controller.h',
         '../ui/base/cocoa/menu_controller.mm',
+        'browser/app_controller_mac.h',
+        'browser/app_controller_mac.mm',
         'browser/ui/cocoa/about_ipc_controller.h',
         'browser/ui/cocoa/about_ipc_controller.mm',
         'browser/ui/cocoa/animatable_view.h',

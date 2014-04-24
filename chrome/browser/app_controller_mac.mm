@@ -207,6 +207,7 @@ bool IsProfileSignedOut(Profile* profile) {
 - (void)initMenuState;
 - (void)initProfileMenu;
 - (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item;
+- (void)updateDisplayMessageCenterPrefMenuItem:(NSMenuItem*)item;
 - (void)registerServicesMenuTypesTo:(NSApplication*)app;
 - (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
@@ -943,6 +944,10 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   } else if (action == @selector(toggleConfirmToQuit:)) {
     [self updateConfirmToQuitPrefMenuItem:static_cast<NSMenuItem*>(item)];
     enable = YES;
+  } else if (action == @selector(toggleDisplayMessageCenter:)) {
+    NSMenuItem* menuItem = static_cast<NSMenuItem*>(item);
+    [self updateDisplayMessageCenterPrefMenuItem:menuItem];
+    enable = YES;
   } else if (action == @selector(executeApplication:)) {
     enable = YES;
   }
@@ -1267,6 +1272,14 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   [item setState:enabled ? NSOnState : NSOffState];
 }
 
+- (void)updateDisplayMessageCenterPrefMenuItem:(NSMenuItem*)item {
+  const PrefService* prefService = g_browser_process->local_state();
+  bool enabled = prefService->GetBoolean(prefs::kMessageCenterShowIcon);
+  // The item should be checked if "show icon" is false, since the text reads
+  // "Hide notification center icon."
+  [item setState:enabled ? NSOffState : NSOnState];
+}
+
 - (void)registerServicesMenuTypesTo:(NSApplication*)app {
   // Note that RenderWidgetHostViewCocoa implements NSServicesRequests which
   // handles requests from services.
@@ -1380,6 +1393,12 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   PrefService* prefService = g_browser_process->local_state();
   bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
   prefService->SetBoolean(prefs::kConfirmToQuitEnabled, !enabled);
+}
+
+- (IBAction)toggleDisplayMessageCenter:(id)sender {
+  PrefService* prefService = g_browser_process->local_state();
+  bool enabled = prefService->GetBoolean(prefs::kMessageCenterShowIcon);
+  prefService->SetBoolean(prefs::kMessageCenterShowIcon, !enabled);
 }
 
 // Explicitly bring to the foreground when creating new windows from the dock.

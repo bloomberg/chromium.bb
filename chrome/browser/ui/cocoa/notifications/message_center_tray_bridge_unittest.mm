@@ -9,10 +9,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/message_center/cocoa/status_item_view.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -21,6 +23,8 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
   virtual void SetUp() OVERRIDE {
     ui::CocoaTest::SetUp();
 
+    local_state_.reset(
+        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
     message_center::MessageCenter::Initialize();
     center_ = message_center::MessageCenter::Get();
 
@@ -30,6 +34,8 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
   virtual void TearDown() OVERRIDE {
     bridge_.reset();
     message_center::MessageCenter::Shutdown();
+    local_state_.reset();
+    initializer_.reset();
     ui::CocoaTest::TearDown();
   }
 
@@ -51,6 +57,11 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
         NULL));
   }
 
+  TestingPrefServiceSimple* local_state() { return local_state_->Get(); }
+
+  scoped_ptr<TestingBrowserProcessInitializer> initializer_;
+  scoped_ptr<ScopedTestingLocalState> local_state_;
+
   base::MessageLoop message_loop_;
   message_center::MessageCenter* center_;  // Weak, global.
   scoped_ptr<MessageCenterTrayBridge> bridge_;
@@ -60,29 +71,8 @@ class MessageCenterTrayBridgeTestPrefNever
     : public MessageCenterTrayBridgeTest {
  public:
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        message_center::switches::kNotificationCenterTrayBehavior, "never");
     MessageCenterTrayBridgeTest::SetUp();
-  }
-};
-
-class MessageCenterTrayBridgeTestPrefAlways
-    : public MessageCenterTrayBridgeTest {
- public:
-  virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        message_center::switches::kNotificationCenterTrayBehavior, "always");
-    MessageCenterTrayBridgeTest::SetUp();
-  }
-};
-
-class MessageCenterTrayBridgeTestPrefUnread
-    : public MessageCenterTrayBridgeTest {
- public:
-  virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        message_center::switches::kNotificationCenterTrayBehavior, "unread");
-    MessageCenterTrayBridgeTest::SetUp();
+    local_state()->SetBoolean(prefs::kMessageCenterShowIcon, false);
   }
 };
 
@@ -103,7 +93,28 @@ TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyAfterFirstNotification) {
   EXPECT_TRUE(status_item());
 }
 
-TEST_F(MessageCenterTrayBridgeTestPrefNever, StatusItemNeverWithPref) {
+TEST_F(MessageCenterTrayBridgeTest, StatusItemAppearsWithPrefChange) {
+  EXPECT_FALSE(status_item());
+  local_state()->SetBoolean(prefs::kMessageCenterShowIcon, false);
+  EXPECT_FALSE(status_item());
+  local_state()->SetBoolean(prefs::kMessageCenterShowIcon, true);
+  EXPECT_TRUE(status_item());
+}
+
+TEST_F(MessageCenterTrayBridgeTest, StatusItemDisappearsWithPrefChange) {
+  EXPECT_FALSE(status_item());
+  center_->AddNotification(GetNotification());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(status_item());
+  local_state()->SetBoolean(prefs::kMessageCenterShowIcon, false);
+  EXPECT_FALSE(status_item());
+  local_state()->SetBoolean(prefs::kMessageCenterShowIcon, true);
+  EXPECT_TRUE(status_item());
+}
+
+TEST_F(MessageCenterTrayBridgeTestPrefNever, StatusItemNever) {
   EXPECT_FALSE(status_item());
 
   center_->AddNotification(GetNotification());
@@ -119,36 +130,22 @@ TEST_F(MessageCenterTrayBridgeTestPrefNever, StatusItemNeverWithPref) {
   EXPECT_FALSE(status_item());
 }
 
-TEST_F(MessageCenterTrayBridgeTestPrefAlways, StatusItemAlwaysWithPref) {
-  EXPECT_TRUE(status_item());
-
-  center_->AddNotification(GetNotification());
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(status_item());
-  EXPECT_EQ(1u, [status_item() unreadCount]);
-
-  center_->RemoveNotification("1", /*by_user=*/true);
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(status_item());
-}
-
-TEST_F(MessageCenterTrayBridgeTestPrefUnread, StatusItemUnreadWithPref) {
+TEST_F(MessageCenterTrayBridgeTestPrefNever, StatusItemBackWithPref) {
   EXPECT_FALSE(status_item());
 
   center_->AddNotification(GetNotification());
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(status_item());
-  EXPECT_EQ(1u, [status_item() unreadCount]);
+  EXPECT_FALSE(status_item());
 
   center_->RemoveNotification("1", /*by_user=*/true);
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(status_item());
+
+  local_state()->SetBoolean(prefs::kMessageCenterShowIcon, true);
+
+  EXPECT_TRUE(status_item());
 }

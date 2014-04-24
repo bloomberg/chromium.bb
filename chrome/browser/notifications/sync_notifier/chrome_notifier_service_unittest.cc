@@ -33,7 +33,6 @@
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/message_center_util.h"
 
 using sync_pb::SyncedNotificationSpecifics;
 using sync_pb::EntitySpecifics;

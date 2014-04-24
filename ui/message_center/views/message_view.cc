@@ -14,7 +14,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"

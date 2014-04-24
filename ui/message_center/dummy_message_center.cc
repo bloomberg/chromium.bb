@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_switches.h"
-#include "ui/message_center/message_center_util.h"
 
 // This file contains dummy implementation of MessageCenter and used to compile
 // and link with Android and iOS implementations of Chrome which do not have

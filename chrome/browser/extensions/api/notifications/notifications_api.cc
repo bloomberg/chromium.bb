@@ -28,7 +28,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 

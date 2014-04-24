@@ -23,9 +23,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_types.h"
-#include "ui/message_center/message_center_util.h"
 
 class TestAddObserver : public message_center::MessageCenterObserver {
  public:

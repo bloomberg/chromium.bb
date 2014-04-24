@@ -6356,33 +6356,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION" desc="Description for the flag to enable Performance Monitor.">
         Enable passive gathering of performance-related metrics and events and provide the option to view this data in a graphical fashion. To view data, visit chrome://performance.
       </message>
-      <message name="IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_NAME" desc="Name of the flag to enable rich notifications.">
-        Enable Rich Notifications
-      </message>
-      <message name="IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable rich notifications.">
-        Enable rich templated notifications. Both HTML5 notifications and app notifications will be shown through new Notification Center.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_NAME" desc="Name of the flag to enable experimental UI for notifications.">
-        Enable experimental UI for Notifications
-      </message>
-      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_DESCRIPTION" desc="Description for the flag to enable experimental UI for notifications.">
-        Used for various Notification Center features under construction/polish that are not yet ready to be shipped.
-      </message>
-      <message name="IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_NAME" desc="Name of the flag to change the behavior of the notifications tray icon.">
-        Notification Center behavior
-      </message>
-      <message name="IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_DESCRIPTION" desc="Description for the flag to enable experimental UI for notifications.">
-        Alters the behavior of the system level icon for the notification center.
-      </message>
-      <message name="IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_NEVER" desc="Description for the flag to enable experimental UI for notifications.">
-        Never show
-      </message>
-      <message name="IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_ALWAYS" desc="Description for the flag to enable experimental UI for notifications.">
-        Always show
-      </message>
-      <message name="IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_UNREAD" desc="Description for the flag to enable experimental UI for notifications.">
-        Only show if there are outstanding notifications
-      </message>
       <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME" desc="Name of the flag to enable synced notifications.">
         Enable Synced Notifications
       </message>
@@ -7666,6 +7639,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_CONFIRM_TO_QUIT_OPTION" desc="The label of the checkbox preference that enables the confirm-to-quit feature.">
         Warn Before Quitting (<ph name="KEY_EQUIVALENT">$1<ex>⌘Q</ex></ph>)
+      </message>
+
+      <!-- Show/Hide notifications menubar extra -->
+      <message name="IDS_HIDE_NOTIFICATION_CENTER_OPTION" desc="The label of the checkbox preference that disables the notification center feature.">
+        Hide Notifications Icon
       </message>
 
       <!-- Importer Lock Dialog -->

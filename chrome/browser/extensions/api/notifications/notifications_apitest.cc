@@ -14,8 +14,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/features/feature.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_switches.h"
-#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notifier_settings.h"
 

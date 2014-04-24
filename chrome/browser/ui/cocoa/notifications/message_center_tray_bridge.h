@@ -11,6 +11,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_member.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
 @class MCPopupCollection;
@@ -53,6 +55,13 @@ class MessageCenterTrayBridge :
   // Opens the message center tray.
   void OpenTrayWindow();
 
+  // Uses the pref controlled by the main menu to determine whether the status
+  // item should be shown.
+  bool ShouldShowStatusItem() const;
+
+  // Notifies that the user has changed the show menubar item preference.
+  void OnShowStatusItemChanged();
+
   // The global, singleton message center model object. Weak.
   message_center::MessageCenter* message_center_;
 
@@ -70,6 +79,10 @@ class MessageCenterTrayBridge :
 
   // Weak pointer factory to posts tasks to self.
   base::WeakPtrFactory<MessageCenterTrayBridge> weak_ptr_factory_;
+
+  // A PrefMember that calls OnShowStatusItemChanged when the pref is updated
+  // by the user's selection in the main menu.
+  BooleanPrefMember show_status_item_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterTrayBridge);
 };

@@ -54,7 +54,6 @@
 
 #if defined(ENABLE_NOTIFICATIONS)
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_util.h"
 #endif
 
 using content::SiteInstance;

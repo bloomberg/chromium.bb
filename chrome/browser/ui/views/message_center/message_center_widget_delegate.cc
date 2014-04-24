@@ -12,7 +12,6 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/message_center_view.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"

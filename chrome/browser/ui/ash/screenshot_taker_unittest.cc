@@ -19,7 +19,6 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/message_center/message_center_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state.h"

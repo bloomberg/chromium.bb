@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "ui/message_center/message_center_util.h"
 
 // static
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {

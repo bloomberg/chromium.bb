@@ -2125,6 +2125,10 @@ const char kRollbackRequested[] = "RollbackRequested";
 const char kMessageCenterShowedFirstRunBalloon[] =
     "message_center.showed_first_run_balloon";
 
+// Boolean recording whether the user has disabled the notifications
+// menubar or systray icon.
+const char kMessageCenterShowIcon[] = "message_center.show_icon";
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

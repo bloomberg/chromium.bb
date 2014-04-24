@@ -12,8 +12,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
-#include "ui/message_center/message_center_switches.h"
-#include "ui/message_center/message_center_util.h"
 
 class NotificationIdleTest : public ExtensionApiTest {
  protected:

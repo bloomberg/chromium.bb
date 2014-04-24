@@ -36,7 +36,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(ENABLE_MDNS)
