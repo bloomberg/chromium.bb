@@ -216,4 +216,11 @@ CompositingReasons RenderEmbeddedObject::additionalCompositingReasons(Compositin
     return CompositingReasonNone;
 }
 
+RenderBox* RenderEmbeddedObject::embeddedContentBox() const
+{
+    if (!node() || !widget() || !widget()->isFrameView())
+        return 0;
+    return toFrameView(widget())->embeddedContentBox();
+}
+
 }

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<style>iframe { border:none }</style>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<iframe src="../as-image/resources/200x200-blue-rect.svg">
+</iframe>
+<script>
+    t = async_test("Test <iframe> and <svg> size");
+    function check() {
+        var iframe = document.querySelector('iframe');
+        var svg = iframe.contentDocument.documentElement;
+
+        assert_equals(iframe.offsetWidth, 300, "width should be fallback width.");
+        assert_equals(iframe.offsetHeight, 150, "height should be the fallback height 150.");
+        assert_equals(svg.offsetWidth, svg.width.baseVal.value, "width should be what the <svg> requests.");
+        assert_equals(svg.offsetHeight, svg.height.baseVal.value, "height should be what the <svg> requests.");
+
+        t.done();
+    }
+    t.step(function() {
+        addEventListener('load', t.step_func(check));
+    });
+</script>
+<div id="log"></div>
