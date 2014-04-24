@@ -406,7 +406,7 @@ ca-t3/pk-g4-4.0.1-r333
 
   def testAbortCQHWTests(self):
     commands.AbortCQHWTests('my-version', debug=False)
-    self.assertCommandContains(['cp', '-'], input='')
+    self.assertCommandContains(['cp'])
     self.assertCommandContains(['-i', 'paladin/my-version'])
 
   def testHWTestsAborted(self, aborted=True):
