@@ -258,5 +258,8 @@ race:gfx::ImageFamily::~ImageFamily
 # http://crbug.com/364014
 race:WTF::Latin1Encoding()::globalLatin1Encoding
 
+# http://crbug.com/366594
+net::tools::test*EndToEndTest::VerifyCleanConnection
+
 # https://code.google.com/p/v8/issues/detail?id=3143
 race:v8::internal::FLAG_track_double_fields
