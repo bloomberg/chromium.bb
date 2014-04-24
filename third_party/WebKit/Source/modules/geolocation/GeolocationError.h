@@ -33,14 +33,18 @@
 
 namespace WebCore {
 
-class GeolocationError : public RefCounted<GeolocationError> {
+class GeolocationError : public RefCountedWillBeGarbageCollectedFinalized<GeolocationError> {
 public:
     enum ErrorCode {
         PermissionDenied,
         PositionUnavailable
     };
 
-    static PassRefPtr<GeolocationError> create(ErrorCode code, const String& message) { return adoptRef(new GeolocationError(code, message)); }
+    static PassRefPtrWillBeRawPtr<GeolocationError> create(ErrorCode code, const String& message)
+    {
+        return adoptRefWillBeNoop(new GeolocationError(code, message));
+    }
+    void trace(Visitor*) { }
 
     ErrorCode code() const { return m_code; }
     const String& message() const { return m_message; }

@@ -53,7 +53,7 @@ public:
 
     void setController(GeolocationController*);
 
-    void setPosition(PassRefPtr<GeolocationPosition>);
+    void setPosition(PassRefPtrWillBeRawPtr<GeolocationPosition>);
     void setPositionUnavailableError(const String& errorMessage);
     void setPermission(bool allowed);
     int numberOfPendingPermissionRequests() const;
@@ -77,7 +77,7 @@ private:
     void clearError();
 
     GeolocationController* m_controller;
-    RefPtr<GeolocationPosition> m_lastPosition;
+    RefPtrWillBePersistent<GeolocationPosition> m_lastPosition;
     bool m_hasError;
     String m_errorMessage;
     Timer<GeolocationClientMock> m_controllerTimer;

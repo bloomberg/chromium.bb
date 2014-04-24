@@ -77,7 +77,7 @@ WebCore::GeolocationPosition* GeolocationClientProxy::lastPosition()
 {
     WebGeolocationPosition webPosition;
     if (m_client->lastPosition(webPosition))
-        m_lastPosition = webPosition;
+        m_lastPosition = PassRefPtrWillBeRawPtr<WebCore::GeolocationPosition>(webPosition);
     else
         m_lastPosition.clear();
 

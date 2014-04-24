@@ -47,13 +47,13 @@ void WebGeolocationPosition::reset()
     m_private.reset();
 }
 
-WebGeolocationPosition& WebGeolocationPosition::operator=(PassRefPtr<GeolocationPosition> position)
+WebGeolocationPosition& WebGeolocationPosition::operator=(PassRefPtrWillBeRawPtr<GeolocationPosition> position)
 {
     m_private = position;
     return *this;
 }
 
-WebGeolocationPosition::operator PassRefPtr<GeolocationPosition>() const
+WebGeolocationPosition::operator PassRefPtrWillBeRawPtr<GeolocationPosition>() const
 {
     return m_private.get();
 }

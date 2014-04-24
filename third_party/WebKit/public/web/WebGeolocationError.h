@@ -55,9 +55,9 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    WebGeolocationError(WTF::PassRefPtr<WebCore::GeolocationError>);
-    WebGeolocationError& operator=(WTF::PassRefPtr<WebCore::GeolocationError>);
-    operator WTF::PassRefPtr<WebCore::GeolocationError>() const;
+    WebGeolocationError(PassRefPtrWillBeRawPtr<WebCore::GeolocationError>);
+    WebGeolocationError& operator=(PassRefPtrWillBeRawPtr<WebCore::GeolocationError>);
+    operator PassRefPtrWillBeRawPtr<WebCore::GeolocationError>() const;
 #endif
 
 private:

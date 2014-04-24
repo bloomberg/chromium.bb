@@ -52,9 +52,9 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    WebGeolocationPosition(WTF::PassRefPtr<WebCore::GeolocationPosition>);
-    WebGeolocationPosition& operator=(WTF::PassRefPtr<WebCore::GeolocationPosition>);
-    operator WTF::PassRefPtr<WebCore::GeolocationPosition>() const;
+    WebGeolocationPosition(PassRefPtrWillBeRawPtr<WebCore::GeolocationPosition>);
+    WebGeolocationPosition& operator=(PassRefPtrWillBeRawPtr<WebCore::GeolocationPosition>);
+    operator PassRefPtrWillBeRawPtr<WebCore::GeolocationPosition>() const;
 #endif
 
 private:

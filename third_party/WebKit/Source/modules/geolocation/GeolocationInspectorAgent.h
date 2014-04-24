@@ -60,8 +60,8 @@ private:
     explicit GeolocationInspectorAgent(GeolocationController*);
     GeolocationController* m_controller;
     bool m_geolocationOverridden;
-    RefPtr<GeolocationPosition> m_geolocationPosition;
-    RefPtr<GeolocationPosition> m_platformGeolocationPosition;
+    RefPtrWillBePersistent<GeolocationPosition> m_geolocationPosition;
+    RefPtrWillBePersistent<GeolocationPosition> m_platformGeolocationPosition;
 };
 
 

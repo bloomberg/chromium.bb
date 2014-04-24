@@ -26,17 +26,24 @@
 #ifndef GeolocationPosition_h
 #define GeolocationPosition_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class GeolocationPosition : public RefCounted<GeolocationPosition> {
+class GeolocationPosition : public RefCountedWillBeGarbageCollected<GeolocationPosition> {
 public:
-    static PassRefPtr<GeolocationPosition> create(double timestamp, double latitude, double longitude, double accuracy) { return adoptRef(new GeolocationPosition(timestamp, latitude, longitude, accuracy)); }
-
-    static PassRefPtr<GeolocationPosition> create(double timestamp, double latitude, double longitude, double accuracy, bool providesAltitude, double altitude, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed) { return adoptRef(new GeolocationPosition(timestamp, latitude, longitude, accuracy, providesAltitude, altitude, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed)); }
+    static PassRefPtrWillBeRawPtr<GeolocationPosition> create(double timestamp, double latitude, double longitude, double accuracy)
+    {
+        return adoptRefWillBeNoop(new GeolocationPosition(timestamp, latitude, longitude, accuracy));
+    }
+    static PassRefPtrWillBeRawPtr<GeolocationPosition> create(double timestamp, double latitude, double longitude, double accuracy, bool providesAltitude, double altitude, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
+    {
+        return adoptRefWillBeNoop(new GeolocationPosition(timestamp, latitude, longitude, accuracy, providesAltitude, altitude, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed));
+    }
+    void trace(Visitor*) { }
 
     double timestamp() const { return m_timestamp; }
 

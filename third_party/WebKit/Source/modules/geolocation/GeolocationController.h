@@ -83,7 +83,7 @@ private:
     GeolocationClient* m_client;
     bool m_hasClientForTest;
 
-    RefPtr<GeolocationPosition> m_lastPosition;
+    RefPtrWillBePersistent<GeolocationPosition> m_lastPosition;
     typedef WillBePersistentHeapHashSet<RefPtrWillBeMember<Geolocation> > ObserversSet;
     // All observers; both those requesting high accuracy and those not.
     ObserversSet m_observers;

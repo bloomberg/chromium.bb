@@ -48,18 +48,18 @@ void WebGeolocationError::reset()
     m_private.reset();
 }
 
-WebGeolocationError::WebGeolocationError(PassRefPtr<GeolocationError> error)
+WebGeolocationError::WebGeolocationError(PassRefPtrWillBeRawPtr<GeolocationError> error)
 {
     m_private = error;
 }
 
-WebGeolocationError& WebGeolocationError::operator=(PassRefPtr<GeolocationError> error)
+WebGeolocationError& WebGeolocationError::operator=(PassRefPtrWillBeRawPtr<GeolocationError> error)
 {
     m_private = error;
     return *this;
 }
 
-WebGeolocationError::operator PassRefPtr<GeolocationError>() const
+WebGeolocationError::operator PassRefPtrWillBeRawPtr<GeolocationError>() const
 {
     return m_private.get();
 }

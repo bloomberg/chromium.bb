@@ -41,12 +41,12 @@ namespace blink {
 
 void WebGeolocationController::positionChanged(const WebGeolocationPosition& webPosition)
 {
-    m_private->positionChanged(PassRefPtr<GeolocationPosition>(webPosition).get());
+    m_private->positionChanged(PassRefPtrWillBeRawPtr<GeolocationPosition>(webPosition).get());
 }
 
 void WebGeolocationController::errorOccurred(const WebGeolocationError& webError)
 {
-    m_private->errorOccurred(PassRefPtr<GeolocationError>(webError).get());
+    m_private->errorOccurred(PassRefPtrWillBeRawPtr<GeolocationError>(webError).get());
 }
 
 } // namespace blink
