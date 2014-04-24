@@ -10,9 +10,6 @@
 #include "base/test/test_suite.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/utility_process_host_impl.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/common/content_client.h"
@@ -20,6 +17,12 @@
 #include "content/utility/in_process_utility_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
+
+#if !defined(OS_IOS)
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/utility_process_host_impl.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"

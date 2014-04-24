@@ -39,7 +39,6 @@
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
@@ -68,6 +67,10 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
+#endif
+
+#if !defined(OS_IOS)
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -718,8 +721,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
+#if !defined(OS_IOS)
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
+#endif
 
   if (parts_) {
     TRACE_EVENT0("shutdown",

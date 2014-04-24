@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace base {
 class MessageLoop;
@@ -43,6 +44,7 @@ class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
+class MojoApplication;
 class ServiceWorkerDispatcher;
 class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
@@ -54,7 +56,9 @@ class WebSocketDispatcher;
 struct RequestInfo;
 
 // The main thread of a child process derives from this class.
-class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
+class CONTENT_EXPORT ChildThread : public IPC::Listener,
+                                   public IPC::Sender,
+                                   public mojo::ShellClient {
  public:
   // Creates the thread.
   ChildThread();
@@ -170,6 +174,11 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
+  // mojo::ShellClient implementation:
+  virtual void AcceptConnection(
+      const mojo::String& service_name,
+      mojo::ScopedMessagePipeHandle message_pipe) OVERRIDE;
+
  private:
   class ChildThreadMessageRouter : public MessageRouter {
    public:
@@ -196,6 +205,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 #endif
 
   void EnsureConnected();
+
+  scoped_ptr<MojoApplication> mojo_application_;
 
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;

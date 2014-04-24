@@ -46,9 +46,11 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/mojo/mojo_service_names.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/web_ui_setup.mojom.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -693,9 +695,13 @@ void RenderViewHostImpl::SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) {
   }
 
   DCHECK(renderer_initialized_);
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  process->SetWebUIHandle(GetRoutingID(), handle.Pass());
+
+  mojo::InterfacePipe<WebUISetup, mojo::AnyInterface> pipe;
+  mojo::RemotePtr<WebUISetup> web_ui_setup(pipe.handle_to_self.Pass(), NULL);
+  web_ui_setup->SetWebUIHandle(GetRoutingID(), handle.Pass());
+
+  static_cast<RenderProcessHostImpl*>(GetProcess())->ConnectTo(
+      kRendererService_WebUISetup, pipe.handle_to_peer.Pass());
 }
 
 #if defined(OS_ANDROID)

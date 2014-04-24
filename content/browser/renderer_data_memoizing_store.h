@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/synchronization/lock.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 namespace content {

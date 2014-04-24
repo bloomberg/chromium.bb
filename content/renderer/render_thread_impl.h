@@ -401,6 +401,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
       size_t height,
       unsigned internalformat) OVERRIDE;
 
+  // mojo::ShellClient implementation:
+  virtual void AcceptConnection(
+      const mojo::String& service_name,
+      mojo::ScopedMessagePipeHandle message_pipe) OVERRIDE;
+
   void Init();
 
   void OnSetZoomLevelForCurrentURL(const std::string& scheme,
