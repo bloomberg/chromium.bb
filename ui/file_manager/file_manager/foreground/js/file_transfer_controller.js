@@ -925,6 +925,17 @@ FileTransferController.prototype = {
       if (entries[i].isFile)
         fileEntries.push(entries[i]);
     }
+    var containsDirectory = fileEntries.length !== entries.length;
+
+    // File object must be prepeared in advance for clipboard operations
+    // (copy, paste and drag). DataTransfer object closes for write after
+    // returning control from that handlers so they may not have
+    // asynchronous operations.
+    if (!containsDirectory) {
+      for (var i = 0; i < fileEntries.length; i++) {
+        fileEntries[i].file(function(file) { files.push(file); });
+      }
+    }
 
     if (entries.length === 1) {
       // For single selection, the dragged element is created in advance,
@@ -933,38 +944,20 @@ FileTransferController.prototype = {
       this.preloadThumbnailImage_(entries[0]);
     }
 
-    // File object must be prepeared in advance for clipboard operations
-    // (copy, paste and drag). DataTransfer object closes for write after
-    // returning control from that handlers so they may not have
-    // asynchronous operations.
-    var prepareFileObjects = function() {
-      for (var i = 0; i < fileEntries.length; i++) {
-        fileEntries[i].file(function(file) { files.push(file); });
-      }
-    };
-
     if (this.isOnDrive) {
       this.allDriveFilesAvailable = false;
-      this.metadataCache_.get(
-          entries, 'drive', function(props) {
+      this.metadataCache_.get(entries, 'drive', function(props) {
         // We consider directories not available offline for the purposes of
         // file transfer since we cannot afford to recursive traversal.
         this.allDriveFilesAvailable =
-            entries.filter(function(e) {
-              return e.isDirectory;
-            }).length === 0 &&
+            !containsDirectory &&
             props.filter(function(p) {
               return !p.availableOffline;
             }).length === 0;
         // |Copy| is the only menu item affected by allDriveFilesAvailable.
         // It could be open right now, update its UI.
         this.copyCommand_.disabled = !this.canCopyOrDrag_();
-
-        if (this.allDriveFilesAvailable)
-          prepareFileObjects();
       }.bind(this));
-    } else {
-      prepareFileObjects();
     }
   },
 

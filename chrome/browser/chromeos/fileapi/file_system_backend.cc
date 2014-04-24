@@ -260,7 +260,7 @@ fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
 
 bool FileSystemBackend::SupportsStreaming(
     const fileapi::FileSystemURL& url) const {
-  return false;
+  return url.type() == fileapi::kFileSystemTypeDrive;
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

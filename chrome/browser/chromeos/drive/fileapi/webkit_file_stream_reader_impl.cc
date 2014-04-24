@@ -98,17 +98,8 @@ void WebkitFileStreamReaderImpl::OnStreamReaderInitialized(
   DCHECK(stream_reader_);
   DCHECK(!callback.is_null());
 
-  if (error == net::OK) {
-    DCHECK(entry);
-
-    // Check last modification time.
-    if (!expected_modification_time_.is_null() &&
-        expected_modification_time_.ToInternalValue() !=
-        entry->file_info().last_modified()) {
-      error = net::ERR_UPLOAD_FILE_CHANGED;
-    }
-  }
-
+  // TODO(hashimoto): Report ERR_UPLOAD_FILE_CHANGED when modification time
+  // doesn't match. crbug.com/346625
   if (error != net::OK) {
     // Found an error. Close the |stream_reader_| and notify it to the caller.
     stream_reader_.reset();

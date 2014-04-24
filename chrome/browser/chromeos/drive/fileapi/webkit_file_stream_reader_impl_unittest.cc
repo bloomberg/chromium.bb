@@ -185,7 +185,8 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
   EXPECT_GE(content.size(), static_cast<size_t>(result));
 }
 
-TEST_F(WebkitFileStreamReaderImplTest, LastModificationError) {
+// TODO(hashimoto): Enable this test. crbug.com/346625
+TEST_F(WebkitFileStreamReaderImplTest, DISABLED_LastModificationError) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
