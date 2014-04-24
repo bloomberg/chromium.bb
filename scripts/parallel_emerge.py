@@ -36,6 +36,7 @@ import time
 import traceback
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
 # If PORTAGE_USERNAME isn't specified, scrape it from the $HOME variable. On
 # Chromium OS, the default "portage" user doesn't have the necessary
@@ -1272,8 +1273,8 @@ class EmergeQueue(object):
       print "Skipping merge because of --pretend mode."
       sys.exit(0)
 
-    # Set a process group so we can easily terminate all children.
-    os.setsid()
+    # Set up a session so we can easily terminate all children.
+    self._SetupSession()
 
     # Setup scheduler graph object. This is used by the child processes
     # to help schedule jobs.
@@ -1324,6 +1325,71 @@ class EmergeQueue(object):
     self._state_map.update(
         (pkg, TargetState(pkg, data)) for pkg, data in deps_map.iteritems())
     self._fetch_ready.multi_put(self._state_map.itervalues())
+
+  def _SetupSession(self):
+    """Set up a session so we can easily terminate all children."""
+    # When we call os.setsid(), this sets up a session / process group for this
+    # process and all children. These session groups are needed so that we can
+    # easily kill all children (including processes launched by emerge) before
+    # we exit.
+    #
+    # One unfortunate side effect of os.setsid() is that it blocks CTRL-C from
+    # being received. To work around this, we only call os.setsid() in a forked
+    # process, so that the parent can still watch for CTRL-C. The parent will
+    # just sit around, watching for signals and propagating them to the child,
+    # until the child exits.
+    #
+    # TODO(davidjames): It would be nice if we could replace this with cgroups.
+    pid = os.fork()
+    if pid == 0:
+      os.setsid()
+    else:
+      def PropagateToChildren(signum, _frame):
+        # Just propagate the signals down to the child. We'll exit when the
+        # child does.
+        try:
+          os.kill(pid, signum)
+        except OSError as ex:
+          if ex.errno != errno.ESRCH:
+            raise
+      signal.signal(signal.SIGINT, PropagateToChildren)
+      signal.signal(signal.SIGTERM, PropagateToChildren)
+
+      def StopGroup(_signum, _frame):
+        # When we get stopped, stop the children.
+        try:
+          os.killpg(pid, signal.SIGSTOP)
+          os.kill(0, signal.SIGSTOP)
+        except OSError as ex:
+          if ex.errno != errno.ESRCH:
+            raise
+      signal.signal(signal.SIGTSTP, StopGroup)
+
+      def ContinueGroup(_signum, _frame):
+        # Launch the children again after being stopped.
+        try:
+          os.killpg(pid, signal.SIGCONT)
+        except OSError as ex:
+          if ex.errno != errno.ESRCH:
+            raise
+      signal.signal(signal.SIGCONT, ContinueGroup)
+
+      # Loop until the children exit. We exit with os._exit to be sure we
+      # don't run any finalizers (those will be run by the child process.)
+      # pylint: disable=W0212
+      while True:
+        try:
+          # Wait for the process to exit. When it does, exit with the return
+          # value of the subprocess.
+          os._exit(osutils.GetExitStatus(os.waitpid(pid, 0)[1]))
+        except OSError as ex:
+          if ex.errno == errno.EINTR:
+            continue
+          traceback.print_exc()
+          os._exit(1)
+        except BaseException:
+          traceback.print_exc()
+          os._exit(1)
 
   def _SetupExitHandler(self):
 
