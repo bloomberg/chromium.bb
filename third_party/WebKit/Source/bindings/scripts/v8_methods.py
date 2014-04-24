@@ -120,9 +120,6 @@ def generate_method(interface, method):
         'is_raises_exception': is_raises_exception,
         'is_read_only': 'ReadOnly' in extended_attributes,
         'is_static': is_static,
-        'is_strict_type_checking':
-            'StrictTypeChecking' in extended_attributes or
-            'StrictTypeChecking' in interface.extended_attributes,
         'is_variadic': arguments and arguments[-1].is_variadic,
         'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
         'name': name,
@@ -157,6 +154,15 @@ def generate_argument(interface, method, argument, index):
         'has_event_listener_argument': any(
             argument_so_far for argument_so_far in method.arguments[:index]
             if argument_so_far.idl_type.name == 'EventListener'),
+        'has_type_checking_interface':
+            (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
+             has_extended_attribute_value(method, 'TypeChecking', 'Interface') or
+             has_extended_attribute_value(argument, 'TypeChecking', 'Interface')) and
+            idl_type.is_wrapper_type,
+        'has_type_checking_string':
+            (has_extended_attribute_value(interface, 'TypeChecking', 'String') or
+             has_extended_attribute_value(method, 'TypeChecking', 'String') or
+             has_extended_attribute_value(argument, 'TypeChecking', 'String')),
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
         'idl_type_object': idl_type,
@@ -165,7 +171,6 @@ def generate_argument(interface, method, argument, index):
         'is_callback_interface': idl_type.is_callback_interface,
         'is_nullable': idl_type.is_nullable,
         'is_optional': argument.is_optional,
-        'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
         'is_wrapper_type': idl_type.is_wrapper_type,

@@ -233,9 +233,10 @@ interface TestObject {
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
-    [StrictTypeChecking] attribute float strictTypeCheckingFloatAttribute; // nop for non-interface types
-    [StrictTypeChecking] attribute TestInterface strictTypeCheckingTestInterfaceAttribute;
-    [StrictTypeChecking] attribute TestInterface? strictTypeCheckingNullableTestInterfaceAttribute;
+    [TypeChecking=Interface|Nullable|String] attribute float strictTypeCheckingInterfaceNullableStringFloatAttribute; // nop for non-interface types
+    [TypeChecking=Interface] attribute TestInterface strictTypeCheckingInterfaceTestInterfaceAttribute;
+    [TypeChecking=Nullable] attribute TestInterface? strictTypeCheckingNullableTestInterfaceOrNullAttribute;
+    [TypeChecking=Interface|Nullable] attribute TestInterface? strictTypeCheckingInterfaceNullableTestInterfaceOrNullAttribute;
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;
@@ -392,9 +393,9 @@ interface TestObject {
     void overloadedMethodE(long longArg);
     void overloadedMethodE(long[] longArrayArg);
     void overloadedMethodF(long longArg);
-    void overloadedMethodF(TestInterfaceEmpty? testInterfaceEmptyNullableArg);
+    void overloadedMethodF(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     void overloadedMethodG();
-    void overloadedMethodG([StrictTypeChecking] DOMString strictTypeCheckingStringArg);
+    void overloadedMethodG([TypeChecking=String] DOMString strictTypeCheckingStringStringArg);
     void overloadedMethodH();
     void overloadedMethodH(TestCallbackInterface testCallbackInterfaceArg);
     // FIXME: Should be in order double, Dictionary, but Blink implementation of
@@ -402,7 +403,7 @@ interface TestObject {
     void overloadedMethodI(Dictionary dictionaryArg); // Non-wrapper type
     void overloadedMethodI(double doubleArg);
     void overloadedMethodJ(long longArg);
-    void overloadedMethodJ([Default=Null] TestInterfaceEmpty? testInterfaceEmptyNullableArg);
+    void overloadedMethodJ([Default=Null] TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
 
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();
@@ -469,8 +470,9 @@ interface TestObject {
     [NotEnumerable, ReadOnly] void notEnumerableReadOnlyVoidMethod();
     [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
     [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsRuntimeEnabledVoidMethod();
-    [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
-    [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyArg);
+    [TypeChecking=Interface] void strictTypeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
+    [TypeChecking=Nullable] void strictTypeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
+    [TypeChecking=Interface|Nullable] void strictTypeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [Unforgeable] void unforgeableVoidMethod();

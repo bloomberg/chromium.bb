@@ -25,7 +25,7 @@
  */
 
 [
-    StrictTypeChecking,
+    TypeChecking=Interface|Nullable|String,
 ] interface SVGFilterElement : SVGElement {
     readonly attribute SVGAnimatedEnumeration filterUnits;
     readonly attribute SVGAnimatedEnumeration primitiveUnits;

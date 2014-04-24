@@ -20,7 +20,7 @@
  */
 
 [
-    StrictTypeChecking,
+    TypeChecking=Interface|Nullable|String,
     ImplementedAs=SVGTransformTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGTransform {

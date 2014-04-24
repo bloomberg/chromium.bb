@@ -25,7 +25,7 @@
  */
 
 [
-    StrictTypeChecking,
+    TypeChecking=Interface|Nullable|String,
 ] interface SVGPathSegCurvetoCubicAbs : SVGPathSeg {
     attribute float x;
     attribute float y;

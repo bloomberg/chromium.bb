@@ -92,7 +92,7 @@ if (UNLIKELY(info.Length() <= {{argument.index}})) {
     return;
 }
 {% endif %}
-{% if method.is_strict_type_checking and argument.is_wrapper_type %}
+{% if argument.has_type_checking_interface %}
 {# Type checking for wrapper interface types (if interface not implemented,
    throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
 if (info.Length() > {{argument.index}} && {% if argument.is_nullable %}!isUndefinedOrNull(info[{{argument.index}}]) && {% endif %}!V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate())) {

@@ -26,7 +26,7 @@
 // http://www.w3.org/TR/SVG2/painting.html#InterfaceSVGMarkerElement
 
 [
-    StrictTypeChecking,
+    TypeChecking=Interface|Nullable|String,
 ] interface SVGMarkerElement : SVGElement {
 
     // Marker Unit Types

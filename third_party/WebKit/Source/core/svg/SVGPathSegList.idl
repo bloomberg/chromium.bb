@@ -25,7 +25,7 @@
  */
 
 [
-    StrictTypeChecking,
+    TypeChecking=Interface|Nullable|String,
     SetWrapperReferenceTo(SVGElement contextElement),
     ImplementedAs=SVGPathSegListTearOff
 ] interface SVGPathSegList {

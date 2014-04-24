@@ -61,8 +61,8 @@
     sequence<MediaStream> getRemoteStreams();
     MediaStream getStreamById(DOMString streamId);
 
-    [StrictTypeChecking, RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
-    [StrictTypeChecking, RaisesException] void removeStream(MediaStream? stream);
+    [TypeChecking=Interface|Nullable|String, RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
+    [TypeChecking=Interface|Nullable|String, RaisesException] void removeStream(MediaStream? stream);
 
     void getStats(RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
 

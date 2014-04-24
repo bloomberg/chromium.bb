@@ -418,7 +418,7 @@ def overload_check_argument(index, argument):
     cpp_value = 'info[%s]' % index
     idl_type = argument['idl_type_object']
     # FIXME: proper type checking, sharing code with attributes and methods
-    if idl_type.name == 'String' and argument['is_strict_type_checking']:
+    if idl_type.name == 'String' and argument['has_type_checking_string']:
         return ' || '.join(['isUndefinedOrNull(%s)' % cpp_value,
                             '%s->IsString()' % cpp_value,
                             '%s->IsObject()' % cpp_value])
@@ -500,12 +500,12 @@ def constructor_argument(interface, constructor, argument, index):
         'cpp_value':
             v8_methods.cpp_value(interface, constructor, index),
         'has_default': 'Default' in argument.extended_attributes,
+        'has_type_checking_string': False,  # Required for overload resolution
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
         'idl_type_object': idl_type,
         'index': index,
         'is_optional': argument.is_optional,
-        'is_strict_type_checking': False,  # Required for overload resolution
         'name': argument.name,
         'v8_value_to_local_cpp_value':
             v8_methods.v8_value_to_local_cpp_value(argument, index),
@@ -612,8 +612,8 @@ def property_setter(setter):
     extended_attributes = setter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
     return {
-        'has_strict_type_checking':
-            'StrictTypeChecking' in extended_attributes and
+        'has_type_checking_interface':
+            has_extended_attribute_value(setter, 'TypeChecking', 'Interface') and
             idl_type.is_wrapper_type,
         'idl_type': idl_type.base_type,
         'is_custom': 'Custom' in extended_attributes,

@@ -39,10 +39,10 @@
     ImplementedAs=TestInterfaceImplementation,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface referencedName),
-    StrictTypeChecking,
+    TypeChecking=Interface|Nullable|String,
 ] interface TestInterface : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
-    // configuration and method configuration, and [StrictTypeChecking]
+    // configuration and method configuration, and [TypeChecking]
     // constants also needed for [DoNotCheckConstants]
     const unsigned long UNSIGNED_LONG = 0;
     [Reflect=CONST_CPP] const short CONST_JAVASCRIPT = 1;

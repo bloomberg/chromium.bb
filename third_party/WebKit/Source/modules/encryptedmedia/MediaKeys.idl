@@ -29,7 +29,7 @@
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     WillBeGarbageCollected,
-    StrictTypeChecking
+    TypeChecking=Interface|Nullable|String
 ] interface MediaKeys {
     readonly attribute DOMString keySystem;
 

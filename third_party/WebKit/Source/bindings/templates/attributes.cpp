@@ -55,7 +55,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
-    {% if attribute.is_nullable and not attribute.has_strict_type_checking %}
+    {% if attribute.is_nullable and not attribute.has_type_checking_nullable %}
     bool isNull = false;
     {% endif %}
     {# FIXME: consider always using a local variable for value #}
@@ -85,7 +85,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
       | indent}}
     {% endif %}
     {% if attribute.is_nullable %}
-    {% if attribute.has_strict_type_checking %}
+    {% if attribute.has_type_checking_nullable %}
     if (!{{attribute.cpp_value}}) {
     {% else %}
     if (isNull) {
@@ -225,7 +225,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
     {# Type checking #}
-    {% if attribute.has_strict_type_checking %}
+    {% if attribute.has_type_checking_interface %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if ({% if attribute.is_nullable %}!isUndefinedOrNull(v8Value) && {% endif %}!V8{{attribute.idl_type}}::hasInstance(v8Value, info.GetIsolate())) {

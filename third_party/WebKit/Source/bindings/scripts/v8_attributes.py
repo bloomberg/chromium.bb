@@ -38,7 +38,7 @@ from idl_types import inherits_interface
 from v8_globals import includes, interfaces
 import v8_types
 import v8_utilities
-from v8_utilities import capitalize, cpp_name, has_extended_attribute, scoped_name, strip_suffix, uncapitalize
+from v8_utilities import capitalize, cpp_name, has_extended_attribute, has_extended_attribute_value, scoped_name, strip_suffix, uncapitalize
 
 
 def generate_attribute(interface, attribute):
@@ -67,11 +67,15 @@ def generate_attribute(interface, attribute):
     is_setter_raises_exception = (
         'RaisesException' in extended_attributes and
         extended_attributes['RaisesException'] in [None, 'Setter'])
-    # [StrictTypeChecking]
-    has_strict_type_checking = (
-        ('StrictTypeChecking' in extended_attributes or
-         'StrictTypeChecking' in interface.extended_attributes) and
+    # [TypeChecking]
+    has_type_checking_interface = (
+        (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
+         has_extended_attribute_value(attribute, 'TypeChecking', 'Interface')) and
         idl_type.is_wrapper_type)
+    has_type_checking_nullable = (
+        (has_extended_attribute_value(interface, 'TypeChecking', 'Nullable') or
+         has_extended_attribute_value(attribute, 'TypeChecking', 'Nullable')) and
+         idl_type.is_wrapper_type)
 
     if (base_idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -92,7 +96,8 @@ def generate_attribute(interface, attribute):
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
-        'has_strict_type_checking': has_strict_type_checking,
+        'has_type_checking_interface': has_type_checking_interface,
+        'has_type_checking_nullable': has_type_checking_nullable,
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_call_with_new_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'NewScriptState'),
@@ -115,8 +120,8 @@ def generate_attribute(interface, attribute):
         'is_setter_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'SetterCallWith', 'ExecutionContext'),
         'is_setter_raises_exception': is_setter_raises_exception,
         'has_setter_exception_state': (
-            is_setter_raises_exception or has_strict_type_checking or
-            idl_type.is_integer_type),
+            is_setter_raises_exception or has_type_checking_interface or
+            has_type_checking_nullable or idl_type.is_integer_type),
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
@@ -202,7 +207,7 @@ def getter_expression(interface, attribute, contents):
     if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
-    if attribute.idl_type.is_nullable and not contents['has_strict_type_checking']:
+    if attribute.idl_type.is_nullable and not contents['has_type_checking_nullable']:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
         arguments.append('exceptionState')

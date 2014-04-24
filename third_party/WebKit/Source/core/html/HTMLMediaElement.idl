@@ -29,7 +29,7 @@
 ] interface HTMLMediaElement : HTMLElement {
 
     // error state
-    [StrictTypeChecking] readonly attribute MediaError? error;
+    [TypeChecking=Interface|Nullable|String] readonly attribute MediaError? error;
 
     // network state
     [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString src;
@@ -73,7 +73,7 @@
 
     // media controller
     [Reflect] attribute DOMString mediaGroup;
-    [StrictTypeChecking] attribute MediaController? controller;
+    [TypeChecking=Interface|Nullable|String] attribute MediaController? controller;
 
     // controls
     attribute boolean controls;

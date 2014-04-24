@@ -89,10 +89,10 @@ SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SpecialWrapFor=*
-StrictTypeChecking
 TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString
+TypeChecking=Interface|Nullable|String
 URL
 Unforgeable
 WillBeGarbageCollected
