@@ -602,7 +602,7 @@ notify_output_destroy(struct wl_listener *listener, void *data)
 	struct weston_compositor *c = device->seat->compositor;
 	struct weston_output *output;
 
-	if (device->output_name) {
+	if (!device->output_name) {
 		output = container_of(c->output_list.next,
 				      struct weston_output, link);
 		evdev_device_set_output(device, output);
