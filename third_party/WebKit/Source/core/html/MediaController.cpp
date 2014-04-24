@@ -30,6 +30,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "platform/Clock.h"
@@ -53,7 +54,7 @@ MediaController::MediaController(ExecutionContext* context)
     , m_muted(false)
     , m_readyState(HTMLMediaElement::HAVE_NOTHING)
     , m_playbackState(WAITING)
-    , m_asyncEventTimer(this, &MediaController::asyncEventTimerFired)
+    , m_pendingEventsQueue(GenericEventQueue::create(this))
     , m_clearPositionTimer(this, &MediaController::clearPositionTimerFired)
     , m_clock(Clock::create())
     , m_executionContext(context)
@@ -587,19 +588,7 @@ bool MediaController::hasEnded() const
 
 void MediaController::scheduleEvent(const AtomicString& eventName)
 {
-    m_pendingEvents.append(Event::createCancelable(eventName));
-    if (!m_asyncEventTimer.isActive())
-        m_asyncEventTimer.startOneShot(0, FROM_HERE);
-}
-
-void MediaController::asyncEventTimerFired(Timer<MediaController>*)
-{
-    WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
-
-    m_pendingEvents.swap(pendingEvents);
-    size_t count = pendingEvents.size();
-    for (size_t index = 0; index < count; ++index)
-        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION);
+    m_pendingEventsQueue->enqueueEvent(Event::createCancelable(eventName));
 }
 
 void MediaController::clearPositionTimerFired(Timer<MediaController>*)

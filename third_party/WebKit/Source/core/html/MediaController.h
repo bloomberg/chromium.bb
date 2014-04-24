@@ -27,10 +27,8 @@
 #define MediaController_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"
-#include "platform/Timer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -38,9 +36,9 @@
 namespace WebCore {
 
 class Clock;
-class Event;
 class ExceptionState;
 class ExecutionContext;
+class GenericEventQueue;
 
 class MediaController FINAL : public RefCounted<MediaController>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(MediaController);
@@ -95,7 +93,6 @@ private:
     void updateMediaElements();
     void bringElementUpToSpeed(HTMLMediaElement*);
     void scheduleEvent(const AtomicString& eventName);
-    void asyncEventTimerFired(Timer<MediaController>*);
     void clearPositionTimerFired(Timer<MediaController>*);
     bool hasEnded() const;
     void scheduleTimeupdateEvent();
@@ -116,8 +113,7 @@ private:
     bool m_muted;
     ReadyState m_readyState;
     PlaybackState m_playbackState;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_pendingEvents;
-    Timer<MediaController> m_asyncEventTimer;
+    OwnPtr<GenericEventQueue> m_pendingEventsQueue;
     mutable Timer<MediaController> m_clearPositionTimer;
     OwnPtr<Clock> m_clock;
     ExecutionContext* m_executionContext;
