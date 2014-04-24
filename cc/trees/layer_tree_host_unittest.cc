@@ -4633,50 +4633,6 @@ class LayerSetsNeedsFilterContext : public Layer {
   bool needs_context_;
 };
 
-class LayerTreeHostTestOffscreenContext : public LayerTreeHostTest {
- protected:
-  virtual void SetupTree() OVERRIDE {
-    scoped_refptr<LayerSetsNeedsFilterContext> root =
-        LayerSetsNeedsFilterContext::Create();
-    root->SetIsDrawable(true);
-    root->SetAnchorPoint(gfx::PointF());
-    root->SetBounds(gfx::Size(10, 10));
-    root->set_needs_context(with_context_);
-    layer_tree_host()->SetRootLayer(root);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    bool expect_context = with_context_;
-    if (delegating_renderer())
-      expect_context = false;
-    EXPECT_EQ(expect_context, !!host_impl->offscreen_context_provider());
-    EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
-  bool with_context_;
-};
-
-class LayerTreeHostTestOffscreenContext_NoContext
-    : public LayerTreeHostTestOffscreenContext {
- protected:
-  LayerTreeHostTestOffscreenContext_NoContext() { with_context_ = false; }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestOffscreenContext_NoContext);
-
-class LayerTreeHostTestOffscreenContext_WithContext
-    : public LayerTreeHostTestOffscreenContext {
- protected:
-  LayerTreeHostTestOffscreenContext_WithContext() { with_context_ = true; }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestOffscreenContext_WithContext);
-
 class LayerTreeHostTestNoQuadsForEmptyLayer : public LayerTreeHostTest {
  protected:
   virtual void SetupTree() OVERRIDE {

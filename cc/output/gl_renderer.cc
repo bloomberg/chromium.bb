@@ -177,6 +177,40 @@ const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
 
 }  // anonymous namespace
 
+class GLRenderer::ScopedUseGrContext {
+ public:
+  static scoped_ptr<ScopedUseGrContext> Create(GLRenderer* renderer,
+                                               DrawingFrame* frame) {
+    if (!renderer->output_surface_->context_provider()->GrContext())
+      return scoped_ptr<ScopedUseGrContext>();
+    return make_scoped_ptr(new ScopedUseGrContext(renderer, frame));
+  }
+
+  ~ScopedUseGrContext() { PassControlToGLRenderer(); }
+
+  GrContext* context() const {
+    return renderer_->output_surface_->context_provider()->GrContext();
+  }
+
+ private:
+  ScopedUseGrContext(GLRenderer* renderer, DrawingFrame* frame)
+      : renderer_(renderer), frame_(frame) {
+    PassControlToSkia();
+  }
+
+  void PassControlToSkia() { context()->resetContext(); }
+
+  void PassControlToGLRenderer() {
+    renderer_->RestoreGLState();
+    renderer_->RestoreFramebuffer(frame_);
+  }
+
+  GLRenderer* renderer_;
+  DrawingFrame* frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedUseGrContext);
+};
+
 struct GLRenderer::PendingAsyncReadPixels {
   PendingAsyncReadPixels() : buffer(0) {}
 
@@ -300,7 +334,7 @@ GLRenderer::GLRenderer(RendererClient* client,
   // so we only need to avoid POT textures if we have an NPOT fast-path.
   capabilities_.avoid_pow2_textures = context_caps.gpu.fast_npot_mo8_textures;
 
-  capabilities_.using_offscreen_context3d = true;
+  capabilities_.using_offscreen_context3d = false;
 
   capabilities_.using_map_image =
       settings_->use_map_image && context_caps.gpu.map_image;
@@ -569,24 +603,20 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   GLC(gl_, gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0));
 }
 
-static SkBitmap ApplyImageFilter(GLRenderer* renderer,
-                                 ContextProvider* offscreen_contexts,
-                                 const gfx::Point& origin,
-                                 SkImageFilter* filter,
-                                 ScopedResource* source_texture_resource) {
+static SkBitmap ApplyImageFilter(
+    scoped_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
+    ResourceProvider* resource_provider,
+    const gfx::Point& origin,
+    SkImageFilter* filter,
+    ScopedResource* source_texture_resource) {
   if (!filter)
     return SkBitmap();
 
-  if (!offscreen_contexts || !offscreen_contexts->GrContext())
+  if (!use_gr_context)
     return SkBitmap();
 
-  ResourceProvider::ScopedReadLockGL lock(renderer->resource_provider(),
+  ResourceProvider::ScopedReadLockGL lock(resource_provider,
                                           source_texture_resource->id());
-
-  // Flush the compositor context to ensure that textures there are available
-  // in the shared context.  Do this after locking/creating the compositor
-  // texture.
-  renderer->resource_provider()->Flush();
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
@@ -597,7 +627,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   backend_texture_description.fTextureHandle = lock.texture_id();
   backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
   skia::RefPtr<GrTexture> texture =
-      skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
+      skia::AdoptRef(use_gr_context->context()->wrapBackendTexture(
           backend_texture_description));
 
   SkImageInfo info = {
@@ -622,12 +652,12 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   desc.fConfig = kSkia8888_GrPixelConfig;
   desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
   GrAutoScratchTexture scratch_texture(
-      offscreen_contexts->GrContext(), desc, GrContext::kExact_ScratchTexMatch);
+      use_gr_context->context(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
       skia::AdoptRef(scratch_texture.detach());
 
   // Create a device and canvas using that backing store.
-  SkGpuDevice device(offscreen_contexts->GrContext(), backing_store.get());
+  SkGpuDevice device(use_gr_context->context(), backing_store.get());
   SkCanvas canvas(&device);
 
   // Draw the source bitmap through the filter to the canvas.
@@ -641,25 +671,22 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   canvas.translate(SkIntToScalar(-origin.x()), SkIntToScalar(-origin.y()));
   canvas.drawSprite(source, 0, 0, &paint);
 
-  // Flush skia context so that all the rendered stuff appears on the
-  // texture.
-  offscreen_contexts->GrContext()->flush();
-
-  // Flush the GL context so rendering results from this context are
-  // visible in the compositor's context.
-  offscreen_contexts->ContextGL()->Flush();
+  // Flush the GrContext to ensure all buffered GL calls are drawn to the
+  // backing store before we access and return it, and have cc begin using the
+  // GL context again.
+  use_gr_context->context()->flush();
 
   return device.accessBitmap(false);
 }
 
 static SkBitmap ApplyBlendModeWithBackdrop(
-    GLRenderer* renderer,
-    ContextProvider* offscreen_contexts,
+    scoped_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
+    ResourceProvider* resource_provider,
     SkBitmap source_bitmap_with_filters,
     ScopedResource* source_texture_resource,
     ScopedResource* background_texture_resource,
     SkXfermode::Mode blend_mode) {
-  if (!offscreen_contexts || !offscreen_contexts->GrContext())
+  if (!use_gr_context)
     return source_bitmap_with_filters;
 
   DCHECK(background_texture_resource);
@@ -681,17 +708,12 @@ static SkBitmap ApplyBlendModeWithBackdrop(
     source_texture_with_filters_id = texture->getTextureHandle();
   } else {
     lock.reset(new ResourceProvider::ScopedReadLockGL(
-        renderer->resource_provider(), source_texture_resource->id()));
+        resource_provider, source_texture_resource->id()));
     source_texture_with_filters_id = lock->texture_id();
   }
 
   ResourceProvider::ScopedReadLockGL lock_background(
-      renderer->resource_provider(), background_texture_resource->id());
-
-  // Flush the compositor context to ensure that textures there are available
-  // in the shared context.  Do this after locking/creating the compositor
-  // texture.
-  renderer->resource_provider()->Flush();
+      resource_provider, background_texture_resource->id());
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
@@ -702,14 +724,14 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   backend_texture_description.fHeight = source_size.height();
   backend_texture_description.fTextureHandle = source_texture_with_filters_id;
   skia::RefPtr<GrTexture> source_texture =
-      skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
+      skia::AdoptRef(use_gr_context->context()->wrapBackendTexture(
           backend_texture_description));
 
   backend_texture_description.fWidth = background_size.width();
   backend_texture_description.fHeight = background_size.height();
   backend_texture_description.fTextureHandle = lock_background.texture_id();
   skia::RefPtr<GrTexture> background_texture =
-      skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
+      skia::AdoptRef(use_gr_context->context()->wrapBackendTexture(
           backend_texture_description));
 
   SkImageInfo source_info = {
@@ -748,12 +770,12 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   desc.fConfig = kSkia8888_GrPixelConfig;
   desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
   GrAutoScratchTexture scratch_texture(
-      offscreen_contexts->GrContext(), desc, GrContext::kExact_ScratchTexMatch);
+      use_gr_context->context(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
       skia::AdoptRef(scratch_texture.detach());
 
   // Create a device and canvas using that backing store.
-  SkGpuDevice device(offscreen_contexts->GrContext(), backing_store.get());
+  SkGpuDevice device(use_gr_context->context(), backing_store.get());
   SkCanvas canvas(&device);
 
   // Draw the source bitmap through the filter to the canvas.
@@ -763,13 +785,10 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   paint.setXfermodeMode(blend_mode);
   canvas.drawSprite(source, 0, 0, &paint);
 
-  // Flush skia context so that all the rendered stuff appears on the
-  // texture.
-  offscreen_contexts->GrContext()->flush();
-
-  // Flush the GL context so rendering results from this context are
-  // visible in the compositor's context.
-  offscreen_contexts->ContextGL()->Flush();
+  // Flush the GrContext to ensure all buffered GL calls are drawn to the
+  // backing store before we access and return it, and have cc begin using the
+  // GL context again.
+  use_gr_context->context()->flush();
 
   return device.accessBitmap(false);
 }
@@ -847,8 +866,8 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
   SkBitmap filtered_device_background;
   if (apply_background_filters) {
     filtered_device_background =
-        ApplyImageFilter(this,
-                         frame->offscreen_context_provider,
+        ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
+                         resource_provider_,
                          quad->rect.origin(),
                          filter.get(),
                          device_background_texture.get());
@@ -959,8 +978,6 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   SkBitmap filter_bitmap;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
-  // TODO(ajuma): Always use RenderSurfaceFilters::BuildImageFilter, not just
-  // when we have a reference filter.
   if (!quad->filters.IsEmpty()) {
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, contents_texture->size());
@@ -978,11 +995,12 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         // in the compositor.
         use_color_matrix = true;
       } else {
-        filter_bitmap = ApplyImageFilter(this,
-                                         frame->offscreen_context_provider,
-                                         quad->rect.origin(),
-                                         filter.get(),
-                                         contents_texture);
+        filter_bitmap =
+            ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
+                             resource_provider_,
+                             quad->rect.origin(),
+                             filter.get(),
+                             contents_texture);
       }
     }
   }
@@ -990,8 +1008,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode &&
       background_texture) {
     filter_bitmap =
-        ApplyBlendModeWithBackdrop(this,
-                                   frame->offscreen_context_provider,
+        ApplyBlendModeWithBackdrop(ScopedUseGrContext::Create(this, frame),
+                                   resource_provider_,
                                    filter_bitmap,
                                    contents_texture,
                                    background_texture.get(),
@@ -3111,24 +3129,53 @@ void GLRenderer::CleanupSharedObjects() {
 }
 
 void GLRenderer::ReinitializeGLState() {
-  // Bind the common vertex attributes used for drawing all the layers.
+  is_scissor_enabled_ = false;
+  scissor_rect_needs_reset_ = true;
+  stencil_shadow_ = false;
+  blend_shadow_ = true;
+  program_shadow_ = 0;
+
+  RestoreGLState();
+}
+
+void GLRenderer::RestoreGLState() {
+  // This restores the current GLRenderer state to the GL context.
+
   shared_geometry_->PrepareForDraw();
 
   GLC(gl_, gl_->Disable(GL_DEPTH_TEST));
   GLC(gl_, gl_->Disable(GL_CULL_FACE));
   GLC(gl_, gl_->ColorMask(true, true, true, true));
-  GLC(gl_, gl_->Disable(GL_STENCIL_TEST));
-  stencil_shadow_ = false;
-  GLC(gl_, gl_->Enable(GL_BLEND));
-  blend_shadow_ = true;
   GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
   GLC(gl_, gl_->ActiveTexture(GL_TEXTURE0));
-  program_shadow_ = 0;
 
-  // Make sure scissoring starts as disabled.
-  is_scissor_enabled_ = false;
-  GLC(gl_, gl_->Disable(GL_SCISSOR_TEST));
-  scissor_rect_needs_reset_ = true;
+  if (program_shadow_)
+    gl_->UseProgram(program_shadow_);
+
+  if (stencil_shadow_)
+    GLC(gl_, gl_->Enable(GL_STENCIL_TEST));
+  else
+    GLC(gl_, gl_->Disable(GL_STENCIL_TEST));
+
+  if (blend_shadow_)
+    GLC(gl_, gl_->Enable(GL_BLEND));
+  else
+    GLC(gl_, gl_->Disable(GL_BLEND));
+
+  if (is_scissor_enabled_) {
+    GLC(gl_, gl_->Enable(GL_SCISSOR_TEST));
+    GLC(gl_,
+        gl_->Scissor(scissor_rect_.x(),
+                     scissor_rect_.y(),
+                     scissor_rect_.width(),
+                     scissor_rect_.height()));
+  } else {
+    GLC(gl_, gl_->Disable(GL_SCISSOR_TEST));
+  }
+}
+
+void GLRenderer::RestoreFramebuffer(DrawingFrame* frame) {
+  UseRenderPass(frame, frame->current_render_pass);
 }
 
 bool GLRenderer::IsContextLost() {
@@ -3150,7 +3197,7 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
 
     pending_overlay_resources_.push_back(
         make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(
-            resource_provider(), overlay.resource_id)));
+            resource_provider_, overlay.resource_id)));
 
     context_support_->ScheduleOverlayPlane(
         overlay.plane_z_order,

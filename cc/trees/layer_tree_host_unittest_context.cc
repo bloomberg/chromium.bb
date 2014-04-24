@@ -214,7 +214,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     recovered_context_ = true;
   }
 
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(9u, test_case_); }
+  virtual void AfterTest() OVERRIDE { EXPECT_EQ(7u, test_case_); }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     // If the last frame had a context loss, then we'll commit again to
@@ -265,18 +265,6 @@ class LayerTreeHostContextTestLostContextSucceeds
          1,      // times_to_lose_during_draw
          3,      // times_to_fail_recreate
          0,      // times_to_fail_recreate_offscreen
-         false,  // fallback_context_works
-        },
-        {1,      // times_to_lose_during_commit
-         0,      // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         3,      // times_to_fail_recreate_offscreen
-         false,  // fallback_context_works
-        },
-        {0,      // times_to_lose_during_commit
-         1,      // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         3,      // times_to_fail_recreate_offscreen
          false,  // fallback_context_works
         },
         // Losing the context and recreating it any number of times should
@@ -372,9 +360,6 @@ MULTI_THREAD_TEST_F(LayerTreeHostClientNotReadyDoesNotCreateOutputSurface);
 class LayerTreeHostContextTestLostContextSucceedsWithContent
     : public LayerTreeHostContextTestLostContextSucceeds {
  public:
-  LayerTreeHostContextTestLostContextSucceedsWithContent()
-      : LayerTreeHostContextTestLostContextSucceeds() {}
-
   virtual void SetupTree() OVERRIDE {
     root_ = Layer::Create();
     root_->SetBounds(gfx::Size(10, 10));
@@ -385,14 +370,6 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     content_->SetBounds(gfx::Size(10, 10));
     content_->SetAnchorPoint(gfx::PointF());
     content_->SetIsDrawable(true);
-    if (use_surface_) {
-      content_->SetForceRenderSurface(true);
-      // Filters require us to create an offscreen context.
-      FilterOperations filters;
-      filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
-      content_->SetFilters(filters);
-      content_->SetBackgroundFilters(filters);
-    }
 
     root_->AddChild(content_);
 
@@ -415,75 +392,17 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     // TestWebGraphicsContext3D ensures that this resource is created with
     // the active context.
     EXPECT_TRUE(content_impl->HaveResourceForTileAt(0, 0));
-
-    ContextProvider* contexts = host_impl->offscreen_context_provider();
-    if (use_surface_) {
-      ASSERT_TRUE(contexts);
-      EXPECT_TRUE(contexts->ContextGL());
-      // TODO(danakj): Make a fake GrContext.
-      // EXPECT_TRUE(contexts->GrContext());
-    } else {
-      EXPECT_FALSE(contexts);
-    }
-  }
-
-  virtual void AfterTest() OVERRIDE {
-    LayerTreeHostContextTestLostContextSucceeds::AfterTest();
-    if (use_surface_) {
-      // 1 create to start with +
-      // 4 from test cases that lose the offscreen context directly +
-      // 2 from test cases that create a fallback +
-      // All the test cases that recreate both contexts only once
-      // per time it is lost.
-      EXPECT_EQ(4 + 1 + 2 + num_losses_, times_offscreen_created_);
-    } else {
-      EXPECT_EQ(0, times_offscreen_created_);
-    }
   }
 
  protected:
-  bool use_surface_;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_;
   scoped_refptr<ContentLayer> content_;
 };
 
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_SingleThread_DirectRenderer) {
-  use_surface_ = false;
-  RunTest(false, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_SingleThread_DelegatingRenderer) {
-  use_surface_ = false;
-  RunTest(false, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_MultiThread_DirectRenderer_MainThreadPaint) {
-  use_surface_ = false;
-  RunTest(true, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_MultiThread_DelegatingRenderer_MainThreadPaint) {
-  use_surface_ = false;
-  RunTest(true, true, false);
-}
-
-// Surfaces don't exist with a delegating renderer.
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       WithSurface_SingleThread_DirectRenderer) {
-  use_surface_ = true;
-  RunTest(false, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       WithSurface_MultiThread_DirectRenderer_MainThreadPaint) {
-  use_surface_ = true;
-  RunTest(true, false, false);
-}
+// This test uses TiledLayer to check for a working context.
+SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
+    LayerTreeHostContextTestLostContextSucceedsWithContent);
 
 class LayerTreeHostContextTestCreateOutputSurfaceFails
     : public LayerTreeHostContextTest {

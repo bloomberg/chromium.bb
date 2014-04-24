@@ -45,6 +45,8 @@ class ScopedEnsureFramebufferAllocation;
 // Class that handles drawing of composited render layers using GL.
 class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
+  class ScopedUseGrContext;
+
   static scoped_ptr<GLRenderer> Create(
       RendererClient* client,
       const LayerTreeSettings* settings,
@@ -216,6 +218,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                       bool success);
 
   void ReinitializeGLState();
+  void RestoreGLState();
+  void RestoreFramebuffer(DrawingFrame* frame);
 
   virtual void DiscardBackbuffer() OVERRIDE;
   virtual void EnsureBackbuffer() OVERRIDE;

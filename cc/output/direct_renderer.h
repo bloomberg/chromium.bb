@@ -26,8 +26,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
  public:
   virtual ~DirectRenderer();
 
-  ResourceProvider* resource_provider() const { return resource_provider_; }
-
   virtual bool CanReadPixels() const OVERRIDE;
   virtual void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order) OVERRIDE;
