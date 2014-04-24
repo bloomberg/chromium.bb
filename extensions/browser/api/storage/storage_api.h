@@ -22,13 +22,11 @@ class SettingsFunction : public UIThreadExtensionFunction {
 
   // ExtensionFunction:
   virtual bool ShouldSkipQuotaLimiting() const OVERRIDE;
-  virtual bool RunImpl() OVERRIDE;
+  virtual ResponseAction RunImplTypesafe() OVERRIDE;
 
   // Extension settings function implementations should do their work here.
   // The StorageFrontend makes sure this is posted to the appropriate thread.
-  // Implementations should fill in args themselves, though (like RunImpl)
-  // may return false to imply failure.
-  virtual bool RunWithStorage(ValueStore* storage) = 0;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) = 0;
 
   // Handles the |result| of a read function.
   // - If the result succeeded, this will set |result_| and return.
@@ -36,7 +34,8 @@ class SettingsFunction : public UIThreadExtensionFunction {
   //   RestoreStorageAndRetry(), and return that result.
   // - If the |result| failed with a different error, this will set |error_|
   //   and return.
-  bool UseReadResult(ValueStore::ReadResult result, ValueStore* storage);
+  ResponseValue UseReadResult(ValueStore::ReadResult result,
+                              ValueStore* storage);
 
   // Handles the |result| of a write function.
   // - If the result succeeded, this will set |result_| and return.
@@ -45,10 +44,11 @@ class SettingsFunction : public UIThreadExtensionFunction {
   // - If the |result| failed with a different error, this will set |error_|
   //   and return.
   // This will also send out a change notification, if appropriate.
-  bool UseWriteResult(ValueStore::WriteResult result, ValueStore* storage);
+  ResponseValue UseWriteResult(ValueStore::WriteResult result,
+                               ValueStore* storage);
 
  private:
-  // Called via PostTask from RunImpl.  Calls RunWithStorage and then
+  // Called via PostTask from RunImplTypesafe. Calls RunWithStorage and then
   // SendResponse with its success value.
   void AsyncRunWithStorage(ValueStore* storage);
 
@@ -57,7 +57,8 @@ class SettingsFunction : public UIThreadExtensionFunction {
   // If the storage cannot be restored or was due to some other error, then sets
   // error and returns. This also sets the |tried_restoring_storage_| flag to
   // ensure we don't enter a loop.
-  bool HandleError(const ValueStore::Error& error, ValueStore* storage);
+  ResponseValue HandleError(const ValueStore::Error& error,
+                            ValueStore* storage);
 
   // The settings namespace the call was for.  For example, SYNC if the API
   // call was chrome.settings.experimental.sync..., LOCAL if .local, etc.
@@ -79,7 +80,7 @@ class StorageStorageAreaGetFunction : public SettingsFunction {
   virtual ~StorageStorageAreaGetFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
 };
 
 class StorageStorageAreaSetFunction : public SettingsFunction {
@@ -90,7 +91,7 @@ class StorageStorageAreaSetFunction : public SettingsFunction {
   virtual ~StorageStorageAreaSetFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
@@ -105,7 +106,7 @@ class StorageStorageAreaRemoveFunction : public SettingsFunction {
   virtual ~StorageStorageAreaRemoveFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
@@ -120,7 +121,7 @@ class StorageStorageAreaClearFunction : public SettingsFunction {
   virtual ~StorageStorageAreaClearFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
@@ -135,7 +136,7 @@ class StorageStorageAreaGetBytesInUseFunction : public SettingsFunction {
   virtual ~StorageStorageAreaGetBytesInUseFunction() {}
 
   // SettingsFunction:
-  virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
+  virtual ResponseValue RunWithStorage(ValueStore* storage) OVERRIDE;
 };
 
 }  // namespace extensions

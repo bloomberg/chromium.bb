@@ -64,6 +64,8 @@ class StorageApiUnittest : public ExtensionApiUnittest {
     scoped_ptr<base::Value> result = RunFunctionAndReturnValue(
         new StorageStorageAreaGetFunction(),
         base::StringPrintf("[\"local\", \"%s\"]", key.c_str()));
+    if (!result.get())
+      return testing::AssertionFailure() << "No result";
     base::DictionaryValue* dict = NULL;
     if (!result->GetAsDictionary(&dict))
       return testing::AssertionFailure() << result << " was not a dictionary.";

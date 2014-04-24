@@ -32,27 +32,28 @@ bool SettingsFunction::ShouldSkipQuotaLimiting() const {
   std::string settings_namespace_string;
   if (!args_->GetString(0, &settings_namespace_string)) {
     // This should be EXTENSION_FUNCTION_VALIDATE(false) but there is no way
-    // to signify that from this function. It will be caught in RunImpl().
+    // to signify that from this function. It will be caught in
+    // RunImplTypesafe().
     return false;
   }
   return settings_namespace_string != "sync";
 }
 
-bool SettingsFunction::RunImpl() {
+ExtensionFunction::ResponseAction SettingsFunction::RunImplTypesafe() {
   std::string settings_namespace_string;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &settings_namespace_string));
+  EXTENSION_FUNCTION_VALIDATE_TYPESAFE(
+      args_->GetString(0, &settings_namespace_string));
   args_->Remove(0, NULL);
   settings_namespace_ =
       settings_namespace::FromString(settings_namespace_string);
-  EXTENSION_FUNCTION_VALIDATE(
-      settings_namespace_ != settings_namespace::INVALID);
+  EXTENSION_FUNCTION_VALIDATE_TYPESAFE(settings_namespace_ !=
+                                       settings_namespace::INVALID);
 
   StorageFrontend* frontend = StorageFrontend::Get(browser_context());
   if (!frontend->IsStorageEnabled(settings_namespace_)) {
-    error_ = base::StringPrintf(
-        "\"%s\" is not available in this instance of Chrome",
-        settings_namespace_string.c_str());
-    return false;
+    return RespondNow(Error(
+        base::StringPrintf("\"%s\" is not available in this instance of Chrome",
+                           settings_namespace_string.c_str())));
   }
 
   observers_ = frontend->GetObservers();
@@ -60,30 +61,32 @@ bool SettingsFunction::RunImpl() {
       GetExtension(),
       settings_namespace_,
       base::Bind(&SettingsFunction::AsyncRunWithStorage, this));
-  return true;
+  return RespondLater();
 }
 
 void SettingsFunction::AsyncRunWithStorage(ValueStore* storage) {
-  bool success = RunWithStorage(storage);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&SettingsFunction::SendResponse, this, success));
+  ResponseValue response = RunWithStorage(storage);
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&SettingsFunction::SendResponseTypesafe,
+                                     this,
+                                     base::Passed(&response)));
 }
 
-bool SettingsFunction::UseReadResult(ValueStore::ReadResult result,
-                                     ValueStore* storage) {
+ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
+    ValueStore::ReadResult result,
+    ValueStore* storage) {
   if (result->HasError())
     return HandleError(result->error(), storage);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Swap(&result->settings());
-  SetResult(dict);
-  return true;
+  return SingleArgument(dict);
 }
 
-bool SettingsFunction::UseWriteResult(ValueStore::WriteResult result,
-                                      ValueStore* storage) {
+ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
+    ValueStore::WriteResult result,
+    ValueStore* storage) {
   if (result->HasError())
     return HandleError(result->error(), storage);
 
@@ -95,11 +98,12 @@ bool SettingsFunction::UseWriteResult(ValueStore::WriteResult result,
         ValueStoreChange::ToJson(result->changes()));
   }
 
-  return true;
+  return NoArguments();
 }
 
-bool SettingsFunction::HandleError(const ValueStore::Error& error,
-                                   ValueStore* storage) {
+ExtensionFunction::ResponseValue SettingsFunction::HandleError(
+    const ValueStore::Error& error,
+    ValueStore* storage) {
   // If the method failed due to corruption, and we haven't tried to fix it, we
   // can try to restore the storage and re-run it. Otherwise, the method has
   // failed.
@@ -117,8 +121,7 @@ bool SettingsFunction::HandleError(const ValueStore::Error& error,
       return RunWithStorage(storage);
   }
 
-  error_ = error.message;
-  return false;
+  return Error(error.message);
 }
 
 // Concrete settings functions
@@ -174,9 +177,11 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
 
 }  // namespace
 
-bool StorageStorageAreaGetFunction::RunWithStorage(ValueStore* storage) {
+ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
+    ValueStore* storage) {
   base::Value* input = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
+  if (!args_->Get(0, &input))
+    return BadMessage();
 
   switch (input->GetType()) {
     case base::Value::TYPE_NULL:
@@ -211,15 +216,15 @@ bool StorageStorageAreaGetFunction::RunWithStorage(ValueStore* storage) {
     }
 
     default:
-      EXTENSION_FUNCTION_VALIDATE(false);
-      return false;
+      return BadMessage();
   }
 }
 
-bool StorageStorageAreaGetBytesInUseFunction::RunWithStorage(
-    ValueStore* storage) {
+ExtensionFunction::ResponseValue
+StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
   base::Value* input = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
+  if (!args_->Get(0, &input))
+    return BadMessage();
 
   size_t bytes_in_use = 0;
 
@@ -244,17 +249,18 @@ bool StorageStorageAreaGetBytesInUseFunction::RunWithStorage(
     }
 
     default:
-      EXTENSION_FUNCTION_VALIDATE(false);
-      return false;
+      return BadMessage();
   }
 
-  SetResult(new base::FundamentalValue(static_cast<int>(bytes_in_use)));
-  return true;
+  return SingleArgument(
+      new base::FundamentalValue(static_cast<int>(bytes_in_use)));
 }
 
-bool StorageStorageAreaSetFunction::RunWithStorage(ValueStore* storage) {
+ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunWithStorage(
+    ValueStore* storage) {
   base::DictionaryValue* input = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
+  if (!args_->GetDictionary(0, &input))
+    return BadMessage();
   return UseWriteResult(storage->Set(ValueStore::DEFAULTS, *input), storage);
 }
 
@@ -263,9 +269,11 @@ void StorageStorageAreaSetFunction::GetQuotaLimitHeuristics(
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
+ExtensionFunction::ResponseValue
+StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
   base::Value* input = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
+  if (!args_->Get(0, &input))
+    return BadMessage();
 
   switch (input->GetType()) {
     case base::Value::TYPE_STRING: {
@@ -282,8 +290,7 @@ bool StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
     }
 
     default:
-      EXTENSION_FUNCTION_VALIDATE(false);
-      return false;
+      return BadMessage();
   };
 }
 
@@ -292,7 +299,8 @@ void StorageStorageAreaRemoveFunction::GetQuotaLimitHeuristics(
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool StorageStorageAreaClearFunction::RunWithStorage(ValueStore* storage) {
+ExtensionFunction::ResponseValue
+StorageStorageAreaClearFunction::RunWithStorage(ValueStore* storage) {
   return UseWriteResult(storage->Clear(), storage);
 }
 

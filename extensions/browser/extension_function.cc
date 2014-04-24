@@ -22,6 +22,74 @@ using content::WebContents;
 using extensions::ExtensionAPI;
 using extensions::Feature;
 
+namespace {
+
+class MultipleArgumentsResponseValue
+    : public ExtensionFunction::ResponseValueObject {
+ public:
+  MultipleArgumentsResponseValue(ExtensionFunction* function,
+                                 base::ListValue* result) {
+    if (function->GetResultList()) {
+      DCHECK_EQ(function->GetResultList(), result);
+    } else {
+      function->SetResultList(make_scoped_ptr(result));
+    }
+    DCHECK_EQ("", function->GetError());
+  }
+
+  virtual ~MultipleArgumentsResponseValue() {}
+
+  virtual bool Apply() OVERRIDE { return true; }
+};
+
+class ErrorResponseValue : public ExtensionFunction::ResponseValueObject {
+ public:
+  ErrorResponseValue(ExtensionFunction* function, const std::string& error) {
+    DCHECK_NE("", error);
+    function->SetError(error);
+  }
+
+  virtual ~ErrorResponseValue() {}
+
+  virtual bool Apply() OVERRIDE { return false; }
+};
+
+class BadMessageResponseValue : public ExtensionFunction::ResponseValueObject {
+ public:
+  explicit BadMessageResponseValue(ExtensionFunction* function) {
+    function->set_bad_message(true);
+    NOTREACHED() << function->name() << ": bad message";
+  }
+
+  virtual ~BadMessageResponseValue() {}
+
+  virtual bool Apply() OVERRIDE { return false; }
+};
+
+class RespondNowAction : public ExtensionFunction::ResponseActionObject {
+ public:
+  typedef base::Callback<void(bool)> SendResponseCallback;
+  RespondNowAction(ExtensionFunction::ResponseValue result,
+                   const SendResponseCallback& send_response)
+      : result_(result.Pass()), send_response_(send_response) {}
+  virtual ~RespondNowAction() {}
+
+  virtual void Execute() OVERRIDE { send_response_.Run(result_->Apply()); }
+
+ private:
+  ExtensionFunction::ResponseValue result_;
+  SendResponseCallback send_response_;
+};
+
+class RespondLaterAction : public ExtensionFunction::ResponseActionObject {
+ public:
+  virtual ~RespondLaterAction() {}
+
+  virtual void Execute() OVERRIDE {}
+};
+
+}  // namespace
+
 // static
 void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
   x->Destruct();
@@ -112,11 +180,15 @@ void ExtensionFunction::SetResult(base::Value* result) {
   results_->Append(result);
 }
 
-const base::ListValue* ExtensionFunction::GetResultList() {
+void ExtensionFunction::SetResultList(scoped_ptr<base::ListValue> results) {
+  results_ = results.Pass();
+}
+
+const base::ListValue* ExtensionFunction::GetResultList() const {
   return results_.get();
 }
 
-const std::string ExtensionFunction::GetError() {
+std::string ExtensionFunction::GetError() const {
   return error_;
 }
 
@@ -124,9 +196,60 @@ void ExtensionFunction::SetError(const std::string& error) {
   error_ = error;
 }
 
+ExtensionFunction::ResponseValue ExtensionFunction::NoArguments() {
+  return MultipleArguments(new base::ListValue());
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::SingleArgument(
+    base::Value* arg) {
+  base::ListValue* args = new base::ListValue();
+  args->Append(arg);
+  return MultipleArguments(args);
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::MultipleArguments(
+    base::ListValue* args) {
+  return scoped_ptr<ResponseValueObject>(
+      new MultipleArgumentsResponseValue(this, args));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::Error(
+    const std::string& error) {
+  return scoped_ptr<ResponseValueObject>(new ErrorResponseValue(this, error));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {
+  return scoped_ptr<ResponseValueObject>(new BadMessageResponseValue(this));
+}
+
+ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
+    ResponseValue result) {
+  return scoped_ptr<ResponseActionObject>(new RespondNowAction(
+      result.Pass(), base::Bind(&ExtensionFunction::SendResponse, this)));
+}
+
+ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {
+  return scoped_ptr<ResponseActionObject>(new RespondLaterAction());
+}
+
 void ExtensionFunction::Run() {
   if (!RunImpl())
     SendResponse(false);
+}
+
+bool ExtensionFunction::RunImpl() {
+  RunImplTypesafe()->Execute();
+  return true;
+}
+
+ExtensionFunction::ResponseAction ExtensionFunction::RunImplTypesafe() {
+  NOTREACHED()
+      << "ExtensionFunctions must override either RunImpl or RunImplTypesafe";
+  return RespondNow(NoArguments());
+}
+
+void ExtensionFunction::SendResponseTypesafe(ResponseValue response) {
+  SendResponse(response->Apply());
 }
 
 bool ExtensionFunction::ShouldSkipQuotaLimiting() const {

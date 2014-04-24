@@ -44,15 +44,22 @@ class ExtensionMessageFilter;
 class QuotaLimitHeuristic;
 }
 
+#define EXTENSION_FUNCTION_VALIDATE(test) \
+  EXTENSION_FUNCTION_VALIDATE_INTERNAL(test, false)
+
+#define EXTENSION_FUNCTION_VALIDATE_TYPESAFE(test) \
+  EXTENSION_FUNCTION_VALIDATE_INTERNAL(test, RespondNow(BadMessage()))
+
 #ifdef NDEBUG
-#define EXTENSION_FUNCTION_VALIDATE(test) do { \
-    if (!(test)) { \
-      bad_message_ = true; \
-      return false; \
-    } \
+#define EXTENSION_FUNCTION_VALIDATE_INTERNAL(test, failure) \
+  do {                                                      \
+    if (!(test)) {                                          \
+      bad_message_ = true;                                  \
+      return (failure);                                     \
+    }                                                       \
   } while (0)
 #else   // NDEBUG
-#define EXTENSION_FUNCTION_VALIDATE(test) CHECK(test)
+#define EXTENSION_FUNCTION_VALIDATE_INTERNAL(test, failure) CHECK(test)
 #endif  // NDEBUG
 
 #define EXTENSION_FUNCTION_ERROR(error) do { \
@@ -145,14 +152,20 @@ class ExtensionFunction
   // Sets a single Value as the results of the function.
   void SetResult(base::Value* result);
 
+  // Sets multiple Values as the results of the function.
+  void SetResultList(scoped_ptr<base::ListValue> results);
+
   // Retrieves the results of the function as a ListValue.
-  const base::ListValue* GetResultList();
+  const base::ListValue* GetResultList() const;
 
   // Retrieves any error string from the function.
-  virtual const std::string GetError();
+  virtual std::string GetError() const;
 
   // Sets the function's error string.
   virtual void SetError(const std::string& error);
+
+  // Sets the function's bad message state.
+  void set_bad_message(bool bad_message) { bad_message_ = bad_message; }
 
   // Specifies the name of the function.
   void set_name(const std::string& name) { name_ = name; }
@@ -195,19 +208,72 @@ class ExtensionFunction
   void set_source_tab_id(int source_tab_id) { source_tab_id_ = source_tab_id; }
   int source_tab_id() const { return source_tab_id_; }
 
+  // The result of a function call.
+  //
+  // Use NoArguments(), SingleArgument(), MultipleArguments(), or Error()
+  // rather than this class directly.
+  class ResponseValueObject {
+   public:
+    virtual ~ResponseValueObject() {}
+
+    // Returns true for success, false for failure.
+    virtual bool Apply() = 0;
+  };
+  typedef scoped_ptr<ResponseValueObject> ResponseValue;
+
+  // The action to use when returning from RunImpl.
+  //
+  // Use RespondNow() or RespondLater() rather than this class directly.
+  class ResponseActionObject {
+   public:
+    virtual ~ResponseActionObject() {}
+
+    virtual void Execute() = 0;
+  };
+  typedef scoped_ptr<ResponseActionObject> ResponseAction;
+
  protected:
   friend struct ExtensionFunctionDeleteTraits;
+
+  // ResponseValues.
+  //
+  // Success, no arguments to pass to caller
+  ResponseValue NoArguments();
+  // Success, a single argument |result| to pass to caller. TAKES OWNERSHIP.
+  ResponseValue SingleArgument(base::Value* result);
+  // Success, a list of arguments |results| to pass to caller. TAKES OWNERSHIP.
+  ResponseValue MultipleArguments(base::ListValue* results);
+  // Error. chrome.runtime.lastError.message will be set to |error|.
+  ResponseValue Error(const std::string& error);
+  // Bad message. A ResponseValue equivalent to EXTENSION_FUNCTION_VALIDATE().
+  ResponseValue BadMessage();
+
+  // ResponseActions.
+  //
+  // Respond to the extension immediately with |result|.
+  ResponseAction RespondNow(ResponseValue result);
+  // Don't respond now, but promise to call SendResponse later.
+  ResponseAction RespondLater();
 
   virtual ~ExtensionFunction();
 
   // Helper method for ExtensionFunctionDeleteTraits. Deletes this object.
   virtual void Destruct() const = 0;
 
-  // Derived classes should implement this method to do their work and return
-  // success/failure.
-  virtual bool RunImpl() = 0;
+  // Derived classes should implement one of these methods to do their work.
+  //
+  // Returns the action to take. DO NOT USE WITH SyncExtensionFunction.
+  virtual ResponseAction RunImplTypesafe();
+  // Deprecated. Returns true on success. SendResponse() must be called later.
+  // Return false to indicate an error and respond immediately.
+  virtual bool RunImpl();
 
   // Sends the result back to the extension.
+  //
+  // Responds with |response|.
+  void SendResponseTypesafe(ResponseValue response);
+  // Deprecated. Call with true to indicate success, false to indicate failure,
+  // in which case please set |error_|.
   virtual void SendResponse(bool success) = 0;
 
   // Common implementation for SendResponse.
