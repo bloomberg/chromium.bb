@@ -197,6 +197,8 @@ void NativeDisplayDelegateX11::UngrabServer() {
   XRRFreeScreenResources(screen_);
   screen_ = NULL;
   XUngrabServer(display_);
+  // crbug.com/366125
+  XFlush(display_);
 }
 
 void NativeDisplayDelegateX11::SyncWithServer() { XSync(display_, 0); }
