@@ -242,24 +242,6 @@ bool AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
   return false;
 }
 
-// static
-void AppWindowRegistry::CloseAllAppWindows() {
-  std::vector<content::BrowserContext*> contexts =
-      AppsClient::Get()->GetLoadedBrowserContexts();
-  for (std::vector<content::BrowserContext*>::const_iterator i =
-           contexts.begin();
-       i != contexts.end();
-       ++i) {
-    AppWindowRegistry* registry =
-        Factory::GetForBrowserContext(*i, false /* create */);
-    if (!registry)
-      continue;
-
-    while (!registry->app_windows().empty())
-      registry->app_windows().front()->GetBaseWindow()->Close();
-  }
-}
-
 void AppWindowRegistry::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {

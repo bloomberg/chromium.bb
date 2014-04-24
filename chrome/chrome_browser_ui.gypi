@@ -534,8 +534,6 @@
         'browser/ui/cocoa/apps/chrome_app_window_delegate_cocoa.mm',
         'browser/ui/cocoa/apps/native_app_window_cocoa.h',
         'browser/ui/cocoa/apps/native_app_window_cocoa.mm',
-        'browser/ui/cocoa/apps/quit_with_apps_controller_mac.cc',
-        'browser/ui/cocoa/apps/quit_with_apps_controller_mac.h',
         'browser/ui/cocoa/autofill/autofill_account_chooser.h',
         'browser/ui/cocoa/autofill/autofill_account_chooser.mm',
         'browser/ui/cocoa/autofill/autofill_details_container.h',

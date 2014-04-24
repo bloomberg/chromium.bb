@@ -25,8 +25,6 @@ class GURL;
 class HistoryMenuBridge;
 class Profile;
 @class ProfileMenuController;
-class QuitWithAppsController;
-
 namespace ui {
 class WorkAreaWatcherObserver;
 }
@@ -89,9 +87,6 @@ class WorkAreaWatcherObserver;
 
   scoped_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
   PrefChangeRegistrar localPrefRegistrar_;
-
-  // Displays a notification when quitting while apps are running.
-  scoped_refptr<QuitWithAppsController> quitWithAppsController_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;

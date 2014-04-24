@@ -52,7 +52,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/apps/app_shim_menu_controller_mac.h"
-#include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -370,12 +369,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // download isn't stopped before terminate is called again.
   if (!browser_shutdown::IsTryingToQuit() &&
       ![self shouldQuitWithInProgressDownloads])
-    return NO;
-
-  // Check for active apps, and prompt the user if they really want to quit
-  // (and also quit the apps).
-  if (!browser_shutdown::IsTryingToQuit() &&
-      quitWithAppsController_.get() && !quitWithAppsController_->ShouldQuit())
     return NO;
 
   // TODO(viettrungluu): Remove Apple Event handlers here? (It's safe to leave
@@ -701,10 +694,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // Start managing the menu for app windows. This needs to be done here because
   // main menu item titles are not yet initialized in awakeFromNib.
   [self initAppShimMenuController];
-
-  // If enabled, keep Chrome alive when apps are open instead of quitting all
-  // apps.
-  quitWithAppsController_ = new QuitWithAppsController();
 
   // Build up the encoding menu, the order of the items differs based on the
   // current locale (see http://crbug.com/7647 for details).
