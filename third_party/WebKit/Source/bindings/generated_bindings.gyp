@@ -61,9 +61,11 @@
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
     ],
-    # Write list of main IDL files to a file, so that the command line doesn't
+    # Write lists of main IDL files to a file, so that the command lines don't
     # exceed OS length limits.
     'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
+    'core_idl_files_list': '<|(core_idl_files_list.tmp <@(core_idl_files))',
+    'modules_idl_files_list': '<|(modules_idl_files_list.tmp <@(modules_idl_files))',
 
     # Static IDL files / Generated IDL files
     # Paths need to be passed separately for static and generated files, as
@@ -251,10 +253,10 @@
     # However, pre-caching ensures that all compiler processes use the cached
     # files (hence maximizing speed), instead of early processes building the
     # tables themselves (as they've not yet been written when they start).
-    'target_name': 'cached_yacc_tables',
+    'target_name': 'cached_lex_yacc_tables',
     'type': 'none',
     'actions': [{
-      'action_name': 'cache_yacc_tables',
+      'action_name': 'cache_lex_yacc_tables',
       'inputs': [
         '<@(idl_lexer_parser_files)',
       ],
@@ -305,7 +307,7 @@
     'hard_dependency': 1,
     'dependencies': [
       'interfaces_info',
-      'cached_yacc_tables',
+      'cached_lex_yacc_tables',
       'cached_jinja_templates',
       '../core/core_generated.gyp:generated_testing_idls',
     ],
@@ -360,27 +362,48 @@
   },
 ################################################################################
   {
-    'target_name': 'aggregate_generated_bindings',
+    'target_name': 'bindings_core_generated_aggregate',
     'type': 'none',
     'actions': [{
-      'action_name': 'generate_aggregate_generated_bindings',
+      'action_name': 'generate_aggregate_bindings_core',
       'inputs': [
         'scripts/aggregate_generated_bindings.py',
-        # Only includes main IDL files (exclude dependencies and testing,
-        # for which bindings are not included in aggregate bindings).
-        '<(main_interface_idl_files_list)',
+        '<(core_idl_files_list)',
       ],
       'outputs': [
-        '<@(aggregate_generated_bindings_files)',
+        '<@(bindings_core_generated_aggregate_files)',
       ],
       'action': [
         'python',
         'scripts/aggregate_generated_bindings.py',
-        '<(main_interface_idl_files_list)',
+        '<(core_idl_files_list)',
         '--',
-        '<@(aggregate_generated_bindings_files)',
+        '<@(bindings_core_generated_aggregate_files)',
       ],
-      'message': 'Generating aggregate generated bindings files',
+      'message': 'Generating aggregate generated core bindings files',
+    }],
+  },
+################################################################################
+  {
+    'target_name': 'bindings_modules_generated_aggregate',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'generate_aggregate_bindings_modules',
+      'inputs': [
+        'scripts/aggregate_generated_bindings.py',
+        '<(modules_idl_files_list)',
+      ],
+      'outputs': [
+        '<@(bindings_modules_generated_aggregate_files)',
+      ],
+      'action': [
+        'python',
+        'scripts/aggregate_generated_bindings.py',
+        '<(modules_idl_files_list)',
+        '--',
+        '<@(bindings_modules_generated_aggregate_files)',
+      ],
+      'message': 'Generating aggregate generated modules bindings files',
     }],
   },
 ################################################################################
@@ -388,7 +411,8 @@
     'target_name': 'generated_bindings',
     'type': 'none',
     'dependencies': [
-      'aggregate_generated_bindings',
+      'bindings_core_generated_aggregate',
+      'bindings_modules_generated_aggregate',
       'individual_generated_bindings',
     ],
   },
