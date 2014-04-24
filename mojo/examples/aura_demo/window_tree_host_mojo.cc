@@ -56,6 +56,10 @@ WindowTreeHostMojo::~WindowTreeHostMojo() {}
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, aura::WindowTreeHost implementation:
 
+ui::EventSource* WindowTreeHostMojo::GetEventSource() {
+  return this;
+}
+
 gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
   NOTIMPLEMENTED() << "GetAcceleratedWidget";
   return gfx::kNullAcceleratedWidget;

@@ -30,6 +30,7 @@ class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
 
  private:
   // WindowTreeHost Overrides.
+  virtual ui::EventSource* GetEventSource() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

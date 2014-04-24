@@ -373,6 +373,10 @@ Window* RemoteWindowTreeHostWin::GetAshWindow() {
   return window();
 }
 
+ui::EventSource* RemoteWindowTreeHostWin::GetEventSource() {
+  return this;
+}
+
 gfx::AcceleratedWidget RemoteWindowTreeHostWin::GetAcceleratedWidget() {
   if (remote_window_)
     return remote_window_;

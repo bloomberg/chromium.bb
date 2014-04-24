@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -110,6 +111,10 @@ class AURA_EXPORT WindowTreeHost {
   void MoveCursorToHostLocation(const gfx::Point& host_location);
 
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
+
+  // Returns the EventSource responsible for dispatching events to the window
+  // tree.
+  virtual ui::EventSource* GetEventSource() = 0;
 
   // Returns the accelerated widget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;

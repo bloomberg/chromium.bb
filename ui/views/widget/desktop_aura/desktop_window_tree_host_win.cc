@@ -436,6 +436,10 @@ bool DesktopWindowTreeHostWin::IsAnimatingClosed() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, WindowTreeHost implementation:
 
+ui::EventSource* DesktopWindowTreeHostWin::GetEventSource() {
+  return this;
+}
+
 gfx::AcceleratedWidget DesktopWindowTreeHostWin::GetAcceleratedWidget() {
   return message_handler_->hwnd();
 }

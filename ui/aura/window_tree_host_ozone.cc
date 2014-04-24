@@ -51,6 +51,10 @@ uint32_t WindowTreeHostOzone::DispatchEvent(const ui::PlatformEvent& ne) {
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
+ui::EventSource* WindowTreeHostOzone::GetEventSource() {
+  return this;
+}
+
 gfx::AcceleratedWidget WindowTreeHostOzone::GetAcceleratedWidget() {
   return widget_;
 }

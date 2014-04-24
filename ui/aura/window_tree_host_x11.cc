@@ -343,6 +343,10 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
+ui::EventSource* WindowTreeHostX11::GetEventSource() {
+  return this;
+}
+
 gfx::AcceleratedWidget WindowTreeHostX11::GetAcceleratedWidget() {
   return xwindow_;
 }

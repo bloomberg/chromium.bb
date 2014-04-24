@@ -23,6 +23,11 @@ WindowTreeHostMac::~WindowTreeHostMac() {
   DestroyDispatcher();
 }
 
+EventSource* WindowTreeHostMac::GetEventSource() {
+  NOTIMPLEMENTED();
+  return nil;
+}
+
 gfx::AcceleratedWidget WindowTreeHostMac::GetAcceleratedWidget() {
   return [window_ contentView];
 }

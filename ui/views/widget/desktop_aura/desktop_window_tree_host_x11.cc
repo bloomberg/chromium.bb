@@ -765,6 +765,10 @@ bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 
+ui::EventSource* DesktopWindowTreeHostX11::GetEventSource() {
+  return this;
+}
+
 gfx::AcceleratedWidget DesktopWindowTreeHostX11::GetAcceleratedWidget() {
   return xwindow_;
 }

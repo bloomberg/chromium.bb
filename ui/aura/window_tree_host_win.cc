@@ -55,6 +55,10 @@ WindowTreeHostWin::~WindowTreeHostWin() {
   DestroyWindow(hwnd());
 }
 
+ui::EventSource* WindowTreeHostWin::GetEventSource() {
+  return this;
+}
+
 gfx::AcceleratedWidget WindowTreeHostWin::GetAcceleratedWidget() {
   return hwnd();
 }

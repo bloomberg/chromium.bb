@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
+#include "ui/events/event_source.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -130,6 +131,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   virtual bool IsAnimatingClosed() const OVERRIDE;
 
   // Overridden from aura::WindowTreeHost:
+  virtual ui::EventSource* GetEventSource() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

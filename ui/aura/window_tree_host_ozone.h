@@ -29,6 +29,7 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
   // WindowTreeHost:
+  virtual ui::EventSource* GetEventSource() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

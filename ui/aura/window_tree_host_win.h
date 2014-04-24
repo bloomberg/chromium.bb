@@ -20,6 +20,7 @@ class AURA_EXPORT WindowTreeHostWin : public WindowTreeHost,
   explicit WindowTreeHostWin(const gfx::Rect& bounds);
   virtual ~WindowTreeHostWin();
   // WindowTreeHost:
+  virtual ui::EventSource* GetEventSource() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

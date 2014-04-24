@@ -33,6 +33,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 
  private:
   // WindowTreeHost:
+  virtual ui::EventSource* GetEventSource() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
