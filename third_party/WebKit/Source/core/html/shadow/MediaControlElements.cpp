@@ -271,6 +271,15 @@ PassRefPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlayPlayButtonEl
     return button.release();
 }
 
+void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == EventTypeNames::click && mediaElement().togglePlayStateWillPlay()) {
+        mediaElement().togglePlayState();
+        updateDisplayType();
+        event->setDefaultHandled();
+    }
+}
+
 void MediaControlOverlayPlayButtonElement::updateDisplayType()
 {
     if (mediaElement().togglePlayStateWillPlay()) {

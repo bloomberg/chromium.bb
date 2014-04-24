@@ -1,4 +1,0 @@
- This is a testharness.js-based test.
-PASS activation behavior with shadow children 
-Harness: the test ran to completion.
-

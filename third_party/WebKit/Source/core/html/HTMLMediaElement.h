@@ -405,9 +405,7 @@ private:
     void prepareMediaFragmentURI();
     void applyMediaFragmentURI();
 
-    virtual bool willRespondToMouseClickEvents() OVERRIDE FINAL;
     virtual void* preDispatchEventHandler(Event*) OVERRIDE FINAL;
-    virtual void defaultEventHandler(Event*) OVERRIDE FINAL;
 
     void changeNetworkStateFromLoadingToIdle();
 

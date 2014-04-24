@@ -2209,7 +2209,6 @@ bool HTMLMediaElement::togglePlayStateWillPlay() const
 
 void HTMLMediaElement::togglePlayState()
 {
-    // The activation behavior of a media element that is exposing a user interface to the user
     if (m_mediaController) {
         if (m_mediaController->isRestrained())
             m_mediaController->play();
@@ -3405,27 +3404,12 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
     configureTextTracks();
 }
 
-bool HTMLMediaElement::willRespondToMouseClickEvents()
-{
-    return controls();
-}
-
 void* HTMLMediaElement::preDispatchEventHandler(Event* event)
 {
     if (event && event->type() == EventTypeNames::webkitfullscreenchange)
         configureMediaControls();
 
     return 0;
-}
-
-void HTMLMediaElement::defaultEventHandler(Event* event)
-{
-    if (event->type() == EventTypeNames::click && willRespondToMouseClickEvents()) {
-        togglePlayState();
-        event->setDefaultHandled();
-        return;
-    }
-    HTMLElement::defaultEventHandler(event);
 }
 
 void HTMLMediaElement::createMediaPlayer()
