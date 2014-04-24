@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "URLTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"

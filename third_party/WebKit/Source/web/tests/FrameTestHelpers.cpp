@@ -29,10 +29,8 @@
  */
 
 #include "config.h"
-#include "FrameTestHelpers.h"
+#include "web/tests/FrameTestHelpers.h"
 
-#include "URLTestHelpers.h"
-#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "public/platform/Platform.h"
@@ -41,6 +39,8 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/tests/URLTestHelpers.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {

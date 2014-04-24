@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "WebDOMEventListenerPrivate.h"
+#include "web/WebDOMEventListenerPrivate.h"
 
-#include "EventListenerWrapper.h"
 #include "WebDOMEventListener.h"
+#include "web/EventListenerWrapper.h"
 
 using namespace WebCore;
 

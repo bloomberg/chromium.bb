@@ -29,11 +29,9 @@
  */
 
 #include "config.h"
-#include "PopupListBox.h"
+#include "web/PopupListBox.h"
 
 #include "CSSValueKeywords.h"
-#include "PopupContainer.h"
-#include "PopupMenuChromium.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/KeyboardCodes.h"
@@ -53,6 +51,8 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/StringTruncator.h"
 #include "platform/text/TextRun.h"
+#include "web/PopupContainer.h"
+#include "web/PopupMenuChromium.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/CurrentTime.h"
 #include <limits>

@@ -29,13 +29,11 @@
  */
 
 #include "config.h"
-#include "PopupContainer.h"
+#include "web/PopupContainer.h"
 
-#include "WebPopupMenuImpl.h"
 #include "WebPopupMenuInfo.h"
 #include "WebPopupType.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -53,6 +51,8 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/FramelessScrollViewClient.h"
+#include "web/WebPopupMenuImpl.h"
+#include "web/WebViewImpl.h"
 #include <limits>
 
 namespace blink {

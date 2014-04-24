@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "FakeWebPlugin.h"
+#include "web/tests/FakeWebPlugin.h"
 
 #include "WebPluginParams.h"
 #include "wtf/StdLibExtras.h"

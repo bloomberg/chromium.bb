@@ -1,21 +1,21 @@
 #include "config.h"
 
-#include <gtest/gtest.h>
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebHistoryItem.h"
 #include "WebInputEvent.h"
-#include "WebLocalFrameImpl.h"
 #include "WebScriptSource.h"
 #include "WebSettings.h"
 #include "WebView.h"
-#include "WebViewImpl.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace blink;

@@ -30,12 +30,7 @@
 
 #include "config.h"
 
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
-#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
-#include "WebViewImpl.h"
-#include <gtest/gtest.h>
 #include "core/page/Page.h"
 #include "core/page/PageSerializer.h"
 #include "platform/SerializedResource.h"
@@ -46,7 +41,12 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 #include "wtf/Vector.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace blink;

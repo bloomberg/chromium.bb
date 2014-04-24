@@ -26,9 +26,9 @@
 #include "config.h"
 #include "public/platform/WebIDBKeyRange.h"
 
-#include "public/platform/WebIDBKey.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
+#include "public/platform/WebIDBKey.h"
 
 using namespace WebCore;
 

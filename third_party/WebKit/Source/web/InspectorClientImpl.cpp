@@ -29,21 +29,21 @@
  */
 
 #include "config.h"
-#include "InspectorClientImpl.h"
+#include "web/InspectorClientImpl.h"
 
-#include "WebDevToolsAgentImpl.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
+#include "web/WebDevToolsAgentImpl.h"
+#include "web/WebViewImpl.h"
 #include "wtf/Vector.h"
 
 using namespace WebCore;

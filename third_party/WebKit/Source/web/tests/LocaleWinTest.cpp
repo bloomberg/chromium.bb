@@ -31,12 +31,12 @@
 #include "config.h"
 #include "platform/text/LocaleWin.h"
 
-#include <gtest/gtest.h>
 #include "platform/DateComponents.h"
 #include "wtf/DateMath.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/CString.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace std;

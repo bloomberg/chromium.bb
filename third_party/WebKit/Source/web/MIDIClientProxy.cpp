@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "MIDIClientProxy.h"
+#include "web/MIDIClientProxy.h"
 
 #include "WebMIDIClient.h"
 #include "WebMIDIPermissionRequest.h"

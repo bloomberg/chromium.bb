@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "FullscreenController.h"
+#include "web/FullscreenController.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "WebFrame.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/LayoutTestSupport.h"
+#include "web/WebViewImpl.h"
 
 using namespace WebCore;
 

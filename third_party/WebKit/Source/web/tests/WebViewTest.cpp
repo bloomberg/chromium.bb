@@ -31,9 +31,6 @@
 #include "config.h"
 #include "WebView.h"
 
-#include <gtest/gtest.h>
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebAutofillClient.h"
 #include "WebContentDetectionResult.h"
 #include "WebDateTimeChooserCompletion.h"
@@ -43,22 +40,19 @@
 #include "WebFrameClient.h"
 #include "WebHitTestResult.h"
 #include "WebInputEvent.h"
-#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
-#include "WebSettingsImpl.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "WebWidget.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Chrome.h"
-#include "core/frame/Settings.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
@@ -71,6 +65,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebSettingsImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
+#include <gtest/gtest.h>
 
 using namespace blink;
 using blink::FrameTestHelpers::runPendingTasks;

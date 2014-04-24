@@ -29,10 +29,9 @@
  */
 
 #include "config.h"
-#include "AssociatedURLLoader.h"
+#include "web/AssociatedURLLoader.h"
 
 #include "WebDataSource.h"
-#include "WebLocalFrameImpl.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
@@ -47,6 +46,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLRequest.h"
+#include "web/WebLocalFrameImpl.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 

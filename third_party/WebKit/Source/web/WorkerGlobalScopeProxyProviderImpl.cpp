@@ -29,14 +29,9 @@
  */
 
 #include "config.h"
-#include "WorkerGlobalScopeProxyProviderImpl.h"
+#include "web/WorkerGlobalScopeProxyProviderImpl.h"
 
-#include "DatabaseClientImpl.h"
-#include "LocalFileSystemClient.h"
-#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
-#include "WebViewImpl.h"
-#include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/Worker.h"
@@ -47,6 +42,11 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
+#include "web/DatabaseClientImpl.h"
+#include "web/LocalFileSystemClient.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/WorkerPermissionClient.h"
 
 using namespace WebCore;
 

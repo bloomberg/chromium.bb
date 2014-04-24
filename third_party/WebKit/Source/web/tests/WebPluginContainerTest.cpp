@@ -31,25 +31,25 @@
 #include "config.h"
 #include "WebPluginContainer.h"
 
-#include <gtest/gtest.h>
-#include "FakeWebPlugin.h"
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
-#include "WebLocalFrameImpl.h"
-#include "WebPluginContainerImpl.h"
 #include "WebPluginParams.h"
 #include "WebSettings.h"
 #include "WebView.h"
-#include "WebViewImpl.h"
 #include "core/dom/Element.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebPluginContainerImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FakeWebPlugin.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
+#include <gtest/gtest.h>
 
 using namespace blink;
 

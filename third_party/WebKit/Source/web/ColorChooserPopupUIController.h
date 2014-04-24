@@ -26,8 +26,8 @@
 #ifndef ColorChooserPopupUIController_h
 #define ColorChooserPopupUIController_h
 
-#include "ColorChooserUIController.h"
 #include "core/page/PagePopupClient.h"
+#include "web/ColorChooserUIController.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {

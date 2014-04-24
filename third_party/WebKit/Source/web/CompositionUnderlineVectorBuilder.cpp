@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "CompositionUnderlineVectorBuilder.h"
+#include "web/CompositionUnderlineVectorBuilder.h"
 
-#include "CompositionUnderlineBuilder.h"
+#include "web/CompositionUnderlineBuilder.h"
 
 using namespace WebCore;
 

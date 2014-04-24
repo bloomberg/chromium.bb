@@ -6,9 +6,6 @@
 
 #include "core/frame/PinchViewport.h"
 
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
-#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "core/frame/FrameHost.h"
@@ -19,6 +16,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 

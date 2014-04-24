@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "UserMediaClientImpl.h"
+#include "web/UserMediaClientImpl.h"
 
 #include "WebMediaDevicesRequest.h"
 #include "WebUserMediaClient.h"
 #include "WebUserMediaRequest.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
+#include "web/WebViewImpl.h"
 #include "wtf/RefPtr.h"
 
 using namespace WebCore;

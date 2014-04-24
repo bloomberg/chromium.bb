@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebView.h"
-#include <gtest/gtest.h>
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
+#include <gtest/gtest.h>
 #include <v8/include/v8-profiler.h>
 #include <v8/include/v8.h>
 

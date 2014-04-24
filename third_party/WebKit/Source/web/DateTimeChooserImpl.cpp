@@ -30,19 +30,19 @@
 
 #include "config.h"
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeChooserImpl.h"
+#include "web/DateTimeChooserImpl.h"
 
 #include "CalendarPicker.h"
-#include "ChromeClientImpl.h"
 #include "InputTypeNames.h"
 #include "PickerCommon.h"
-#include "WebViewImpl.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
 #include "platform/DateTimeChooserClient.h"
 #include "platform/Language.h"
 #include "platform/text/PlatformLocale.h"
+#include "web/ChromeClientImpl.h"
+#include "web/WebViewImpl.h"
 
 using namespace WebCore;
 

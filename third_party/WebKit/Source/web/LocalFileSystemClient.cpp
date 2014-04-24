@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "LocalFileSystemClient.h"
+#include "web/LocalFileSystemClient.h"
 
-#include "WebLocalFrameImpl.h"
-#include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/PermissionCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebPermissionCallbacks.h"
 #include "public/web/WebPermissionClient.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WorkerPermissionClient.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;

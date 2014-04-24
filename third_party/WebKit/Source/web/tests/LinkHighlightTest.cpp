@@ -24,18 +24,12 @@
 
 #include "config.h"
 
-#include "LinkHighlight.h"
+#include "web/LinkHighlight.h"
 
-#include <gtest/gtest.h>
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebInputEvent.h"
-#include "WebInputEventConversion.h"
-#include "WebLocalFrameImpl.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
@@ -46,7 +40,13 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebInputEventConversion.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 #include "wtf/PassOwnPtr.h"
+#include <gtest/gtest.h>
 
 
 using namespace blink;

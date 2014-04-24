@@ -76,10 +76,9 @@
 // saved resource files.
 
 #include "config.h"
-#include "WebPageSerializerImpl.h"
+#include "web/WebPageSerializerImpl.h"
 
 #include "HTMLNames.h"
-#include "WebLocalFrameImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
@@ -92,6 +91,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "public/platform/WebVector.h"
+#include "web/WebLocalFrameImpl.h"
 #include "wtf/text/TextEncoding.h"
 
 using namespace WebCore;

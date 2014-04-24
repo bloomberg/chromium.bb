@@ -29,8 +29,10 @@
  */
 
 #include "config.h"
-#include "PaintAggregator.h"
+#include "web/painting/PaintAggregator.h"
+
 #include "public/platform/Platform.h"
+
 using namespace WebCore;
 
 namespace blink {

@@ -26,10 +26,10 @@
 
 #if ENABLE(OPENTYPE_VERTICAL)
 
-#include <gtest/gtest.h>
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
 #include "wtf/RefPtr.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 

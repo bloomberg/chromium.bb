@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "ContinuousPainter.h"
+#include "web/painting/ContinuousPainter.h"
 
-#include "PageOverlayList.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "web/PageOverlayList.h"
 
 using namespace WebCore;
 

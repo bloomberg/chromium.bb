@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "SpeechInputClientImpl.h"
+#include "web/SpeechInputClientImpl.h"
 
-#include "public/platform/WebString.h"
-#include "wtf/text/WTFString.h"
 #include "WebSecurityOrigin.h"
 #include "WebSpeechInputController.h"
 #include "WebViewClient.h"
 #include "core/speech/SpeechInputListener.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebString.h"
+#include "wtf/text/WTFString.h"
 
 #if ENABLE(INPUT_SPEECH)
 

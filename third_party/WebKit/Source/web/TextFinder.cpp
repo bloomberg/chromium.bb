@@ -30,14 +30,11 @@
 
 
 #include "config.h"
-#include "TextFinder.h"
+#include "web/TextFinder.h"
 
-#include "FindInPageCoordinates.h"
 #include "WebFindOptions.h"
 #include "WebFrameClient.h"
-#include "WebLocalFrameImpl.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Range.h"
@@ -48,6 +45,9 @@
 #include "core/frame/FrameView.h"
 #include "platform/Timer.h"
 #include "public/platform/WebVector.h"
+#include "web/FindInPageCoordinates.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 
 using namespace WebCore;

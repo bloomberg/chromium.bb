@@ -30,23 +30,23 @@
 
 #include "config.h"
 
-#include "WebInputEventConversion.h"
+#include "web/WebInputEventConversion.h"
 
-#include <gtest/gtest.h>
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebSettings.h"
-#include "WebViewImpl.h"
+#include "core/dom/Touch.h"
+#include "core/dom/TouchList.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/dom/Touch.h"
 #include "core/events/TouchEvent.h"
-#include "core/dom/TouchList.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
+#include <gtest/gtest.h>
 
 using namespace blink;
 using namespace WebCore;

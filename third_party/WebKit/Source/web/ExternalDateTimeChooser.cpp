@@ -25,14 +25,14 @@
 
 #include "config.h"
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "ExternalDateTimeChooser.h"
+#include "web/ExternalDateTimeChooser.h"
 
-#include "ChromeClientImpl.h"
 #include "InputTypeNames.h"
 #include "WebDateTimeChooserCompletion.h"
 #include "WebDateTimeChooserParams.h"
 #include "WebViewClient.h"
 #include "platform/DateTimeChooserClient.h"
+#include "web/ChromeClientImpl.h"
 #include "wtf/text/AtomicString.h"
 
 using namespace WebCore;

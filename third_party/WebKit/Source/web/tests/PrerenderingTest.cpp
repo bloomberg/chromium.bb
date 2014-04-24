@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebCache.h"
 #include "WebDocument.h"
 #include "WebElement.h"
@@ -42,16 +40,18 @@
 #include "WebScriptSource.h"
 #include "WebView.h"
 #include "WebViewClient.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 
-#include <functional>
-#include <gtest/gtest.h>
-#include <list>
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerender.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "wtf/OwnPtr.h"
+#include <functional>
+#include <gtest/gtest.h>
+#include <list>
 
 using namespace blink;
 using blink::URLTestHelpers::toKURL;

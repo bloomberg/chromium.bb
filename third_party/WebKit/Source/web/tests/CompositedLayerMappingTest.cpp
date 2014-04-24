@@ -27,19 +27,19 @@
 
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebFrameClient.h"
-#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 
 #include <gtest/gtest.h>
 

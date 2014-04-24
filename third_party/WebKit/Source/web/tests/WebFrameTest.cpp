@@ -32,14 +32,9 @@
 
 #include "WebFrame.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <v8.h>
-#include "FrameTestHelpers.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
-#include "URLTestHelpers.h"
 #include "UserAgentStyleSheets.h"
 #include "WebDataSource.h"
 #include "WebDocument.h"
@@ -47,7 +42,6 @@
 #include "WebFormElement.h"
 #include "WebFrameClient.h"
 #include "WebHistoryItem.h"
-#include "WebLocalFrameImpl.h"
 #include "WebRange.h"
 #include "WebScriptSource.h"
 #include "WebSearchableFormData.h"
@@ -58,7 +52,6 @@
 #include "WebTextCheckingCompletion.h"
 #include "WebTextCheckingResult.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -90,9 +83,16 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 #include "wtf/Forward.h"
 #include "wtf/dtoa/utils.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <map>
+#include <v8.h>
 
 using namespace blink;
 using WebCore::Document;

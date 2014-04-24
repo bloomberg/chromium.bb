@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "WebEntities.h"
+#include "web/WebEntities.h"
 
 #include "public/platform/WebString.h"
-#include <string.h>
 #include "wtf/text/StringBuilder.h"
+#include <string.h>
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebSocket.h"
 
-#include "WebSocketImpl.h"
+#include "web/WebSocketImpl.h"
 
 namespace blink {
 

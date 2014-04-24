@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebConsoleMessage.h"
 #include "WebFrame.h"
 #include "WebScriptSource.h"
@@ -39,10 +37,10 @@
 #include "WebViewClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/page/PageScaleConstraints.h"
-#include "core/frame/Settings.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -50,6 +48,8 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 

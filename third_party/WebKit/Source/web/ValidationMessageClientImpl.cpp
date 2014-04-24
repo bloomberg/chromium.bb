@@ -24,10 +24,9 @@
  */
 
 #include "config.h"
-#include "ValidationMessageClientImpl.h"
+#include "web/ValidationMessageClientImpl.h"
 
 #include "WebTextDirection.h"
-#include "WebViewImpl.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderObject.h"
@@ -35,6 +34,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebViewClient.h"
+#include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 
 using namespace WebCore;

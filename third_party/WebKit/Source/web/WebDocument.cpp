@@ -37,7 +37,6 @@
 #include "WebElement.h"
 #include "WebElementCollection.h"
 #include "WebFormElement.h"
-#include "WebLocalFrameImpl.h"
 #include "WebNodeList.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
@@ -63,6 +62,7 @@
 #include "core/rendering/RenderObject.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
+#include "web/WebLocalFrameImpl.h"
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 

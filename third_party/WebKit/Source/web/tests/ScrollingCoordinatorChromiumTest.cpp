@@ -26,13 +26,8 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
-#include <gtest/gtest.h>
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
-#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -42,6 +37,11 @@
 #include "public/platform/WebLayerPositionConstraint.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace blink;

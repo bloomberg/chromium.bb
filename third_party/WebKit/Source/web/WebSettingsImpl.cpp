@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebSettingsImpl.h"
+#include "web/WebSettingsImpl.h"
 
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorController.h"

@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "ContextFeaturesClientImpl.h"
+#include "web/ContextFeaturesClientImpl.h"
 
 #include "WebDocument.h"
-#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "core/dom/Document.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "web/WebLocalFrameImpl.h"
 
 using namespace WebCore;
 

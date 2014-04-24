@@ -31,12 +31,12 @@
 #include "config.h"
 #include "public/platform/WebImage.h"
 
-#include <gtest/gtest.h>
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace blink;

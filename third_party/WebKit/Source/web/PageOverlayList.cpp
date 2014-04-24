@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "PageOverlayList.h"
+#include "web/PageOverlayList.h"
 
-#include "PageOverlay.h"
 #include "WebPageOverlay.h"
-#include "WebViewImpl.h"
+#include "web/PageOverlay.h"
+#include "web/WebViewImpl.h"
 
 namespace blink {
 

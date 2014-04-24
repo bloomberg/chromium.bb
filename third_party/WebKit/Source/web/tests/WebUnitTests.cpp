@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebUnitTests.h"
+#include "web/tests/WebUnitTests.h"
 
 // FIXME: Can we move this to webkit/support and fix the layering violation?
 #include <base/test/test_suite.h>

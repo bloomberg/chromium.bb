@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "ScrollbarGroup.h"
+#include "web/ScrollbarGroup.h"
 
-#include "WebPluginScrollbarImpl.h"
 #include "core/frame/FrameView.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebRect.h"
+#include "web/WebPluginScrollbarImpl.h"
 
 using namespace WebCore;
 

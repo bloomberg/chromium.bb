@@ -26,11 +26,11 @@
 #include "config.h"
 #include "WebGeolocationPermissionRequest.h"
 
-#include "public/platform/WebURL.h"
 #include "WebSecurityOrigin.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/geolocation/Geolocation.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURL.h"
 
 using namespace WebCore;
 

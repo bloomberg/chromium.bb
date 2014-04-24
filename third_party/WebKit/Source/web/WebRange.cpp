@@ -32,7 +32,6 @@
 #include "WebRange.h"
 
 #include "WebExceptionCode.h"
-#include "WebLocalFrameImpl.h"
 #include "WebNode.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -46,6 +45,7 @@
 #include "core/frame/LocalFrame.h"
 #include "public/platform/WebFloatQuad.h"
 #include "public/platform/WebString.h"
+#include "web/WebLocalFrameImpl.h"
 #include "wtf/PassRefPtr.h"
 
 using namespace WebCore;

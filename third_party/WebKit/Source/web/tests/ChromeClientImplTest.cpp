@@ -35,8 +35,8 @@
 #include "WebLocalFrame.h"
 #include "WebView.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/page/Chrome.h"
+#include "web/WebViewImpl.h"
 #include <gtest/gtest.h>
 
 using namespace blink;

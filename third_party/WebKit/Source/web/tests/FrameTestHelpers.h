@@ -31,8 +31,8 @@
 #ifndef FrameTestHelpers_h
 #define FrameTestHelpers_h
 
-#include "WebViewImpl.h"
 #include "public/web/WebFrameClient.h"
+#include "web/WebViewImpl.h"
 #include "wtf/PassOwnPtr.h"
 #include <string>
 

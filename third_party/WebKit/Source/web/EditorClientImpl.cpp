@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "EditorClientImpl.h"
+#include "web/EditorClientImpl.h"
 
 #include "WebFrameClient.h"
-#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "core/editing/SelectionType.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 
 using namespace WebCore;
 

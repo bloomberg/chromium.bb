@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "StorageClientImpl.h"
+#include "web/StorageClientImpl.h"
 
-#include "WebLocalFrameImpl.h"
-#include "WebViewImpl.h"
 #include "core/storage/StorageNamespace.h"
 #include "public/platform/WebStorageNamespace.h"
 #include "public/web/WebPermissionClient.h"
 #include "public/web/WebViewClient.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 
 namespace blink {
 

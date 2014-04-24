@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebDevToolsAgentImpl.h"
+#include "web/WebDevToolsAgentImpl.h"
 
 #include "InspectorBackendDispatcher.h"
 #include "InspectorFrontend.h"
@@ -37,12 +37,9 @@
 #include "WebDataSource.h"
 #include "WebDevToolsAgentClient.h"
 #include "WebDeviceEmulationParams.h"
-#include "WebInputEventConversion.h"
-#include "WebLocalFrameImpl.h"
 #include "WebMemoryUsageInfo.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "bindings/v8/PageScriptDebugServer.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -67,6 +64,9 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
+#include "web/WebInputEventConversion.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"

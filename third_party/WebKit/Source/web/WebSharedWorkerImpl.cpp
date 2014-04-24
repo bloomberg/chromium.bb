@@ -29,17 +29,12 @@
  */
 
 #include "config.h"
-#include "WebSharedWorkerImpl.h"
+#include "web/WebSharedWorkerImpl.h"
 
-#include "DatabaseClientImpl.h"
-#include "LocalFileSystemClient.h"
 #include "RuntimeEnabledFeatures.h"
-#include "WebDataSourceImpl.h"
 #include "WebFrame.h"
-#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebView.h"
-#include "WorkerPermissionClient.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/events/MessageEvent.h"
@@ -67,6 +62,11 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
+#include "web/DatabaseClientImpl.h"
+#include "web/LocalFileSystemClient.h"
+#include "web/WebDataSourceImpl.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WorkerPermissionClient.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 

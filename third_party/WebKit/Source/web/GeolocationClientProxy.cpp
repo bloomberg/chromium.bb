@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "GeolocationClientProxy.h"
+#include "web/GeolocationClientProxy.h"
 
 #include "WebGeolocationClient.h"
 #include "WebGeolocationPermissionRequest.h"

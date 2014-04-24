@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "FindInPageCoordinates.h"
+#include "web/FindInPageCoordinates.h"
 
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"

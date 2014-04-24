@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "WebHelperPluginImpl.h"
+#include "web/WebHelperPluginImpl.h"
 
-#include "WebLocalFrameImpl.h"
 #include "WebPlugin.h"
-#include "WebPluginContainerImpl.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebPluginContainerImpl.h"
 
 using namespace WebCore;
 

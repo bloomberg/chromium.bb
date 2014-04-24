@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "NotificationPresenterImpl.h"
+#include "web/NotificationPresenterImpl.h"
 
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"

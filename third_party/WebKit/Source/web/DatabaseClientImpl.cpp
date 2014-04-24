@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "DatabaseClientImpl.h"
+#include "web/DatabaseClientImpl.h"
 
-#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
-#include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WorkerPermissionClient.h"
 
 using namespace WebCore;
 

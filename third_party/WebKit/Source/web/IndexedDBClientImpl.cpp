@@ -27,17 +27,17 @@
  */
 
 #include "config.h"
-#include "IndexedDBClientImpl.h"
+#include "web/IndexedDBClientImpl.h"
 
 #include "WebKit.h"
-#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebSecurityOrigin.h"
-#include "WorkerPermissionClient.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WorkerPermissionClient.h"
 
 
 using namespace WebCore;

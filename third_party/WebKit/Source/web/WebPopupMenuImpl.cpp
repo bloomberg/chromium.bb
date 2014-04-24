@@ -29,12 +29,9 @@
  */
 
 #include "config.h"
-#include "WebPopupMenuImpl.h"
+#include "web/WebPopupMenuImpl.h"
 
-#include "PopupContainer.h"
-#include "PopupMenuChromium.h"
 #include "WebInputEvent.h"
-#include "WebInputEventConversion.h"
 #include "WebRange.h"
 #include "WebViewClient.h"
 #include "WebWidgetClient.h"
@@ -55,6 +52,9 @@
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
+#include "web/PopupContainer.h"
+#include "web/PopupMenuChromium.h"
+#include "web/WebInputEventConversion.h"
 #include <skia/ext/platform_canvas.h>
 
 using namespace WebCore;

@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "WebPluginLoadObserver.h"
+#include "web/WebPluginLoadObserver.h"
 
 #include "WebPlugin.h"
-#include "WebPluginContainerImpl.h"
+#include "web/WebPluginContainerImpl.h"
 
 namespace blink {
 

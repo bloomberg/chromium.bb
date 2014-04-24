@@ -31,13 +31,13 @@
 #include "config.h"
 #include "WebDatabase.h"
 
-#include "public/platform/WebString.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebString.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 using namespace WebCore;
 

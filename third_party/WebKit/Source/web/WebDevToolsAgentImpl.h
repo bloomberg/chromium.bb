@@ -34,10 +34,10 @@
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 
-#include "WebDevToolsAgentPrivate.h"
 #include "WebPageOverlay.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
+#include "web/WebDevToolsAgentPrivate.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"

@@ -30,13 +30,13 @@
  */
 
 #include "config.h"
-#include "PrerendererClientImpl.h"
+#include "web/PrerendererClientImpl.h"
 
 #include "WebPrerendererClient.h"
-#include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "platform/Prerender.h"
 #include "public/platform/WebPrerender.h"
+#include "web/WebViewImpl.h"
 
 namespace blink {
 

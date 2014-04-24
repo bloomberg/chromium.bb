@@ -29,9 +29,8 @@
  */
 
 #include "config.h"
-#include "ServiceWorkerGlobalScopeProxy.h"
+#include "web/ServiceWorkerGlobalScopeProxy.h"
 
-#include "WebEmbeddedWorkerImpl.h"
 #include "WebSerializedScriptValue.h"
 #include "WebServiceWorkerContextClient.h"
 #include "bindings/v8/WorkerScriptController.h"
@@ -44,6 +43,7 @@
 #include "modules/serviceworkers/InstallPhaseEvent.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
+#include "web/WebEmbeddedWorkerImpl.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 

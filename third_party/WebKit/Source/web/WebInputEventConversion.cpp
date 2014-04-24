@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebInputEventConversion.h"
+#include "web/WebInputEventConversion.h"
 
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"

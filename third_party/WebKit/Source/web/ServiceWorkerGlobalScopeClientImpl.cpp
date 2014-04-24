@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ServiceWorkerGlobalScopeClientImpl.h"
+#include "web/ServiceWorkerGlobalScopeClientImpl.h"
 
 #include "WebServiceWorkerContextClient.h"
 #include "modules/serviceworkers/Response.h"

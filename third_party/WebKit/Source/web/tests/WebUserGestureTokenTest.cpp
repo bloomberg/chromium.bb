@@ -32,10 +32,10 @@
 
 #include "WebUserGestureToken.h"
 
-#include <gtest/gtest.h>
 #include "WebScopedUserGesture.h"
 #include "WebUserGestureIndicator.h"
 #include "platform/UserGestureIndicator.h"
+#include <gtest/gtest.h>
 
 using namespace blink;
 using namespace WebCore;

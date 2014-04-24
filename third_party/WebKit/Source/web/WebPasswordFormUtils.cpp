@@ -41,7 +41,7 @@
 //   toolkit/components/passwordmgr/base/nsPasswordManager.cpp
 
 #include "config.h"
-#include "WebPasswordFormUtils.h"
+#include "web/WebPasswordFormUtils.h"
 
 #include "HTMLNames.h"
 #include "core/html/HTMLFormElement.h"

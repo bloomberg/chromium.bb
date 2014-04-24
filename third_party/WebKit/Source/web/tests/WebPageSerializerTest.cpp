@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebPageSerializer.h"
 
-#include "FrameTestHelpers.h"
-#include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebView.h"
 #include "core/dom/Document.h"
@@ -43,6 +41,8 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
+#include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 
 #include <gtest/gtest.h>
 

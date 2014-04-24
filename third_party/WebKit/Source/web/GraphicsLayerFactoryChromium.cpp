@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "GraphicsLayerFactoryChromium.h"
+#include "web/GraphicsLayerFactoryChromium.h"
 
-#include "WebViewImpl.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "web/WebViewImpl.h"
 
 using namespace WebCore;
 

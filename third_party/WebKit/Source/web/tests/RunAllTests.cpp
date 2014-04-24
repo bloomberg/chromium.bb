@@ -40,7 +40,7 @@
 #include <content/test/webkit_unit_test_support.h>
 
 #if defined(BLINK_DLL_UNITTEST)
-#include "WebUnitTests.h"
+#include "web/tests/WebUnitTests.h"
 #endif
 
 #include <gmock/gmock.h>

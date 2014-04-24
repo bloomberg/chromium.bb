@@ -31,10 +31,10 @@
 #ifndef PopupContainer_h
 #define PopupContainer_h
 
-#include "PopupListBox.h"
 #include "platform/PopupMenuStyle.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/scroll/FramelessScrollView.h"
+#include "web/PopupListBox.h"
 
 namespace WebCore {
 class ChromeClient;

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "PopupContainer.h"
+#include "web/PopupContainer.h"
 
 #include <gtest/gtest.h>
 

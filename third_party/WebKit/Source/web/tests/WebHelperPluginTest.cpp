@@ -5,10 +5,10 @@
 #include "config.h"
 #include "WebHelperPlugin.h"
 
-#include "FakeWebPlugin.h"
-#include "FrameTestHelpers.h"
 #include "WebFrameClient.h"
 #include "WebLocalFrame.h"
+#include "web/tests/FakeWebPlugin.h"
+#include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
 namespace blink {

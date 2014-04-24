@@ -32,8 +32,8 @@
 #include "WebSelector.h"
 
 #include "../platform/WebString.h"
-#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSSelectorList.h"
+#include "core/css/parser/BisonCSSParser.h"
 
 using namespace WebCore;
 

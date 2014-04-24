@@ -31,9 +31,9 @@
 #ifndef WebPagePopupImpl_h
 #define WebPagePopupImpl_h
 
-#include "PageWidgetDelegate.h"
 #include "WebPagePopup.h"
 #include "core/page/PagePopup.h"
+#include "web/PageWidgetDelegate.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 

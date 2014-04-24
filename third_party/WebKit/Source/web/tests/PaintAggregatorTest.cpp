@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "painting/PaintAggregator.h"
+#include "web/painting/PaintAggregator.h"
 
 #include <gtest/gtest.h>
 

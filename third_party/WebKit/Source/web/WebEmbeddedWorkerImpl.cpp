@@ -29,17 +29,12 @@
  */
 
 #include "config.h"
-#include "WebEmbeddedWorkerImpl.h"
+#include "web/WebEmbeddedWorkerImpl.h"
 
-#include "ServiceWorkerGlobalScopeClientImpl.h"
-#include "ServiceWorkerGlobalScopeProxy.h"
-#include "WebDataSourceImpl.h"
-#include "WebLocalFrameImpl.h"
 #include "WebServiceWorkerContextClient.h"
 #include "WebServiceWorkerNetworkProvider.h"
 #include "WebView.h"
 #include "WebWorkerPermissionClientProxy.h"
-#include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/SubstituteData.h"
@@ -53,6 +48,11 @@
 #include "platform/NotImplemented.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "web/ServiceWorkerGlobalScopeClientImpl.h"
+#include "web/ServiceWorkerGlobalScopeProxy.h"
+#include "web/WebDataSourceImpl.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WorkerPermissionClient.h"
 #include "wtf/Functional.h"
 
 using namespace WebCore;

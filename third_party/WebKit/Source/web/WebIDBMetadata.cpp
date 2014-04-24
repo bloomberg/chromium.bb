@@ -26,10 +26,10 @@
 #include "config.h"
 #include "public/platform/WebIDBMetadata.h"
 
+#include "modules/indexeddb/IDBMetadata.h"
 #include "public/platform/WebIDBKeyPath.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
-#include "modules/indexeddb/IDBMetadata.h"
 
 using namespace WebCore;
 

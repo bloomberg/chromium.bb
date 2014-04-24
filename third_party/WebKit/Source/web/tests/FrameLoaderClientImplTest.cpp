@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include "FrameLoaderClientImpl.h"
+#include "web/FrameLoaderClientImpl.h"
 
 #include "WebFrameClient.h"
-#include "WebLocalFrameImpl.h"
 #include "WebView.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
+#include "web/WebLocalFrameImpl.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ViewportAnchor.h"
+#include "web/ViewportAnchor.h"
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"

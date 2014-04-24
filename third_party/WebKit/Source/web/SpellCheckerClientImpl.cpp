@@ -25,18 +25,18 @@
  */
 
 #include "config.h"
-#include "SpellCheckerClientImpl.h"
+#include "web/SpellCheckerClientImpl.h"
 
 #include "WebSpellCheckClient.h"
-#include "WebTextCheckingCompletionImpl.h"
 #include "WebTextCheckingResult.h"
-#include "WebViewImpl.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/page/Page.h"
+#include "web/WebTextCheckingCompletionImpl.h"
+#include "web/WebViewImpl.h"
 
 using namespace WebCore;
 

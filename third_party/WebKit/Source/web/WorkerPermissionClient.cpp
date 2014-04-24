@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WorkerPermissionClient.h"
+#include "web/WorkerPermissionClient.h"
 
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebPermissionCallbacks.h"

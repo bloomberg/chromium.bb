@@ -37,8 +37,8 @@
 
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 struct NPObject;
 
