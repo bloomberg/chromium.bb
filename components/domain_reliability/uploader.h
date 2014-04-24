@@ -14,6 +14,7 @@
 
 namespace net {
 class URLFetcher;
+class URLRequest;
 class URLRequestContextGetter;
 }  // namespace net
 
@@ -32,6 +33,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
   virtual void UploadReport(const std::string& report_json,
                             const GURL& upload_url,
                             const UploadCallback& callback) = 0;
+
+  static bool URLRequestIsUpload(const net::URLRequest& request);
 };
 
 }  // namespace domain_reliability

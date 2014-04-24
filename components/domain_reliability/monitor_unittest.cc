@@ -82,6 +82,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
     request.response_code = 200;
     request.was_cached = false;
     request.load_flags = 0;
+    request.is_upload = false;
     return request;
   }
 
@@ -133,6 +134,16 @@ TEST_F(DomainReliabilityMonitorTest, ContextRequestWithDoNotSendCookies) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
   request.load_flags = net::LOAD_DO_NOT_SEND_COOKIES;
+  OnRequestLegComplete(request);
+
+  EXPECT_TRUE(CheckNoBeacons(0));
+  EXPECT_TRUE(CheckNoBeacons(1));
+}
+
+TEST_F(DomainReliabilityMonitorTest, ContextRequestThatIsUpload) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.is_upload = true;
   OnRequestLegComplete(request);
 
   EXPECT_TRUE(CheckNoBeacons(0));

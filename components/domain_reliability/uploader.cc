@@ -5,8 +5,10 @@
 #include "components/domain_reliability/uploader.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
+#include "base/supports_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -15,6 +17,23 @@
 namespace domain_reliability {
 
 namespace {
+
+class UploadUserData : public base::SupportsUserData::Data {
+ public:
+  static net::URLFetcher::CreateDataCallback CreateCreateDataCallback() {
+    return base::Bind(&UploadUserData::CreateUploadUserData);
+  }
+
+  static const void* kUserDataKey;
+
+ private:
+  static base::SupportsUserData::Data* CreateUploadUserData() {
+    return new UploadUserData();
+  }
+};
+
+const void* UploadUserData::kUserDataKey =
+    static_cast<const void*>(&UploadUserData::kUserDataKey);
 
 class DomainReliabilityUploaderImpl
     : public DomainReliabilityUploader, net::URLFetcherDelegate {
@@ -44,6 +63,9 @@ class DomainReliabilityUploaderImpl
                           net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher->SetUploadData("text/json", report_json);
     fetcher->SetAutomaticallyRetryOn5xx(false);
+    fetcher->SetURLRequestUserData(
+        UploadUserData::kUserDataKey,
+        UploadUserData::CreateCreateDataCallback());
     fetcher->Start();
 
     upload_callbacks_[fetcher] = callback;
@@ -88,6 +110,12 @@ scoped_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   return scoped_ptr<DomainReliabilityUploader>(
       new DomainReliabilityUploaderImpl(url_request_context_getter));
+}
+
+// static
+bool DomainReliabilityUploader::URLRequestIsUpload(
+    const net::URLRequest& request) {
+  return request.GetUserData(UploadUserData::kUserDataKey) != NULL;
 }
 
 }  // namespace domain_reliability

@@ -142,7 +142,8 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
       response_code(-1),
       socket_address(request.GetSocketAddress()),
       was_cached(request.was_cached()),
-      load_flags(request.load_flags()) {
+      load_flags(request.load_flags()),
+      is_upload(DomainReliabilityUploader::URLRequestIsUpload(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
   // Can't get response code of a canceled request -- there's no transaction.
   if (status.status() != net::URLRequestStatus::CANCELED)
@@ -187,6 +188,11 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   // for such requests may allow the server to correlate that request with the
   // user (by correlating a particular config).
   if (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES)
+    return;
+
+  // Don't monitor requests that were, themselves, Domain Reliability uploads,
+  // to avoid infinite chains of uploads.
+  if (request.is_upload)
     return;
 
   ContextMap::iterator it = contexts_.find(request.url.host());
