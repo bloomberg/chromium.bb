@@ -207,6 +207,8 @@
       'WebPopupMenuImpl.cpp',
       'WebPopupMenuImpl.h',
       'WebRange.cpp',
+      'WebRemoteFrameImpl.cpp',
+      'WebRemoteFrameImpl.h',
       'WebRuntimeFeatures.cpp',
       'WebScopedMicrotaskSuppression.cpp',
       'WebScopedUserGesture.cpp',
