@@ -67,7 +67,7 @@ public class ContentDetectionTestBase extends ContentShellTestBase {
         int currentCallCount = onStartContentIntentHelper.getCallCount();
 
         DOMUtils.scrollNodeIntoView(getContentViewCore(), id);
-        DOMUtils.clickNode(this, getContentView(), id);
+        DOMUtils.clickNode(this, getContentViewCore(), id);
 
         onStartContentIntentHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);
@@ -88,7 +88,7 @@ public class ContentDetectionTestBase extends ContentShellTestBase {
         int currentCallCount = onPageFinishedHelper.getCallCount();
 
         DOMUtils.scrollNodeIntoView(getContentViewCore(), id);
-        DOMUtils.clickNode(this, getContentView(), id);
+        DOMUtils.clickNode(this, getContentViewCore(), id);
 
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);

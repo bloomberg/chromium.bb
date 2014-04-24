@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -41,18 +40,14 @@ public class SelectPopupTest extends ContentShellTestBase {
     private class PopupShowingCriteria implements Criteria {
         @Override
         public boolean isSatisfied() {
-            ContentViewCore contentViewCore
-                    = getActivity().getActiveContentView().getContentViewCore();
-            return contentViewCore.getSelectPopupForTest() != null;
+           return getContentViewCore().getSelectPopupForTest() != null;
         }
     }
 
     private class PopupHiddenCriteria implements Criteria {
         @Override
         public boolean isSatisfied() {
-            ContentViewCore contentViewCore
-                    = getActivity().getActiveContentView().getContentViewCore();
-            return contentViewCore.getSelectPopupForTest() == null;
+            return getContentViewCore().getSelectPopupForTest() == null;
         }
     }
 
@@ -76,14 +71,12 @@ public class SelectPopupTest extends ContentShellTestBase {
         assertTrue("The select popup is shown after load.",
                 CriteriaHelper.pollForCriteria(new PopupHiddenCriteria()));
 
-        final ContentView view = getActivity().getActiveContentView();
-        final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(view.getContentViewCore());
-        final OnPageFinishedHelper onPageFinishedHelper =
-                viewClient.getOnPageFinishedHelper();
+        final ContentViewCore viewCore = getContentViewCore();
+        final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(viewCore);
+        final OnPageFinishedHelper onPageFinishedHelper = viewClient.getOnPageFinishedHelper();
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, view, "select");
+        DOMUtils.clickNode(this, viewCore, "select");
         assertTrue("The select popup did not show up on click.",
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria()));
 
@@ -104,7 +97,7 @@ public class SelectPopupTest extends ContentShellTestBase {
                 CriteriaHelper.pollForCriteria(new PopupHiddenCriteria()));
 
         // Click the select and wait for the popup to show.
-        DOMUtils.clickNode(this, view, "select");
+        DOMUtils.clickNode(this, viewCore, "select");
         assertTrue("The select popup did not show on click after reload.",
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria()));
     }

@@ -13,11 +13,11 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
 import android.text.Selection;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -403,7 +403,6 @@ public class SelectionHandleTest extends ContentShellTestBase {
 
     private void dragHandleTo(final HandleView handle, final int dragToX, final int dragToY,
             final int steps) throws Throwable {
-        ContentView view = getContentView();
         assertTrue(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
             public Boolean call() {
@@ -415,7 +414,7 @@ public class SelectionHandleTest extends ContentShellTestBase {
                 int realDragToX = dragToX + (realX - adjustedX);
                 int realDragToY = dragToY + (realY - adjustedY);
 
-                ContentView view = getContentView();
+                ViewGroup view = getContentViewCore().getContainerView();
                 int[] fromLocation = TestTouchUtils.getAbsoluteLocationFromRelative(
                         view, realX, realY);
                 int[] toLocation = TestTouchUtils.getAbsoluteLocationFromRelative(
@@ -468,7 +467,7 @@ public class SelectionHandleTest extends ContentShellTestBase {
         TouchCommon touchCommon = new TouchCommon(this);
         int centerX = nodeWindowBounds.centerX();
         int centerY = nodeWindowBounds.centerY();
-        touchCommon.longPressView(getContentView(), centerX, centerY);
+        touchCommon.longPressView(getContentViewCore().getContainerView(), centerX, centerY);
 
         assertWaitForHandlesShowingEquals(true);
         assertWaitForHandleViewStopped(getStartHandle());
@@ -480,7 +479,7 @@ public class SelectionHandleTest extends ContentShellTestBase {
 
     private void clickToDismissHandles() throws Throwable {
         TestTouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
-        new TouchCommon(this).singleClickView(getContentView(), 0, 0);
+        new TouchCommon(this).singleClickView(getContentViewCore().getContainerView(), 0, 0);
         assertWaitForHandlesShowingEquals(false);
     }
 

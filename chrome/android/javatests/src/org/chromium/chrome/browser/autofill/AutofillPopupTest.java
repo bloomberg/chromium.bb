@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -14,7 +15,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -135,8 +135,8 @@ public class AutofillPopupTest extends ChromeShellTestBase {
 
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.
-        ContentView view = getActivity().getActiveContentView();
-        final ContentViewCore viewCore = view.getContentViewCore();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
+        final ViewGroup view = viewCore.getContainerView();
         final TestInputMethodManagerWrapper immw =
                 new TestInputMethodManagerWrapper(viewCore);
         viewCore.getImeAdapterForTest().setInputMethodManagerWrapper(immw);
@@ -150,7 +150,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
 
         // Click the input field for the first name.
         assertTrue(DOMUtils.waitForNonZeroNodeBounds(viewCore, "fn"));
-        DOMUtils.clickNode(this, view, "fn");
+        DOMUtils.clickNode(this, viewCore, "fn");
 
         waitForKeyboardShowRequest(immw, 1);
 
@@ -290,7 +290,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
                 }));
     }
 
-    private void waitForAnchorViewAdd(final ContentView view) throws InterruptedException {
+    private void waitForAnchorViewAdd(final ViewGroup view) throws InterruptedException {
         assertTrue("Autofill Popup anchor view was never added.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override

@@ -12,11 +12,11 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
 import android.text.Selection;
 import android.view.KeyEvent;
+import android.view.View;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -203,7 +203,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
 
         // The input box does not go to the edge of the screen, and neither should the insertion
         // handle.
-        dragToX = getContentView().getWidth();
+        dragToX = getContentViewCore().getContainerView().getWidth();
         dragHandleTo(dragToX, dragToY);
         assertTrue(handle.getPositionX() < dragToX - 100);
     }
@@ -260,7 +260,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
         float bottom = renderCoordinates.fromLocalCssToPix(nodeBounds.bottom) + offsetY;
 
         TouchCommon touchCommon = new TouchCommon(this);
-        touchCommon.singleClickView(getContentView(),
+        touchCommon.singleClickView(getContentViewCore().getContainerView(),
                 (int)(left + 3 * (right - left) / 4), (int)(top + (bottom - top) / 2));
 
 
@@ -268,7 +268,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHasSelectionPosition());
 
         // TODO(cjhopman): Wait for keyboard display finished?
-        touchCommon.singleClickView(getContentView(),
+        touchCommon.singleClickView(getContentViewCore().getContainerView(),
                 (int)(left + (right - left) / 4), (int)(top + (bottom - top) / 2));
         assertTrue(waitForHandleShowingEquals(true));
         assertTrue(waitForHandleViewStopped());
@@ -322,7 +322,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
         HandleView handle = ihc.getHandleViewForTest();
         int initialX = handle.getPositionX();
         int initialY = handle.getPositionY();
-        ContentView view = getContentView();
+        View view = getContentViewCore().getContainerView();
 
         int fromLocation[] = TestTouchUtils.getAbsoluteLocationFromRelative(view, initialX,
                 initialY + VERTICAL_OFFSET);

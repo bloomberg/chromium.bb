@@ -18,7 +18,6 @@ import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
@@ -215,15 +214,6 @@ public class ContentShellActivity extends Activity {
      */
     public Shell getActiveShell() {
         return mShellManager != null ? mShellManager.getActiveShell() : null;
-    }
-
-    /**
-     * @return The {@link ContentView} owned by the currently visible {@link Shell} or null if one
-     *         is not showing.
-     */
-    public ContentView getActiveContentView() {
-        Shell shell = getActiveShell();
-        return shell != null ? shell.getContentView() : null;
     }
 
     /**

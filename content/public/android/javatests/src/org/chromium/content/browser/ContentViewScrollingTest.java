@@ -132,7 +132,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().scrollTo(x, y);
+                getContentViewCore().getContainerView().scrollTo(x, y);
             }
         });
     }

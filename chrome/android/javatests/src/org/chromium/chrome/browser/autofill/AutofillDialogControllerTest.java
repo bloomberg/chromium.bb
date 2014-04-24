@@ -574,7 +574,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
         launchChromeShellWithUrl(url);
         assertTrue(waitForActiveShellToBeDoneLoading());
 
-        final ContentView view = getActivity().getActiveContentView();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
 
         AutofillDialogResult.ResultWallet result = new AutofillDialogResult.ResultWallet(
                 TEST_EMAIL, "Google Transaction ID",
@@ -595,12 +595,11 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 true, "", "", "", "",
                 requestFullBilling, requestShipping, requestPhoneNumbers);
 
-        DOMUtils.clickNode(this, view, "id-button");
-        waitForInputFieldFill(view.getContentViewCore());
+        DOMUtils.clickNode(this, viewCore, "id-button");
+        waitForInputFieldFill(viewCore);
 
         assertEquals("requestAutocomplete failed",
-                "succeeded", DOMUtils.getNodeContents(
-                        view.getContentViewCore(), "was-autocompleted"));
+                "succeeded", DOMUtils.getNodeContents(viewCore, "was-autocompleted"));
     }
 
     private void waitForInputFieldFill(final ContentViewCore viewCore) throws InterruptedException {

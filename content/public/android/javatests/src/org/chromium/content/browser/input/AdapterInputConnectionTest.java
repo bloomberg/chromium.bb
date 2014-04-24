@@ -39,7 +39,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         EditorInfo info = new EditorInfo();
         mEditable = Editable.Factory.getInstance().newEditable("");
         mConnection = new AdapterInputConnection(
-                getActivity().getActiveContentView(), imeAdapter, mEditable, info);
+                getContentViewCore().getContainerView(), imeAdapter, mEditable, info);
     }
 
     @MediumTest

@@ -123,7 +123,7 @@ public class InterstitialPageTest extends ContentShellTestBase {
         assertTrue("WebContentsObserver not notified of interstitial showing",
                 observer.isInterstitialShowing());
         TouchCommon touchCommon = new TouchCommon(this);
-        touchCommon.singleClickViewRelative(getActivity().getActiveContentView(), 10, 10);
+        touchCommon.singleClickViewRelative(getContentViewCore().getContainerView(), 10, 10);
         assertTrue("Interstitial never hidden.", waitForInterstitial(false));
         assertTrue("WebContentsObserver not notified of interstitial hiding",
                 !observer.isInterstitialShowing());

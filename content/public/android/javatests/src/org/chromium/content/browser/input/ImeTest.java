@@ -19,7 +19,6 @@ import android.view.inputmethod.EditorInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -48,7 +47,6 @@ public class ImeTest extends ContentShellTestBase {
     private TestAdapterInputConnection mConnection;
     private ImeAdapter mImeAdapter;
 
-    private ContentView mContentView;
     private ContentViewCore mContentViewCore;
     private TestCallbackHelperContainer mCallbackContainer;
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
@@ -59,7 +57,6 @@ public class ImeTest extends ContentShellTestBase {
 
         launchContentShellWithUrl(DATA_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
-        mContentView = getContentView();
         mContentViewCore = getContentViewCore();
 
         mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(mContentViewCore);
@@ -73,7 +70,7 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForPageScaleFactorMatch(2);
         assertTrue(DOMUtils.waitForNonZeroNodeBounds(
                 mContentViewCore, "input_text"));
-        DOMUtils.clickNode(this, mContentView, "input_text");
+        DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
 
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
@@ -136,10 +133,10 @@ public class ImeTest extends ContentShellTestBase {
         commitText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
-        DOMUtils.clickNode(this, mContentView, "input_radio");
+        DOMUtils.clickNode(this, mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
 
-        DOMUtils.clickNode(this, mContentView, "input_text");
+        DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
         assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelStart);
         assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
@@ -207,13 +204,13 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testShowImeIfNeeded() throws Throwable {
-        DOMUtils.focusNode(this, mContentViewCore, "input_radio");
+        DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
 
         performShowImeIfNeeded();
         assertWaitForKeyboardStatus(false);
 
-        DOMUtils.focusNode(this, mContentViewCore, "input_text");
+        DOMUtils.focusNode(mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(false);
 
         performShowImeIfNeeded();
@@ -224,9 +221,9 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput", "Main"})
     public void testFinishComposingText() throws Throwable {
         // Focus the textarea. We need to do the following steps because we are focusing using JS.
-        DOMUtils.focusNode(this, mContentViewCore, "input_radio");
+        DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
-        DOMUtils.focusNode(this, mContentViewCore, "textarea");
+        DOMUtils.focusNode(mContentViewCore, "textarea");
         assertWaitForKeyboardStatus(false);
         performShowImeIfNeeded();
         assertWaitForKeyboardStatus(true);
@@ -257,9 +254,9 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput", "Main"})
     public void testEnterKeyEventWhileComposingText() throws Throwable {
         // Focus the textarea. We need to do the following steps because we are focusing using JS.
-        DOMUtils.focusNode(this, mContentViewCore, "input_radio");
+        DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
-        DOMUtils.focusNode(this, mContentViewCore, "textarea");
+        DOMUtils.focusNode(mContentViewCore, "textarea");
         assertWaitForKeyboardStatus(false);
         performShowImeIfNeeded();
         assertWaitForKeyboardStatus(true);

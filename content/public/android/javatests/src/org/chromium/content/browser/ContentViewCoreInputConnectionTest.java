@@ -32,6 +32,7 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
         }
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentViewCore = new ContentViewCore(getActivity());
@@ -40,7 +41,7 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
         mImeAdapter.setInputMethodManagerWrapper(new TestInputMethodManagerWrapper(
             mContentViewCore));
         mContentViewCore.setImeAdapterForTest(mImeAdapter);
-        mContentViewCore.setContainerViewForTest(getActivity().getActiveContentView());
+        mContentViewCore.setContainerViewForTest(getActivity().getActiveShell().getContentView());
     }
 
     /**

@@ -58,10 +58,10 @@ public class SelectPopupOtherContentViewTest extends ChromeShellTestBase {
         launchChromeShellWithUrl(SELECT_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
-        final ContentView view = getActivity().getActiveContentView();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(this, view, "select");
+        DOMUtils.clickNode(this, viewCore, "select");
         assertTrue("The select popup did not show up on click.",
                 CriteriaHelper.pollForCriteria(new PopupShowingCriteria()));
 
@@ -82,6 +82,6 @@ public class SelectPopupOtherContentViewTest extends ChromeShellTestBase {
 
         // The popup should still be shown.
         assertNotNull("The select popup got hidden by destroying of unrelated ContentViewCore.",
-                view.getContentViewCore().getSelectPopupForTest());
+                viewCore.getSelectPopupForTest());
     }
 }

@@ -13,7 +13,6 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -98,17 +97,10 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
     }
 
     /**
-     * Returns the current ContentView.
-     */
-    protected ContentView getContentView() {
-        return getActivity().getActiveShell().getContentView();
-    }
-
-    /**
      * Returns the current ContentViewCore or null if there is no ContentView.
      */
     protected ContentViewCore getContentViewCore() {
-        return getContentView() == null ? null : getContentView().getContentViewCore();
+        return getActivity().getActiveShell().getContentViewCore();
     }
 
     /**

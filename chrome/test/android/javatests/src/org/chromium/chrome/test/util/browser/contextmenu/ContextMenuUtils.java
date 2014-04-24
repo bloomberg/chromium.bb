@@ -44,7 +44,7 @@ public class ContextMenuUtils {
                 client.getOnContextMenuShownHelper();
 
         int callCount = helper.getCallCount();
-        DOMUtils.longPressNode(testCase, tab.getContentView(), openerDOMNodeId);
+        DOMUtils.longPressNode(testCase, tab.getContentViewCore(), openerDOMNodeId);
 
         helper.waitForCallback(callCount);
         return helper.getContextMenu();

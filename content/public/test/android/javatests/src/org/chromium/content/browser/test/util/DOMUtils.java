@@ -10,7 +10,6 @@ import android.util.JsonReader;
 
 import junit.framework.Assert;
 
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.io.IOException;
@@ -70,8 +69,7 @@ public class DOMUtils {
     /**
      * Focus a DOM node by its id.
      */
-    public static void focusNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentViewCore viewCore, String nodeId)
+    public static void focusNode(final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
@@ -86,22 +84,22 @@ public class DOMUtils {
      * Click a DOM node by its id.
      */
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentView view, String nodeId)
+            final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        int[] clickTarget = getClickTargetForNode(view.getContentViewCore(), nodeId);
+        int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
         TouchCommon touchCommon = new TouchCommon(activityTestCase);
-        touchCommon.singleClickView(view, clickTarget[0], clickTarget[1]);
+        touchCommon.singleClickView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
     }
 
     /**
      * Long-press a DOM node by its id.
      */
     public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
-            final ContentView view, String nodeId)
+            final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        int[] clickTarget = getClickTargetForNode(view.getContentViewCore(), nodeId);
+        int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
         TouchCommon touchCommon = new TouchCommon(activityTestCase);
-        touchCommon.longPressView(view, clickTarget[0], clickTarget[1]);
+        touchCommon.longPressView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
     }
 
     /**
