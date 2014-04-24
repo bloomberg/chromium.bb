@@ -128,25 +128,22 @@ def v8_class_name(interface):
 ################################################################################
 
 # [ActivityLogging]
-def activity_logging_world_list(member, access_type=None):
+def activity_logging_world_list(member, access_type=''):
     """Returns a set of world suffixes for which a definition member has activity logging, for specified access type.
 
     access_type can be 'Getter' or 'Setter' if only checking getting or setting.
     """
-    if 'ActivityLogging' not in member.extended_attributes:
+    extended_attributes = member.extended_attributes
+    if 'LogActivity' not in extended_attributes:
         return set()
-    activity_logging = member.extended_attributes['ActivityLogging']
-    # [ActivityLogging=For*] (no prefix, starts with the worlds suffix) means
-    # "log for all use (method)/access (attribute)", otherwise check that value
-    # agrees with specified access_type (Getter/Setter).
-    has_logging = (activity_logging.startswith('For') or
-                   (access_type and activity_logging.startswith(access_type)))
-    if not has_logging:
+    log_activity = extended_attributes['LogActivity']
+    if log_activity and not log_activity.startswith(access_type):
         return set()
+
     includes.add('bindings/v8/V8DOMActivityLogger.h')
-    if activity_logging.endswith('ForIsolatedWorlds'):
-        return set([''])
-    return set(['', 'ForMainWorld'])  # endswith('ForAllWorlds')
+    if 'LogAllWorlds' in extended_attributes:
+        return set(['', 'ForMainWorld'])
+    return set([''])  # At minimum, include isolated worlds.
 
 
 # [CallWith]

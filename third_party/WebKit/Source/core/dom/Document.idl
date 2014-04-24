@@ -31,7 +31,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     readonly attribute DOMImplementation implementation;
     readonly attribute Element documentElement;
 
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElement(DOMString tagName);
+    [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Element createElement(DOMString tagName);
     DocumentFragment createDocumentFragment();
     [PerWorldBindings] Text createTextNode(DOMString data);
     Comment createComment(DOMString data);
@@ -42,8 +42,8 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // Introduced in DOM Level 2:
 
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Node importNode(Node node, optional boolean deep);
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName);
+    [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Node importNode(Node node, optional boolean deep);
+    [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName);
     [RaisesException, DeprecateAs=DocumentCreateAttributeNS] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                                   [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName); // Removed from DOM4.
     HTMLCollection getElementsByTagNameNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
@@ -131,7 +131,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     [PerWorldBindings] NodeList getElementsByName([Default=Undefined] optional DOMString elementName);
 
-    [PerWorldBindings, ActivityLogging=ForIsolatedWorlds, PutForwards=href] readonly attribute Location location;
+    [PerWorldBindings, LogActivity, PutForwards=href] readonly attribute Location location;
 
     // IE extensions
     [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;
@@ -188,7 +188,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     attribute EventHandler onwebkitfullscreenerror;
     attribute EventHandler onwebkitpointerlockchange;
     attribute EventHandler onwebkitpointerlockerror;
-    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onwheel;
+    [PerWorldBindings, LogActivity=SetterOnly] attribute EventHandler onwheel;
 
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
                                                [Default=Undefined] optional EventTarget target,
@@ -204,8 +204,8 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
     [CallWith=NewScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor registerElement(DOMString name, optional Dictionary options);
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
+    [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
+    [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);
 
     // Page visibility API.

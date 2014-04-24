@@ -37,8 +37,8 @@
     // problem, since that allows tracking navigation.
     [SetterCallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity=Setter, Unforgeable] attribute DOMString href;
 
-    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void assign(DOMString url);
-    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void replace(DOMString url);
+    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, LogActivity] void assign(DOMString url);
+    [CallWith=ActiveWindow&FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, LogActivity] void replace(DOMString url);
     [CallWith=ActiveWindow, Unforgeable, ReadOnly] void reload();
 
     // URI decomposition attributes

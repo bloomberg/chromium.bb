@@ -36,8 +36,8 @@
 
     [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;
     [NotEnumerable, RaisesException, TreatReturnedNullStringAs=Null] DOMString key(unsigned long index);
-    [ActivityLogging=ForIsolatedWorlds, NotEnumerable, PerWorldBindings, RaisesException, TreatReturnedNullStringAs=Null] DOMString getItem(DOMString key);
-    [ActivityLogging=ForIsolatedWorlds, NotEnumerable, RaisesException, PerWorldBindings] void setItem(DOMString key, DOMString data);
-    [ActivityLogging=ForIsolatedWorlds, NotEnumerable, PerWorldBindings, RaisesException] void removeItem(DOMString key);
-    [ActivityLogging=ForIsolatedWorlds, NotEnumerable, PerWorldBindings, RaisesException] void clear();
+    [LogActivity, NotEnumerable, PerWorldBindings, RaisesException, TreatReturnedNullStringAs=Null] DOMString getItem(DOMString key);
+    [LogActivity, NotEnumerable, RaisesException, PerWorldBindings] void setItem(DOMString key, DOMString data);
+    [LogActivity, NotEnumerable, PerWorldBindings, RaisesException] void removeItem(DOMString key);
+    [LogActivity, NotEnumerable, PerWorldBindings, RaisesException] void clear();
 };

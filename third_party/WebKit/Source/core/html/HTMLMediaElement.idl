@@ -32,8 +32,8 @@
     [StrictTypeChecking] readonly attribute MediaError? error;
 
     // network state
-    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
-    [URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] readonly attribute DOMString currentSrc;
+    [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString src;
+    [URL, PerWorldBindings, LogActivity=SetterOnly] readonly attribute DOMString currentSrc;
     [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString crossOrigin;
 
     const unsigned short NETWORK_EMPTY = 0;

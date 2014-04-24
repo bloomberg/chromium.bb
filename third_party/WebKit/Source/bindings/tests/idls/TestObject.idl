@@ -153,9 +153,9 @@ interface TestObject {
     attribute EventHandler eventHandlerAttribute;
 
     // Extended attributes
-    [ActivityLogging=ForAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
-    [ActivityLogging=GetterForAllWorlds] attribute long activityLoggingGetterForAllWorldsLongAttribute;
-    [ActivityLogging=SetterForAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
+    [LogActivity, LogAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
+    [LogActivity=GetterOnly, LogAllWorlds] attribute long activityLoggingGetterForAllWorldsLongAttribute;
+    [LogActivity=SetterOnly, LogAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CallWith=NewScriptState] attribute any callWithNewScriptStateAnyAttribute;
@@ -187,10 +187,10 @@ interface TestObject {
     [PerWorldBindings] attribute long perWorldBindingsLongAttribute;
     [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute; // Separate read only attribute to check attribute configuration
     [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
-    [ActivityLogging=ForAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
-    [ActivityLogging=ForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
-    [ActivityLogging=GetterForAllWorlds, PerWorldBindings] attribute long activityLoggingGetterPerWorldBindingsLongAttribute;
-    [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute;
+    [LogActivity, LogAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
+    [LogActivity, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
+    [LogActivity=GetterOnly, LogAllWorlds, PerWorldBindings] attribute long activityLoggingGetterPerWorldBindingsLongAttribute;
+    [LogActivity=GetterOnly, PerWorldBindings] attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute;
     [PutForwards=href] readonly attribute TestNode location;
     [PutForwards=hrefThrows] readonly attribute TestNode locationWithException;
     [PutForwards=hrefCallWith] readonly attribute TestNode locationWithCallWith;
@@ -427,7 +427,7 @@ interface TestObject {
     void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString treatNullAsNullStringStringArg);
 
     // Extended attributes for methods
-    [ActivityLogging=ForAllWorlds] void activityLoggingAccessForAllWorldsMethod();
+    [LogActivity, LogAllWorlds] void activityLoggingAccessForAllWorldsMethod();
     [CallWith=ScriptState] void callWithScriptStateVoidMethod();
     [CallWith=ScriptState] long callWithScriptStateLongMethod();
     [CallWith=ExecutionContext] void callWithExecutionContextVoidMethod();
@@ -456,8 +456,8 @@ interface TestObject {
     [PerContextEnabled=FeatureName] void perContextEnabledVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
-    [ActivityLogging=ForAllWorlds, PerWorldBindings] void activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
-    [ActivityLogging=ForIsolatedWorlds, PerWorldBindings] void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
+    [LogActivity, LogAllWorlds, PerWorldBindings] void activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
+    [LogActivity, PerWorldBindings] void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
     [RaisesException] void raisesExceptionVoidMethod();
     [RaisesException] DOMString raisesExceptionStringMethod();
     [RaisesException] void raisesExceptionVoidMethodOptionalLongArg(optional long optionalLongArg);

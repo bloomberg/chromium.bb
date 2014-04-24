@@ -34,7 +34,6 @@
 #
 
 ActiveDOMObject
-ActivityLogging=ForAllWorlds|GetterForAllWorlds|SetterForAllWorlds|ForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
 CachedAttribute=*
 CallWith=ExecutionContext|ScriptState|NewScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity=Frame|Node
@@ -62,6 +61,8 @@ Immutable
 ImplementedAs=*
 InitializedByEventConstructor
 LegacyTreatAsPartialInterface
+LogActivity=|GetterOnly|SetterOnly
+LogAllWorlds
 MeasureAs=*
 NamedConstructor=*
 NoInterfaceObject
