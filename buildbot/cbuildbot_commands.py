@@ -572,6 +572,7 @@ def ListFailedTests(results_path):
   failed_tests = []
   processed_tests = []
   for report in reports:
+    cros_build_lib.Info('Parsing test report %s', report)
     # Format used in the report:
     #   /path/to/base/dir/test_harness/all/SimpleTestUpdateAndVerify/ \
     #     2_autotest_tests/results-01-security_OpenSSLBlacklist [  FAILED  ]
