@@ -6,18 +6,27 @@
 
 (function() {
 
-function verifyTrack(audioAppId, query, title, artist) {
-  var p1 = verifyElenmentTextContent(
-              audioAppId,
-              query + ' > .data-title',
-              title);
-  var p2 = verifyElenmentTextContent(
-              audioAppId,
-              query +' > .data-artist',
-              artist);
-
-  return Promise.all(p1, p2).then(function(results) {
-    return results.every(function(result) { return result; });
+/**
+ * Obtains track text.
+ * @param {string} audioAppId Window ID.
+ * @param {query} query Query for the track.
+ * @return {Promise} Promise to be fulfilled with {title:string, artist:string}
+ *     object.
+ */
+function getTrackText(audioAppId, query) {
+  var titleElements = callRemoteTestUtil(
+      'queryAllElements',
+      audioAppId,
+      [query + ' > .data > .data-title']);
+  var artistElements = callRemoteTestUtil(
+      'queryAllElements',
+      audioAppId,
+      [query + ' > .data > .data-artist']);
+  return Promise.all([titleElements, artistElements]).then(function(data) {
+    return {
+      title: data[0][0] && data[0][0].text,
+      artist: data[1][0] && data[1][0].text
+    };
   });
 }
 
@@ -73,28 +82,27 @@ function audioOpen(path) {
           'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
-
-      verifyTrack(
-          audioAppId,
-          'audio-player /deep/ .track[index="0"][active]',
-          'Beautiful Song',
-          'Unknown artist').then(this.next);
+      var query1 = 'audio-player /deep/ .track[index="0"][active]';
+      var query2 = 'audio-player /deep/ .track[index="1"]:not([active])';
+      var trackText1 = getTrackText(audioAppId, query1);
+      var trackText2 = getTrackText(audioAppId, query2);
+      Promise.all([trackText1, trackText2]).then(function(tracks) {
+        chrome.test.assertEq('Beautiful Song',
+                             tracks[0].title,
+                             'Displayed data of 1st file is wrong.');
+        chrome.test.assertEq('Unknown Artist',
+                             tracks[0].artist,
+                             'Displayed data of 1st file is wrong.');
+        chrome.test.assertEq('newly added file',
+                             tracks[1].title,
+                             'Displayed data of 2nd file is wrong.');
+        chrome.test.assertEq('Unknown Artist',
+                             tracks[1].artist,
+                             'Displayed data of 2nd file is wrong.');
+      }).then(this.next, function(e) { chrome.test.fail(e); });
     },
-    // Get the source file name.
-    function(result) {
-      chrome.test.assertTrue(result, 'Displayed data of 1st file is wrong.');
-
-      verifyTrack(
-          audioAppId,
-          'audio-player /deep/ .track[index="1"]:not([active])',
-          'Beautiful Song',
-          'Unknown artist').then(this.next);
-    },
-    // Wait for the changes of the player status.
-    function(result) {
-      chrome.test.assertTrue(result, 'Displayed data of 2nd file is wrong.');
-
-      // Open another file.
+    // Open another file.
+    function() {
       callRemoteTestUtil(
           'openFile', appId, ['newly added file.ogg'], this.next);
     },
@@ -112,27 +120,27 @@ function audioOpen(path) {
           'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
-
-      verifyTrack(
-          audioAppId,
-          'audio-player /deep/ .track[index="0"][active]',
-          'Beautiful Song',
-          'Unknown artist').then(this.next);
-    },
-    // Get the source file name.
-    function(result) {
-      chrome.test.assertTrue(result, 'Displayed data of 1st file is wrong.');
-
-      verifyTrack(
-          audioAppId,
-          'audio-player /deep/ .track[index="1"]:not([active])',
-          'Beautiful Song',
-          'Unknown artist').then(this.next);
+      var query1 = 'audio-player /deep/ .track[index="0"]:not([active])';
+      var query2 = 'audio-player /deep/ .track[index="1"][active]';
+      var trackText1 = getTrackText(audioAppId, query1);
+      var trackText2 = getTrackText(audioAppId, query2);
+      Promise.all([trackText1, trackText2]).then(function(tracks) {
+        chrome.test.assertEq('Beautiful Song',
+                             tracks[0].title,
+                             'Displayed data of 1st file is wrong.');
+        chrome.test.assertEq('Unknown Artist',
+                             tracks[0].artist,
+                             'Displayed data of 1st file is wrong.');
+        chrome.test.assertEq('newly added file',
+                             tracks[1].title,
+                             'Displayed data of 2nd file is wrong.');
+        chrome.test.assertEq('Unknown Artist',
+                             tracks[1].artist,
+                             'Displayed data of 2nd file is wrong.');
+      }).then(this.next, function(e) { chrome.test.fail(e); });
     },
     // Wait for the changes of the player status.
-    function(result) {
-      chrome.test.assertTrue(result, 'Displayed data of 2nd file is wrong.');
-
+    function() {
       // Close window
       closeWindowAndWait(audioAppId).then(this.next);
     },

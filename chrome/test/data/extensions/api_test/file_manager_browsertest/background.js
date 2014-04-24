@@ -234,27 +234,6 @@ function waitForElementLost(windowId, query, opt_iframeQuery) {
 }
 
 /**
- * Waits for the specified element appearing in the DOM.
- * @param {string} windowId Target window ID.
- * @param {string} query Query string for the element.
- * @param {string=} opt_iframeQuery Query string for the iframe containing the
- *     element.
- * @return {Promise} Promise to be fulfilled when the element appears.
- */
-function verifyElenmentTextContent(windowId, query, text, opt_iframeQuery) {
-  return callRemoteTestUtil(
-      'queryAllElements',
-      windowId,
-      [query, opt_iframeQuery]
-  ).then(function(elements) {
-    if (elements.length > 0) {
-      return (elements[0].textContent === text);
-    }
-    return false;
-  });
-}
-
-/**
 /**
  * Waits for the file list turns to the given contents.
  * @param {string} windowId Target window ID.
