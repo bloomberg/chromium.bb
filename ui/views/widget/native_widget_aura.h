@@ -42,10 +42,6 @@ class VIEWS_EXPORT NativeWidgetAura
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
 
-  // TODO(beng): Find a better place for this, and the similar method on
-  //             NativeWidgetWin.
-  static gfx::FontList GetWindowTitleFontList();
-
   // Called internally by NativeWidgetAura and DesktopNativeWidgetAura to
   // associate |native_widget| with |window|.
   static void RegisterNativeWidgetForWindow(
