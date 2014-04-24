@@ -66,7 +66,21 @@ DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
    */
   this.buttonLabel = opt_buttonLabel || null;
 
-  Object.freeze(this);
+  /**
+   * Queue of API call.
+   * @type {AsyncUtil.Queue}
+   * @private
+   */
+  this.queue_ = new AsyncUtil.Queue();
+
+  /**
+   * Timeout ID.
+   * @type {number}
+   * @private
+   */
+  this.pendingShowTimerId_ = 0;
+
+  Object.seal(this);
 };
 
 /**
@@ -142,19 +156,32 @@ DeviceHandler.Notification.FORMAT_FAIL = new DeviceHandler.Notification(
  * @return {string} Notification ID.
  */
 DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
-  var buttons = this.buttonLabel ? [{title: str(this.buttonLabel)}] : undefined;
+  this.clearTimeout_();
   var notificationId = this.makeId_(devicePath);
-  chrome.notifications.create(
-      notificationId,
-      {
-        type: 'basic',
-        title: str(this.title),
-        message: opt_message || str(this.message),
-        iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
-        buttons: buttons
-      },
-      function() {});
+  this.queue_.run(function(callback) {
+    var buttons =
+        this.buttonLabel ? [{title: str(this.buttonLabel)}] : undefined;
+    chrome.notifications.create(
+        notificationId,
+        {
+          type: 'basic',
+          title: str(this.title),
+          message: opt_message || str(this.message),
+          iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
+          buttons: buttons
+        },
+        callback);
+  }.bind(this));
   return notificationId;
+};
+
+/**
+ * Shows the notificaiton after 5 seconds.
+ * @param {string} devicePath Device path.
+ */
+DeviceHandler.Notification.prototype.showLater = function(devicePath) {
+  this.clearTimeout_();
+  this.pendingShowTimerId_ = setTimeout(this.show.bind(this, devicePath), 5000);
 };
 
 /**
@@ -162,7 +189,10 @@ DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
  * @param {string} devicePath Device path.
  */
 DeviceHandler.Notification.prototype.hide = function(devicePath) {
-  chrome.notifications.clear(this.makeId_(devicePath), function() {});
+  this.clearTimeout_();
+  this.queue_.run(function(callback) {
+    chrome.notifications.clear(this.makeId_(devicePath), callback);
+  }.bind(this));
 };
 
 /**
@@ -176,6 +206,17 @@ DeviceHandler.Notification.prototype.makeId_ = function(devicePath) {
 };
 
 /**
+ * Cancels the timeout request.
+ * @private
+ */
+DeviceHandler.Notification.prototype.clearTimeout_ = function() {
+  if (this.pendingShowTimerId_) {
+    clearTimeout(this.pendingShowTimerId_);
+    this.pendingShowTimerId_ = 0;
+  }
+};
+
+/**
  * Handles notifications from C++ sides.
  * @param {DeviceEvent} event Device event.
  * @private
@@ -183,7 +224,7 @@ DeviceHandler.Notification.prototype.makeId_ = function(devicePath) {
 DeviceHandler.prototype.onDeviceChanged_ = function(event) {
   switch (event.type) {
     case 'added':
-      DeviceHandler.Notification.DEVICE.show(event.devicePath);
+      DeviceHandler.Notification.DEVICE.showLater(event.devicePath);
       this.mountStatus_[event.devicePath] = DeviceHandler.MountStatus.NO_RESULT;
       break;
     case 'disabled':

@@ -14,6 +14,12 @@ var handler;
  */
 var chrome;
 
+/**
+ * Callbacks registered by setTimeout.
+ * @type {Array.<function>}
+ */
+var timeoutCallbacks;
+
 // Set up the test components.
 function setUp() {
   // Set up string assets.
@@ -51,8 +57,9 @@ function setUp() {
       create: function(id, params, callback) {
         assertFalse(!!this.items[id]);
         this.items[id] = params;
+        callback();
       },
-      clear: function(id) { delete this.items[id]; },
+      clear: function(id, callback) { delete this.items[id]; callback(); },
       items: {},
       onButtonClicked: {
         addListener: function(listener) {
@@ -65,8 +72,27 @@ function setUp() {
     }
   };
 
+  // Reset timeout callbacks.
+  timeoutCallbacks = [];
+
   // Make a device handler.
   handler = new DeviceHandler();
+}
+
+/**
+ * Overrided setTimoeut funciton.
+ */
+window.setTimeout = function(func) {
+  timeoutCallbacks.push(func);
+};
+
+/**
+ * Call all pending timeout functions.
+ */
+function callTimeoutCallbacks() {
+  while (timeoutCallbacks.length) {
+    timeoutCallbacks.shift()();
+  }
 }
 
 function registerTypicalDevice() {
@@ -74,6 +100,8 @@ function registerTypicalDevice() {
     type: 'added',
     devicePath: '/device/path'
   });
+  assertFalse('device:/device/path' in chrome.notifications.items);
+  callTimeoutCallbacks();
   assertEquals('Scanning...',
                chrome.notifications.items['device:/device/path'].message);
 }
