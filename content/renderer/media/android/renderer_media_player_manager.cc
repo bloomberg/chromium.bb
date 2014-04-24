@@ -8,9 +8,11 @@
 #include "base/message_loop/message_loop.h"
 #include "content/common/media/cdm_messages.h"
 #include "content/common/media/media_player_messages_android.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
+#include "content/renderer/render_view_impl.h"
 #include "ui/gfx/rect_f.h"
 
 namespace content {
@@ -437,6 +439,13 @@ void RendererMediaPlayerManager::RetrieveGeometryChanges(
         (*changes)[player_it->first] = player->GetBoundaryRectangle();
     }
   }
+}
+
+bool
+RendererMediaPlayerManager::ShouldUseVideoOverlayForEmbeddedEncryptedVideo() {
+  const RendererPreferences& prefs = static_cast<RenderViewImpl*>(
+      render_view())->renderer_preferences();
+  return prefs.use_video_overlay_for_embedded_encrypted_video;
 }
 #endif  // defined(VIDEO_HOLE)
 

@@ -16,14 +16,81 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/renderer_preferences.h"
 #include "jni/AwSettings_jni.h"
+#include "ui/gfx/font_render_params_linux.h"
 #include "webkit/common/webpreferences.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
+using content::RendererPreferences;
 
 namespace android_webview {
+
+namespace {
+
+// TODO(boliu): Deduplicate with chrome/ code.
+content::RendererPreferencesHintingEnum GetRendererPreferencesHintingEnum(
+    gfx::FontRenderParams::Hinting hinting) {
+  switch (hinting) {
+    case gfx::FontRenderParams::HINTING_NONE:
+      return content::RENDERER_PREFERENCES_HINTING_NONE;
+    case gfx::FontRenderParams::HINTING_SLIGHT:
+      return content::RENDERER_PREFERENCES_HINTING_SLIGHT;
+    case gfx::FontRenderParams::HINTING_MEDIUM:
+      return content::RENDERER_PREFERENCES_HINTING_MEDIUM;
+    case gfx::FontRenderParams::HINTING_FULL:
+      return content::RENDERER_PREFERENCES_HINTING_FULL;
+    default:
+      NOTREACHED() << "Unhandled hinting style " << hinting;
+      return content::RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT;
+  }
+}
+
+// TODO(boliu): Deduplicate with chrome/ code.
+content::RendererPreferencesSubpixelRenderingEnum
+GetRendererPreferencesSubpixelRenderingEnum(
+    gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
+  switch (subpixel_rendering) {
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR;
+    default:
+      NOTREACHED() << "Unhandled subpixel rendering style "
+                   << subpixel_rendering;
+      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
+  }
+}
+
+void PopulateFixedRendererPreferences(RendererPreferences* prefs) {
+  prefs->tap_multiple_targets_strategy =
+      content::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
+
+  // TODO(boliu): Deduplicate with chrome/ code.
+  const gfx::FontRenderParams& params = gfx::GetDefaultWebKitFontRenderParams();
+  prefs->should_antialias_text = params.antialiasing;
+  prefs->use_subpixel_positioning = params.subpixel_positioning;
+  prefs->hinting = GetRendererPreferencesHintingEnum(params.hinting);
+  prefs->use_autohinter = params.autohinter;
+  prefs->use_bitmaps = params.use_bitmaps;
+  prefs->subpixel_rendering =
+      GetRendererPreferencesSubpixelRenderingEnum(params.subpixel_rendering);
+}
+
+void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
+  web_prefs->shrinks_standalone_images_to_fit = false;
+  web_prefs->should_clear_document_background = false;
+}
+
+};  // namespace
 
 const void* kAwSettingsUserDataKey = &kAwSettingsUserDataKey;
 
@@ -49,6 +116,7 @@ AwSettings::AwSettings(JNIEnv* env, jobject obj, jlong web_contents)
       accelerated_2d_canvas_disabled_by_switch_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableAccelerated2dCanvas)),
+      renderer_prefs_initialized_(false),
       aw_settings_(env, obj) {
   reinterpret_cast<content::WebContents*>(web_contents)->
       SetUserData(kAwSettingsUserDataKey, new AwSettingsUserData(this));
@@ -104,6 +172,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env, jobject obj) {
   UpdateUserAgentLocked(env, obj);
   ResetScrollAndScaleState(env, obj);
   UpdateFormDataPreferencesLocked(env, obj);
+  UpdateRendererPreferencesLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env, jobject obj) {
@@ -159,6 +228,30 @@ void AwSettings::UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj) {
   contents->SetSaveFormData(Java_AwSettings_getSaveFormDataLocked(env, obj));
 }
 
+void AwSettings::UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj) {
+  if (!web_contents()) return;
+
+  bool update_prefs = false;
+  RendererPreferences* prefs = web_contents()->GetMutableRendererPrefs();
+
+  if (!renderer_prefs_initialized_) {
+    PopulateFixedRendererPreferences(prefs);
+    renderer_prefs_initialized_ = true;
+    update_prefs = true;
+  }
+
+  bool video_overlay =
+      Java_AwSettings_getVideoOverlayForEmbeddedVideoEnabledLocked(env, obj);
+  if (video_overlay != prefs->use_video_overlay_for_embedded_encrypted_video) {
+    prefs->use_video_overlay_for_embedded_encrypted_video = video_overlay;
+    update_prefs = true;
+  }
+
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  if (update_prefs && host)
+    host->SyncRendererPrefs();
+}
+
 void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
   // A single WebContents can normally have 0 to many RenderViewHost instances
   // associated with it.
@@ -178,12 +271,6 @@ void AwSettings::WebContentsDestroyed(content::WebContents* web_contents) {
   delete this;
 }
 
-// static
-void AwSettings::PopulateFixedPreferences(WebPreferences* web_prefs) {
-  web_prefs->shrinks_standalone_images_to_fit = false;
-  web_prefs->should_clear_document_background = false;
-}
-
 void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
@@ -201,7 +288,7 @@ void AwSettings::PopulateWebPreferencesLocked(
   if (!render_view_host_ext) return;
 
   WebPreferences* web_prefs = reinterpret_cast<WebPreferences*>(web_prefs_ptr);
-  PopulateFixedPreferences(web_prefs);
+  PopulateFixedWebPreferences(web_prefs);
 
   web_prefs->text_autosizing_enabled =
       Java_AwSettings_getTextAutosizingEnabledLocked(env, obj);

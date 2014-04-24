@@ -35,15 +35,13 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateUserAgentLocked(JNIEnv* env, jobject obj);
   void UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj);
   void UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj);
+  void UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj);
 
   void PopulateWebPreferences(WebPreferences* web_prefs);
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();
   void UpdateEverything();
-
-  // Fixed WebPreferences for Android WebView.
-  static void PopulateFixedPreferences(WebPreferences* web_prefs);
 
   // WebContentsObserver overrides:
   virtual void RenderViewCreated(
@@ -52,6 +50,8 @@ class AwSettings : public content::WebContentsObserver {
       content::WebContents* web_contents) OVERRIDE;
 
   bool accelerated_2d_canvas_disabled_by_switch_;
+
+  bool renderer_prefs_initialized_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

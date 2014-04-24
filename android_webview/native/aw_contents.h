@@ -204,7 +204,6 @@ class AwContents : public FindHelper::Listener,
 
  private:
   void InitAutofillIfNecessary(bool enabled);
-  void SetAndroidWebViewRendererPrefs();
   void DidDrawGL(const DrawGLResult& result);
   void ForceFakeComposite();
 

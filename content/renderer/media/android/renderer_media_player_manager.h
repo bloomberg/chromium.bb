@@ -93,6 +93,10 @@ class RendererMediaPlayerManager : public RenderViewObserver {
 
   // RenderViewObserver overrides.
   virtual void DidCommitCompositorFrame() OVERRIDE;
+
+  // Returns true if a media player should use video-overlay for the embedded
+  // encrypted video.
+  bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo();
 #endif  // defined(VIDEO_HOLE)
 
   // Encrypted media related methods.

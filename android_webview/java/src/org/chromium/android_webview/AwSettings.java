@@ -94,6 +94,7 @@ public class AwSettings {
     private boolean mSpatialNavigationEnabled;  // Default depends on device features.
     private boolean mEnableSupportedHardwareAcceleratedFeatures = false;
     private int mMixedContentMode = MIXED_CONTENT_NEVER_ALLOW;
+    private boolean mVideoOverlayForEmbeddedVideoEnabled = false;
 
     private final boolean mSupportLegacyQuirks;
 
@@ -1469,6 +1470,40 @@ public class AwSettings {
                 mMixedContentMode == MIXED_CONTENT_COMPATIBILITY_MODE;
     }
 
+    /**
+     * Sets whether to use the video overlay for the embedded video.
+     * @param flag whether to enable the video overlay for the embedded video.
+     */
+    public void setVideoOverlayForEmbeddedVideoEnabled(final boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (mVideoOverlayForEmbeddedVideoEnabled != enabled) {
+                mVideoOverlayForEmbeddedVideoEnabled = enabled;
+                mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
+                    @Override
+                    public void run() {
+                        nativeUpdateRendererPreferencesLocked(mNativeAwSettings);
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * Gets whether to use the video overlay for the embedded video.
+     * @return true if the WebView enables the video overlay for the embedded video.
+     */
+    public boolean getVideoOverlayForEmbeddedVideoEnabled() {
+        synchronized (mAwSettingsLock) {
+            return mVideoOverlayForEmbeddedVideoEnabled;
+        }
+    }
+
+    @CalledByNative
+    private boolean getVideoOverlayForEmbeddedVideoEnabledLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mVideoOverlayForEmbeddedVideoEnabled;
+    }
+
     @CalledByNative
     private boolean supportsDoubleTapZoomLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
@@ -1540,4 +1575,6 @@ public class AwSettings {
     private static native String nativeGetDefaultUserAgent();
 
     private native void nativeUpdateFormDataPreferencesLocked(long nativeAwSettings);
+
+    private native void nativeUpdateRendererPreferencesLocked(long nativeAwSettings);
 }

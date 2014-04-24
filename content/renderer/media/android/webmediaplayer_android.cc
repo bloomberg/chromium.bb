@@ -676,7 +676,8 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   // Use H/W surface for encrypted video.
   // TODO(qinmin): Change this so that only EME needs the H/W surface
   if (force_use_overlay_embedded_video_ ||
-      (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted())) {
+      (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted() &&
+       manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo())) {
     needs_external_surface_ = true;
     if (!paused() && !manager_->IsInFullscreen(frame_))
       manager_->RequestExternalSurface(player_id_, last_computed_rect_);
