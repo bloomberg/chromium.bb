@@ -63,7 +63,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
 
   struct DOMAIN_RELIABILITY_EXPORT RequestInfo {
     RequestInfo();
-    RequestInfo(const net::URLRequest& request);
+    explicit RequestInfo(const net::URLRequest& request);
     ~RequestInfo();
 
     bool DefinitelyReachedNetwork() const;
