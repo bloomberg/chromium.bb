@@ -359,7 +359,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       needs_scroll_styles_(false),
       in_size_loop_(false),
       touch_down_context_(false),
-      last_mouse_hwheel_time_(0) {
+      last_mouse_hwheel_time_(0),
+      msg_handled_(FALSE) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
