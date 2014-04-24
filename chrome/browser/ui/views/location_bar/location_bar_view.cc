@@ -108,8 +108,8 @@ namespace {
 
 #if !defined(OS_CHROMEOS)
 Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
-  WebContents* contents = delegate->GetWebContents();
-  return contents ? chrome::FindBrowserWithWebContents(contents) : NULL;
+  WebContents* web_contents = delegate->GetWebContents();
+  return web_contents ? chrome::FindBrowserWithWebContents(web_contents) : NULL;
 }
 #endif
 
@@ -520,8 +520,9 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
     SchedulePaint();
   }
 
-  if (can_show_bubble && zoom_view_->visible() && delegate_->GetWebContents())
-    ZoomBubbleView::ShowBubble(delegate_->GetWebContents(), true);
+  WebContents* web_contents = GetWebContents();
+  if (can_show_bubble && zoom_view_->visible() && web_contents)
+    ZoomBubbleView::ShowBubble(web_contents, true);
 }
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
@@ -530,7 +531,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   DCHECK(page_action);
-  WebContents* contents = delegate_->GetWebContents();
+  WebContents* web_contents = GetWebContents();
 
   RefreshPageActionViews();
   PageActionWithBadgeView* page_action_view =
@@ -540,7 +541,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   page_action_view->image_view()->set_preview_enabled(preview_enabled);
-  page_action_view->UpdateVisibility(contents, GetToolbarModel()->GetURL());
+  page_action_view->UpdateVisibility(web_contents, GetToolbarModel()->GetURL());
   Layout();
   SchedulePaint();
 }
@@ -761,7 +762,8 @@ void LocationBarView::Layout() {
   // animations.
   if (show_url_animation_->is_animating() ||
       hide_url_animation_->is_animating()) {
-    const GURL url = GetWebContents()->GetURL();
+    WebContents* web_contents = GetWebContents();
+    const GURL url = web_contents ? web_contents->GetURL() : GURL();
     const base::string16 host =
         OriginChip::LabelFromURLForProfile(url, profile());
     animated_host_label_->SetText(host);
@@ -1124,10 +1126,10 @@ bool LocationBarView::RefreshPageActionViews() {
 
   PageActions new_page_actions;
 
-  WebContents* contents = delegate_->GetWebContents();
-  if (contents) {
+  WebContents* web_contents = GetWebContents();
+  if (web_contents) {
     extensions::TabHelper* extensions_tab_helper =
-        extensions::TabHelper::FromWebContents(contents);
+        extensions::TabHelper::FromWebContents(web_contents);
     extensions::LocationBarController* controller =
         extensions_tab_helper->location_bar_controller();
     new_page_actions = controller->GetCurrentActions();
@@ -1170,14 +1172,14 @@ bool LocationBarView::RefreshPageActionViews() {
       AddChildViewAt(*i, GetIndexOf(right_anchor));
   }
 
-  if (!page_action_views_.empty() && contents) {
-    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  if (!page_action_views_.empty() && web_contents) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     GURL url = browser->tab_strip_model()->GetActiveWebContents()->GetURL();
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
       (*i)->UpdateVisibility(
-          GetToolbarModel()->input_in_progress() ? NULL : contents, url);
+          GetToolbarModel()->input_in_progress() ? NULL : web_contents, url);
 
       // Check if the visibility of the action changed and notify if it did.
       ExtensionAction* action = (*i)->image_view()->page_action();
@@ -1187,7 +1189,7 @@ bool LocationBarView::RefreshPageActionViews() {
         content::NotificationService::current()->Notify(
             chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             content::Source<ExtensionAction>(action),
-            content::Details<WebContents>(contents));
+            content::Details<WebContents>(web_contents));
       }
     }
   }
@@ -1680,8 +1682,7 @@ void LocationBarView::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
-      WebContents* target_tab = content::Details<WebContents>(details).ptr();
-      if (target_tab == GetWebContents())
+      if (content::Details<WebContents>(details).ptr() == GetWebContents())
         UpdatePageActions();
       break;
     }
