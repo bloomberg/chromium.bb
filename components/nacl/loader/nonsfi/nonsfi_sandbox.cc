@@ -143,6 +143,9 @@ ErrorCode RestrictSocketpair(SandboxBPF* sb) {
 
 bool IsGracefullyDenied(int sysno) {
   switch (sysno) {
+    // libevent tries this first and then falls back to poll if
+    // epoll_create fails.
+    case __NR_epoll_create:
     // third_party/libevent uses them, but we can just return -1 from
     // them as it is just checking getuid() != geteuid() and
     // getgid() != getegid()
@@ -212,9 +215,6 @@ ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl(
     case __NR_close:
     case __NR_dup:
     case __NR_dup2:
-    case __NR_epoll_create:
-    case __NR_epoll_ctl:
-    case __NR_epoll_wait:
     case __NR_exit:
     case __NR_exit_group:
 #if defined(__i386__) || defined(__arm__)
@@ -233,6 +233,7 @@ ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl(
     // TODO(hamaji): Remove the need of pipe. Currently, this is
     // called from base::MessagePumpLibevent::Init().
     case __NR_pipe:
+    case __NR_poll:
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_read:

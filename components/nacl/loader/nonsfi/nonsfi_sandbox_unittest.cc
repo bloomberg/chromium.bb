@@ -345,6 +345,13 @@ BPF_TEST(NaClNonSfiSandboxTest, brk,
   BPF_ASSERT_EQ(ENOMEM, errno);
 }
 
+BPF_TEST(NaClNonSfiSandboxTest, epoll_create_EPERM,
+         nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
+  errno = 0;
+  BPF_ASSERT_EQ(-1, syscall(__NR_epoll_create));
+  BPF_ASSERT_EQ(EPERM, errno);
+}
+
 #if defined(__i386__) || defined(__arm__)
 BPF_TEST(NaClNonSfiSandboxTest, getegid32_EPERM,
          nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
