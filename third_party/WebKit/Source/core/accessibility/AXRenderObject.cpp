@@ -1251,7 +1251,7 @@ IntPoint AXRenderObject::clickPoint()
     if (!isWebArea() || isReadOnly())
         return AXObject::clickPoint();
 
-    LayoutRect bounds = elementRect();
+    IntRect bounds = pixelSnappedIntRect(elementRect());
     return IntPoint(bounds.x() + (bounds.width() / 2), bounds.y() - (bounds.height() / 2));
 }
 

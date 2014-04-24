@@ -98,7 +98,7 @@ void AXInlineTextBox::textCharacterOffsets(Vector<int>& offsets) const
     float widthSoFar = 0;
     for (unsigned i = 0; i < len; i++) {
         widthSoFar += widths[i];
-        offsets[i] = LayoutUnit::fromFloatRound(widthSoFar);
+        offsets[i] = lroundf(widthSoFar);
     }
 }
 

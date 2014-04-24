@@ -730,7 +730,7 @@ void AXObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const
     if (!scrollableArea)
         return;
 
-    LayoutRect objectRect = elementRect();
+    IntRect objectRect = pixelSnappedIntRect(elementRect());
     IntPoint scrollPosition = scrollableArea->scrollPosition();
     IntRect scrollVisibleRect = scrollableArea->visibleContentRect();
 
@@ -775,8 +775,8 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const
 
         ScrollableArea* scrollableArea = outer->getScrollableAreaIfScrollable();
 
-        LayoutRect innerRect = inner->isAXScrollView() ? inner->parentObject()->elementRect() : inner->elementRect();
-        LayoutRect objectRect = innerRect;
+        IntRect innerRect = inner->isAXScrollView() ? pixelSnappedIntRect(inner->parentObject()->elementRect()) : pixelSnappedIntRect(inner->elementRect());
+        IntRect objectRect = innerRect;
         IntPoint scrollPosition = scrollableArea->scrollPosition();
 
         // Convert the object rect into local coordinates.
