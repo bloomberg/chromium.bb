@@ -22,6 +22,7 @@ Call tool.CleanUpEnvironment().
 """
 # pylint: disable=R0201
 
+import glob
 import os.path
 import subprocess
 import sys
@@ -103,12 +104,19 @@ class AddressSanitizerTool(BaseTool):
     # This is required because ASan is a compiler-based tool, and md5sum
     # includes instrumented code from base.
     device.old_interface.SetUtilWrapper(self.GetUtilWrapper())
+    libs = glob.glob(os.path.join(DIR_SOURCE_ROOT,
+                                  'third_party/llvm-build/Release+Asserts/',
+                                  'lib/clang/*/lib/linux/',
+                                  'libclang_rt.asan-arm-android.so'))
+    assert len(libs) == 1
+    self._lib = libs[0]
 
   def CopyFiles(self):
     """Copies ASan tools to the device."""
     subprocess.call([os.path.join(DIR_SOURCE_ROOT,
                                   'tools/android/asan/asan_device_setup.sh'),
                      '--device', self._device.old_interface.GetDevice(),
+                     '--lib', self._lib,
                      '--extra-options', AddressSanitizerTool.EXTRA_OPTIONS])
     self._device.old_interface.WaitForDevicePm()
 
