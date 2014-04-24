@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<style>
+@font-face {
+    font-family: ahem;
+    src: url('../../../../misc/resources/acid3/font.ttf');
+}
+</style>
+
+<div id="target">Hello webfont</div>
+
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+var waitMillisBeforeFetching = 300;
+var entry;
+
+(new Promise(function(resolve) {
+    setTimeout(function() {
+        var target = document.getElementById('target');
+        target.style['font-family'] = 'ahem';
+        resolve();
+    }, waitMillisBeforeFetching);
+})).then(function() {
+    return document.fonts.ready();
+}).then(function() {
+    setTimeout(function() {
+        var name = document.location.origin + '/misc/resources/acid3/font.ttf';
+        entry = window.performance.getEntriesByName(name)[0];
+        shouldBeTrue('entry.startTime >= waitMillisBeforeFetching');
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }, 100);
+});
+</script>

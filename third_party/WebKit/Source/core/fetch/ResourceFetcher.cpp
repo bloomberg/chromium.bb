@@ -838,8 +838,6 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
 
     memoryCache()->remove(resource);
     memoryCache()->add(newResource.get());
-    storeResourceTimingInitiatorInformation(newResource, request);
-    TRACE_EVENT_ASYNC_BEGIN2("net", "Resource", newResource.get(), "url", newResource->url().string().ascii(), "priority", newResource->resourceRequest().priority());
     return newResource;
 }
 
@@ -853,27 +851,25 @@ ResourcePtr<Resource> ResourceFetcher::loadResource(Resource::Type type, FetchRe
     ResourcePtr<Resource> resource = createResource(type, request.mutableResourceRequest(), charset);
 
     memoryCache()->add(resource.get());
-    storeResourceTimingInitiatorInformation(resource, request);
-    TRACE_EVENT_ASYNC_BEGIN2("net", "Resource", resource.get(), "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
     return resource;
 }
 
-void ResourceFetcher::storeResourceTimingInitiatorInformation(const ResourcePtr<Resource>& resource, const FetchRequest& request)
+void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource)
 {
-    if (request.options().requestInitiatorContext != DocumentContext)
+    if (resource->options().requestInitiatorContext != DocumentContext)
         return;
 
-    RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
+    RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime());
 
     if (resource->type() == Resource::MainResource) {
         // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
         if (frame()->ownerElement() && !frame()->ownerElement()->loadedNonEmptyDocument()) {
             info->setInitiatorType(frame()->ownerElement()->localName());
-            m_resourceTimingInfoMap.add(resource.get(), info);
+            m_resourceTimingInfoMap.add(resource, info);
             frame()->ownerElement()->didLoadNonEmptyDocument();
         }
     } else {
-        m_resourceTimingInfoMap.add(resource.get(), info);
+        m_resourceTimingInfoMap.add(resource, info);
     }
 }
 
@@ -1282,10 +1278,13 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
         frame->loader().checkLoadComplete(m_documentLoader);
 }
 
-void ResourceFetcher::willStartLoadingResource(ResourceRequest& request)
+void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceRequest& request)
 {
     if (m_documentLoader)
         m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+
+    storeResourceTimingInitiatorInformation(resource);
+    TRACE_EVENT_ASYNC_BEGIN2("net", "Resource", resource, "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
 }
 
 void ResourceFetcher::stopFetching()

@@ -133,7 +133,7 @@ void ResourceLoader::start()
     ASSERT(!m_request.isNull());
     ASSERT(m_deferredRequest.isNull());
 
-    m_host->willStartLoadingResource(m_request);
+    m_host->willStartLoadingResource(m_resource, m_request);
 
     if (m_options.synchronousPolicy == RequestSynchronously) {
         requestSynchronously();
