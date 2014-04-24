@@ -1636,7 +1636,7 @@ DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
 ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    ui::NativeTheme* native_theme = linux_ui->GetNativeTheme();
+    ui::NativeTheme* native_theme = linux_ui->GetNativeTheme(window);
     if (native_theme)
       return native_theme;
   }

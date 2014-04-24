@@ -281,12 +281,14 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
   int padding = menu_config.corner_radius > 0 ?
         kBorderPaddingDueToRoundedCorners : 0;
 
+#if !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (menu_config.native_theme == ui::NativeThemeAura::instance()) {
     // In case of NativeThemeAura the border gets drawn with the shadow.
     // Furthermore no additional padding is wanted.
     use_border = false;
     padding = 0;
   }
+#endif
 
   int top = menu_config.menu_vertical_border_size + padding;
   int left = menu_config.menu_horizontal_border_size + padding;

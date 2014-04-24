@@ -34,6 +34,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #endif
 
@@ -337,7 +338,15 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
         NOTREACHED();
     }
   } else if (use_non_toplevel_window) {
-    params->native_widget = new views::NativeWidgetAura(delegate);
+    views::NativeWidgetAura* native_widget =
+        new views::NativeWidgetAura(delegate);
+    if (params->parent) {
+      Profile* parent_profile = reinterpret_cast<Profile*>(
+          params->parent->GetNativeWindowProperty(Profile::kProfileKey));
+      native_widget->SetNativeWindowProperty(Profile::kProfileKey,
+                                             parent_profile);
+    }
+    params->native_widget = native_widget;
   } else if (params->type != views::Widget::InitParams::TYPE_TOOLTIP) {
     // TODO(erg): Once we've threaded context to everywhere that needs it, we
     // should remove this check here.

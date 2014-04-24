@@ -412,7 +412,7 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
   bool use_new_menu = false;
   bool supports_new_separators = false;
   // TODO: remove this.
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
   supports_new_separators =
       GetNativeTheme() == ui::NativeThemeAura::instance();
   use_new_menu = supports_new_separators;

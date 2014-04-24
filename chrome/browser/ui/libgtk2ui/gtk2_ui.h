@@ -45,6 +45,9 @@ class Gtk2UI : public views::LinuxUI {
   Gtk2UI();
   virtual ~Gtk2UI();
 
+  typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
+      NativeThemeGetter;
+
   // Setters used by GConfListener:
   void SetWindowButtonOrdering(
     const std::vector<views::FrameButton>& leading_buttons,
@@ -90,7 +93,9 @@ class Gtk2UI : public views::LinuxUI {
   virtual SkColor GetInactiveSelectionBgColor() const OVERRIDE;
   virtual SkColor GetInactiveSelectionFgColor() const OVERRIDE;
   virtual double GetCursorBlinkInterval() const OVERRIDE;
-  virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
+  virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const OVERRIDE;
+  virtual void SetNativeThemeOverride(const NativeThemeGetter& callback)
+      OVERRIDE;
   virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
   virtual void SetDownloadCount(int count) const OVERRIDE;
   virtual void SetProgressFraction(float percentage) const OVERRIDE;
@@ -255,6 +260,11 @@ class Gtk2UI : public views::LinuxUI {
 
   // Image cache of lazily created images.
   mutable ImageCache gtk_images_;
+
+  // Used to override the native theme for a window. If no override is provided
+  // or the callback returns NULL, Gtk2UI will default to a NativeThemeGtk2
+  // instance.
+  NativeThemeGetter native_theme_overrider_;
 
   DISALLOW_COPY_AND_ASSIGN(Gtk2UI);
 };

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
@@ -18,6 +19,10 @@
 
 // The main entrypoint into Linux toolkit specific code. GTK code should only
 // be executed behind this interface.
+
+namespace aura {
+class Window;
+}
 
 namespace gfx {
 class Image;
@@ -55,6 +60,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
     MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE
   };
 
+  typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
+      NativeThemeGetter;
+
   virtual ~LinuxUI() {}
 
   // Sets the dynamically loaded singleton that draws the desktop native UI.
@@ -87,7 +95,10 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   // Returns a NativeTheme that will provide system colors and draw system
   // style widgets.
-  virtual ui::NativeTheme* GetNativeTheme() const = 0;
+  virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const = 0;
+
+  // Used to set an override NativeTheme.
+  virtual void SetNativeThemeOverride(const NativeThemeGetter& callback) = 0;
 
   // Returns whether we should be using the native theme provided by this
   // object by default.

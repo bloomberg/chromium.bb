@@ -449,8 +449,19 @@ double Gtk2UI::GetCursorBlinkInterval() const {
   return cursor_blink ? (cursor_blink_time / kGtkCursorBlinkCycleFactor) : 0.0;
 }
 
-ui::NativeTheme* Gtk2UI::GetNativeTheme() const {
+ui::NativeTheme* Gtk2UI::GetNativeTheme(aura::Window* window) const {
+  ui::NativeTheme* native_theme_override = NULL;
+  if (!native_theme_overrider_.is_null())
+    native_theme_override = native_theme_overrider_.Run(window);
+
+  if (native_theme_override)
+    return native_theme_override;
+
   return NativeThemeGtk2::instance();
+}
+
+void Gtk2UI::SetNativeThemeOverride(const NativeThemeGetter& callback) {
+  native_theme_overrider_ = callback;
 }
 
 bool Gtk2UI::GetDefaultUsesSystemTheme() const {
