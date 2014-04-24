@@ -1613,8 +1613,10 @@ crbug.com/364960 fast/multicol/newmulticol/hide-box-horizontal-bt.html [ Skip ]
 crbug.com/364960 fast/multicol/newmulticol/hide-box-vertical-rl.html [ Skip ]
 crbug.com/364960 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 
-# Appears broken, needs investigation.
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/shaping/shaping-selection-rect.html [ Failure ]
+crbug.com/366705 [ Win ] virtual/windows-directwrite/fast/text/shaping/shaping-selection-rect.html [ NeedsRebaseline ]
+crbug.com/366705 [ Win ] virtual/windows-directwrite/fast/text/should-use-atsui.html [ NeedsRebaseline ]
+crbug.com/366705 fast/text/shaping/shaping-selection-rect.html [ NeedsRebaseline ]
+crbug.com/366705 svg/text/text-intro-05-t.svg [ NeedsRebaseline ]
 
 # Flaky on debug
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-pixel.html [ Pass Failure ]
