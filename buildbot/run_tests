@@ -6,6 +6,7 @@
 
 CHROMITE_PATH=$(realpath "$(dirname "$0")/..")
 IN_CHROOT="cros_sdk"
+TIMEOUT="timeout -k 5m 20m"
 CHROOT_CHROMITE=../../chromite
 
 set -eu
@@ -90,14 +91,14 @@ run_test() {
     else
       echo "Starting unittest ${test} inside the chroot"
       if ! ${dryrun}; then
-        ${IN_CHROOT} python "${CHROOT_CHROMITE}/${test}" &> "${log_file}" ||
-          append_failed_test "${test}" "${log_file}"
+        ${TIMEOUT} ${IN_CHROOT} python "${CHROOT_CHROMITE}/${test}" \
+          &> "${log_file}" || append_failed_test "${test}" "${log_file}"
       fi
     fi
   else
     echo "Starting unittest ${test}"
     if ! ${dryrun}; then
-      python "${CHROMITE_PATH}/${test}" &> "${log_file}" ||
+      ${TIMEOUT} python "${CHROMITE_PATH}/${test}" &> "${log_file}" ||
         append_failed_test "${test}" "${log_file}"
     fi
   fi
