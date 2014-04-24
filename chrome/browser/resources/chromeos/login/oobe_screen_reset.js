@@ -13,9 +13,6 @@ login.createScreen('ResetScreen', 'reset', function() {
       $('reset-powerwash-help-link-on-rollback').addEventListener(
           'click', function(event) {
         chrome.send('resetOnLearnMore');
-      $('powerwash-help-link').addEventListener(
-          'click', function(event) {
-        chrome.send('resetOnLearnMore');
       });
     },
 
