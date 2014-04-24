@@ -11,11 +11,11 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
-layer at (0,0) size 879x585
-  RenderView at (0,0) size 800x585
-layer at (0,0) size 800x585
-  RenderBlock {HTML} at (0,0) size 800x585
-    RenderBody {BODY} at (8,8) size 784x569
+layer at (0,0) size 879x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {DIV} at (0,0) size 784x60
         RenderText {#text} at (0,0) size 739x59
           text run at (0,0) width 739: "This test validates the fix for a bug that occurred when typing a blank at the end of a line when the character doesn't fix by a"

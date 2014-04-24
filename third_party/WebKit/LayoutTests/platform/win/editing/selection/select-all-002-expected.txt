@@ -1,10 +1,10 @@
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 layer at (0,0) size 820x900
-  RenderView at (0,0) size 785x585
-layer at (0,0) size 785x900
-  RenderBlock {HTML} at (0,0) size 785x900
-    RenderBody {BODY} at (8,64) size 769x772
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x900
+  RenderBlock {HTML} at (0,0) size 800x900
+    RenderBody {BODY} at (8,64) size 784x772
       RenderBlock {DIV} at (64,0) size 748x772 [border: (50px solid #FF0000)]
         RenderBlock {DIV} at (74,74) size 600x624
           RenderText {#text} at (0,10) size 583x123
