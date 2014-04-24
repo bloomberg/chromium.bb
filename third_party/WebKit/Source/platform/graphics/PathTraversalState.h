@@ -56,8 +56,6 @@ public:
 
     FloatPoint m_current;
     FloatPoint m_start;
-    FloatPoint m_control1;
-    FloatPoint m_control2;
 
     float m_totalLength;
     unsigned m_segmentIndex;
