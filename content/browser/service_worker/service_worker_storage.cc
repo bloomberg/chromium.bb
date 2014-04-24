@@ -171,7 +171,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
 
   // Return asyncly to simulate having had to look in the db since this
   // origin does have some registations.
-  CompleteFindSoon(installing_registration, SERVICE_WORKER_OK, callback);
+  CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND, callback);
 }
 
 void ServiceWorkerStorage::FindRegistrationForId(
