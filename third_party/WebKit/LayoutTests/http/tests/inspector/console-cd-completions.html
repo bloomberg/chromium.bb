@@ -9,7 +9,7 @@ function test()
     InspectorTest.showConsolePanel();
     InspectorTest.changeExecutionContext("myIFrame");
 
-    WebInspector.context.flavor(WebInspector.ExecutionContext)._completionsForExpression("", "myGlob", false, checkCompletions.bind(this));
+    WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("", "myGlob", false, checkCompletions.bind(this));
     function checkCompletions(completions)
     {
         var expected = ["myGlobalVar", "myGlobalFunction"];

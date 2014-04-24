@@ -23,47 +23,47 @@ var test = function()
 
     function step2()
     {
-        executionContext._completionsForExpression("", "var", false, checkAgainstGolden.bind(this, [ "var1", "var2" ], [], step3));
+        executionContext.completionsForExpression("", "var", false, checkAgainstGolden.bind(this, [ "var1", "var2" ], [], step3));
     }
 
     function step3()
     {
-        executionContext._completionsForExpression("", "di", false, checkAgainstGolden.bind(this, [ "dir", "dirxml" ], [], step4));
+        executionContext.completionsForExpression("", "di", false, checkAgainstGolden.bind(this, [ "dir", "dirxml" ], [], step4));
     }
 
     function step4()
     {
-        executionContext._completionsForExpression("", "win", false, checkAgainstGolden.bind(this, [ "window" ], [], step5));
+        executionContext.completionsForExpression("", "win", false, checkAgainstGolden.bind(this, [ "window" ], [], step5));
     }
 
     function step5()
     {
-        executionContext._completionsForExpression("", "t", false, checkAgainstGolden.bind(this, [ "this" ], [], step6));
+        executionContext.completionsForExpression("", "t", false, checkAgainstGolden.bind(this, [ "this" ], [], step6));
     }
 
     function step6()
     {
-        executionContext._completionsForExpression("var1", "toExp", false, checkAgainstGolden.bind(this, [ "toExponential" ], [], step7));
+        executionContext.completionsForExpression("var1", "toExp", false, checkAgainstGolden.bind(this, [ "toExponential" ], [], step7));
     }
 
     function step7()
     {
-        executionContext._completionsForExpression("123", "toExp", false, checkAgainstGolden.bind(this, [], [ "toExponential" ], step8));
+        executionContext.completionsForExpression("123", "toExp", false, checkAgainstGolden.bind(this, [], [ "toExponential" ], step8));
     }
 
     function step8()
     {
-        executionContext._completionsForExpression("", "", false, checkAgainstGolden.bind(this, [], ["$"], step9));
+        executionContext.completionsForExpression("", "", false, checkAgainstGolden.bind(this, [], ["$"], step9));
     }
 
     function step9()
     {
-        executionContext._completionsForExpression("", "", true, checkAgainstGolden.bind(this, ["$", "window"], [], step10));
+        executionContext.completionsForExpression("", "", true, checkAgainstGolden.bind(this, ["$", "window"], [], step10));
     }
 
     function step10()
     {
-        executionContext._completionsForExpression("console", "log('bar');", false, checkAgainstGolden.bind(this, [], ["$"], step11));
+        executionContext.completionsForExpression("console", "log('bar');", false, checkAgainstGolden.bind(this, [], ["$"], step11));
     }
 
     function step11()
