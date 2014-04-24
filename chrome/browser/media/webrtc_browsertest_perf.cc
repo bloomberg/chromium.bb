@@ -29,9 +29,11 @@ static bool MaybePrintResultsForAudioReceive(
   }
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("bytesReceived", ssrc), &value));
-  perf_test::PrintResult("audio_recv", "", "bytes_recv", value, "bytes", false);
+  perf_test::PrintResult(
+      "audio_bytes", "", "bytes_recv", value, "bytes", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("packetsLost", ssrc), &value));
-  perf_test::PrintResult("audio_recv", "", "packets_lost", value, "", false);
+  perf_test::PrintResult(
+      "audio_misc", "", "packets_lost", value, "", false);
 
   return true;
 }
@@ -45,106 +47,123 @@ static bool MaybePrintResultsForAudioSend(
   }
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("bytesSent", ssrc), &value));
-  perf_test::PrintResult("audio_send", "", "bytes_sent", value, "bytes", false);
+  perf_test::PrintResult(
+      "audio_bytes", "", "bytes_sent", value, "bytes", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterReceived", ssrc), &value));
-  perf_test::PrintResult("audio_send", "", "goog_jitter_recv", value, "",
-                         false);
+  perf_test::PrintResult(
+      "audio_tx", "", "goog_jitter_recv", value, "ms", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
-  perf_test::PrintResult("audio_send", "", "goog_rtt", value, "ms", false);
-  return true;
-}
-
-static bool MaybePrintResultsForVideoReceive(
-    const std::string& ssrc, const base::DictionaryValue& pc_dict) {
-  std::string value;
-  if (!pc_dict.GetString(Statistic("googFrameRateInput", ssrc), &value)) {
-    // Not a video receive stream.
-    return false;
-  }
-
-  perf_test::PrintResult("video_recv", "", "goog_frame_rate_input", value,
-                         "fps", false);
-
-  EXPECT_TRUE(pc_dict.GetString(Statistic("googFrameRateSent", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_frame_rate_sent", value, "fps",
-                         false);
-  EXPECT_TRUE(pc_dict.GetString(Statistic("bytesSent", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "bytes_sent", value, "bytes", false);
-  EXPECT_TRUE(pc_dict.GetString(Statistic("googFirsReceived", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_firs_recv", value, "", false);
-  EXPECT_TRUE(pc_dict.GetString(Statistic("googNacksReceived", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_nacks_recv", value, "", false);
-  EXPECT_TRUE(pc_dict.GetString(Statistic("googFrameWidthSent", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_frame_width_sent", value,
-                         "pixels", false);
-  EXPECT_TRUE(
-      pc_dict.GetString(Statistic("googFrameHeightSent", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_frame_height_sent", value,
-                         "pixels", false);
-  EXPECT_TRUE(pc_dict.GetString(
-      Statistic("googCaptureJitterMs", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_capture_jitter_ms", value,
-                         "ms", false);
-  EXPECT_TRUE(pc_dict.GetString(
-      Statistic("googCaptureQueueDelayMsPerS", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_capture_queue_delay_ms_per_s",
-                         value, "ms/s", false);
-  EXPECT_TRUE(pc_dict.GetString(
-      Statistic("googEncodeUsagePercent", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_encode_usage_percent",
-                         value, "%", false);
-  EXPECT_TRUE(pc_dict.GetString(Statistic("googAvgEncodeMs", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_avg_encode_ms", value, "ms",
-                         false);
-  EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
-  perf_test::PrintResult("video_recv", "", "goog_rtt", value, "ms", false);
+  perf_test::PrintResult(
+      "audio_tx", "", "goog_rtt", value, "ms", false);
   return true;
 }
 
 static bool MaybePrintResultsForVideoSend(
     const std::string& ssrc, const base::DictionaryValue& pc_dict) {
   std::string value;
-  if (!pc_dict.GetString(Statistic("googFrameRateOutput", ssrc), &value)) {
+  if (!pc_dict.GetString(Statistic("googFrameRateSent", ssrc), &value)) {
+    // Not a video send stream.
+    return false;
+  }
+
+  // Graph these by unit: the dashboard expects all stats in one graph to have
+  // the same unit (e.g. ms, fps, etc). Most graphs, like video_fps, will also
+  // be populated by the counterparts on the video receiving side.
+  perf_test::PrintResult(
+      "video_fps", "", "goog_frame_rate_sent", value, "fps", false);
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googFrameRateInput", ssrc), &value));
+  perf_test::PrintResult(
+      "video_fps", "", "goog_frame_rate_input", value, "fps", false);
+
+  EXPECT_TRUE(pc_dict.GetString(Statistic("bytesSent", ssrc), &value));
+  perf_test::PrintResult(
+      "video_total_bytes", "", "bytes_sent", value, "bytes", false);
+
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googFirsReceived", ssrc), &value));
+  perf_test::PrintResult(
+      "video_misc", "", "goog_firs_recv", value, "", false);
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googNacksReceived", ssrc), &value));
+  perf_test::PrintResult(
+      "video_misc", "", "goog_nacks_recv", value, "", false);
+
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googFrameWidthSent", ssrc), &value));
+  perf_test::PrintResult(
+      "video_resolution", "", "goog_frame_width_sent", value, "pixels", false);
+  EXPECT_TRUE(
+      pc_dict.GetString(Statistic("googFrameHeightSent", ssrc), &value));
+  perf_test::PrintResult(
+      "video_resolution", "", "goog_frame_height_sent", value, "pixels", false);
+
+  EXPECT_TRUE(pc_dict.GetString(
+      Statistic("googCaptureJitterMs", ssrc), &value));
+  perf_test::PrintResult(
+      "video_tx", "", "goog_capture_jitter_ms", value, "ms", false);
+  EXPECT_TRUE(pc_dict.GetString(
+      Statistic("googCaptureQueueDelayMsPerS", ssrc), &value));
+  perf_test::PrintResult(
+      "video_tx", "", "goog_capture_queue_delay_ms_per_s",
+       value, "ms/s", false);
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googAvgEncodeMs", ssrc), &value));
+  perf_test::PrintResult(
+      "video_tx", "", "goog_avg_encode_ms", value, "ms", false);
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
+  perf_test::PrintResult("video_tx", "", "goog_rtt", value, "ms", false);
+
+  EXPECT_TRUE(pc_dict.GetString(
+      Statistic("googEncodeUsagePercent", ssrc), &value));
+  perf_test::PrintResult(
+      "video_cpu_usage", "", "goog_encode_usage_percent", value, "%", false);
+  return true;
+}
+
+static bool MaybePrintResultsForVideoReceive(
+    const std::string& ssrc, const base::DictionaryValue& pc_dict) {
+  std::string value;
+  if (!pc_dict.GetString(Statistic("googFrameRateReceived", ssrc), &value)) {
     // Not a video receive stream.
     return false;
   }
 
-  perf_test::PrintResult("video_send", "", "goog_frame_rate_output", value,
-                         "fps", false);
+  perf_test::PrintResult(
+      "video_fps", "", "goog_frame_rate_recv", value, "fps", false);
+  EXPECT_TRUE(
+      pc_dict.GetString(Statistic("googFrameRateOutput", ssrc), &value));
+  perf_test::PrintResult(
+      "video_fps", "", "goog_frame_rate_output", value, "fps", false);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("packetsLost", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "packets_lost", value, "packets",
-                         false);
+  perf_test::PrintResult("video_misc", "", "packets_lost", value, "", false);
+
+  EXPECT_TRUE(pc_dict.GetString(Statistic("bytesReceived", ssrc), &value));
+  perf_test::PrintResult(
+      "video_total_bytes", "", "bytes_recv", value, "bytes", false);
+
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googFrameWidthReceived", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_frame_width_recv", value,
-                         "pixels", false);
+  perf_test::PrintResult(
+      "video_resolution", "", "goog_frame_width_recv", value, "pixels", false);
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googFrameHeightReceived", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_frame_height_recv", value,
-                         "pixels", false);
-  EXPECT_TRUE(
-      pc_dict.GetString(Statistic("googFrameRateReceived", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_frame_rate_recv", value, "fps",
-                         false);
+  perf_test::PrintResult(
+      "video_resolution", "", "goog_frame_height_recv", value, "pixels", false);
+
   EXPECT_TRUE(pc_dict.GetString(Statistic("googCurrentDelayMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_current_delay_ms", value, "ms",
-                         false);
+  perf_test::PrintResult(
+      "video_rx", "", "goog_current_delay_ms", value, "ms", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googTargetDelayMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_target_delay_ms", value, "ms",
-                         false);
+  perf_test::PrintResult(
+      "video_rx", "", "goog_target_delay_ms", value, "ms", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googDecodeMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_decode_ms", value, "ms",
-                         false);
+  perf_test::PrintResult("video_rx", "", "goog_decode_ms", value, "ms", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googMaxDecodeMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_max_decode_ms", value, "ms",
-                         false);
+  perf_test::PrintResult(
+      "video_rx", "", "goog_max_decode_ms", value, "ms", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterBufferMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_jitter_buffer_ms", value, "ms",
-                         false);
+  perf_test::PrintResult(
+      "video_rx", "", "goog_jitter_buffer_ms", value, "ms", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRenderDelayMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_render_delay_ms", value, "ms",
-                         false);
+  perf_test::PrintResult(
+      "video_rx", "", "goog_render_delay_ms", value, "ms", false);
 
   return true;
 }
@@ -179,24 +198,24 @@ void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict) {
   std::string value;
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googAvailableSendBandwidth", kBweStatsKey), &value));
-  perf_test::PrintResult("bwe_stats", "", "available_send_bw", value, "bytes/s",
-                         false);
+  perf_test::PrintResult(
+      "bwe_stats", "", "available_send_bw", value, "bit/s", false);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googAvailableReceiveBandwidth", kBweStatsKey), &value));
-  perf_test::PrintResult("bwe_stats", "", "available_recv_bw", value, "bytes/s",
-                         false);
-  ASSERT_TRUE(pc_dict.GetString(Statistic("googTargetEncBitrate", kBweStatsKey),
-                                &value));
-  perf_test::PrintResult("bwe_stats", "", "target_enc_bitrate", value, "bit/s",
-                         false);
-  ASSERT_TRUE(pc_dict.GetString(Statistic("googActualEncBitrate", kBweStatsKey),
-                                &value));
-  perf_test::PrintResult("bwe_stats", "", "actual_enc_bitrate", value, "bit/s",
-                         false);
-  ASSERT_TRUE(pc_dict.GetString(Statistic("googTransmitBitrate", kBweStatsKey),
-                                &value));
-  perf_test::PrintResult("bwe_stats", "", "transmit_bitrate", value, "bit/s",
-                         false);
+  perf_test::PrintResult(
+      "bwe_stats", "", "available_recv_bw", value, "bit/s", false);
+  ASSERT_TRUE(pc_dict.GetString(
+      Statistic("googTargetEncBitrate", kBweStatsKey), &value));
+  perf_test::PrintResult(
+      "bwe_stats", "", "target_enc_bitrate", value, "bit/s", false);
+  ASSERT_TRUE(pc_dict.GetString(
+      Statistic("googActualEncBitrate", kBweStatsKey), &value));
+  perf_test::PrintResult(
+      "bwe_stats", "", "actual_enc_bitrate", value, "bit/s", false);
+  ASSERT_TRUE(pc_dict.GetString(
+      Statistic("googTransmitBitrate", kBweStatsKey), &value));
+  perf_test::PrintResult(
+      "bwe_stats", "", "transmit_bitrate", value, "bit/s",false);
 }
 
 void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict) {
