@@ -81,8 +81,8 @@ extern const int kLargeWallpaperMaxHeight;
 extern const int kWallpaperThumbnailWidth;
 extern const int kWallpaperThumbnailHeight;
 
-// This class maintains wallpapers for users who have logged into this Chrome
-// OS device.
+// This singleton class maintains wallpapers for users who have logged into this
+// Chrome OS device.
 class WallpaperManager: public content::NotificationObserver {
  public:
   enum WallpaperResolution {
@@ -146,7 +146,7 @@ class WallpaperManager: public content::NotificationObserver {
     //    - need to LoadWallpaper(), resize and install.
     // 3) wallpaper path is not NULL, load image URL, then resize, etc...
     // 4) SetDefaultWallpaper (either on some error, or when user is new).
-    void ResetSetWallpaperImage(const gfx::ImageSkia& user_wallpaper,
+    void ResetSetWallpaperImage(const gfx::ImageSkia& image,
                                 const WallpaperInfo& info);
     void ResetLoadWallpaper(const WallpaperInfo& info);
     void ResetSetCustomWallpaper(const WallpaperInfo& info,
@@ -159,7 +159,7 @@ class WallpaperManager: public content::NotificationObserver {
     ~PendingWallpaper();
 
     // All Reset*() methods use SetMode() to set object to new state.
-    void SetMode(const gfx::ImageSkia& user_wallpaper,
+    void SetMode(const gfx::ImageSkia& image,
                  const WallpaperInfo& info,
                  const base::FilePath& wallpaper_path,
                  const bool is_default);
@@ -189,19 +189,44 @@ class WallpaperManager: public content::NotificationObserver {
     DISALLOW_COPY_AND_ASSIGN(PendingWallpaper);
   };
 
-  static WallpaperManager* Get();
-
   WallpaperManager();
   virtual ~WallpaperManager();
+
+  // Get pointer to singleton WallpaperManager instance, create it if necessary.
+  static WallpaperManager* Get();
+
+  // Registers wallpaper manager preferences.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Resizes |image| to a resolution which is nearest to |preferred_width| and
+  // |preferred_height| while respecting the |layout| choice. |output_skia| is
+  // optional (may be NULL). Returns true on success.
+  static bool ResizeImage(const gfx::ImageSkia& image,
+                          ash::WallpaperLayout layout,
+                          int preferred_width,
+                          int preferred_height,
+                          scoped_refptr<base::RefCountedBytes>* output,
+                          gfx::ImageSkia* output_skia);
+
+  // Resizes |image| to a resolution which is nearest to |preferred_width| and
+  // |preferred_height| while respecting the |layout| choice and saves the
+  // resized wallpaper to |path|. |output_skia| is optional (may be
+  // NULL). Returns true on success.
+  static bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
+                                     const base::FilePath& path,
+                                     ash::WallpaperLayout layout,
+                                     int preferred_width,
+                                     int preferred_height,
+                                     gfx::ImageSkia* output_skia);
+
+  // Returns the appropriate wallpaper resolution for all root windows.
+  static WallpaperResolution GetAppropriateResolution();
 
   void SetCommandLineForTesting(base::CommandLine* command_line);
 
   // Indicates imminent shutdown, allowing the WallpaperManager to remove any
   // observers it has registered.
   void Shutdown();
-
-  // Registers wallpaper manager preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Adds PowerManagerClient, TimeZoneSettings and CrosSettings observers.
   void AddObservers();
@@ -210,18 +235,11 @@ class WallpaperManager: public content::NotificationObserver {
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();
 
-  // Clears disposable ONLINE and CUSTOM wallpaper cache. At multi profile
-  // world, logged in users' wallpaper cache is not disposable.
-  void ClearDisposableWallpaperCache();
-
   // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
   // to custom wallpaper directory.
   base::FilePath GetCustomWallpaperPath(const char* sub_dir,
                                         const std::string& user_id_hash,
                                         const std::string& file) const;
-
-  // Returns filepath to save original custom wallpaper for the given user.
-  base::FilePath GetOriginalWallpaperPathForUser(const std::string& user_id);
 
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
@@ -239,26 +257,6 @@ class WallpaperManager: public content::NotificationObserver {
   // Removes all |user_id| related wallpaper info and saved wallpapers.
   void RemoveUserWallpaperInfo(const std::string& user_id);
 
-  // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
-  // and |preferred_height| while maintaining aspect ratio.
-  bool ResizeWallpaper(const UserImage& wallpaper,
-                       ash::WallpaperLayout layout,
-                       int preferred_width,
-                       int preferred_height,
-                       scoped_refptr<base::RefCountedBytes>* output,
-                       gfx::ImageSkia* output_skia) const;
-
-  // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
-  // and |preferred_height| while maintaining aspect ratio. And saves the
-  // resized wallpaper to |path|. |result| is optional (may be NULL).
-  // Returns true on success.
-  bool ResizeAndSaveWallpaper(const UserImage& wallpaper,
-                              const base::FilePath& path,
-                              ash::WallpaperLayout layout,
-                              int preferred_width,
-                              int preferred_height,
-                              gfx::ImageSkia* result_out) const;
-
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences. If |update_wallpaper| is false, don't change
   // wallpaper but only update cache.
@@ -267,7 +265,7 @@ class WallpaperManager: public content::NotificationObserver {
                           const std::string& file,
                           ash::WallpaperLayout layout,
                           User::WallpaperType type,
-                          const UserImage& wallpaper,
+                          const gfx::ImageSkia& image,
                           bool update_wallpaper);
 
   // Use given files as new default wallpaper.
@@ -287,19 +285,11 @@ class WallpaperManager: public content::NotificationObserver {
   // Sets wallpaper to default wallpaper (asynchronously with default delay).
   void SetDefaultWallpaperDelayed(const std::string& user_id);
 
-  // Initialize wallpaper for the specified user to default and saves this
-  // settings in local state.
-  void InitInitialUserWallpaper(const std::string& user_id,
-                                bool is_persistent);
-
   // Sets selected wallpaper information for |user_id| and saves it to Local
   // State if |is_persistent| is true.
   void SetUserWallpaperInfo(const std::string& user_id,
                             const WallpaperInfo& info,
                             bool is_persistent);
-
-  // Sets last selected user on user pod row.
-  void SetLastSelectedUser(const std::string& last_selected_user);
 
   // Sets |user_id|'s wallpaper (asynchronously with zero delay).
   void SetUserWallpaperNow(const std::string& user_id);
@@ -307,10 +297,10 @@ class WallpaperManager: public content::NotificationObserver {
   // Sets |user_id|'s wallpaper (asynchronously with default delay).
   void SetUserWallpaperDelayed(const std::string& user_id);
 
-  // Sets wallpaper to |wallpaper| (asynchronously with zero delay). If
+  // Sets wallpaper to |image| (asynchronously with zero delay). If
   // |update_wallpaper| is false, skip change wallpaper but only update cache.
   void SetWallpaperFromImageSkia(const std::string& user_id,
-                                 const gfx::ImageSkia& wallpaper,
+                                 const gfx::ImageSkia& image,
                                  ash::WallpaperLayout layout,
                                  bool update_wallpaper);
 
@@ -340,9 +330,6 @@ class WallpaperManager: public content::NotificationObserver {
                        const std::string& user_id,
                        scoped_ptr<std::string> data);
 
-  // Returns the appropriate wallpaper resolution for all root windows.
-  static WallpaperResolution GetAppropriateResolution();
-
   // Enable surprise me wallpaper mode.
   void EnableSurpriseMe();
 
@@ -361,13 +348,17 @@ class WallpaperManager: public content::NotificationObserver {
 
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
 
-  // Set |wallpaper| controlled by policy.
+  // Initialize wallpaper for the specified user to default and saves this
+  // settings in local state.
+  void InitInitialUserWallpaper(const std::string& user_id, bool is_persistent);
+
+  // Set wallpaper to |user_image| controlled by policy.  (Takes a UserImage
+  // because that's the callback interface provided by UserImageLoader.)
   void SetPolicyControlledWallpaper(const std::string& user_id,
-                                    const UserImage& wallpaper);
+                                    const UserImage& user_image);
 
   // Gets encoded wallpaper from cache. Returns true if success.
-  bool GetWallpaperFromCache(const std::string& user_id,
-                             gfx::ImageSkia* wallpaper);
+  bool GetWallpaperFromCache(const std::string& user_id, gfx::ImageSkia* image);
 
   // The number of wallpapers have loaded. For test only.
   int loaded_wallpapers() const { return loaded_wallpapers_; }
@@ -387,22 +378,16 @@ class WallpaperManager: public content::NotificationObserver {
   // Caches |user_id|'s wallpaper to memory.
   void CacheUserWallpaper(const std::string& user_id);
 
+  // Clears disposable ONLINE and CUSTOM wallpaper cache. At multi profile
+  // world, logged in users' wallpaper cache is not disposable.
+  void ClearDisposableWallpaperCache();
+
   // Clears all obsolete wallpaper prefs from old version wallpaper pickers.
   void ClearObsoleteWallpaperPrefs();
-
-  // Deletes everything else except |path| in the same directory.
-  void DeleteAllExcept(const base::FilePath& path);
-
-  // Deletes a list of wallpaper files in |file_list|.
-  void DeleteWallpaperInList(const std::vector<base::FilePath>& file_list);
 
   // Deletes all |user_id| related custom wallpapers and directories.
   void DeleteUserWallpapers(const std::string& user_id,
                             const std::string& path_to_file);
-
-  // Creates all new custom wallpaper directories for |user_id_hash| if not
-  // exist.
-  void EnsureCustomWallpaperDirectories(const std::string& user_id_hash);
 
   // Gets the CommandLine representing the current process's command line.
   base::CommandLine* GetCommandLine();
@@ -449,21 +434,13 @@ class WallpaperManager: public content::NotificationObserver {
                             WallpaperInfo* info) const;
 
   // Sets wallpaper to the decoded wallpaper if |update_wallpaper| is true.
-  // Otherwise, cache wallpaper to memory if not logged in.
+  // Otherwise, cache wallpaper to memory if not logged in.  (Takes a UserImage
+  // because that's the callback interface provided by UserImageLoader.)
   void OnWallpaperDecoded(const std::string& user_id,
                           ash::WallpaperLayout layout,
                           bool update_wallpaper,
                           MovableOnDestroyCallbackHolder on_finish,
-                          const UserImage& wallpaper);
-
-  // Generates thumbnail of custom wallpaper on wallpaper sequenced worker
-  // thread. If |persistent| is true, saves original custom image and resized
-  // images to disk.
-  void ProcessCustomWallpaper(const std::string& user_id_hash,
-                              bool persistent,
-                              const WallpaperInfo& info,
-                              scoped_ptr<gfx::ImageSkia> image,
-                              const UserImage::RawImage& raw_image);
+                          const UserImage& user_image);
 
   // Record data for User Metrics Analysis.
   void RecordUma(User::WallpaperType type, int index) const;
@@ -473,13 +450,7 @@ class WallpaperManager: public content::NotificationObserver {
   void SaveCustomWallpaper(const std::string& user_id_hash,
                            const base::FilePath& path,
                            ash::WallpaperLayout layout,
-                           const UserImage& wallpaper);
-
-  // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
-  // True on success.
-  bool SaveWallpaperInternal(const base::FilePath& path,
-                             const char* data,
-                             int size) const;
+                           scoped_ptr<gfx::ImageSkia> image) const;
 
   // Creates new PendingWallpaper request (or updates currently pending).
   void ScheduleSetUserWallpaper(const std::string& user_id, bool delayed);
@@ -500,7 +471,7 @@ class WallpaperManager: public content::NotificationObserver {
   // After completed load operation, update average load time.
   void SaveLastLoadTime(const base::TimeDelta elapsed);
 
-  // Notify all registed observers.
+  // Notify all registered observers.
   void NotifyAnimationFinished();
 
   // Returns modifiable PendingWallpaper.
@@ -554,7 +525,7 @@ class WallpaperManager: public content::NotificationObserver {
                                  const ash::WallpaperLayout layout,
                                  scoped_ptr<UserImage>* result,
                                  MovableOnDestroyCallbackHolder on_finish,
-                                 const UserImage& wallpaper);
+                                 const UserImage& user_image);
 
   // Start decoding given default wallpaper.
   void StartLoadAndSetDefaultWallpaper(const base::FilePath& path,

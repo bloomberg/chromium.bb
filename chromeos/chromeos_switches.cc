@@ -142,7 +142,8 @@ const char kLoginManager[]                  = "login-manager";
 // Specifies a password to be used to login (along with login-user).
 const char kLoginPassword[]                 = "login-password";
 
-// Specifies the profile to use once a chromeos user is logged in.
+// Specifies the profile to use once a chromeos user is logged in. This is
+// required unless --multi-profile is set.
 const char kLoginProfile[]                  = "login-profile";
 
 // Specifies the user which is already logged in.

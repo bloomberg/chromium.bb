@@ -119,13 +119,9 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
 }
 
 void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
-    const gfx::ImageSkia& wallpaper) {
+    const gfx::ImageSkia& image) {
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
-  chromeos::UserImage::RawImage raw_image(
-      params_->details.wallpaper_data->begin(),
-      params_->details.wallpaper_data->end());
-  chromeos::UserImage image(wallpaper, raw_image);
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
       chromeos::kThumbnailWallpaperSubDir,
       user_id_hash_,
@@ -151,14 +147,16 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   unsafe_wallpaper_decoder_ = NULL;
 
   if (params_->details.thumbnail) {
-    wallpaper.EnsureRepsForSupportedScales();
-    scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
+    image.EnsureRepsForSupportedScales();
+    scoped_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
     // request thumbnail in the javascript callback.
-    task_runner->PostTask(FROM_HERE,
-        base::Bind(
-            &WallpaperSetWallpaperFunction::GenerateThumbnail,
-            this, thumbnail_path, base::Passed(&deep_copy)));
+    task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&WallpaperSetWallpaperFunction::GenerateThumbnail,
+                   this,
+                   thumbnail_path,
+                   base::Passed(deep_copy.Pass())));
   } else {
     SendResponse(true);
   }
@@ -168,13 +166,12 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
     const base::FilePath& thumbnail_path, scoped_ptr<gfx::ImageSkia> image) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
-  chromeos::UserImage wallpaper(*image.get());
   if (!base::PathExists(thumbnail_path.DirName()))
     base::CreateDirectory(thumbnail_path.DirName());
 
   scoped_refptr<base::RefCountedBytes> data;
-  chromeos::WallpaperManager::Get()->ResizeWallpaper(
-      wallpaper,
+  chromeos::WallpaperManager::Get()->ResizeImage(
+      *image,
       ash::WALLPAPER_LAYOUT_STRETCH,
       chromeos::kWallpaperThumbnailWidth,
       chromeos::kWallpaperThumbnailHeight,

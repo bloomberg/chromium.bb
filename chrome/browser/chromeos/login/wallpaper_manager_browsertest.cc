@@ -163,6 +163,10 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
     return WallpaperManager::Get()->loaded_wallpapers();
   }
 
+  void ClearDisposableWallpaperCache() {
+    WallpaperManager::Get()->ClearDisposableWallpaperCache();
+  }
+
   // Creates a test image of size 1x1.
   gfx::ImageSkia CreateTestImage(int width, int height, SkColor color) {
     SkBitmap bitmap;
@@ -404,7 +408,7 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
   wallpaper_manager->SetUserWallpaperNow(kTestUser1);
   WaitAsyncWallpaperLoadFinished();
   EXPECT_EQ(1, LoadedWallpapers());
-  wallpaper_manager->ClearDisposableWallpaperCache();
+  ClearDisposableWallpaperCache();
 
   // Change wallpaper to a custom wallpaper.
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
@@ -692,13 +696,12 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTestCacheUpdate,
   EXPECT_TRUE(cached_wallpaper.BackedBySameObjectAs(red_wallpaper));
 
   gfx::ImageSkia green_wallpaper = CreateTestImage(SK_ColorGREEN);
-  chromeos::UserImage image(green_wallpaper);
   wallpaper_manager->SetCustomWallpaper(kTestUser1,
                                         kTestUser1Hash,
                                         "dummy",  // dummy file name
                                         WALLPAPER_LAYOUT_CENTER,
                                         User::CUSTOMIZED,
-                                        image,
+                                        green_wallpaper,
                                         true);
   WaitAsyncWallpaperLoadFinished();
   // SetCustomWallpaper should also update wallpaper cache when multi-profile is
@@ -922,13 +925,12 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
   // Custom wallpaper should be applied immediately, canceling the default
   // wallpaper load task.
   gfx::ImageSkia image = CreateTestImage(640, 480, kCustomWallpaperColor);
-  UserImage wallpaper(image);
   WallpaperManager::Get()->SetCustomWallpaper(UserManager::kStubUser,
                                               "test_hash",
                                               "test-nofile.jpeg",
                                               WALLPAPER_LAYOUT_STRETCH,
                                               User::CUSTOMIZED,
-                                              wallpaper,
+                                              image,
                                               true);
   WaitAsyncWallpaperLoadFinished();
 

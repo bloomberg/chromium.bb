@@ -350,7 +350,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
 }
 
 void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
-    const gfx::ImageSkia& wallpaper) {
+    const gfx::ImageSkia& image) {
   // Set unsafe_wallpaper_decoder_ to null since the decoding already finished.
   unsafe_wallpaper_decoder_ = NULL;
 
@@ -362,7 +362,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
   bool update_wallpaper =
       user_id_ == chromeos::UserManager::Get()->GetActiveUser()->email();
   wallpaper_manager->SetWallpaperFromImageSkia(
-      user_id_, wallpaper, layout, update_wallpaper);
+      user_id_, image, layout, update_wallpaper);
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   chromeos::WallpaperInfo info = {
@@ -401,8 +401,8 @@ bool WallpaperPrivateSetWallpaperFunction::RunImpl() {
 }
 
 void WallpaperPrivateSetWallpaperFunction::OnWallpaperDecoded(
-    const gfx::ImageSkia& wallpaper) {
-  wallpaper_ = wallpaper;
+    const gfx::ImageSkia& image) {
+  wallpaper_ = image;
   // Set unsafe_wallpaper_decoder_ to null since the decoding already finished.
   unsafe_wallpaper_decoder_ = NULL;
 
@@ -427,10 +427,11 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     // ImageSkia is not RefCountedThreadSafe. Use a deep copied ImageSkia if
     // post to another thread.
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper,
-                   this, base::Passed(&deep_copy)));
-    chromeos::UserImage wallpaper(wallpaper_);
+                   this,
+                   base::Passed(deep_copy.Pass())));
 
     base::FilePath wallpaper_dir;
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
@@ -441,7 +442,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
     // maintain the aspect ratio after resize.
     chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
-        wallpaper,
+        wallpaper_,
         file_path,
         ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
         chromeos::kSmallWallpaperMaxWidth,
@@ -458,7 +459,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
 }
 
 void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
-    scoped_ptr<gfx::ImageSkia> wallpaper) {
+    scoped_ptr<gfx::ImageSkia> image) {
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
 
@@ -468,7 +469,7 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
   bool update_wallpaper =
       user_id_ == chromeos::UserManager::Get()->GetActiveUser()->email();
   wallpaper_manager->SetWallpaperFromImageSkia(
-      user_id_, *wallpaper.get(), layout, update_wallpaper);
+      user_id_, *image.get(), layout, update_wallpaper);
 
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
@@ -531,12 +532,9 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunImpl() {
 }
 
 void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
-    const gfx::ImageSkia& wallpaper) {
+    const gfx::ImageSkia& image) {
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
-  chromeos::UserImage::RawImage raw_image(params->wallpaper.begin(),
-                                          params->wallpaper.end());
-  chromeos::UserImage image(wallpaper, raw_image);
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
       chromeos::kThumbnailWallpaperSubDir, user_id_hash_, params->file_name);
 
@@ -562,8 +560,8 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   unsafe_wallpaper_decoder_ = NULL;
 
   if (params->generate_thumbnail) {
-    wallpaper.EnsureRepsForSupportedScales();
-    scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
+    image.EnsureRepsForSupportedScales();
+    scoped_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
     // request thumbnail in the javascript callback.
     task_runner->PostTask(FROM_HERE,
@@ -579,13 +577,12 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
     const base::FilePath& thumbnail_path, scoped_ptr<gfx::ImageSkia> image) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
-  chromeos::UserImage wallpaper(*image.get());
   if (!base::PathExists(thumbnail_path.DirName()))
     base::CreateDirectory(thumbnail_path.DirName());
 
   scoped_refptr<base::RefCountedBytes> data;
-  chromeos::WallpaperManager::Get()->ResizeWallpaper(
-      wallpaper,
+  chromeos::WallpaperManager::Get()->ResizeImage(
+      *image,
       ash::WALLPAPER_LAYOUT_STRETCH,
       chromeos::kWallpaperThumbnailWidth,
       chromeos::kWallpaperThumbnailHeight,

@@ -32,7 +32,7 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
+  virtual void OnWallpaperDecoded(const gfx::ImageSkia& image) OVERRIDE;
 
   // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
   // generating thumbnail.

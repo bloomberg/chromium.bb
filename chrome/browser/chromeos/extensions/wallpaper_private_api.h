@@ -42,7 +42,7 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
+  virtual void OnWallpaperDecoded(const gfx::ImageSkia& image) OVERRIDE;
 
   // File doesn't exist. Sets javascript callback parameter to false.
   void OnFileNotExists(const std::string& error);
@@ -77,13 +77,13 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
+  virtual void OnWallpaperDecoded(const gfx::ImageSkia& image) OVERRIDE;
 
   // Saves the image data to a file.
   void SaveToFile();
 
   // Sets wallpaper to the decoded image.
-  void SetDecodedWallpaper(scoped_ptr<gfx::ImageSkia> wallpaper);
+  void SetDecodedWallpaper(scoped_ptr<gfx::ImageSkia> image);
 
   scoped_ptr<extensions::api::wallpaper_private::SetWallpaper::Params> params;
 

@@ -108,11 +108,11 @@ class User {
   static const int kInvalidImageIndex = -3;
 
   enum WallpaperType {
-    DAILY = 0,
-    CUSTOMIZED = 1,
-    DEFAULT = 2,
+    /* DAILY = 0 */    // Removed.  Do not re-use the id!
+    CUSTOMIZED = 1,    // Selected by user.
+    DEFAULT = 2,       // Default.
     /* UNKNOWN = 3 */  // Removed.  Do not re-use the id!
-    ONLINE = 4,
+    ONLINE = 4,        // WallpaperInfo.file denotes an URL.
     POLICY = 5,        // Controlled by policy, can't be changed by the user.
     WALLPAPER_TYPE_COUNT = 6
   };

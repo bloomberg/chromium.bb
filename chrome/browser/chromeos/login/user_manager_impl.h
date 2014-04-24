@@ -314,7 +314,7 @@ class UserManagerImpl
   // Update the global LoginState.
   void UpdateLoginState();
 
-  // Insert |user| at the front of the LRU user list..
+  // Insert |user| at the front of the LRU user list.
   void SetLRUUser(User* user);
 
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
