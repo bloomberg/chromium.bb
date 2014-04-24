@@ -32,7 +32,6 @@
         '../apps/common/api/api.gyp:apps_api',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:url_matcher',
-        '../components/components.gyp:wifi_component',
         '../components/components_strings.gyp:components_strings',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
@@ -1073,6 +1072,9 @@
           ],
         }],
         ['OS=="win" or OS=="mac"', {
+          'dependencies': [
+            '../components/components.gyp:wifi_component',
+          ],
           'sources': [
             'browser/extensions/api/networking_private/networking_private_api.h',
             'browser/extensions/api/networking_private/networking_private_api_nonchromeos.cc',

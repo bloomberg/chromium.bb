@@ -9,8 +9,8 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../components/components.gyp:onc_component',
         '../third_party/libxml/libxml.gyp:libxml',
+        'onc_component',
       ],
       'include_dirs': [
         '..',
@@ -48,9 +48,9 @@
       'target_name': 'wifi_test',
       'type': 'executable',
       'dependencies': [
-        'wifi_component',
         '../base/base.gyp:base',
-        '../components/components.gyp:onc_component',
+        'onc_component',
+        'wifi_component',
       ],
       'include_dirs': [
         '..',
