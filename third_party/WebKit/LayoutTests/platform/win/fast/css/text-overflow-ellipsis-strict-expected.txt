@@ -1,9 +1,9 @@
-layer at (0,0) size 785x770
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x770
-  RenderBlock {HTML} at (0,0) size 785x770
-    RenderBody {BODY} at (8,8) size 769x742
-      RenderBlock (anonymous) at (0,0) size 769x100
+layer at (0,0) size 800x770
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x770
+  RenderBlock {HTML} at (0,0) size 800x770
+    RenderBody {BODY} at (8,8) size 784x742
+      RenderBlock (anonymous) at (0,0) size 784x100
         RenderText {#text} at (0,0) size 531x19
           text run at (0,0) width 531: "This tests checks that the text-overflow:ellipsis property is handled correctly for bidi text."
         RenderBR {BR} at (531,0) size 0x19
@@ -14,34 +14,34 @@ layer at (0,0) size 785x770
         RenderBR {BR} at (0,60) size 0x19
         RenderText {#text} at (0,80) size 31x19
           text run at (0,80) width 31: "RTL:"
-      RenderBlock (anonymous) at (0,142) size 769x20
+      RenderBlock (anonymous) at (0,142) size 784x20
         RenderText {#text} at (0,0) size 89x19
           text run at (0,0) width 89: "RTL Override:"
-      RenderBlock (anonymous) at (0,204) size 769x20
+      RenderBlock (anonymous) at (0,204) size 784x20
         RenderText {#text} at (0,0) size 56x19
           text run at (0,0) width 56: "RTL link:"
-      RenderBlock (anonymous) at (0,266) size 769x20
+      RenderBlock (anonymous) at (0,266) size 784x20
         RenderText {#text} at (0,0) size 124x19
           text run at (0,0) width 124: "RTL with ltr content:"
-      RenderBlock (anonymous) at (0,328) size 769x20
+      RenderBlock (anonymous) at (0,328) size 784x20
         RenderText {#text} at (0,0) size 149x19
           text run at (0,0) width 149: "RTL link with ltr content:"
-      RenderBlock (anonymous) at (0,390) size 769x20
+      RenderBlock (anonymous) at (0,390) size 784x20
         RenderText {#text} at (0,0) size 56x19
           text run at (0,0) width 56: "LTR link:"
-      RenderBlock (anonymous) at (0,452) size 769x20
+      RenderBlock (anonymous) at (0,452) size 784x20
         RenderText {#text} at (0,0) size 31x19
           text run at (0,0) width 31: "LTR:"
-      RenderBlock (anonymous) at (0,514) size 769x20
+      RenderBlock (anonymous) at (0,514) size 784x20
         RenderText {#text} at (0,0) size 124x19
           text run at (0,0) width 124: "LTR with rtl content:"
-      RenderBlock (anonymous) at (0,576) size 769x20
+      RenderBlock (anonymous) at (0,576) size 784x20
         RenderText {#text} at (0,0) size 167x19
           text run at (0,0) width 167: "LTR with forced rtl content:"
-      RenderBlock (anonymous) at (0,638) size 769x20
+      RenderBlock (anonymous) at (0,638) size 784x20
         RenderText {#text} at (0,0) size 149x19
           text run at (0,0) width 149: "LTR link with rtl content:"
-      RenderBlock (anonymous) at (0,700) size 769x20
+      RenderBlock (anonymous) at (0,700) size 784x20
         RenderText {#text} at (0,0) size 192x19
           text run at (0,0) width 192: "LTR link with forced rtl content:"
 layer at (8,108) size 182x22 clip at (9,109) size 180x20 scrollX 118 scrollWidth 298

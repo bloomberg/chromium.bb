@@ -1,8 +1,8 @@
-layer at (0,0) size 1904x585
-  RenderView at (0,0) size 800x585
-layer at (0,0) size 1904x585
-  RenderBlock {HTML} at (0,0) size 1904x585
-    RenderBody {BODY} at (8,8) size 1880x569
+layer at (0,0) size 1904x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 1904x600
+  RenderBlock {HTML} at (0,0) size 1904x600
+    RenderBody {BODY} at (8,8) size 1880x584
       RenderBlock {UL} at (0,0) size 142x182 [border: (1px solid #0000FF)]
         RenderListItem {LI} at (1,41) size 40x140 [border: (5px solid #FFA500)]
           RenderListMarker at (10,-18) size 19x7: bullet

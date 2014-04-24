@@ -1,20 +1,21 @@
-layer at (0,0) size 785x640
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x168
-  RenderBlock {HTML} at (0,0) size 785x167.88
-    RenderBody {BODY} at (8,21.44) size 769x130.44
-      RenderBlock {H1} at (0,0) size 769x37
+layer at (0,0) size 800x640
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x168
+  RenderBlock {HTML} at (0,0) size 800x167.88
+    RenderBody {BODY} at (8,21.44) size 784x130.44
+      RenderBlock {H1} at (0,0) size 784x37
         RenderText {#text} at (0,0) size 759x37
           text run at (0,0) width 759: "Testing the values of 'pointer-events' on HTML content"
-      RenderBlock {P} at (0,58.44) size 769x72
-        RenderText {#text} at (0,0) size 768x72
+      RenderBlock {P} at (0,58.44) size 784x72
+        RenderText {#text} at (0,0) size 779x72
           text run at (0,0) width 579: "This test is expected to be run from within DumpRenderTree. If running manually, click on "
-          text run at (579,0) width 145: "the elements in the first"
-          text run at (0,18) width 379: "column, making sure the actual result (3rd column) matches "
-          text run at (379,18) width 382: "the expected result (2nd column). Repeat for click target (4th"
-          text run at (0,36) width 243: "column), expected result (5th column) "
-          text run at (243,36) width 525: "and actual result (6th column). Note: You should click on a yellow inline element if"
-          text run at (0,54) width 268: "one exists, otherwise anywhere in the box."
+          text run at (579,0) width 200: "the elements in the first column,"
+          text run at (0,18) width 324: "making sure the actual result (3rd column) matches "
+          text run at (324,18) width 442: "the expected result (2nd column). Repeat for click target (4th column),"
+          text run at (0,36) width 183: "expected result (5th column) "
+          text run at (183,36) width 529: "and actual result (6th column). Note: You should click on a yellow inline element if "
+          text run at (712,36) width 66: "one exists,"
+          text run at (0,54) width 198: "otherwise anywhere in the box."
 layer at (10,140) size 300x100
   RenderBlock (positioned) {DIV} at (10,140) size 300x100
 layer at (10,140) size 80x80
