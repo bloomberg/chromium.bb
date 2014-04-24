@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import math
 import unittest
 
 # Special import necessary because filename contains dash characters.
@@ -74,6 +75,28 @@ class BisectPerfRegressionTest(unittest.TestCase):
     # Standard deviation in both groups is zero, so confidence is 100.
     self.assertEqual(
         100, bisect_perf_module.CalculateConfidence(bad_values, good_values))
+
+  def testCalculateRelativeChange(self):
+    """Tests the common cases for calculating relative change."""
+    # The change is relative to the first value, regardless of which is bigger.
+    self.assertEqual(0.5, bisect_perf_module.CalculateRelativeChange(1.0, 1.5))
+    self.assertEqual(0.5, bisect_perf_module.CalculateRelativeChange(2.0, 1.0))
+
+  def testCalculateRelativeChangeFromZero(self):
+    """Tests what happens when relative change from zero is calculated."""
+    # If the first number is zero, then the result is not a number.
+    self.assertEqual(0, bisect_perf_module.CalculateRelativeChange(0, 0))
+    self.assertTrue(
+        math.isnan(bisect_perf_module.CalculateRelativeChange(0, 1)))
+    self.assertTrue(
+        math.isnan(bisect_perf_module.CalculateRelativeChange(0, -1)))
+
+  def testCalculateRelativeChangeWithNegatives(self):
+    """Tests that relative change given is always positive."""
+    self.assertEqual(3.0, bisect_perf_module.CalculateRelativeChange(-1, 2))
+    self.assertEqual(3.0, bisect_perf_module.CalculateRelativeChange(1, -2))
+    self.assertEqual(1.0, bisect_perf_module.CalculateRelativeChange(-1, -2))
+
 
 if __name__ == '__main__':
   unittest.main()

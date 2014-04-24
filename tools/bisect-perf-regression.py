@@ -291,6 +291,29 @@ def CalculateStandardDeviation(values):
   return std_dev
 
 
+def CalculateRelativeChange(before, after):
+  """Returns the relative change of before and after, relative to before.
+
+  There are several different ways to define relative difference between
+  two numbers; sometimes it is defined as relative to the smaller number,
+  or to the mean of the two numbers. This version returns the difference
+  relative to the first of the two numbers.
+
+  Args:
+    before: A number representing an earlier value.
+    after: Another number, representing a later value.
+
+  Returns:
+    A non-negative floating point number; 0.1 represents a 10% change.
+  """
+  if before == after:
+    return 0.0
+  if before == 0:
+    return float('nan')
+  difference = after - before
+  return math.fabs(difference / before)
+
+
 def CalculatePooledStandardError(work_sets):
   numerator = 0.0
   denominator1 = 0.0
@@ -3165,8 +3188,10 @@ class BisectPerformanceMetrics(object):
       mean_of_bad_runs = CalculateMean(broken_mean)
       mean_of_good_runs = CalculateMean(working_mean)
 
-      regression_size = math.fabs(max(mean_of_good_runs, mean_of_bad_runs) /
-          max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0 - 100.0
+      regression_size = 100 * CalculateRelativeChange(mean_of_good_runs,
+                                                      mean_of_bad_runs)
+      if math.isnan(regression_size):
+        regression_size = 'zero-to-nonzero'
 
       regression_std_err = math.fabs(CalculatePooledStandardError(
           [working_mean, broken_mean]) /
