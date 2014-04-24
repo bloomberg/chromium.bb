@@ -386,6 +386,12 @@ void IDBRequest::stop()
     }
 
     m_enqueuedEvents.clear();
+    if (m_source)
+        m_source->contextWillBeDestroyed();
+    if (m_result)
+        m_result->contextWillBeDestroyed();
+    if (m_pendingCursor)
+        m_pendingCursor->contextWillBeDestroyed();
 }
 
 const AtomicString& IDBRequest::interfaceName() const

@@ -75,6 +75,7 @@ public:
         return adoptRef(new IDBAny(value, key, keyPath));
     }
     ~IDBAny();
+    void contextWillBeDestroyed();
 
     enum Type {
         UndefinedType = 0,

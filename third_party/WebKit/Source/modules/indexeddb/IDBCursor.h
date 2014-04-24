@@ -56,6 +56,7 @@ public:
 
     static PassRefPtr<IDBCursor> create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
+    void contextWillBeDestroyed() { m_backend.clear(); }
 
     // Implement the IDL
     const String& direction() const { return directionToString(m_direction); }

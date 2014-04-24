@@ -60,6 +60,12 @@ IDBAny::~IDBAny()
 {
 }
 
+void IDBAny::contextWillBeDestroyed()
+{
+    if (m_idbCursor)
+        m_idbCursor->contextWillBeDestroyed();
+}
+
 DOMStringList* IDBAny::domStringList() const
 {
     ASSERT(m_type == DOMStringListType);
