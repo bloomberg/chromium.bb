@@ -44,6 +44,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TypeTraits.h"
+#include "wtf/WeakPtr.h"
 
 #ifndef NDEBUG
 #define DEBUG_ONLY(x) x
@@ -324,6 +325,18 @@ public:
     {
     }
 #endif
+
+    // This trace method is to trace a WeakPtrWillBeMember when ENABLE(OILPAN)
+    // is not enabled.
+    // Remove this once we remove WeakPtrWillBeMember.
+    template<typename T>
+    void trace(const WeakPtr<T>&)
+    {
+#if ENABLE(OILPAN)
+        // WeakPtrs should never be traced.
+        ASSERT_NOT_REACHED();
+#endif
+    }
 
     // This method marks an object and adds it to the set of objects
     // that should have their trace method called. Since not all

@@ -98,7 +98,9 @@ protected:
     Deque<InitializeNewSessionData> m_pendingInitializeNewSessionData;
     Timer<MediaKeys> m_initializeNewSessionTimer;
 
+#if !ENABLE(OILPAN)
     WeakPtrFactory<MediaKeys> m_weakFactory;
+#endif
 };
 
 }

@@ -61,14 +61,14 @@ MediaKeySession::PendingAction::~PendingAction()
 {
 }
 
-PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, WeakPtr<MediaKeys> keys)
+PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, WeakPtrWillBeRawPtr<MediaKeys> keys)
 {
     RefPtrWillBeRawPtr<MediaKeySession> session(adoptRefWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys)));
     session->suspendIfNeeded();
     return session.release();
 }
 
-MediaKeySession::MediaKeySession(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, WeakPtr<MediaKeys> keys)
+MediaKeySession::MediaKeySession(ExecutionContext* context, blink::WebContentDecryptionModule* cdm, WeakPtrWillBeRawPtr<MediaKeys> keys)
     : ActiveDOMObject(context)
     , m_keySystem(keys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))
@@ -269,6 +269,11 @@ void MediaKeySession::stop()
         m_actionTimer.stop();
     m_pendingActions.clear();
     m_asyncEventQueue->close();
+}
+
+void MediaKeySession::trace(Visitor* visitor)
+{
+    visitor->trace(m_keys);
 }
 
 }

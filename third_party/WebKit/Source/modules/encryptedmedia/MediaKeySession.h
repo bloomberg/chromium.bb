@@ -68,7 +68,7 @@ class MediaKeySession FINAL
     , private blink::WebContentDecryptionModuleSession::Client {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>);
 public:
-    static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, blink::WebContentDecryptionModule*, WeakPtr<MediaKeys>);
+    static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, blink::WebContentDecryptionModule*, WeakPtrWillBeRawPtr<MediaKeys>);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -91,7 +91,7 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     // A struct holding the pending action.
@@ -111,7 +111,7 @@ private:
         PendingAction(Type, PassRefPtr<Uint8Array> data);
     };
 
-    MediaKeySession(ExecutionContext*, blink::WebContentDecryptionModule*, WeakPtr<MediaKeys>);
+    MediaKeySession(ExecutionContext*, blink::WebContentDecryptionModule*, WeakPtrWillBeRawPtr<MediaKeys>);
     void actionTimerFired(Timer<MediaKeySession>*);
 
     // blink::WebContentDecryptionModuleSession::Client
@@ -126,7 +126,7 @@ private:
     OwnPtr<blink::WebContentDecryptionModuleSession> m_session;
 
     // Used to determine if MediaKeys is still active.
-    WeakPtr<MediaKeys> m_keys;
+    WeakPtrWillBeWeakMember<MediaKeys> m_keys;
 
     // Is the CDM finished with this session?
     bool m_isClosed;

@@ -92,7 +92,9 @@ MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, PassOwn
     , m_keySystem(keySystem)
     , m_cdm(cdm)
     , m_initializeNewSessionTimer(this, &MediaKeys::initializeNewSessionTimerFired)
+#if !ENABLE(OILPAN)
     , m_weakFactory(this)
+#endif
 {
     WTF_LOG(Media, "MediaKeys::MediaKeys");
     ScriptWrappable::init(this);
@@ -128,7 +130,11 @@ PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContex
     }
 
     // 2. Create a new MediaKeySession object.
-    RefPtrWillBeRawPtr<MediaKeySession> session = MediaKeySession::create(context, m_cdm.get(), m_weakFactory.createWeakPtr());
+#if ENABLE(OILPAN)
+    MediaKeySession* session = MediaKeySession::create(context, m_cdm.get(), this);
+#else
+    RefPtr<MediaKeySession> session = MediaKeySession::create(context, m_cdm.get(), m_weakFactory.createWeakPtr());
+#endif
     // 2.1 Let the keySystem attribute be keySystem.
     ASSERT(!session->keySystem().isEmpty());
     // FIXME: 2.2 Let the state of the session be CREATED.
