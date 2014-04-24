@@ -278,7 +278,7 @@ void SharedWorkerServiceImpl::CreateWorker(
     int route_id,
     SharedWorkerMessageFilter* filter,
     ResourceContext* resource_context,
-    const WorkerStoragePartition& partition,
+    const WorkerStoragePartitionId& partition_id,
     bool* url_mismatch) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   *url_mismatch = false;
@@ -288,7 +288,7 @@ void SharedWorkerServiceImpl::CreateWorker(
                                params.content_security_policy,
                                params.security_policy_type,
                                resource_context,
-                               partition));
+                               partition_id));
   scoped_ptr<SharedWorkerPendingInstance::SharedWorkerPendingRequest> request(
       new SharedWorkerPendingInstance::SharedWorkerPendingRequest(
           filter,

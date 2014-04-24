@@ -29,7 +29,7 @@ class SharedWorkerHost;
 class SharedWorkerMessageFilter;
 class ResourceContext;
 class WorkerServiceObserver;
-class WorkerStoragePartition;
+class WorkerStoragePartitionId;
 
 // If "enable-embedded-shared-worker" is set this class will be used instead of
 // WorkerServiceImpl.
@@ -51,7 +51,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
                     int route_id,
                     SharedWorkerMessageFilter* filter,
                     ResourceContext* resource_context,
-                    const WorkerStoragePartition& worker_partition,
+                    const WorkerStoragePartitionId& partition_id,
                     bool* url_mismatch);
   void ForwardToWorker(const IPC::Message& message,
                        SharedWorkerMessageFilter* filter);

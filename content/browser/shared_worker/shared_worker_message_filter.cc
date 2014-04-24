@@ -24,8 +24,8 @@ SharedWorkerMessageFilter::SharedWorkerMessageFilter(
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition,
     MessagePortMessageFilter* message_port_message_filter)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kFilteredMessageClasses,
+                           arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       resource_context_(resource_context),
       partition_(partition),
@@ -79,7 +79,12 @@ void SharedWorkerMessageFilter::OnCreateWorker(
   bool url_error = false;
   *route_id = GetNextRoutingID();
   SharedWorkerServiceImpl::GetInstance()->CreateWorker(
-      params, *route_id, this, resource_context_, partition_, &url_error);
+      params,
+      *route_id,
+      this,
+      resource_context_,
+      WorkerStoragePartitionId(partition_),
+      &url_error);
   if (url_error)
     *route_id = MSG_ROUTING_NONE;
 }

@@ -46,7 +46,8 @@ class SharedWorkerDevToolsManagerTest : public testing::Test {
                                        NULL,
                                        NULL,
                                        NULL,
-                                       NULL)) {}
+                                       NULL)),
+        partition_id_(*partition_.get()) {}
 
  protected:
   virtual void SetUp() OVERRIDE {
@@ -91,6 +92,7 @@ class SharedWorkerDevToolsManagerTest : public testing::Test {
   BrowserThreadImpl ui_thread_;
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<WorkerStoragePartition> partition_;
+  const WorkerStoragePartitionId partition_id_;
   SharedWorkerDevToolsManager* manager_;
 };
 
@@ -102,7 +104,7 @@ TEST_F(SharedWorkerDevToolsManagerTest, BasicTest) {
                                  base::string16(),
                                  blink::WebContentSecurityPolicyTypeReport,
                                  browser_context_->GetResourceContext(),
-                                 *partition_.get());
+                                 partition_id_);
 
   agent_host = manager_->GetDevToolsAgentHostForWorker(1, 1);
   EXPECT_FALSE(agent_host.get());
@@ -182,13 +184,13 @@ TEST_F(SharedWorkerDevToolsManagerTest, AttachTest) {
                                  base::string16(),
                                  blink::WebContentSecurityPolicyTypeReport,
                                  browser_context_->GetResourceContext(),
-                                 *partition_.get());
+                                 partition_id_);
   SharedWorkerInstance instance2(GURL("http://example.com/w2.js"),
                                  base::string16(),
                                  base::string16(),
                                  blink::WebContentSecurityPolicyTypeReport,
                                  browser_context_->GetResourceContext(),
-                                 *partition_.get());
+                                 partition_id_);
 
   // Created -> GetDevToolsAgentHost -> Register -> Started -> Destroyed
   scoped_ptr<TestDevToolsClientHost> client_host1(new TestDevToolsClientHost());

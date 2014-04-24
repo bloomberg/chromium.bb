@@ -25,7 +25,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
                        const base::string16& content_security_policy,
                        blink::WebContentSecurityPolicyType security_policy_type,
                        ResourceContext* resource_context,
-                       const WorkerStoragePartition& partition);
+                       const WorkerStoragePartitionId& partition_id);
   SharedWorkerInstance(const SharedWorkerInstance& other);
   ~SharedWorkerInstance();
 
@@ -35,11 +35,10 @@ class CONTENT_EXPORT SharedWorkerInstance {
   // a) the names are non-empty and equal.
   // -or-
   // b) the names are both empty, and the urls are equal.
-  bool Matches(
-      const GURL& url,
-      const base::string16& name,
-      const WorkerStoragePartition& partition,
-      ResourceContext* resource_context) const;
+  bool Matches(const GURL& url,
+               const base::string16& name,
+               const WorkerStoragePartitionId& partition,
+               ResourceContext* resource_context) const;
   bool Matches(const SharedWorkerInstance& other) const;
 
   // Accessors.
@@ -54,9 +53,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
   ResourceContext* resource_context() const {
     return resource_context_;
   }
-  const WorkerStoragePartition& partition() const {
-    return partition_;
-  }
+  const WorkerStoragePartitionId& partition_id() const { return partition_id_; }
 
  private:
   const GURL url_;
@@ -64,7 +61,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
   const base::string16 content_security_policy_;
   const blink::WebContentSecurityPolicyType security_policy_type_;
   ResourceContext* const resource_context_;
-  const WorkerStoragePartition partition_;
+  const WorkerStoragePartitionId partition_id_;
 };
 
 }  // namespace content

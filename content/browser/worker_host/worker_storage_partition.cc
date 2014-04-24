@@ -73,4 +73,31 @@ void WorkerStoragePartition::Copy(const WorkerStoragePartition& other) {
   service_worker_context_ = other.service_worker_context_;
 }
 
+WorkerStoragePartitionId::WorkerStoragePartitionId(
+    const WorkerStoragePartition& partition)
+    : url_request_context_(partition.url_request_context()),
+      media_url_request_context_(partition.media_url_request_context()),
+      appcache_service_(partition.appcache_service()),
+      quota_manager_(partition.quota_manager()),
+      filesystem_context_(partition.filesystem_context()),
+      database_tracker_(partition.database_tracker()),
+      indexed_db_context_(partition.indexed_db_context()),
+      service_worker_context_(partition.service_worker_context()) {
+}
+
+WorkerStoragePartitionId::~WorkerStoragePartitionId() {
+}
+
+bool WorkerStoragePartitionId::Equals(
+    const WorkerStoragePartitionId& other) const {
+  return url_request_context_ == other.url_request_context_ &&
+         media_url_request_context_ == other.media_url_request_context_ &&
+         appcache_service_ == other.appcache_service_ &&
+         quota_manager_ == other.quota_manager_ &&
+         filesystem_context_ == other.filesystem_context_ &&
+         database_tracker_ == other.database_tracker_ &&
+         indexed_db_context_ == other.indexed_db_context_ &&
+         service_worker_context_ == other.service_worker_context_;
+}
+
 }  // namespace content

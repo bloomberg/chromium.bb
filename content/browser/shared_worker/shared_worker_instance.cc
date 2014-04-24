@@ -14,13 +14,13 @@ SharedWorkerInstance::SharedWorkerInstance(
     const base::string16& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
     ResourceContext* resource_context,
-    const WorkerStoragePartition& partition)
+    const WorkerStoragePartitionId& partition_id)
     : url_(url),
       name_(name),
       content_security_policy_(content_security_policy),
       security_policy_type_(security_policy_type),
       resource_context_(resource_context),
-      partition_(partition) {
+      partition_id_(partition_id) {
   DCHECK(resource_context_);
 }
 
@@ -30,14 +30,15 @@ SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other)
       content_security_policy_(other.content_security_policy_),
       security_policy_type_(other.security_policy_type_),
       resource_context_(other.resource_context_),
-      partition_(other.partition_) {}
+      partition_id_(other.partition_id_) {
+}
 
 SharedWorkerInstance::~SharedWorkerInstance() {}
 
 bool SharedWorkerInstance::Matches(const GURL& match_url,
                                    const base::string16& match_name,
-                                   const WorkerStoragePartition& partition,
-    ResourceContext* resource_context) const {
+                                   const WorkerStoragePartitionId& partition_id,
+                                   ResourceContext* resource_context) const {
   // ResourceContext equivalence is being used as a proxy to ensure we only
   // matched shared workers within the same BrowserContext.
   if (resource_context_ != resource_context)
@@ -45,7 +46,7 @@ bool SharedWorkerInstance::Matches(const GURL& match_url,
 
   // We must be in the same storage partition otherwise sharing will violate
   // isolation.
-  if (!partition_.Equals(partition))
+  if (!partition_id_.Equals(partition_id))
     return false;
 
   if (url_.GetOrigin() != match_url.GetOrigin())
@@ -58,8 +59,10 @@ bool SharedWorkerInstance::Matches(const GURL& match_url,
 }
 
 bool SharedWorkerInstance::Matches(const SharedWorkerInstance& other) const {
-  return Matches(
-      other.url(), other.name(), other.partition(), other.resource_context());
+  return Matches(other.url(),
+                 other.name(),
+                 other.partition_id(),
+                 other.resource_context());
 }
 
 }  // namespace content

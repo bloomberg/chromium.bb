@@ -17,22 +17,29 @@ class SharedWorkerInstanceTest : public testing::Test {
  protected:
   SharedWorkerInstanceTest()
       : browser_context_(new TestBrowserContext()),
-        partition_(new WorkerStoragePartition(
-            browser_context_->GetRequestContext(),
-            NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
-  }
+        partition_(
+            new WorkerStoragePartition(browser_context_->GetRequestContext(),
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL)),
+        partition_id_(*partition_.get()) {}
 
   bool Matches(const SharedWorkerInstance& instance,
                const std::string& url,
                const base::StringPiece& name) {
     return instance.Matches(GURL(url),
                             base::ASCIIToUTF16(name),
-                            *partition_.get(),
+                            partition_id_,
                             browser_context_->GetResourceContext());
   }
 
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<WorkerStoragePartition> partition_;
+  const WorkerStoragePartitionId partition_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerInstanceTest);
 };
@@ -43,7 +50,7 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
                                  base::string16(),
                                  blink::WebContentSecurityPolicyTypeReport,
                                  browser_context_->GetResourceContext(),
-                                 *partition_.get());
+                                 partition_id_);
   EXPECT_TRUE(Matches(instance1, "http://example.com/w.js", ""));
   EXPECT_FALSE(Matches(instance1, "http://example.com/w2.js", ""));
   EXPECT_FALSE(Matches(instance1, "http://example.net/w.js", ""));
@@ -58,7 +65,7 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
                                  base::string16(),
                                  blink::WebContentSecurityPolicyTypeReport,
                                  browser_context_->GetResourceContext(),
-                                 *partition_.get());
+                                 partition_id_);
   EXPECT_FALSE(Matches(instance2, "http://example.com/w.js", ""));
   EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", ""));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", ""));

@@ -107,6 +107,28 @@ class CONTENT_EXPORT WorkerStoragePartition {
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 };
 
+// WorkerStoragePartitionId can be used to identify each
+// WorkerStoragePartitions. We can hold WorkerStoragePartitionId without
+// extending the lifetime of all objects in the WorkerStoragePartition.
+// That means that holding a WorkerStoragePartitionId doesn't mean the
+// corresponding partition and its members are kept alive.
+class CONTENT_EXPORT WorkerStoragePartitionId {
+ public:
+  explicit WorkerStoragePartitionId(const WorkerStoragePartition& partition);
+  ~WorkerStoragePartitionId();
+  bool Equals(const WorkerStoragePartitionId& other) const;
+
+ private:
+  net::URLRequestContextGetter* url_request_context_;
+  net::URLRequestContextGetter* media_url_request_context_;
+  ChromeAppCacheService* appcache_service_;
+  quota::QuotaManager* quota_manager_;
+  fileapi::FileSystemContext* filesystem_context_;
+  webkit_database::DatabaseTracker* database_tracker_;
+  IndexedDBContextImpl* indexed_db_context_;
+  ServiceWorkerContextWrapper* service_worker_context_;
+};
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_STORAGE_PARTITION_H_
