@@ -263,6 +263,9 @@ Textfield::Textfield()
     password_reveal_duration_ = ViewsDelegate::views_delegate->
         GetDefaultTextfieldObscuredRevealDuration();
   }
+
+  if (NativeViewHost::kRenderNativeControlFocus)
+    focus_painter_ = Painter::CreateDashedFocusPainter();
 }
 
 Textfield::~Textfield() {}
@@ -856,6 +859,8 @@ void Textfield::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
   PaintTextAndCursor(canvas);
   OnPaintBorder(canvas);
+  if (NativeViewHost::kRenderNativeControlFocus)
+    Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
 void Textfield::OnFocus() {
@@ -1285,7 +1290,7 @@ gfx::NativeWindow Textfield::GetAttachedWindow() const {
   // IME may want to interact with the native view of [NativeWidget A] rather
   // than that of [NativeWidget B]. This is why we need to call
   // GetTopLevelWidget() here.
-  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+  return GetWidget()->GetTopLevelWidget()->GetNativeView();
 }
 
 ui::TextInputType Textfield::GetTextInputType() const {

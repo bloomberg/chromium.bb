@@ -28,6 +28,9 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // The NativeViewHost's class name.
   static const char kViewClassName[];
 
+  // Should views render the focus when on native controls?
+  static const bool kRenderNativeControlFocus;
+
   NativeViewHost();
   virtual ~NativeViewHost();
 

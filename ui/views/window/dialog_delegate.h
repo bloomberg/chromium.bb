@@ -33,8 +33,8 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
 
   // Create a |dialog| window Widget with the specified |context| or |parent|.
   static Widget* CreateDialogWidget(DialogDelegate* dialog,
-                                    gfx::NativeView context,
-                                    gfx::NativeView parent);
+                                    gfx::NativeWindow context,
+                                    gfx::NativeWindow parent);
 
   // Override this function to display an extra view adjacent to the buttons.
   // Overrides may construct the view; this will only be called once per dialog.

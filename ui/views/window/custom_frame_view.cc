@@ -19,7 +19,7 @@
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/widget/native_widget_private.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -63,7 +63,7 @@ const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 
 const gfx::FontList& GetTitleFontList() {
   static const gfx::FontList title_font_list =
-      internal::NativeWidgetPrivate::GetWindowTitleFontList();
+      NativeWidgetAura::GetWindowTitleFontList();
   return title_font_list;
 }
 
