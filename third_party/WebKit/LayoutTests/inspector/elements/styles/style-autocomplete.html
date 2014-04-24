@@ -9,7 +9,12 @@ function test()
     WebInspector.inspectorView.showPanel("elements");
 
     var namePrompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.cssPropertiesMetainfo, null, true);
-    var valuePrompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.keywordsForProperty("color"), null, false);
+    var valuePrompt = valuePromptFor("color");
+
+    function valuePromptFor(name)
+    {
+        return new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.CSSMetadata.keywordsForProperty(name), null, false);
+    }
 
     InspectorTest.runTestSuite([
         function testEmptyName(next)
@@ -40,8 +45,18 @@ function test()
         function testValueWithParenthesis(next)
         {
             testAgainstGolden(valuePrompt, "saturate(0%)", false, [], ["inherit"], next);
+        },
+
+        function testValuePrefixed(next)
+        {
+            testAgainstGolden(valuePromptFor("-webkit-transform"), "t", false, ["translate", "translateY", "translate3d"], ["initial", "inherit"], next);
+        },
+
+        function testValueUnprefixed(next)
+        {
+            testAgainstGolden(valuePromptFor("transform"), "t", false, ["translate", "translateY", "translate3d"], ["initial", "inherit"], next);
         }
-    ]);
+   ]);
 
     function testAgainstGolden(prompt, inputText, force, golden, antiGolden, callback)
     {
