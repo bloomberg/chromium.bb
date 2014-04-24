@@ -4761,10 +4761,10 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
         }
         break;
     case GL_HALF_FLOAT_OES: // OES_texture_half_float
-        // As per the specification, ArrayBufferView should be null when
+        // As per the specification, ArrayBufferView should be null or a Uint16Array when
         // OES_texture_half_float is enabled.
-        if (pixels) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type HALF_FLOAT_OES but ArrayBufferView is not NULL");
+        if (pixels && pixels->type() != ArrayBufferView::TypeUint16) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type HALF_FLOAT_OES but ArrayBufferView is not NULL and not Uint16Array");
             return false;
         }
         break;
