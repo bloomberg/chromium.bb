@@ -2,11 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-declare_args() {
-  # Indicates if the build should use the Chrome-specific plugins for enforcing
-  # coding guidelines, etc. Only used when compiling with Clang.
-  clang_use_chrome_plugins = true
-}
+import("clang.gni")
 
 config("find_bad_constructs") {
   if (clang_use_chrome_plugins) {

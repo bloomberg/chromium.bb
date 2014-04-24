@@ -43,6 +43,7 @@ group("root") {
     "//third_party/smhasher:cityhash",
     "//third_party/smhasher:murmurhash3",
     "//third_party/smhasher:pmurhash",
+    "//third_party/WebKit/Source/wtf",
     "//third_party/zlib",
     "//tools/gn",
     "//ui/events",
