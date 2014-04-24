@@ -598,6 +598,10 @@ class GLES2ImplementationTest : public testing::Test {
     return gl_->GetError();
   }
 
+  const std::string& GetLastError() {
+    return gl_->GetLastError();
+  }
+
   bool GetBucketContents(uint32 bucket_id, std::vector<int8>* data) {
     return gl_->GetBucketContents(bucket_id, data);
   }
@@ -3131,6 +3135,108 @@ TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
   expected.cmd.Init(GL_TEXTURE_2D, mailbox.name);
   gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, LimitSizeAndOffsetTo32Bit) {
+  GLsizeiptr size;
+  GLintptr offset;
+  if (sizeof(size) <= 4 || sizeof(offset) <= 4)
+    return;
+  // The below two casts should be no-op, as we return early if
+  // it's 32-bit system.
+  int64 value64 = 0x100000000;
+  size = static_cast<GLsizeiptr>(value64);
+  offset = static_cast<GLintptr>(value64);
+
+  const char kSizeOverflowMessage[] = "size more than 32-bit";
+  const char kOffsetOverflowMessage[] = "offset more than 32-bit";
+
+  const GLfloat buf[] = { 1.0, 1.0, 1.0, 1.0 };
+  const GLubyte indices[] = { 0 };
+
+  const GLuint kClientArrayBufferId = 0x789;
+  const GLuint kClientElementArrayBufferId = 0x790;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kClientArrayBufferId);
+  gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, kClientElementArrayBufferId);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // Call BufferData() should succeed with legal paramaters.
+  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(buf), buf, GL_DYNAMIC_DRAW);
+  gl_->BufferData(
+      GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // BufferData: size
+  gl_->BufferData(GL_ARRAY_BUFFER, size, buf, GL_DYNAMIC_DRAW);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kSizeOverflowMessage, GetLastError().c_str());
+
+  // Call BufferSubData() should succeed with legal paramaters.
+  gl_->BufferSubData(GL_ARRAY_BUFFER, 0, sizeof(buf[0]), buf);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // BufferSubData: offset
+  gl_->BufferSubData(GL_ARRAY_BUFFER, offset, 1, buf);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kOffsetOverflowMessage, GetLastError().c_str());
+
+  // BufferSubData: size
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+  gl_->BufferSubData(GL_ARRAY_BUFFER, 0, size, buf);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kSizeOverflowMessage, GetLastError().c_str());
+
+  // Call MapBufferSubDataCHROMIUM() should succeed with legal paramaters.
+  EXPECT_TRUE(NULL != gl_->MapBufferSubDataCHROMIUM(
+      GL_ARRAY_BUFFER, 0, 1, GL_WRITE_ONLY));
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // MapBufferSubDataCHROMIUM: offset
+  EXPECT_TRUE(NULL == gl_->MapBufferSubDataCHROMIUM(
+      GL_ARRAY_BUFFER, offset, 1, GL_WRITE_ONLY));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kOffsetOverflowMessage, GetLastError().c_str());
+
+  // MapBufferSubDataCHROMIUM: size
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+  EXPECT_TRUE(NULL == gl_->MapBufferSubDataCHROMIUM(
+      GL_ARRAY_BUFFER, 0, size, GL_WRITE_ONLY));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kSizeOverflowMessage, GetLastError().c_str());
+
+  // Call DrawElements() should succeed with legal paramaters.
+  gl_->DrawElements(GL_POINTS, 1, GL_UNSIGNED_BYTE, NULL);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // DrawElements: offset
+  gl_->DrawElements(
+      GL_POINTS, 1, GL_UNSIGNED_BYTE, reinterpret_cast<void*>(offset));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kOffsetOverflowMessage, GetLastError().c_str());
+
+  // Call DrawElementsInstancedANGLE() should succeed with legal paramaters.
+  gl_->DrawElementsInstancedANGLE(GL_POINTS, 1, GL_UNSIGNED_BYTE, NULL, 1);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // DrawElementsInstancedANGLE: offset
+  gl_->DrawElementsInstancedANGLE(
+      GL_POINTS, 1, GL_UNSIGNED_BYTE, reinterpret_cast<void*>(offset), 1);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kOffsetOverflowMessage, GetLastError().c_str());
+
+  // Call VertexAttribPointer() should succeed with legal paramaters.
+  const GLuint kAttribIndex = 1;
+  const GLsizei kStride = 4;
+  gl_->VertexAttribPointer(
+      kAttribIndex, 1, GL_FLOAT, GL_FALSE, kStride, NULL);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  // VertexAttribPointer: offset
+  gl_->VertexAttribPointer(
+      kAttribIndex, 1, GL_FLOAT, GL_FALSE, kStride,
+      reinterpret_cast<void*>(offset));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_STREQ(kOffsetOverflowMessage, GetLastError().c_str());
 }
 
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {

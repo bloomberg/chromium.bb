@@ -865,6 +865,10 @@ void GLES2Implementation::DrawElements(
   if (count == 0) {
     return;
   }
+  if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
+      !ValidateOffset("glDrawElements", reinterpret_cast<GLintptr>(indices))) {
+    return;
+  }
   GLuint offset = 0;
   bool simulated = false;
   if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
@@ -1266,7 +1270,6 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
   CheckGLError();
 }
 
-
 void GLES2Implementation::VertexAttribPointer(
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) {
@@ -1288,10 +1291,18 @@ void GLES2Implementation::VertexAttribPointer(
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   if (bound_array_buffer_id_ != 0) {
     // Only report NON client side buffers to the service.
+    if (!ValidateOffset("glVertexAttribPointer",
+                        reinterpret_cast<GLintptr>(ptr))) {
+      return;
+    }
     helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                  ToGLuint(ptr));
   }
 #else  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  if (!ValidateOffset("glVertexAttribPointer",
+                      reinterpret_cast<GLintptr>(ptr))) {
+    return;
+  }
   helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                ToGLuint(ptr));
 #endif  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
@@ -1381,10 +1392,8 @@ void GLES2Implementation::ShaderSource(
 
 void GLES2Implementation::BufferDataHelper(
     GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glBufferData", "size < 0");
+  if (!ValidateSize("glBufferData", size))
     return;
-  }
 
   GLuint buffer_id;
   if (GetBoundPixelTransferBuffer(target, "glBufferData", &buffer_id)) {
@@ -1455,8 +1464,8 @@ void GLES2Implementation::BufferSubDataHelper(
     return;
   }
 
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glBufferSubData", "size < 0");
+  if (!ValidateSize("glBufferSubData", size) ||
+      !ValidateOffset("glBufferSubData", offset)) {
     return;
   }
 
@@ -1893,9 +1902,9 @@ void GLES2Implementation::TexSubImage2D(
 }
 
 static GLint ComputeNumRowsThatFitInBuffer(
-    GLsizeiptr padded_row_size, GLsizeiptr unpadded_row_size,
+    uint32 padded_row_size, uint32 unpadded_row_size,
     unsigned int size) {
-  DCHECK_GE(unpadded_row_size, 0);
+  DCHECK_GE(unpadded_row_size, 0u);
   if (padded_row_size == 0) {
     return 1;
   }
@@ -2916,10 +2925,11 @@ void* GLES2Implementation::MapBufferSubDataCHROMIUM(
         "glMapBufferSubDataCHROMIUM", access, "access");
     return NULL;
   }
-  if (offset < 0 || size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glMapBufferSubDataCHROMIUM", "bad range");
+  if (!ValidateSize("glMapBufferSubDataCHROMIUM", size) ||
+      !ValidateOffset("glMapBufferSubDataCHROMIUM", offset)) {
     return NULL;
   }
+
   int32 shm_id;
   unsigned int shm_offset;
   void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
@@ -3129,6 +3139,7 @@ void GLES2Implementation::GetMultipleIntegervCHROMIUM(
           "  " << i << ": " << GLES2Util::GetStringGLState(pnames[i]));
     }
   });
+  DCHECK(size >= 0 && FitInt32NonNegative<GLsizeiptr>(size));
 
   GetMultipleIntegervState state(pnames, count, results, size);
   if (!GetMultipleIntegervSetup(&state)) {
@@ -3534,6 +3545,11 @@ void GLES2Implementation::DrawElementsInstancedANGLE(
     return;
   }
   if (primcount == 0) {
+    return;
+  }
+  if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
+      !ValidateOffset("glDrawElementsInstancedANGLE",
+                      reinterpret_cast<GLintptr>(indices))) {
     return;
   }
   GLuint offset = 0;
@@ -4095,6 +4111,30 @@ void GLES2Implementation::GetImageParameterivCHROMIUM(
       << static_cast<const void*>(params) << ")");
   GetImageParameterivCHROMIUMHelper(image_id, pname, params);
   CheckGLError();
+}
+
+bool GLES2Implementation::ValidateSize(const char* func, GLsizeiptr size) {
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE, func, "size < 0");
+    return false;
+  }
+  if (!FitInt32NonNegative<GLsizeiptr>(size)) {
+    SetGLError(GL_INVALID_OPERATION, func, "size more than 32-bit");
+    return false;
+  }
+  return true;
+}
+
+bool GLES2Implementation::ValidateOffset(const char* func, GLintptr offset) {
+  if (offset < 0) {
+    SetGLError(GL_INVALID_VALUE, func, "offset < 0");
+    return false;
+  }
+  if (!FitInt32NonNegative<GLintptr>(offset)) {
+    SetGLError(GL_INVALID_OPERATION, func, "offset more than 32-bit");
+    return false;
+  }
+  return true;
 }
 
 // Include the auto-generated part of this file. We split this because it means

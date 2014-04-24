@@ -56,6 +56,14 @@ inline bool SafeAddInt32(int32 a, int32 b, int32* dst) {
   return safe;
 }
 
+// Return false if |value| is more than a 32 bit integer can represent.
+template<typename T>
+inline bool FitInt32NonNegative(T value) {
+  const int32 max = std::numeric_limits<int32>::max();
+  return (std::numeric_limits<T>::max() <= max ||
+          value <= static_cast<T>(max));
+}
+
 // Utilties for GLES2 support.
 class GLES2_UTILS_EXPORT GLES2Util {
  public:
