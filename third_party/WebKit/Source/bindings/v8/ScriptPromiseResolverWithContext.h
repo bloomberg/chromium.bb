@@ -42,26 +42,14 @@ public:
     template <typename T>
     void resolve(T value)
     {
-        if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
-            return;
-        m_state = Resolving;
-        NewScriptState::Scope scope(m_scriptState.get());
-        m_value.set(m_scriptState->isolate(), toV8Value(value));
-        if (!executionContext()->activeDOMObjectsAreSuspended())
-            resolveOrRejectImmediately(&m_timer);
+        resolveOrReject(value, Resolving);
     }
 
     // Anything that can be passed to toV8Value can be passed to this function.
     template <typename T>
     void reject(T value)
     {
-        if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
-            return;
-        m_state = Rejecting;
-        NewScriptState::Scope scope(m_scriptState.get());
-        m_value.set(m_scriptState->isolate(), toV8Value(value));
-        if (!executionContext()->activeDOMObjectsAreSuspended())
-            resolveOrRejectImmediately(&m_timer);
+        resolveOrReject(value, Rejecting);
     }
 
     NewScriptState* scriptState() { return m_scriptState.get(); }
@@ -102,7 +90,29 @@ private:
         return ToV8Value<ScriptPromiseResolverWithContext, NewScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
     }
 
-    void resolveOrRejectImmediately(Timer<ScriptPromiseResolverWithContext>*);
+    template <typename T>
+    void resolveOrReject(T value, ResolutionState newState)
+    {
+        if (m_state != Pending || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_state = newState;
+        // Retain this object until it is actually resolved or rejected.
+        // |deref| will be called in |clear|.
+        ref();
+
+        NewScriptState::Scope scope(m_scriptState.get());
+        m_value.set(m_scriptState->isolate(), toV8Value(value));
+        if (!executionContext()->activeDOMObjectsAreSuspended()) {
+            resolveOrRejectImmediately();
+            // |this| can't be deleted here, so it is safe to call an instance
+            // method.
+            postRunMicrotasks();
+        }
+    }
+
+    void resolveOrRejectImmediately();
+    void postRunMicrotasks();
+    void onTimerFired(Timer<ScriptPromiseResolverWithContext>*);
     void clear();
 
     ResolutionState m_state;

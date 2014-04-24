@@ -5,13 +5,43 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 
+#include "bindings/v8/V8PerIsolateData.h"
+#include "core/dom/ExecutionContextTask.h"
+#include "wtf/PassOwnPtr.h"
+
 namespace WebCore {
+
+namespace {
+
+class RunMicrotasksTask FINAL : public ExecutionContextTask {
+public:
+    static PassOwnPtr<RunMicrotasksTask> create(NewScriptState* scriptState)
+    {
+        return adoptPtr<RunMicrotasksTask>(new RunMicrotasksTask(scriptState));
+    }
+
+    virtual void performTask(ExecutionContext* executionContext) OVERRIDE
+    {
+        if (m_scriptState->contextIsEmpty())
+            return;
+        if (executionContext->activeDOMObjectsAreStopped())
+            return;
+        NewScriptState::Scope scope(m_scriptState.get());
+        v8::V8::RunMicrotasks(m_scriptState->isolate());
+    }
+
+private:
+    explicit RunMicrotasksTask(NewScriptState* scriptState) : m_scriptState(scriptState) { }
+    RefPtr<NewScriptState> m_scriptState;
+};
+
+} // namespace
 
 ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(NewScriptState* scriptState)
     : ActiveDOMObject(scriptState->executionContext())
     , m_state(Pending)
     , m_scriptState(scriptState)
-    , m_timer(this, &ScriptPromiseResolverWithContext::resolveOrRejectImmediately)
+    , m_timer(this, &ScriptPromiseResolverWithContext::onTimerFired)
     , m_resolver(ScriptPromiseResolver::create(m_scriptState->executionContext())) { }
 
 void ScriptPromiseResolverWithContext::suspend()
@@ -31,26 +61,47 @@ void ScriptPromiseResolverWithContext::stop()
     clear();
 }
 
-void ScriptPromiseResolverWithContext::resolveOrRejectImmediately(Timer<ScriptPromiseResolverWithContext>*)
+void ScriptPromiseResolverWithContext::onTimerFired(Timer<ScriptPromiseResolverWithContext>*)
+{
+    RefPtr<ScriptPromiseResolverWithContext> protect(this);
+    NewScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    resolveOrRejectImmediately();
+
+    // There is no need to post a RunMicrotasksTask because it is safe to
+    // call RunMicrotasks here.
+    v8::V8::RunMicrotasks(isolate);
+}
+
+void ScriptPromiseResolverWithContext::resolveOrRejectImmediately()
 {
     ASSERT(!executionContext()->activeDOMObjectsAreStopped());
     ASSERT(!executionContext()->activeDOMObjectsAreSuspended());
     if (m_state == Resolving) {
-        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->resolve(m_value.newLocal(m_scriptState->isolate()));
     } else {
         ASSERT(m_state == Rejecting);
-        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->reject(m_value.newLocal(m_scriptState->isolate()));
     }
-    m_state = ResolvedOrRejected;
     clear();
+}
+
+void ScriptPromiseResolverWithContext::postRunMicrotasks()
+{
+    executionContext()->postTask(RunMicrotasksTask::create(m_scriptState.get()));
 }
 
 void ScriptPromiseResolverWithContext::clear()
 {
+    ResolutionState state = m_state;
+    m_state = ResolvedOrRejected;
     m_resolver.clear();
     m_value.clear();
+    if (state == Resolving || state == Rejecting) {
+        // |ref| was called in |resolveOrReject|.
+        deref();
+    }
+    // |this| may be deleted here.
 }
 
 } // namespace WebCore

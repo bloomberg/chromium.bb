@@ -14,7 +14,7 @@ window.jsTestIsAsync = true;
 
 shouldBeTrue('!!navigator.push');
 shouldBeTrue('!!navigator.push.register');
-shouldBeEqualToString('String(navigator.push.register("senderId"))', '[object Promise]');
+shouldBe('navigator.push.register("senderId").constructor', 'Promise');
 
 // Currently we have an empty implementation that always fails.
 navigator.push.register('senderId').then(function successCallback() {
