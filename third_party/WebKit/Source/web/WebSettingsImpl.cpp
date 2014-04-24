@@ -576,6 +576,11 @@ void WebSettingsImpl::setAllowRunningOfInsecureContent(bool enabled)
     m_settings->setAllowRunningOfInsecureContent(enabled);
 }
 
+void WebSettingsImpl::setAllowConnectingInsecureWebSocket(bool enabled)
+{
+    m_settings->setAllowConnectingInsecureWebSocket(enabled);
+}
+
 void WebSettingsImpl::setPasswordEchoEnabled(bool flag)
 {
     m_settings->setPasswordEchoEnabled(flag);

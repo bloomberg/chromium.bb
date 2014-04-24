@@ -127,6 +127,7 @@ preciseMemoryInfoEnabled initial=false
 hyperlinkAuditingEnabled initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
+allowConnectingInsecureWebSocket initial=false
 mediaPlaybackRequiresUserGesture initial=false
 shouldDisplaySubtitles initial=false
 shouldDisplayCaptions initial=false

@@ -69,6 +69,7 @@ public:
     virtual void setAllowFileAccessFromFileURLs(bool) OVERRIDE;
     virtual void setAllowCustomScrollbarInMainFrame(bool) OVERRIDE;
     virtual void setAllowRunningOfInsecureContent(bool) OVERRIDE;
+    virtual void setAllowConnectingInsecureWebSocket(bool) OVERRIDE;
     virtual void setAllowScriptsToCloseWindows(bool) OVERRIDE;
     virtual void setAllowUniversalAccessFromFileURLs(bool) OVERRIDE;
     virtual void setAntialiased2dCanvasEnabled(bool) OVERRIDE;

@@ -74,10 +74,24 @@ public:
     virtual void setAcceleratedCompositingForTransitionEnabled(bool) { };
     virtual void setAcceleratedCompositingForPluginsEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForVideoEnabled(bool) = 0;
+    // If set to true, allows frames with an https origin to display passive
+    // contents at an insecure URL. Otherwise, disallows it. The
+    // FrameLoaderClient set to the frame may override the value set by this
+    // method.
     virtual void setAllowDisplayOfInsecureContent(bool) = 0;
     virtual void setAllowFileAccessFromFileURLs(bool) = 0;
     virtual void setAllowCustomScrollbarInMainFrame(bool) = 0;
+    // If set to true, allows frames with an https origin to run active
+    // contents at an insecure URL. This includes WebSockets. Otherwise,
+    // disallows it. The FrameLoaderClient set to the frame may override the
+    // value set by this method.
     virtual void setAllowRunningOfInsecureContent(bool) = 0;
+    // If set to true, allows frames with an https origin to connect WebSockets
+    // with an insecure URL (ws://). Otherwise, disallows it. Only when this is
+    // set to true, this value overrides the value set by
+    // setAllowRunningOfInsecureContent() for WebSockets. The FrameLoaderClient
+    // set to the frame may override the value set by this method.
+    virtual void setAllowConnectingInsecureWebSocket(bool) = 0;
     virtual void setAllowScriptsToCloseWindows(bool) = 0;
     virtual void setAllowUniversalAccessFromFileURLs(bool) = 0;
     virtual void setAntialiased2dCanvasEnabled(bool) = 0;

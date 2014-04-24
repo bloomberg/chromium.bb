@@ -46,12 +46,21 @@ public:
     MixedContentChecker(LocalFrame*);
 
     bool canDisplayInsecureContent(SecurityOrigin*, const KURL&) const;
-    bool canRunInsecureContent(SecurityOrigin*, const KURL&) const;
+    bool canRunInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
+    {
+        return canRunInsecureContentInternal(securityOrigin, url, false);
+    }
+    bool canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
+    {
+        return canRunInsecureContentInternal(securityOrigin, url, true);
+    }
     static bool isMixedContent(SecurityOrigin*, const KURL&);
 
 private:
     // FIXME: This should probably have a separate client from FrameLoader.
     FrameLoaderClient* client() const;
+
+    bool canRunInsecureContentInternal(SecurityOrigin*, const KURL&, bool isWebSocket) const;
 
     void logWarning(bool allowed, const String& action, const KURL&) const;
 
@@ -61,4 +70,3 @@ private:
 } // namespace WebCore
 
 #endif // MixedContentChecker_h
-

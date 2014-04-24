@@ -73,13 +73,14 @@ bool MixedContentChecker::canDisplayInsecureContent(SecurityOrigin* securityOrig
     return allowed;
 }
 
-bool MixedContentChecker::canRunInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
+bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* securityOrigin, const KURL& url, bool isWebSocket) const
 {
     if (!isMixedContent(securityOrigin, url))
         return true;
 
     Settings* settings = m_frame->settings();
-    bool allowed = client()->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
+    bool allowedPerSettings = settings && (settings->allowRunningOfInsecureContent() || (isWebSocket && settings->allowConnectingInsecureWebSocket()));
+    bool allowed = client()->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);
     logWarning(allowed, "ran", url);
 
     if (allowed)
