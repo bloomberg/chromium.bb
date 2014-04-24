@@ -106,7 +106,6 @@ public:
     StartTagScanner(const StringImpl* tagImpl, PassRefPtr<MediaValues> mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
-        , m_linkIsImport(false)
         , m_matchedMediaAttribute(true)
         , m_inputIsImage(false)
         , m_imgSourceSize(0)
@@ -194,16 +193,14 @@ private:
                 }
             }
         } else if (match(m_tagImpl, linkTag)) {
-            if (match(attributeName, hrefAttr)) {
+            if (match(attributeName, hrefAttr))
                 setUrlToLoad(attributeValue, DisallowURLReplacement);
-            } else if (match(attributeName, relAttr)) {
+            else if (match(attributeName, relAttr))
                 m_linkIsStyleSheet = relAttributeIsStyleSheet(attributeValue);
-                m_linkIsImport = RuntimeEnabledFeatures::htmlImportsEnabled() && relAttributeIsImport(attributeValue);
-            } else if (match(attributeName, mediaAttr)) {
+            else if (match(attributeName, mediaAttr))
                 m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
-            } else if (match(attributeName, crossoriginAttr)) {
+            else if (match(attributeName, crossoriginAttr))
                 setCrossOriginAllowed(attributeValue);
-            }
         } else if (match(m_tagImpl, inputTag)) {
             if (match(attributeName, srcAttr))
                 setUrlToLoad(attributeValue, DisallowURLReplacement);
@@ -212,21 +209,10 @@ private:
         }
     }
 
-    static bool relAttributeWillBeImmediatelyUsed(const LinkRelAttribute& rel)
-    {
-        return !rel.isAlternate() && rel.iconType() == InvalidIcon && !rel.isDNSPrefetch();
-    }
-
     static bool relAttributeIsStyleSheet(const String& attributeValue)
     {
         LinkRelAttribute rel(attributeValue);
-        return rel.isStyleSheet() && relAttributeWillBeImmediatelyUsed(rel);
-    }
-
-    static bool relAttributeIsImport(const String& attributeValue)
-    {
-        LinkRelAttribute rel(attributeValue);
-        return rel.isImport() && relAttributeWillBeImmediatelyUsed(rel);
+        return rel.isStyleSheet() && !rel.isAlternate() && rel.iconType() == InvalidIcon && !rel.isDNSPrefetch();
     }
 
     void setUrlToLoad(const String& value, URLReplacement replacement)
@@ -257,8 +243,6 @@ private:
             return Resource::Image;
         if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet)
             return Resource::CSSStyleSheet;
-        if (match(m_tagImpl, linkTag) && m_linkIsImport)
-            return Resource::ImportResource;
         ASSERT_NOT_REACHED();
         return Resource::Raw;
     }
@@ -267,7 +251,7 @@ private:
     {
         if (m_urlToLoad.isEmpty())
             return false;
-        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport)
+        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet)
             return false;
         if (match(m_tagImpl, inputTag) && !m_inputIsImage)
             return false;
@@ -298,7 +282,6 @@ private:
     ImageCandidate m_srcsetImageCandidate;
     String m_charset;
     bool m_linkIsStyleSheet;
-    bool m_linkIsImport;
     bool m_matchedMediaAttribute;
     bool m_inputIsImage;
     String m_imgSrcUrl;
