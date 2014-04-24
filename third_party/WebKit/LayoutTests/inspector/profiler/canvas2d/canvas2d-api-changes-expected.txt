@@ -8,6 +8,7 @@ ellipse
 isContextLost
 resetTransform
 scrollPathIntoView
+webkitImageSmoothingEnabled
 New properties and functions of CanvasGradient object that should be manually examined (should be empty to pass the test):
 New properties and functions of CanvasPattern object that should be manually examined (should be empty to pass the test):
 

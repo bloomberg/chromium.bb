@@ -117,7 +117,6 @@ function draw(imageContainer)
     canvas.height = imageContainer.clientHeight;
 
     var ctx = canvas.getContext('2d');
-    ctx.webkitImageSmoothingEnabled = false;
     ctx.mozImageSmoothingEnabled = false;
     ctx.imageSmoothingEnabled = false;
     ctx.translate(imageContainer.clientWidth / 2, imageContainer.clientHeight / 2);

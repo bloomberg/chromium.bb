@@ -26,7 +26,6 @@ Number of trace log calls received: 20
   strokeStyle: #000000
   textAlign: start
   textBaseline: alphabetic
-  webkitImageSmoothingEnabled: true
 
 --- Canvas 2D state after canvas calls ---
 {ResourceState}  length(imageURL):1594
@@ -49,5 +48,4 @@ Number of trace log calls received: 20
   strokeStyle: #656667
   textAlign: left
   textBaseline: middle
-  webkitImageSmoothingEnabled: false
 

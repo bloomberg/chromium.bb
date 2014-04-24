@@ -3127,7 +3127,6 @@ CanvasRenderingContext2DResource.AttributeProperties = [
     "textBaseline",
     "lineDashOffset",
     "imageSmoothingEnabled",
-    "webkitImageSmoothingEnabled",
     "webkitLineDash",
     "webkitLineDashOffset"
 ];
