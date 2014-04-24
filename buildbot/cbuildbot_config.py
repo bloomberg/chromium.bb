@@ -2241,6 +2241,7 @@ _factory_release = _release.derive(
   upload_hw_test_artifacts=False,
   upload_symbols=False,
   hw_tests=[],
+  chrome_sdk=False,
   description='Factory Builds',
 )
 
