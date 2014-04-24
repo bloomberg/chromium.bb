@@ -191,11 +191,17 @@ blink::WebGraphicsContext3D* DrawingBuffer::context()
 
 bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
-    // prepareMailbox() is always called after layout.
-    ASSERT(!m_destructionInProgress);
-
     if (!m_contentsChanged)
         return false;
+
+    if (m_destructionInProgress) {
+        // It can be hit in the following sequence.
+        // 1. WebGL draws something.
+        // 2. The compositor begins the frame.
+        // 3. Javascript makes a context lost using WEBGL_lose_context extension.
+        // 4. Here.
+        return false;
+    }
 
     m_context->makeContextCurrent();
 
