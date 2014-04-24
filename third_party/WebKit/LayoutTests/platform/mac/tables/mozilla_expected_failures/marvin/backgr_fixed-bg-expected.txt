@@ -1,41 +1,41 @@
 layer at (0,0) size 1544x1660
-  RenderView at (0,0) size 785x585
-layer at (0,0) size 785x1660
-  RenderBlock {HTML} at (0,0) size 785x1660.19
-    RenderBody {BODY} at (8,17.41) size 769x1629.78 [color=#00FF00] [bgcolor=#333333]
-      RenderBlock {H1} at (0,0) size 769x30
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x1660
+  RenderBlock {HTML} at (0,0) size 800x1660.19
+    RenderBody {BODY} at (8,17.41) size 784x1629.78 [color=#00FF00] [bgcolor=#333333]
+      RenderBlock {H1} at (0,0) size 784x30
         RenderText {#text} at (0,0) size 528x30
           text run at (0,0) width 528: "CSS2 Table Backgrounds Test Suite"
-      RenderBlock {H2} at (0,47.41) size 769x23
+      RenderBlock {H2} at (0,47.41) size 784x23
         RenderText {#text} at (0,0) size 252x23
           text run at (0,0) width 252: "Part E: Special Tests"
-      RenderBlock {H3} at (0,86.58) size 769x17
+      RenderBlock {H3} at (0,86.58) size 784x17
         RenderText {#text} at (0,0) size 153x17
           text run at (0,0) width 153: "Fixed Backgrounds"
-      RenderBlock {UL} at (0,118.78) size 769x60
-        RenderListItem {LI} at (40,0) size 729x45
+      RenderBlock {UL} at (0,118.78) size 784x60
+        RenderListItem {LI} at (40,0) size 744x45
           RenderListMarker at (-16,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 704x45
+          RenderText {#text} at (0,0) size 736x45
             text run at (0,0) width 704: "If you scroll the table over the top left corner of the viewport, the first, second, and"
-            text run at (0,15) width 688: "fourth rows as well as cell L should reveal a purple and aqua band forming a 90-degree"
-            text run at (0,30) width 232: "angle in the top left corner."
-        RenderListItem {LI} at (40,45) size 729x15
+            text run at (0,15) width 736: "fourth rows as well as cell L should reveal a purple and aqua band forming a 90-degree angle"
+            text run at (0,30) width 184: "in the top left corner."
+        RenderListItem {LI} at (40,45) size 744x15
           RenderListMarker at (-16,0) size 6x15: bullet
           RenderText {#text} at (0,0) size 664x15
             text run at (0,0) width 664: "Cells A and P should have a rainbow background that seems attached to the viewport."
-      RenderBlock {DL} at (0,191.78) size 769x60
-        RenderBlock {DT} at (0,0) size 769x15
+      RenderBlock {DL} at (0,191.78) size 784x60
+        RenderBlock {DT} at (0,0) size 784x15
           RenderText {#text} at (0,0) size 64x15
             text run at (0,0) width 64: "previous"
-        RenderBlock {DD} at (40,15) size 729x15
+        RenderBlock {DD} at (40,15) size 744x15
           RenderInline {A} at (0,0) size 176x15 [color=#FFFF00]
             RenderText {#text} at (0,0) size 176x15
               text run at (0,0) width 176: "Special Tests: opacity"
           RenderText {#text} at (0,0) size 0x0
-        RenderBlock {DT} at (0,30) size 769x15
+        RenderBlock {DT} at (0,30) size 784x15
           RenderText {#text} at (0,0) size 64x15
             text run at (0,0) width 64: "contents"
-        RenderBlock {DD} at (40,45) size 729x15
+        RenderBlock {DD} at (40,45) size 744x15
           RenderInline {A} at (0,0) size 136x15 [color=#FFFF00]
             RenderText {#text} at (0,0) size 136x15
               text run at (0,0) width 136: "Table of Contents"
@@ -154,14 +154,14 @@ layer at (0,0) size 785x1660
             RenderTableCell {TD} at (465,136) size 112x25 [border: (1px dotted #000000)] [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (2,2) size 43x22
                 text run at (2,2) width 43: "TD L"
-      RenderBlock {DIV} at (0,1162.78) size 769x34
+      RenderBlock {DIV} at (0,1162.78) size 784x34
         RenderInline {A} at (0,0) size 88x15 [color=#FFFF00]
           RenderImage {IMG} at (0,0) size 88x31
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {ADDRESS} at (0,1196.78) size 769x15
+      RenderBlock {ADDRESS} at (0,1196.78) size 784x15
         RenderText {#text} at (0,0) size 704x15
           text run at (0,0) width 704: "CSS2 Table Backgrounds Test Suite designed and written by fantasai <fantasai@escape.com>"
-      RenderBlock {PRE} at (0,1224.78) size 769x405
+      RenderBlock {PRE} at (0,1224.78) size 784x405
         RenderText {#text} at (0,0) size 1536x405
           text run at (0,0) width 1536: "................................................................................................................................................................................................"
           text run at (1536,0) width 0: " "
