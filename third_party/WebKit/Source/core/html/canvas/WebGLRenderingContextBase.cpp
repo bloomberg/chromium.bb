@@ -723,6 +723,7 @@ void WebGLRenderingContextBase::destroyContext()
     webContext()->setErrorMessageCallback(0);
 
     ASSERT(m_drawingBuffer);
+    m_drawingBuffer->beginDestruction();
     m_drawingBuffer.clear();
 }
 
@@ -5441,7 +5442,10 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         return;
 
     // If the context was lost due to RealLostContext, we need to destroy the old DrawingBuffer before creating new DrawingBuffer to ensure resource budget enough.
-    m_drawingBuffer.clear();
+    if (m_drawingBuffer) {
+        m_drawingBuffer->beginDestruction();
+        m_drawingBuffer.clear();
+    }
 
     blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument().url().string(), settings);
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));

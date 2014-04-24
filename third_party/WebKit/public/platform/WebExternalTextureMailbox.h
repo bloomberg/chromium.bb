@@ -44,6 +44,11 @@ struct WebExternalTextureMailbox {
     }
 };
 
+inline bool nameEquals(const WebExternalTextureMailbox& a, const WebExternalTextureMailbox& b)
+{
+    return !memcmp(a.name, b.name, sizeof(a.name));
+}
+
 } // namespace blink
 
 #endif // WebExternalTextureMailbox_h

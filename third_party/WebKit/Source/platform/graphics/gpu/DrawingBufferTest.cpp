@@ -34,6 +34,7 @@
 
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/test/MockWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
@@ -105,6 +106,39 @@ static const int initialWidth = 100;
 static const int initialHeight = 100;
 static const int alternateHeight = 50;
 
+class DrawingBufferForTests : public DrawingBuffer {
+public:
+    static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<blink::WebGraphicsContext3D> context,
+        const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
+    {
+        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
+        RefPtr<DrawingBufferForTests> drawingBuffer =
+            adoptRef(new DrawingBufferForTests(context, extensionsUtil.release(), preserve, contextEvictionManager));
+        if (!drawingBuffer->initialize(size)) {
+            drawingBuffer->beginDestruction();
+            return PassRefPtr<DrawingBufferForTests>();
+        }
+        return drawingBuffer.release();
+    }
+
+    DrawingBufferForTests(PassOwnPtr<blink::WebGraphicsContext3D> context,
+        PassOwnPtr<Extensions3DUtil> extensionsUtil,
+        PreserveDrawingBuffer preserve,
+        PassRefPtr<ContextEvictionManager> contextEvictionManager)
+        : DrawingBuffer(context, extensionsUtil, false /* multisampleExtensionSupported */,
+            false /* packedDepthStencilExtensionSupported */, preserve, contextEvictionManager)
+        , m_live(0)
+    { }
+
+    virtual ~DrawingBufferForTests()
+    {
+        if (m_live)
+            *m_live = false;
+    }
+
+    bool* m_live;
+};
+
 class DrawingBufferTest : public Test {
 protected:
     virtual void SetUp()
@@ -112,7 +146,8 @@ protected:
         RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
         OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
         m_context = context.get();
-        m_drawingBuffer = DrawingBuffer::create(context.release(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
+        m_drawingBuffer = DrawingBufferForTests::create(context.release(),
+            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
     }
 
     WebGraphicsContext3DForTests* webContext()
@@ -121,7 +156,7 @@ protected:
     }
 
     WebGraphicsContext3DForTests* m_context;
-    RefPtr<DrawingBuffer> m_drawingBuffer;
+    RefPtr<DrawingBufferForTests> m_drawingBuffer;
 };
 
 TEST_F(DrawingBufferTest, testPaintRenderingResultsToCanvas)
@@ -136,6 +171,7 @@ TEST_F(DrawingBufferTest, testPaintRenderingResultsToCanvas)
     m_drawingBuffer->paintRenderingResultsToCanvas(imageBuffer.get());
     EXPECT_FALSE(imageBuffer->isAccelerated());
     EXPECT_FALSE(imageBuffer->bitmap().isNull());
+    m_drawingBuffer->beginDestruction();
 }
 
 TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
@@ -173,7 +209,47 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
     EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
+    m_drawingBuffer->beginDestruction();
 }
+
+TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased)
+{
+    bool live = true;
+    m_drawingBuffer->m_live = &live;
+
+    blink::WebExternalTextureMailbox mailbox1;
+    blink::WebExternalTextureMailbox mailbox2;
+    blink::WebExternalTextureMailbox mailbox3;
+
+    IntSize initialSize(initialWidth, initialHeight);
+
+    // Produce mailboxes.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox1, 0));
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox2, 0));
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox3, 0));
+
+    m_drawingBuffer->markContentsChanged();
+    m_drawingBuffer->mailboxReleased(mailbox1);
+
+    m_drawingBuffer->beginDestruction();
+    EXPECT_EQ(live, true);
+
+    DrawingBufferForTests* weakPointer = m_drawingBuffer.get();
+    m_drawingBuffer.clear();
+    EXPECT_EQ(live, true);
+
+    weakPointer->markContentsChanged();
+    weakPointer->mailboxReleased(mailbox2);
+    EXPECT_EQ(live, true);
+
+    weakPointer->markContentsChanged();
+    weakPointer->mailboxReleased(mailbox3);
+    EXPECT_EQ(live, false);
+}
+
 
 class TextureMailboxWrapper {
 public:
@@ -229,6 +305,11 @@ TEST_F(DrawingBufferTest, verifyRecyclingMailboxesByFIFO)
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&recycledMailbox, 0));
     EXPECT_EQ(TextureMailboxWrapper(mailbox1), TextureMailboxWrapper(recycledMailbox));
+
+    m_drawingBuffer->mailboxReleased(mailbox1);
+    m_drawingBuffer->mailboxReleased(mailbox2);
+    m_drawingBuffer->mailboxReleased(mailbox3);
+    m_drawingBuffer->beginDestruction();
 }
 
 } // namespace
