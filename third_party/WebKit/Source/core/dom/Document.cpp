@@ -1154,11 +1154,6 @@ void Document::setContentLanguage(const AtomicString& language)
 
 void Document::setXMLVersion(const String& version, ExceptionState& exceptionState)
 {
-    if (!implementation().hasFeature("XML", String())) {
-        exceptionState.throwDOMException(NotSupportedError, "This document does not support XML.");
-        return;
-    }
-
     if (!XMLDocumentParser::supportsXMLVersion(version)) {
         exceptionState.throwDOMException(NotSupportedError, "This document does not support the XML version '" + version + "'.");
         return;
@@ -1169,11 +1164,6 @@ void Document::setXMLVersion(const String& version, ExceptionState& exceptionSta
 
 void Document::setXMLStandalone(bool standalone, ExceptionState& exceptionState)
 {
-    if (!implementation().hasFeature("XML", String())) {
-        exceptionState.throwDOMException(NotSupportedError, "This document does not support XML.");
-        return;
-    }
-
     m_xmlStandalone = standalone ? Standalone : NotStandalone;
 }
 
