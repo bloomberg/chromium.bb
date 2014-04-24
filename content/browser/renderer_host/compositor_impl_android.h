@@ -86,8 +86,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE {}
   virtual void DidCompleteSwapBuffers() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProvider() OVERRIDE;
 
   // LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() OVERRIDE;
@@ -117,8 +115,6 @@ class CONTENT_EXPORT CompositorImpl
   int surface_id_;
 
   CompositorClient* client_;
-
-  scoped_refptr<cc::ContextProvider> null_offscreen_context_provider_;
 
   typedef base::ScopedPtrHashMap<cc::UIResourceId, cc::UIResourceClient>
       UIResourceMap;

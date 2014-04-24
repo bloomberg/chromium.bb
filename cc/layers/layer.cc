@@ -133,7 +133,6 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
 
   if (host && layer_animation_controller_->has_any_animation())
     host->SetNeedsCommit();
-  SetNeedsFilterContextIfNeeded();
 }
 
 void Layer::SetNeedsUpdate() {
@@ -165,15 +164,6 @@ void Layer::SetNextCommitWaitsForActivation() {
     return;
 
   layer_tree_host_->SetNextCommitWaitsForActivation();
-}
-
-void Layer::SetNeedsFilterContextIfNeeded() {
-  if (!layer_tree_host_)
-    return;
-
-  if (!filters_.IsEmpty() || !background_filters_.IsEmpty() ||
-      !uses_default_blend_mode())
-    layer_tree_host_->set_needs_filter_context();
 }
 
 void Layer::SetNeedsPushProperties() {
@@ -487,7 +477,6 @@ void Layer::SetFilters(const FilterOperations& filters) {
     return;
   filters_ = filters;
   SetNeedsCommit();
-  SetNeedsFilterContextIfNeeded();
 }
 
 bool Layer::FilterIsAnimating() const {
@@ -500,7 +489,6 @@ void Layer::SetBackgroundFilters(const FilterOperations& filters) {
     return;
   background_filters_ = filters;
   SetNeedsCommit();
-  SetNeedsFilterContextIfNeeded();
 }
 
 void Layer::SetOpacity(float opacity) {
@@ -566,7 +554,6 @@ void Layer::SetBlendMode(SkXfermode::Mode blend_mode) {
 
   blend_mode_ = blend_mode;
   SetNeedsCommit();
-  SetNeedsFilterContextIfNeeded();
 }
 
 void Layer::SetIsRootForIsolatedGroup(bool root) {

@@ -397,10 +397,6 @@ void Compositor::DidCompleteSwapBuffers() {
   }
 }
 
-scoped_refptr<cc::ContextProvider> Compositor::OffscreenContextProvider() {
-  return ContextFactory::GetInstance()->OffscreenCompositorContextProvider();
-}
-
 void Compositor::ScheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();

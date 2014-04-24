@@ -80,7 +80,6 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   RenderPassList* pass_list =
       &aggregated_frame->delegated_frame_data->render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
-                           PixelTest::NoOffscreenContext,
                            base::FilePath(FILE_PATH_LITERAL("green.png")),
                            pixel_comparator));
 }
@@ -161,7 +160,6 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   RenderPassList* pass_list =
       &aggregated_frame->delegated_frame_data->render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
-                           PixelTest::NoOffscreenContext,
                            base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
                            pixel_comparator));
 }
@@ -302,7 +300,6 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
       &aggregated_frame->delegated_frame_data->render_pass_list;
   EXPECT_TRUE(RunPixelTest(
       pass_list,
-      PixelTest::NoOffscreenContext,
       base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
       pixel_comparator));
 }

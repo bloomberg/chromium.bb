@@ -5516,7 +5516,6 @@ class LayerTreeHostImplTestDeferredInitialize : public LayerTreeHostImplTest {
     SetupRootLayerImpl(root_layer.PassAs<LayerImpl>());
 
     onscreen_context_provider_ = TestContextProvider::Create();
-    offscreen_context_provider_ = TestContextProvider::Create();
   }
 
   virtual void UpdateRendererCapabilitiesOnImplThread() OVERRIDE {
@@ -5525,7 +5524,6 @@ class LayerTreeHostImplTestDeferredInitialize : public LayerTreeHostImplTest {
 
   FakeOutputSurface* output_surface_;
   scoped_refptr<TestContextProvider> onscreen_context_provider_;
-  scoped_refptr<TestContextProvider> offscreen_context_provider_;
   bool did_update_renderer_capabilities_;
 };
 
@@ -5535,16 +5533,13 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Success) {
   DrawFrame();
 
   EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
 
   // DeferredInitialize and hardware draw.
   did_update_renderer_capabilities_ = false;
-  EXPECT_TRUE(output_surface_->InitializeAndSetContext3d(
-      onscreen_context_provider_, offscreen_context_provider_));
+  EXPECT_TRUE(
+      output_surface_->InitializeAndSetContext3d(onscreen_context_provider_));
   EXPECT_EQ(onscreen_context_provider_,
             host_impl_->output_surface()->context_provider());
-  EXPECT_EQ(offscreen_context_provider_,
-            host_impl_->offscreen_context_provider());
   EXPECT_TRUE(did_update_renderer_capabilities_);
 
   // Defer intialized GL draw.
@@ -5554,14 +5549,13 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Success) {
   did_update_renderer_capabilities_ = false;
   output_surface_->ReleaseGL();
   EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
   EXPECT_TRUE(did_update_renderer_capabilities_);
 
   // Software draw again.
   DrawFrame();
 }
 
-TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OnscreenContext_0) {
+TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails) {
   // Software draw.
   DrawFrame();
 
@@ -5570,77 +5564,16 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OnscreenContext_0) {
   onscreen_context_provider_->UnboundTestContext3d()->set_context_lost(true);
 
   EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
 
   // DeferredInitialize fails.
   did_update_renderer_capabilities_ = false;
-  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
-      onscreen_context_provider_, offscreen_context_provider_));
+  EXPECT_FALSE(
+      output_surface_->InitializeAndSetContext3d(onscreen_context_provider_));
   EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
   EXPECT_FALSE(did_update_renderer_capabilities_);
 
   // Software draw again.
   DrawFrame();
-}
-
-// TODO(boliu): After r239415, fails_OnscreenContext_1 and 2 are exactly the
-// same as 0. They were supposed to test makeCurrent failing in the
-// OutputSurface, LayerTreeHostImpl, and GLRenderer respectively.
-TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OnscreenContext_1) {
-  // Software draw.
-  DrawFrame();
-
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
-
-  onscreen_context_provider_->UnboundTestContext3d()->set_context_lost(true);
-
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  // DeferredInitialize fails.
-  did_update_renderer_capabilities_ = false;
-  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
-      onscreen_context_provider_, offscreen_context_provider_));
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
-  EXPECT_FALSE(did_update_renderer_capabilities_);
-}
-
-TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OnscreenContext_2) {
-  // Software draw.
-  DrawFrame();
-
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
-
-  onscreen_context_provider_->UnboundTestContext3d()->set_context_lost(true);
-
-  // DeferredInitialize fails.
-  did_update_renderer_capabilities_ = false;
-  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
-      onscreen_context_provider_, offscreen_context_provider_));
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
-  EXPECT_FALSE(did_update_renderer_capabilities_);
-}
-
-TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OffscreenContext) {
-  // Software draw.
-  DrawFrame();
-
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
-
-  // Fail initialization of the offscreen context.
-  onscreen_context_provider_->UnboundTestContext3d()->set_context_lost(true);
-
-  // DeferredInitialize fails.
-  did_update_renderer_capabilities_ = false;
-  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
-      onscreen_context_provider_, offscreen_context_provider_));
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(host_impl_->offscreen_context_provider());
-  EXPECT_FALSE(did_update_renderer_capabilities_);
 }
 
 // Checks that we have a non-0 default allocation if we pass a context that

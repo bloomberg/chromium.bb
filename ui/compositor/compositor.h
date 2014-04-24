@@ -82,16 +82,8 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Removes the reflector, which stops the mirroring.
   virtual void RemoveReflector(scoped_refptr<Reflector> reflector) = 0;
 
-  // Returns a reference to the offscreen context provider used by the
-  // compositor. This provider is bound and used on whichever thread the
-  // compositor is rendering from.
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenCompositorContextProvider() = 0;
-
   // Return a reference to a shared offscreen context provider usable from the
-  // main thread. This may be the same as OffscreenCompositorContextProvider()
-  // depending on the compositor's threading configuration. This provider will
-  // be bound to the main thread.
+  // main thread.
   virtual scoped_refptr<cc::ContextProvider>
       SharedMainThreadContextProvider() = 0;
 
@@ -233,8 +225,6 @@ class COMPOSITOR_EXPORT Compositor
   virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE;
   virtual void DidCompleteSwapBuffers() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProvider() OVERRIDE;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() OVERRIDE;

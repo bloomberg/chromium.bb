@@ -32,7 +32,6 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
     : Proxy(NULL),
       layer_tree_host_(layer_tree_host),
       client_(client),
-      created_offscreen_context_provider_(false),
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
@@ -122,17 +121,6 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
     return;
   }
 
-  scoped_refptr<ContextProvider> offscreen_context_provider;
-  if (created_offscreen_context_provider_) {
-    offscreen_context_provider =
-        layer_tree_host_->client()->OffscreenContextProvider();
-    if (!offscreen_context_provider.get() ||
-        !offscreen_context_provider->BindToCurrentThread()) {
-      OnOutputSurfaceInitializeAttempted(false);
-      return;
-    }
-  }
-
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
@@ -147,13 +135,6 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
     DCHECK(output_surface);
     initialized = layer_tree_host_impl_->InitializeRenderer(
         output_surface.Pass());
-    if (!initialized && offscreen_context_provider.get()) {
-      offscreen_context_provider->VerifyContexts();
-      offscreen_context_provider = NULL;
-    }
-
-    layer_tree_host_impl_->SetOffscreenContextProvider(
-        offscreen_context_provider);
   }
 
   OnOutputSurfaceInitializeAttempted(initialized);
@@ -469,25 +450,9 @@ bool SingleThreadProxy::CommitAndComposite(
 
   layer_tree_host_->WillCommit();
 
-  scoped_refptr<ContextProvider> offscreen_context_provider;
-  if (renderer_capabilities_for_main_thread_.using_offscreen_context3d &&
-      layer_tree_host_->needs_offscreen_context()) {
-    offscreen_context_provider =
-        layer_tree_host_->client()->OffscreenContextProvider();
-    if (offscreen_context_provider.get() &&
-        !offscreen_context_provider->BindToCurrentThread())
-      offscreen_context_provider = NULL;
-
-    if (offscreen_context_provider.get())
-      created_offscreen_context_provider_ = true;
-  }
-
   DoCommit(queue.Pass());
-  bool result = DoComposite(offscreen_context_provider,
-                            frame_begin_time,
-                            device_viewport_damage_rect,
-                            for_readback,
-                            frame);
+  bool result = DoComposite(
+      frame_begin_time, device_viewport_damage_rect, for_readback, frame);
   layer_tree_host_->DidBeginMainFrame();
   return result;
 }
@@ -505,7 +470,6 @@ void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
 }
 
 bool SingleThreadProxy::DoComposite(
-    scoped_refptr<ContextProvider> offscreen_context_provider,
     base::TimeTicks frame_begin_time,
     const gfx::Rect& device_viewport_damage_rect,
     bool for_readback,
@@ -517,9 +481,6 @@ bool SingleThreadProxy::DoComposite(
   {
     DebugScopedSetImplThread impl(this);
     base::AutoReset<bool> mark_inside(&inside_draw_, true);
-
-    layer_tree_host_impl_->SetOffscreenContextProvider(
-        offscreen_context_provider);
 
     bool can_do_readback = layer_tree_host_impl_->renderer()->CanReadPixels();
 
@@ -550,10 +511,6 @@ bool SingleThreadProxy::DoComposite(
   }
 
   if (lost_output_surface) {
-    ContextProvider* offscreen_contexts =
-        layer_tree_host_impl_->offscreen_context_provider();
-    if (offscreen_contexts)
-      offscreen_contexts->VerifyContexts();
     layer_tree_host_->DidLoseOutputSurface();
     return false;
   }

@@ -42,8 +42,6 @@ class CompositorHost : public cc::LayerTreeHostClient {
   virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE;
   virtual void DidCompleteSwapBuffers() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider> OffscreenContextProvider()
-      OVERRIDE;
 
  private:
   void SetupScene();

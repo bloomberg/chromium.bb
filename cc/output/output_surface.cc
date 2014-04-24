@@ -263,8 +263,7 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
 }
 
 bool OutputSurface::InitializeAndSetContext3d(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> offscreen_context_provider) {
+    scoped_refptr<ContextProvider> context_provider) {
   DCHECK(!context_provider_);
   DCHECK(context_provider);
   DCHECK(client_);
@@ -273,8 +272,8 @@ bool OutputSurface::InitializeAndSetContext3d(
   if (context_provider->BindToCurrentThread()) {
     context_provider_ = context_provider;
     SetUpContext3d();
-    if (client_->DeferredInitialize(offscreen_context_provider))
-      success = true;
+    client_->DeferredInitialize();
+    success = true;
   }
 
   if (!success)

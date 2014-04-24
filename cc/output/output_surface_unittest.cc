@@ -40,8 +40,7 @@ class TestOutputSurface : public OutputSurface {
 
   bool InitializeNewContext3d(
       scoped_refptr<ContextProvider> new_context_provider) {
-    return InitializeAndSetContext3d(new_context_provider,
-                                     scoped_refptr<ContextProvider>());
+    return InitializeAndSetContext3d(new_context_provider);
   }
 
   using OutputSurface::ReleaseGL;
@@ -207,12 +206,6 @@ TEST_F(OutputSurfaceTestInitializeNewContext3d, Context3dMakeCurrentFails) {
   BindOutputSurface();
 
   context_provider_->UnboundTestContext3d()->set_context_lost(true);
-  InitializeNewContextExpectFail();
-}
-
-TEST_F(OutputSurfaceTestInitializeNewContext3d, ClientDeferredInitializeFails) {
-  BindOutputSurface();
-  client_.set_deferred_initialize_result(false);
   InitializeNewContextExpectFail();
 }
 

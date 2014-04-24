@@ -490,14 +490,6 @@ void CompositorImpl::OnLostResources() {
   client_->DidLoseResources();
 }
 
-scoped_refptr<cc::ContextProvider> CompositorImpl::OffscreenContextProvider() {
-  // There is no support for offscreen contexts, or compositor filters that
-  // would require them in this compositor instance. If they are needed,
-  // then implement a context provider that provides contexts from
-  // ImageTransportSurfaceAndroid.
-  return NULL;
-}
-
 void CompositorImpl::DidCompleteSwapBuffers() {
   client_->OnSwapBuffersCompleted();
 }

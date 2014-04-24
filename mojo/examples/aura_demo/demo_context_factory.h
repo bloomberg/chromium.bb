@@ -34,8 +34,6 @@ class DemoContextFactory : public ui::ContextFactory {
   virtual void RemoveReflector(scoped_refptr<ui::Reflector> reflector) OVERRIDE;
 
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenCompositorContextProvider() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
       SharedMainThreadContextProvider() OVERRIDE;
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
@@ -43,8 +41,6 @@ class DemoContextFactory : public ui::ContextFactory {
   bool Initialize();
 
  private:
-  scoped_refptr<webkit::gpu::ContextProviderInProcess>
-      offscreen_compositor_contexts_;
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       shared_main_thread_contexts_;
 

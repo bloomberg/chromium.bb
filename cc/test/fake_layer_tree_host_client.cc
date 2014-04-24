@@ -35,12 +35,4 @@ scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface(
   return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
 }
 
-scoped_refptr<ContextProvider>
-FakeLayerTreeHostClient::OffscreenContextProvider() {
-  if (!offscreen_contexts_.get() ||
-      offscreen_contexts_->DestroyedOnMainThread())
-    offscreen_contexts_ = TestContextProvider::Create();
-  return offscreen_contexts_;
-}
-
 }  // namespace cc

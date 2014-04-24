@@ -13,7 +13,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
-#include "content/test/test_context_provider_factory.h"
 #include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -148,13 +147,6 @@ scoped_ptr<cc::OutputSurface>
 WebLayerTreeViewImplForTesting::CreateOutputSurface(bool fallback) {
   return make_scoped_ptr(
       new cc::OutputSurface(cc::TestContextProvider::Create()));
-}
-
-scoped_refptr<cc::ContextProvider>
-WebLayerTreeViewImplForTesting::OffscreenContextProvider() {
-  // Unit tests only run in single threaded mode.
-  return content::TestContextProviderFactory::GetInstance()->
-      OffscreenContextProviderForMainThread();
 }
 
 void WebLayerTreeViewImplForTesting::registerViewportLayers(

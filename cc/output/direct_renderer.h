@@ -32,7 +32,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool HasAllocatedResourcesForTesting(RenderPass::Id id) const
       OVERRIDE;
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                         ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect,
@@ -52,8 +51,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
-
-    ContextProvider* offscreen_context_provider;
 
     bool disable_picture_quad_image_filtering;
 

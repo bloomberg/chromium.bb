@@ -58,7 +58,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
-    : callback_factory_(this), offscreen_content_bound_to_other_thread_(false) {
+    : callback_factory_(this) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
       &output_surface_map_);
 }
@@ -68,13 +68,6 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
   // Make sure the lost context callback doesn't try to run during destruction.
   callback_factory_.InvalidateWeakPtrs();
-
-  if (offscreen_compositor_contexts_.get() &&
-      offscreen_content_bound_to_other_thread_) {
-    // Leak shared contexts on other threads, as we can not get to the correct
-    // thread to destroy them.
-    offscreen_compositor_contexts_->set_leak_on_destroy();
-  }
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
@@ -258,24 +251,6 @@ void GpuProcessTransportFactory::RemoveObserver(
 }
 
 scoped_refptr<cc::ContextProvider>
-GpuProcessTransportFactory::OffscreenCompositorContextProvider() {
-  // Don't check for DestroyedOnMainThread() here. We hear about context
-  // loss for this context through the lost context callback. If the context
-  // is lost, we want to leave this ContextProvider available until the lost
-  // context notification is sent to the ImageTransportFactoryObserver clients.
-  if (offscreen_compositor_contexts_.get())
-    return offscreen_compositor_contexts_;
-
-  offscreen_compositor_contexts_ = ContextProviderCommandBuffer::Create(
-      GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
-      "Compositor-Offscreen");
-  offscreen_content_bound_to_other_thread_ =
-      ui::Compositor::WasInitializedWithThread();
-
-  return offscreen_compositor_contexts_;
-}
-
-scoped_refptr<cc::ContextProvider>
 GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   if (shared_main_thread_contexts_.get())
     return shared_main_thread_contexts_;
@@ -293,10 +268,8 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
         base::Bind(&GpuProcessTransportFactory::
                         OnLostMainThreadSharedContextInsideCallback,
                    callback_factory_.GetWeakPtr()));
-    if (!shared_main_thread_contexts_->BindToCurrentThread()) {
+    if (!shared_main_thread_contexts_->BindToCurrentThread())
       shared_main_thread_contexts_ = NULL;
-      offscreen_compositor_contexts_ = NULL;
-    }
   }
   return shared_main_thread_contexts_;
 }
@@ -366,11 +339,8 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   // new resources are created if needed.
   // Kill shared contexts for both threads in tandem so they are always in
   // the same share group.
-  scoped_refptr<cc::ContextProvider> lost_offscreen_compositor_contexts =
-      offscreen_compositor_contexts_;
   scoped_refptr<cc::ContextProvider> lost_shared_main_thread_contexts =
       shared_main_thread_contexts_;
-  offscreen_compositor_contexts_ = NULL;
   shared_main_thread_contexts_  = NULL;
 
   scoped_ptr<GLHelper> lost_gl_helper = gl_helper_.Pass();
@@ -381,7 +351,6 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
 
   // Kill things that use the shared context before killing the shared context.
   lost_gl_helper.reset();
-  lost_offscreen_compositor_contexts = NULL;
   lost_shared_main_thread_contexts  = NULL;
 }
 

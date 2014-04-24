@@ -95,7 +95,6 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
   renderer()->DrawFrame(&list,
-                        NULL,
                         device_scale_factor,
                         device_viewport_rect,
                         device_viewport_rect,
@@ -199,7 +198,6 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
   renderer()->DrawFrame(&list,
-                        NULL,
                         device_scale_factor,
                         device_viewport_rect,
                         device_viewport_rect,
@@ -280,7 +278,6 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(tile_size);
   renderer()->DrawFrame(&list,
-                        NULL,
                         device_scale_factor,
                         device_viewport_rect,
                         device_viewport_rect,
@@ -335,7 +332,6 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
   renderer()->DrawFrame(&list,
-                        NULL,
                         device_scale_factor,
                         viewport_rect,
                         viewport_rect,
@@ -359,7 +355,6 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
   renderer()->DrawFrame(&list,
-                        NULL,
                         device_scale_factor,
                         viewport_rect,
                         viewport_rect,
@@ -410,7 +405,6 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
   renderer()->DrawFrame(&list,
-                        NULL,
                         device_scale_factor,
                         viewport_rect,
                         viewport_rect,

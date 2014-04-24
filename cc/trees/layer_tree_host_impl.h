@@ -222,8 +222,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void NotifyReadyToActivate() OVERRIDE;
 
   // OutputSurfaceClient implementation.
-  virtual bool DeferredInitialize(
-      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
+  virtual void DeferredInitialize() OVERRIDE;
   virtual void ReleaseGL() OVERRIDE;
   virtual void SetNeedsRedrawRect(const gfx::Rect& rect) OVERRIDE;
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
@@ -246,12 +245,6 @@ class CC_EXPORT LayerTreeHostImpl
   // Implementation.
   bool CanDraw() const;
   OutputSurface* output_surface() const { return output_surface_.get(); }
-
-  void SetOffscreenContextProvider(
-      const scoped_refptr<ContextProvider>& offscreen_context_provider);
-  ContextProvider* offscreen_context_provider() const {
-    return offscreen_context_provider_.get();
-  }
 
   std::string LayerTreeAsJson() const;
 

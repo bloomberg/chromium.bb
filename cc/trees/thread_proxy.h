@@ -160,10 +160,8 @@ class ThreadProxy : public Proxy,
   void ForceCommitForReadbackOnImplThread(
       CompletionEvent* begin_main_frame_sent_completion,
       ReadbackRequest* request);
-  void StartCommitOnImplThread(
-      CompletionEvent* completion,
-      ResourceUpdateQueue* queue,
-      scoped_refptr<ContextProvider> offscreen_context_provider);
+  void StartCommitOnImplThread(CompletionEvent* completion,
+                               ResourceUpdateQueue* queue);
   void BeginMainFrameAbortedOnImplThread(bool did_handle);
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
@@ -177,7 +175,6 @@ class ThreadProxy : public Proxy,
   void InitializeOutputSurfaceOnImplThread(
       CompletionEvent* completion,
       scoped_ptr<OutputSurface> output_surface,
-      scoped_refptr<ContextProvider> offscreen_context_provider,
       bool* success,
       RendererCapabilities* capabilities);
   void FinishGLOnImplThread(CompletionEvent* completion);
@@ -214,8 +211,6 @@ class ThreadProxy : public Proxy,
     bool commit_requested;
     // Set by SetNeedsAnimate, SetNeedsUpdateLayers, and SetNeedsCommit.
     bool commit_request_sent_to_impl_thread;
-    // Set by BeginMainFrame
-    bool created_offscreen_context_provider;
 
     bool started;
     bool in_composite_and_readback;

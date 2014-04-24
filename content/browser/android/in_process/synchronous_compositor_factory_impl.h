@@ -41,18 +41,16 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE;
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
       GetSharedOffscreenContextProviderForMainThread() OVERRIDE;
-  // This is called on both renderer main thread (offscreen context creation
-  // path shared between cross-process and in-process platforms) and renderer
-  // compositor impl thread (InitializeHwDraw) in order to support Android
-  // WebView synchronously enable and disable hardware mode multiple times in
-  // the same task. This is ok because in-process WGC3D creation may happen on
-  // any thread and is lightweight.
-  virtual scoped_refptr<cc::ContextProvider>
-      GetOffscreenContextProviderForCompositorThread() OVERRIDE;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE;
   virtual blink::WebGraphicsContext3D* CreateOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) OVERRIDE;
+
+  // This is called on the renderer compositor impl thread (InitializeHwDraw) in
+  // order to support Android WebView synchronously enable and disable hardware
+  // mode multiple times in the same task.
+  scoped_refptr<cc::ContextProvider>
+      GetOffscreenContextProviderForCompositorThread();
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;
@@ -74,9 +72,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   SynchronousInputEventFilter synchronous_input_event_filter_;
 
-  // Only guards construction and destruction of
-  // |offscreen_context_for_compositor_thread_|, not usage.
-  base::Lock offscreen_context_for_compositor_thread_lock_;
   scoped_refptr<webkit::gpu::ContextProviderWebContext>
       offscreen_context_for_main_thread_;
   // This is a pointer to the context owned by

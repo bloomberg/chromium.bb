@@ -83,9 +83,5 @@ void CompositorHost::DidCommit() {}
 void CompositorHost::DidCommitAndDrawFrame() {}
 void CompositorHost::DidCompleteSwapBuffers() {}
 
-scoped_refptr<cc::ContextProvider> CompositorHost::OffscreenContextProvider() {
-  return NULL;
-}
-
 }  // namespace examples
 }  // namespace mojo

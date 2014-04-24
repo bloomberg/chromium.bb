@@ -50,7 +50,6 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     const std::string& debug_name)
     : context3d_(context3d.Pass()),
       debug_name_(debug_name),
-      leak_on_destroy_(false),
       destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
@@ -69,13 +68,6 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
         CommandBufferProxyImpl::MemoryAllocationChangedCallback());
   }
   lost_context_callback_proxy_.reset();
-
-  if (leak_on_destroy_) {
-    WebGraphicsContext3DCommandBufferImpl* context3d ALLOW_UNUSED =
-        context3d_.release();
-    webkit::gpu::GrContextForWebGraphicsContext3D* gr_context ALLOW_UNUSED =
-        gr_context_.release();
-  }
 }
 
 

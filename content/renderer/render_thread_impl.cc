@@ -563,11 +563,6 @@ void RenderThreadImpl::Shutdown() {
   // Clean up plugin channels before this thread goes away.
   NPChannelBase::CleanupChannels();
 #endif
-
-  // Leak shared contexts on other threads, as we can not get to the correct
-  // thread to destroy them.
-  if (offscreen_compositor_contexts_.get())
-    offscreen_compositor_contexts_->set_leak_on_destroy();
 }
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {
@@ -1021,28 +1016,6 @@ RenderThreadImpl::CreateOffscreenContext3d() {
           NULL));
 }
 
-scoped_refptr<cc::ContextProvider>
-RenderThreadImpl::OffscreenCompositorContextProvider() {
-  DCHECK(IsMainThread());
-
-#if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory* factory =
-      SynchronousCompositorFactory::GetInstance()) {
-    if (compositor_message_loop_proxy_)
-      return factory->GetOffscreenContextProviderForCompositorThread();
-    return factory->GetSharedOffscreenContextProviderForMainThread();
-  }
-#endif
-
-  if (!offscreen_compositor_contexts_.get() ||
-      offscreen_compositor_contexts_->DestroyedOnMainThread()) {
-    offscreen_compositor_contexts_ = ContextProviderCommandBuffer::Create(
-        CreateOffscreenContext3d(),
-        "Compositor-Offscreen");
-  }
-  return offscreen_compositor_contexts_;
-}
-
 scoped_refptr<webkit::gpu::ContextProviderWebContext>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
@@ -1054,19 +1027,8 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
   if (!shared_main_thread_contexts_ ||
       shared_main_thread_contexts_->DestroyedOnMainThread()) {
-    if (compositor_message_loop_proxy_) {
-      // In threaded compositing mode, we have to create a new ContextProvider
-      // to bind to the main thread since the compositor's is bound to the
-      // compositor thread.
-      shared_main_thread_contexts_ =
-          ContextProviderCommandBuffer::Create(CreateOffscreenContext3d(),
-                                               "Offscreen-MainThread");
-    } else {
-      // In single threaded mode, we can use the same context provider.
-      shared_main_thread_contexts_ =
-          static_cast<ContextProviderCommandBuffer*>(
-                OffscreenCompositorContextProvider().get());
-    }
+    shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
+        CreateOffscreenContext3d(), "Offscreen-MainThread");
   }
   if (shared_main_thread_contexts_ &&
       !shared_main_thread_contexts_->BindToCurrentThread())

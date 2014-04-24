@@ -40,7 +40,6 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   virtual void DidCommit() OVERRIDE {}
   virtual void DidCommitAndDrawFrame() OVERRIDE {}
   virtual void DidCompleteSwapBuffers() OVERRIDE {}
-  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE;
 
   // LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() OVERRIDE {}
@@ -51,8 +50,6 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
  private:
   bool use_software_rendering_;
   bool use_delegating_renderer_;
-
-  scoped_refptr<TestContextProvider> offscreen_contexts_;
 };
 
 }  // namespace cc

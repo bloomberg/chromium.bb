@@ -53,7 +53,6 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
   capabilities_.allow_partial_texture_updates = false;
-  capabilities_.using_offscreen_context3d = false;
 
   if (!output_surface_->context_provider()) {
     capabilities_.using_shared_memory_resources = true;
@@ -88,7 +87,6 @@ static ResourceProvider::ResourceId AppendToArray(
 }
 
 void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
-                                   ContextProvider* offscreen_context_provider,
                                    float device_scale_factor,
                                    const gfx::Rect& device_viewport_rect,
                                    const gfx::Rect& device_clip_rect,

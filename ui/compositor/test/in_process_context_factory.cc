@@ -54,33 +54,15 @@ void InProcessContextFactory::RemoveReflector(
     scoped_refptr<Reflector> reflector) {}
 
 scoped_refptr<cc::ContextProvider>
-InProcessContextFactory::OffscreenCompositorContextProvider() {
-  if (!offscreen_compositor_contexts_.get() ||
-      !offscreen_compositor_contexts_->DestroyedOnMainThread()) {
-    bool lose_context_when_out_of_memory = true;
-    offscreen_compositor_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen(
-            lose_context_when_out_of_memory);
-  }
-  return offscreen_compositor_contexts_;
-}
-
-scoped_refptr<cc::ContextProvider>
 InProcessContextFactory::SharedMainThreadContextProvider() {
   if (shared_main_thread_contexts_ &&
       !shared_main_thread_contexts_->DestroyedOnMainThread())
     return shared_main_thread_contexts_;
 
-  if (ui::Compositor::WasInitializedWithThread()) {
-    bool lose_context_when_out_of_memory = false;
-    shared_main_thread_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen(
-            lose_context_when_out_of_memory);
-  } else {
-    shared_main_thread_contexts_ =
-        static_cast<webkit::gpu::ContextProviderInProcess*>(
-            OffscreenCompositorContextProvider().get());
-  }
+  bool lose_context_when_out_of_memory = false;
+  shared_main_thread_contexts_ =
+      webkit::gpu::ContextProviderInProcess::CreateOffscreen(
+          lose_context_when_out_of_memory);
   if (shared_main_thread_contexts_ &&
       !shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = NULL;

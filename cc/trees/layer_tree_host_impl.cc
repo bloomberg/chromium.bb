@@ -1426,14 +1426,12 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_, output_surface_.get(), NULL);
     temp_software_renderer->DrawFrame(&frame->render_passes,
-                                      NULL,
                                       device_scale_factor_,
                                       DeviceViewport(),
                                       DeviceClip(),
                                       disable_picture_quad_image_filtering);
   } else {
     renderer_->DrawFrame(&frame->render_passes,
-                         offscreen_context_provider_.get(),
                          device_scale_factor_,
                          DeviceViewport(),
                          DeviceClip(),
@@ -1917,8 +1915,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   return true;
 }
 
-bool LayerTreeHostImpl::DeferredInitialize(
-    scoped_refptr<ContextProvider> offscreen_context_provider) {
+void LayerTreeHostImpl::DeferredInitialize() {
   DCHECK(output_surface_->capabilities().deferred_gl_initialization);
   DCHECK(settings_.impl_side_painting);
   DCHECK(output_surface_->context_provider());
@@ -1932,39 +1929,8 @@ bool LayerTreeHostImpl::DeferredInitialize(
   CreateAndSetRenderer(
       output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
 
-  bool success = true;
-  if (offscreen_context_provider.get() &&
-      !offscreen_context_provider->BindToCurrentThread())
-    success = false;
-
-  if (success) {
-    EnforceZeroBudget(false);
-    client_->SetNeedsCommitOnImplThread();
-  } else {
-    if (offscreen_context_provider.get()) {
-      if (offscreen_context_provider->BindToCurrentThread())
-        offscreen_context_provider->VerifyContexts();
-      offscreen_context_provider = NULL;
-    }
-
-    client_->DidLoseOutputSurfaceOnImplThread();
-
-    // If this method fails, the context provider will be dropped from the
-    // output surface and destroyed. But the GLRenderer expects the output
-    // surface to stick around - and hold onto the context3d - as long as it is
-    // alive.
-    // TODO(danakj): Remove the need for this code path: crbug.com/276411
-    renderer_.reset();
-
-    // The resource provider can't stay in GL mode or it tries to clean up GL
-    // stuff, but the context provider is going away on the output surface
-    // which contradicts being in GL mode.
-    // TODO(danakj): Remove the need for this code path: crbug.com/276411
-    resource_provider_->InitializeSoftware();
-  }
-
-  SetOffscreenContextProvider(offscreen_context_provider);
-  return success;
+  EnforceZeroBudget(false);
+  client_->SetNeedsCommitOnImplThread();
 }
 
 void LayerTreeHostImpl::ReleaseGL() {
@@ -1990,8 +1956,6 @@ void LayerTreeHostImpl::ReleaseGL() {
                           GetRendererCapabilities().using_map_image,
                           GetRendererCapabilities().allow_rasterize_on_demand);
   DCHECK(tile_manager_);
-
-  SetOffscreenContextProvider(NULL);
 
   client_->SetNeedsCommitOnImplThread();
 }
@@ -2819,21 +2783,6 @@ void LayerTreeHostImpl::SendReleaseResourcesRecursive(LayerImpl* current) {
     SendReleaseResourcesRecursive(current->replica_layer());
   for (size_t i = 0; i < current->children().size(); ++i)
     SendReleaseResourcesRecursive(current->children()[i]);
-}
-
-void LayerTreeHostImpl::SetOffscreenContextProvider(
-    const scoped_refptr<ContextProvider>& offscreen_context_provider) {
-  if (!offscreen_context_provider.get()) {
-    offscreen_context_provider_ = NULL;
-    return;
-  }
-
-  if (!offscreen_context_provider->BindToCurrentThread()) {
-    offscreen_context_provider_ = NULL;
-    return;
-  }
-
-  offscreen_context_provider_ = offscreen_context_provider;
 }
 
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {

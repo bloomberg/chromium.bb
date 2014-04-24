@@ -29,7 +29,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   virtual bool CanReadPixels() const OVERRIDE;
 
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                         ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect,

@@ -14,13 +14,11 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
  public:
   FakeOutputSurfaceClient()
       : begin_frame_count_(0),
-        deferred_initialize_result_(true),
         deferred_initialize_called_(false),
         did_lose_output_surface_called_(false),
         memory_policy_(0) {}
 
-  virtual bool DeferredInitialize(
-      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
+  virtual void DeferredInitialize() OVERRIDE;
   virtual void ReleaseGL() OVERRIDE {}
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
@@ -38,10 +36,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
 
   int begin_frame_count() { return begin_frame_count_; }
 
-  void set_deferred_initialize_result(bool result) {
-    deferred_initialize_result_ = result;
-  }
-
   bool deferred_initialize_called() {
     return deferred_initialize_called_;
   }
@@ -54,7 +48,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
 
  private:
   int begin_frame_count_;
-  bool deferred_initialize_result_;
   bool deferred_initialize_called_;
   bool did_lose_output_surface_called_;
   ManagedMemoryPolicy memory_policy_;

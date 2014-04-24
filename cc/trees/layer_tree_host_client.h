@@ -37,11 +37,6 @@ class LayerTreeHostClient {
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void DidCompleteSwapBuffers() = 0;
 
-  // If the client provides an OutputSurface bound to a 3d context for direct
-  // rendering, this must return a provider that provides contexts usable from
-  // the same thread as the OutputSurface's context.
-  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() = 0;
-
   // Requests that the client insert a rate limiting token in the shared main
   // thread context's command stream that will block if the context gets too far
   // ahead of the compositor's command stream. Only needed if the tree contains

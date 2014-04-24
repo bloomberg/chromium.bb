@@ -64,10 +64,6 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
   return output_surface.PassAs<OutputSurface>();
 }
 
-scoped_refptr<ContextProvider> LayerTreePixelTest::OffscreenContextProvider() {
-  return scoped_refptr<ContextProvider>(new TestInProcessContextProvider);
-}
-
 void LayerTreePixelTest::CommitCompleteOnThread(LayerTreeHostImpl* impl) {
   LayerTreeImpl* commit_tree =
       impl->pending_tree() ? impl->pending_tree() : impl->active_tree();

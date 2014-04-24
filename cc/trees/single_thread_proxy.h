@@ -94,8 +94,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
                           bool for_readback,
                           LayerTreeHostImpl::FrameData* frame);
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
-  bool DoComposite(scoped_refptr<ContextProvider> offscreen_context_provider,
-                   base::TimeTicks frame_begin_time,
+  bool DoComposite(base::TimeTicks frame_begin_time,
                    const gfx::Rect& device_viewport_damage_rect,
                    bool for_readback,
                    LayerTreeHostImpl::FrameData* frame);
@@ -107,7 +106,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;
   LayerTreeHostSingleThreadClient* client_;
-  bool created_offscreen_context_provider_;
 
   // Used on the Thread, but checked on main thread during
   // initialization/shutdown.

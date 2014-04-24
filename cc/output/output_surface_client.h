@@ -27,8 +27,7 @@ class CC_EXPORT OutputSurfaceClient {
   // Called to synchronously re-initialize using the Context3D. Upon returning
   // the compositor should be able to draw using GL what was previously
   // committed.
-  virtual bool DeferredInitialize(
-      scoped_refptr<ContextProvider> offscreen_context_provider) = 0;
+  virtual void DeferredInitialize() = 0;
   virtual void ReleaseGL() = 0;
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
   virtual void BeginFrame(const BeginFrameArgs& args) = 0;

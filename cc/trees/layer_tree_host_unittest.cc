@@ -3085,7 +3085,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     scoped_refptr<TestContextProvider> context_provider =
         TestContextProvider::Create();  // Not bound to thread.
     EXPECT_TRUE(
-        fake_output_surface->InitializeAndSetContext3d(context_provider, NULL));
+        fake_output_surface->InitializeAndSetContext3d(context_provider));
     did_initialize_gl_ = true;
   }
 
@@ -4607,31 +4607,6 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostTestMemoryLimits);
-
-class LayerSetsNeedsFilterContext : public Layer {
- public:
-  static scoped_refptr<LayerSetsNeedsFilterContext> Create() {
-    return make_scoped_refptr(new LayerSetsNeedsFilterContext());
-  }
-
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) OVERRIDE {
-    bool updated = Layer::Update(queue, occlusion);
-    if (needs_context_) {
-      layer_tree_host()->set_needs_filter_context();
-      return true;
-    }
-    return updated;
-  }
-
-  void set_needs_context(bool need) { needs_context_ = need; }
-
- private:
-  LayerSetsNeedsFilterContext() : needs_context_(false) {}
-  virtual ~LayerSetsNeedsFilterContext() {}
-
-  bool needs_context_;
-};
 
 class LayerTreeHostTestNoQuadsForEmptyLayer : public LayerTreeHostTest {
  protected:

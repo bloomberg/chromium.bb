@@ -3168,7 +3168,7 @@ void InitializeGLAndCheck(ContextSharedData* shared_data,
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create(
           context_owned.PassAs<TestWebGraphicsContext3D>());
-  output_surface->InitializeAndSetContext3d(context_provider, NULL);
+  output_surface->InitializeAndSetContext3d(context_provider);
   resource_provider->InitializeGL();
 
   CheckCreateResource(ResourceProvider::GLTexture, resource_provider, context);

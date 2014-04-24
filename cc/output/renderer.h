@@ -23,7 +23,6 @@ struct RendererCapabilitiesImpl {
   // Capabilities copied to main thread.
   ResourceFormat best_texture_format;
   bool allow_partial_texture_updates;
-  bool using_offscreen_context3d;
   int max_texture_size;
   bool using_shared_memory_resources;
 
@@ -61,7 +60,6 @@ class CC_EXPORT Renderer {
   // The |device_viewport_rect| and |device_clip_rect| are in non-y-flipped
   // window space.
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                         ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect,

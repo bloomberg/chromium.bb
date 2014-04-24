@@ -569,8 +569,7 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
                        _,
                        kOverlayRect,
                        BoundingRect(kUVTopLeft, kUVBottomRight))).Times(1);
-  renderer_->DrawFrame(
-      &pass_list, NULL, 1.f, viewport_rect, viewport_rect, false);
+  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
 
   SwapBuffers();
 
@@ -602,8 +601,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadDrawn) {
   // 3 quads in the pass, all should draw.
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(3);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  renderer_->DrawFrame(
-      &pass_list, NULL, 1.f, viewport_rect, viewport_rect, false);
+  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
 
   SwapBuffers();
 
@@ -635,8 +633,7 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   // Should see no overlays.
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(3);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  renderer_->DrawFrame(
-      &pass_list, NULL, 1.f, viewport_rect, viewport_rect, false);
+  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
 
   SwapBuffers();
 

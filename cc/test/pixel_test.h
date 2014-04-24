@@ -28,20 +28,13 @@ class PixelTest : public testing::Test, RendererClient {
   PixelTest();
   virtual ~PixelTest();
 
-  enum OffscreenContextOption {
-    NoOffscreenContext,
-    WithOffscreenContext
-  };
-
   bool RunPixelTest(RenderPassList* pass_list,
-                    OffscreenContextOption provide_offscreen_context,
                     const base::FilePath& ref_file,
                     const PixelComparator& comparator);
 
   bool RunPixelTestWithReadbackTarget(
       RenderPassList* pass_list,
       RenderPass* target,
-      OffscreenContextOption provide_offscreen_context,
       const base::FilePath& ref_file,
       const PixelComparator& comparator);
 

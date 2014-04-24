@@ -44,8 +44,6 @@ class GpuProcessTransportFactory
       scoped_refptr<ui::Reflector> reflector) OVERRIDE;
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenCompositorContextProvider() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
       SharedMainThreadContextProvider() OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
 
@@ -69,12 +67,10 @@ class GpuProcessTransportFactory
 
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
-  scoped_refptr<ContextProviderCommandBuffer> offscreen_compositor_contexts_;
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
   scoped_ptr<GLHelper> gl_helper_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
-  bool offscreen_content_bound_to_other_thread_;
 
   // The contents of this map and its methods may only be used on the compositor
   // thread.

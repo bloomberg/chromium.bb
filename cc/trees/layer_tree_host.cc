@@ -48,19 +48,16 @@ namespace cc {
 
 RendererCapabilities::RendererCapabilities(ResourceFormat best_texture_format,
                                            bool allow_partial_texture_updates,
-                                           bool using_offscreen_context3d,
                                            int max_texture_size,
                                            bool using_shared_memory_resources)
     : best_texture_format(best_texture_format),
       allow_partial_texture_updates(allow_partial_texture_updates),
-      using_offscreen_context3d(using_offscreen_context3d),
       max_texture_size(max_texture_size),
       using_shared_memory_resources(using_shared_memory_resources) {}
 
 RendererCapabilities::RendererCapabilities()
     : best_texture_format(RGBA_8888),
       allow_partial_texture_updates(false),
-      using_offscreen_context3d(false),
       max_texture_size(0),
       using_shared_memory_resources(false) {}
 
@@ -98,7 +95,6 @@ LayerTreeHost::LayerTreeHost(
       next_ui_resource_id_(1),
       animating_(false),
       needs_full_tree_sync_(true),
-      needs_filter_context_(false),
       client_(client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),

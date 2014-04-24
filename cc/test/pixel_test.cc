@@ -36,12 +36,10 @@ PixelTest::PixelTest()
 PixelTest::~PixelTest() {}
 
 bool PixelTest::RunPixelTest(RenderPassList* pass_list,
-                             OffscreenContextOption provide_offscreen_context,
                              const base::FilePath& ref_file,
                              const PixelComparator& comparator) {
   return RunPixelTestWithReadbackTarget(pass_list,
                                         pass_list->back(),
-                                        provide_offscreen_context,
                                         ref_file,
                                         comparator);
 }
@@ -49,7 +47,6 @@ bool PixelTest::RunPixelTest(RenderPassList* pass_list,
 bool PixelTest::RunPixelTestWithReadbackTarget(
     RenderPassList* pass_list,
     RenderPass* target,
-    OffscreenContextOption provide_offscreen_context,
     const base::FilePath& ref_file,
     const PixelComparator& comparator) {
   base::RunLoop run_loop;
@@ -59,16 +56,6 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
                  base::Unretained(this),
                  run_loop.QuitClosure())));
 
-  scoped_refptr<ContextProvider> offscreen_contexts;
-  switch (provide_offscreen_context) {
-    case NoOffscreenContext:
-      break;
-    case WithOffscreenContext:
-      offscreen_contexts = new TestInProcessContextProvider;
-      CHECK(offscreen_contexts->BindToCurrentThread());
-      break;
-  }
-
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect =
       gfx::Rect(device_viewport_size_) + external_device_viewport_offset_;
@@ -77,7 +64,6 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
                                    : external_device_clip_rect_;
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   renderer_->DrawFrame(pass_list,
-                       offscreen_contexts.get(),
                        device_scale_factor,
                        device_viewport_rect,
                        device_clip_rect,

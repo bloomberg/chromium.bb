@@ -58,10 +58,8 @@ static gfx::Transform window_matrix(int x, int y, int width, int height) {
 namespace cc {
 
 DirectRenderer::DrawingFrame::DrawingFrame()
-    : root_render_pass(NULL),
-      current_render_pass(NULL),
-      current_texture(NULL),
-      offscreen_context_provider(NULL) {}
+    : root_render_pass(NULL), current_render_pass(NULL), current_texture(NULL) {
+}
 
 DirectRenderer::DrawingFrame::~DrawingFrame() {}
 
@@ -198,7 +196,6 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 }
 
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
-                               ContextProvider* offscreen_context_provider,
                                float device_scale_factor,
                                const gfx::Rect& device_viewport_rect,
                                const gfx::Rect& device_clip_rect,
@@ -218,7 +215,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.root_damage_rect.Intersect(gfx::Rect(device_viewport_rect.size()));
   frame.device_viewport_rect = device_viewport_rect;
   frame.device_clip_rect = device_clip_rect;
-  frame.offscreen_context_provider = offscreen_context_provider;
   frame.disable_picture_quad_image_filtering =
       disable_picture_quad_image_filtering;
 

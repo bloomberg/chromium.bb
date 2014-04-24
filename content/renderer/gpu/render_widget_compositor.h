@@ -128,8 +128,6 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE;
   virtual void DidCompleteSwapBuffers() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProvider() OVERRIDE;
   virtual void RateLimitSharedMainThreadContext() OVERRIDE;
 
   // cc::LayerTreeHostSingleThreadClient implementation.

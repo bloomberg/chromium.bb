@@ -152,15 +152,11 @@ scoped_refptr<ContextProviderWebContext> SynchronousCompositorFactoryImpl::
   return offscreen_context_for_main_thread_;
 }
 
-// This is called on both renderer main thread (offscreen context creation
-// path shared between cross-process and in-process platforms) and renderer
-// compositor impl thread (InitializeHwDraw) in order to support Android
-// WebView synchronously enable and disable hardware mode multiple times in
-// the same task. This is ok because in-process WGC3D creation may happen on
-// any thread and is lightweight.
+// This is called on the renderer compositor impl thread (InitializeHwDraw) in
+// order to support Android WebView synchronously enable and disable hardware
+// mode multiple times in the same task.
 scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
     GetOffscreenContextProviderForCompositorThread() {
-  base::AutoLock lock(offscreen_context_for_compositor_thread_lock_);
   DCHECK(service_);
   bool failed = false;
   if (!offscreen_context_for_compositor_thread_.get() ||

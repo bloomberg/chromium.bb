@@ -484,9 +484,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // unused resources on the impl thread are returned before commit completes.
   void SetNextCommitWaitsForActivation();
 
-  // Called when the blend mode or filters have been changed.
-  void SetNeedsFilterContextIfNeeded();
-
   void AddDependentNeedsPushProperties();
   void RemoveDependentNeedsPushProperties();
   bool parent_should_know_need_push_properties() const {

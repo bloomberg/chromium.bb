@@ -633,11 +633,6 @@ void RenderWidgetCompositor::DidCompleteSwapBuffers() {
     widget_->OnSwapBuffersComplete();
 }
 
-scoped_refptr<cc::ContextProvider>
-RenderWidgetCompositor::OffscreenContextProvider() {
-  return RenderThreadImpl::current()->OffscreenCompositorContextProvider();
-}
-
 void RenderWidgetCompositor::ScheduleComposite() {
   if (!suppress_schedule_composite_)
     widget_->scheduleComposite();

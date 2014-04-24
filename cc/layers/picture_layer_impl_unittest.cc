@@ -1826,7 +1826,7 @@ TEST_F(DeferredInitPictureLayerImplTest,
   FakeOutputSurface* fake_output_surface =
       static_cast<FakeOutputSurface*>(host_impl_.output_surface());
   ASSERT_TRUE(fake_output_surface->InitializeAndSetContext3d(
-      TestContextProvider::Create(), NULL));
+      TestContextProvider::Create()));
 
   // These will crash PictureLayerImpl if this is not true.
   ASSERT_TRUE(host_impl_.pending_tree()->needs_update_draw_properties());
