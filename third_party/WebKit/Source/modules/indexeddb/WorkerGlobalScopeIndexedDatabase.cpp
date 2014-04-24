@@ -72,8 +72,9 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
     return m_idbFactory.get();
 }
 
-void WorkerGlobalScopeIndexedDatabase::trace(Visitor*)
+void WorkerGlobalScopeIndexedDatabase::trace(Visitor* visitor)
 {
+    visitor->trace(m_idbFactory);
 }
 
 } // namespace WebCore

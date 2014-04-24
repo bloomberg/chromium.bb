@@ -30,6 +30,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -43,13 +44,14 @@ class IDBKey;
 class IDBKeyRange;
 class ExecutionContext;
 
-class IDBFactory : public ScriptWrappable, public RefCounted<IDBFactory> {
+class IDBFactory : public RefCountedWillBeGarbageCollectedFinalized<IDBFactory>, public ScriptWrappable {
 public:
-    static PassRefPtr<IDBFactory> create(IndexedDBClient* client)
+    static PassRefPtrWillBeRawPtr<IDBFactory> create(IndexedDBClient* client)
     {
-        return adoptRef(new IDBFactory(client));
+        return adoptRefWillBeNoop(new IDBFactory(client));
     }
     ~IDBFactory();
+    void trace(Visitor*) { }
 
     PassRefPtr<IDBRequest> getDatabaseNames(ExecutionContext*, ExceptionState&);
 

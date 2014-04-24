@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected
 ] interface IDBFactory {
     [CallWith=ExecutionContext, ImplementedAs=getDatabaseNames, RaisesException] IDBRequest webkitGetDatabaseNames();
 

@@ -53,7 +53,7 @@ private:
     static const char* supplementName();
 
     RefPtr<IndexedDBClient> m_client;
-    RefPtr<IDBFactory> m_idbFactory;
+    RefPtrWillBeMember<IDBFactory> m_idbFactory;
 };
 
 } // namespace WebCore

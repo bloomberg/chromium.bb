@@ -53,8 +53,10 @@ static const char permissionDeniedErrorMessage[] = "The user denied permission t
 IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
     : m_permissionClient(permissionClient)
 {
+#if !ENABLE(OILPAN)
     // We pass a reference to this object before it can be adopted.
     relaxAdoptionRequirement();
+#endif
     ScriptWrappable::init(this);
 }
 
