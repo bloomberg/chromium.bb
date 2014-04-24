@@ -36,6 +36,7 @@
 #include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
+#include "chrome/installer/util/firewall_manager_win.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -255,6 +256,54 @@ void AddInstallExtensionCommandWorkItem(const InstallerState& installer_state,
                                    work_item_list);
 }
 
+// A callback invoked by |work_item| that adds firewall rules for Chrome. Rules
+// are left in-place on rollback unless |remove_on_rollback| is true. This is
+// the case for new installs only. Updates and overinstalls leave the rule
+// in-place on rollback since a previous install of Chrome will be used in that
+// case.
+bool AddFirewallRulesCallback(bool system_level,
+                              BrowserDistribution* dist,
+                              const base::FilePath& chrome_path,
+                              bool remove_on_rollback,
+                              const CallbackWorkItem& work_item) {
+  // There is no work to do on rollback if this is not a new install.
+  if (work_item.IsRollback() || !remove_on_rollback)
+    return true;
+
+  scoped_ptr<FirewallManager> manager =
+      FirewallManager::Create(dist, chrome_path);
+  if (!manager) {
+    LOG(ERROR) << "Failed creating a FirewallManager. Continuing with install.";
+    return true;
+  }
+
+  if (work_item.IsRollback()) {
+    manager->RemoveFirewallRules();
+    return true;
+  }
+
+  // Adding the firewall rule is expected to fail for user-level installs on
+  // Vista+. Try anyway in case the installer is running elevated.
+  if (!manager->AddFirewallRules())
+    LOG(ERROR) << "Failed creating a firewall rules. Continuing with install.";
+
+  // Don't abort installation if the firewall rule couldn't be added.
+  return true;
+}
+
+// Adds work items to |list| to create firewall rules.
+void AddFirewallRulesWorkItems(const InstallerState& installer_state,
+                               BrowserDistribution* dist,
+                               bool is_new_install,
+                               WorkItemList* list) {
+  list->AddCallbackWorkItem(
+      base::Bind(&AddFirewallRulesCallback,
+                 installer_state.system_install(),
+                 dist,
+                 installer_state.target_path().Append(kChromeExe),
+                 is_new_install));
+}
+
 // Returns the basic CommandLine to setup.exe for a quick-enable operation on
 // the binaries. This will unconditionally include --multi-install as well as
 // --verbose-logging if the current installation was launched with
@@ -345,6 +394,7 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
                                  const base::FilePath& setup_path,
                                  const Version& new_version,
+                                 bool is_new_install,
                                  WorkItemList* list) {
   const Products& products = installer_state.products();
   for (Products::const_iterator it = products.begin(); it < products.end();
@@ -359,6 +409,8 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
                             list);
       AddInstallExtensionCommandWorkItem(installer_state, original_state,
                                          setup_path, new_version, p, list);
+      AddFirewallRulesWorkItems(
+          installer_state, p.distribution(), is_new_install, list);
     }
     if (p.is_chrome_binaries()) {
       AddQueryEULAAcceptanceWorkItems(
@@ -1164,8 +1216,12 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   // Add any remaining work items that involve special settings for
   // each product.
-  AddProductSpecificWorkItems(original_state, installer_state, setup_path,
-                              new_version, install_list);
+  AddProductSpecificWorkItems(original_state,
+                              installer_state,
+                              setup_path,
+                              new_version,
+                              current_version == NULL,
+                              install_list);
 
   // Copy over brand, usagestats, and other values.
   AddGoogleUpdateWorkItems(original_state, installer_state, install_list);

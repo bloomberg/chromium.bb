@@ -8,11 +8,17 @@
 #include "base/strings/string16.h"
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/legacy_firewall_manager_win.h"
+
+#include "installer_util_strings.h"  // NOLINT
 
 namespace installer {
 
 namespace {
+
+const uint16 kDefaultMdnsPort = 5353;
 
 class FirewallManagerAdvancedImpl : public FirewallManager {
  public:
@@ -29,8 +35,8 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
   };
 
   virtual bool AddFirewallRules() OVERRIDE {
-    // Nothing yet.
-    return true;
+    return manager_.AddUDPRule(GetMdnsRuleName(), GetMdnsRuleDescription(),
+                               kDefaultMdnsPort);
   }
 
   virtual void RemoveFirewallRules() OVERRIDE {
@@ -38,6 +44,22 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
   }
 
  private:
+  static base::string16 GetMdnsRuleName() {
+#if defined(GOOGLE_CHROME_BUILD)
+    if (InstallUtil::IsChromeSxSProcess())
+      return GetLocalizedString(IDS_INBOUND_MDNS_RULE_NAME_CANARY_BASE);
+#endif
+    return GetLocalizedString(IDS_INBOUND_MDNS_RULE_NAME_BASE);
+  }
+
+  static base::string16 GetMdnsRuleDescription() {
+#if defined(GOOGLE_CHROME_BUILD)
+    if (InstallUtil::IsChromeSxSProcess())
+      return GetLocalizedString(IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY_BASE);
+#endif
+      return GetLocalizedString(IDS_INBOUND_MDNS_RULE_DESCRIPTION_BASE);
+  }
+
   AdvancedFirewallManager manager_;
   DISALLOW_COPY_AND_ASSIGN(FirewallManagerAdvancedImpl);
 };
@@ -58,8 +80,9 @@ class FirewallManagerLegacyImpl : public FirewallManager {
   };
 
   virtual bool AddFirewallRules() OVERRIDE {
-    // Nothing yet.
-    return true;
+    // Change nothing if rule is set.
+    return manager_.GetAllowIncomingConnection(NULL) ||
+        manager_.SetAllowIncomingConnection(true);
   }
 
   virtual void RemoveFirewallRules() OVERRIDE {

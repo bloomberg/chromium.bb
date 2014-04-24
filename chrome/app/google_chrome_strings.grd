@@ -1082,6 +1082,22 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         ''' It also controls what page is shown when you start Chrome or search from the Omnibox. '''
       </message>
 
+      <!-- Windows firewall rule strings. -->
+      <if expr="is_win">
+        <message name="IDS_INBOUND_MDNS_RULE_NAME" desc="The name of the firewall rule allowing inbound mDNS traffic.">
+          Google Chrome (mDNS-In).
+        </message>
+        <message name="IDS_INBOUND_MDNS_RULE_NAME_CANARY" desc="The name of the firewall rule allowing inbound mDNS traffic for canary.">
+          Google Chrome Canary (mDNS-In).
+        </message>
+        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION" desc="The description of the firewall rule allowing inbound mDNS traffic.">
+          Inbound rule for Google Chrome to allow mDNS traffic.
+        </message>
+        <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY" desc="The description of the firewall rule allowing inbound mDNS traffic canary.">
+          Inbound rule for Google Chrome Canary to allow mDNS traffic.
+        </message>
+      </if>
+
       <!-- Update bubble -->
       <message name="IDS_REINSTALL_APP" desc="Text for the button the user clicks to reinstall the app.">
         Reinstall Chrome

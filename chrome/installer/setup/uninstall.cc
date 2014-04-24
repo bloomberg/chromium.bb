@@ -35,6 +35,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
+#include "chrome/installer/util/firewall_manager_win.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
@@ -1047,6 +1048,14 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
   }
 }
 
+void UninstallFirewallRules(BrowserDistribution* dist,
+                            const base::FilePath& chrome_exe) {
+  scoped_ptr<FirewallManager> manager =
+      FirewallManager::Create(dist, chrome_exe);
+  if (manager)
+    manager->RemoveFirewallRules();
+}
+
 InstallStatus UninstallProduct(const InstallationState& original_state,
                                const InstallerState& installer_state,
                                const base::FilePath& setup_exe,
@@ -1226,6 +1235,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     ProcessOnOsUpgradeWorkItems(installer_state, product);
 
     UninstallActiveSetupEntries(installer_state, product);
+
+    UninstallFirewallRules(browser_dist, base::FilePath(chrome_exe));
 
     // Notify the shell that associations have changed since Chrome was likely
     // unregistered.
