@@ -61,11 +61,12 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
  public:
   virtual ~QuicConnectionVisitorInterface() {}
 
-  // A simple visitor interface for dealing with data frames.  The session
-  // should determine if all frames will be accepted, and return true if so.
-  // If any frames can't be processed or buffered, none of the data should
-  // be used, and the callee should return false.
-  virtual bool OnStreamFrames(const std::vector<QuicStreamFrame>& frames) = 0;
+  // A simple method to determine if all frames will be accepted by the visitor.
+  virtual bool WillAcceptStreamFrames(
+      const std::vector<QuicStreamFrame>& frames) = 0;
+
+  // A simple visitor interface for dealing with data frames.
+  virtual void OnStreamFrames(const std::vector<QuicStreamFrame>& frames) = 0;
 
   // The session should process all WINDOW_UPDATE frames, adjusting both stream
   // and connection level flow control windows.

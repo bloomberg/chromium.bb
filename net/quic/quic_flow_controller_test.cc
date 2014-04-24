@@ -17,16 +17,18 @@ using base::StringPrintf;
 namespace net {
 namespace test {
 
+using ::testing::_;
+
 TEST(QuicFlowControllerTest, SendingBytes) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   const QuicStreamId kStreamId = 1234;
   const uint64 kSendWindow = 100;
   const uint64 kReceiveWindow = 200;
   const uint64 kMaxReceiveWindow = 200;
 
-  QuicFlowController fc(kStreamId, false, kSendWindow, kReceiveWindow,
-                        kMaxReceiveWindow);
+  QuicFlowController fc(QuicVersionMax(), kStreamId, false, kSendWindow,
+                        kReceiveWindow, kMaxReceiveWindow);
 
   EXPECT_TRUE(fc.IsEnabled());
   EXPECT_FALSE(fc.IsBlocked());
@@ -66,15 +68,15 @@ TEST(QuicFlowControllerTest, SendingBytes) {
 }
 
 TEST(QuicFlowControllerTest, ReceivingBytes) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   const QuicStreamId kStreamId = 1234;
   const uint64 kSendWindow = 100;
   const uint64 kReceiveWindow = 200;
   const uint64 kMaxReceiveWindow = 200;
 
-  QuicFlowController fc(kStreamId, false, kSendWindow, kReceiveWindow,
-                        kMaxReceiveWindow);
+  QuicFlowController fc(QuicVersionMax(), kStreamId, false, kSendWindow,
+                        kReceiveWindow, kMaxReceiveWindow);
 
   EXPECT_TRUE(fc.IsEnabled());
   EXPECT_FALSE(fc.IsBlocked());
@@ -93,8 +95,67 @@ TEST(QuicFlowControllerTest, ReceivingBytes) {
             QuicFlowControllerPeer::ReceiveWindowSize(&fc));
 
   MockConnection connection(false);
-  EXPECT_CALL(connection, SendWindowUpdate(kStreamId, ::testing::_)).Times(1);
+  EXPECT_CALL(connection, SendWindowUpdate(kStreamId, _)).Times(1);
   fc.MaybeSendWindowUpdate(&connection);
+}
+
+TEST(QuicFlowControllerTest, DisabledWhenQuicVersionDoesNotSupportFlowControl) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
+
+  const QuicStreamId kStreamId = 1234;
+  const uint64 kSendWindow = 100;
+  const uint64 kReceiveWindow = 200;
+  const uint64 kMaxReceiveWindow = 200;
+
+  QuicFlowController fc(QUIC_VERSION_16, kStreamId, false, kSendWindow,
+                        kReceiveWindow, kMaxReceiveWindow);
+
+  // Should not be enabled, and should not report as blocked.
+  EXPECT_FALSE(fc.IsEnabled());
+  EXPECT_FALSE(fc.IsBlocked());
+  EXPECT_FALSE(fc.FlowControlViolation());
+
+  // Any attempts to add/remove bytes should have no effect.
+  EXPECT_EQ(kSendWindow, fc.SendWindowSize());
+  EXPECT_EQ(kSendWindow, QuicFlowControllerPeer::SendWindowOffset(&fc));
+  EXPECT_EQ(kReceiveWindow, QuicFlowControllerPeer::ReceiveWindowOffset(&fc));
+  fc.AddBytesSent(123);
+  fc.AddBytesConsumed(456);
+  fc.AddBytesBuffered(789);
+  fc.RemoveBytesBuffered(321);
+  EXPECT_EQ(kSendWindow, fc.SendWindowSize());
+  EXPECT_EQ(kSendWindow, QuicFlowControllerPeer::SendWindowOffset(&fc));
+  EXPECT_EQ(kReceiveWindow, QuicFlowControllerPeer::ReceiveWindowOffset(&fc));
+
+  // Any attempt to change offset should have no effect.
+  EXPECT_EQ(kSendWindow, fc.SendWindowSize());
+  EXPECT_EQ(kSendWindow, QuicFlowControllerPeer::SendWindowOffset(&fc));
+  fc.UpdateSendWindowOffset(kSendWindow + 12345);
+  EXPECT_EQ(kSendWindow, fc.SendWindowSize());
+  EXPECT_EQ(kSendWindow, QuicFlowControllerPeer::SendWindowOffset(&fc));
+
+  // Should never send WINDOW_UPDATE or BLOCKED frames, even if the internal
+  // state implies that it should.
+  MockConnection connection(false);
+
+  // If the flow controller was enabled, then a send window size of 0 would
+  // trigger a BLOCKED frame to be sent.
+  EXPECT_EQ(kSendWindow, fc.SendWindowSize());
+  EXPECT_CALL(connection, SendBlocked(_)).Times(0);
+  fc.MaybeSendBlocked(&connection);
+
+  // If the flow controller was enabled, then a WINDOW_UPDATE would be sent if
+  // (receive window) < (max receive window / 2)
+  QuicFlowControllerPeer::SetReceiveWindowOffset(&fc, kMaxReceiveWindow / 10);
+  EXPECT_TRUE(QuicFlowControllerPeer::ReceiveWindowSize(&fc) <
+              (kMaxReceiveWindow / 2));
+  EXPECT_CALL(connection, SendWindowUpdate(_, _)).Times(0);
+  fc.MaybeSendWindowUpdate(&connection);
+
+  // Should not be enabled, and should not report as blocked.
+  EXPECT_FALSE(fc.IsEnabled());
+  EXPECT_FALSE(fc.IsBlocked());
+  EXPECT_FALSE(fc.FlowControlViolation());
 }
 
 }  // namespace test

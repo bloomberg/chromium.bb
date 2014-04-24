@@ -94,9 +94,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   bool fin,
                                                   QuicAckNotifier* notifier) {
   IsHandshake handshake = id == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE;
-  // The caller should have flushed pending frames before sending handshake
-  // messages.
-  DCHECK(handshake == NOT_HANDSHAKE || !HasPendingFrames());
   SendQueuedFrames(false);
 
   size_t total_bytes_consumed = 0;

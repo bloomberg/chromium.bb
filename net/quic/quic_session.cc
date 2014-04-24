@@ -31,10 +31,14 @@ class VisitorShim : public QuicConnectionVisitorInterface {
  public:
   explicit VisitorShim(QuicSession* session) : session_(session) {}
 
-  virtual bool OnStreamFrames(const vector<QuicStreamFrame>& frames) OVERRIDE {
-    bool accepted = session_->OnStreamFrames(frames);
+  virtual bool WillAcceptStreamFrames(
+      const vector<QuicStreamFrame>& frames) OVERRIDE {
+    return session_->WillAcceptStreamFrames(frames);
+  }
+
+  virtual void OnStreamFrames(const vector<QuicStreamFrame>& frames) OVERRIDE {
+    session_->OnStreamFrames(frames);
     session_->PostProcessAfterData();
-    return accepted;
   }
   virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE {
     session_->OnRstStream(frame);
@@ -127,7 +131,8 @@ QuicSession::~QuicSession() {
   STLDeleteValues(&stream_map_);
 }
 
-bool QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
+bool QuicSession::WillAcceptStreamFrames(
+    const vector<QuicStreamFrame>& frames) {
   for (size_t i = 0; i < frames.size(); ++i) {
     // TODO(rch) deal with the error case of stream id 0
     if (IsClosedStream(frames[i].stream_id)) {
@@ -142,6 +147,10 @@ bool QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
     // sure we update the connection.
   }
 
+  return true;
+}
+
+void QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
   for (size_t i = 0; i < frames.size(); ++i) {
     QuicStreamId stream_id = frames[i].stream_id;
     ReliableQuicStream* stream = GetStream(stream_id);
@@ -150,8 +159,6 @@ bool QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
     }
     stream->OnStreamFrame(frames[i]);
   }
-
-  return true;
 }
 
 void QuicSession::OnStreamHeaders(QuicStreamId stream_id,

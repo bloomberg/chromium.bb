@@ -21,7 +21,6 @@
 
 using base::StringPiece;
 using std::min;
-using testing::_;
 using testing::CreateFunctor;
 using testing::InSequence;
 using testing::Invoke;
@@ -29,6 +28,7 @@ using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 using testing::WithArgs;
+using testing::_;
 
 namespace net {
 namespace test {
@@ -316,7 +316,7 @@ TEST_F(ReliableQuicStreamTest, OnlySendOneRst) {
 }
 
 TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
   set_initial_flow_control_window_bytes(1000);
 
   Initialize(kShouldProcessData);
@@ -352,7 +352,7 @@ TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
 TEST_F(ReliableQuicStreamTest, StreamFlowControlShouldNotBlockInLessThanQ017) {
   // TODO(rjshade): Remove this test when we no longer have any versions <
   //                QUIC_VERSION_17.
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   // Make sure we are using a version which does not support flow control.
   QuicVersion kTestQuicVersions[] = {QUIC_VERSION_16};

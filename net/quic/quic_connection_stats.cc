@@ -12,8 +12,10 @@ QuicConnectionStats::QuicConnectionStats()
     : bytes_sent(0),
       packets_sent(0),
       stream_bytes_sent(0),
+      packets_discarded(0),
       bytes_received(0),
       packets_received(0),
+      packets_processed(0),
       stream_bytes_received(0),
       bytes_retransmitted(0),
       packets_retransmitted(0),
@@ -45,8 +47,10 @@ ostream& operator<<(ostream& os, const QuicConnectionStats& s) {
   os << "{ bytes sent: " << s.bytes_sent
      << ", packets sent:" << s.packets_sent
      << ", stream bytes sent: " << s.stream_bytes_sent
+     << ", packets discarded: " << s.packets_discarded
      << ", bytes received: " << s.bytes_received
      << ", packets received: " << s.packets_received
+     << ", packets processed: " << s.packets_processed
      << ", stream bytes received: " << s.stream_bytes_received
      << ", bytes retransmitted: " << s.bytes_retransmitted
      << ", packets retransmitted: " << s.packets_retransmitted

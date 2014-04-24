@@ -227,7 +227,7 @@ QuicClientSession::~QuicClientSession() {
   }
 }
 
-bool QuicClientSession::OnStreamFrames(
+void QuicClientSession::OnStreamFrames(
     const std::vector<QuicStreamFrame>& frames) {
   // Record total number of stream frames.
   UMA_HISTOGRAM_COUNTS("Net.QuicNumStreamFramesInPacket", frames.size());

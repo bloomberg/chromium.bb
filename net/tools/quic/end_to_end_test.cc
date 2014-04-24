@@ -164,7 +164,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     FLAGS_enable_quic_pacing = GetParam().use_pacing;
 
     if (negotiated_version_ >= QUIC_VERSION_17) {
-      FLAGS_enable_quic_stream_flow_control = true;
+      FLAGS_enable_quic_stream_flow_control_2 = true;
     }
     VLOG(1) << "Using Configuration: " << GetParam();
 
@@ -300,6 +300,32 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // chrome's tree.
     // client_writer_->set_fake_reorder_percentage(reorder);
     // server_writer_->set_fake_reorder_percentage(reorder);
+  }
+
+  // Verifies that the client and server connections were both free of packets
+  // being discarded, based on connection stats.
+  void VerifyCleanConnection(bool had_packet_loss) {
+    QuicConnectionStats client_stats =
+        client_->client()->session()->connection()->GetStats();
+    if (!had_packet_loss) {
+      EXPECT_EQ(0u, client_stats.packets_lost);
+    }
+    EXPECT_EQ(0u, client_stats.packets_discarded);
+    EXPECT_EQ(0u, client_stats.packets_dropped);
+    EXPECT_EQ(client_stats.packets_received, client_stats.packets_processed);
+
+    QuicDispatcher* dispatcher =
+        QuicServerPeer::GetDispatcher(server_thread_->server());
+    ASSERT_EQ(1u, dispatcher->session_map().size());
+    QuicSession* session = dispatcher->session_map().begin()->second;
+    QuicConnectionStats server_stats = session->connection()->GetStats();
+    if (!had_packet_loss) {
+      EXPECT_EQ(0u, server_stats.packets_lost);
+    }
+    EXPECT_EQ(0u, server_stats.packets_discarded);
+    // TODO(ianswett): Restore the check for packets_dropped equals 0.
+    // The expect for packets received is equal to packets processed fails
+    // due to version negotiation packets.
   }
 
   IPEndPoint server_address_;
@@ -455,10 +481,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
-  QuicConnectionStats stats =
-      client_->client()->session()->connection()->GetStats();
-  // TODO(rtenneti): check for stats.packets_lost is flaky on valgrind.
-  // EXPECT_EQ(0u, stats.packets_lost);
+  VerifyCleanConnection(false);
 }
 
 TEST_P(EndToEndTest, LargePostNoPacketLoss1sRTT) {
@@ -476,9 +499,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss1sRTT) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
-  QuicConnectionStats stats =
-      client_->client()->session()->connection()->GetStats();
-  EXPECT_EQ(0u, stats.packets_lost);
+  VerifyCleanConnection(false);
 }
 
 TEST_P(EndToEndTest, LargePostWithPacketLoss) {
@@ -519,6 +540,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  // TODO(ianswett): Add a VerifyCleanConnection call once this is clean.
 }
 
 TEST_P(EndToEndTest, LargePostWithPacketLossAndBlockedSocket) {
@@ -620,6 +642,7 @@ TEST_P(EndToEndTest, LargePostFEC) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  VerifyCleanConnection(true);
 }
 
 TEST_P(EndToEndTest, LargePostLargeBuffer) {
@@ -641,6 +664,7 @@ TEST_P(EndToEndTest, LargePostLargeBuffer) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+  VerifyCleanConnection(false);
 }
 
 TEST_P(EndToEndTest, InvalidStream) {
@@ -925,8 +949,7 @@ TEST_P(EndToEndTest, ConnectionMigration) {
 
   scoped_ptr<WrongAddressWriter> writer(new WrongAddressWriter());
 
-  writer->set_writer(new QuicDefaultPacketWriter(
-      QuicClientPeer::GetFd(client_->client())));
+  writer->set_writer(new QuicDefaultPacketWriter(client_->client()->fd()));
   QuicConnectionPeer::SetWriter(client_->client()->session()->connection(),
                                 writer.get());
 

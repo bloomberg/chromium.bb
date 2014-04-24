@@ -124,6 +124,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
       rst_sent_(false),
       is_server_(session_->is_server()),
       flow_controller_(
+          session_->connection()->version(),
           id_,
           is_server_,
           session_->config()->HasReceivedInitialFlowControlWindowBytes() ?
@@ -131,9 +132,6 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
               kDefaultFlowControlSendWindow,
           session_->connection()->max_flow_control_receive_window_bytes(),
           session_->connection()->max_flow_control_receive_window_bytes()) {
-  if (session_->connection()->version() < QUIC_VERSION_17) {
-    flow_controller_.Disable();
-  }
 }
 
 ReliableQuicStream::~ReliableQuicStream() {
@@ -164,21 +162,17 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
 
   bool accepted = sequencer_.OnStreamFrame(frame);
 
-  if (version() >= QUIC_VERSION_17) {
-    if (flow_controller_.FlowControlViolation()) {
-      session_->connection()->SendConnectionClose(QUIC_FLOW_CONTROL_ERROR);
-      return false;
-    }
-    MaybeSendWindowUpdate();
+  if (flow_controller_.FlowControlViolation()) {
+    session_->connection()->SendConnectionClose(QUIC_FLOW_CONTROL_ERROR);
+    return false;
   }
+  MaybeSendWindowUpdate();
 
   return accepted;
 }
 
 void ReliableQuicStream::MaybeSendWindowUpdate() {
-  if (version() >= QUIC_VERSION_17) {
-    flow_controller_.MaybeSendWindowUpdate(session()->connection());
-  }
+  flow_controller_.MaybeSendWindowUpdate(session()->connection());
 }
 
 int ReliableQuicStream::num_frames_received() {
@@ -321,13 +315,13 @@ QuicConsumedData ReliableQuicStream::WritevData(
   // How much data we want to write.
   size_t write_length = TotalIovecLength(iov, iov_count);
 
-  // How much data we are allowed to write from flow control.
-  size_t send_window = flow_controller_.SendWindowSize();
-
   // A FIN with zero data payload should not be flow control blocked.
   bool fin_with_zero_data = (fin && write_length == 0);
 
-  if (version() >= QUIC_VERSION_17 && flow_controller_.IsEnabled()) {
+  if (flow_controller_.IsEnabled()) {
+    // How much data we are allowed to write from flow control.
+    size_t send_window = flow_controller_.SendWindowSize();
+
     if (send_window == 0 && !fin_with_zero_data) {
       // Quick return if we can't send anything.
       flow_controller_.MaybeSendBlocked(session()->connection());
@@ -351,15 +345,11 @@ QuicConsumedData ReliableQuicStream::WritevData(
       id(), data, stream_bytes_written_, fin, ack_notifier_delegate);
   stream_bytes_written_ += consumed_data.bytes_consumed;
 
-  if (version() >= QUIC_VERSION_17 && flow_controller_.IsEnabled()) {
-    flow_controller_.AddBytesSent(consumed_data.bytes_consumed);
-  }
+  flow_controller_.AddBytesSent(consumed_data.bytes_consumed);
 
   if (consumed_data.bytes_consumed == write_length) {
     if (!fin_with_zero_data) {
-      if (version() >= QUIC_VERSION_17) {
-        flow_controller_.MaybeSendBlocked(session()->connection());
-      }
+      flow_controller_.MaybeSendBlocked(session()->connection());
     }
     if (fin && consumed_data.fin_consumed) {
       fin_sent_ = true;
@@ -407,8 +397,7 @@ void ReliableQuicStream::OnClose() {
   CloseReadSide();
   CloseWriteSide();
 
-  if (version() > QUIC_VERSION_13 &&
-      !fin_sent_ && !rst_sent_) {
+  if (!fin_sent_ && !rst_sent_) {
     // For flow control accounting, we must tell the peer how many bytes we have
     // written on this stream before termination. Done here if needed, using a
     // RST frame.

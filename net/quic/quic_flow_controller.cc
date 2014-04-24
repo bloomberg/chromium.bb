@@ -13,7 +13,8 @@ namespace net {
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
-QuicFlowController::QuicFlowController(QuicStreamId id,
+QuicFlowController::QuicFlowController(QuicVersion version,
+                                       QuicStreamId id,
                                        bool is_server,
                                        uint64 send_window_offset,
                                        uint64 receive_window_offset,
@@ -33,6 +34,11 @@ QuicFlowController::QuicFlowController(QuicStreamId id,
            << ", max receive window to: "
            << max_receive_window_
            << ", setting send window offset to: " << send_window_offset_;
+  if (version < QUIC_VERSION_17) {
+    DVLOG(1) << ENDPOINT << "Disabling QuicFlowController for stream " << id_
+             << ", QUIC version " << version;
+    Disable();
+  }
 }
 
 void QuicFlowController::AddBytesConsumed(uint64 bytes_consumed) {
@@ -87,6 +93,10 @@ void QuicFlowController::AddBytesSent(uint64 bytes_sent) {
 }
 
 bool QuicFlowController::FlowControlViolation() {
+  if (!IsEnabled()) {
+    return false;
+  }
+
   if (receive_window_offset_ < TotalReceivedBytes()) {
     // TODO(rjshade): Lower severity from ERROR once we have established that
     //                flow control is working correctly.
@@ -144,6 +154,10 @@ void QuicFlowController::MaybeSendBlocked(QuicConnection* connection) {
 }
 
 bool QuicFlowController::UpdateSendWindowOffset(uint64 new_send_window_offset) {
+  if (!IsEnabled()) {
+    return false;
+  }
+
   // Only update if send window has increased.
   if (new_send_window_offset <= send_window_offset_) {
     return false;
@@ -162,7 +176,7 @@ void QuicFlowController::Disable() {
 }
 
 bool QuicFlowController::IsEnabled() const {
-  return FLAGS_enable_quic_stream_flow_control && is_enabled_;
+  return FLAGS_enable_quic_stream_flow_control_2 && is_enabled_;
 }
 
 bool QuicFlowController::IsBlocked() const {

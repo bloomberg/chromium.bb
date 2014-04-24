@@ -261,11 +261,11 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
 }
 
 TEST(QuicDispatcherFlowControlTest, NoNewVersion17ConnectionsIfFlagDisabled) {
-  // If FLAGS_enable_quic_stream_flow_control is disabled
+  // If FLAGS_enable_quic_stream_flow_control_2 is disabled
   // then the dispatcher should stop creating connections that support
   // QUIC_VERSION_17 (existing connections will stay alive).
   // TODO(rjshade): Remove once
-  // FLAGS_enable_quic_stream_flow_control is removed.
+  // FLAGS_enable_quic_stream_flow_control_2 is removed.
 
   EpollServer eps;
   QuicConfig config;
@@ -288,7 +288,7 @@ TEST(QuicDispatcherFlowControlTest, NoNewVersion17ConnectionsIfFlagDisabled) {
   dispatcher.Initialize(0);
 
   // When flag is enabled, new connections should support QUIC_VERSION_17.
-  FLAGS_enable_quic_stream_flow_control = true;
+  FLAGS_enable_quic_stream_flow_control_2 = true;
   scoped_ptr<QuicConnection> connection_1(
       QuicDispatcherPeer::CreateQuicConnection(
           &dispatcher, kCID, client, server, kInitialFlowControlWindowForTest));
@@ -296,7 +296,7 @@ TEST(QuicDispatcherFlowControlTest, NoNewVersion17ConnectionsIfFlagDisabled) {
 
 
   // When flag is disabled, new connections should not support QUIC_VERSION_17.
-  FLAGS_enable_quic_stream_flow_control = false;
+  FLAGS_enable_quic_stream_flow_control_2 = false;
   scoped_ptr<QuicConnection> connection_2(
       QuicDispatcherPeer::CreateQuicConnection(
           &dispatcher, kCID, client, server, kInitialFlowControlWindowForTest));

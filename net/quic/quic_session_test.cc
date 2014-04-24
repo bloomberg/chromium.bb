@@ -529,7 +529,7 @@ TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
   QuicStreamFrame data1(stream_id1, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
-  EXPECT_TRUE(session_.OnStreamFrames(frames));
+  EXPECT_TRUE(session_.WillAcceptStreamFrames(frames));
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
 
   QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR, 0);
@@ -547,7 +547,7 @@ TEST_P(QuicSessionTest, MultipleRstStreamsCauseSingleConnectionClose) {
   QuicStreamFrame data1(kStreamId, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
-  EXPECT_TRUE(session_.OnStreamFrames(frames));
+  EXPECT_TRUE(session_.WillAcceptStreamFrames(frames));
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
 
   // Process first invalid stream reset, resulting in the connection being
@@ -571,7 +571,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   if (version() < QUIC_VERSION_17) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   // Ensure that Writev consumes all the data it is given (simulate no socket
   // blocking).
@@ -599,7 +599,7 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
   if (version() < QUIC_VERSION_17) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control_2, true);
 
   uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
 

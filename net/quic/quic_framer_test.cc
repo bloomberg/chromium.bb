@@ -1687,109 +1687,6 @@ TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
   CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 }
 
-TEST_P(QuicFramerTest, AckFrameV13) {
-  if (framer_.version() != QUIC_VERSION_13) {
-    return;
-  }
-
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xA8, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags (entropy)
-    0x01,
-
-    // frame type (ack frame)
-    // (has nacks, not truncated, 6 byte largest observed, 1 byte delta)
-    0x6C,
-    // entropy hash of sent packets till least awaiting - 1.
-    0xAB,
-    // least packet sequence number awaiting an ack, delta from sequence number.
-    0x08, 0x00, 0x00, 0x00,
-    0x00, 0x00,
-    // entropy hash of all received packets.
-    0xBA,
-    // largest observed packet sequence number
-    0xBF, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // Zero delta time.
-    0x0, 0x0,
-    // num missing packets
-    0x01,
-    // missing packet delta
-    0x01,
-    // 0 more missing packets in range.
-    0x00,
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-
-  EXPECT_EQ(0u, visitor_.stream_frames_.size());
-  ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  const QuicAckFrame& frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(0xAB, frame.sent_info.entropy_hash);
-  EXPECT_EQ(0xBA, frame.received_info.entropy_hash);
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABF), frame.received_info.largest_observed);
-  ASSERT_EQ(1u, frame.received_info.missing_packets.size());
-  SequenceNumberSet::const_iterator missing_iter =
-      frame.received_info.missing_packets.begin();
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABE), *missing_iter);
-  EXPECT_EQ(GG_UINT64_C(0x0123456789AA0), frame.sent_info.least_unacked);
-
-  const size_t kSentEntropyOffset = kQuicFrameTypeSize;
-  const size_t kLeastUnackedOffset = kSentEntropyOffset + kQuicEntropyHashSize;
-  const size_t kReceivedEntropyOffset = kLeastUnackedOffset +
-      PACKET_6BYTE_SEQUENCE_NUMBER;
-  const size_t kLargestObservedOffset = kReceivedEntropyOffset +
-      kQuicEntropyHashSize;
-  const size_t kMissingDeltaTimeOffset = kLargestObservedOffset +
-      PACKET_6BYTE_SEQUENCE_NUMBER;
-  const size_t kNumMissingPacketOffset = kMissingDeltaTimeOffset +
-      kQuicDeltaTimeLargestObservedSize;
-  const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
-      kNumberOfMissingPacketsSize;
-  const size_t kMissingPacketsRange = kMissingPacketsOffset +
-      PACKET_1BYTE_SEQUENCE_NUMBER;
-  // Now test framing boundaries
-  const size_t ack_frame_size = kMissingPacketsRange +
-      PACKET_1BYTE_SEQUENCE_NUMBER;
-  for (size_t i = kQuicFrameTypeSize; i < ack_frame_size; ++i) {
-    string expected_error;
-    if (i < kLeastUnackedOffset) {
-      expected_error = "Unable to read entropy hash for sent packets.";
-    } else if (i < kReceivedEntropyOffset) {
-      expected_error = "Unable to read least unacked delta.";
-    } else if (i < kLargestObservedOffset) {
-      expected_error = "Unable to read entropy hash for received packets.";
-    } else if (i < kMissingDeltaTimeOffset) {
-      expected_error = "Unable to read largest observed.";
-    } else if (i < kNumMissingPacketOffset) {
-      expected_error = "Unable to read delta time largest observed.";
-    } else if (i < kMissingPacketsOffset) {
-      expected_error = "Unable to read num missing packet ranges.";
-    } else if (i < kMissingPacketsRange) {
-      expected_error = "Unable to read missing sequence number delta.";
-    } else {
-      expected_error = "Unable to read missing sequence number range.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_ACK_DATA);
-  }
-}
-
 TEST_P(QuicFramerTest, AckFrame15) {
   if (framer_.version() != QUIC_VERSION_15) {
     return;
@@ -2488,89 +2385,7 @@ TEST_P(QuicFramerTest, AckFrame500Nacks15) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, AckFrame500NacksV13) {
-  if (framer_.version() != QUIC_VERSION_13) {
-    return;
-  }
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xA8, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags (entropy)
-    0x01,
-
-    // frame type (ack frame)
-    // (has nacks, not truncated, 6 byte largest observed, 1 byte delta)
-    0x6C,
-    // entropy hash of sent packets till least awaiting - 1.
-    0xAB,
-    // least packet sequence number awaiting an ack, delta from sequence number.
-    0x08, 0x00, 0x00, 0x00,
-    0x00, 0x00,
-    // entropy hash of all received packets.
-    0xBA,
-    // largest observed packet sequence number
-    0xBF, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // Zero delta time.
-    0x0, 0x0,
-    // num missing packet ranges
-    0x02,
-    // missing packet delta
-    0x01,
-    // 243 more missing packets in range.
-    // The ranges are listed in this order so the re-constructed packet matches.
-    0xF3,
-    // No gap between ranges
-    0x00,
-    // 255 more missing packets in range.
-    0xFF,
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-
-  EXPECT_EQ(0u, visitor_.stream_frames_.size());
-  ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  QuicAckFrame* frame = visitor_.ack_frames_[0];
-  EXPECT_EQ(0xAB, frame->sent_info.entropy_hash);
-  EXPECT_EQ(0xBA, frame->received_info.entropy_hash);
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABF),
-            frame->received_info.largest_observed);
-  ASSERT_EQ(500u, frame->received_info.missing_packets.size());
-  SequenceNumberSet::const_iterator first_missing_iter =
-      frame->received_info.missing_packets.begin();
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABE) - 499, *first_missing_iter);
-  SequenceNumberSet::const_reverse_iterator last_missing_iter =
-      frame->received_info.missing_packets.rbegin();
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABE), *last_missing_iter);
-  EXPECT_EQ(GG_UINT64_C(0x0123456789AA0), frame->sent_info.least_unacked);
-
-  // Verify that the packet re-serializes identically.
-  QuicFrames frames;
-  frames.push_back(QuicFrame(frame));
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildUnsizedDataPacket(*visitor_.header_, frames).packet);
-  ASSERT_TRUE(data != NULL);
-
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
-}
-
 TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
-  if (framer_.version() == QUIC_VERSION_13) {
-    return;
-  }
   unsigned char packet[] = {
     // public flags (8 byte connection_id)
     0x3C,
@@ -2621,68 +2436,7 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
   }
 }
 
-TEST_P(QuicFramerTest, CongestionFeedbackFrameTCPV13) {
-  if (framer_.version() != QUIC_VERSION_13) {
-    return;
-  }
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (congestion feedback frame)
-    0x20,
-    // congestion feedback type (tcp)
-    0x00,
-    // ack_frame.feedback.tcp.accumulated_number_of_lost_packets
-    0x01, 0x02,
-    // ack_frame.feedback.tcp.receive_window
-    0x03, 0x04,
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-
-  EXPECT_EQ(0u, visitor_.stream_frames_.size());
-  ASSERT_EQ(1u, visitor_.congestion_feedback_frames_.size());
-  const QuicCongestionFeedbackFrame& frame =
-      *visitor_.congestion_feedback_frames_[0];
-  ASSERT_EQ(kTCP, frame.type);
-  EXPECT_EQ(0x4030u, frame.tcp.receive_window);
-
-  // Now test framing boundaries
-  for (size_t i = kQuicFrameTypeSize; i < 6; ++i) {
-    string expected_error;
-    if (i < 2) {
-      expected_error = "Unable to read congestion feedback type.";
-    } else if (i < 4) {
-      expected_error = "Unable to read accumulated number of lost packets.";
-    } else if (i < 6) {
-      expected_error = "Unable to read receive window.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
-  }
-}
-
 TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
-  if (framer_.version() == QUIC_VERSION_13) {
-    return;
-  }
   unsigned char packet[] = {
     // public flags (8 byte connection_id)
     0x3C,
@@ -2762,103 +2516,6 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     } else if (i < 25) {
       expected_error = "Unable to read sequence delta in received packets.";
     } else if (i < 29) {
-      expected_error = "Unable to read time delta in received packets.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
-  }
-}
-
-TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrivalV13) {
-  if (framer_.version() != QUIC_VERSION_13) {
-    return;
-  }
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (congestion feedback frame)
-    0x20,
-    // congestion feedback type (inter arrival)
-    0x01,
-    // accumulated_number_of_lost_packets
-    0x02, 0x03,
-    // num received packets
-    0x03,
-    // lowest sequence number
-    0xBA, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // receive time
-    0x87, 0x96, 0xA5, 0xB4,
-    0xC3, 0xD2, 0xE1, 0x07,
-    // sequence delta
-    0x01, 0x00,
-    // time delta
-    0x01, 0x00, 0x00, 0x00,
-    // sequence delta (skip one packet)
-    0x03, 0x00,
-    // time delta
-    0x02, 0x00, 0x00, 0x00,
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-
-  EXPECT_EQ(0u, visitor_.stream_frames_.size());
-  ASSERT_EQ(1u, visitor_.congestion_feedback_frames_.size());
-  const QuicCongestionFeedbackFrame& frame =
-      *visitor_.congestion_feedback_frames_[0];
-  ASSERT_EQ(kInterArrival, frame.type);
-  ASSERT_EQ(3u, frame.inter_arrival.received_packet_times.size());
-  TimeMap::const_iterator iter =
-      frame.inter_arrival.received_packet_times.begin();
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABA), iter->first);
-  EXPECT_EQ(GG_INT64_C(0x07E1D2C3B4A59687),
-            iter->second.Subtract(start_).ToMicroseconds());
-  ++iter;
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABB), iter->first);
-  EXPECT_EQ(GG_INT64_C(0x07E1D2C3B4A59688),
-            iter->second.Subtract(start_).ToMicroseconds());
-  ++iter;
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABD), iter->first);
-  EXPECT_EQ(GG_INT64_C(0x07E1D2C3B4A59689),
-            iter->second.Subtract(start_).ToMicroseconds());
-
-  // Now test framing boundaries
-  for (size_t i = kQuicFrameTypeSize; i < 31; ++i) {
-    string expected_error;
-    if (i < 2) {
-      expected_error = "Unable to read congestion feedback type.";
-    } else if (i < 4) {
-      expected_error = "Unable to read accumulated number of lost packets.";
-    } else if (i < 5) {
-      expected_error = "Unable to read num received packets.";
-    } else if (i < 11) {
-      expected_error = "Unable to read smallest received.";
-    } else if (i < 19) {
-      expected_error = "Unable to read time received.";
-    } else if (i < 21) {
-      expected_error = "Unable to read sequence delta in received packets.";
-    } else if (i < 25) {
-      expected_error = "Unable to read time delta in received packets.";
-    } else if (i < 27) {
-      expected_error = "Unable to read sequence delta in received packets.";
-    } else if (i < 31) {
       expected_error = "Unable to read time delta in received packets.";
     }
     CheckProcessingFails(
@@ -3003,75 +2660,7 @@ TEST_P(QuicFramerTest, StopWaitingFrame) {
   }
 }
 
-TEST_P(QuicFramerTest, RstStreamFrameVersion13) {
-  if (version_ > QUIC_VERSION_13) {
-    return;
-  }
-
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (rst stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // error code
-    0x01, 0x00, 0x00, 0x00,
-
-    // error details length
-    0x0d, 0x00,
-    // error details
-    'b',  'e',  'c',  'a',
-    'u',  's',  'e',  ' ',
-    'I',  ' ',  'c',  'a',
-    'n',
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-
-  EXPECT_EQ(GG_UINT64_C(0x01020304), visitor_.rst_stream_frame_.stream_id);
-  EXPECT_EQ(0x01, visitor_.rst_stream_frame_.error_code);
-  EXPECT_EQ("because I can", visitor_.rst_stream_frame_.error_details);
-
-  // Now test framing boundaries
-  for (size_t i = kQuicFrameTypeSize;
-       i < QuicFramer::GetMinRstStreamFrameSize(version_); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-               kQuicErrorCodeSize) {
-      expected_error = "Unable to read rst stream error code.";
-    } else {
-      expected_error = "Unable to read rst stream error details.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_RST_STREAM_DATA);
-  }
-}
-
 TEST_P(QuicFramerTest, RstStreamFrameQuic) {
-  if (version_ <= QUIC_VERSION_13) {
-    return;
-  }
-
   unsigned char packet[] = {
     // public flags (8 byte connection_id)
     0x3C,
@@ -3284,14 +2873,6 @@ TEST_P(QuicFramerTest, WindowUpdateFrame) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
 
-  // WINDOW_UPDATE frame introduced in QUIC_VERSION_14.
-  if (version_ <= QUIC_VERSION_13) {
-    string expected_error = "Trying to read a WindowUpdateFrame in " +
-                            QuicVersionToString(version_);
-    EXPECT_DFATAL(framer_.ProcessPacket(encrypted), expected_error);
-    return;
-  }
-
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -3340,14 +2921,6 @@ TEST_P(QuicFramerTest, BlockedFrame) {
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-
-  // BLOCKED frame introduced in QUIC_VERSION_14.
-  if (version_ <= QUIC_VERSION_13) {
-    string expected_error =
-        "Trying to read a BlockedFrame in " + QuicVersionToString(version_);
-    EXPECT_DFATAL(framer_.ProcessPacket(encrypted), expected_error);
-    return;
-  }
 
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
@@ -4213,79 +3786,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacket15) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildAckFramePacketV13) {
-  if (version_ != QUIC_VERSION_13) {
-    return;
-  }
-  QuicPacketHeader header;
-  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.fec_flag = false;
-  header.entropy_flag = true;
-  header.packet_sequence_number = GG_UINT64_C(0x770123456789AA8);
-  header.fec_group = 0;
-
-  QuicAckFrame ack_frame;
-  ack_frame.received_info.entropy_hash = 0x43;
-  ack_frame.received_info.largest_observed = GG_UINT64_C(0x770123456789ABF);
-  ack_frame.received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
-  ack_frame.received_info.missing_packets.insert(
-      GG_UINT64_C(0x770123456789ABE));
-  ack_frame.sent_info.entropy_hash = 0x14;
-  ack_frame.sent_info.least_unacked = GG_UINT64_C(0x770123456789AA0);
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&ack_frame));
-
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xA8, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags (entropy)
-    0x01,
-
-    // frame type (ack frame)
-    // (has nacks, not truncated, 6 byte largest observed, 1 byte delta)
-    0x6C,
-    // entropy hash of sent packets till least awaiting - 1.
-    0x14,
-    // least packet sequence number awaiting an ack, delta from sequence number.
-    0x08, 0x00, 0x00, 0x00,
-    0x00, 0x00,
-    // entropy hash of all received packets.
-    0x43,
-    // largest observed packet sequence number
-    0xBF, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // Zero delta time.
-    0x0, 0x0,
-    // num missing packet ranges
-    0x01,
-    // missing packet delta
-    0x01,
-    // 0 more missing packets in range.
-    0x00,
-  };
-
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
-  ASSERT_TRUE(data != NULL);
-
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
-}
-
 TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCP) {
-  if (version_ == QUIC_VERSION_13) {
-    return;
-  }
   QuicPacketHeader header;
   header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -4318,57 +3819,6 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCP) {
     0x20,
     // congestion feedback type (TCP)
     0x00,
-    // TCP receive window
-    0x03, 0x04,
-  };
-
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
-  ASSERT_TRUE(data != NULL);
-
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
-}
-
-TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCPV13) {
-  if (version_ != QUIC_VERSION_13) {
-    return;
-  }
-  QuicPacketHeader header;
-  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.fec_flag = false;
-  header.entropy_flag = false;
-  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.fec_group = 0;
-
-  QuicCongestionFeedbackFrame congestion_feedback_frame;
-  congestion_feedback_frame.type = kTCP;
-  congestion_feedback_frame.tcp.receive_window = 0x4030;
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&congestion_feedback_frame));
-
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (congestion feedback frame)
-    0x20,
-    // congestion feedback type (TCP)
-    0x00,
-    // accumulated number of lost packets
-    0x00, 0x00,
     // TCP receive window
     0x03, 0x04,
   };
@@ -4383,9 +3833,6 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCPV13) {
 }
 
 TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
-  if (version_ == QUIC_VERSION_13) {
-    return;
-  }
   QuicPacketHeader header;
   header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -4428,81 +3875,6 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
     0x20,
     // congestion feedback type (inter arrival)
     0x01,
-    // num received packets
-    0x03,
-    // lowest sequence number
-    0xBA, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // receive time
-    0x87, 0x96, 0xA5, 0xB4,
-    0xC3, 0xD2, 0xE1, 0x07,
-    // sequence delta
-    0x01, 0x00,
-    // time delta
-    0x01, 0x00, 0x00, 0x00,
-    // sequence delta (skip one packet)
-    0x03, 0x00,
-    // time delta
-    0x02, 0x00, 0x00, 0x00,
-  };
-
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
-  ASSERT_TRUE(data != NULL);
-
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
-}
-
-TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrivalV13) {
-  if (version_ != QUIC_VERSION_13) {
-    return;
-  }
-  QuicPacketHeader header;
-  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.fec_flag = false;
-  header.entropy_flag = false;
-  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.fec_group = 0;
-
-  QuicCongestionFeedbackFrame frame;
-  frame.type = kInterArrival;
-  frame.inter_arrival.received_packet_times.insert(
-      make_pair(GG_UINT64_C(0x0123456789ABA),
-                start_.Add(QuicTime::Delta::FromMicroseconds(
-                    GG_UINT64_C(0x07E1D2C3B4A59687)))));
-  frame.inter_arrival.received_packet_times.insert(
-      make_pair(GG_UINT64_C(0x0123456789ABB),
-                start_.Add(QuicTime::Delta::FromMicroseconds(
-                    GG_UINT64_C(0x07E1D2C3B4A59688)))));
-  frame.inter_arrival.received_packet_times.insert(
-      make_pair(GG_UINT64_C(0x0123456789ABD),
-                start_.Add(QuicTime::Delta::FromMicroseconds(
-                    GG_UINT64_C(0x07E1D2C3B4A59689)))));
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&frame));
-
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (congestion feedback frame)
-    0x20,
-    // congestion feedback type (inter arrival)
-    0x01,
-    // accumulated_number_of_lost_packets
-    0x00, 0x00,
     // num received packets
     0x03,
     // lowest sequence number
@@ -4651,69 +4023,7 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInvalidFeedback) {
   ASSERT_TRUE(data == NULL);
 }
 
-TEST_P(QuicFramerTest, BuildRstFramePacketVersion13) {
-  if (version_ > QUIC_VERSION_13) {
-    return;
-  }
-
-  QuicPacketHeader header;
-  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.fec_flag = false;
-  header.entropy_flag = false;
-  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.fec_group = 0;
-
-  QuicRstStreamFrame rst_frame;
-  rst_frame.stream_id = 0x01020304;
-  rst_frame.error_code = static_cast<QuicRstStreamErrorCode>(0x05060708);
-  rst_frame.error_details = "because I can";
-
-  unsigned char packet[] = {
-    // public flags (8 byte connection_id)
-    0x3C,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (rst stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // error code
-    0x08, 0x07, 0x06, 0x05,
-    // error details length
-    0x0d, 0x00,
-    // error details
-    'b',  'e',  'c',  'a',
-    'u',  's',  'e',  ' ',
-    'I',  ' ',  'c',  'a',
-    'n',
-  };
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&rst_frame));
-
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
-  ASSERT_TRUE(data != NULL);
-
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
-}
-
 TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
-  if (version_ <= QUIC_VERSION_13) {
-    return;
-  }
-
   QuicPacketHeader header;
   header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -4914,21 +4224,13 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
     0x44, 0x33, 0x22, 0x11,
   };
 
-  if (version_ > QUIC_VERSION_13) {
-    scoped_ptr<QuicPacket> data(
-        framer_.BuildUnsizedDataPacket(header, frames).packet);
-    ASSERT_TRUE(data != NULL);
+  scoped_ptr<QuicPacket> data(
+      framer_.BuildUnsizedDataPacket(header, frames).packet);
+  ASSERT_TRUE(data != NULL);
 
-    test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                        data->length(), AsChars(packet),
-                                        arraysize(packet));
-  } else {
-    string expected_error = "Attempt to add a WindowUpdateFrame in " +
-                            QuicVersionToString(version_);
-    EXPECT_DFATAL(framer_.BuildUnsizedDataPacket(header, frames),
-                  expected_error);
-    return;
-  }
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildBlockedPacket) {
@@ -4965,21 +4267,13 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
     0x04, 0x03, 0x02, 0x01,
   };
 
-  if (version_ > QUIC_VERSION_13) {
-    scoped_ptr<QuicPacket> data(
-        framer_.BuildUnsizedDataPacket(header, frames).packet);
-    ASSERT_TRUE(data != NULL);
+  scoped_ptr<QuicPacket> data(
+      framer_.BuildUnsizedDataPacket(header, frames).packet);
+  ASSERT_TRUE(data != NULL);
 
-    test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                        data->length(), AsChars(packet),
-                                        arraysize(packet));
-  } else {
-    string expected_error =
-        "Attempt to add a BlockedFrame in " + QuicVersionToString(version_);
-    EXPECT_DFATAL(framer_.BuildUnsizedDataPacket(header, frames),
-                  expected_error);
-    return;
-  }
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildPingPacket) {

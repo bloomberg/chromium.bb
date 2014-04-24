@@ -46,8 +46,8 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   // TODO(wtc): return a success/failure status.
   void SendHandshakeMessage(const CryptoHandshakeMessage& message);
 
-  bool encryption_established() { return encryption_established_; }
-  bool handshake_confirmed() { return handshake_confirmed_; }
+  bool encryption_established() const { return encryption_established_; }
+  bool handshake_confirmed() const { return handshake_confirmed_; }
 
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
 

@@ -345,7 +345,7 @@ QuicErrorCode QuicTestClient::connection_error() {
   return client()->session()->error();
 }
 
-QuicClient* QuicTestClient::client() { return client_.get(); }
+MockableQuicClient* QuicTestClient::client() { return client_.get(); }
 
 const string& QuicTestClient::cert_common_name() const {
   return reinterpret_cast<RecordingProofVerifier*>(proof_verifier_)

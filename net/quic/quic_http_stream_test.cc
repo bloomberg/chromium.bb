@@ -187,6 +187,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                 OnPacketSent(_, _, _, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
         Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(
+        Return(kMaxPacketSize));
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _)).
         WillRepeatedly(Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
@@ -265,7 +267,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       QuicPacketSequenceNumber sequence_number) {
     return maker_.MakeAckAndRstPacket(
         sequence_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED,
-        1, 1, !kIncludeCongestionFeedback);
+        2, 1, !kIncludeCongestionFeedback);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
@@ -589,9 +591,7 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   SetRequest("GET", "/", MEDIUM);
   use_closing_stream_ = true;
 
-  if (GetParam() > QUIC_VERSION_13) {
-    AddWrite(ConstructRstStreamPacket(1));
-  }
+  AddWrite(ConstructRstStreamPacket(1));
 
   Initialize();
 

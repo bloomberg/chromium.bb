@@ -42,6 +42,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   // presented a ChannelID. Otherwise it returns false.
   bool GetBase64SHA256ClientChannelID(std::string* output) const;
 
+  uint8 num_handshake_messages() const { return num_handshake_messages_; }
+
  protected:
   virtual QuicErrorCode ProcessClientHello(
       const CryptoHandshakeMessage& message,
@@ -83,6 +85,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   // FinishProcessingHandshakeMessage for processing.  NULL if no
   // handshake message is being validated.
   ValidateCallback* validate_client_hello_cb_;
+
+  uint8 num_handshake_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerStream);
 };

@@ -20,24 +20,29 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicConnectionStats& s);
 
-  uint64 bytes_sent;  // includes retransmissions, fec.
+  uint64 bytes_sent;  // Includes retransmissions, fec.
   uint32 packets_sent;
   uint64 stream_bytes_sent;  // non-retransmitted bytes sent in a stream frame.
+  uint32 packets_discarded;  // Packets serialized and discarded before sending.
 
-  uint64 bytes_received;  // includes duplicate data for a stream, fec.
-  uint32 packets_received;  // includes dropped packets
-  uint64 stream_bytes_received;  // bytes received in a stream frame.
+  // These include version negotiation and public reset packets, which do not
+  // have sequence numbers or frame data.
+  uint64 bytes_received;  // Includes duplicate data for a stream, fec.
+  uint32 packets_received;  // Includes packets which were not processable.
+  uint32 packets_processed;  // Excludes packets which were not processable.
+  uint64 stream_bytes_received;  // Bytes received in a stream frame.
 
   uint64 bytes_retransmitted;
   uint32 packets_retransmitted;
 
   uint64 bytes_spuriously_retransmitted;
   uint32 packets_spuriously_retransmitted;
+  // Number of packets abandoned as lost by the loss detection algorithm.
   uint32 packets_lost;
   uint32 slowstart_packets_lost;  // Number of packets lost exiting slow start.
 
   uint32 packets_revived;
-  uint32 packets_dropped;  // duplicate or less than least unacked.
+  uint32 packets_dropped;  // Duplicate or less than least unacked.
   uint32 crypto_retransmit_count;
   // Count of times the loss detection alarm fired.  At least one packet should
   // be lost when the alarm fires.

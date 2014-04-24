@@ -23,7 +23,8 @@ class QuicConnection;
 // can send WINDOW_UPDATE or BLOCKED frames when needed.
 class NET_EXPORT_PRIVATE QuicFlowController {
  public:
-  QuicFlowController(QuicStreamId id,
+  QuicFlowController(QuicVersion version,
+                     QuicStreamId id,
                      bool is_server,
                      uint64 send_window_offset,
                      uint64 receive_window_offset,

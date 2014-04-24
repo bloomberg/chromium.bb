@@ -11,11 +11,6 @@ namespace tools {
 namespace test {
 
 // static
-int QuicClientPeer::GetFd(QuicClient* client) {
-  return client->fd_;
-}
-
-// static
 QuicCryptoClientConfig* QuicClientPeer::GetCryptoConfig(QuicClient* client) {
   return &client->crypto_config_;
 }

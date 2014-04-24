@@ -19,7 +19,6 @@ namespace test {
 
 class QuicClientPeer {
  public:
-  static int GetFd(QuicClient* client);
   static QuicCryptoClientConfig* GetCryptoConfig(QuicClient* client);
 
  private:

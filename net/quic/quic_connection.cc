@@ -427,10 +427,6 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     debug_visitor_->OnPacketHeader(header);
   }
 
-  if (header.fec_flag && framer_.version() == QUIC_VERSION_13) {
-    return false;
-  }
-
   if (!ProcessValidatedPacket()) {
     return false;
   }
@@ -458,14 +454,18 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   // has told us will not be retransmitted, then stop processing the packet.
   if (!received_packet_manager_.IsAwaitingPacket(
           header.packet_sequence_number)) {
+    DVLOG(1) << ENDPOINT << "Packet " << header.packet_sequence_number
+             << " no longer being waited for.  Discarding.";
+    // TODO(jri): Log reception of duplicate packets or packets the peer has
+    // told us to stop waiting for.
     return false;
   }
 
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (is_server_) {
       if (!header.public_header.version_flag) {
-        DLOG(WARNING) << ENDPOINT << "Got packet without version flag before "
-                      << "version negotiated.";
+        DLOG(WARNING) << ENDPOINT << "Packet " << header.packet_sequence_number
+                      << " without version flag before version negotiated.";
         // Packets should have the version flag till version negotiation is
         // done.
         CloseConnection(QUIC_INVALID_VERSION, false);
@@ -778,14 +778,26 @@ void QuicConnection::OnPacketComplete() {
            << " stream frames for "
            << last_header_.public_header.connection_id;
 
-  MaybeQueueAck();
-
-  // Discard the packet if the visitor fails to process the stream frames.
+  // Discard the packet if the visitor will not accept the stream frames.
+  // TODO(jri): Now that we have flow control, this is not required for data
+  // streams. Since header and crypto streams are still not flow controlled,
+  // we need to have this check. Add stream-level flow control to both crypto
+  // and header streams (the right thing to do), and keep them out of the
+  // connection-level flow control, to avoid deadlock.
+  // Also, check if stream_sequencer is checking anywhere for a reasonable
+  // limit; if not, remove entire code path under WillAcceptStreamFrames.
   if (!last_stream_frames_.empty() &&
-      !visitor_->OnStreamFrames(last_stream_frames_)) {
+      !visitor_->WillAcceptStreamFrames(last_stream_frames_)) {
     return;
   }
 
+  // Call MaybeQueueAck() before recording the received packet, since we want
+  // to trigger an ack if the newly received packet was previously missing.
+  MaybeQueueAck();
+
+  // Record received or revived packet to populate ack info correctly before
+  // processing stream frames, since the processing may result in a response
+  // packet with a bundled ack.
   if (last_packet_revived_) {
     received_packet_manager_.RecordPacketRevived(
         last_header_.packet_sequence_number);
@@ -793,6 +805,11 @@ void QuicConnection::OnPacketComplete() {
     received_packet_manager_.RecordPacketReceived(
         last_size_, last_header_, time_of_last_received_packet_);
   }
+
+  if (!last_stream_frames_.empty()) {
+    visitor_->OnStreamFrames(last_stream_frames_);
+  }
+
   for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
     stats_.stream_bytes_received +=
         last_stream_frames_[i].data.TotalBufferSize();
@@ -999,7 +1016,18 @@ QuicConsumedData QuicConnection::SendStreamData(
   }
 
   // Opportunistically bundle an ack with every outgoing packet.
-  // TODO(ianswett): Consider not bundling an ack when there is no encryption.
+  // Particularly, we want to bundle with handshake packets since we don't know
+  // which decrypter will be used on an ack packet following a handshake
+  // packet (a handshake packet from client to server could result in a REJ or a
+  // SHLO from the server, leading to two different decrypters at the server.)
+  //
+  // TODO(jri): Note that ConsumeData may cause a response packet to be sent.
+  // We may end up sending stale ack information if there are undecryptable
+  // packets hanging around and/or there are revivable packets which may get
+  // handled after this packet is sent. Change ScopedPacketBundler to do the
+  // right thing: check ack_queued_, and then check undecryptable packets and
+  // also if there is possibility of revival. Only bundle an ack if there's no
+  // processing left that may cause received_info_ to change.
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
   QuicConsumedData consumed_data =
       packet_generator_.ConsumeData(id, data, offset, fin, notifier);
@@ -1090,6 +1118,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
     return;
   }
 
+  ++stats_.packets_processed;
   MaybeProcessUndecryptablePackets();
   MaybeProcessRevivedPacket();
   MaybeSendInResponseToPacket();
@@ -1276,6 +1305,7 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
   if (ShouldDiscardPacket(packet.encryption_level,
                           sequence_number,
                           packet.retransmittable)) {
+    ++stats_.packets_discarded;
     return true;
   }
 
@@ -1625,6 +1655,7 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
       break;
     }
     DVLOG(1) << ENDPOINT << "Processed undecryptable packet!";
+    ++stats_.packets_processed;
     delete packet;
     undecryptable_packets_.pop_front();
   }

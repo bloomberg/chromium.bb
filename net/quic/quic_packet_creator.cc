@@ -274,8 +274,7 @@ size_t QuicPacketCreator::BytesFree() const {
 }
 
 InFecGroup QuicPacketCreator::IsFecEnabled() const {
-  return (framer_->version() == QUIC_VERSION_13 ||
-          options_.max_packets_per_fec_group == 0) ?
+  return (options_.max_packets_per_fec_group == 0) ?
           NOT_IN_FEC_GROUP : IN_FEC_GROUP;
 }
 

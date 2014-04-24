@@ -144,7 +144,7 @@ class QuicTestClient : public SimpleClient,
   QuicRstStreamErrorCode stream_error() { return stream_error_; }
   QuicErrorCode connection_error();
 
-  QuicClient* client();
+  MockableQuicClient* client();
 
   // cert_common_name returns the common name value of the server's certificate,
   // or the empty string if no certificate was presented.

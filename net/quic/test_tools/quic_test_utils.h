@@ -183,7 +183,9 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MockConnectionVisitor();
   virtual ~MockConnectionVisitor();
 
-  MOCK_METHOD1(OnStreamFrames, bool(const std::vector<QuicStreamFrame>& frame));
+  MOCK_METHOD1(WillAcceptStreamFrames, bool(
+      const std::vector<QuicStreamFrame>& frame));
+  MOCK_METHOD1(OnStreamFrames, void(const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD1(OnWindowUpdateFrames,
                void(const std::vector<QuicWindowUpdateFrame>& frame));
   MOCK_METHOD1(OnBlockedFrames,

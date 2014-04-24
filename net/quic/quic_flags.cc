@@ -21,7 +21,7 @@ bool FLAGS_enable_quic_pacing = true;
 
 // Do not remove this flag until b/11792453 is marked as Fixed.
 // If true, turns on stream flow control in QUIC.
-bool FLAGS_enable_quic_stream_flow_control = true;
+bool FLAGS_enable_quic_stream_flow_control_2 = true;
 
 bool FLAGS_quic_allow_oversized_packets_for_test = false;
 bool FLAGS_quic_congestion_control_inter_arrival = false;

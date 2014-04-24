@@ -20,7 +20,8 @@ QuicCryptoServerStream::QuicCryptoServerStream(
     QuicSession* session)
     : QuicCryptoStream(session),
       crypto_config_(crypto_config),
-      validate_client_hello_cb_(NULL) {
+      validate_client_hello_cb_(NULL),
+      num_handshake_messages_(0) {
 }
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {
@@ -37,6 +38,7 @@ void QuicCryptoServerStream::CancelOutstandingCallbacks() {
 void QuicCryptoServerStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
   QuicCryptoStream::OnHandshakeMessage(message);
+  ++num_handshake_messages_;
 
   // Do not process handshake messages after the handshake is confirmed.
   if (handshake_confirmed_) {
