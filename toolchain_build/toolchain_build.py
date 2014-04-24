@@ -69,7 +69,7 @@ TAR_FILES = {
     'mpc': command.path.join('mpc', 'mpc-1.0.2.tar.gz'),
     'isl': command.path.join('cloog', 'isl-0.12.2.tar.bz2'),
     'cloog': command.path.join('cloog', 'cloog-0.18.1.tar.gz'),
-    'expat': command.path.join('expat', 'expat-2.0.1.tar.gz'),
+    'expat': command.path.join('expat', 'expat-2.1.0.tar.gz'),
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
