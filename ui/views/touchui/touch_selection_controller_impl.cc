@@ -8,6 +8,7 @@
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
@@ -606,6 +607,16 @@ bool TouchSelectionControllerImpl::IsSelectionHandle2Visible() {
 
 bool TouchSelectionControllerImpl::IsCursorHandleVisible() {
   return cursor_handle_->IsWidgetVisible();
+}
+
+ViewsTouchSelectionControllerFactory::ViewsTouchSelectionControllerFactory() {
+}
+
+ui::TouchSelectionController* ViewsTouchSelectionControllerFactory::create(
+    ui::TouchEditable* client_view) {
+  if (switches::IsTouchEditingEnabled())
+    return new views::TouchSelectionControllerImpl(client_view);
+  return NULL;
 }
 
 }  // namespace views

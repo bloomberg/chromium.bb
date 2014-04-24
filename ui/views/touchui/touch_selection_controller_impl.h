@@ -118,6 +118,16 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImpl);
 };
 
+class VIEWS_EXPORT ViewsTouchSelectionControllerFactory
+    : public ui::TouchSelectionControllerFactory {
+ public:
+  ViewsTouchSelectionControllerFactory();
+
+  // Overridden from ui::TouchSelectionControllerFactory.
+  virtual ui::TouchSelectionController* create(
+      ui::TouchEditable* client_view) OVERRIDE;
+};
+
 }  // namespace views
 
 #endif  // UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
