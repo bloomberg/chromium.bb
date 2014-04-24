@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_MAC_H_
 
 #include <deque>
+#include <list>
 #include <vector>
 
 #import <Cocoa/Cocoa.h>
 #include <QuartzCore/QuartzCore.h>
 
 #include "base/callback.h"
+#include "base/lazy_instance.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -211,6 +213,8 @@ class CompositingIOSurfaceMac {
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTextureWithContextCurrent(
       const scoped_refptr<CompositingIOSurfaceContext>& current_context,
+      const gfx::Size pixel_size,
+      float scale_factor,
       uint64 io_surface_handle) WARN_UNUSED_RESULT;
 
   void UnrefIOSurfaceWithContextCurrent();
@@ -301,6 +305,26 @@ class CompositingIOSurfaceMac {
 
   // Error saved by GetAndSaveGLError
   GLint gl_error_;
+
+  // Aggressive IOSurface eviction logic. When using CoreAnimation, IOSurfaces
+  // are used only transiently to transfer from the GPU process to the browser
+  // process. Once the IOSurface has been drawn to its CALayer, the CALayer
+  // will not need updating again until its view is hidden and re-shown.
+  // Aggressively evict surfaces when more than 8 (the number allowed by the
+  // memory manager for fast tab switching) are allocated.
+  enum {
+    kMaximumUnevictedSurfaces = 8,
+  };
+  typedef std::list<CompositingIOSurfaceMac*> EvictionQueue;
+  void EvictionMarkUpdated();
+  void EvictionMarkEvicted();
+  EvictionQueue::iterator eviction_queue_iterator_;
+  bool eviction_has_been_drawn_since_updated_;
+
+  static void EvictionScheduleDoEvict();
+  static void EvictionDoEvict();
+  static base::LazyInstance<EvictionQueue> eviction_queue_;
+  static bool eviction_scheduled_;
 };
 
 }  // namespace content

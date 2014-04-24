@@ -131,7 +131,8 @@
   if (!context_ ||
       (context_ && context_->cgl_context() != glContext) ||
       !renderWidgetHostView_ ||
-      !renderWidgetHostView_->compositing_iosurface_) {
+      !renderWidgetHostView_->compositing_iosurface_ ||
+      !renderWidgetHostView_->compositing_iosurface_->HasIOSurface()) {
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     return;

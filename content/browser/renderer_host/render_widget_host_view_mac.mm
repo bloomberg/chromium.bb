@@ -2250,7 +2250,9 @@ void RenderWidgetHostViewMac::LayoutLayers() {
       EnsureCompositedIOSurfaceLayer();
     }
   }
-  if (compositing_iosurface_ && compositing_iosurface_layer_) {
+  if (compositing_iosurface_ &&
+      compositing_iosurface_->HasIOSurface() &&
+      compositing_iosurface_layer_) {
     CGRect layer_bounds = CGRectMake(
       0,
       0,
