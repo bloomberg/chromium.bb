@@ -111,8 +111,7 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
 
   // |read_result == 0| means "end of file".
   if (read_result == 0 || (errno != EAGAIN && errno != EWOULDBLOCK)) {
-    if (read_result != 0)
-      PLOG(ERROR) << "read";
+    PLOG_IF(ERROR, read_result != 0) << "read";
 
     // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
     read_watcher_.reset();
@@ -174,8 +173,7 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(size_t* bytes_written) {
   }
 
   if (errno != EAGAIN && errno != EWOULDBLOCK) {
-    PLOG(ERROR) << "write of size "
-                << write_buffer_no_lock()->GetTotalBytesToWrite();
+    PLOG(ERROR) << "write";
     return IO_FAILED;
   }
 

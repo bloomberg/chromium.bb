@@ -59,7 +59,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
     // Called when there's a fatal error, which leads to the channel no longer
     // being viable. This may call |Shutdown()| (on the |RawChannel()|), but
-    // must now destroy it.
+    // must not destroy it.
     //
     // For each raw channel, at most one |FATAL_ERROR_FAILED_READ| and at most
     // one |FATAL_ERROR_FAILED_WRITE| notification will be issued (both may be
@@ -78,7 +78,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // This must be called (on an I/O thread) before this object is used. Does
   // *not* take ownership of |delegate|. Both the I/O thread and |delegate| must
-  // remain alive for the lifetime of this object. Returns true on success. On
+  // remain alive until |Shutdown()| is called (unless this fails); |delegate|
+  // will no longer be used after |Shutdown()|. Returns true on success. On
   // failure, |Shutdown()| should *not* be called.
   bool Init(Delegate* delegate);
 
@@ -199,9 +200,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // Must be called on the I/O thread WITHOUT |write_lock_| held.
   virtual bool OnInit() = 0;
-  // On shutdown, passes the ownership of the buffers to subclasses, who may
-  // want to preserve them if there are pending read/write.
-  // Must be called on the I/O thread under |write_lock_|.
+  // On shutdown, passes the ownership of the buffers to subclasses, which may
+  // want to preserve them if there are pending read/write. Must be called on
+  // the I/O thread under |write_lock_|.
   virtual void OnShutdownNoLock(
       scoped_ptr<ReadBuffer> read_buffer,
       scoped_ptr<WriteBuffer> write_buffer) = 0;
@@ -225,10 +226,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // Set in |Init()| and never changed (hence usable on any thread without
   // locking):
-  Delegate* delegate_;
   base::MessageLoopForIO* message_loop_for_io_;
 
   // Only used on the I/O thread:
+  Delegate* delegate_;
   bool read_stopped_;
   scoped_ptr<ReadBuffer> read_buffer_;
 

@@ -253,7 +253,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
     CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
   }
 
-  // Wait for all the messages (of sizes |expected_sizes_|) to be seen.
+  // Waits for all the messages (of sizes |expected_sizes_|) to be seen.
   void Wait() {
     done_event_.Wait();
   }
@@ -362,7 +362,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
     CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
   }
 
-  // Wait for all the messages to have been seen.
+  // Waits for all the messages to have been seen.
   void Wait() {
     done_event_.Wait();
   }
@@ -497,12 +497,11 @@ TEST_F(RawChannelTest, OnFatalError) {
 TEST_F(RawChannelTest, ReadUnaffectedByWriteFatalError) {
   const size_t kMessageCount = 5;
 
-  // Write into the other end a few messages.
+  // Write a few messages into the other end.
   uint32_t message_size = 1;
-  for (size_t count = 0; count < kMessageCount;
-       ++count, message_size += message_size / 2 + 1) {
+  for (size_t i = 0; i < kMessageCount;
+       i++, message_size += message_size / 2 + 1)
     EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), message_size));
-  }
 
   // Close the other end, which should make writing fail.
   handles[1].reset();
@@ -546,6 +545,150 @@ TEST_F(RawChannelTest, WriteMessageAfterShutdown) {
                                           base::Unretained(rc.get())));
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
+}
+
+// RawChannelTest.ShutdownOnReadMessage ----------------------------------------
+
+class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
+ public:
+  explicit ShutdownOnReadMessageRawChannelDelegate(RawChannel* raw_channel)
+      : raw_channel_(raw_channel),
+        done_event_(false, false),
+        did_shutdown_(false) {}
+  virtual ~ShutdownOnReadMessageRawChannelDelegate() {}
+
+  // |RawChannel::Delegate| implementation (called on the I/O thread):
+  virtual void OnReadMessage(
+      const MessageInTransit::View& message_view) OVERRIDE {
+    EXPECT_FALSE(did_shutdown_);
+    EXPECT_TRUE(CheckMessageData(message_view.bytes(),
+                message_view.num_bytes()));
+    raw_channel_->Shutdown();
+    did_shutdown_ = true;
+    done_event_.Signal();
+  }
+  virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
+    CHECK(false);  // Should not get called.
+  }
+
+  // Waits for shutdown.
+  void Wait() {
+    done_event_.Wait();
+    EXPECT_TRUE(did_shutdown_);
+  }
+
+ private:
+  RawChannel* const raw_channel_;
+  base::WaitableEvent done_event_;
+  bool did_shutdown_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownOnReadMessageRawChannelDelegate);
+};
+
+// TODO(vtl): crbug.com/366768
+#if defined(OS_WIN)
+#define MAYBE_ShutdownOnReadMessage DISABLED_ShutdownOnReadMessage
+#else
+#define MAYBE_ShutdownOnReadMessage ShutdownOnReadMessage
+#endif
+TEST_F(RawChannelTest, MAYBE_ShutdownOnReadMessage) {
+  // Write a few messages into the other end.
+  for (size_t count = 0; count < 5; count++)
+    EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), 10));
+
+  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  ShutdownOnReadMessageRawChannelDelegate delegate(rc.get());
+  io_thread()->PostTaskAndWait(FROM_HERE,
+                               base::Bind(&InitOnIOThread, rc.get(),
+                                          base::Unretained(&delegate)));
+
+  // Wait for the delegate, which will shut the |RawChannel| down.
+  delegate.Wait();
+}
+
+// RawChannelTest.ShutdownOnFatalError{Read, Write} ----------------------------
+
+class ShutdownOnFatalErrorRawChannelDelegate : public RawChannel::Delegate {
+ public:
+  ShutdownOnFatalErrorRawChannelDelegate(RawChannel* raw_channel,
+                                         FatalError shutdown_on_error_type)
+      : raw_channel_(raw_channel),
+        shutdown_on_error_type_(shutdown_on_error_type),
+        done_event_(false, false),
+        did_shutdown_(false) {}
+  virtual ~ShutdownOnFatalErrorRawChannelDelegate() {}
+
+  // |RawChannel::Delegate| implementation (called on the I/O thread):
+  virtual void OnReadMessage(
+      const MessageInTransit::View& /*message_view*/) OVERRIDE {
+    CHECK(false);  // Should not get called.
+  }
+  virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
+    EXPECT_FALSE(did_shutdown_);
+    if (fatal_error != shutdown_on_error_type_)
+      return;
+    raw_channel_->Shutdown();
+    did_shutdown_ = true;
+    done_event_.Signal();
+  }
+
+  // Waits for shutdown.
+  void Wait() {
+    done_event_.Wait();
+    EXPECT_TRUE(did_shutdown_);
+  }
+
+ private:
+  RawChannel* const raw_channel_;
+  const FatalError shutdown_on_error_type_;
+  base::WaitableEvent done_event_;
+  bool did_shutdown_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownOnFatalErrorRawChannelDelegate);
+};
+
+// TODO(vtl): crbug.com/366768
+#if defined(OS_WIN)
+#define MAYBE_ShutdownOnFatalErrorRead DISABLED_ShutdownOnFatalErrorRead
+#else
+#define MAYBE_ShutdownOnFatalErrorRead ShutdownOnFatalErrorRead
+#endif
+TEST_F(RawChannelTest, MAYBE_ShutdownOnFatalErrorRead) {
+  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  ShutdownOnFatalErrorRawChannelDelegate delegate(
+      rc.get(), RawChannel::Delegate::FATAL_ERROR_FAILED_READ);
+  io_thread()->PostTaskAndWait(FROM_HERE,
+                               base::Bind(&InitOnIOThread, rc.get(),
+                                          base::Unretained(&delegate)));
+
+  // Close the handle of the other end, which should stuff fail.
+  handles[1].reset();
+
+  // Wait for the delegate, which will shut the |RawChannel| down.
+  delegate.Wait();
+}
+
+// TODO(vtl): crbug.com/366768
+#if defined(OS_WIN)
+#define MAYBE_ShutdownOnFatalErrorWrite DISABLED_ShutdownOnFatalErrorWrite
+#else
+#define MAYBE_ShutdownOnFatalErrorWrite ShutdownOnFatalErrorWrite
+#endif
+TEST_F(RawChannelTest, MAYBE_ShutdownOnFatalErrorWrite) {
+  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  ShutdownOnFatalErrorRawChannelDelegate delegate(
+      rc.get(), RawChannel::Delegate::FATAL_ERROR_FAILED_WRITE);
+  io_thread()->PostTaskAndWait(FROM_HERE,
+                               base::Bind(&InitOnIOThread, rc.get(),
+                                          base::Unretained(&delegate)));
+
+  // Close the handle of the other end, which should stuff fail.
+  handles[1].reset();
+
+  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
+
+  // Wait for the delegate, which will shut the |RawChannel| down.
+  delegate.Wait();
 }
 
 }  // namespace
