@@ -198,18 +198,16 @@ void LocalDiscoveryUIHandler::HandleRequestPrinterList(
 
 void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
     const base::ListValue* args) {
-  std::string url;
-  bool rv = args->GetString(0, &url);
+  std::string id;
+  bool rv = args->GetString(0, &id);
   DCHECK(rv);
-
-  GURL url_full(cloud_devices::GetCloudPrintRelativeURL(url));
 
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   DCHECK(browser);
 
   chrome::AddSelectedTabWithURL(browser,
-                                url_full,
+                                cloud_devices::GetCloudPrintManageDeviceURL(id),
                                 content::PAGE_TRANSITION_FROM_API);
 }
 

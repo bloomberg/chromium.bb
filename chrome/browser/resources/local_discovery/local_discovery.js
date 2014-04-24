@@ -15,12 +15,6 @@
 cr.define('local_discovery', function() {
   'use strict';
 
-  /**
-   * Prefix for printer management page URLs, relative to base cloud print URL.
-   * @type {string}
-   */
-  var PRINTER_MANAGEMENT_PAGE_PREFIX = '#printers/';
-
   // Histogram buckets for UMA tracking.
   /** @const */ var DEVICES_PAGE_EVENTS = {
     OPENED: 0,
@@ -450,8 +444,7 @@ cr.define('local_discovery', function() {
    */
   function manageCloudDevice(device_id) {
     recordUmaEvent(DEVICES_PAGE_EVENTS.MANAGE_CLICKED);
-    chrome.send('openCloudPrintURL',
-                [PRINTER_MANAGEMENT_PAGE_PREFIX + device_id]);
+    chrome.send('openCloudPrintURL', [device_id]);
   }
 
   /**

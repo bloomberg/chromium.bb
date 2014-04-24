@@ -53,8 +53,8 @@ TEST(CloudPrintURLTest, GetCloudPrintEnableURL) {
   EXPECT_THAT(enable_url, HasSubstr("/cloudprint/"));
 }
 
-TEST(CloudPrintURLTest, GetCloudPrintEnableURLWithSignin) {
-  std::string enable_url = GetCloudPrintEnableURLWithSignin("123123").spec();
+TEST(CloudPrintURLTest, GetCloudPrintEnableWithSigninURL) {
+  std::string enable_url = GetCloudPrintEnableWithSigninURL("123123").spec();
   EXPECT_THAT(enable_url, HasSubstr("accounts.google.com"));
   EXPECT_THAT(enable_url, HasSubstr("/ServiceLogin"));
   EXPECT_THAT(enable_url, HasSubstr("service=cloudprint"));
@@ -62,6 +62,13 @@ TEST(CloudPrintURLTest, GetCloudPrintEnableURLWithSignin) {
   EXPECT_THAT(enable_url, HasSubstr("proxy%3D123123"));
   EXPECT_THAT(enable_url, HasSubstr("%2Fenable_chrome_connector%2Fenable"));
   EXPECT_THAT(enable_url, HasSubstr("%2Fcloudprint%2F"));
+}
+
+TEST(CloudPrintURLTest, GetCloudPrintManageDeviceURL) {
+  std::string manage_url = GetCloudPrintManageDeviceURL("123").spec();
+  EXPECT_THAT(manage_url, HasSubstr("www.google.com"));
+  EXPECT_THAT(manage_url, HasSubstr("/cloudprint"));
+  EXPECT_THAT(manage_url, HasSubstr("#printers/123"));
 }
 
 TEST(CloudPrintURLTest, GetCloudPrintSigninURL) {

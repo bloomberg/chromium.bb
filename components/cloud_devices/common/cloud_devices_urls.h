@@ -19,7 +19,8 @@ extern const char kCloudPrintTestPageURL[];
 GURL GetCloudPrintURL();
 GURL GetCloudPrintRelativeURL(const std::string& relative_path);
 GURL GetCloudPrintEnableURL(const std::string& proxy_id);
-GURL GetCloudPrintEnableURLWithSignin(const std::string& proxy_id);
+GURL GetCloudPrintEnableWithSigninURL(const std::string& proxy_id);
+GURL GetCloudPrintManageDeviceURL(const std::string& device_id);
 GURL GetCloudPrintSigninURL();
 GURL GetCloudPrintAddAccountURL();
 

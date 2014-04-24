@@ -292,7 +292,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
   cmd.AppendSwitch(switches::kNoFirstRun);
 
   cmd.AppendArg(
-      cloud_devices::GetCloudPrintEnableURLWithSignin(proxy_id).spec());
+      cloud_devices::GetCloudPrintEnableWithSigninURL(proxy_id).spec());
 
   base::win::ScopedHandle chrome_handle;
   DWORD thread_id = 0;

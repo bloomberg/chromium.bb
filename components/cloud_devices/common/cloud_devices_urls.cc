@@ -85,12 +85,19 @@ GURL GetCloudPrintEnableURL(const std::string& proxy_id) {
   return url;
 }
 
-GURL GetCloudPrintEnableURLWithSignin(const std::string& proxy_id) {
+GURL GetCloudPrintEnableWithSigninURL(const std::string& proxy_id) {
   GURL url(GaiaUrls::GetInstance()->service_login_url());
   url = net::AppendQueryParameter(url, "service", "cloudprint");
   url = net::AppendQueryParameter(url, "sarp", "1");
   std::string continue_str = GetCloudPrintEnableURL(proxy_id).spec();
   return net::AppendQueryParameter(url, "continue", continue_str);
+}
+
+GURL GetCloudPrintManageDeviceURL(const std::string& device_id) {
+  std::string ref = "printers/" + device_id;
+  GURL::Replacements replacements;
+  replacements.SetRefStr(ref);
+  return GetCloudPrintURL().ReplaceComponents(replacements);
 }
 
 GURL GetCloudDevicesURL() {
