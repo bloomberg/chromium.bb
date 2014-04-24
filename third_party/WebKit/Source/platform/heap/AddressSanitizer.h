@@ -31,10 +31,8 @@
 #ifndef AddressSanitizer_h
 #define AddressSanitizer_h
 
-// The following API isn't exposed by SyzyASan (current version of ASan on
-// Windows).
-// FIXME: Add Windows support here.
-#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+// FIXME: Add SyZyASan support?
+#if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
 #define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
 #else

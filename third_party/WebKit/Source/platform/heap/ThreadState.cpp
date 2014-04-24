@@ -243,7 +243,7 @@ ThreadState::ThreadState()
     , m_inGC(false)
     , m_heapContainsCache(adoptPtr(new HeapContainsCache()))
     , m_isCleaningUp(false)
-#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+#if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
 {
@@ -397,7 +397,7 @@ void ThreadState::visitRoots(Visitor* visitor)
 NO_SANITIZE_ADDRESS
 void ThreadState::visitAsanFakeStackForPointer(Visitor* visitor, Address ptr)
 {
-#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+#if defined(ADDRESS_SANITIZER)
     Address* start = reinterpret_cast<Address*>(m_startOfStack);
     Address* end = reinterpret_cast<Address*>(m_endOfStack);
     Address* fakeFrameStart = 0;

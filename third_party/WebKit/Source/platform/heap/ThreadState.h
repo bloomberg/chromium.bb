@@ -579,7 +579,7 @@ private:
 
     CallbackStack* m_weakCallbackStack;
 
-#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+#if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;
 #endif
 };
