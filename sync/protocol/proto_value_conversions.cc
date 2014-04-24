@@ -416,6 +416,8 @@ base::DictionaryValue* AppSpecificsToValue(
   SET_STR(app_launch_ordinal);
   SET_STR(page_ordinal);
   SET_ENUM(launch_type, GetLaunchTypeString);
+  SET_STR(bookmark_app_url);
+  SET_STR(bookmark_app_description);
 
   return value;
 }

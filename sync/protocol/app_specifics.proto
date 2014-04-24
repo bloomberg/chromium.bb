@@ -68,4 +68,11 @@ message AppSpecifics {
 
   // This describes how the extension should be launched.
   optional LaunchType launch_type = 5;
+
+  // This is the url of a bookmark app. If this exists, the app is a bookmark
+  // app.
+  optional string bookmark_app_url = 6;
+
+  // This is the description of a bookmark app.
+  optional string bookmark_app_description = 7;
 }

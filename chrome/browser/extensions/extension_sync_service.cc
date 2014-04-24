@@ -7,9 +7,11 @@
 #include <iterator>
 
 #include "base/basictypes.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/app_sync_data.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
@@ -17,21 +19,45 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "chrome/common/web_application_info.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_icon_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
+#include "ui/gfx/image/image_family.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::FeatureSwitch;
+
+namespace {
+
+void OnWebApplicationInfoLoaded(
+    WebApplicationInfo synced_info,
+    base::WeakPtr<ExtensionService> extension_service,
+    const WebApplicationInfo& loaded_info) {
+  DCHECK_EQ(synced_info.app_url, loaded_info.app_url);
+
+  if (!extension_service)
+    return;
+
+  // Use the old icons if they exist.
+  synced_info.icons = loaded_info.icons;
+  CreateOrUpdateBookmarkApp(extension_service.get(), synced_info);
+}
+
+}  // namespace
 
 ExtensionSyncService::ExtensionSyncService(Profile* profile,
                                            ExtensionPrefs* extension_prefs,
@@ -317,6 +343,9 @@ bool ExtensionSyncService::ProcessAppSyncData(
                               app_sync_data.launch_type());
   }
 
+  if (!app_sync_data.bookmark_app_url().empty())
+    ProcessBookmarkAppSyncData(app_sync_data);
+
   if (!ProcessExtensionSyncDataHelper(app_sync_data.extension_sync_data(),
                                       syncer::APPS)) {
     app_sync_bundle_.AddPendingApp(id, app_sync_data);
@@ -325,6 +354,46 @@ bool ExtensionSyncService::ProcessAppSyncData(
   }
 
   return true;
+}
+
+void ExtensionSyncService::ProcessBookmarkAppSyncData(
+    const extensions::AppSyncData& app_sync_data) {
+  // Process bookmark app sync if necessary.
+  GURL bookmark_app_url(app_sync_data.bookmark_app_url());
+  if (!bookmark_app_url.is_valid() ||
+      app_sync_data.extension_sync_data().uninstalled()) {
+    return;
+  }
+
+  const extensions::Extension* extension =
+      extension_service_->GetInstalledExtension(
+          app_sync_data.extension_sync_data().id());
+
+  // Return if there are no bookmark app details that need updating.
+  if (extension && extension->non_localized_name() ==
+                       app_sync_data.extension_sync_data().name() &&
+      extension->description() == app_sync_data.bookmark_app_description()) {
+    return;
+  }
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = bookmark_app_url;
+  web_app_info.title =
+      base::UTF8ToUTF16(app_sync_data.extension_sync_data().name());
+  web_app_info.description =
+      base::UTF8ToUTF16(app_sync_data.bookmark_app_description());
+
+  // If the bookmark app already exists, keep the old icons.
+  if (!extension) {
+    CreateOrUpdateBookmarkApp(extension_service_, web_app_info);
+  } else {
+    app_sync_data.extension_sync_data().name();
+    GetWebApplicationInfoFromApp(profile_,
+                                 extension,
+                                 base::Bind(&OnWebApplicationInfoLoaded,
+                                            web_app_info,
+                                            extension_service_->AsWeakPtr()));
+  }
 }
 
 void ExtensionSyncService::SyncOrderingChange(const std::string& extension_id) {

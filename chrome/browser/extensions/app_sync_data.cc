@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/app_sync_data.h"
 
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/common/extension.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/app_specifics.pb.h"
@@ -33,6 +34,10 @@ AppSyncData::AppSyncData(const Extension& extension,
       app_launch_ordinal_(app_launch_ordinal),
       page_ordinal_(page_ordinal),
       launch_type_(launch_type) {
+  if (extension.from_bookmark()) {
+    bookmark_app_description_ = extension.description();
+    bookmark_app_url_ = AppLaunchInfo::GetLaunchWebURL(&extension).spec();
+  }
 }
 
 AppSyncData::~AppSyncData() {}
@@ -69,6 +74,12 @@ void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
     specifics->set_launch_type(sync_launch_type);
   }
 
+  if (!bookmark_app_url_.empty())
+    specifics->set_bookmark_app_url(bookmark_app_url_);
+
+  if (!bookmark_app_description_.empty())
+    specifics->set_bookmark_app_description(bookmark_app_description_);
+
   extension_sync_data_.PopulateExtensionSpecifics(
       specifics->mutable_extension());
 }
@@ -83,6 +94,9 @@ void AppSyncData::PopulateFromAppSpecifics(
   launch_type_ = specifics.has_launch_type()
       ? static_cast<extensions::LaunchType>(specifics.launch_type())
       : LAUNCH_TYPE_INVALID;
+
+  bookmark_app_url_ = specifics.bookmark_app_url();
+  bookmark_app_description_ = specifics.bookmark_app_description();
 }
 
 void AppSyncData::PopulateFromSyncData(const syncer::SyncData& sync_data) {

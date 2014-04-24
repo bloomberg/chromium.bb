@@ -13,6 +13,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/skia_util.h"
 
 namespace {
 
@@ -74,6 +75,23 @@ WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
   icon_info.height = size;
   icon_info.data = CreateSquareBitmapWithColor(size, color);
   return icon_info;
+}
+
+void ValidateWebApplicationInfo(base::Closure callback,
+                                const WebApplicationInfo& expected,
+                                const WebApplicationInfo& actual) {
+  EXPECT_EQ(expected.title, actual.title);
+  EXPECT_EQ(expected.description, actual.description);
+  EXPECT_EQ(expected.app_url, actual.app_url);
+  EXPECT_EQ(expected.icons.size(), actual.icons.size());
+  for (size_t i = 0; i < expected.icons.size(); ++i) {
+    EXPECT_EQ(expected.icons[i].width, actual.icons[i].width);
+    EXPECT_EQ(expected.icons[i].height, actual.icons[i].height);
+    EXPECT_EQ(expected.icons[i].url, actual.icons[i].url);
+    EXPECT_TRUE(
+        gfx::BitmapsAreEqual(expected.icons[i].data, actual.icons[i].data));
+  }
+  callback.Run();
 }
 #endif
 
@@ -185,6 +203,30 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
                      extension, kIconSizeLarge, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());
   }
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kAppUrl);
+  web_app_info.title = base::UTF8ToUTF16(kAppTitle);
+  web_app_info.description = base::UTF8ToUTF16(kAppDescription);
+
+  web_app_info.icons.push_back(
+      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED));
+  web_app_info.icons.push_back(
+      CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED));
+
+  extensions::CreateOrUpdateBookmarkApp(service_, web_app_info);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, registry_->enabled_extensions().size());
+  base::RunLoop run_loop;
+  extensions::GetWebApplicationInfoFromApp(
+      profile_.get(),
+      service_->extensions()->begin()->get(),
+      base::Bind(
+          &ValidateWebApplicationInfo, run_loop.QuitClosure(), web_app_info));
+  run_loop.Run();
 }
 #endif
 

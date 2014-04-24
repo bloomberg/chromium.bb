@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"

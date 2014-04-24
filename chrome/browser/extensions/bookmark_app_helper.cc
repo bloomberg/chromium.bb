@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/favicon_downloader.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -23,6 +24,27 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
+
+namespace {
+
+void OnIconsLoaded(
+    WebApplicationInfo web_app_info,
+    const base::Callback<void(const WebApplicationInfo&)> callback,
+    const gfx::ImageFamily& image_family) {
+  for (gfx::ImageFamily::const_iterator it = image_family.begin();
+       it != image_family.end();
+       ++it) {
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.data = *it->ToSkBitmap();
+    icon_info.width = icon_info.data.width();
+    icon_info.height = icon_info.data.height();
+    web_app_info.icons.push_back(icon_info);
+  }
+  callback.Run(web_app_info);
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -290,6 +312,39 @@ void CreateOrUpdateBookmarkApp(ExtensionService* service,
       extensions::CrxInstaller::CreateSilent(service));
   installer->set_error_on_unsupported_requirements(true);
   installer->InstallWebApp(web_app_info);
+}
+
+void GetWebApplicationInfoFromApp(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    const base::Callback<void(const WebApplicationInfo&)> callback) {
+  if (!extension->from_bookmark()) {
+    callback.Run(WebApplicationInfo());
+    return;
+  }
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = AppLaunchInfo::GetLaunchWebURL(extension);
+  web_app_info.title = base::UTF8ToUTF16(extension->non_localized_name());
+  web_app_info.description = base::UTF8ToUTF16(extension->description());
+
+  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
+  for (size_t i = 0; i < extension_misc::kNumExtensionIconSizes; ++i) {
+    int size = extension_misc::kExtensionIconSizes[i];
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            extension, size, ExtensionIconSet::MATCH_EXACTLY);
+    if (!resource.empty()) {
+      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+          resource,
+          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+          gfx::Size(size, size),
+          ui::SCALE_FACTOR_100P));
+    }
+  }
+
+  extensions::ImageLoader::Get(browser_context)->LoadImageFamilyAsync(
+      extension, info_list, base::Bind(&OnIconsLoaded, web_app_info, callback));
 }
 
 bool IsValidBookmarkAppUrl(const GURL& url) {

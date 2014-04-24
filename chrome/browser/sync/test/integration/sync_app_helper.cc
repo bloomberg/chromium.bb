@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
@@ -33,6 +34,10 @@ struct AppState {
   syncer::StringOrdinal app_launch_ordinal;
   syncer::StringOrdinal page_ordinal;
   extensions::LaunchType launch_type;
+  GURL launch_web_url;
+  std::string description;
+  std::string name;
+  bool from_bookmark;
 };
 
 typedef std::map<std::string, AppState> AppStateMap;
@@ -47,8 +52,11 @@ bool AppState::IsValid() const {
 
 bool AppState::Equals(const AppState& other) const {
   return app_launch_ordinal.Equals(other.app_launch_ordinal) &&
-      page_ordinal.Equals(other.page_ordinal) &&
-      launch_type == other.launch_type;
+         page_ordinal.Equals(other.page_ordinal) &&
+         launch_type == other.launch_type &&
+         launch_web_url == other.launch_web_url &&
+         description == other.description && name == other.name &&
+         from_bookmark == other.from_bookmark;
 }
 
 // Load all the app specific values for |id| into |app_state|.
@@ -59,6 +67,14 @@ void LoadApp(content::BrowserContext* context,
   app_state->app_launch_ordinal = prefs->app_sorting()->GetAppLaunchOrdinal(id);
   app_state->page_ordinal = prefs->app_sorting()->GetPageOrdinal(id);
   app_state->launch_type = extensions::GetLaunchTypePrefValue(prefs, id);
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(context)->extension_service();
+  const extensions::Extension* extension = service->GetInstalledExtension(id);
+  app_state->launch_web_url =
+      extensions::AppLaunchInfo::GetLaunchWebURL(extension);
+  app_state->description = extension->description();
+  app_state->name = extension->name();
+  app_state->from_bookmark = extension->from_bookmark();
 }
 
 // Returns a map from |profile|'s installed extensions to their state.

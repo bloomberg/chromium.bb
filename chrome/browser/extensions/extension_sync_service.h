@@ -94,6 +94,9 @@ class ExtensionSyncService : public syncer::SyncableService,
       const extensions::ExtensionSyncData& extension_sync_data);
   bool ProcessAppSyncData(const extensions::AppSyncData& app_sync_data);
 
+  // Processes the bookmark app specific parts of an AppSyncData.
+  void ProcessBookmarkAppSyncData(const extensions::AppSyncData& app_sync_data);
+
   syncer::SyncChange PrepareToSyncUninstallExtension(
       const extensions::Extension* extension,
       bool extensions_ready);

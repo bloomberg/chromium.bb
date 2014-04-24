@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,8 +15,11 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "sync/api/string_ordinal.h"
 
 using apps_helper::AllProfilesHaveSameAppsAsVerifier;
@@ -505,6 +511,52 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  size_t num_extensions =
+      GetProfile(0)->GetExtensionService()->extensions()->size();
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL("http://www.chromium.org");
+  web_app_info.title = base::UTF8ToUTF16("Test name");
+  web_app_info.description = base::UTF8ToUTF16("Test description");
+  ++num_extensions;
+  {
+    content::WindowedNotificationObserver windowed_observer(
+        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    extensions::CreateOrUpdateBookmarkApp(GetProfile(0)->GetExtensionService(),
+                                          web_app_info);
+    windowed_observer.Wait();
+    EXPECT_EQ(num_extensions,
+              extensions::ExtensionRegistry::Get(GetProfile(0))
+                  ->enabled_extensions()
+                  .size());
+  }
+  {
+    content::WindowedNotificationObserver windowed_observer(
+        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    extensions::CreateOrUpdateBookmarkApp(verifier()->GetExtensionService(),
+                                          web_app_info);
+    windowed_observer.Wait();
+    EXPECT_EQ(num_extensions,
+              extensions::ExtensionRegistry::Get(verifier())
+                  ->enabled_extensions()
+                  .size());
+  }
+  {
+    // Wait for the synced app to install.
+    content::WindowedNotificationObserver windowed_observer(
+        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    ASSERT_TRUE(AwaitQuiescence());
+    windowed_observer.Wait();
+    ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+  }
+}
 // TODO(akalin): Add tests exercising:
 //   - Offline installation/uninstallation behavior
 //   - App-specific properties
