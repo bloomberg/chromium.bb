@@ -1,8 +1,8 @@
-layer at (0,0) size 825x585
-  RenderView at (0,0) size 800x585
-layer at (-25,0) size 825x585 backgroundClip at (0,0) size 825x585 clip at (0,0) size 825x585 outlineClip at (0,0) size 825x585
-  RenderBlock {HTML} at (0,0) size 825x585
-    RenderBody {BODY} at (8,8) size 0x569
+layer at (0,0) size 825x600
+  RenderView at (0,0) size 800x600
+layer at (-25,0) size 825x600 backgroundClip at (0,0) size 825x600 clip at (0,0) size 825x600 outlineClip at (0,0) size 825x600
+  RenderBlock {HTML} at (0,0) size 825x600
+    RenderBody {BODY} at (8,8) size 0x584
       RenderBlock (floating) {DIV} at (8,8) size 156x366 [border: (3px solid #000000)]
         RenderText {#text} at (15,3) size 20x270
           text run at (15,3) width 270: "\x{305B}\x{3063}\x{304B}\x{304F}\x{898B}\x{3064}\x{3051}\x{305F}\x{3059}\x{3070}\x{3089}\x{3057}\x{3044}\x{8A18}\x{4E8B}"
