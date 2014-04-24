@@ -233,9 +233,7 @@ class MockDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
 
 class MockDistillerPage : public DistillerPage {
  public:
-  MOCK_METHOD0(InitImpl, void());
-  MOCK_METHOD1(LoadURLImpl, void(const GURL& gurl));
-  MOCK_METHOD1(ExecuteJavaScriptImpl, void(const string& script));
+  MOCK_METHOD2(DistillPageImpl, void(const GURL& gurl, const string& script));
 
   MockDistillerPage() {}
 };
@@ -276,18 +274,15 @@ class DistillerTest : public testing::Test {
   TestDistillerURLFetcherFactory url_fetcher_factory_;
 };
 
-ACTION_P3(DistillerPageOnExecuteJavaScriptDone, distiller_page, url, list) {
-  distiller_page->OnExecuteJavaScriptDone(url, list);
+ACTION_P3(DistillerPageOnDistillationDone, distiller_page, url, list) {
+  distiller_page->OnDistillationDone(url, list);
 }
 
 ACTION_P2(CreateMockDistillerPage, list, kurl) {
   MockDistillerPage* distiller_page = new MockDistillerPage();
-  EXPECT_CALL(*distiller_page, InitImpl());
-  EXPECT_CALL(*distiller_page, LoadURLImpl(kurl))
-      .WillOnce(testing::InvokeWithoutArgs(distiller_page,
-                                           &DistillerPage::OnLoadURLDone));
-  EXPECT_CALL(*distiller_page, ExecuteJavaScriptImpl(_)).WillOnce(
-      DistillerPageOnExecuteJavaScriptDone(distiller_page, kurl, list));
+  EXPECT_CALL(*distiller_page, DistillPageImpl(kurl, _))
+      .WillOnce(
+          DistillerPageOnDistillationDone(distiller_page, kurl, list));
   return distiller_page;
 }
 
@@ -296,11 +291,7 @@ ACTION_P2(CreateMockDistillerPageWithPendingJSCallback,
           kurl) {
   MockDistillerPage* distiller_page = new MockDistillerPage();
   *distiller_page_ptr = distiller_page;
-  EXPECT_CALL(*distiller_page, InitImpl());
-  EXPECT_CALL(*distiller_page, LoadURLImpl(kurl))
-      .WillOnce(testing::InvokeWithoutArgs(distiller_page,
-                                           &DistillerPage::OnLoadURLDone));
-  EXPECT_CALL(*distiller_page, ExecuteJavaScriptImpl(_));
+  EXPECT_CALL(*distiller_page, DistillPageImpl(kurl, _));
   return distiller_page;
 }
 
@@ -309,18 +300,14 @@ ACTION_P3(CreateMockDistillerPages,
           pages_size,
           start_page_num) {
   MockDistillerPage* distiller_page = new MockDistillerPage();
-  EXPECT_CALL(*distiller_page, InitImpl());
   {
     testing::InSequence s;
     vector<int> page_nums = GetPagesInSequence(start_page_num, pages_size);
     for (size_t page_num = 0; page_num < pages_size; ++page_num) {
       int page = page_nums[page_num];
       GURL url = GURL(distiller_data->page_urls[page]);
-      EXPECT_CALL(*distiller_page, LoadURLImpl(url))
-          .WillOnce(testing::InvokeWithoutArgs(distiller_page,
-                                               &DistillerPage::OnLoadURLDone));
-      EXPECT_CALL(*distiller_page, ExecuteJavaScriptImpl(_))
-          .WillOnce(DistillerPageOnExecuteJavaScriptDone(
+      EXPECT_CALL(*distiller_page, DistillPageImpl(url, _))
+          .WillOnce(DistillerPageOnDistillationDone(
               distiller_page, url, distiller_data->distilled_values[page]));
     }
   }
@@ -334,7 +321,6 @@ TEST_F(DistillerTest, DistillPage) {
   EXPECT_CALL(page_factory_, CreateDistillerPageMock())
       .WillOnce(CreateMockDistillerPage(list.get(), GURL(kURL)));
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(kURL);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -354,7 +340,6 @@ TEST_F(DistillerTest, DistillPageWithImages) {
   EXPECT_CALL(page_factory_, CreateDistillerPageMock())
       .WillOnce(CreateMockDistillerPage(list.get(), GURL(kURL)));
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(kURL);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -392,7 +377,6 @@ TEST_F(DistillerTest, DistillMultiplePages) {
       .WillOnce(CreateMockDistillerPages(distiller_data.get(), kNumPages, 0));
 
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(distiller_data->page_urls[0]);
   base::MessageLoop::current()->RunUntilIdle();
   VerifyArticleProtoMatchesMultipageData(
@@ -408,7 +392,6 @@ TEST_F(DistillerTest, DistillLinkLoop) {
   EXPECT_CALL(page_factory_, CreateDistillerPageMock())
       .WillOnce(CreateMockDistillerPage(list.get(), GURL(kURL)));
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(kURL);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -441,7 +424,6 @@ TEST_F(DistillerTest, CheckMaxPageLimitExtraPage) {
 
   distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
 
-  distiller_->Init();
   DistillPage(distiller_data->page_urls[0]);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -462,8 +444,6 @@ TEST_F(DistillerTest, CheckMaxPageLimitExactLimit) {
   // Check if distilling an article with exactly the page limit works.
   distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
 
-  distiller_->Init();
-
   DistillPage(distiller_data->page_urls[0]);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -478,7 +458,6 @@ TEST_F(DistillerTest, SinglePageDistillationFailure) {
   EXPECT_CALL(page_factory_, CreateDistillerPageMock())
       .WillOnce(CreateMockDistillerPage(nullValue.get(), GURL(kURL)));
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(kURL);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ("", article_proto_->title());
@@ -504,7 +483,6 @@ TEST_F(DistillerTest, MultiplePagesDistillationFailure) {
       CreateMockDistillerPages(distiller_data.get(), failed_page_num + 1, 0));
 
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(distiller_data->page_urls[0]);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -526,7 +504,6 @@ TEST_F(DistillerTest, DistillPreviousPage) {
           distiller_data.get(), kNumPages, start_page_num));
 
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(distiller_data->page_urls[start_page_num]);
   base::MessageLoop::current()->RunUntilIdle();
   VerifyArticleProtoMatchesMultipageData(
@@ -547,7 +524,6 @@ TEST_F(DistillerTest, IncrementalUpdates) {
           distiller_data.get(), kNumPages, start_page_num));
 
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(distiller_data->page_urls[start_page_num]);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -570,7 +546,6 @@ TEST_F(DistillerTest, IncrementalUpdatesDoNotDeleteFinalArticle) {
           distiller_data.get(), kNumPages, start_page_num));
 
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(distiller_data->page_urls[start_page_num]);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kNumPages, in_sequence_updates_.size());
@@ -595,7 +570,6 @@ TEST_F(DistillerTest, DeletingArticleDoesNotInterfereWithUpdates) {
           distiller_data.get(), kNumPages, start_page_num));
 
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(distiller_data->page_urls[start_page_num]);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kNumPages, in_sequence_updates_.size());
@@ -622,7 +596,6 @@ TEST_F(DistillerTest, CancelWithDelayedImageFetchCallback) {
   EXPECT_CALL(url_fetcher_factory, CreateDistillerURLFetcher())
       .WillOnce(Return(delayed_fetcher));
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory));
-  distiller_->Init();
   DistillPage(kURL);
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -642,13 +615,12 @@ TEST_F(DistillerTest, CancelWithDelayedJSCallback) {
       .WillOnce(CreateMockDistillerPageWithPendingJSCallback(&distiller_page,
                                                              GURL(kURL)));
   distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  distiller_->Init();
   DistillPage(kURL);
   base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_TRUE(distiller_page);
   // Post the task to execute javascript and then delete the distiller.
-  distiller_page->OnExecuteJavaScriptDone(GURL(kURL), distilled_value.get());
+  distiller_page->OnDistillationDone(GURL(kURL), distilled_value.get());
   distiller_.reset();
 
   base::MessageLoop::current()->RunUntilIdle();

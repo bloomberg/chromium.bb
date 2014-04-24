@@ -19,54 +19,27 @@ DistilledPageInfo::~DistilledPageInfo() {}
 
 DistillerPageFactory::~DistillerPageFactory() {}
 
-DistillerPage::DistillerPage() : state_(NO_CONTEXT) {}
+DistillerPage::DistillerPage() : ready_(true) {}
 
 DistillerPage::~DistillerPage() {}
 
-void DistillerPage::Init() {
-  DCHECK_EQ(NO_CONTEXT, state_);
-  InitImpl();
-  state_ = IDLE;
-}
-
 void DistillerPage::DistillPage(const GURL& gurl,
                                 const DistillerPageCallback& callback) {
-  DCHECK(state_ == IDLE || state_ == PAGE_AVAILABLE ||
-         state_ == PAGELOAD_FAILED);
-  state_ = LOADING_PAGE;
+  DCHECK(ready_);
+  // It is only possible to distill one page at a time. |ready_| is reset when
+  // the callback to OnDistillationDone happens.
+  ready_ = false;
   distiller_page_callback_ = callback;
-  LoadURLImpl(gurl);
-}
-
-void DistillerPage::ExecuteJavaScript() {
-  DCHECK_EQ(PAGE_AVAILABLE, state_);
-  state_ = EXECUTING_JAVASCRIPT;
-  DVLOG(1) << "Beginning distillation";
   std::string script = ResourceBundle::GetSharedInstance()
                            .GetRawDataResource(IDR_DISTILLER_JS)
                            .as_string();
-  ExecuteJavaScriptImpl(script);
+  DistillPageImpl(gurl, script);
 }
 
-void DistillerPage::OnLoadURLDone() {
-  DCHECK_EQ(LOADING_PAGE, state_);
-  state_ = PAGE_AVAILABLE;
-  ExecuteJavaScript();
-}
-
-void DistillerPage::OnLoadURLFailed() {
-  state_ = PAGELOAD_FAILED;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(distiller_page_callback_,
-                 base::Passed(scoped_ptr<DistilledPageInfo>()),
-                 false));
-}
-
-void DistillerPage::OnExecuteJavaScriptDone(const GURL& page_url,
-                                            const base::Value* value) {
-  DCHECK_EQ(EXECUTING_JAVASCRIPT, state_);
-  state_ = PAGE_AVAILABLE;
+void DistillerPage::OnDistillationDone(const GURL& page_url,
+                                       const base::Value* value) {
+  DCHECK(!ready_);
+  ready_ = true;
   scoped_ptr<DistilledPageInfo> page_info(new DistilledPageInfo());
   std::string result;
   const base::ListValue* result_list = NULL;

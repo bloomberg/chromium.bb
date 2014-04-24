@@ -73,10 +73,6 @@ class DistillerImpl : public Distiller {
       const DistillerURLFetcherFactory& distiller_url_fetcher_factory);
   virtual ~DistillerImpl();
 
-  // Creates an execution context. This must be called once before any calls are
-  // made to distill the page.
-  virtual void Init();
-
   virtual void DistillPage(const GURL& url,
                            const DistillationFinishedCallback& finished_cb,
                            const DistillationUpdateCallback& update_cb)

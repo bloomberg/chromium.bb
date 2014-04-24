@@ -39,7 +39,6 @@ DistillerFactoryImpl::~DistillerFactoryImpl() {}
 scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistiller() {
   scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
       *distiller_page_factory_, *distiller_url_fetcher_factory_));
-  distiller->Init();
   return distiller.PassAs<Distiller>();
 }
 
@@ -59,11 +58,6 @@ DistillerImpl::DistillerImpl(
 
 DistillerImpl::~DistillerImpl() {
   DCHECK(destruction_allowed_);
-}
-
-void DistillerImpl::Init() {
-  DCHECK(AreAllPagesFinished());
-  distiller_page_->Init();
 }
 
 void DistillerImpl::SetMaxNumPagesInArticle(size_t max_num_pages) {

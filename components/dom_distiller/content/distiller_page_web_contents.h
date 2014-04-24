@@ -54,11 +54,36 @@ class DistillerPageWebContents : public DistillerPage,
                            RenderViewHost* render_view_host) OVERRIDE;
 
  protected:
-  virtual void InitImpl() OVERRIDE;
-  virtual void LoadURLImpl(const GURL& gurl) OVERRIDE;
-  virtual void ExecuteJavaScriptImpl(const std::string& script) OVERRIDE;
+  virtual void DistillPageImpl(const GURL& gurl,
+                               const std::string& script) OVERRIDE;
 
  private:
+  enum State {
+    // The page distiller is idle.
+    IDLE,
+    // A page is currently loading.
+    LOADING_PAGE,
+    // There was an error processing the page.
+    PAGELOAD_FAILED,
+    // JavaScript is executing within the context of the page. When the
+    // JavaScript completes, the state will be returned to |IDLE|.
+    EXECUTING_JAVASCRIPT
+  };
+
+  // Injects and executes JavaScript in the context of a loaded page. This
+  // must only be called after the page has successfully loaded.
+  void ExecuteJavaScript();
+
+  // Called when the distillation is done or if the page load failed.
+  void OnWebContentsDistillationDone(const GURL& page_url,
+                                     const base::Value* value);
+
+  // The current state of the |DistillerPage|, initially |IDLE|.
+  State state_;
+
+  // The JavaScript to inject to extract content.
+  std::string script_;
+
   scoped_ptr<content::WebContents> web_contents_;
   content::BrowserContext* browser_context_;
   DISALLOW_COPY_AND_ASSIGN(DistillerPageWebContents);

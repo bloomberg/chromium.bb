@@ -27,32 +27,27 @@ scoped_ptr<DistillerPage> DistillerPageWebContentsFactory::CreateDistillerPage()
 
 DistillerPageWebContents::DistillerPageWebContents(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {}
+    : state_(IDLE), browser_context_(browser_context) {}
 
 DistillerPageWebContents::~DistillerPageWebContents() {}
 
-void DistillerPageWebContents::InitImpl() {
+void DistillerPageWebContents::DistillPageImpl(const GURL& gurl,
+                                               const std::string& script) {
   DCHECK(browser_context_);
+  DCHECK(state_ == IDLE);
+  state_ = LOADING_PAGE;
+  script_ = script;
+
+  // Create new WebContents to use for distilling the content.
   content::WebContents::CreateParams create_params(browser_context_);
   create_params.initially_hidden = true;
   web_contents_.reset(content::WebContents::Create(create_params));
-}
-
-void DistillerPageWebContents::LoadURLImpl(const GURL& gurl) {
   DCHECK(web_contents_.get());
+
+  // Start observing WebContents and load the requested URL.
   content::WebContentsObserver::Observe(web_contents_.get());
   content::NavigationController::LoadURLParams params(gurl);
   web_contents_->GetController().LoadURLWithParams(params);
-}
-
-void DistillerPageWebContents::ExecuteJavaScriptImpl(
-    const std::string& script) {
-  content::RenderFrameHost* frame = web_contents_->GetMainFrame();
-  DCHECK(frame);
-  frame->ExecuteJavaScript(base::UTF8ToUTF16(script),
-                           base::Bind(&DistillerPage::OnExecuteJavaScriptDone,
-                                      base::Unretained(this),
-                                      web_contents_->GetLastCommittedURL()));
 }
 
 void DistillerPageWebContents::DocumentLoadedInFrame(
@@ -61,7 +56,7 @@ void DistillerPageWebContents::DocumentLoadedInFrame(
   if (frame_id == web_contents_->GetMainFrame()->GetRoutingID()) {
     content::WebContentsObserver::Observe(NULL);
     web_contents_->Stop();
-    OnLoadURLDone();
+    ExecuteJavaScript();
   }
 }
 
@@ -74,8 +69,32 @@ void DistillerPageWebContents::DidFailLoad(
     RenderViewHost* render_view_host) {
   if (is_main_frame) {
     content::WebContentsObserver::Observe(NULL);
-    OnLoadURLFailed();
+    DCHECK(state_ == LOADING_PAGE || state_ == EXECUTING_JAVASCRIPT);
+    state_ = PAGELOAD_FAILED;
+    scoped_ptr<base::Value> empty(base::Value::CreateNullValue());
+    OnWebContentsDistillationDone(GURL(), empty.get());
   }
+}
+
+void DistillerPageWebContents::ExecuteJavaScript() {
+  content::RenderFrameHost* frame = web_contents_->GetMainFrame();
+  DCHECK(frame);
+  DCHECK_EQ(LOADING_PAGE, state_);
+  state_ = EXECUTING_JAVASCRIPT;
+  DVLOG(1) << "Beginning distillation";
+  frame->ExecuteJavaScript(
+      base::UTF8ToUTF16(script_),
+      base::Bind(&DistillerPageWebContents::OnWebContentsDistillationDone,
+                 base::Unretained(this),
+                 web_contents_->GetLastCommittedURL()));
+}
+
+void DistillerPageWebContents::OnWebContentsDistillationDone(
+    const GURL& page_url,
+    const base::Value* value) {
+  DCHECK(state_ == PAGELOAD_FAILED || state_ == EXECUTING_JAVASCRIPT);
+  state_ = IDLE;
+  DistillerPage::OnDistillationDone(page_url, value);
 }
 
 }  // namespace dom_distiller

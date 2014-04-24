@@ -40,9 +40,8 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
                    this));
   }
 
-  void OnPageDistillationFinished(
-    scoped_ptr<DistilledPageInfo> distilled_page,
-    bool distillation_successful) {
+  void OnPageDistillationFinished(scoped_ptr<DistilledPageInfo> distilled_page,
+                                  bool distillation_successful) {
     page_info_ = distilled_page.Pass();
     quit_closure_.Run();
   }
@@ -57,13 +56,13 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
         pak_file, ui::SCALE_FACTOR_NONE);
   }
 
-   void SetUpTestServer() {
-     base::FilePath path;
-     PathService::Get(base::DIR_SOURCE_ROOT, &path);
-     path = path.AppendASCII("components/test/data/dom_distiller");
-     embedded_test_server()->ServeFilesFromDirectory(path);
-     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-   }
+  void SetUpTestServer() {
+    base::FilePath path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    path = path.AppendASCII("components/test/data/dom_distiller");
+    embedded_test_server()->ServeFilesFromDirectory(path);
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  }
 
  protected:
   DistillerPageWebContents* distiller_page_;
@@ -75,7 +74,6 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext());
   distiller_page_ = &distiller_page;
-  distiller_page.Init();
 
   base::RunLoop run_loop;
   DistillPage(run_loop.QuitClosure(), "/simple_article.html");
@@ -92,7 +90,6 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext());
   distiller_page_ = &distiller_page;
-  distiller_page.Init();
 
   base::RunLoop run_loop;
   DistillPage(run_loop.QuitClosure(), "/simple_article.html");
@@ -109,7 +106,6 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext());
   distiller_page_ = &distiller_page;
-  distiller_page.Init();
 
   base::RunLoop run_loop;
   DistillPage(run_loop.QuitClosure(), "/simple_article.html");
