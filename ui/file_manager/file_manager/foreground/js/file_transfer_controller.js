@@ -89,7 +89,10 @@ FileTransferController.prototype = {
     list.addEventListener('dragstart', this.onDragStart_.bind(this, list));
     list.addEventListener('dragend', this.onDragEnd_.bind(this, list));
     list.addEventListener('touchstart', this.onTouchStart_.bind(this));
-    list.addEventListener('touchend', this.onTouchEnd_.bind(this));
+    list.ownerDocument.addEventListener(
+        'touchend', this.onTouchEnd_.bind(this), true);
+    list.ownerDocument.addEventListener(
+        'touchcancel', this.onTouchEnd_.bind(this), true);
   },
 
   /**
