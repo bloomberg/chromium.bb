@@ -2,3 +2,15 @@
 RenderViewImplTest.SendProgressCompletionUpdates
 WebRtcBrowserTests/WebRtcBrowserTest.Ca*
 WebRtcBrowserTests/WebRtcBrowserTest.NegotiateOfferWithBLine*
+# Dr.Memory-i#1528-c#2
+BrowserPluginHostTest.InputMethod
+DeviceInertialSensorBrowserTest.OrientationNullTestWithAlert
+DeviceInertialSensorBrowserTest.MotionNullTestWithAlert
+PluginTest.GetURLRequestFailWrite
+PluginTest.MultipleInstancesSyncCalls
+PluginTest.EnsureScriptingWorksInDestroy
+TouchActionBrowserTest.TouchActionNone,
+RenderViewImplTest.DontIgnoreBackAfterNavEntryLimit
+RenderViewImplTest.SendSwapOutACK
+ResourceFetcherTests.ResourceFetcherDidFail
+OpenedByDOMTest.CrossProcessPopup
