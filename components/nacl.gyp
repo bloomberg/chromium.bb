@@ -153,6 +153,8 @@
           'target_name': 'nacl_renderer',
           'type': 'static_library',
           'sources': [
+            'nacl/renderer/histogram.cc',
+            'nacl/renderer/histogram.h',
             'nacl/renderer/manifest_service_channel.cc',
             'nacl/renderer/manifest_service_channel.h',
             'nacl/renderer/nexe_load_manager.cc',
