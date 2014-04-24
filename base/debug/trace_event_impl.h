@@ -299,13 +299,14 @@ class BASE_EXPORT CategoryFilter {
   //
   // Category filters can also be used to configure synthetic delays.
   //
-  // Example: CategoryFilter("DELAY(gpu.SwapBuffers;16)"); would make swap
+  // Example: CategoryFilter("DELAY(gpu.PresentingFrame;16)"); would make swap
   //          buffers always take at least 16 ms.
-  // Example: CategoryFilter("DELAY(gpu.SwapBuffers;16;oneshot)"); would
-  //          make swap buffers take at least 16 ms the first time it is called.
-  // Example: CategoryFilter("DELAY(gpu.SwapBuffers;16;alternating)"); would
-  //          make swap buffers take at least 16 ms every other time it is
+  // Example: CategoryFilter("DELAY(gpu.PresentingFrame;16;oneshot)"); would
+  //          make swap buffers take at least 16 ms the first time it is
   //          called.
+  // Example: CategoryFilter("DELAY(gpu.PresentingFrame;16;alternating)");
+  //          would make swap buffers take at least 16 ms every other time it
+  //          is called.
   explicit CategoryFilter(const std::string& filter_string);
 
   CategoryFilter(const CategoryFilter& cf);

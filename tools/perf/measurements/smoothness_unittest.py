@@ -45,7 +45,7 @@ class SmoothnessUnitTest(
     test_page.synthetic_delays = {
         'cc.BeginMainFrame': { 'target_duration': 0.012 },
         'cc.DrawAndSwap': { 'target_duration': 0.012, 'mode': 'alternating' },
-        'gpu.SwapBuffers': { 'target_duration': 0.012 }
+        'gpu.PresentingFrame': { 'target_duration': 0.012 }
     }
 
     tab = FakeTab()
@@ -55,7 +55,7 @@ class SmoothnessUnitTest(
     expected_category_filter = [
         'DELAY(cc.BeginMainFrame;0.012000;static)',
         'DELAY(cc.DrawAndSwap;0.012000;alternating)',
-        'DELAY(gpu.SwapBuffers;0.012000;static)',
+        'DELAY(gpu.PresentingFrame;0.012000;static)',
         'benchmark',
         'webkit.console'
     ]

@@ -53,7 +53,7 @@ class Page3(ToughSchedulingCasesPage):
 
     self.synthetic_delays = {
       'cc.DrawAndSwap': {'target_duration': 0.004},
-      'gpu.SwapBuffers': {'target_duration': 0.004},
+      'gpu.PresentingFrame': {'target_duration': 0.004},
       'cc.BeginMainFrame': {'target_duration': 0.004}
     }
 
@@ -70,7 +70,7 @@ class Page4(ToughSchedulingCasesPage):
 
     self.synthetic_delays = {
       'cc.DrawAndSwap': {'target_duration': 0.012},
-      'gpu.SwapBuffers': {'target_duration': 0.012},
+      'gpu.PresentingFrame': {'target_duration': 0.012},
       'cc.BeginMainFrame': {'target_duration': 0.012}
     }
 
@@ -236,7 +236,7 @@ class Page15(ToughSchedulingCasesPage):
       url='file://tough_scheduling_cases/raf.html?gpu_bound',
       page_set=page_set)
 
-    self.synthetic_delays = {'gpu.SwapBuffers': {'target_duration': 0.1}}
+    self.synthetic_delays = {'gpu.PresentingFrame': {'target_duration': 0.1}}
 
 
 class Page16(ToughSchedulingCasesPage):

@@ -7558,6 +7558,9 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     uint32 immediate_data_size, const cmds::PostSubBufferCHROMIUM& c) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandlePostSubBufferCHROMIUM");
+  {
+    TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame");
+  }
   if (!supports_post_sub_buffer_) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
@@ -9066,7 +9069,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
                "offscreen", is_offscreen,
                "frame", this_frame_number);
   {
-    TRACE_EVENT_SYNTHETIC_DELAY("gpu.SwapBuffers");
+    TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame");
   }
 
   bool is_tracing;
