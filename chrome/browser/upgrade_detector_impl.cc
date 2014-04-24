@@ -93,17 +93,20 @@ int GetCheckForUpgradeEveryMs() {
 
 // Return true if the current build is one of the unstable channels.
 bool IsUnstableChannel() {
+  // TODO(mad): Investigate whether we still need to be on the file thread for
+  // this. On Windows, the file thread used to be required for registry access
+  // but no anymore. But other platform may still need the file thread.
+  // crbug.com/366647.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   return channel == chrome::VersionInfo::CHANNEL_DEV ||
          channel == chrome::VersionInfo::CHANNEL_CANARY;
 }
 
-// This task identifies whether we are running an unstable version. And then
-// it unconditionally calls back the provided task.
+// This task identifies whether we are running an unstable version. And then it
+// unconditionally calls back the provided task.
 void CheckForUnstableChannel(const base::Closure& callback_task,
                              bool* is_unstable_channel) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   *is_unstable_channel = IsUnstableChannel();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
 }
@@ -139,9 +142,10 @@ void DetectUpdatability(const base::Closure& callback_task,
     *is_auto_update_enabled =
         GoogleUpdateSettings::AreAutoupdatesEnabled(app_guid);
   }
+  *is_unstable_channel = IsUnstableChannel();
   // Don't show the update bubbles to entreprise users (i.e., on a domain).
   if (!base::win::IsEnrolledToDomain())
-    CheckForUnstableChannel(callback_task, is_unstable_channel);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
 }
 #endif  // defined(OS_WIN)
 
