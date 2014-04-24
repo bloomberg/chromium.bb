@@ -64,7 +64,7 @@ GIT_REVISIONS = {
     }
 
 TAR_FILES = {
-    'gmp': command.path.join('gmp', 'gmp-5.1.3.tar.bz2'),
+    'gmp': command.path.join('gmp', 'gmp-6.0.0a.tar.bz2'),
     'mpfr': command.path.join('mpfr', 'mpfr-3.1.2.tar.bz2'),
     'mpc': command.path.join('mpc', 'mpc-1.0.2.tar.gz'),
     'isl': command.path.join('cloog', 'isl-0.12.2.tar.bz2'),
