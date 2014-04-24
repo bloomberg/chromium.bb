@@ -687,31 +687,14 @@ class CONTENT_EXPORT RenderViewImpl
 
   void didAccessInitialDocument(blink::WebLocalFrame* frame);
   void didDisownOpener(blink::WebLocalFrame* frame);
-  void frameDetached(blink::WebFrame* frame);
-  void willClose(blink::WebFrame* frame);
-  void didMatchCSS(
-      blink::WebLocalFrame* frame,
-      const blink::WebVector<blink::WebString>& newly_matching_selectors,
-      const blink::WebVector<blink::WebString>& stopped_matching_selectors);
-  void willSendSubmitEvent(blink::WebLocalFrame* frame,
-                           const blink::WebFormElement& form);
-  void willSubmitForm(blink::WebLocalFrame* frame,
-                      const blink::WebFormElement& form);
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource);
-  void didFailProvisionalLoad(blink::WebLocalFrame* frame,
-                              const blink::WebURLError& error);
   void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
-  void didCreateDocumentElement(blink::WebLocalFrame* frame);
   void didReceiveTitle(blink::WebLocalFrame* frame,
                        const blink::WebString& title,
                        blink::WebTextDirection direction);
   void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
-  void didFinishDocumentLoad(blink::WebLocalFrame* frame);
   void didHandleOnloadEvents(blink::WebLocalFrame* frame);
-  void didFailLoad(blink::WebLocalFrame* frame,
-                   const blink::WebURLError& error);
-  void didFinishLoad(blink::WebLocalFrame* frame);
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didFinishResourceLoad(blink::WebLocalFrame* frame,
                              unsigned identifier);

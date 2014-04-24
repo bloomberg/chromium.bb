@@ -2082,27 +2082,6 @@ void RenderViewImpl::didDisownOpener(blink::WebLocalFrame* frame) {
   Send(new ViewHostMsg_DidDisownOpener(routing_id_));
 }
 
-void RenderViewImpl::frameDetached(WebFrame* frame) {
-  // NOTE: We may get here for either the main frame or for subframes.  The
-  // RenderFrameImpl will be deleted immediately after this call for subframes
-  // but not for the main frame, which is owned by |main_render_frame_|.
-
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
-}
-
-void RenderViewImpl::willClose(WebFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
-}
-
-void RenderViewImpl::didMatchCSS(
-    WebLocalFrame* frame,
-    const WebVector<WebString>& newly_matching_selectors,
-    const WebVector<WebString>& stopped_matching_selectors) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_,
-      DidMatchCSS(frame, newly_matching_selectors, stopped_matching_selectors));
-}
-
 void RenderViewImpl::Repaint(const gfx::Size& size) {
   OnRepaint(size);
 }
@@ -2135,18 +2114,6 @@ SSLStatus RenderViewImpl::GetSSLStatusOfFrame(blink::WebFrame* frame) const {
 
 const std::string& RenderViewImpl::GetAcceptLanguages() const {
   return renderer_preferences_.accept_languages;
-}
-
-void RenderViewImpl::willSendSubmitEvent(blink::WebLocalFrame* frame,
-                                         const blink::WebFormElement& form) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, WillSendSubmitEvent(frame, form));
-}
-
-void RenderViewImpl::willSubmitForm(WebLocalFrame* frame,
-                                    const WebFormElement& form) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, WillSubmitForm(frame, form));
 }
 
 void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
@@ -2327,18 +2294,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   webview()->setPageScaleFactorLimits(1, maxPageScaleFactor);
 }
 
-void RenderViewImpl::didFailProvisionalLoad(WebLocalFrame* frame,
-                                            const WebURLError& error) {
-  // Notify the browser that we failed a provisional load with an error.
-  //
-  // Note: It is important this notification occur before DidStopLoading so the
-  //       SSL manager can react to the provisional load failure before being
-  //       notified the load stopped.
-  //
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidFailProvisionalLoad(frame, error));
-}
-
 void RenderViewImpl::FrameDidCommitProvisionalLoad(WebLocalFrame* frame,
                                                    bool is_new_navigation) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
@@ -2379,11 +2334,6 @@ void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame, int world_id) {
     MemoryBenchmarkingExtension::Install(frame);
 }
 
-void RenderViewImpl::didCreateDocumentElement(WebLocalFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidCreateDocumentElement(frame));
-}
-
 void RenderViewImpl::didReceiveTitle(WebLocalFrame* frame,
                                      const WebString& title,
                                      WebTextDirection direction) {
@@ -2412,25 +2362,11 @@ void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
   SendUpdateFaviconURL(urls);
 }
 
-void RenderViewImpl::didFinishDocumentLoad(WebLocalFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidFinishDocumentLoad(frame));
-}
-
 void RenderViewImpl::didHandleOnloadEvents(WebLocalFrame* frame) {
   if (webview()->mainFrame() == frame) {
     Send(new ViewHostMsg_DocumentOnLoadCompletedInMainFrame(routing_id_,
                                                             page_id_));
   }
-}
-
-void RenderViewImpl::didFailLoad(WebLocalFrame* frame,
-                                 const WebURLError& error) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFailLoad(frame, error));
-}
-
-void RenderViewImpl::didFinishLoad(WebLocalFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
 }
 
 void RenderViewImpl::didUpdateCurrentHistoryItem(WebLocalFrame* frame) {

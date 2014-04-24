@@ -1396,9 +1396,8 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   // have IPCs fired off.
   is_detaching_ = true;
 
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->frameDetached(frame);
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    FrameDetached(frame));
 
   // We need to clean up subframes by removing them from the map and deleting
   // the RenderFrameImpl.  In contrast, the main frame is owned by its
@@ -1427,9 +1426,9 @@ void RenderFrameImpl::frameFocused() {
 
 void RenderFrameImpl::willClose(blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->willClose(frame);
+
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    FrameWillClose(frame));
 }
 
 void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
@@ -1450,8 +1449,11 @@ void RenderFrameImpl::didMatchCSS(
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   DCHECK(!frame_ || frame_ == frame);
-  render_view_->didMatchCSS(
-      frame, newly_matching_selectors, stopped_matching_selectors);
+
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidMatchCSS(frame,
+                                newly_matching_selectors,
+                                stopped_matching_selectors));
 }
 
 bool RenderFrameImpl::shouldReportDetailedMessageForSource(
@@ -1486,16 +1488,14 @@ void RenderFrameImpl::didAddMessageToConsole(
 
   if (shouldReportDetailedMessageForSource(source_name)) {
     FOR_EACH_OBSERVER(
-        RenderViewObserver,
-        render_view_->observers(),
+        RenderViewObserver, render_view_->observers(),
         DetailedConsoleMessageAdded(message.text,
                                     source_name,
                                     stack_trace,
                                     source_line,
                                     static_cast<int32>(log_severity)));
     FOR_EACH_OBSERVER(
-        RenderFrameObserver,
-        observers_,
+        RenderFrameObserver, observers_,
         DetailedConsoleMessageAdded(message.text,
                                     source_name,
                                     stack_trace,
@@ -1547,9 +1547,9 @@ blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame(
 void RenderFrameImpl::willSendSubmitEvent(blink::WebLocalFrame* frame,
                                           const blink::WebFormElement& form) {
   DCHECK(!frame_ || frame_ == frame);
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->willSendSubmitEvent(frame, form);
+
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    WillSendSubmitEvent(frame, form));
 }
 
 void RenderFrameImpl::willSubmitForm(blink::WebLocalFrame* frame,
@@ -1572,9 +1572,8 @@ void RenderFrameImpl::willSubmitForm(blink::WebLocalFrame* frame,
   internal_data->set_searchable_form_encoding(
       web_searchable_form_data.encoding().utf8());
 
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->willSubmitForm(frame, form);
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    WillSubmitForm(frame, form));
 }
 
 void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
@@ -1637,13 +1636,9 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
         PAGE_TRANSITION_AUTO_SUBFRAME);
   }
 
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, render_view_->observers(),
-      DidStartProvisionalLoad(frame));
-
-  FOR_EACH_OBSERVER(
-      RenderFrameObserver, observers_,
-      DidStartProvisionalLoad());
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidStartProvisionalLoad(frame));
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidStartProvisionalLoad());
 
   int parent_routing_id = frame->parent() ?
       FromWebFrame(frame->parent())->GetRoutingID() : -1;
@@ -1683,9 +1678,14 @@ void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
 
   const WebURLRequest& failed_request = ds->request();
 
-  // Call out to RenderViewImpl, so observers are notified.
-  render_view_->didFailProvisionalLoad(frame, error);
-
+  // Notify the browser that we failed a provisional load with an error.
+  //
+  // Note: It is important this notification occur before DidStopLoading so the
+  //       SSL manager can react to the provisional load failure before being
+  //       notified the load stopped.
+  //
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidFailProvisionalLoad(frame, error));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidFailProvisionalLoad(error));
 
@@ -1909,9 +1909,8 @@ void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
     }
   }
 
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver.
-  render_view_->didCreateDocumentElement(frame);
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidCreateDocumentElement(frame));
 }
 
 void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
@@ -1937,10 +1936,8 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
 
   Send(new FrameHostMsg_DidFinishDocumentLoad(routing_id_));
 
-  // Call back to RenderViewImpl for observers to be notified.
-  // TODO(nasko): Remove once we have RenderFrameObserver for this method.
-  render_view_->didFinishDocumentLoad(frame);
-
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidFinishDocumentLoad(frame));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishDocumentLoad());
 
   // Check whether we have new encoding name.
@@ -1961,7 +1958,8 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
 
-  render_view_->didFailLoad(frame, error);
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidFailLoad(frame, error));
 
   const WebURLRequest& failed_request = ds->request();
   base::string16 error_description;
@@ -1990,7 +1988,8 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
     document_state->set_finish_load_time(Time::Now());
   }
 
-  render_view_->didFinishLoad(frame);
+  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
+                    DidFinishLoad(frame));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishLoad());
 
   // Don't send this message while the frame is swapped out.
