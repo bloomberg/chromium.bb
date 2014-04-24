@@ -1,5 +1,7 @@
 module mojo {
 
+// This struct encompasses all of the basic types, so that they
+// may be sent from C++ to JS and back for validation.
 struct EchoArgs {
   int64 si64;
   int32 si32;
@@ -9,6 +11,12 @@ struct EchoArgs {
   uint32 ui32;
   uint16 ui16;
   uint8  ui8;
+  float float_val;
+  float float_inf;
+  float float_nan;
+  double double_val;
+  double double_inf;
+  double double_nan;
   string name;
 };
 

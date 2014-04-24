@@ -98,7 +98,7 @@ _kind_to_javascript_decode_snippet = {
   mojom.UINT16:       "readUint16()",
   mojom.INT32:        "readInt32()",
   mojom.UINT32:       "readUint32()",
-  mojom.FLOAT:        "decodeFloat()",
+  mojom.FLOAT:        "readFloat()",
   mojom.HANDLE:       "decodeHandle()",
   mojom.DCPIPE:       "decodeHandle()",
   mojom.DPPIPE:       "decodeHandle()",
@@ -106,7 +106,7 @@ _kind_to_javascript_decode_snippet = {
   mojom.SHAREDBUFFER: "decodeHandle()",
   mojom.INT64:        "readInt64()",
   mojom.UINT64:       "readUint64()",
-  mojom.DOUBLE:       "decodeDouble()",
+  mojom.DOUBLE:       "readDouble()",
   mojom.STRING:       "decodeStringPointer()",
 }
 
@@ -132,7 +132,7 @@ _kind_to_javascript_encode_snippet = {
   mojom.UINT16:       "writeUint16(",
   mojom.INT32:        "writeInt32(",
   mojom.UINT32:       "writeUint32(",
-  mojom.FLOAT:        "encodeFloat(",
+  mojom.FLOAT:        "writeFloat(",
   mojom.HANDLE:       "encodeHandle(",
   mojom.DCPIPE:       "encodeHandle(",
   mojom.DPPIPE:       "encodeHandle(",
@@ -140,7 +140,7 @@ _kind_to_javascript_encode_snippet = {
   mojom.SHAREDBUFFER: "encodeHandle(",
   mojom.INT64:        "writeInt64(",
   mojom.UINT64:       "writeUint64(",
-  mojom.DOUBLE:       "encodeDouble(",
+  mojom.DOUBLE:       "writeDouble(",
   mojom.STRING:       "encodeStringPointer(",
 }
 

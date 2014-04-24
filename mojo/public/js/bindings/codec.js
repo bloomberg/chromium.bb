@@ -178,15 +178,15 @@ define("mojo/public/js/bindings/codec", [
     return result;
   };
 
-  Decoder.prototype.readFloat32 = function() {
-    var result = this.buffer.dataView.readFloat32(
+  Decoder.prototype.readFloat = function() {
+    var result = this.buffer.dataView.getFloat32(
         this.next, kHostIsLittleEndian);
     this.next += 4;
     return result;
   };
 
-  Decoder.prototype.readFloat64 = function() {
-    var result = this.buffer.dataView.readFloat64(
+  Decoder.prototype.readDouble = function() {
+    var result = this.buffer.dataView.getFloat64(
         this.next, kHostIsLittleEndian);
     this.next += 8;
     return result;
@@ -308,13 +308,13 @@ define("mojo/public/js/bindings/codec", [
     this.next += 8;
   };
 
-  Encoder.prototype.writeFloat32 = function(val) {
-    this.buffer.dataView.setFloat32(val, kHostIsLittleEndian);
+  Encoder.prototype.writeFloat = function(val) {
+    this.buffer.dataView.setFloat32(this.next, val, kHostIsLittleEndian);
     this.next += 4;
   };
 
-  Encoder.prototype.writeFloat64 = function(val) {
-    this.buffer.dataView.setFloat64(val, kHostIsLittleEndian);
+  Encoder.prototype.writeDouble = function(val) {
+    this.buffer.dataView.setFloat64(this.next, val, kHostIsLittleEndian);
     this.next += 8;
   };
 
@@ -558,7 +558,7 @@ define("mojo/public/js/bindings/codec", [
   };
 
   function Int64() {
-  };
+  }
 
   Int64.encodedSize = 8;
 
@@ -571,7 +571,7 @@ define("mojo/public/js/bindings/codec", [
   };
 
   function Uint64() {
-  };
+  }
 
   Uint64.encodedSize = 8;
 
@@ -583,15 +583,38 @@ define("mojo/public/js/bindings/codec", [
     encoder.writeUint64(val);
   };
 
-  function PointerTo(cls) {
-    this.cls = cls;
-  };
-
   // TODO(abarth): Add missing types:
   // * String
-  // * Float
-  // * Double
-  // * Signed integers
+
+  function Float() {
+  }
+
+  Float.encodedSize = 4;
+
+  Float.decode = function(decoder) {
+    return decoder.readFloat();
+  };
+
+  Float.encode = function(encoder, val) {
+    encoder.writeFloat(val);
+  };
+
+  function Double() {
+  }
+
+  Double.encodedSize = 8;
+
+  Double.decode = function(decoder) {
+    return decoder.readDouble();
+  };
+
+  Double.encode = function(encoder, val) {
+    encoder.writeDouble(val);
+  };
+
+  function PointerTo(cls) {
+    this.cls = cls;
+  }
 
   PointerTo.prototype.encodedSize = 8;
 
@@ -606,7 +629,7 @@ define("mojo/public/js/bindings/codec", [
 
   function ArrayOf(cls) {
     this.cls = cls;
-  };
+  }
 
   ArrayOf.prototype.encodedSize = 8;
 
@@ -651,6 +674,8 @@ define("mojo/public/js/bindings/codec", [
   exports.Uint32 = Uint32;
   exports.Int64 = Int64;
   exports.Uint64 = Uint64;
+  exports.Float = Float;
+  exports.Double = Double;
   exports.PointerTo = PointerTo;
   exports.ArrayOf = ArrayOf;
   exports.Handle = Handle;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -46,6 +48,17 @@ const uint8  kExpectedUInt8Value = 65;
 const uint16 kExpectedUInt16Value = 16961;
 const uint32 kExpectedUInt32Value = 1145258561;
 const uint64 kExpectedUInt64Value = 77263311946305LL;
+
+// Double/float values, including special case constants.
+const double kExpectedDoubleVal = 3.14159265358979323846;
+const double kExpectedDoubleInf = std::numeric_limits<double>::infinity();
+const double kExpectedDoubleNan = std::numeric_limits<double>::quiet_NaN();
+const float kExpectedFloatVal = static_cast<float>(kExpectedDoubleVal);
+const float kExpectedFloatInf = std::numeric_limits<float>::infinity();
+const float kExpectedFloatNan = std::numeric_limits<float>::quiet_NaN();
+
+// NaN has the property that it is not equal to itself.
+#define EXPECT_NAN(x) EXPECT_NE(x, x)
 
 // Returns the path to the mojom js bindings file.
 base::FilePath GetFilePathForJSResource(const std::string& path) {
@@ -144,6 +157,12 @@ class EchoBrowserTargetImpl : public BrowserTargetImpl {
     builder.set_ui32(kExpectedUInt32Value);
     builder.set_ui16(kExpectedUInt16Value);
     builder.set_ui8(kExpectedUInt8Value);
+    builder.set_float_val(kExpectedFloatVal);
+    builder.set_float_inf(kExpectedFloatInf);
+    builder.set_float_nan(kExpectedFloatNan);
+    builder.set_double_val(kExpectedDoubleVal);
+    builder.set_double_inf(kExpectedDoubleInf);
+    builder.set_double_nan(kExpectedDoubleNan);
     builder.set_name("coming");
     client_->Echo(builder.Finish());
   }
@@ -162,6 +181,12 @@ class EchoBrowserTargetImpl : public BrowserTargetImpl {
     EXPECT_EQ(kExpectedUInt32Value, arg1.ui32());
     EXPECT_EQ(kExpectedUInt16Value, arg1.ui16());
     EXPECT_EQ(kExpectedUInt8Value, arg1.ui8());
+    EXPECT_EQ(kExpectedFloatVal, arg1.float_val());
+    EXPECT_EQ(kExpectedFloatInf, arg1.float_inf());
+    EXPECT_NAN(arg1.float_nan());
+    EXPECT_EQ(kExpectedDoubleVal, arg1.double_val());
+    EXPECT_EQ(kExpectedDoubleInf, arg1.double_inf());
+    EXPECT_NAN(arg1.double_nan());
     EXPECT_EQ(std::string("coming"), arg1.name().To<std::string>());
 
     EXPECT_EQ(-1, arg2.si64());
