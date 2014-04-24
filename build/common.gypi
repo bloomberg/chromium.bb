@@ -1546,7 +1546,7 @@
               'android_app_abi%': 'arm64-v8a',
               'android_gdbserver%': '<(android_ndk_experimental_root)/prebuilt/android-arm64/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_experimental_root)/platforms/android-20/arch-arm64',
-              'android_toolchain%': '<(android_ndk_experimental_root)/toolchains/aarch64-linux-android-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
+              'android_toolchain%': '<(android_ndk_experimental_root)/toolchains/aarch64-linux-android-4.9/prebuilt/<(host_os)-<(android_host_arch)/bin',
               'android_stlport_root': '<(android_ndk_experimental_root)/sources/cxx-stl/stlport',
             }],
             ['target_arch == "mipsel"', {
