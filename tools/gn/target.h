@@ -150,6 +150,9 @@ class Target : public Item {
   // dependencies have been resolved.
   void PullDependentTargetInfo(std::set<const Config*>* unique_configs);
 
+  // Pulls dependent configs that need forwarding.
+  void PullForwardedDependentConfigs();
+
   OutputType output_type_;
   std::string output_name_;
   std::string output_extension_;

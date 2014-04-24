@@ -147,6 +147,7 @@ void Target::OnResolved() {
     // pulled from G to A in case G has configs directly on it).
     PullDependentTargetInfo(&unique_configs);
   }
+  PullForwardedDependentConfigs();
 }
 
 bool Target::IsLinkable() const {
@@ -181,6 +182,12 @@ void Target::PullDependentTargetInfo(std::set<const Config*>* unique_configs) {
       all_libs_.append(dep->all_libs());
     }
   }
+}
+
+void Target::PullForwardedDependentConfigs() {
+  // Groups implicitly forward all if its dependency's configs.
+  if (output_type() == GROUP)
+    forward_dependent_configs_ = deps_;
 
   // Forward direct dependent configs if requested.
   for (size_t dep = 0; dep < forward_dependent_configs_.size(); dep++) {
