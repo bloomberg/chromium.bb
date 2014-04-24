@@ -99,8 +99,12 @@ function cloneKey(key)
 // Logging the serialized format ensures that if it changes it will break tests.
 function logSerializedKey(o)
 {
-    if (internals)
-        debug("Serialized key bytes: " + bytesToHexString(internals.serializeObject(o)));
+    if (internals) {
+        // Removing the version tag from the output so serialization format changes don't need to update all the crypto tests.
+        var serialized = internals.serializeObject(o);
+        var serializedWithoutVersion = new Uint8Array(serialized, 2);
+        debug("Serialized key bytes: " + bytesToHexString(serializedWithoutVersion));
+    }
 }
 
 function shouldEvaluateAs(actual, expectedValue)
