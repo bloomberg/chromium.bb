@@ -1523,8 +1523,10 @@ void RenderObject::repaintTreeAfterLayout()
 {
     clearRepaintState();
 
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling())
-        child->repaintTreeAfterLayout();
+    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+        if (!child->isOutOfFlowPositioned())
+            child->repaintTreeAfterLayout();
+    }
 }
 
 static PassRefPtr<JSONValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutRect& newRect)
@@ -3388,6 +3390,9 @@ void RenderObject::clearRepaintState()
     setShouldDoFullRepaintIfSelfPaintingLayer(false);
     setShouldRepaintOverflow(false);
     setLayoutDidGetCalled(false);
+#ifndef NDEBUG
+    setRepaintStateWasCleared(true);
+#endif
 }
 
 } // namespace WebCore

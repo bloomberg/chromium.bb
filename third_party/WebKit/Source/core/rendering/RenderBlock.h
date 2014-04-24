@@ -350,6 +350,8 @@ private:
 
     virtual bool isRenderBlock() const OVERRIDE FINAL { return true; }
 
+    virtual void repaintTreeAfterLayout() OVERRIDE;
+
     void makeChildrenNonInline(RenderObject* insertionPoint = 0);
     virtual void removeLeftoverAnonymousBlock(RenderBlock* child);
 

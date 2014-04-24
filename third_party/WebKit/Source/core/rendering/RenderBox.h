@@ -617,6 +617,8 @@ public:
             removeFloatingOrPositionedChildFromBlockLists();
     }
 
+    virtual void repaintTreeAfterLayout() OVERRIDE;
+
 protected:
     virtual void willBeDestroyed() OVERRIDE;
 
@@ -628,8 +630,6 @@ protected:
     bool getBackgroundPaintedExtent(LayoutRect&) const;
     virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const;
     virtual bool computeBackgroundIsKnownToBeObscured() OVERRIDE;
-
-    virtual void repaintTreeAfterLayout() OVERRIDE;
 
     void paintBackgroundWithBorderAndBoxShadow(PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance);
     void paintBackground(const PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone);

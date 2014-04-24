@@ -361,6 +361,18 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
+void RenderBlock::repaintTreeAfterLayout()
+{
+    RenderBox::repaintTreeAfterLayout();
+
+    // Take care of positioned objects. This is required as LayoutState keeps a single clip rect.
+    if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
+        TrackedRendererListHashSet::iterator end = positionedObjects->end();
+        for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it)
+            (*it)->repaintTreeAfterLayout();
+    }
+}
+
 RenderBlock* RenderBlock::continuationBefore(RenderObject* beforeChild)
 {
     if (beforeChild && beforeChild->parent() == this)

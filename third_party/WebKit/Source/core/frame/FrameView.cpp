@@ -990,6 +990,12 @@ void FrameView::layout(bool allowSubtree)
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         repaintTree(rootForThisLayout);
 
+#ifndef NDEBUG
+        for (RenderObject* curObject = rootForThisLayout; curObject; curObject = curObject->nextInPreOrder(rootForThisLayout)) {
+            ASSERT(curObject->repaintStateWasCleared());
+            curObject->setRepaintStateWasCleared(false);
+        }
+#endif
     } else if (m_doFullRepaint) {
         // FIXME: This isn't really right, since the RenderView doesn't fully encompass
         // the visibleContentRect(). It just happens to work out most of the time,
