@@ -4,8 +4,8 @@
 
 if (!window.WebInspector)
     window.WebInspector = {};
-InspectorTest.importScript("../../../../../Source/devtools/front_end/UIString.js");
-InspectorTest.importScript("../../../../../Source/devtools/front_end/utilities.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/common/UIString.js");
+InspectorTest.importScript("../../../../../Source/devtools/front_end/common/utilities.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/profiler/HeapSnapshotCommon.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/profiler/heap_snapshot_worker/HeapSnapshot.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/profiler/heap_snapshot_worker/JSHeapSnapshot.js");
