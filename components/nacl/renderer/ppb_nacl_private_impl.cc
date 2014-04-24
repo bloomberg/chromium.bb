@@ -633,14 +633,12 @@ void NexeFileDidOpen(PP_Instance instance,
 }
 
 void ReportLoadSuccess(PP_Instance instance,
-                       PP_Bool is_pnacl,
                        const char* url,
                        uint64_t loaded_bytes,
                        uint64_t total_bytes) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
-    load_manager->ReportLoadSuccess(
-        PP_ToBool(is_pnacl), url, loaded_bytes, total_bytes);
+    load_manager->ReportLoadSuccess(url, loaded_bytes, total_bytes);
 }
 
 void ReportLoadError(PP_Instance instance,
@@ -752,11 +750,14 @@ void Vlog(const char* message) {
   VLOG(1) << message;
 }
 
-void InitializePlugin(PP_Instance instance) {
+void InitializePlugin(PP_Instance instance,
+                      uint32_t argc,
+                      const char* argn[],
+                      const char* argv[]) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
-    load_manager->InitializePlugin();
+    load_manager->InitializePlugin(argc, argn, argv);
 }
 
 int64_t GetNexeSize(PP_Instance instance) {
@@ -820,6 +821,29 @@ void ProcessNaClManifest(PP_Instance instance, const char* program_url) {
     load_manager->ProcessNaClManifest(program_url);
 }
 
+PP_Var GetManifestURLArgument(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager) {
+    return ppapi::StringVar::StringToPPVar(
+        load_manager->GetManifestURLArgument());
+  }
+  return PP_MakeUndefined();
+}
+
+PP_Bool IsPNaCl(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    return PP_FromBool(load_manager->IsPNaCl());
+  return PP_FALSE;
+}
+
+PP_Bool DevInterfacesEnabled(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    return PP_FromBool(load_manager->DevInterfacesEnabled());
+  return PP_FALSE;
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -856,7 +880,10 @@ const PPB_NaCl_Private nacl_interface = {
   &GetManifestBaseURL,
   &ResolvesRelativeToPluginBaseURL,
   &ParseDataURL,
-  &ProcessNaClManifest
+  &ProcessNaClManifest,
+  &GetManifestURLArgument,
+  &IsPNaCl,
+  &DevInterfacesEnabled
 };
 
 }  // namespace

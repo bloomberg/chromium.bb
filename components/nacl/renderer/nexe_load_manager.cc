@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/renderer/histogram.h"
@@ -42,6 +43,23 @@
 
 namespace {
 
+const char* const kTypeAttribute = "type";
+// The "src" attribute of the <embed> tag.  The value is expected to be either
+// a URL or URI pointing to the manifest file (which is expected to contain
+// JSON matching ISAs with .nexe URLs).
+const char* const kSrcManifestAttribute = "src";
+// The "nacl" attribute of the <embed> tag.  We use the value of this attribute
+// to find the manifest file when NaCl is registered as a plug-in for another
+// MIME type because the "src" attribute is used to supply us with the resource
+// of that MIME type that we're supposed to display.
+const char* const kNaClManifestAttribute = "nacl";
+// Define an argument name to enable 'dev' interfaces. To make sure it doesn't
+// collide with any user-defined HTML attribute, make the first character '@'.
+const char* const kDevAttribute = "@dev";
+
+const char* const kNaClMIMEType = "application/x-nacl";
+const char* const kPNaClMIMEType = "application/x-pnacl";
+
 blink::WebString EventTypeToString(PP_NaClEventType event_type) {
   switch (event_type) {
     case PP_NACL_EVENT_LOADSTART:
@@ -71,6 +89,14 @@ static int GetRoutingID(PP_Instance instance) {
   if (!host)
     return 0;
   return host->GetRoutingIDForWidget(instance);
+}
+
+std::string LookupAttribute(const std::map<std::string, std::string>& args,
+                            const std::string& key) {
+  std::map<std::string, std::string>::const_iterator it = args.find(key);
+  if (it != args.end())
+    return it->second;
+  return std::string();
 }
 
 }  // namespace
@@ -154,12 +180,11 @@ void NexeLoadManager::NexeFileDidOpen(int32_t pp_error,
   }
 }
 
-void NexeLoadManager::ReportLoadSuccess(bool is_pnacl,
-                                        const std::string& url,
+void NexeLoadManager::ReportLoadSuccess(const std::string& url,
                                         uint64_t loaded_bytes,
                                         uint64_t total_bytes) {
   ready_time_ = base::Time::Now();
-  if (!is_pnacl) {
+  if (!IsPNaCl()) {
     base::TimeDelta load_module_time = ready_time_ - load_start_;
     HistogramStartupTimeSmall(
         "NaCl.Perf.StartupTime.LoadModule", load_module_time, nexe_size_);
@@ -382,8 +407,18 @@ void NexeLoadManager::set_exit_status(int exit_status) {
   SetReadOnlyProperty(exit_status_name_var.get(), PP_MakeInt32(exit_status));
 }
 
-void NexeLoadManager::InitializePlugin() {
+void NexeLoadManager::InitializePlugin(
+    uint32_t argc, const char* argn[], const char* argv[]) {
   init_time_ = base::Time::Now();
+
+  for (size_t i = 0; i < argc; ++i) {
+    std::string name(argn[i]);
+    std::string value(argv[i]);
+    args_[name] = value;
+  }
+
+  // Store mime_type_ at initialization time since we make it lowercase.
+  mime_type_ = StringToLowerASCII(LookupAttribute(args_, kTypeAttribute));
 }
 
 void NexeLoadManager::ReportStartupOverhead() const {
@@ -429,6 +464,42 @@ void NexeLoadManager::ProcessNaClManifest(const std::string& program_url) {
       base::Bind(&NexeLoadManager::DispatchEvent,
                  weak_factory_.GetWeakPtr(),
                  ProgressEvent(PP_NACL_EVENT_PROGRESS)));
+}
+
+std::string NexeLoadManager::GetManifestURLArgument() const {
+  std::string manifest_url;
+
+  // If the MIME type is foreign, then this NEXE is being used as a content
+  // type handler rather than directly by an HTML document.
+  bool nexe_is_content_handler =
+      !mime_type_.empty() &&
+      mime_type_ != kNaClMIMEType &&
+      mime_type_ != kPNaClMIMEType;
+
+  if (nexe_is_content_handler) {
+    // For content handlers 'src' will be the URL for the content
+    // and 'nacl' will be the URL for the manifest.
+    manifest_url = LookupAttribute(args_, kNaClManifestAttribute);
+  } else {
+    manifest_url = LookupAttribute(args_, kSrcManifestAttribute);
+  }
+
+  if (manifest_url.empty()) {
+    VLOG(1) << "WARNING: no 'src' property, so no manifest loaded.";
+    if (args_.find(kNaClManifestAttribute) != args_.end())
+      VLOG(1) << "WARNING: 'nacl' property is incorrect. Use 'src'.";
+  }
+  return manifest_url;
+}
+
+bool NexeLoadManager::IsPNaCl() const {
+  return mime_type_ == kPNaClMIMEType;
+}
+
+bool NexeLoadManager::DevInterfacesEnabled() const {
+  // Look for the developer attribute; if it's present, enable 'dev'
+  // interfaces.
+  return args_.find(kDevAttribute) != args_.end();
 }
 
 void NexeLoadManager::ReportDeadNexe() {

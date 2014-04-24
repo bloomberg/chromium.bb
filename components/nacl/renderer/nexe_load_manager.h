@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NACL_RENDERER_NEXE_LOAD_MANAGER_H_
 #define COMPONENTS_NACL_RENDERER_NEXE_LOAD_MANAGER_H_
 
+#include <map>
 #include <string>
 
 #include "base/macros.h"
@@ -35,8 +36,7 @@ class NexeLoadManager {
                        int64_t nexe_bytes_read,
                        const std::string& url,
                        int64_t time_since_open);
-  void ReportLoadSuccess(bool is_pnacl,
-                         const std::string& url,
+  void ReportLoadSuccess(const std::string& url,
                          uint64_t loaded_bytes,
                          uint64_t total_bytes);
   void ReportLoadError(PP_NaClError error,
@@ -93,7 +93,7 @@ class NexeLoadManager {
   int32_t exit_status() const { return exit_status_; }
   void set_exit_status(int32_t exit_status);
 
-  void InitializePlugin();
+  void InitializePlugin(uint32_t argc, const char* argn[], const char* argv[]);
 
   void ReportStartupOverhead() const;
 
@@ -110,6 +110,16 @@ class NexeLoadManager {
   // manifest_base_url is the URL used for resolving relative URLs mentioned
   // in manifest files.  If the manifest is a data URI, this is an empty string
   const GURL& manifest_base_url() const { return manifest_base_url_; }
+
+  // Returns the manifest URL passed as an argument for this plugin instance.
+  std::string GetManifestURLArgument() const;
+
+  // Returns true if the MIME type for this plugin matches the type for PNaCl,
+  // false otherwise.
+  bool IsPNaCl() const;
+
+  // Returns true if dev interfaces are enabled for this plugin.
+  bool DevInterfacesEnabled() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
@@ -158,6 +168,13 @@ class NexeLoadManager {
   GURL plugin_base_url_;
 
   GURL manifest_base_url_;
+
+  // Arguments passed to this plugin instance from the DOM.
+  std::map<std::string, std::string> args_;
+
+  // We store mime_type_ outside of args_ explicitly because we change it to be
+  // lowercase.
+  std::string mime_type_;
 
   scoped_ptr<TrustedPluginChannel> trusted_plugin_channel_;
   scoped_ptr<ManifestServiceChannel> manifest_service_channel_;

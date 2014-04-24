@@ -304,7 +304,6 @@ interface PPB_NaCl_Private {
 
   /* Report that the nexe loaded successfully. */
   void ReportLoadSuccess([in] PP_Instance instance,
-                         [in] PP_Bool is_pnacl,
                          [in] str_t url,
                          [in] uint64_t loaded_bytes,
                          [in] uint64_t total_bytes);
@@ -362,7 +361,10 @@ interface PPB_NaCl_Private {
   void Vlog([in] str_t message);
 
   /* Initializes internal state for a NaCl plugin. */
-  void InitializePlugin([in] PP_Instance instance);
+  void InitializePlugin([in] PP_Instance instance,
+                        [in] uint32_t argc,
+                        [in, size_as=argc] str_t[] argn,
+                        [in, size_as=argv] str_t[] argv);
 
   /* Returns the size of the nexe. */
   int64_t GetNexeSize([in] PP_Instance instance);
@@ -385,4 +387,11 @@ interface PPB_NaCl_Private {
    */
   void ProcessNaClManifest([in] PP_Instance instance,
                            [in] str_t program_url);
+
+  /* Returns the manifest url as passed as a plugin argument. */
+  PP_Var GetManifestURLArgument([in] PP_Instance instance);
+
+  PP_Bool IsPNaCl([in] PP_Instance instance);
+
+  PP_Bool DevInterfacesEnabled([in] PP_Instance instance);
 };

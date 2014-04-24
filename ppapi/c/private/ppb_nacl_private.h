@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Apr 23 12:56:55 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Apr 23 12:20:47 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -322,7 +322,6 @@ struct PPB_NaCl_Private_1_0 {
                           int64_t time_since_open);
   /* Report that the nexe loaded successfully. */
   void (*ReportLoadSuccess)(PP_Instance instance,
-                            PP_Bool is_pnacl,
                             const char* url,
                             uint64_t loaded_bytes,
                             uint64_t total_bytes);
@@ -362,7 +361,10 @@ struct PPB_NaCl_Private_1_0 {
   /* Logs the message via VLOG. */
   void (*Vlog)(const char* message);
   /* Initializes internal state for a NaCl plugin. */
-  void (*InitializePlugin)(PP_Instance instance);
+  void (*InitializePlugin)(PP_Instance instance,
+                           uint32_t argc,
+                           const char* argn[],
+                           const char* argv[]);
   /* Returns the size of the nexe. */
   int64_t (*GetNexeSize)(PP_Instance instance);
   /* Performs accounting for requesting the NaCl manifest at the given URL. */
@@ -378,6 +380,10 @@ struct PPB_NaCl_Private_1_0 {
    * plugin.
    */
   void (*ProcessNaClManifest)(PP_Instance instance, const char* program_url);
+  /* Returns the manifest url as passed as a plugin argument. */
+  struct PP_Var (*GetManifestURLArgument)(PP_Instance instance);
+  PP_Bool (*IsPNaCl)(PP_Instance instance);
+  PP_Bool (*DevInterfacesEnabled)(PP_Instance instance);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;
