@@ -772,3 +772,20 @@ def GetDeviceSize(device_path, in_bytes=False):
       return int(d.SIZE) if in_bytes else d.SIZE
 
   raise ValueError('No size info of %s is found.' % device_path)
+
+
+def GetExitStatus(status):
+  """Get the exit status of a child from an os.waitpid call.
+
+  Args:
+    status: The return value of os.waitpid(pid, 0)[1]
+
+  Returns:
+    The exit status of the process. If the process exited with a signal,
+    the return value will be 128 plus the signal number.
+  """
+  if os.WIFSIGNALED(status):
+    return 128 + os.WTERMSIG(status)
+  else:
+    assert os.WIFEXITED(status), 'Unexpected exit status %r' % status
+    return os.WEXITSTATUS(status)
