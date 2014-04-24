@@ -31,9 +31,13 @@
 
 namespace WebCore {
 
+template<typename T> class EventSender;
+typedef EventSender<HTMLSourceElement> SourceEventSender;
+
 class HTMLSourceElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLSourceElement> create(Document&);
+    virtual ~HTMLSourceElement();
 
     const AtomicString& type() const;
     void setSrc(const String&);
@@ -42,16 +46,14 @@ public:
     void scheduleErrorEvent();
     void cancelPendingErrorEvent();
 
+    void dispatchPendingEvent(SourceEventSender*);
+
 private:
     explicit HTMLSourceElement(Document&);
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-
-    void errorEventTimerFired(Timer<HTMLSourceElement>*);
-
-    Timer<HTMLSourceElement> m_errorEventTimer;
 };
 
 } // namespace WebCore

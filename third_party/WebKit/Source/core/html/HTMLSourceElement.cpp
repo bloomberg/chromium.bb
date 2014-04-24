@@ -27,7 +27,7 @@
 #include "core/html/HTMLSourceElement.h"
 
 #include "HTMLNames.h"
-#include "core/events/Event.h"
+#include "core/events/EventSender.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Logging.h"
 
@@ -37,9 +37,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+static SourceEventSender& sourceErrorEventSender()
+{
+    DEFINE_STATIC_LOCAL(SourceEventSender, sharedErrorEventSender, (EventTypeNames::error));
+    return sharedErrorEventSender;
+}
+
 inline HTMLSourceElement::HTMLSourceElement(Document& document)
     : HTMLElement(sourceTag, document)
-    , m_errorEventTimer(this, &HTMLSourceElement::errorEventTimerFired)
 {
     WTF_LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
     ScriptWrappable::init(this);
@@ -48,6 +53,11 @@ inline HTMLSourceElement::HTMLSourceElement(Document& document)
 PassRefPtr<HTMLSourceElement> HTMLSourceElement::create(Document& document)
 {
     return adoptRef(new HTMLSourceElement(document));
+}
+
+HTMLSourceElement::~HTMLSourceElement()
+{
+    sourceErrorEventSender().cancelEvent(this);
 }
 
 Node::InsertionNotificationRequest HTMLSourceElement::insertedInto(ContainerNode* insertionPoint)
@@ -87,21 +97,19 @@ void HTMLSourceElement::setType(const AtomicString& type)
 void HTMLSourceElement::scheduleErrorEvent()
 {
     WTF_LOG(Media, "HTMLSourceElement::scheduleErrorEvent - %p", this);
-    if (m_errorEventTimer.isActive())
-        return;
-
-    m_errorEventTimer.startOneShot(0, FROM_HERE);
+    sourceErrorEventSender().dispatchEventSoon(this);
 }
 
 void HTMLSourceElement::cancelPendingErrorEvent()
 {
     WTF_LOG(Media, "HTMLSourceElement::cancelPendingErrorEvent - %p", this);
-    m_errorEventTimer.stop();
+    sourceErrorEventSender().cancelEvent(this);
 }
 
-void HTMLSourceElement::errorEventTimerFired(Timer<HTMLSourceElement>*)
+void HTMLSourceElement::dispatchPendingEvent(SourceEventSender* eventSender)
 {
-    WTF_LOG(Media, "HTMLSourceElement::errorEventTimerFired - %p", this);
+    ASSERT_UNUSED(eventSender, eventSender == &sourceErrorEventSender());
+    WTF_LOG(Media, "HTMLSourceElement::dispatchPendingEvent - %p", this);
     dispatchEvent(Event::createCancelable(EventTypeNames::error));
 }
 
