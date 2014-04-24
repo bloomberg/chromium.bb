@@ -473,8 +473,11 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer()))
         layerConfigChanged = true;
 
-    if (updateScrollingLayers(m_owningLayer.needsCompositedScrolling()))
+    bool scrollingConfigChanged = false;
+    if (updateScrollingLayers(m_owningLayer.needsCompositedScrolling())) {
         layerConfigChanged = true;
+        scrollingConfigChanged = true;
+    }
 
     bool hasPerspective = false;
     if (RenderStyle* style = renderer->style())
@@ -492,6 +495,12 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     if (layerConfigChanged)
         updateInternalHierarchy();
 
+    if (scrollingConfigChanged) {
+        if (renderer->view())
+            compositor->scrollingLayerDidChange(&m_owningLayer);
+    }
+
+    // FIXME: Why do we update the mask layer after checking layerConfigChanged?
     if (updateMaskLayer(renderer->hasMask())) {
         layerConfigChanged = true;
         m_graphicsLayer->setMaskLayer(m_maskLayer.get());
@@ -1386,12 +1395,6 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
         layerChanged = true;
         if (scrollingCoordinator)
             scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.scrollableArea());
-    }
-
-    if (layerChanged) {
-        updateInternalHierarchy();
-        if (renderer()->view())
-            compositor()->scrollingLayerDidChange(&m_owningLayer);
     }
 
     return layerChanged;
