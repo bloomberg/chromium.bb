@@ -99,10 +99,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
 class UndefinedValue {
 public:
     typedef WebServiceWorker WebType;
-    static v8::Handle<v8::Value> from(NewScriptState* scriptState, WebServiceWorker* worker)
+    static V8UndefinedType from(ScriptPromiseResolverWithContext* resolver, WebServiceWorker* worker)
     {
         ASSERT(!worker); // Anything passed here will be leaked.
-        return v8::Undefined(scriptState->isolate());
+        return V8UndefinedType();
     }
 
 private:

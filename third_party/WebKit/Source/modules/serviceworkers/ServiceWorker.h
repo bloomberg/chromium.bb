@@ -31,6 +31,7 @@
 #ifndef ServiceWorker_h
 #define ServiceWorker_h
 
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/workers/AbstractWorker.h"
@@ -48,6 +49,7 @@ class WebServiceWorker;
 namespace WebCore {
 
 class NewScriptState;
+class ScriptPromiseResolverWithContext;
 
 class ServiceWorker
     : public AbstractWorker
@@ -60,7 +62,7 @@ public:
 
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
-    static PassRefPtr<ServiceWorker> from(NewScriptState*, WebType* worker);
+    static PassRefPtr<ServiceWorker> from(ScriptPromiseResolverWithContext*, WebType* worker);
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
@@ -68,15 +70,23 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // WebServiceWorkerProxy overrides.
+    virtual void onStateChanged(blink::WebServiceWorkerState) OVERRIDE;
     virtual void dispatchStateChangeEvent() OVERRIDE;
 
     // AbstractWorker overrides.
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
+    class ThenFunction;
+
     ServiceWorker(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
+    void onPromiseResolved();
+    void waitOnPromise(ScriptPromise);
+    void changeState(blink::WebServiceWorkerState);
 
     OwnPtr<blink::WebServiceWorker> m_outerWorker;
+    bool m_isPromisePending;
+    Vector<blink::WebServiceWorkerState> m_queuedStates;
 };
 
 } // namespace WebCore

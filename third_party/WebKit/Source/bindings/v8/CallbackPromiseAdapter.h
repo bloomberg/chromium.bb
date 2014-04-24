@@ -39,17 +39,25 @@ namespace WebCore {
 // This class provides an easy way to convert from a Script-exposed
 // class (i.e. a class that has a toV8() overload) that uses Promises
 // to a WebKit API class that uses WebCallbacks. You can define
-// seperate Success and Error classes, but this example just uses one
+// separate Success and Error classes, but this example just uses one
 // object for both.
 //
 // To use:
 //
 // class MyClass ... {
 //    typedef blink::WebMyClass WebType;
-//    static PassRefPtr<MyClass> from(NewScriptState*,
+//    static PassRefPtr<MyClass> from(ScriptPromiseResolverWithContext* resolver,
 //                                    blink::WebMyClass* webInstance) {
 //        // convert/create as appropriate, but often it's just:
 //        return MyClass::create(adoptPtr(webInstance));
+//
+//        // Since promise resolving is done as an async task, it's not
+//        // guaranteed that the script context has seen the promise resolve
+//        // immediately after calling onSuccess/onError. You can use the
+//        // ScriptPromise from the resolver to schedule a task that executes
+//        // after resolving:
+//        NewScriptState::Scope scope(resolver->scriptState());
+//        resolver->promise().then(...);
 //    }
 //
 // Now when calling into a WebKit API that requires a WebCallbacks<blink::WebMyClass, blink::WebMyClass>*:
@@ -71,13 +79,11 @@ public:
 
     virtual void onSuccess(typename S::WebType* result) OVERRIDE
     {
-        v8::HandleScope handleScope(m_resolver->scriptState()->isolate());
-        m_resolver->resolve(S::from(m_resolver->scriptState(), result));
+        m_resolver->resolve(S::from(m_resolver.get(), result));
     }
     virtual void onError(typename T::WebType* error) OVERRIDE
     {
-        v8::HandleScope handleScope(m_resolver->scriptState()->isolate());
-        m_resolver->reject(T::from(m_resolver->scriptState(), error));
+        m_resolver->reject(T::from(m_resolver.get(), error));
     }
 private:
     RefPtr<ScriptPromiseResolverWithContext> m_resolver;

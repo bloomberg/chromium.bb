@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<title>Service Worker: Activation occurs after registration</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/testutils.js"></script>
+<body>
+<script>
+var t = async_test('activation occurs after registration');
+t.step(function() {
+    var scope = 'resources/blank.html';
+    navigator.serviceWorker.unregister(scope).then(doTest, doTest);
+    function doTest() {
+        navigator.serviceWorker.register(
+            'resources/worker-no-op.js', {scope: scope}
+        ).then(t.step_func(onRegister), t.step_func(function(reason) {
+            assert_unreached('Registration should succeed, but failed: ' + reason.name);
+        }));
+    }
+
+    function onRegister(worker) {
+        assert_equals(worker.state, 'parsed', 'worker should be in the "parsed" state upon registration');
+        worker.addEventListener('statechange', t.step_func(function(event) {
+            if (event.target.state == 'active')
+                t.done();
+        }));
+    }
+});
+</script>
+</body>

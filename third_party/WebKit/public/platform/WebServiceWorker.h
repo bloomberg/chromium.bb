@@ -53,6 +53,9 @@ public:
     // WebServiceWorker.
     virtual void setProxy(WebServiceWorkerProxy*) { }
 
+    // Sets the state. This should only be called by the WebServiceWorkerProxy.
+    virtual void setState(blink::WebServiceWorkerState) { }
+
     virtual WebURL scope() const { return WebURL(); }
     virtual WebURL url() const { return WebURL(); }
     virtual WebServiceWorkerState state() const { return WebServiceWorkerStateUnknown; }

@@ -11,7 +11,14 @@ namespace blink {
 // the embedder, to talk to the ServiceWorker object from embedder.
 class WebServiceWorkerProxy {
 public:
-    // The new state should be accessible via WebServiceWorker.state().
+    // Informs the proxy that the service worker's state changed. The state
+    // should be accessible via WebServiceWorker.state() but may not necessarily
+    // be immediately reflected. For example, this happens if the proxy is
+    // waiting for the registration promise to resolve, while the browser has
+    // already registered and activated the worker.
+    virtual void onStateChanged(WebServiceWorkerState) = 0;
+
+    // FIXME: To be removed, this is just here as part of a three-sided patch.
     virtual void dispatchStateChangeEvent() = 0;
 };
 

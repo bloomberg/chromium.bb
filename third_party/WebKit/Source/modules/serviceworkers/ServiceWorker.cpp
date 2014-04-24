@@ -34,6 +34,7 @@
 #include "EventTargetNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
 #include "platform/NotImplemented.h"
@@ -42,6 +43,29 @@
 #include "public/platform/WebString.h"
 
 namespace WebCore {
+
+class ServiceWorker::ThenFunction FINAL : public ScriptFunction {
+public:
+    static PassOwnPtr<ScriptFunction> create(PassRefPtr<ServiceWorker> observer)
+    {
+        ExecutionContext* executionContext = observer->executionContext();
+        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer));
+    }
+private:
+    ThenFunction(v8::Isolate* isolate, PassRefPtr<ServiceWorker> observer)
+        : ScriptFunction(isolate)
+        , m_observer(observer)
+    {
+    }
+
+    virtual ScriptValue call(ScriptValue value) OVERRIDE
+    {
+        m_observer->onPromiseResolved();
+        return value;
+    }
+
+    RefPtr<ServiceWorker> m_observer;
+};
 
 const AtomicString& ServiceWorker::interfaceName() const
 {
@@ -60,9 +84,18 @@ void ServiceWorker::postMessage(PassRefPtr<SerializedScriptValue> message, const
     m_outerWorker->postMessage(messageString, webChannels.leakPtr());
 }
 
+void ServiceWorker::onStateChanged(blink::WebServiceWorkerState state)
+{
+    if (m_isPromisePending)
+        m_queuedStates.append(state);
+    else
+        changeState(state);
+}
+
+// FIXME: To be removed, this is just here as part of a three-sided patch.
 void ServiceWorker::dispatchStateChangeEvent()
 {
-    this->dispatchEvent(Event::create(EventTypeNames::statechange));
+    changeState(m_outerWorker->state());
 }
 
 const AtomicString& ServiceWorker::state() const
@@ -98,9 +131,34 @@ const AtomicString& ServiceWorker::state() const
     }
 }
 
-PassRefPtr<ServiceWorker> ServiceWorker::from(NewScriptState* scriptState, WebType* worker)
+PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolverWithContext* resolver, WebType* worker)
 {
-    return create(scriptState->executionContext(), adoptPtr(worker));
+    NewScriptState::Scope scope(resolver->scriptState());
+    RefPtr<ServiceWorker> serviceWorker = create(resolver->scriptState()->executionContext(), adoptPtr(worker));
+    serviceWorker->waitOnPromise(resolver->promise());
+    return serviceWorker;
+}
+
+void ServiceWorker::onPromiseResolved()
+{
+    ASSERT(m_isPromisePending);
+    m_isPromisePending = false;
+    for (Vector<blink::WebServiceWorkerState>::iterator iterator = m_queuedStates.begin(); iterator != m_queuedStates.end(); ++iterator)
+        changeState(*iterator);
+    m_queuedStates.clear();
+}
+
+void ServiceWorker::waitOnPromise(ScriptPromise promise)
+{
+    ASSERT(!m_isPromisePending);
+    m_isPromisePending = true;
+    promise.then(ThenFunction::create(this));
+}
+
+void ServiceWorker::changeState(blink::WebServiceWorkerState state)
+{
+    m_outerWorker->setState(state);
+    this->dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
 PassRefPtr<ServiceWorker> ServiceWorker::create(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> outerWorker)
@@ -113,6 +171,7 @@ PassRefPtr<ServiceWorker> ServiceWorker::create(ExecutionContext* executionConte
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> worker)
     : AbstractWorker(executionContext)
     , m_outerWorker(worker)
+    , m_isPromisePending(false)
 {
     ScriptWrappable::init(this);
     ASSERT(m_outerWorker);
