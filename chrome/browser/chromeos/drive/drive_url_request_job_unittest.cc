@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/test_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -106,8 +107,7 @@ class DriveURLRequestJobTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
-    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
-        "gdata/root_feed.json"));
+    ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
 
     // Initialize FakeFileSystem.
     fake_file_system_.reset(
@@ -261,8 +261,7 @@ TEST_F(DriveURLRequestJobTest, HostedDocument) {
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
   // Make sure that a hosted document triggers redirection.
   EXPECT_TRUE(request.is_redirecting());
-  EXPECT_EQ(GURL("https://3_document_alternate_link"),
-            test_delegate_->redirect_url());
+  EXPECT_TRUE(test_delegate_->redirect_url().is_valid());
 }
 
 TEST_F(DriveURLRequestJobTest, RootDirectory) {

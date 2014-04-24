@@ -22,7 +22,6 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
-#include "google_apis/drive/time_util.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 
@@ -186,55 +185,6 @@ FakeDriveService::FakeDriveService()
 FakeDriveService::~FakeDriveService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   STLDeleteValues(&entries_);
-}
-
-bool FakeDriveService::LoadResourceListForWapi(
-    const std::string& relative_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<base::Value> raw_value = test_util::LoadJSONFile(relative_path);
-  base::DictionaryValue* as_dict = NULL;
-  scoped_ptr<base::Value> feed;
-  base::DictionaryValue* feed_as_dict = NULL;
-
-  // Extract the "feed" from the raw value and take the ownership.
-  // Note that Remove() transfers the ownership to |feed|.
-  if (raw_value->GetAsDictionary(&as_dict) &&
-      as_dict->Remove("feed", &feed) &&
-      feed->GetAsDictionary(&feed_as_dict)) {
-    base::ListValue* entries = NULL;
-    if (feed_as_dict->GetList("entry", &entries)) {
-      for (size_t i = 0; i < entries->GetSize(); ++i) {
-        base::DictionaryValue* entry = NULL;
-        if (entries->GetDictionary(i, &entry)) {
-          scoped_ptr<ResourceEntry> resource_entry =
-              ResourceEntry::CreateFrom(*entry);
-
-          const std::string resource_id = resource_entry->resource_id();
-          EntryInfoMap::iterator it = entries_.find(resource_id);
-          if (it == entries_.end()) {
-            it = entries_.insert(
-                std::make_pair(resource_id, new EntryInfo)).first;
-          }
-          EntryInfo* new_entry = it->second;
-
-          ChangeResource* change = &new_entry->change_resource;
-          change->set_change_id(about_resource_->largest_change_id());
-          change->set_file_id(resource_id);
-          change->set_file(
-              util::ConvertResourceEntryToFileResource(*resource_entry));
-
-          const Link* share_url =
-              resource_entry->GetLinkByType(Link::LINK_SHARE);
-          if (share_url)
-            new_entry->share_url = share_url->href();
-
-          entry->GetString("test$data", &new_entry->content_data);
-        }
-      }
-    }
-  }
-
-  return feed_as_dict;
 }
 
 bool FakeDriveService::LoadAppListForDriveApi(
@@ -1389,6 +1339,10 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
 
   // Set mime type.
   new_file->set_mime_type(content_type);
+
+  // Set alternate link if needed.
+  if (content_type == util::kGoogleDocumentMimeType)
+    new_file->set_alternate_link(GURL("https://document_alternate_link"));
 
   // Set parents.
   if (!parent_resource_id.empty()) {

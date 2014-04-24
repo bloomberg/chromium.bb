@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
@@ -74,8 +75,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
     fake_drive_service_ = new drive::FakeDriveService();
     fake_drive_service_->Initialize("test_user@gmail.com");
-    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
-        "gdata/root_feed.json"));
+    ASSERT_TRUE(drive::test_util::SetUpTestEntries(fake_drive_service_));
 
     drive_uploader_ = new drive::DriveUploader(
         fake_drive_service_, base::MessageLoopProxy::current().get());

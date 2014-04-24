@@ -31,9 +31,6 @@ class FakeDriveService : public DriveServiceInterface {
   FakeDriveService();
   virtual ~FakeDriveService();
 
-  // Loads the resource list for WAPI. Returns true on success.
-  bool LoadResourceListForWapi(const std::string& relative_path);
-
   // Loads the app list for Drive API. Returns true on success.
   bool LoadAppListForDriveApi(const std::string& relative_path);
 

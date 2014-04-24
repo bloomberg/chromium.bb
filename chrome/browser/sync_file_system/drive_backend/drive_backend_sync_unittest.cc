@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -65,8 +66,7 @@ class DriveBackendSyncTest : public testing::Test,
     scoped_ptr<drive::FakeDriveService> drive_service(
         new drive::FakeDriveService());
     drive_service->Initialize("test@example.com");
-    ASSERT_TRUE(drive_service->LoadResourceListForWapi(
-        "gdata/root_feed.json"));
+    ASSERT_TRUE(drive::test_util::SetUpTestEntries(drive_service.get()));
 
     scoped_ptr<drive::DriveUploaderInterface> uploader(
         new drive::DriveUploader(drive_service.get(),

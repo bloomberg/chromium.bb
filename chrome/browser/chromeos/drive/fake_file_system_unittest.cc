@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,8 +21,7 @@ class FakeFileSystemTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
-    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
-        "gdata/root_feed.json"));
+    ASSERT_TRUE(SetUpTestEntries(fake_drive_service_.get()));
 
     // Create a testee instance.
     fake_file_system_.reset(new FakeFileSystem(fake_drive_service_.get()));

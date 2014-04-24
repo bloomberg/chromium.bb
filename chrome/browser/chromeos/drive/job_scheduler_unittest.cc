@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/test_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -139,7 +140,7 @@ class JobSchedulerTest : public testing::Test {
     logger_.reset(new EventLogger);
 
     fake_drive_service_.reset(new CancelTestableFakeDriveService);
-    fake_drive_service_->LoadResourceListForWapi("gdata/root_feed.json");
+    test_util::SetUpTestEntries(fake_drive_service_.get());
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     scheduler_.reset(new JobScheduler(pref_service_.get(),

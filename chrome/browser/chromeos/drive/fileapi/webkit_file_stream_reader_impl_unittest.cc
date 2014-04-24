@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
@@ -16,7 +17,9 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/time_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -40,8 +43,7 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
 
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
-    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
-        "gdata/root_feed.json"));
+    ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
 
     // Create a testee instance.
     fake_file_system_.reset(
@@ -169,6 +171,29 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
   base::Time expected_modification_time;
   ASSERT_TRUE(google_apis::util::GetTimeFromString(
       "2011-12-14T00:40:47.330Z", &expected_modification_time));
+
+  FileError error = FILE_ERROR_FAILED;
+  scoped_ptr<ResourceEntry> entry;
+  fake_file_system_->GetResourceEntry(
+      kDriveFile,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(entry);
+
+  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  fake_drive_service_->UpdateResource(
+      entry->resource_id(),
+      std::string(),  // parent_resource_id
+      std::string(),  // title
+      expected_modification_time,
+      base::Time(),
+      google_apis::test_util::CreateCopyResultCallback(&status,
+                                                       &resource_entry));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
+
   scoped_ptr<WebkitFileStreamReaderImpl> reader(
       new WebkitFileStreamReaderImpl(GetFileSystemGetter(),
                                      worker_thread_->message_loop_proxy().get(),

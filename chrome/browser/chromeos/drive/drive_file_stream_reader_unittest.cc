@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/local_file_reader.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -290,8 +291,7 @@ class DriveFileStreamReaderTest : public ::testing::Test {
 
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
-    fake_drive_service_->LoadResourceListForWapi(
-        "gdata/root_feed.json");
+    ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
 
     // Create a testee instance.
     fake_file_system_.reset(
