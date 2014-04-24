@@ -71,7 +71,7 @@ void MediaQueryToken::convertToPercentage()
 // FIXME - This doesn't cover all possible Token types, but it's enough for current testing.
 String MediaQueryToken::textForUnitTests() const
 {
-    char buffer[std::numeric_limits<float>::digits10];
+    char buffer[std::numeric_limits<float>::digits];
     if (!m_value.isNull())
         return m_value;
     if (m_type == LeftParenthesisToken)

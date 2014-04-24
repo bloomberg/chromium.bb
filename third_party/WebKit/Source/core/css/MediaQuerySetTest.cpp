@@ -39,7 +39,7 @@ static void testMediaQuery(TestCase test, MediaQuerySet& querySet, bool oldParse
     }
 }
 
-TEST(MediaQueryParserTest, Basic)
+TEST(MediaQuerySetTest, Basic)
 {
     // The first string represents the input string.
     // The second string represents the output string, if present.

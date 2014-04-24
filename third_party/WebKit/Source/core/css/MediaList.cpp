@@ -253,10 +253,9 @@ void MediaList::trace(Visitor* visitor)
     visitor->trace(m_parentRule);
 }
 
-static void addResolutionWarningMessageToConsole(Document* document, const String& serializedExpression, const CSSPrimitiveValue* value)
+static void addResolutionWarningMessageToConsole(Document* document, const String& serializedExpression, CSSPrimitiveValue::UnitTypes type)
 {
     ASSERT(document);
-    ASSERT(value);
 
     DEFINE_STATIC_LOCAL(String, mediaQueryMessage, ("Consider using 'dppx' units, as in CSS '%replacementUnits%' means dots-per-CSS-%lengthUnit%, not dots-per-physical-%lengthUnit%, so does not correspond to the actual '%replacementUnits%' of a screen. In media query expression: "));
     DEFINE_STATIC_LOCAL(String, mediaValueDPI, ("dpi"));
@@ -265,9 +264,9 @@ static void addResolutionWarningMessageToConsole(Document* document, const Strin
     DEFINE_STATIC_LOCAL(String, lengthUnitCentimeter, ("centimeter"));
 
     StringBuilder message;
-    if (value->isDotsPerInch())
+    if (CSSPrimitiveValue::isDotsPerInch(type))
         message.append(String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPI).replace("%lengthUnit%", lengthUnitInch));
-    else if (value->isDotsPerCentimeter())
+    else if (CSSPrimitiveValue::isDotsPerCentimeter(type))
         message.append(String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPCM).replace("%lengthUnit%", lengthUnitCentimeter));
     else
         ASSERT_NOT_REACHED();
@@ -295,7 +294,7 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
     if (!queryCount)
         return;
 
-    CSSPrimitiveValue* suspiciousValue = 0;
+    CSSPrimitiveValue::UnitTypes suspiciousType = CSSPrimitiveValue::CSS_UNKNOWN;
     bool dotsPerPixelUsed = false;
     for (size_t i = 0; i < queryCount; ++i) {
         const MediaQuery* query = mediaQueries[i].get();
@@ -306,20 +305,19 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
         for (size_t j = 0; j < expressions.size(); ++j) {
             const MediaQueryExp* expression = expressions.at(j).get();
             if (isResolutionMediaFeature(expression->mediaFeature())) {
-                CSSValue* cssValue =  expression->value();
-                if (cssValue && cssValue->isPrimitiveValue()) {
-                    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
-                    if (primitiveValue->isDotsPerPixel())
+                MediaQueryExpValue expValue = expression->expValue();
+                if (expValue.isValue) {
+                    if (CSSPrimitiveValue::isDotsPerPixel(expValue.unit))
                         dotsPerPixelUsed = true;
-                    else if (primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter())
-                        suspiciousValue = primitiveValue;
+                    else if (CSSPrimitiveValue::isDotsPerInch(expValue.unit) || CSSPrimitiveValue::isDotsPerCentimeter(expValue.unit))
+                        suspiciousType = expValue.unit;
                 }
             }
         }
     }
 
-    if (suspiciousValue && !dotsPerPixelUsed)
-        addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), suspiciousValue);
+    if (suspiciousType && !dotsPerPixelUsed)
+        addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), suspiciousType);
 }
 
 }
