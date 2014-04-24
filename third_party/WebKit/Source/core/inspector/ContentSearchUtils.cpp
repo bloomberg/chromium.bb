@@ -159,12 +159,16 @@ static String findMagicComment(const String& content, const String& name, MagicC
     String match = commentType == CSSMagicComment
         ? content.substring(urlPos, closingCommentPos - urlPos)
         : content.substring(urlPos);
+
+    size_t newLine = match.find("\n");
+    if (newLine != kNotFound)
+        match = match.substring(0, newLine);
     match = match.stripWhiteSpace();
 
-    String disallowedChars("\"' \t\n\r");
+    String disallowedChars("\"' \t");
     for (unsigned i = 0; i < match.length(); ++i) {
         if (disallowedChars.find(match[i]) != kNotFound)
-            return match.substring(0, i);
+            return "";
     }
 
     return match;

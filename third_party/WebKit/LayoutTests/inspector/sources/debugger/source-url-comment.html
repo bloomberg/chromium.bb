@@ -35,6 +35,20 @@ function doURLAndMappingURL()
     eval("function keepAlive() {}\n//# sourceMappingURL=sourceMappingURL.map\n//# sourceURL=sourceURL.js");
 }
 
+function addScriptWithURL()
+{
+    var script = document.createElement("script");
+    script.src = "resources/script-with-url.js";
+    document.head.appendChild(script);
+}
+
+function addScriptWithPoorURL()
+{
+    var script = document.createElement("script");
+    script.src = "resources/script-with-poor-url.js";
+    document.head.appendChild(script);
+}
+
 function test()
 
 {
@@ -56,9 +70,40 @@ function test()
             {
                 var panel = WebInspector.inspectorView.panel("sources");
                 var uiSourceCodes = panel._workspace.uiSourceCodes();
-                for (var i = 0; i < uiSourceCodes.length; ++i)
-                    InspectorTest.assertTrue(uiSourceCodes[i].originURL().indexOf("inlineScriptURL.js") === -1, "sourceURL comment in inline script was used as a script name");
-                forEachScriptMatchingURL("source-url-comment.html", checkScriptSourceURL)
+                for (var i = 0; i < uiSourceCodes.length; ++i) {
+                    if (uiSourceCodes[i].originURL().indexOf("inlineScriptURL.js") !== -1)
+                        InspectorTest.addResult("FAILED: sourceURL comment in inline script was used as a script name");
+                }
+                next();
+            }
+        },
+
+        function testSourceURLCommentInScript(next)
+        {
+            InspectorTest.showScriptSource("scriptWithSourceURL.js", didShowScriptSource);
+            InspectorTest.evaluateInPage("setTimeout(addScriptWithURL, 0)");
+
+            function didShowScriptSource(sourceFrame)
+            {
+                InspectorTest.addResult(sourceFrame.textEditor.text().trim());
+                forEachScriptMatchingURL("scriptWithSourceURL.js", checkScriptSourceURL);
+                next();
+            }
+        },
+
+        function testPoorSourceURLCommentInScript(next)
+        {
+            InspectorTest.showScriptSource("source-url-comment.html", didShowScriptSource);
+            InspectorTest.evaluateInPage("setTimeout(addScriptWithPoorURL, 0)");
+
+            function didShowScriptSource(sourceFrame)
+            {
+                var panel = WebInspector.inspectorView.panel("sources");
+                var uiSourceCodes = panel._workspace.uiSourceCodes();
+                for (var i = 0; i < uiSourceCodes.length; ++i) {
+                    if (uiSourceCodes[i].originURL().indexOf("scriptWithPoorSourceURL.js") !== -1)
+                        InspectorTest.addResult("FAILED: poor sourceURL comment in script was used as a script name");
+                }
                 next();
             }
         },
