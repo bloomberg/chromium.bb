@@ -37,6 +37,7 @@ import traceback
 
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import proctitle
 
 # If PORTAGE_USERNAME isn't specified, scrape it from the $HOME variable. On
 # Chromium OS, the default "portage" user doesn't have the necessary
@@ -881,11 +882,13 @@ def SetupWorkerSignals():
   signal.signal(signal.SIGINT, ExitHandler)
   signal.signal(signal.SIGTERM, ExitHandler)
 
-def EmergeProcess(output, *args, **kwargs):
+
+def EmergeProcess(output, target, *args, **kwargs):
   """Merge a package in a subprocess.
 
   Args:
     output: Temporary file to write output.
+    target: The package we'll be processing (for display purposes).
     *args: Arguments to pass to Scheduler constructor.
     **kwargs: Keyword arguments to pass to Scheduler constructor.
 
@@ -895,6 +898,8 @@ def EmergeProcess(output, *args, **kwargs):
   pid = os.fork()
   if pid == 0:
     try:
+      proctitle.settitle('EmergeProcess', target)
+
       # Sanity checks.
       if sys.stdout.fileno() != 1:
         raise Exception("sys.stdout.fileno() != 1")
@@ -999,6 +1004,13 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
   The output is stored in filename. When a merge starts or finishes, we push
   EmergeJobState objects to the job_queue.
   """
+  if fetch_only:
+    mode = 'fetch'
+  elif unpack_only:
+    mode = 'unpack'
+  else:
+    mode = 'emerge'
+  proctitle.settitle('EmergeWorker', mode, '[idle]')
 
   SetupWorkerSignals()
   settings, trees, mtimedb = emerge.settings, emerge.trees, emerge.mtimedb
@@ -1032,6 +1044,7 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
       return
 
     target = pkg_state.target
+    proctitle.settitle('EmergeWorker', mode, target)
 
     db_pkg = package_db[target]
 
@@ -1061,8 +1074,8 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
         if unpack_only:
           retcode = UnpackPackage(pkg_state)
         else:
-          retcode = EmergeProcess(output, settings, trees, mtimedb, opts,
-                                  spinner, favorites=emerge.favorites,
+          retcode = EmergeProcess(output, target, settings, trees, mtimedb,
+                                  opts, spinner, favorites=emerge.favorites,
                                   graph_config=emerge.scheduler_graph)
       except Exception:
         traceback.print_exc(file=output)
@@ -1076,6 +1089,10 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
                          retcode, fetch_only=fetch_only,
                          unpack_only=unpack_only)
     job_queue.put(job)
+
+    # Set the title back to idle as the multiprocess pool won't destroy us;
+    # when another job comes up, it'll re-use this process.
+    proctitle.settitle('EmergeWorker', mode, '[idle]')
 
 
 class LinePrinter(object):
@@ -1149,6 +1166,7 @@ class JobPrinter(object):
 
 def PrintWorker(queue):
   """A worker that prints stuff to the screen as requested."""
+  proctitle.settitle('PrintWorker')
 
   def ExitHandler(_signum, _frame):
     # Set KILLED flag.
@@ -1344,6 +1362,8 @@ class EmergeQueue(object):
     if pid == 0:
       os.setsid()
     else:
+      proctitle.settitle('SessionManager')
+
       def PropagateToChildren(signum, _frame):
         # Just propagate the signals down to the child. We'll exit when the
         # child does.
