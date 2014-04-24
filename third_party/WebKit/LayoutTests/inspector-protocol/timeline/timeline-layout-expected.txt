@@ -1,0 +1,6 @@
+DIV
+Recording started
+Recording stopped
+Tracing complete
+SUCCESS: found all expected events.
+

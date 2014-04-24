@@ -134,15 +134,20 @@ InspectorFrontendAPI.dispatchMessage = function(message)
 {
     var messageObject = JSON.parse(message);
     var messageId = messageObject["id"];
-    if (typeof messageId === "number") {
-        var handler = InspectorTest._dispatchTable[messageId];
-        if (handler && typeof handler === "function")
-            handler(messageObject);
-    } else {
-        var eventName = messageObject["method"];
-        var eventHandler = InspectorTest.eventHandler[eventName];
-        if (eventHandler)
-            eventHandler(messageObject);
+    try {
+        if (typeof messageId === "number") {
+            var handler = InspectorTest._dispatchTable[messageId];
+            if (handler && typeof handler === "function")
+                handler(messageObject);
+        } else {
+            var eventName = messageObject["method"];
+            var eventHandler = InspectorTest.eventHandler[eventName];
+            if (eventHandler)
+                eventHandler(messageObject);
+        }
+    } catch(e) {
+        InspectorTest.log("Exception when dispatching message: " + e + "\n\n message = " + JSON.stringify(messageObject, null, 2));
+        InspectorTest.completeTest();
     }
 }
 

@@ -44,6 +44,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -849,6 +850,8 @@ void FrameView::layout(bool allowSubtree)
 
     RELEASE_ASSERT(!isPainting());
 
+    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "beginData", InspectorLayoutEvent::beginData(this));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willLayout(m_frame.get());
 
     if (!allowSubtree && isSubtreeLayout()) {
@@ -973,6 +976,8 @@ void FrameView::layout(bool allowSubtree)
 
     scheduleOrPerformPostLayoutTasks();
 
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "endData", InspectorLayoutEvent::endData(rootForThisLayout));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didLayout(cookie, rootForThisLayout);
 
     m_nestedLayoutCount--;
@@ -1777,6 +1782,8 @@ void FrameView::scheduleRelayout()
         return;
     if (!m_frame->document()->shouldScheduleLayout())
         return;
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "frame", m_frame.get());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 
     if (m_hasPendingLayout)
@@ -1822,25 +1829,25 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
                 m_layoutSubtreeRoot->markContainingBlocksForLayout(false, relayoutRoot);
                 m_layoutSubtreeRoot = relayoutRoot;
                 ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
-                InspectorInstrumentation::didInvalidateLayout(m_frame.get());
             } else {
                 // Just do a full relayout
                 if (isSubtreeLayout())
                     m_layoutSubtreeRoot->markContainingBlocksForLayout(false);
                 m_layoutSubtreeRoot = 0;
                 relayoutRoot->markContainingBlocksForLayout(false);
-                InspectorInstrumentation::didInvalidateLayout(m_frame.get());
             }
         }
     } else if (m_layoutSchedulingEnabled) {
         m_layoutSubtreeRoot = relayoutRoot;
         ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
-        InspectorInstrumentation::didInvalidateLayout(m_frame.get());
         m_hasPendingLayout = true;
 
         page()->animator().scheduleVisualUpdate();
         lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
     }
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "frame", m_frame.get());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
+    InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 }
 
 bool FrameView::layoutPending() const

@@ -177,12 +177,12 @@
 // By default, uint64 ID argument values are not mangled with the Process ID in
 // TRACE_EVENT_ASYNC macros. Use this macro to force Process ID mangling.
 #define TRACE_ID_MANGLE(id) \
-    TraceID::ForceMangle(id)
+    WebCore::TraceEvent::TraceID::ForceMangle(id)
 
 // By default, pointers are mangled with the Process ID in TRACE_EVENT_ASYNC
 // macros. Use this macro to prevent Process ID mangling.
 #define TRACE_ID_DONT_MANGLE(id) \
-    TraceID::DontMangle(id)
+    WebCore::TraceEvent::TraceID::DontMangle(id)
 
 // Records a pair of begin and end events called "name" for the current
 // scope, with 0, 1 or 2 associated arguments. If the category is not
