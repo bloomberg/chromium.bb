@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 
 #include "apps/app_window.h"
+#include "apps/ui/native_app_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -57,7 +58,9 @@ void MultiProfileAppWindowLauncherController::ActiveUserChanged(
     Profile* profile =
         Profile::FromBrowserContext(app_window->browser_context());
     if (multi_user_util::IsProfileFromActiveUser(profile) &&
-        !IsRegisteredApp(app_window->GetNativeWindow()))
+        !IsRegisteredApp(app_window->GetNativeWindow()) &&
+        (app_window->GetBaseWindow()->IsMinimized() ||
+         app_window->GetNativeWindow()->IsVisible()))
       RegisterApp(*it);
   }
 }
@@ -74,25 +77,50 @@ void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
     apps::AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
+
   app_window_list_.push_back(app_window);
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
-  if (multi_user_util::IsProfileFromActiveUser(profile)) {
+  // If the window got created for a non active user but the user allowed to
+  // teleport to the current user's desktop, we teleport it now.
+  if (!multi_user_util::IsProfileFromActiveUser(profile) &&
+      UserHasAppOnActiveDesktop(app_window)) {
+    chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+        app_window->GetNativeWindow(), multi_user_util::GetCurrentUserId());
+  }
+}
+
+void MultiProfileAppWindowLauncherController::OnAppWindowShown(
+    apps::AppWindow* app_window) {
+  if (!ControlsWindow(app_window->GetNativeWindow()))
+    return;
+
+  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
+
+  if (multi_user_util::IsProfileFromActiveUser(profile) &&
+      !IsRegisteredApp(app_window->GetNativeWindow())) {
     RegisterApp(app_window);
-  } else {
-    // If the window got created for a non active user but the user allowed to
-    // teleport to the current user's desktop, we teleport it now.
-    if (UserHasAppOnActiveDesktop(app_window)) {
-      chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
-          app_window->GetNativeWindow(),
-          multi_user_util::GetCurrentUserId());
-      if (app_window->GetNativeWindow()->type() == ui::wm::WINDOW_TYPE_PANEL &&
-          !app_window->GetNativeWindow()->layer()->GetTargetOpacity()) {
-        // The panel layout manager only manages windows which are anchored.
-        // Since this window did never had an anchor, it would stay hidden. We
-        // therefore make it visible now.
-        app_window->GetNativeWindow()->layer()->SetOpacity(1.0f);
-      }
-    }
+    return;
+  }
+
+  // The panel layout manager only manages windows which are anchored.
+  // Since this window did never had an anchor, it would stay hidden. We
+  // therefore make it visible now.
+  if (UserHasAppOnActiveDesktop(app_window) &&
+      app_window->GetNativeWindow()->type() == ui::wm::WINDOW_TYPE_PANEL &&
+      !app_window->GetNativeWindow()->layer()->GetTargetOpacity()) {
+    app_window->GetNativeWindow()->layer()->SetOpacity(1.0f);
+  }
+}
+
+void MultiProfileAppWindowLauncherController::OnAppWindowHidden(
+    apps::AppWindow* app_window) {
+  if (!ControlsWindow(app_window->GetNativeWindow()))
+    return;
+
+  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
+  if (multi_user_util::IsProfileFromActiveUser(profile) &&
+      IsRegisteredApp(app_window->GetNativeWindow())) {
+    UnregisterApp(app_window->GetNativeWindow());
   }
 }
 

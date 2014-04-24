@@ -53,6 +53,8 @@ class AppWindowLauncherController
   virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowShown(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowHidden(apps::AppWindow* app_window) OVERRIDE;
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;

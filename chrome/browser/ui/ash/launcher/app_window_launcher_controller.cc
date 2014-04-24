@@ -85,9 +85,6 @@ void AppWindowLauncherController::AdditionalUserAddedToSession(
 }
 
 void AppWindowLauncherController::OnAppWindowAdded(AppWindow* app_window) {
-  if (!ControlsWindow(app_window->GetNativeWindow()))
-    return;
-  RegisterApp(app_window);
 }
 
 void AppWindowLauncherController::OnAppWindowIconChanged(
@@ -108,6 +105,24 @@ void AppWindowLauncherController::OnAppWindowIconChanged(
 void AppWindowLauncherController::OnAppWindowRemoved(AppWindow* app_window) {
   // Do nothing here; app_window->window() has already been deleted and
   // OnWindowDestroying() has been called, doing the removal.
+}
+
+void AppWindowLauncherController::OnAppWindowShown(AppWindow* app_window) {
+  aura::Window* window = app_window->GetNativeWindow();
+  if (!ControlsWindow(window))
+    return;
+
+  if (!IsRegisteredApp(window))
+    RegisterApp(app_window);
+}
+
+void AppWindowLauncherController::OnAppWindowHidden(AppWindow* app_window) {
+  aura::Window* window = app_window->GetNativeWindow();
+  if (!ControlsWindow(window))
+    return;
+
+  if (IsRegisteredApp(window))
+    UnregisterApp(window);
 }
 
 // Called from aura::Window::~Window(), before delegate_->OnWindowDestroyed()

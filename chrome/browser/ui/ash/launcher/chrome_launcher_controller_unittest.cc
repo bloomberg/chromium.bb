@@ -2301,6 +2301,80 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_FALSE(v2_app_5.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(profile1->GetProfileName());
   EXPECT_TRUE(v2_app_5.window()->GetNativeWindow()->IsVisible());
+
+  // Switching to desktop #2, hiding the app window and creating an app should
+  // teleport there automatically.
+  SwitchActiveUser(profile2->GetProfileName());
+  v2_app_1.window()->Hide();
+  V2App v2_app_6(profile1, extension1_);
+  EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(v2_app_6.window()->GetNativeWindow()->IsVisible());
+}
+
+// Check that V2 applications hide correctly on the shelf when the app window
+// is hidden.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       V2AppHiddenWindows) {
+  InitLauncherController();
+
+  TestingProfile* profile2 = CreateMultiUserProfile("user-2");
+  SwitchActiveUser(profile()->GetProfileName());
+  EXPECT_EQ(2, model_->item_count());
+
+  V2App v2_app_1(profile(), extension1_);
+  EXPECT_EQ(3, model_->item_count());
+  {
+    // Hide and show the app.
+    v2_app_1.window()->Hide();
+    EXPECT_EQ(2, model_->item_count());
+
+    v2_app_1.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    EXPECT_EQ(3, model_->item_count());
+  }
+  {
+    // Switch user, hide and show the app and switch back.
+    SwitchActiveUser(profile2->GetProfileName());
+    EXPECT_EQ(2, model_->item_count());
+
+    v2_app_1.window()->Hide();
+    EXPECT_EQ(2, model_->item_count());
+
+    v2_app_1.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    EXPECT_EQ(2, model_->item_count());
+
+    SwitchActiveUser(profile()->GetProfileName());
+    EXPECT_EQ(3, model_->item_count());
+  }
+  {
+    // Switch user, hide the app, switch back and then show it again.
+    SwitchActiveUser(profile2->GetProfileName());
+    EXPECT_EQ(2, model_->item_count());
+
+    v2_app_1.window()->Hide();
+    EXPECT_EQ(2, model_->item_count());
+
+    SwitchActiveUser(profile()->GetProfileName());
+    EXPECT_EQ(2, model_->item_count());
+
+    v2_app_1.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    EXPECT_EQ(3, model_->item_count());
+  }
+  {
+    // Create a second app, hide and show it and then hide both apps.
+    V2App v2_app_2(profile(), extension1_);
+    EXPECT_EQ(3, model_->item_count());
+
+    v2_app_2.window()->Hide();
+    EXPECT_EQ(3, model_->item_count());
+
+    v2_app_2.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    EXPECT_EQ(3, model_->item_count());
+
+    v2_app_1.window()->Hide();
+    v2_app_2.window()->Hide();
+    EXPECT_EQ(2, model_->item_count());
+  }
 }
 #endif  // defined(OS_CHROMEOS)
 
