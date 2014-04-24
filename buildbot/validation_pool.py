@@ -85,7 +85,8 @@ class FailedToSubmitAllChangesException(results_lib.StepFailure):
         'submitted' % ' '.join(str(c) for c in changes))
 
 
-class FailedToSubmitAllChangesNonFatalException(results_lib.StepFailure):
+class FailedToSubmitAllChangesNonFatalException(
+    FailedToSubmitAllChangesException):
   """Raised if we fail to submit any change due to non-fatal errors."""
 
 
