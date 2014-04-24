@@ -80,7 +80,6 @@ from _emerge.stdout_spinner import stdout_spinner
 from portage._global_updates import _global_updates
 import portage
 import portage.debug
-from portage.versions import vercmp
 # pylint: enable=F0401
 
 
@@ -581,10 +580,7 @@ class DepGraphGenerator(object):
         emerge_pkg = self.package_db.get(pkg)
         if emerge_pkg and emerge_pkg.type_name == "binary":
           this_pkg["binary"] = True
-          if 0 <= vercmp(portage.VERSION, "2.1.11.50"):
-            defined_phases = emerge_pkg.defined_phases
-          else:
-            defined_phases = emerge_pkg.metadata.defined_phases
+          defined_phases = emerge_pkg.defined_phases
           defined_binpkg_phases = binpkg_phases.intersection(defined_phases)
           if not defined_binpkg_phases:
             this_pkg["nodeps"] = True
@@ -916,12 +912,8 @@ def EmergeProcess(output, target, *args, **kwargs):
                   2: output.fileno(),
                   sys.stdin.fileno(): sys.stdin.fileno(),
                   output.fileno(): output.fileno()}
-      if 0 <= vercmp(portage.VERSION, "2.1.11.50"):
-        # pylint: disable=W0212
-        portage.process._setup_pipes(fd_pipes, close_fds=False)
-      else:
-        # pylint: disable=W0212
-        portage.process._setup_pipes(fd_pipes)
+      # pylint: disable=W0212
+      portage.process._setup_pipes(fd_pipes, close_fds=False)
 
       # Portage doesn't like when sys.stdin.fileno() != 0, so point sys.stdin
       # at the filehandle we just created in _setup_pipes.
