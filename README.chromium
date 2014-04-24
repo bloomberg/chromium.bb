@@ -105,8 +105,10 @@ This directory contains the source code of ICU 52.1 for C/C++
          (big5han/gb2312han) that don't make any sense and nobdoy uses.
 
   - android/patch_locale.sh (to be run for Android build only):
-      Makes changes to source/data/{curr,region,lang} to exclude these data
-      except the language and script names of zh_Hans and zh_Hant.
+      a. Makes changes to source/data/{curr,region,lang} to exclude these data
+         except the language and script names of zh_Hans and zh_Hant.
+      b. Remove exemplar cities in timezone data (data/zone)
+      c. Keep only the minimal calendar data in data/locales
  
   - Add tg.txt to source/data/locale source/data/lang to add the minimal locale
     data necessary for the spellchecker. In both directories, add tg.txt to
@@ -148,12 +150,17 @@ This directory contains the source code of ICU 52.1 for C/C++
 
 9. Pre-built data files are checked in with the following steps on Linux:
 
-    a. Make a icu data build directory outside the Chromium source tree.
-    b. Run 'runConfigureICU Linux' outside the source tree.
+    a. Make a icu data build directory outside the Chromium source tree 
+       and cd to that directory.
+    b. Run 
+
+      ${CHROME_ICU_TREE_TOP}/source/runConfigureICU Linux --disable-layout
+
     c. Run 'make'
-    d. 'make' will fail in the 1st pass. Copy source/data/in/coll/invuca.icu
-      to {BUILD_DIR_ROOT}/data/out/build/icudt52l/coll and re-run 'make'
-      in {BUILD_DIR_ROOT}/data.
+    d. 'make' will fail in the 1st pass. Copy 
+       ${CHROME_ICU_TREE_TOP}/source/data/in/coll/invuca.icu
+       to {BUILD_DIR_ROOT}/data/out/build/icudt52l/coll and re-run 'make'
+       in {BUILD_DIR_ROOT}/data.
 
     e. 'make' will fail again when pkgdata looks for css3transform.res. Edit
     data/out/tmp/icudata.lst to replace 'css3transform.res' with 'root.res'.
