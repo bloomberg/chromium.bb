@@ -428,7 +428,7 @@ crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ Skip 
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ Skip ]
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ Skip ]
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Skip ]
-crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Pass Failure ]
+crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ NeedsManualRebaseline ]
 
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
 
@@ -1651,7 +1651,7 @@ crbug.com/366705 fast/text/shaping/shaping-selection-rect.html [ NeedsRebaseline
 crbug.com/366705 svg/text/text-intro-05-t.svg [ NeedsRebaseline ]
 
 # Flaky on debug
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-pixel.html [ Pass Failure ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-pixel.html [ NeedsManualRebaseline ]
 
 # Ref tests fail as the reference rendering uses the default text rendering options (GDI w/o AA)
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-isolate-hang-with-neutral.html [ Skip ]
