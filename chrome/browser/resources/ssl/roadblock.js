@@ -2,17 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var showedMore = false;
-
-function toggleMoreInfo(collapse) {
-  $('more-info-long').hidden = collapse;
-  $('more-info-short').hidden = !collapse;
-  if (!collapse && !showedMore) {
-    sendCommand(CMD_MORE);
-    showedMore = true;
-  }
-}
-
 // UI modifications and event listeners that take place after load.
 function setupEvents() {
   $('proceed-button').hidden = false;
@@ -20,17 +9,16 @@ function setupEvents() {
     sendCommand(CMD_PROCEED);
   });
 
+  var details = document.querySelector('details.more');
   if ($('more-info-title').textContent == '') {
-    $('more-info-short').hidden = true;
-    $('more-info-long').hidden = true;
-    $('twisty-closed').style.display = 'none';
+    details.hidden = true;
   } else {
-    $('more-info-short').addEventListener('click', function() {
-      toggleMoreInfo(false);
-    });
-    $('more-info-long').addEventListener('click', function() {
-      toggleMoreInfo(true);
-    });
+    details.addEventListener('toggle', function handleToggle() {
+      if (!details.open)
+        return;
+      sendCommand(CMD_MORE);
+      details.removeEventListener('toggle', handleToggle);
+    }, false);
   }
 
   $('exit-button').addEventListener('click', function() {

@@ -10,10 +10,6 @@
     height: 100%;
   }
 
-  html[dir='rtl'] #twisty-closed {
-    -webkit-transform: scaleX(-1);
-  }
-
   body {
     font-family: Helvetica, Arial, sans-serif;
     margin: 0;
@@ -70,8 +66,8 @@
     margin: 0 77px 6pt;
   }
 
-  .twisty {
-    display: inline;
+  summary:focus {
+    outline: none;
   }
   </style>
   <script src="../../../../ui/webui/resources/js/assert.js"></script>
@@ -88,24 +84,14 @@
       <button i18n-content="proceed" id="proceed-button" hidden></button>
       <button i18n-content="exit" id="exit-button"></button>
     </div>
-    <div class="more" id="more-info-short">
-      <span class="more-link">
-        <img id="twisty-closed" class="twisty" src="twisty_closed.png"
-            border="0"><span i18n-content="moreInfoTitle" id="more-info-title"
-            class="show-more-info-title"></span>
-      </span>
-    </div>
-    <div class="more" id="more-info-long" hidden>
-      <span class="more-link">
-        <img class="twisty" src="twisty_open.png" border="0"><span
-            i18n-content="moreInfoTitle" class="more-info-title"></span>
-      </span>
+    <details class="more">
+      <summary><span class="more-link" i18n-content="moreInfoTitle" id="more-info-title"></span></summary>
       <p i18n-values=".innerHTML:moreInfo1"></p>
       <p i18n-values=".innerHTML:moreInfo2"></p>
       <p i18n-values=".innerHTML:moreInfo3"></p>
       <p i18n-values=".innerHTML:moreInfo4"></p>
       <p i18n-values=".innerHTML:moreInfo5"></p>
-    </div>
+    </details>
   </div>
 </table>
 </body>
