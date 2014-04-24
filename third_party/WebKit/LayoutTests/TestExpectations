@@ -953,8 +953,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/shaping/shaping-s
 # Flaky on debug
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-pixel.html [ Pass Failure ]
 
-crbug.com/364051 svg/in-html/by-reference.html [ NeedsRebaseline ]
-
 # Ref tests fail as the reference rendering uses the default text rendering options (GDI w/o AA)
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-isolate-hang-with-neutral.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-override-isolate.html [ Skip ]

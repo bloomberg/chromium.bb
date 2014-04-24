@@ -36,5 +36,5 @@ layer at (108,0) size 100x100
   RenderPartObject {IFRAME} at (108,0) size 100x100
     layer at (0,0) size 100x100
       RenderView at (0,0) size 100x100
-    layer at (0,0) size 100x100
+    layer at (0,0) size 50x50
       RenderSVGRoot {svg} at (0,0) size 0x0
