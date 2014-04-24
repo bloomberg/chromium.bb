@@ -290,6 +290,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.scrollbar_animator = cc::LayerTreeSettings::Thinning;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   } else if (cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport)) {
+    // use_pinch_zoom_scrollbars is only true on desktop when non-overlay
+    // scrollbars are in use.
+    settings.use_pinch_zoom_scrollbars = true;
     settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }

@@ -1297,14 +1297,25 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
   }
 
   layer_tree_impl()->set_needs_update_draw_properties();
-  // TODO(wjmaclean) Should the rest of this function be deleted?
   // TODO(wjmaclean) The scrollbar animator for the pinch-zoom scrollbars should
   // activate for every scroll on the main frame, not just the scrolls that move
   // the pinch virtual viewport (i.e. trigger from either inner or outer
   // viewport).
   if (scrollbar_animation_controller_) {
-    bool should_animate = scrollbar_animation_controller_->DidScrollUpdate(
-        layer_tree_impl_->CurrentFrameTimeTicks());
+    // When both non-overlay and overlay scrollbars are both present, don't
+    // animate the overlay scrollbars when page scale factor is at the min.
+    // Non-overlay scrollbars also shouldn't trigger animations.
+    bool is_animatable_scrollbar =
+        scrollbar_layer->is_overlay_scrollbar() &&
+        ((layer_tree_impl()->total_page_scale_factor() >
+          layer_tree_impl()->min_page_scale_factor()) ||
+         !layer_tree_impl()->settings().use_pinch_zoom_scrollbars);
+    // Note that DidScrollUpdate() has the side-effect of setting the
+    // scrollbar's opacity to 1.0 even if the function returns false, so
+    // evaluate it last in the boolean expression.
+    bool should_animate = is_animatable_scrollbar &&
+                          scrollbar_animation_controller_->DidScrollUpdate(
+                              layer_tree_impl_->CurrentFrameTimeTicks());
     if (should_animate)
       layer_tree_impl_->StartScrollbarAnimation();
   }

@@ -23,6 +23,7 @@
 #include "cc/layers/quad_sink.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"
+#include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/tiled_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
@@ -1218,57 +1219,62 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
   base::TimeTicks fake_current_physical_time_;
 };
 
+#define SETUP_LAYERS_FOR_SCROLLBAR_ANIMATION_TEST()                           \
+  gfx::Size viewport_size(10, 10);                                            \
+  gfx::Size content_size(100, 100);                                           \
+                                                                              \
+  LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =            \
+      new LayerTreeHostImplOverridePhysicalTime(settings,                     \
+                                                this,                         \
+                                                &proxy_,                      \
+                                                shared_bitmap_manager_.get(), \
+                                                &stats_instrumentation_);     \
+  host_impl_ = make_scoped_ptr(host_impl_override_time);                      \
+  host_impl_->InitializeRenderer(CreateOutputSurface());                      \
+  host_impl_->SetViewportSize(viewport_size);                                 \
+                                                                              \
+  scoped_ptr<LayerImpl> root =                                                \
+      LayerImpl::Create(host_impl_->active_tree(), 1);                        \
+  root->SetBounds(viewport_size);                                             \
+                                                                              \
+  scoped_ptr<LayerImpl> scroll =                                              \
+      LayerImpl::Create(host_impl_->active_tree(), 2);                        \
+  scroll->SetScrollClipLayer(root->id());                                     \
+  scroll->SetScrollOffset(gfx::Vector2d());                                   \
+  root->SetBounds(viewport_size);                                             \
+  scroll->SetBounds(content_size);                                            \
+  scroll->SetContentBounds(content_size);                                     \
+  scroll->SetIsContainerForFixedPositionLayers(true);                         \
+                                                                              \
+  scoped_ptr<LayerImpl> contents =                                            \
+      LayerImpl::Create(host_impl_->active_tree(), 3);                        \
+  contents->SetDrawsContent(true);                                            \
+  contents->SetBounds(content_size);                                          \
+  contents->SetContentBounds(content_size);                                   \
+                                                                              \
+  scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar =                        \
+      SolidColorScrollbarLayerImpl::Create(                                   \
+          host_impl_->active_tree(), 4, VERTICAL, 10, 0, false, true);        \
+  scrollbar->SetScrollLayerById(2);                                           \
+  scrollbar->SetClipLayerById(1);                                             \
+                                                                              \
+  scroll->AddChild(contents.Pass());                                          \
+  root->AddChild(scroll.Pass());                                              \
+  root->AddChild(scrollbar.PassAs<LayerImpl>());                              \
+                                                                              \
+  host_impl_->active_tree()->SetRootLayer(root.Pass());                       \
+  host_impl_->active_tree()->SetViewportLayersFromIds(                        \
+      1, 2, Layer::INVALID_ID);                                               \
+  host_impl_->active_tree()->DidBecomeActive();                               \
+  DrawFrame();
+
 TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   LayerTreeSettings settings;
   settings.scrollbar_animator = LayerTreeSettings::LinearFade;
   settings.scrollbar_linear_fade_delay_ms = 20;
   settings.scrollbar_linear_fade_length_ms = 20;
 
-  gfx::Size viewport_size(10, 10);
-  gfx::Size content_size(100, 100);
-
-  LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =
-      new LayerTreeHostImplOverridePhysicalTime(settings,
-                                                this,
-                                                &proxy_,
-                                                shared_bitmap_manager_.get(),
-                                                &stats_instrumentation_);
-  host_impl_ = make_scoped_ptr(host_impl_override_time);
-  host_impl_->InitializeRenderer(CreateOutputSurface());
-  host_impl_->SetViewportSize(viewport_size);
-
-  scoped_ptr<LayerImpl> root =
-      LayerImpl::Create(host_impl_->active_tree(), 1);
-  root->SetBounds(viewport_size);
-
-  scoped_ptr<LayerImpl> scroll =
-      LayerImpl::Create(host_impl_->active_tree(), 2);
-  scroll->SetScrollClipLayer(root->id());
-  scroll->SetScrollOffset(gfx::Vector2d());
-  root->SetBounds(viewport_size);
-  scroll->SetBounds(content_size);
-  scroll->SetContentBounds(content_size);
-  scroll->SetIsContainerForFixedPositionLayers(true);
-
-  scoped_ptr<LayerImpl> contents =
-      LayerImpl::Create(host_impl_->active_tree(), 3);
-  contents->SetDrawsContent(true);
-  contents->SetBounds(content_size);
-  contents->SetContentBounds(content_size);
-
-  scoped_ptr<PaintedScrollbarLayerImpl> scrollbar =
-      PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(), 4, VERTICAL);
-  scrollbar->SetScrollLayerById(2);
-  scrollbar->SetClipLayerById(1);
-
-  scroll->AddChild(contents.Pass());
-  root->AddChild(scroll.Pass());
-  root->AddChild(scrollbar.PassAs<LayerImpl>());
-
-  host_impl_->active_tree()->SetRootLayer(root.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(1, 2, Layer::INVALID_ID);
-  host_impl_->active_tree()->DidBecomeActive();
-  DrawFrame();
+  SETUP_LAYERS_FOR_SCROLLBAR_ANIMATION_TEST();
 
   base::TimeTicks fake_now = gfx::FrameTime::Now();
   host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
@@ -1329,6 +1335,74 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   fake_now += base::TimeDelta::FromMilliseconds(10);
   host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
   EXPECT_EQ(fake_now, host_impl_->CurrentFrameTimeTicks());
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollbarFadePinchZoomScrollbars) {
+  LayerTreeSettings settings;
+  settings.scrollbar_animator = LayerTreeSettings::LinearFade;
+  settings.scrollbar_linear_fade_delay_ms = 20;
+  settings.scrollbar_linear_fade_length_ms = 20;
+  settings.use_pinch_zoom_scrollbars = true;
+
+  SETUP_LAYERS_FOR_SCROLLBAR_ANIMATION_TEST();
+
+  base::TimeTicks fake_now = gfx::FrameTime::Now();
+  host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
+
+  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
+
+  // If no scroll happened recently, StartScrollbarAnimation should have no
+  // effect.
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+
+  // If no scroll happened during a scroll gesture, StartScrollbarAnimation
+  // should have no effect.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
+  host_impl_->ScrollEnd();
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+
+  // After a scroll, no fade animation should be scheduled.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
+  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(5, 0));
+  host_impl_->ScrollEnd();
+  did_request_redraw_ = false;
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+  requested_scrollbar_animation_delay_ = base::TimeDelta();
+
+  // We should not see any draw requests.
+  fake_now += base::TimeDelta::FromMilliseconds(25);
+  host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+
+  // Make page scale > min so that subsequent scrolls will trigger fades.
+  host_impl_->active_tree()->SetPageScaleDelta(1.1f);
+
+  // After a scroll, a fade animation should be scheduled about 20ms from now.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
+  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(5, 0));
+  host_impl_->ScrollEnd();
+  did_request_redraw_ = false;
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(19),
+            requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+  requested_scrollbar_animation_delay_ = base::TimeDelta();
+
+  // After the fade begins, we should start getting redraws instead of a
+  // scheduled animation.
+  fake_now += base::TimeDelta::FromMilliseconds(25);
+  host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_TRUE(did_request_redraw_);
 }
 
 void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
