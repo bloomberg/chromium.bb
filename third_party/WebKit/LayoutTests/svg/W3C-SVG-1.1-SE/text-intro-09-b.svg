@@ -86,4 +86,15 @@
     <text font-family="SVGFreeSansASCII,sans-serif" font-weight="bold" font-size="20" x="240"
       text-anchor="middle" y="18" stroke-width="0.5" stroke="black" fill="white">DRAFT</text>
   </g>-->
+ <script>
+     if (window.testRunner) {
+         testRunner.waitUntilDone();
+         pendingFonts = 3;
+         document.fonts.onloadingdone = document.fonts.onloadingerror = function(e) {
+             pendingFonts -= e.fontfaces.length;
+             if (pendingFonts == 0)
+                 testRunner.notifyDone();
+         };
+     }
+ </script>
 </svg>

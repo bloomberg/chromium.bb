@@ -500,7 +500,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
     if (characterFontData) {
         // Got the fallback glyph and font.
         GlyphPage* fallbackPage = GlyphPageTreeNode::getRootChild(characterFontData.get(), pageNumber)->page();
-        GlyphData data = fallbackPage && fallbackPage->fontDataForCharacter(c) ? fallbackPage->glyphDataForCharacter(c) : characterFontData->missingGlyphData();
+        GlyphData data = fallbackPage && fallbackPage->glyphForCharacter(c) ? fallbackPage->glyphDataForCharacter(c) : characterFontData->missingGlyphData();
         // Cache it so we don't have to do system fallback again next time.
         if (variant == NormalVariant) {
             page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
@@ -528,7 +528,7 @@ bool Font::primaryFontHasGlyphForCharacter(UChar32 character) const
     GlyphPageTreeNode* node = GlyphPageTreeNode::getRootChild(primaryFont(), pageNumber);
     GlyphPage* page = node->page();
 
-    return page && page->fontDataForCharacter(character);
+    return page && page->glyphForCharacter(character);
 }
 
 // FIXME: This function may not work if the emphasis mark uses a complex script, but none of the

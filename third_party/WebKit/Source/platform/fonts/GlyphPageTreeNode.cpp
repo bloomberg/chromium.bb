@@ -223,12 +223,14 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                     if (from >= static_cast<int>(GlyphPage::size) || to <= 0)
                         continue;
 
-                    // If this is a custom font needs to be loaded, kick off
-                    // the load here, and do not fill the page so that
-                    // font fallback is used while loading.
+                    // If this is a custom font needs to be loaded, do not fill
+                    // the page so that font fallback is used while loading.
                     RefPtr<CustomFontData> customData = range.fontData()->customFontData();
                     if (customData && customData->isLoadingFallback()) {
-                        customData->beginLoadIfNeeded();
+                        for (int j = from; j < to; j++) {
+                            m_page->setCustomFontToLoad(j, customData.get());
+                            haveGlyphs = true;
+                        }
                         continue;
                     }
 
@@ -272,10 +274,17 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                 // has added anything.
                 bool newGlyphs = false;
                 for (unsigned i = 0; i < GlyphPage::size; i++) {
-                    if (parentPage->glyphAt(i))
+                    if (parentPage->glyphAt(i)) {
                         m_page->setGlyphDataForIndex(i, parentPage->glyphDataForIndex(i));
-                    else  if (fallbackPage->glyphAt(i)) {
+                    } else if (fallbackPage->glyphAt(i)) {
                         m_page->setGlyphDataForIndex(i, fallbackPage->glyphDataForIndex(i));
+                        newGlyphs = true;
+                    }
+
+                    if (parentPage->customFontToLoadAt(i)) {
+                        m_page->setCustomFontToLoad(i, parentPage->customFontToLoadAt(i));
+                    } else if (fallbackPage->customFontToLoadAt(i) && !parentPage->glyphAt(i)) {
+                        m_page->setCustomFontToLoad(i, fallbackPage->customFontToLoadAt(i));
                         newGlyphs = true;
                     }
                 }
