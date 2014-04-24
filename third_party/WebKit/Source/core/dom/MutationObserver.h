@@ -45,12 +45,18 @@ namespace WebCore {
 class Dictionary;
 class ExceptionState;
 class MutationCallback;
+class MutationObserver;
 class MutationObserverRegistration;
 class MutationRecord;
 class Node;
 
 typedef unsigned char MutationObserverOptions;
 typedef unsigned char MutationRecordDeliveryOptions;
+
+typedef WillBeHeapHashSet<RefPtrWillBeMember<MutationObserver> > MutationObserverSet;
+typedef WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> > MutationObserverRegistrationSet;
+typedef WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > MutationObserverVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > MutationRecordVector;
 
 class MutationObserver FINAL : public RefCountedWillBeGarbageCollectedFinalized<MutationObserver>, public ScriptWrappable {
 public:
@@ -98,8 +104,8 @@ private:
     void deliver();
 
     OwnPtr<MutationCallback> m_callback;
-    WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > m_records;
-    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> > m_registrations;
+    MutationRecordVector m_records;
+    MutationObserverRegistrationSet m_registrations;
     unsigned m_priority;
 };
 

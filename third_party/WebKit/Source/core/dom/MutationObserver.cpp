@@ -140,9 +140,9 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
     node->registerMutationObserver(*this, options, attributeFilter);
 }
 
-WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > MutationObserver::takeRecords()
+MutationRecordVector MutationObserver::takeRecords()
 {
-    WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > records;
+    MutationRecordVector records;
     records.swap(m_records);
     InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
     return records;
@@ -152,8 +152,8 @@ void MutationObserver::disconnect()
 {
     m_records.clear();
     InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
-    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> > registrations(m_registrations);
-    for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::iterator iter = registrations.begin(); iter != registrations.end(); ++iter)
+    MutationObserverRegistrationSet registrations(m_registrations);
+    for (MutationObserverRegistrationSet::iterator iter = registrations.begin(); iter != registrations.end(); ++iter)
         (*iter)->unregister();
     ASSERT(m_registrations.isEmpty());
 }
@@ -169,8 +169,6 @@ void MutationObserver::observationEnded(MutationObserverRegistration* registrati
     ASSERT(m_registrations.contains(registration));
     m_registrations.remove(registration);
 }
-
-typedef WillBeHeapHashSet<RefPtrWillBeMember<MutationObserver> > MutationObserverSet;
 
 static MutationObserverSet& activeMutationObservers()
 {
@@ -219,7 +217,7 @@ void MutationObserver::setHasTransientRegistration()
 HashSet<Node*> MutationObserver::getObservedNodes() const
 {
     HashSet<Node*> observedNodes;
-    for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::const_iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter)
+    for (MutationObserverRegistrationSet::const_iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter)
         (*iter)->addRegistrationNodesToSet(observedNodes);
     return observedNodes;
 }
@@ -236,7 +234,7 @@ void MutationObserver::deliver()
     // Calling clearTransientRegistrations() can modify m_registrations, so it's necessary
     // to make a copy of the transient registrations before operating on them.
     WillBeHeapVector<RawPtrWillBeMember<MutationObserverRegistration>, 1> transientRegistrations;
-    for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter) {
+    for (MutationObserverRegistrationSet::iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter) {
         if ((*iter)->hasTransientRegistrations())
             transientRegistrations.append(*iter);
     }
@@ -246,7 +244,7 @@ void MutationObserver::deliver()
     if (m_records.isEmpty())
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > records;
+    MutationRecordVector records;
     records.swap(m_records);
 
     InspectorInstrumentation::willDeliverMutationRecords(m_callback->executionContext(), this);
@@ -260,7 +258,7 @@ void MutationObserver::resumeSuspendedObservers()
     if (suspendedMutationObservers().isEmpty())
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > suspended;
+    MutationObserverVector suspended;
     copyToVector(suspendedMutationObservers(), suspended);
     for (size_t i = 0; i < suspended.size(); ++i) {
         if (suspended[i]->canDeliver()) {
@@ -273,7 +271,7 @@ void MutationObserver::resumeSuspendedObservers()
 void MutationObserver::deliverMutations()
 {
     ASSERT(isMainThread());
-    WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > observers;
+    MutationObserverVector observers;
     copyToVector(activeMutationObservers(), observers);
     activeMutationObservers().clear();
     std::sort(observers.begin(), observers.end(), ObserverLessThan());
