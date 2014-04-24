@@ -44,8 +44,8 @@
     [DeprecateAs=PrefixedPerformanceTimeline,ImplementedAs=getEntriesByType] sequence<PerformanceEntry> webkitGetEntriesByType(DOMString entryType);
     [DeprecateAs=PrefixedPerformanceTimeline,ImplementedAs=getEntriesByName] sequence<PerformanceEntry> webkitGetEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
 
-    void webkitClearResourceTimings();
-    void webkitSetResourceTimingBufferSize(unsigned long maxSize);
+    [MeasureAs=PrefixedPerformanceClearResourceTimings] void webkitClearResourceTimings();
+    [MeasureAs=PrefixedPerformanceSetResourceTimingBufferSize] void webkitSetResourceTimingBufferSize(unsigned long maxSize);
 
     attribute EventHandler onwebkitresourcetimingbufferfull;
 

@@ -358,6 +358,8 @@ public:
         CanvasRenderingContext2DSetFillColor = 338,
         CanvasRenderingContext2DDrawImageFromRect = 339,
         CanvasRenderingContext2DSetShadow = 340,
+        PrefixedPerformanceClearResourceTimings = 341,
+        PrefixedPerformanceSetResourceTimingBufferSize = 342,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.
