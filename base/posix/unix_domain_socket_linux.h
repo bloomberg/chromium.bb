@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/process/process_handle.h"
 
 class Pickle;
 
@@ -17,6 +18,11 @@ class BASE_EXPORT UnixDomainSocket {
  public:
   // Maximum number of file descriptors that can be read by RecvMsg().
   static const size_t kMaxFileDescriptors;
+
+  // Use to enable receiving process IDs in RecvMsgWithPid.  Should be called on
+  // the receiving socket (i.e., the socket passed to RecvMsgWithPid). Returns
+  // true if successful.
+  static bool EnableReceiveProcessId(int fd);
 
   // Use sendmsg to write the given msg and include a vector of file
   // descriptors. Returns true if successful.
@@ -31,6 +37,16 @@ class BASE_EXPORT UnixDomainSocket {
                          void* msg,
                          size_t length,
                          std::vector<int>* fds);
+
+  // Same as RecvMsg above, but also returns the sender's process ID (as seen
+  // from the caller's namespace).  However, before using this function to
+  // receive process IDs, EnableReceiveProcessId() should be called on the
+  // receiving socket.
+  static ssize_t RecvMsgWithPid(int fd,
+                                void* msg,
+                                size_t length,
+                                std::vector<int>* fds,
+                                base::ProcessId* pid);
 
   // Perform a sendmsg/recvmsg pair.
   //   1. This process creates a UNIX SEQPACKET socketpair. Using
@@ -70,7 +86,8 @@ class BASE_EXPORT UnixDomainSocket {
                                   void* msg,
                                   size_t length,
                                   int flags,
-                                  std::vector<int>* fds);
+                                  std::vector<int>* fds,
+                                  base::ProcessId* pid);
 };
 
 #endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_

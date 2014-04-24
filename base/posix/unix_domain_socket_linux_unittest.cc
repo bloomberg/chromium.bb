@@ -77,6 +77,64 @@ TEST(UnixDomainSocketTest, SendRecvMsgAvoidsSIGPIPE) {
   ASSERT_EQ(0, sigaction(SIGPIPE, &oldact, NULL));
 }
 
+// Simple sanity check within a single process that receiving PIDs works.
+TEST(UnixDomainSocketTest, RecvPid) {
+  int fds[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  base::ScopedFD recv_sock(fds[0]);
+  base::ScopedFD send_sock(fds[1]);
+
+  ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
+
+  static const char kHello[] = "hello";
+  ASSERT_TRUE(UnixDomainSocket::SendMsg(
+      send_sock.get(), kHello, sizeof(kHello), std::vector<int>()));
+
+  // Extra receiving buffer space to make sure we really received only
+  // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
+  char buf[sizeof(kHello) + 1];
+  base::ProcessId sender_pid;
+  std::vector<int> fd_vec;
+  const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
+      recv_sock.get(), buf, sizeof(buf), &fd_vec, &sender_pid);
+  ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
+  ASSERT_EQ(0, memcmp(buf, kHello, sizeof(kHello)));
+  ASSERT_EQ(0U, fd_vec.size());
+
+  ASSERT_EQ(getpid(), sender_pid);
+}
+
+// Same as above, but send the max number of file descriptors too.
+TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
+  int fds[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  base::ScopedFD recv_sock(fds[0]);
+  base::ScopedFD send_sock(fds[1]);
+
+  ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
+
+  static const char kHello[] = "hello";
+  std::vector<int> fd_vec(UnixDomainSocket::kMaxFileDescriptors,
+                          send_sock.get());
+  ASSERT_TRUE(UnixDomainSocket::SendMsg(
+      send_sock.get(), kHello, sizeof(kHello), fd_vec));
+
+  // Extra receiving buffer space to make sure we really received only
+  // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
+  char buf[sizeof(kHello) + 1];
+  base::ProcessId sender_pid;
+  const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
+      recv_sock.get(), buf, sizeof(buf), &fd_vec, &sender_pid);
+  ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
+  ASSERT_EQ(0, memcmp(buf, kHello, sizeof(kHello)));
+  ASSERT_EQ(UnixDomainSocket::kMaxFileDescriptors, fd_vec.size());
+  for (size_t i = 0; i < UnixDomainSocket::kMaxFileDescriptors; i++) {
+    ASSERT_EQ(0, IGNORE_EINTR(close(fd_vec[i])));
+  }
+
+  ASSERT_EQ(getpid(), sender_pid);
+}
+
 }  // namespace
 
 }  // namespace base

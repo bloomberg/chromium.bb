@@ -17,6 +17,12 @@
 const size_t UnixDomainSocket::kMaxFileDescriptors = 16;
 
 // static
+bool UnixDomainSocket::EnableReceiveProcessId(int fd) {
+  const int enable = 1;
+  return setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &enable, sizeof(enable)) == 0;
+}
+
+// static
 bool UnixDomainSocket::SendMsg(int fd,
                                const void* buf,
                                size_t length,
@@ -58,7 +64,16 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
                                   void* buf,
                                   size_t length,
                                   std::vector<int>* fds) {
-  return UnixDomainSocket::RecvMsgWithFlags(fd, buf, length, 0, fds);
+  return UnixDomainSocket::RecvMsgWithPid(fd, buf, length, fds, NULL);
+}
+
+// static
+ssize_t UnixDomainSocket::RecvMsgWithPid(int fd,
+                                         void* buf,
+                                         size_t length,
+                                         std::vector<int>* fds,
+                                         base::ProcessId* pid) {
+  return UnixDomainSocket::RecvMsgWithFlags(fd, buf, length, 0, fds, pid);
 }
 
 // static
@@ -66,7 +81,8 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
                                            void* buf,
                                            size_t length,
                                            int flags,
-                                           std::vector<int>* fds) {
+                                           std::vector<int>* fds,
+                                           base::ProcessId* out_pid) {
   fds->clear();
 
   struct msghdr msg = {};
@@ -74,7 +90,8 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
-  char control_buffer[CMSG_SPACE(sizeof(int) * kMaxFileDescriptors)];
+  char control_buffer[CMSG_SPACE(sizeof(int) * kMaxFileDescriptors) +
+                      CMSG_SPACE(sizeof(struct ucred))];
   msg.msg_control = control_buffer;
   msg.msg_controllen = sizeof(control_buffer);
 
@@ -84,17 +101,24 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
 
   int* wire_fds = NULL;
   unsigned wire_fds_len = 0;
+  base::ProcessId pid = -1;
 
   if (msg.msg_controllen > 0) {
     struct cmsghdr* cmsg;
     for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+      const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
       if (cmsg->cmsg_level == SOL_SOCKET &&
           cmsg->cmsg_type == SCM_RIGHTS) {
-        const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
         DCHECK(payload_len % sizeof(int) == 0);
+        DCHECK(wire_fds == NULL);
         wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
         wire_fds_len = payload_len / sizeof(int);
-        break;
+      }
+      if (cmsg->cmsg_level == SOL_SOCKET &&
+          cmsg->cmsg_type == SCM_CREDENTIALS) {
+        DCHECK(payload_len == sizeof(struct ucred));
+        DCHECK(pid == -1);
+        pid = reinterpret_cast<struct ucred*>(CMSG_DATA(cmsg))->pid;
       }
     }
   }
@@ -109,6 +133,11 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   if (wire_fds) {
     fds->resize(wire_fds_len);
     memcpy(vector_as_array(fds), wire_fds, sizeof(int) * wire_fds_len);
+  }
+
+  if (out_pid) {
+    DCHECK(pid != -1);
+    *out_pid = pid;
   }
 
   return r;
@@ -151,8 +180,8 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
   fd_vector.clear();
   // When porting to OSX keep in mind it doesn't support MSG_NOSIGNAL, so the
   // sender might get a SIGPIPE.
-  const ssize_t reply_len = RecvMsgWithFlags(fds[0], reply, max_reply_len,
-                                             recvmsg_flags, &fd_vector);
+  const ssize_t reply_len = RecvMsgWithFlags(
+      fds[0], reply, max_reply_len, recvmsg_flags, &fd_vector, NULL);
   close(fds[0]);
   if (reply_len == -1)
     return -1;
