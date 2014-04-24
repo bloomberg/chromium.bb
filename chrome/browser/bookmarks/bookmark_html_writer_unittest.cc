@@ -199,7 +199,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   base::Time t4(t1 + base::TimeDelta::FromHours(1));
   const BookmarkNode* f1 = model->AddFolder(
       model->bookmark_bar_node(), 0, f1_title);
-  model->AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
+  model->AddURLWithCreationTimeAndMetaInfo(f1, 0, url1_title, url1, t1, NULL);
   HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)->
       AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
   FaviconServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)
@@ -208,20 +208,27 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
                     favicon_base::FAVICON,
                     gfx::Image::CreateFrom1xBitmap(bitmap));
   const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
-  model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
-  model->AddURLWithCreationTime(model->bookmark_bar_node(),
-                                1, url3_title, url3, t3);
+  model->AddURLWithCreationTimeAndMetaInfo(f2, 0, url2_title, url2, t2, NULL);
+  model->AddURLWithCreationTimeAndMetaInfo(
+      model->bookmark_bar_node(), 1, url3_title, url3, t3, NULL);
 
-  model->AddURLWithCreationTime(model->other_node(), 0, url1_title, url1, t1);
-  model->AddURLWithCreationTime(model->other_node(), 1, url2_title, url2, t2);
+  model->AddURLWithCreationTimeAndMetaInfo(
+      model->other_node(), 0, url1_title, url1, t1, NULL);
+  model->AddURLWithCreationTimeAndMetaInfo(
+      model->other_node(), 1, url2_title, url2, t2, NULL);
   const BookmarkNode* f3 = model->AddFolder(model->other_node(), 2, f3_title);
   const BookmarkNode* f4 = model->AddFolder(f3, 0, f4_title);
-  model->AddURLWithCreationTime(f4, 0, url1_title, url1, t1);
-  model->AddURLWithCreationTime(model->bookmark_bar_node(), 2, url4_title,
-                                url4, t4);
-  model->AddURLWithCreationTime(model->mobile_node(), 0, url1_title, url1, t1);
-  model->AddURLWithCreationTime(model->mobile_node(), 1, unnamed_bookmark_title,
-                                unnamed_bookmark_url, t2);
+  model->AddURLWithCreationTimeAndMetaInfo(f4, 0, url1_title, url1, t1, NULL);
+  model->AddURLWithCreationTimeAndMetaInfo(
+      model->bookmark_bar_node(), 2, url4_title, url4, t4, NULL);
+  model->AddURLWithCreationTimeAndMetaInfo(
+      model->mobile_node(), 0, url1_title, url1, t1, NULL);
+  model->AddURLWithCreationTimeAndMetaInfo(model->mobile_node(),
+                                           1,
+                                           unnamed_bookmark_title,
+                                           unnamed_bookmark_url,
+                                           t2,
+                                           NULL);
 
   base::RunLoop run_loop;
 

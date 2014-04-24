@@ -711,7 +711,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
         base::Time::FromInternalValue(specifics.creation_time_us()));
   }
   SetBookmarkFavicon(&sync_node, node, model, profile);
-  SetBookmarkMetaInfo(&sync_node, node, model);
+  model->SetNodeMetaInfoMap(node, *GetBookmarkMetaInfo(&sync_node));
 }
 
 // static
@@ -740,8 +740,11 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddFolder(
-        parent, index, base::UTF8ToUTF16(sync_node->GetTitle()));
+    node =
+        model->AddFolderWithMetaInfo(parent,
+                                     index,
+                                     base::UTF8ToUTF16(sync_node->GetTitle()),
+                                     GetBookmarkMetaInfo(sync_node).get());
   } else {
     // 'creation_time_us' was added in m24. Assume a time of 0 means now.
     const sync_pb::BookmarkSpecifics& specifics =
@@ -749,15 +752,17 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const int64 create_time_internal = specifics.creation_time_us();
     base::Time create_time = (create_time_internal == 0) ?
         base::Time::Now() : base::Time::FromInternalValue(create_time_internal);
-    node = model->AddURLWithCreationTime(parent, index,
-                                         base::UTF8ToUTF16(
-                                             sync_node->GetTitle()),
-                                         GURL(specifics.url()), create_time);
+    node = model->AddURLWithCreationTimeAndMetaInfo(
+        parent,
+        index,
+        base::UTF8ToUTF16(sync_node->GetTitle()),
+        GURL(specifics.url()),
+        create_time,
+        GetBookmarkMetaInfo(sync_node).get());
     if (node)
       SetBookmarkFavicon(sync_node, node, model, profile);
   }
-  if (node)
-    SetBookmarkMetaInfo(sync_node, node, model);
+
   return node;
 }
 
@@ -791,18 +796,18 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
 }
 
 // static
-void BookmarkChangeProcessor::SetBookmarkMetaInfo(
-    const syncer::BaseNode* sync_node,
-    const BookmarkNode* bookmark_node,
-    BookmarkModel* bookmark_model) {
+scoped_ptr<BookmarkNode::MetaInfoMap>
+BookmarkChangeProcessor::GetBookmarkMetaInfo(
+    const syncer::BaseNode* sync_node) {
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node->GetBookmarkSpecifics();
-  BookmarkNode::MetaInfoMap meta_info_map;
+  scoped_ptr<BookmarkNode::MetaInfoMap> meta_info_map(
+      new BookmarkNode::MetaInfoMap);
   for (int i = 0; i < specifics.meta_info_size(); ++i) {
-    meta_info_map[specifics.meta_info(i).key()] =
+    (*meta_info_map)[specifics.meta_info(i).key()] =
         specifics.meta_info(i).value();
   }
-  bookmark_model->SetNodeMetaInfoMap(bookmark_node, meta_info_map);
+  return meta_info_map.Pass();
 }
 
 // static

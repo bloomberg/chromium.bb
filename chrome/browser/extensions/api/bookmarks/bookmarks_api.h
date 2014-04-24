@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "components/bookmarks/core/browser/bookmark_node.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -27,6 +28,12 @@ class BrowserContext;
 }
 
 namespace extensions {
+
+namespace api {
+namespace bookmarks {
+struct CreateDetails;
+}
+}
 
 // Observes BookmarkModel and then routes the notifications as events to
 // the extension system.
@@ -121,6 +128,13 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   // If the given id can't be parsed or doesn't refer to a valid node, sets
   // error_ and returns NULL.
   const BookmarkNode* GetBookmarkNodeFromId(const std::string& id_string);
+
+  // Helper to create a bookmark node from a CreateDetails object. If a node
+  // can't be created based on the given details, sets error_ and returns NULL.
+  const BookmarkNode* CreateBookmarkNode(
+      BookmarkModel* model,
+      const api::bookmarks::CreateDetails& details,
+      const BookmarkNode::MetaInfoMap* meta_info);
 
   // Helper that checks if bookmark editing is enabled. If it's not, this sets
   // error_ to the appropriate error string.

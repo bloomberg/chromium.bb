@@ -1452,8 +1452,12 @@ void ProfileSyncServiceBookmarkTestWithData::PopulateFromTestData(
     if (item.url) {
       const base::Time add_time =
           start_time_ + base::TimeDelta::FromMinutes(*running_count);
-      model_->AddURLWithCreationTime(node, i, base::UTF8ToUTF16(item.title),
-                                     GURL(item.url), add_time);
+      model_->AddURLWithCreationTimeAndMetaInfo(node,
+                                                i,
+                                                base::UTF8ToUTF16(item.title),
+                                                GURL(item.url),
+                                                add_time,
+                                                NULL);
     } else {
       model_->AddFolder(node, i, base::UTF8ToUTF16(item.title));
     }

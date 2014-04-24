@@ -59,6 +59,7 @@ namespace bookmarks = api::bookmarks;
 
 using base::TimeDelta;
 using bookmarks::BookmarkTreeNode;
+using bookmarks::CreateDetails;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::WebContents;
@@ -135,6 +136,69 @@ const BookmarkNode* BookmarksFunction::GetBookmarkNodeFromId(
       BookmarkModelFactory::GetForProfile(GetProfile()), id);
   if (!node)
     error_ = keys::kNoNodeError;
+
+  return node;
+}
+
+const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
+    BookmarkModel* model,
+    const CreateDetails& details,
+    const BookmarkNode::MetaInfoMap* meta_info) {
+  int64 parentId;
+
+  if (!details.parent_id.get()) {
+    // Optional, default to "other bookmarks".
+    parentId = model->other_node()->id();
+  } else {
+    if (!GetBookmarkIdAsInt64(*details.parent_id, &parentId))
+      return NULL;
+  }
+  const BookmarkNode* parent = GetBookmarkNodeByID(model, parentId);
+  if (!parent) {
+    error_ = keys::kNoParentError;
+    return NULL;
+  }
+  if (parent->is_root()) {  // Can't create children of the root.
+    error_ = keys::kModifySpecialError;
+    return NULL;
+  }
+
+  int index;
+  if (!details.index.get()) {  // Optional (defaults to end).
+    index = parent->child_count();
+  } else {
+    index = *details.index;
+    if (index > parent->child_count() || index < 0) {
+      error_ = keys::kInvalidIndexError;
+      return NULL;
+    }
+  }
+
+  base::string16 title;  // Optional.
+  if (details.title.get())
+    title = base::UTF8ToUTF16(*details.title.get());
+
+  std::string url_string;  // Optional.
+  if (details.url.get())
+    url_string = *details.url.get();
+
+  GURL url(url_string);
+  if (!url_string.empty() && !url.is_valid()) {
+    error_ = keys::kInvalidUrlError;
+    return NULL;
+  }
+
+  const BookmarkNode* node;
+  if (url_string.length())
+    node = model->AddURLWithCreationTimeAndMetaInfo(
+        parent, index, title, url, base::Time::Now(), meta_info);
+  else
+    node = model->AddFolderWithMetaInfo(parent, index, title, meta_info);
+  DCHECK(node);
+  if (!node) {
+    error_ = keys::kNoNodeError;
+    return NULL;
+  }
 
   return node;
 }
@@ -514,60 +578,9 @@ bool BookmarksCreateFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
-  int64 parentId;
-
-  if (!params->bookmark.parent_id.get()) {
-    // Optional, default to "other bookmarks".
-    parentId = model->other_node()->id();
-  } else {
-    if (!GetBookmarkIdAsInt64(*params->bookmark.parent_id, &parentId))
-      return false;
-  }
-  const BookmarkNode* parent = GetBookmarkNodeByID(model, parentId);
-  if (!parent) {
-    error_ = keys::kNoParentError;
+  const BookmarkNode* node = CreateBookmarkNode(model, params->bookmark, NULL);
+  if (!node)
     return false;
-  }
-  if (parent->is_root()) {  // Can't create children of the root.
-    error_ = keys::kModifySpecialError;
-    return false;
-  }
-
-  int index;
-  if (!params->bookmark.index.get()) {  // Optional (defaults to end).
-    index = parent->child_count();
-  } else {
-    index = *params->bookmark.index;
-    if (index > parent->child_count() || index < 0) {
-      error_ = keys::kInvalidIndexError;
-      return false;
-    }
-  }
-
-  base::string16 title;  // Optional.
-  if (params->bookmark.title.get())
-    title = base::UTF8ToUTF16(*params->bookmark.title.get());
-
-  std::string url_string;  // Optional.
-  if (params->bookmark.url.get())
-    url_string = *params->bookmark.url.get();
-
-  GURL url(url_string);
-  if (!url_string.empty() && !url.is_valid()) {
-    error_ = keys::kInvalidUrlError;
-    return false;
-  }
-
-  const BookmarkNode* node;
-  if (url_string.length())
-    node = model->AddURL(parent, index, title, url);
-  else
-    node = model->AddFolder(parent, index, title);
-  DCHECK(node);
-  if (!node) {
-    error_ = keys::kNoNodeError;
-    return false;
-  }
 
   scoped_ptr<BookmarkTreeNode> ret(
       bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));

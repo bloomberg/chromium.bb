@@ -40,19 +40,19 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
                            const BookmarkNode* parent,
                            int index_to_add_at,
                            bool reset_node_times) {
-  const BookmarkNode* cloned_node = NULL;
   if (element.is_url) {
-    if (reset_node_times) {
-      cloned_node = model->AddURL(parent, index_to_add_at, element.title,
-                                  element.url);
-    } else {
-      DCHECK(!element.date_added.is_null());
-      cloned_node = model->AddURLWithCreationTime(parent, index_to_add_at,
-                                                  element.title, element.url,
-                                                  element.date_added);
-    }
+    base::Time date_added = reset_node_times ? Time::Now() : element.date_added;
+    DCHECK(!date_added.is_null());
+
+    model->AddURLWithCreationTimeAndMetaInfo(parent,
+                                             index_to_add_at,
+                                             element.title,
+                                             element.url,
+                                             date_added,
+                                             &element.meta_info_map);
   } else {
-    cloned_node = model->AddFolder(parent, index_to_add_at, element.title);
+    const BookmarkNode* cloned_node = model->AddFolderWithMetaInfo(
+        parent, index_to_add_at, element.title, &element.meta_info_map);
     if (!reset_node_times) {
       DCHECK(!element.date_folder_modified.is_null());
       model->SetDateFolderModified(cloned_node, element.date_folder_modified);
@@ -61,7 +61,6 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
       CloneBookmarkNodeImpl(model, element.children[i], cloned_node, i,
                             reset_node_times);
   }
-  model->SetNodeMetaInfoMap(cloned_node, element.meta_info_map);
 }
 
 // Comparison function that compares based on date modified of the two nodes.

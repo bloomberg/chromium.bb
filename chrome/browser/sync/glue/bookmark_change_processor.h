@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "components/bookmarks/core/browser/bookmark_node.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_error_handler.h"
 
@@ -145,10 +146,9 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
     CREATE,
   };
 
-  // Sets the meta info of the given bookmark node from the given sync node.
-  static void SetBookmarkMetaInfo(const syncer::BaseNode* sync_node,
-                                  const BookmarkNode* bookmark_node,
-                                  BookmarkModel* bookmark_model);
+  // Retrieves the meta info from the given sync node.
+  static scoped_ptr<BookmarkNode::MetaInfoMap> GetBookmarkMetaInfo(
+      const syncer::BaseNode* sync_node);
 
   // Sets the meta info of the given sync node from the given bookmark node.
   static void SetSyncNodeMetaInfo(const BookmarkNode* node,

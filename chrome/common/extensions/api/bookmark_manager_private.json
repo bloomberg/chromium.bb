@@ -6,11 +6,9 @@
   {
     "namespace": "bookmarkManagerPrivate",
     "description": "none",
-    "nodoc": true,
     "types": [
       {
         "id": "BookmarkNodeDataElement",
-        "nodoc": true,
         "type": "object",
         "properties": {
           "id": {
@@ -36,7 +34,6 @@
       },
       {
         "id": "BookmarkNodeData",
-        "nodoc": true,
         "type": "object",
         "description": "Information about the drag and drop data for use with drag and drop events.",
         "properties": {
@@ -46,6 +43,12 @@
             "items": {"$ref": "BookmarkNodeDataElement"}
           }
         }
+      },
+      {
+        "id": "MetaInfoFields",
+        "type": "object",
+        "description": "Collection of meta info fields.",
+        "additionalProperties": {"type": "string"}
       }
     ],
     "functions": [
@@ -53,7 +56,6 @@
         "name": "copy",
         "type": "function",
         "description": "Copies the given bookmarks into the clipboard",
-        "nodoc": "true",
         "parameters": [
           {
             "name": "idList",
@@ -69,7 +71,6 @@
         "name": "cut",
         "type": "function",
         "description": "Cuts the given bookmarks into the clipboard",
-        "nodoc": "true",
         "parameters": [
           {
             "name": "idList",
@@ -85,7 +86,6 @@
         "name": "paste",
         "type": "function",
         "description": "Pastes bookmarks from the clipboard into the parent folder after the last selected node",
-        "nodoc": "true",
         "parameters": [
           {"type": "string", "name": "parentId"},
           {
@@ -103,7 +103,6 @@
         "name": "canPaste",
         "type": "function",
         "description": "Whether there are any bookmarks that can be pasted",
-        "nodoc": "true",
         "parameters": [
           {"type": "string", "name": "parentId", "description": "The ID of the folder to paste into"},
           {"type": "function", "name": "callback", "parameters": [
@@ -115,7 +114,6 @@
         "name": "sortChildren",
         "type": "function",
         "description": "Sorts the children of a given folder",
-        "nodoc": "true",
         "parameters": [
           {"type": "string", "name": "parentId", "description": "The ID of the folder to sort the children of"}
         ]
@@ -124,7 +122,6 @@
         "name": "getStrings",
         "type": "function",
         "description": "Gets the i18n strings for the bookmark manager",
-        "nodoc": "true",
         "parameters": [
           {
             "type": "function",
@@ -143,7 +140,6 @@
         "name": "startDrag",
         "type": "function",
         "description": "Begins dragging a set of bookmarks",
-        "nodoc": "true",
         "parameters": [
           {
             "name": "idList",
@@ -163,7 +159,6 @@
         "name": "drop",
         "type": "function",
         "description": "Performs the drop action of the drag and drop session",
-        "nodoc": "true",
         "parameters": [
           {
             "name": "parentId",
@@ -183,7 +178,6 @@
         "name": "getSubtree",
         "type": "function",
         "description": "Retrieves a bookmark hierarchy from the given node.  If the node id is empty, it is the full tree.  If foldersOnly is true, it will only return folders, not actual bookmarks.",
-        "nodoc": "true",
         "parameters": [
           {
             "name": "id",
@@ -208,7 +202,6 @@
         "name": "canEdit",
         "type": "function",
         "description": "Whether bookmarks can be modified",
-        "nodoc": "true",
         "parameters": [
           {"type": "function", "name": "callback", "parameters": [
             {"name": "result", "type": "boolean"}
@@ -219,7 +212,6 @@
         "name": "canOpenNewWindows",
         "type": "function",
         "description": "Whether bookmarks can be opened in new windows",
-        "nodoc": "true",
         "parameters": [
           {"type": "function", "name": "callback", "parameters": [
             {"name": "result", "type": "boolean"}
@@ -230,7 +222,6 @@
         "name": "removeTrees",
         "type": "function",
         "description": "Recursively removes list of bookmarks nodes.",
-        "nodoc": "true",
         "parameters": [
           {
             "name": "idList",
@@ -246,14 +237,38 @@
         "name": "recordLaunch",
         "type": "function",
         "description": "",
-        "nodoc": "true",
         "parameters": []
+      },
+      {
+        "name": "createWithMetaInfo",
+        "type": "function",
+        "description": "Mimics the functionality of bookmarks.create, but will additionally set the given meta info fields.",
+        "parameters": [
+          {
+            "name": "bookmark",
+            "$ref": "bookmarks.CreateDetails"
+          },
+          {
+            "name": "metaInfo",
+            "$ref": "MetaInfoFields"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "result",
+                "$ref": "bookmarks.BookmarkTreeNode"
+              }
+            ]
+          }
+        ]
       },
       {
         "name": "getMetaInfo",
         "type": "function",
-        "description": "Gets a meta info field from a bookmark node",
-        "nodoc": "true",
+        "description": "Gets meta info from a bookmark node",
         "parameters": [
           {
             "name": "id",
@@ -262,7 +277,8 @@
           },
           {
             "name": "key",
-            "description": "The key for the meta info to retrieve",
+            "description": "The key for the meta info to retrieve. If omitted, all fields are returned",
+            "optional": true,
             "type": "string"
           },
           {
@@ -271,9 +287,14 @@
             "parameters": [
               {
                 "name": "value",
-                "description": "The value of the meta info, if present",
+                "description": "If a key was given, the value of the specified field, if present. Otherwise an object containing all meta info fields for the node.",
                 "optional": true,
-                "type": "string"
+                // TODO(rfevang): Convert this to always return MetaInfoFields
+                // if the API is made public.
+                "choices": [
+                  {"type": "string"},
+                  {"$ref": "MetaInfoFields"}
+                ]
               }
             ]
           }
@@ -283,7 +304,6 @@
         "name": "setMetaInfo",
         "type": "function",
         "description": "Sets a meta info value for a bookmark node",
-        "nodoc": "true",
         "parameters": [
           {
             "name": "id",
@@ -309,24 +329,44 @@
         ]
       },
       {
+        "name": "updateMetaInfo",
+        "type": "function",
+        "description": "Updates a set of meta info values for a bookmark node.",
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the bookmark node to update the meta info of.",
+            "type": "string"
+          },
+          {
+            "name": "metaInfoChanges",
+            "description": "A set of meta info key/value pairs to update.",
+            "$ref": "MetaInfoFields"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "undo",
         "type": "function",
         "description": "Performs an undo of the last change to the bookmark model",
-        "nodoc": "true",
         "parameters": []
       },
       {
         "name": "redo",
         "type": "function",
         "description": "Performs a redo of last undone change to the bookmark model",
-        "nodoc": "true",
         "parameters": []
       },
       {
         "name": "getUndoInfo",
         "type": "function",
         "description": "Gets the information for the undo if available",
-        "nodoc": "true",
         "parameters": [
           {
             "type": "function",
@@ -348,7 +388,6 @@
         "name": "getRedoInfo",
         "type": "function",
         "description": "Gets the information for the redo if available",
-        "nodoc": "true",
         "parameters": [
           {
             "type": "function",
@@ -397,7 +436,8 @@
         "type": "function",
         "description": "Fired when the meta info of a node changes.",
         "parameters": [
-          {"name": "id", "type": "string"}
+          {"name": "id", "type": "string"},
+          {"name": "metaInfoChanges", "$ref": "MetaInfoFields"}
         ]
       }
     ]

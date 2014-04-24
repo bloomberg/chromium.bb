@@ -36,6 +36,8 @@ class BookmarkManagerPrivateEventRouter : public BaseBookmarkModelObserver {
   // BaseBookmarkModelObserver:
   virtual void BookmarkModelChanged() OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  virtual void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
+                                            const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
                                        const BookmarkNode* node) OVERRIDE;
 
@@ -43,6 +45,9 @@ class BookmarkManagerPrivateEventRouter : public BaseBookmarkModelObserver {
   // Helper to actually dispatch an event to extension listeners.
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);
+
+  // Remembers the previous meta info of a node before it was changed.
+  BookmarkNode::MetaInfoMap prev_meta_info_;
 
   content::BrowserContext* browser_context_;
   BookmarkModel* bookmark_model_;
@@ -260,6 +265,19 @@ class BookmarkManagerPrivateRecordLaunchFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class BookmarkManagerPrivateCreateWithMetaInfoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.createWithMetaInfo",
+                             BOOKMARKMANAGERPRIVATE_CREATEWITHMETAINFO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateCreateWithMetaInfoFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class BookmarkManagerPrivateGetMetaInfoFunction
     : public extensions::BookmarksFunction {
  public:
@@ -281,6 +299,19 @@ class BookmarkManagerPrivateSetMetaInfoFunction
 
  protected:
   virtual ~BookmarkManagerPrivateSetMetaInfoFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BookmarkManagerPrivateUpdateMetaInfoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.updateMetaInfo",
+                             BOOKMARKMANAGERPRIVATE_UPDATEMETAINFO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateUpdateMetaInfoFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

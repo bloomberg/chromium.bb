@@ -33598,6 +33598,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="731" label="BLUETOOTHLOWENERGY_WRITECHARACTERISTICVALUE"/>
   <int value="732" label="BLUETOOTHLOWENERGY_READDESCRIPTORVALUE"/>
   <int value="733" label="BLUETOOTHLOWENERGY_WRITEDESCRIPTORVALUE"/>
+  <int value="734" label="BOOKMARKMANAGERPRIVATE_CREATEWITHMETAINFO"/>
+  <int value="735" label="BOOKMARKMANAGERPRIVATE_UPDATEMETAINFO"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

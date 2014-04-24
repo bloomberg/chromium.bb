@@ -301,16 +301,63 @@ var tests = [
   },
 
   function getSetMetaInfo() {
-    bookmarkManager.getMetaInfo(nodeA.id, "meta", pass(function(result) {
+    bookmarkManager.getMetaInfo(nodeA.id, 'meta', pass(function(result) {
       assertTrue(!result);
     }));
     chrome.test.listenOnce(bookmarkManager.onMetaInfoChanged, pass(
-        function(id) {
+        function(id, changes) {
       assertEq(nodeA.id, id);
+      assertEq({meta: 'bla'}, changes);
     }));
-    bookmarkManager.setMetaInfo(nodeA.id, "meta", "bla");
-    bookmarkManager.getMetaInfo(nodeA.id, "meta", pass(function(result) {
-      assertEq("bla", result);
+    bookmarkManager.setMetaInfo(nodeA.id, 'meta', 'bla');
+    bookmarkManager.setMetaInfo(nodeA.id, 'meta2', 'foo');
+    bookmarkManager.getMetaInfo(nodeA.id, 'meta', pass(function(result) {
+      assertEq('bla', result);
+    }));
+
+    bookmarkManager.getMetaInfo(nodeA.id, pass(function(result) {
+      assertEq({meta: 'bla', meta2: 'foo'}, result);
+    }));
+  },
+
+  function updateMetaInfo() {
+    bookmarkManager.getMetaInfo(nodeB.id, pass(function(result){
+      assertEq({}, result);
+    }));
+
+    chrome.test.listenOnce(bookmarkManager.onMetaInfoChanged, pass(
+        function(id, changes) {
+      assertEq(nodeB.id, id);
+      assertEq({a: 'a', b: 'b', c: 'c'}, changes);
+    }));
+    bookmarkManager.updateMetaInfo(nodeB.id, {a: 'a', b: 'b', c: 'c'}, pass(
+        function() {
+      chrome.test.listenOnce(bookmarkManager.onMetaInfoChanged, pass(
+          function(id, changes) {
+        assertEq(nodeB.id, id);
+        assertEq({a: 'aa', d: 'd'}, changes);
+      }));
+      bookmarkManager.updateMetaInfo(nodeB.id, {a: 'aa', b: 'b', d: 'd'});
+      bookmarkManager.getMetaInfo(nodeB.id, pass(function(result) {
+        assertEq({a: 'aa', b: 'b', c: 'c', d: 'd'}, result);
+      }));
+    }));
+  },
+
+  function createWithMetaInfo() {
+    var node = {title: 'title', url: 'http://www.google.com/'};
+    var metaInfo = {a: 'a', b: 'b'};
+    chrome.test.listenOnce(bookmarks.onCreated, pass(function(id, created) {
+      assertEq(node.title, created.title);
+      assertEq(node.url, created.url);
+      bookmarkManager.getMetaInfo(id, pass(function(result) {
+        assertEq(metaInfo, result);
+      }));
+    }));
+    bookmarkManager.createWithMetaInfo(node, metaInfo, pass(
+        function(createdNode) {
+      assertEq(node.title, createdNode.title);
+      assertEq(node.url, createdNode.url);
     }));
   }
 ];

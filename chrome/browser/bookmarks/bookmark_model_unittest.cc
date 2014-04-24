@@ -366,6 +366,33 @@ TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
   }
 }
 
+TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
+  const BookmarkNode* root = model_.bookmark_bar_node();
+  const base::string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+  const Time time = Time::Now() - TimeDelta::FromDays(1);
+  BookmarkNode::MetaInfoMap meta_info;
+  meta_info["foo"] = "bar";
+
+  const BookmarkNode* new_node = model_.AddURLWithCreationTimeAndMetaInfo(
+      root, 0, title, url, time, &meta_info);
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
+
+  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(title, new_node->GetTitle());
+  ASSERT_TRUE(url == new_node->url());
+  ASSERT_EQ(BookmarkNode::URL, new_node->type());
+  ASSERT_EQ(time, new_node->date_added());
+  ASSERT_TRUE(new_node->GetMetaInfoMap());
+  ASSERT_EQ(meta_info, *new_node->GetMetaInfoMap());
+  ASSERT_TRUE(new_node == model_.GetMostRecentlyAddedNodeForURL(url));
+
+  EXPECT_TRUE(new_node->id() != root->id() &&
+              new_node->id() != model_.other_node()->id() &&
+              new_node->id() != model_.mobile_node()->id());
+}
+
 TEST_F(BookmarkModelTest, AddURLToMobileBookmarks) {
   const BookmarkNode* root = model_.mobile_node();
   const base::string16 title(ASCIIToUTF16("foo"));

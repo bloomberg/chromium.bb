@@ -180,18 +180,27 @@ class BookmarkModel : public content::NotificationObserver,
                                 int index,
                                 const base::string16& title);
 
+  // Adds a new folder with meta info.
+  const BookmarkNode* AddFolderWithMetaInfo(
+      const BookmarkNode* parent,
+      int index,
+      const base::string16& title,
+      const BookmarkNode::MetaInfoMap* meta_info);
+
   // Adds a url at the specified position.
   const BookmarkNode* AddURL(const BookmarkNode* parent,
                              int index,
                              const base::string16& title,
                              const GURL& url);
 
-  // Adds a url with a specific creation date.
-  const BookmarkNode* AddURLWithCreationTime(const BookmarkNode* parent,
-                                             int index,
-                                             const base::string16& title,
-                                             const GURL& url,
-                                             const base::Time& creation_time);
+  // Adds a url with a specific creation date and meta info.
+  const BookmarkNode* AddURLWithCreationTimeAndMetaInfo(
+      const BookmarkNode* parent,
+      int index,
+      const base::string16& title,
+      const GURL& url,
+      const base::Time& creation_time,
+      const BookmarkNode::MetaInfoMap* meta_info);
 
   // Sorts the children of |parent|, notifying observers by way of the
   // BookmarkNodeChildrenReordered method.

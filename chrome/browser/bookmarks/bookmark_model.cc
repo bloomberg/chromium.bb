@@ -500,6 +500,13 @@ void BookmarkModel::BlockTillLoaded() {
 const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
                                              int index,
                                              const base::string16& title) {
+  return AddFolderWithMetaInfo(parent, index, title, NULL);
+}
+const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
+    const BookmarkNode* parent,
+    int index,
+    const base::string16& title,
+    const BookmarkNode::MetaInfoMap* meta_info) {
   if (!loaded_ || is_root_node(parent) || !IsValidIndex(parent, index, true)) {
     // Can't add to the root.
     NOTREACHED();
@@ -511,6 +518,8 @@ const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
   // Folders shouldn't have line breaks in their titles.
   new_node->SetTitle(title);
   new_node->set_type(BookmarkNode::FOLDER);
+  if (meta_info)
+    new_node->SetMetaInfoMap(*meta_info);
 
   return AddNode(AsMutable(parent), index, new_node);
 }
@@ -519,17 +528,22 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
                                           int index,
                                           const base::string16& title,
                                           const GURL& url) {
-  return AddURLWithCreationTime(parent, index,
-                                base::CollapseWhitespace(title, false),
-                                url, Time::Now());
+  return AddURLWithCreationTimeAndMetaInfo(
+      parent,
+      index,
+      base::CollapseWhitespace(title, false),
+      url,
+      Time::Now(),
+      NULL);
 }
 
-const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
+const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
     const BookmarkNode* parent,
     int index,
     const base::string16& title,
     const GURL& url,
-    const Time& creation_time) {
+    const Time& creation_time,
+    const BookmarkNode::MetaInfoMap* meta_info) {
   if (!loaded_ || !url.is_valid() || is_root_node(parent) ||
       !IsValidIndex(parent, index, true)) {
     NOTREACHED();
@@ -544,6 +558,8 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
   new_node->SetTitle(title);
   new_node->set_date_added(creation_time);
   new_node->set_type(BookmarkNode::URL);
+  if (meta_info)
+    new_node->SetMetaInfoMap(*meta_info);
 
   {
     // Only hold the lock for the duration of the insert.
