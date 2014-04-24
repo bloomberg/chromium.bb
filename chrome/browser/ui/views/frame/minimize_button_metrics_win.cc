@@ -21,8 +21,8 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
               reinterpret_cast<WPARAM>(&titlebar_info));
 
   if (titlebar_info.rgrect[2].left == titlebar_info.rgrect[2].right ||
-      (titlebar_info.rgstate[2] & (STATE_SYSTEM_INVISIBLE ||
-                                   STATE_SYSTEM_OFFSCREEN ||
+      (titlebar_info.rgstate[2] & (STATE_SYSTEM_INVISIBLE |
+                                   STATE_SYSTEM_OFFSCREEN |
                                    STATE_SYSTEM_UNAVAILABLE))) {
     return 0;
   }
