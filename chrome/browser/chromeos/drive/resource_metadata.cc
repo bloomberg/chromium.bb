@@ -363,8 +363,12 @@ base::FilePath ResourceMetadata::GetFilePath(const std::string& id) {
   base::FilePath path;
   ResourceEntry entry;
   if (storage_->GetEntry(id, &entry)) {
-    if (!entry.parent_local_id().empty())
+    if (!entry.parent_local_id().empty()) {
       path = GetFilePath(entry.parent_local_id());
+    } else if (entry.local_id() != util::kDriveGrandRootLocalId) {
+      DVLOG(1) << "Entries not under the grand root don't have paths.";
+      return base::FilePath();
+    }
     path = path.Append(base::FilePath::FromUTF8Unsafe(entry.base_name()));
   }
   return path;

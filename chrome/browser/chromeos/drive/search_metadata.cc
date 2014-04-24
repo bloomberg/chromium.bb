@@ -93,30 +93,31 @@ class ScopedPriorityQueue {
   DISALLOW_COPY_AND_ASSIGN(ScopedPriorityQueue);
 };
 
-// Classifies the given entry as trashed if it's placed under the trash.
-class TrashedEntryClassifier {
+// Classifies the given entry as hidden if it's not under specific directories.
+class HiddenEntryClassifier {
  public:
-  explicit TrashedEntryClassifier(ResourceMetadata* metadata)
+  HiddenEntryClassifier(ResourceMetadata* metadata,
+                        const std::string& mydrive_local_id)
       : metadata_(metadata) {
-    trashed_[""] = false;
-    trashed_[util::kDriveTrashDirLocalId] = true;
+    // Only things under My Drive and drive/other are not hidden.
+    is_hiding_child_[mydrive_local_id] = false;
+    is_hiding_child_[util::kDriveOtherDirLocalId] = false;
+
+    // Everything else is hidden, including the directories mentioned above
+    // themselves.
+    is_hiding_child_[""] = true;
   }
 
-  // |result| is set to true if |entry| is under the trash.
-  FileError IsTrashed(const ResourceEntry& entry, bool* result) {
-    // parent_local_id cannot be used to classify the trash itself.
-    if (entry.local_id() == util::kDriveTrashDirLocalId) {
-      *result = true;
-      return FILE_ERROR_OK;
-    }
-
+  // |result| is set to true if |entry| is hidden.
+  FileError IsHidden(const ResourceEntry& entry, bool* result) {
     // Look up for parents recursively.
     std::vector<std::string> undetermined_ids;
     undetermined_ids.push_back(entry.parent_local_id());
 
     std::map<std::string, bool>::iterator it =
-        trashed_.find(undetermined_ids.back());
-    for (; it == trashed_.end(); it = trashed_.find(undetermined_ids.back())) {
+        is_hiding_child_.find(undetermined_ids.back());
+    for (; it == is_hiding_child_.end();
+         it = is_hiding_child_.find(undetermined_ids.back())) {
       ResourceEntry parent;
       FileError error =
           metadata_->GetResourceEntryById(undetermined_ids.back(), &parent);
@@ -125,10 +126,10 @@ class TrashedEntryClassifier {
       undetermined_ids.push_back(parent.parent_local_id());
     }
 
-    // Cache the result to |trashed_|.
-    undetermined_ids.pop_back();  // The last one is already in |trashed_|.
+    // Cache the result.
+    undetermined_ids.pop_back();  // The last one is already in the map.
     for (size_t i = 0; i < undetermined_ids.size(); ++i)
-      trashed_[undetermined_ids[i]] = it->second;
+      is_hiding_child_[undetermined_ids[i]] = it->second;
 
     *result = it->second;
     return FILE_ERROR_OK;
@@ -136,7 +137,9 @@ class TrashedEntryClassifier {
 
  private:
   ResourceMetadata* metadata_;
-  std::map<std::string, bool> trashed_;  // local ID to is_trashed map.
+
+  // local ID to is_hidden map.
+  std::map<std::string, bool> is_hiding_child_;
 };
 
 // Returns true if |entry| is eligible for the search |options| and should be
@@ -182,12 +185,6 @@ bool IsEligibleEntry(const ResourceEntry& entry,
     }
   }
 
-  // Exclude "drive", "drive/root", and "drive/other".
-  if (it->GetID() == util::kDriveGrandRootLocalId ||
-      entry.parent_local_id() == util::kDriveGrandRootLocalId) {
-    return false;
-  }
-
   return true;
 }
 
@@ -201,7 +198,7 @@ FileError MaybeAddEntryToResult(
     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
     int options,
     size_t at_most_num_matches,
-    TrashedEntryClassifier* trashed_entry_classifier,
+    HiddenEntryClassifier* hidden_entry_classifier,
     ScopedPriorityQueue<ResultCandidate,
                         ResultCandidateComparator>* result_candidates) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
@@ -223,10 +220,10 @@ FileError MaybeAddEntryToResult(
       (query && !FindAndHighlight(entry.base_name(), query, &highlighted)))
     return FILE_ERROR_OK;
 
-  // Trashed entry should not be returned.
-  bool trashed = false;
-  FileError error = trashed_entry_classifier->IsTrashed(entry, &trashed);
-  if (error != FILE_ERROR_OK || trashed)
+  // Hidden entry should not be returned.
+  bool hidden = false;
+  FileError error = hidden_entry_classifier->IsHidden(entry, &hidden);
+  if (error != FILE_ERROR_OK || hidden)
     return error;
 
   // Make space for |entry| when appropriate.
@@ -249,15 +246,23 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents query(
       base::UTF8ToUTF16(query_text));
 
+  // Prepare an object to filter out hidden entries.
+  ResourceEntry mydrive;
+  FileError error = resource_metadata->GetResourceEntryByPath(
+      util::GetDriveMyDriveRootPath(), &mydrive);
+  if (error != FILE_ERROR_OK)
+    return error;
+  HiddenEntryClassifier hidden_entry_classifier(resource_metadata,
+                                                mydrive.local_id());
+
   // Iterate over entries.
-  TrashedEntryClassifier trashed_entry_classifier(resource_metadata);
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     FileError error = MaybeAddEntryToResult(resource_metadata, it.get(),
                                             query_text.empty() ? NULL : &query,
                                             options,
                                             at_most_num_matches,
-                                            &trashed_entry_classifier,
+                                            &hidden_entry_classifier,
                                             &result_candidates);
     if (error != FILE_ERROR_OK)
       return error;
