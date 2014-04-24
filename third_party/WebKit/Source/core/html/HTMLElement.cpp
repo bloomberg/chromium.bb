@@ -281,6 +281,7 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
         attributeNameToEventNameMap.set(onsubmitAttr.localName(), EventTypeNames::submit);
         attributeNameToEventNameMap.set(onsuspendAttr.localName(), EventTypeNames::suspend);
         attributeNameToEventNameMap.set(ontimeupdateAttr.localName(), EventTypeNames::timeupdate);
+        attributeNameToEventNameMap.set(ontoggleAttr.localName(), EventTypeNames::toggle);
         attributeNameToEventNameMap.set(ontouchcancelAttr.localName(), EventTypeNames::touchcancel);
         attributeNameToEventNameMap.set(ontouchendAttr.localName(), EventTypeNames::touchend);
         attributeNameToEventNameMap.set(ontouchmoveAttr.localName(), EventTypeNames::touchmove);

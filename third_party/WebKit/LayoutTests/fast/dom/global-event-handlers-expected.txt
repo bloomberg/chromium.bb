@@ -638,16 +638,16 @@ PASS Enumerate Document.ontimeupdate
 PASS Set Window.ontimeupdate 
 PASS Enumerate Window.ontimeupdate 
 PASS No Element.ontoggle 
-FAIL Set HTMLElement.ontoggle assert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate HTMLElement.ontoggle assert_true: expected true got undefined
-FAIL Reflect HTMLElement.ontoggle assert_equals: Convert to function expected "function" but got "undefined"
-FAIL Set SVGElement.ontoggle assert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate SVGElement.ontoggle assert_true: expected true got undefined
-FAIL Reflect SVGElement.ontoggle assert_equals: Convert to function expected "function" but got "undefined"
-FAIL Set Document.ontoggle assert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Document.ontoggle assert_true: expected true got undefined
-FAIL Set Window.ontoggle assert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Window.ontoggle assert_true: expected true got undefined
+PASS Set HTMLElement.ontoggle 
+PASS Enumerate HTMLElement.ontoggle 
+PASS Reflect HTMLElement.ontoggle 
+PASS Set SVGElement.ontoggle 
+PASS Enumerate SVGElement.ontoggle 
+PASS Reflect SVGElement.ontoggle 
+PASS Set Document.ontoggle 
+PASS Enumerate Document.ontoggle 
+PASS Set Window.ontoggle 
+PASS Enumerate Window.ontoggle 
 PASS No Element.onvolumechange 
 PASS Set HTMLElement.onvolumechange 
 PASS Enumerate HTMLElement.onvolumechange 

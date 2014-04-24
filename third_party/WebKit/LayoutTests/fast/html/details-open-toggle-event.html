@@ -5,7 +5,7 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
-<details id="details">
+<details id="details" ontoggle="handleToggleEventFromHTMLAttribute(event)">
     <summary>details</summary>
     <input>
 </details>
@@ -14,7 +14,15 @@ description("Tests that a 'toggle' event is fired asynchronously whenever the op
 window.jsTestIsAsync = true;
 
 var toggleEventCount = 0;
+var toggleEventCountFromHTMLAttribute = 0;
 var testEvent;
+
+function handleToggleEventFromHTMLAttribute(ev) {
+    testEvent = ev;
+    shouldBe("testEvent.__proto__", "Event.prototype");
+    shouldBeEqualToString("testEvent.type", "toggle");
+    ++toggleEventCountFromHTMLAttribute;
+}
 
 function handleToggleEvent(ev) {
     testEvent = ev;
@@ -25,19 +33,23 @@ function handleToggleEvent(ev) {
 
 function checkSingleToggleEvent() {
     shouldBe("toggleEventCount", "1");
+    shouldBe("toggleEventCountFromHTMLAttribute", "1");
     shouldBeTrue("details.open");
     testEventsCoalesced();
 }
 
 function testToogleEventFired() {
     shouldBe("toggleEventCount", "0");
+    shouldBe("toggleEventCountFromHTMLAttribute", "0");
     details.open = true;
     shouldBe("toggleEventCount", "0");
+    shouldBe("toggleEventCountFromHTMLAttribute", "0");
     setTimeout(checkSingleToggleEvent, 0);
 }
 
 function checkEventsCoalesced() {
     shouldBe("toggleEventCount", "2");
+    shouldBe("toggleEventCountFromHTMLAttribute", "2");
     shouldBeFalse("details.open");
     finishJSTest();
 }
@@ -53,6 +65,7 @@ function testEventsCoalesced() {
 }
 
 var details = document.getElementById("details");
+shouldBe("details.ontoggle.__proto__", "Function.prototype");
 details.addEventListener("toggle", handleToggleEvent);
 shouldBeFalse("details.open");
 testToogleEventFired();
