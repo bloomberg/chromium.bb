@@ -19,6 +19,7 @@
 #include "google_apis/gcm/engine/checkin_request.h"
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
+#include "google_apis/gcm/engine/gservices_settings.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -77,7 +78,6 @@ enum MessageType {
 const char kMCSEndpointMain[] = "https://mtalk.google.com:5228";
 const char kMCSEndpointFallback[] = "https://mtalk.google.com:443";
 
-const int64 kDefaultCheckinInterval = 2 * 24 * 60 * 60LL;  // seconds = 2 days.
 const int kMaxRegistrationRetries = 5;
 const char kMessageTypeDataMessage[] = "gcm";
 const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
@@ -162,6 +162,7 @@ GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
       pending_registration_requests_deleter_(&pending_registration_requests_),
       pending_unregistration_requests_deleter_(
           &pending_unregistration_requests_),
+      periodic_checkin_ptr_factory_(this),
       weak_ptr_factory_(this) {
 }
 
@@ -191,6 +192,7 @@ void GCMClientImpl::Initialize(
   account_ids_ = account_ids;
 
   gcm_store_.reset(new GCMStoreImpl(path, blocking_task_runner));
+  gservices_settings_.reset(new GServicesSettings(gcm_store_.get()));
 
   delegate_ = delegate;
 
@@ -217,11 +219,12 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   registrations_ = result->registrations;
   device_checkin_info_.android_id = result->device_android_id;
   device_checkin_info_.secret = result->device_security_token;
-  base::Time last_checkin_time = result->last_checkin_time;
+  last_checkin_time_ = result->last_checkin_time;
+  gservices_settings_->UpdateFromLoadResult(*result);
   InitializeMCSClient(result.Pass());
 
   if (device_checkin_info_.IsValid()) {
-    SchedulePeriodicCheckin(last_checkin_time);
+    SchedulePeriodicCheckin();
     OnReady();
     return;
   }
@@ -291,12 +294,15 @@ void GCMClientImpl::ResetState() {
 }
 
 void GCMClientImpl::StartCheckin() {
-  CheckinRequest::RequestInfo request_info(
-    device_checkin_info_.android_id,
-    device_checkin_info_.secret,
-    std::string(),
-    account_ids_,
-    chrome_build_proto_);
+  // Make sure no checkin is in progress.
+  if (checkin_request_.get())
+    return;
+
+  CheckinRequest::RequestInfo request_info(device_checkin_info_.android_id,
+                                           device_checkin_info_.secret,
+                                           gservices_settings_->digest(),
+                                           account_ids_,
+                                           chrome_build_proto_);
   checkin_request_.reset(
       new CheckinRequest(request_info,
                          kDefaultBackoffPolicy,
@@ -332,28 +338,41 @@ void GCMClientImpl::OnCheckinCompleted(
   }
 
   if (device_checkin_info_.IsValid()) {
-    base::Time last_checkin_time = clock_->Now();
+    // First update G-services settings, as something might have changed.
+    gservices_settings_->UpdateFromCheckinResponse(checkin_response);
+    last_checkin_time_ = clock_->Now();
     gcm_store_->SetLastCheckinTime(
-        last_checkin_time,
+        last_checkin_time_,
         base::Bind(&GCMClientImpl::SetLastCheckinTimeCallback,
                    weak_ptr_factory_.GetWeakPtr()));
-    SchedulePeriodicCheckin(last_checkin_time);
+    SchedulePeriodicCheckin();
   }
 }
 
-void GCMClientImpl::SchedulePeriodicCheckin(
-    const base::Time& last_checkin_time) {
-  base::TimeDelta time_to_next_checkin = last_checkin_time +
-      base::TimeDelta::FromSeconds(kDefaultCheckinInterval) - clock_->Now();
-  if (time_to_next_checkin < base::TimeDelta::FromSeconds(0L))
-    time_to_next_checkin = base::TimeDelta::FromSeconds(0L);
-  // TODO(fgorski): Make sure that once dynamic events (like accounts list
-  // change) trigger checkin we reset the timer.
+void GCMClientImpl::SchedulePeriodicCheckin() {
+  // Make sure no checkin is in progress.
+  if (checkin_request_.get())
+    return;
+
+  // There should be only one periodic checkin pending at a time. Removing
+  // pending periodic checkin to schedule a new one.
+  periodic_checkin_ptr_factory_.InvalidateWeakPtrs();
+
+  base::TimeDelta time_to_next_checkin = GetTimeToNextCheckin();
+  if (time_to_next_checkin < base::TimeDelta())
+    time_to_next_checkin = base::TimeDelta();
+
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&GCMClientImpl::StartCheckin,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 periodic_checkin_ptr_factory_.GetWeakPtr()),
       time_to_next_checkin);
+}
+
+base::TimeDelta GCMClientImpl::GetTimeToNextCheckin() const {
+  return last_checkin_time_ +
+         base::TimeDelta::FromSeconds(gservices_settings_->checkin_interval()) -
+         clock_->Now();
 }
 
 void GCMClientImpl::SetLastCheckinTimeCallback(bool success) {

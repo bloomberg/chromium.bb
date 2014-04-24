@@ -29,6 +29,7 @@ class GURL;
 
 namespace base {
 class Clock;
+class Time;
 }  // namespace base
 
 namespace mcs_proto {
@@ -44,6 +45,7 @@ namespace gcm {
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
+class GServicesSettings;
 
 // Helper class for building GCM internals. Allows tests to inject fake versions
 // as necessary.
@@ -176,9 +178,12 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Function also cleans up the pending checkin.
   void OnCheckinCompleted(
       const checkin_proto::AndroidCheckinResponse& checkin_response);
-  // Schedules next device checkin, based on |last_checkin_time| and
-  // checkin_interval specified in GServices settings.
-  void SchedulePeriodicCheckin(const base::Time& last_checkin_time);
+  // Schedules next periodic device checkin and makes sure there is at most one
+  // pending checkin at a time. This function is meant to be called after a
+  // successful checkin.
+  void SchedulePeriodicCheckin();
+  // Gets the time until next checkin.
+  base::TimeDelta GetTimeToNextCheckin() const;
   // Callback for setting last checkin time in the |gcm_store_|.
   void SetLastCheckinTimeCallback(bool success);
 
@@ -267,6 +272,15 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   PendingUnregistrationRequests pending_unregistration_requests_;
   STLValueDeleter<PendingUnregistrationRequests>
       pending_unregistration_requests_deleter_;
+
+  // G-services settings that were provided by MCS.
+  scoped_ptr<GServicesSettings> gservices_settings_;
+
+  // Time of the last successful checkin.
+  base::Time last_checkin_time_;
+
+  // Factory for creating references when scheduling periodic checkin.
+  base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_;
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_;

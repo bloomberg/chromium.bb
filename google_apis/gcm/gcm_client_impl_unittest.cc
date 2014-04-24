@@ -8,12 +8,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/simple_test_clock.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/clock.h"
 #include "components/os_crypt/os_crypt_switches.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
+#include "google_apis/gcm/engine/gservices_settings.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
@@ -39,6 +41,8 @@ enum LastEvent {
 
 const uint64 kDeviceAndroidId = 54321;
 const uint64 kDeviceSecurityToken = 12345;
+const int64 kSettingsCheckinInterval = 3600;
+const char kSettingsDefaultDigest[] = "default_digest";
 const char kAppId[] = "app_id";
 const char kSender[] = "project_id";
 const char kSender2[] = "project_id2";
@@ -115,9 +119,44 @@ void FakeMCSClient::SendMessage(const MCSMessage& message) {
   }
 }
 
+class AutoAdvancingTestClock : public base::Clock {
+ public:
+  explicit AutoAdvancingTestClock(base::TimeDelta auto_increment_time_delta);
+  virtual ~AutoAdvancingTestClock();
+
+  virtual base::Time Now() OVERRIDE;
+  void Advance(TimeDelta delta);
+  int call_count() const { return call_count_; }
+
+ private:
+  int call_count_;
+  base::TimeDelta auto_increment_time_delta_;
+  base::Time now_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoAdvancingTestClock);
+};
+
+AutoAdvancingTestClock::AutoAdvancingTestClock(
+    base::TimeDelta auto_increment_time_delta)
+    : call_count_(0), auto_increment_time_delta_(auto_increment_time_delta) {
+}
+
+AutoAdvancingTestClock::~AutoAdvancingTestClock() {
+}
+
+base::Time AutoAdvancingTestClock::Now() {
+  call_count_++;
+  now_ += auto_increment_time_delta_;
+  return now_;
+}
+
+void AutoAdvancingTestClock::Advance(base::TimeDelta delta) {
+  now_ += delta;
+}
+
 class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
  public:
-  FakeGCMInternalsBuilder();
+  FakeGCMInternalsBuilder(base::TimeDelta clock_step);
   virtual ~FakeGCMInternalsBuilder();
 
   virtual scoped_ptr<base::Clock> BuildClock() OVERRIDE;
@@ -132,14 +171,19 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
       const net::BackoffEntry::Policy& backoff_policy,
       scoped_refptr<net::HttpNetworkSession> network_session,
       net::NetLog* net_log) OVERRIDE;
+
+ private:
+  base::TimeDelta clock_step_;
 };
 
-FakeGCMInternalsBuilder::FakeGCMInternalsBuilder() {}
+FakeGCMInternalsBuilder::FakeGCMInternalsBuilder(base::TimeDelta clock_step)
+    : clock_step_(clock_step) {
+}
 
 FakeGCMInternalsBuilder::~FakeGCMInternalsBuilder() {}
 
 scoped_ptr<base::Clock> FakeGCMInternalsBuilder::BuildClock() {
-  return make_scoped_ptr<base::Clock>(new base::SimpleTestClock());
+  return make_scoped_ptr<base::Clock>(new AutoAdvancingTestClock(clock_step_));
 }
 
 scoped_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
@@ -172,10 +216,13 @@ class GCMClientImplTest : public testing::Test,
 
   virtual void SetUp() OVERRIDE;
 
-  void BuildGCMClient();
+  void BuildGCMClient(base::TimeDelta clock_step);
   void InitializeGCMClient();
   void ReceiveMessageFromMCS(const MCSMessage& message);
-  void CompleteCheckin(uint64 android_id, uint64 security_token);
+  void CompleteCheckin(uint64 android_id,
+                       uint64 security_token,
+                       const std::string& digest,
+                       const std::map<std::string, std::string>& settings);
   void CompleteRegistration(const std::string& registration_id);
   void CompleteUnregistration(const std::string& app_id);
 
@@ -232,18 +279,23 @@ class GCMClientImplTest : public testing::Test,
     return last_error_details_;
   }
 
+  const GServicesSettings* gservices_settings() const {
+    return gcm_client_->gservices_settings_.get();
+  }
+
   int64 CurrentTime();
 
- private:
   // Tooling.
   void PumpLoop();
   void PumpLoopUntilIdle();
   void QuitLoop();
-
-  base::SimpleTestClock* clock() const {
-    return reinterpret_cast<base::SimpleTestClock*>(gcm_client_->clock_.get());
+  void InitializeLoop();
+  bool CreateUniqueTempDir();
+  AutoAdvancingTestClock* clock() const {
+    return reinterpret_cast<AutoAdvancingTestClock*>(gcm_client_->clock_.get());
   }
 
+ private:
   // Variables used for verification.
   LastEvent last_event_;
   std::string last_app_id_;
@@ -279,11 +331,14 @@ void GCMClientImplTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       os_crypt::switches::kUseMockKeychain);
 #endif  // OS_MACOSX
-  ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
-  run_loop_.reset(new base::RunLoop);
-  BuildGCMClient();
+  ASSERT_TRUE(CreateUniqueTempDir());
+  InitializeLoop();
+  BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
-  CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken);
+  CompleteCheckin(kDeviceAndroidId,
+                  kDeviceSecurityToken,
+                  std::string(),
+                  std::map<std::string, std::string>());
 }
 
 void GCMClientImplTest::PumpLoop() {
@@ -301,17 +356,41 @@ void GCMClientImplTest::QuitLoop() {
     run_loop_->Quit();
 }
 
-void GCMClientImplTest::BuildGCMClient() {
-  gcm_client_.reset(new GCMClientImpl(
-      make_scoped_ptr<GCMInternalsBuilder>(new FakeGCMInternalsBuilder())));
+void GCMClientImplTest::InitializeLoop() {
+  run_loop_.reset(new base::RunLoop);
 }
 
-void GCMClientImplTest::CompleteCheckin(uint64 android_id,
-                                        uint64 security_token) {
+bool GCMClientImplTest::CreateUniqueTempDir() {
+  return temp_directory_.CreateUniqueTempDir();
+}
+
+void GCMClientImplTest::BuildGCMClient(base::TimeDelta clock_step) {
+  gcm_client_.reset(new GCMClientImpl(make_scoped_ptr<GCMInternalsBuilder>(
+      new FakeGCMInternalsBuilder(clock_step))));
+}
+
+void GCMClientImplTest::CompleteCheckin(
+    uint64 android_id,
+    uint64 security_token,
+    const std::string& digest,
+    const std::map<std::string, std::string>& settings) {
   checkin_proto::AndroidCheckinResponse response;
   response.set_stats_ok(true);
   response.set_android_id(android_id);
   response.set_security_token(security_token);
+
+  // For testing G-services settings.
+  if (!digest.empty()) {
+    response.set_digest(digest);
+    for (std::map<std::string, std::string>::const_iterator it =
+             settings.begin();
+         it != settings.end();
+         ++it) {
+      checkin_proto::GservicesSetting* setting = response.add_setting();
+      setting->set_name(it->first);
+      setting->set_value(it->second);
+    }
+  }
 
   std::string response_string;
   response.SerializeToString(&response_string);
@@ -475,7 +554,7 @@ TEST_F(GCMClientImplTest, DISABLED_RegisterAppFromCache) {
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
 
   // Recreate GCMClient in order to load from the persistent store.
-  BuildGCMClient();
+  BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
 
   EXPECT_TRUE(ExistsRegistration(kAppId));
@@ -600,6 +679,63 @@ TEST_F(GCMClientImplTest, SendMessage) {
   EXPECT_EQ("key", mcs_client()->last_data_message_stanza().app_data(0).key());
   EXPECT_EQ("value",
             mcs_client()->last_data_message_stanza().app_data(0).value());
+}
+
+class GCMClientImplCheckinTest : public GCMClientImplTest {
+ public:
+  GCMClientImplCheckinTest();
+  virtual ~GCMClientImplCheckinTest();
+
+  virtual void SetUp() OVERRIDE;
+
+  std::map<std::string, std::string> GenerateSettings(int64 checkin_interval);
+};
+
+GCMClientImplCheckinTest::GCMClientImplCheckinTest() {
+}
+
+GCMClientImplCheckinTest::~GCMClientImplCheckinTest() {
+}
+
+void GCMClientImplCheckinTest::SetUp() {
+  testing::Test::SetUp();
+#if defined(OS_MACOSX)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      os_crypt::switches::kUseMockKeychain);
+#endif  // OS_MACOSX
+  // Creating unique temp directory that will be used by GCMStore shared between
+  // GCM Client and G-services settings.
+  ASSERT_TRUE(CreateUniqueTempDir());
+  InitializeLoop();
+  // Time will be advancing one hour every time it is checked.
+  BuildGCMClient(base::TimeDelta::FromSeconds(3600LL));
+  InitializeGCMClient();
+}
+
+TEST_F(GCMClientImplCheckinTest, GServicesSettingsAfterInitialCheckin) {
+  std::map<std::string, std::string> settings;
+  settings["checkin_interval"] = base::Int64ToString(kSettingsCheckinInterval);
+  CompleteCheckin(
+      kDeviceAndroidId, kDeviceSecurityToken, kSettingsDefaultDigest, settings);
+  EXPECT_EQ(kSettingsCheckinInterval, gservices_settings()->checkin_interval());
+}
+
+// This test only checks that periodic checkin happens.
+TEST_F(GCMClientImplCheckinTest, PeriodicCheckin) {
+  std::map<std::string, std::string> settings;
+  // Interval is smaller than the clock step.
+  settings["checkin_interval"] = "1800";
+  settings["checkin_url"] = "http://alternative.url/checkin";
+  settings["gcm_hostname"] = "http://alternative.gcm.host";
+  settings["gcm_secure_port"] = "443";
+  settings["gcm_registration_url"] = "http://alternative.url/registration";
+  CompleteCheckin(
+      kDeviceAndroidId, kDeviceSecurityToken, kSettingsDefaultDigest, settings);
+  EXPECT_EQ(2, clock()->call_count());
+
+  PumpLoopUntilIdle();
+  CompleteCheckin(
+      kDeviceAndroidId, kDeviceSecurityToken, kSettingsDefaultDigest, settings);
 }
 
 }  // namespace gcm
