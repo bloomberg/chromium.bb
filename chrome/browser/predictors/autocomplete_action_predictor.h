@@ -101,9 +101,16 @@ class AutocompleteActionPredictor
       const content::SessionStorageNamespaceMap& session_storage_namespace_map,
       const gfx::Size& size);
 
+  // Cancels the current prerender, unless it has already been abandoned.
+  void CancelPrerender();
+
   // Return true if the suggestion type warrants a TCP/IP preconnection.
   // i.e., it is now quite likely that the user will select the related domain.
   static bool IsPreconnectable(const AutocompleteMatch& match);
+
+  // Returns true if there is an active Omnibox prerender and it has been
+  // abandoned.
+  bool IsPrerenderAbandonedForTesting();
 
  private:
   friend class AutocompleteActionPredictorTest;

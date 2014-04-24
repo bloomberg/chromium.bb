@@ -53,6 +53,11 @@ bool PrerenderHandle::IsFinishedLoading() const {
   return prerender_data_->contents()->has_finished_loading();
 }
 
+bool PrerenderHandle::IsAbandoned() const {
+  DCHECK(CalledOnValidThread());
+  return prerender_data_ && !prerender_data_->abandon_time().is_null();
+}
+
 PrerenderContents* PrerenderHandle::contents() const {
   DCHECK(CalledOnValidThread());
   return prerender_data_ ? prerender_data_->contents() : NULL;

@@ -76,6 +76,9 @@ class PrerenderHandle : public base::NonThreadSafe,
   // True if we started a prerender, and it has finished loading.
   bool IsFinishedLoading() const;
 
+  // True if the prerender is currently active, but is abandoned.
+  bool IsAbandoned() const;
+
   PrerenderContents* contents() const;
 
   // Returns whether the prerender matches the URL provided.

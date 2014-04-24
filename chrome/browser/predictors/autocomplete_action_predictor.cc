@@ -136,6 +136,15 @@ void AutocompleteActionPredictor::ClearTransitionalMatches() {
   transitional_matches_.clear();
 }
 
+void AutocompleteActionPredictor::CancelPrerender() {
+  // If the prerender has already been abandoned, leave it to its own timeout;
+  // this normally gets called immediately after OnOmniboxOpenedUrl.
+  if (prerender_handle_ && !prerender_handle_->IsAbandoned()) {
+    prerender_handle_->OnCancel();
+    prerender_handle_.reset();
+  }
+}
+
 void AutocompleteActionPredictor::StartPrerendering(
     const GURL& url,
     const content::SessionStorageNamespaceMap& session_storage_namespace_map,
@@ -207,6 +216,10 @@ AutocompleteActionPredictor::Action
 bool AutocompleteActionPredictor::IsPreconnectable(
     const AutocompleteMatch& match) {
   return AutocompleteMatch::IsSearchType(match.type);
+}
+
+bool AutocompleteActionPredictor::IsPrerenderAbandonedForTesting() {
+  return prerender_handle_ && prerender_handle_->IsAbandoned();
 }
 
 void AutocompleteActionPredictor::Observe(
@@ -324,6 +337,14 @@ void AutocompleteActionPredictor::DeleteRowsWithURLs(
 void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
   if (log.text.length() < kMinimumUserTextLength)
     return;
+
+  // Abandon the current prerender. If it is to be used, it will be used very
+  // soon, so use the lower timeout.
+  if (prerender_handle_) {
+    prerender_handle_->OnNavigateAway();
+    // Don't release |prerender_handle_| so it is canceled if it survives to the
+    // next StartPrerendering call.
+  }
 
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
 

@@ -533,6 +533,7 @@ void OmniboxEditModel::Revert() {
   AutocompleteActionPredictor* action_predictor =
       predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_);
   action_predictor->ClearTransitionalMatches();
+  action_predictor->CancelPrerender();
 }
 
 void OmniboxEditModel::StartAutocomplete(
