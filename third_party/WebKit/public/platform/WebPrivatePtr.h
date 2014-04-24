@@ -37,7 +37,7 @@
 
 namespace WebCore { template<typename T> class TreeShared; }
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/TypeTraits.h"
 #endif

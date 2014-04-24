@@ -32,7 +32,7 @@
 #define WrapperTypeInfo_h
 
 #include "gin/public/wrapper_info.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include <v8.h>
 

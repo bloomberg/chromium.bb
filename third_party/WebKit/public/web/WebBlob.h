@@ -38,7 +38,7 @@
 #include "public/platform/WebURL.h"
 
 #if BLINK_IMPLEMENTATION
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #endif
 
 namespace v8 {

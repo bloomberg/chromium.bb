@@ -36,7 +36,7 @@
 #include "WebNavigationType.h"
 
 #if BLINK_IMPLEMENTATION
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #endif
 
 namespace WebCore { class Performance; }

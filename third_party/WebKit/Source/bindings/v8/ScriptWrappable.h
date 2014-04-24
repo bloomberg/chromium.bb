@@ -32,7 +32,7 @@
 #define ScriptWrappable_h
 
 #include "bindings/v8/WrapperTypeInfo.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include <v8.h>
 
 // Helper to call webCoreInitializeScriptWrappableForInterface in the global namespace.

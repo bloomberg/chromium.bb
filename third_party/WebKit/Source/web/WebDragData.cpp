@@ -32,9 +32,9 @@
 
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferItem.h"
-#include "heap/Handle.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebString.h"

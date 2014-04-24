@@ -1,4 +1,4 @@
 include_rules = [
-    "+heap",
+    "+platform/heap",
     "+wtf",
 ]

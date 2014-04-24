@@ -26,7 +26,7 @@
 #ifndef Supplementable_h
 #define Supplementable_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
