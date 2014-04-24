@@ -1069,9 +1069,10 @@ def _CheckJSONParsability(input_api, output_api):
     with open(fpath.LocalPath(), 'r') as f:
       try:
         input_api.json.load(f)
-      except ValueError:
+      except ValueError as e:
         results.append(output_api.PresubmitError(
-          "File %r does not parse as valid JSON" % (fpath.LocalPath())
+          "File %r does not parse as valid JSON:\n    %s"
+          % (fpath.LocalPath(), e.args[0])
         ))
   return results
 
