@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
+#include "apps/ui/views/app_window_frame_view.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
@@ -184,9 +185,10 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     EXPECT_EQ(window, move.target());
   }
 
-  // The EasyResizeTargeter specifies an inset of 5px within the window.
-  app_window_views()->InstallEasyResizeTargeterOnContainer();
-
+#if !defined(OS_CHROMEOS)
+  // The non standard app frame has a easy resize targetter installed.
+  scoped_ptr<apps::AppWindowFrameView> frame(
+      app_window_views()->CreateNonStandardAppFrame());
   {
     // Ensure that the window has an event targeter (there should be an
     // EasyResizeWindowTargeter installed).
@@ -223,4 +225,5 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
+#endif  // defined (OS_CHROMEOS)
 }
