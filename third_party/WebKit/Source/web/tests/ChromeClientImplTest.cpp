@@ -37,6 +37,7 @@
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
+#include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;
@@ -52,12 +53,7 @@ void setCurrentInputEventForTest(const WebInputEvent* event)
 
 namespace {
 
-class TestWebWidgetClient : public WebWidgetClient {
-public:
-    ~TestWebWidgetClient() { }
-};
-
-class TestWebViewClient : public WebViewClient {
+class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     explicit TestWebViewClient(WebNavigationPolicy* target) : m_target(target) { }
     ~TestWebViewClient() { }

@@ -32,6 +32,7 @@
 #define FrameTestHelpers_h
 
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 #include "wtf/PassOwnPtr.h"
 #include <string>
@@ -40,7 +41,6 @@ namespace blink {
 
 class WebLocalFrameImpl;
 class WebSettings;
-class WebViewClient;
 
 namespace FrameTestHelpers {
 
@@ -77,6 +77,16 @@ class TestWebFrameClient : public WebFrameClient {
 public:
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) OVERRIDE;
     virtual void frameDetached(WebFrame*) OVERRIDE;
+};
+
+class TestWebViewClient : public WebViewClient {
+public:
+    virtual ~TestWebViewClient() { }
+    virtual void initializeLayerTreeView() OVERRIDE;
+    virtual WebLayerTreeView* layerTreeView() OVERRIDE { return m_layerTreeView.get(); }
+
+private:
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
 };
 
 } // namespace FrameTestHelpers

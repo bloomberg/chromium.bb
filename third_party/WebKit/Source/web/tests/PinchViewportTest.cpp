@@ -48,23 +48,6 @@ using namespace blink;
 
 namespace {
 
-class FakeWebViewClient : public WebViewClient {
-public:
-    virtual void initializeLayerTreeView()
-    {
-        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
-        ASSERT(m_layerTreeView);
-    }
-
-    virtual WebLayerTreeView* layerTreeView()
-    {
-        return m_layerTreeView.get();
-    }
-
-private:
-    OwnPtr<WebLayerTreeView> m_layerTreeView;
-};
-
 class PinchViewportTest : public testing::Test {
 public:
     PinchViewportTest()
@@ -110,7 +93,7 @@ public:
 
 protected:
     std::string m_baseURL;
-    FakeWebViewClient m_mockWebViewClient;
+    FrameTestHelpers::TestWebViewClient m_mockWebViewClient;
 
 private:
     static void configureSettings(WebSettings* settings)

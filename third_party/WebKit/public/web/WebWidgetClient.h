@@ -69,6 +69,8 @@ public:
     // Return a compositing view used for this widget. This is owned by the
     // WebWidgetClient.
     virtual WebLayerTreeView* layerTreeView() { return 0; }
+    // FIXME: Remove all overrides of this and change layerTreeView() above to ASSERT_NOT_REACHED.
+    virtual bool allowsBrokenNullLayerTreeView() const { return false; }
 
     // Sometimes the WebWidget enters a state where it will generate a sequence
     // of invalidations that should not, by themselves, trigger the compositor
