@@ -12,12 +12,15 @@ import os
 import pprint
 import sys
 
+# Disable lint check for finding modules:
+# pylint: disable=F0401
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(script_dir, "pylib"))
 
+from mojom.error import Error
 from mojom.generate.data import OrderedModuleFromData
-from mojom.parse.lexer import LexError
-from mojom.parse.parser import Parse, ParseError
+from mojom.parse.parser import Parse
 from mojom.parse.translate import Translate
 
 
@@ -54,16 +57,19 @@ def MakeImportStackMessage(imported_filename_stack):
                     zip(imported_filename_stack[1:], imported_filename_stack)]))
 
 
-def ProcessFile(args, generator_modules, filename, processed_files={},
-                imported_filename_stack=[]):
+# Disable Check for dangerous default arguments (they're "private" keyword
+# arguments):
+# pylint: disable=W0102
+def ProcessFile(args, generator_modules, filename, _processed_files={},
+                _imported_filename_stack=[]):
   # Memoized results.
-  if filename in processed_files:
-    return processed_files[filename]
+  if filename in _processed_files:
+    return _processed_files[filename]
 
   # Ensure we only visit each file once.
-  if filename in imported_filename_stack:
+  if filename in _imported_filename_stack:
     print "%s: Error: Circular dependency" % filename + \
-        MakeImportStackMessage(imported_filename_stack + [filename])
+        MakeImportStackMessage(_imported_filename_stack + [filename])
     sys.exit(1)
 
   try:
@@ -71,13 +77,13 @@ def ProcessFile(args, generator_modules, filename, processed_files={},
       source = f.read()
   except IOError as e:
     print "%s: Error: %s" % (e.filename, e.strerror) + \
-        MakeImportStackMessage(imported_filename_stack + [filename])
+        MakeImportStackMessage(_imported_filename_stack + [filename])
     sys.exit(1)
 
   try:
     tree = Parse(source, filename)
-  except (LexError, ParseError) as e:
-    print str(e) + MakeImportStackMessage(imported_filename_stack + [filename])
+  except Error as e:
+    print str(e) + MakeImportStackMessage(_imported_filename_stack + [filename])
     sys.exit(1)
 
   dirname, name = os.path.split(filename)
@@ -91,8 +97,8 @@ def ProcessFile(args, generator_modules, filename, processed_files={},
     import_filename = os.path.join(dirname, import_data['filename'])
     import_data['module'] = ProcessFile(
         args, generator_modules, import_filename,
-        processed_files=processed_files,
-        imported_filename_stack=imported_filename_stack + [filename])
+        _processed_files=_processed_files,
+        _imported_filename_stack=_imported_filename_stack + [filename])
 
   module = OrderedModuleFromData(mojom)
 
@@ -108,8 +114,9 @@ def ProcessFile(args, generator_modules, filename, processed_files={},
     generator.GenerateFiles()
 
   # Save result.
-  processed_files[filename] = module
+  _processed_files[filename] = module
   return module
+# pylint: enable=W0102
 
 
 def Main():

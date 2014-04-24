@@ -116,11 +116,11 @@ class PackedStruct(object):
 
   def GetTotalSize(self):
     if not self.packed_fields:
-      return 0;
+      return 0
     last_field = self.packed_fields[-1]
     offset = last_field.offset + last_field.size
     pad = GetPad(offset, 8)
-    return offset + pad;
+    return offset + pad
 
 
 class ByteInfo(object):

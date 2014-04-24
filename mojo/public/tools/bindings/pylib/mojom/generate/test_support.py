@@ -179,7 +179,6 @@ def EXPECT_TRUE(a):
 
 def RunTest(fn):
   sys.stdout.write('Running %s...' % fn.__name__)
-  success = True;
   try:
     errors = fn()
   except:

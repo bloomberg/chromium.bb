@@ -5,32 +5,31 @@
 
 """Generates a syntax tree from a Mojo IDL file."""
 
-
+import imp
 import os.path
 import sys
 
-# Try to load the ply module, if not, then assume it is in the third_party
-# directory.
-try:
-  # Disable lint check which fails to find the ply module.
-  # pylint: disable=F0401
-  from ply import lex
-  from ply import yacc
-except ImportError:
-  # Work our way up to the directory containing mojo/ (usually src/). (Note:
-  # Some builds don't check out into a directory called src/.)
+# Disable lint check for finding modules:
+# pylint: disable=F0401
+
+def _GetDirAbove(dirname):
+  """Returns the directory "above" this file containing |dirname| (which must
+  also be "above" this file)."""
   path = os.path.abspath(__file__)
   while True:
     path, tail = os.path.split(path)
     assert tail
-    if tail == "mojo":
-      break
-  sys.path.append(os.path.join(path, "third_party"))
-  del path, tail
-  # pylint: disable=F0401
-  from ply import lex
-  from ply import yacc
+    if tail == dirname:
+      return path
 
+try:
+  imp.find_module("ply")
+except ImportError:
+  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+from ply import lex
+from ply import yacc
+
+from ..error import Error
 import ast
 from lexer import Lexer
 
@@ -52,25 +51,18 @@ def _ListFromConcat(*items):
   return itemsout
 
 
-class ParseError(Exception):
+# Disable lint check for exceptions deriving from Exception:
+# pylint: disable=W0710
+class ParseError(Error):
+  """Class for errors from the parser."""
 
   def __init__(self, filename, message, lineno=None, snippet=None):
-    self.filename = filename
-    self.message = message
-    self.lineno = lineno
-    self.snippet = snippet
-
-  def __str__(self):
-    if self.lineno is None:
-      return "%s: Error: %s" % (self.filename, self.message)
-
-    s = "%s:%d: Error: %s" % (self.filename, self.lineno, self.message)
-    return s if self.snippet is None else s + "\n" + self.snippet
-
-  def __repr__(self):
-    return str(self)
+    Error.__init__(self, filename, message, lineno=lineno,
+                   addenda=([snippet] if snippet else None))
 
 
+# We have methods which look like they could be functions:
+# pylint: disable=R0201
 class Parser(object):
 
   def __init__(self, lexer, source, filename):

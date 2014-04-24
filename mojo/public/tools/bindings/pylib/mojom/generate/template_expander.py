@@ -5,20 +5,28 @@
 # Based on:
 # http://src.chromium.org/viewvc/blink/trunk/Source/build/scripts/template_expander.py
 
+import imp
 import inspect
-import os
+import os.path
 import sys
 
-# jinja2 is in the third_party directory.
-# Insert at front to override system libraries, and after path[0] == script dir.
-path = os.path.abspath(__file__)
-while True:
-  path, tail = os.path.split(path)
-  assert tail
-  if tail == "mojo":
-    break
-sys.path.insert(1, os.path.join(path, "third_party"))
-del path, tail
+# Disable lint check for finding modules:
+# pylint: disable=F0401
+
+def _GetDirAbove(dirname):
+  """Returns the directory "above" this file containing |dirname| (which must
+  also be "above" this file)."""
+  path = os.path.abspath(__file__)
+  while True:
+    path, tail = os.path.split(path)
+    assert tail
+    if tail == dirname:
+      return path
+
+try:
+  imp.find_module("jinja2")
+except ImportError:
+  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
 import jinja2
 
 

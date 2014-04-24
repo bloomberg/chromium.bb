@@ -5,8 +5,7 @@
 """Code shared by the various language-specific code generators."""
 
 from functools import partial
-import os
-import re
+import os.path
 
 import module as mojom
 import pack

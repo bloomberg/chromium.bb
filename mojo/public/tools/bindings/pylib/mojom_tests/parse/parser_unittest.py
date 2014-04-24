@@ -2,11 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import imp
+import os.path
+import sys
 import unittest
 
-import ast
-import lexer
-import parser
+# Disable lint check for finding modules:
+# pylint: disable=F0401
+
+def _GetDirAbove(dirname):
+  """Returns the directory "above" this file containing |dirname| (which must
+  also be "above" this file)."""
+  path = os.path.abspath(__file__)
+  while True:
+    path, tail = os.path.split(path)
+    assert tail
+    if tail == dirname:
+      return path
+
+try:
+  imp.find_module("mojom")
+except ImportError:
+  sys.path.append(os.path.join(_GetDirAbove("pylib"), "pylib"))
+import mojom.parse.ast as ast
+import mojom.parse.lexer as lexer
+import mojom.parse.parser as parser
 
 
 class ParserTest(unittest.TestCase):
@@ -25,7 +45,7 @@ module my_module {
 
   def testSourceWithCrLfs(self):
     """Tests a .mojom source with CR-LFs instead of LFs."""
-    source = "// This is a comment.\r\n\r\nmodule my_module {\r\n}\r\n";
+    source = "// This is a comment.\r\n\r\nmodule my_module {\r\n}\r\n"
     self.assertEquals(parser.Parse(source, "my_file.mojom"),
                       [("MODULE", "my_module", None)])
 

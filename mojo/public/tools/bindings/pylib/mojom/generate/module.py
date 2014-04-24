@@ -149,7 +149,7 @@ class Interface(Kind):
   def AddMethod(self, name, ordinal = None):
     method = Method(name, ordinal)
     self.methods.append(method)
-    return method;
+    return method
 
 
 class EnumField(object):
@@ -179,11 +179,11 @@ class Module(object):
     self.interfaces = []
 
   def AddInterface(self, name):
-    interface = Interface(name);
+    interface = Interface(name)
     self.interfaces.append(interface)
-    return interface;
+    return interface
 
   def AddStruct(self, name):
     struct = Struct(name)
     self.structs.append(struct)
-    return struct;
+    return struct

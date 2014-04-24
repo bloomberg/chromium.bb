@@ -2,44 +2,43 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import imp
 import os.path
-import re
 import sys
 
-# Try to load the ply module, if not, then assume it is in the third_party
-# directory.
-try:
-  # Disable lint check which fails to find the ply module.
-  # pylint: disable=F0401
-  from ply.lex import TOKEN
-except ImportError:
-  # Work our way up to the directory containing mojo/ (usually src/). (Note:
-  # Some builds don't check out into a directory called src/.)
+# Disable lint check for finding modules:
+# pylint: disable=F0401
+
+def _GetDirAbove(dirname):
+  """Returns the directory "above" this file containing |dirname| (which must
+  also be "above" this file)."""
   path = os.path.abspath(__file__)
   while True:
     path, tail = os.path.split(path)
     assert tail
-    if tail == "mojo":
-      break
-  sys.path.append(os.path.join(path, "third_party"))
-  del path, tail
-  # pylint: disable=F0401
-  from ply.lex import TOKEN
+    if tail == dirname:
+      return path
+
+try:
+  imp.find_module("ply")
+except ImportError:
+  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+from ply.lex import TOKEN
+
+from ..error import Error
 
 
-class LexError(Exception):
-  def __init__(self, filename, lineno, msg):
-    self.filename = filename
-    self.lineno = lineno
-    self.msg = msg
+# Disable lint check for exceptions deriving from Exception:
+# pylint: disable=W0710
+class LexError(Error):
+  """Class for errors from the lexer."""
 
-  def __str__(self):
-    return "%s:%d: Error: %s" % (self.filename, self.lineno, self.msg)
-
-  def __repr__(self):
-    return str(self)
+  def __init__(self, filename, message, lineno):
+    Error.__init__(self, filename, message, lineno=lineno)
 
 
+# We have methods which look like they could be functions:
+# pylint: disable=R0201
 class Lexer(object):
 
   def __init__(self, filename):
@@ -51,7 +50,7 @@ class Lexer(object):
   ## Internal auxiliary methods
   ##
   def _error(self, msg, token):
-    raise LexError(self.filename, token.lineno, msg)
+    raise LexError(self.filename, msg, token.lineno)
 
   ##
   ## Reserved keywords

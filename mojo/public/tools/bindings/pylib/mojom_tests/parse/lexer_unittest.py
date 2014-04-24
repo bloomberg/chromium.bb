@@ -2,31 +2,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import imp
 import os.path
 import sys
 import unittest
 
-# Try to load the ply module, if not, then assume it is in the third_party
-# directory.
-try:
-  # Disable lint check which fails to find the ply module.
-  # pylint: disable=F0401
-  from ply import lex
-except ImportError:
-  # Work our way up to the directory containing mojo/ (usually src/). (Note:
-  # Some builds don't check out into a directory called src/.)
+# Disable lint check for finding modules:
+# pylint: disable=F0401
+
+def _GetDirAbove(dirname):
+  """Returns the directory "above" this file containing |dirname| (which must
+  also be "above" this file)."""
   path = os.path.abspath(__file__)
   while True:
     path, tail = os.path.split(path)
     assert tail
-    if tail == "mojo":
-      break
-  sys.path.append(os.path.join(path, "third_party"))
-  del path, tail
-  # pylint: disable=F0401
-  from ply import lex
+    if tail == dirname:
+      return path
 
-import lexer
+try:
+  imp.find_module("ply")
+except ImportError:
+  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+from ply import lex
+
+try:
+  imp.find_module("mojom")
+except ImportError:
+  sys.path.append(os.path.join(_GetDirAbove("pylib"), "pylib"))
+import mojom.parse.lexer
 
 
 # This (monkey-patching LexToken to make comparison value-based) is evil, but
@@ -38,11 +42,11 @@ def _LexTokenEq(self, other):
 setattr(lex.LexToken, '__eq__', _LexTokenEq)
 
 
-def _MakeLexToken(type, value, lineno=1, lexpos=0):
+def _MakeLexToken(token_type, value, lineno=1, lexpos=0):
   """Makes a LexToken with the given parameters. (Note that lineno is 1-based,
   but lexpos is 0-based.)"""
   rv = lex.LexToken()
-  rv.type, rv.value, rv.lineno, rv.lexpos = type, value, lineno, lexpos
+  rv.type, rv.value, rv.lineno, rv.lexpos = token_type, value, lineno, lexpos
   return rv
 
 
@@ -52,12 +56,12 @@ def _MakeLexTokenForKeyword(keyword, **kwargs):
 
 
 class LexerTest(unittest.TestCase):
-  """Tests |lexer.Lexer|."""
+  """Tests |mojom.parse.lexer.Lexer|."""
 
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     # Clone all lexer instances from this one, since making a lexer is slow.
-    self._zygote_lexer = lex.lex(lexer.Lexer("my_file.mojom"))
+    self._zygote_lexer = lex.lex(mojom.parse.lexer.Lexer("my_file.mojom"))
 
   def testValidSingleKeywords(self):
     """Tests valid, single keywords."""
@@ -145,10 +149,10 @@ class LexerTest(unittest.TestCase):
     self.assertEquals(self._SingleTokenForInput("."),
                       _MakeLexToken("DOT", "."))
 
-  def _TokensForInput(self, input):
+  def _TokensForInput(self, input_string):
     """Gets a list of tokens for the given input string."""
     lexer = self._zygote_lexer.clone()
-    lexer.input(input)
+    lexer.input(input_string)
     rv = []
     while True:
       tok = lexer.token()
@@ -156,10 +160,10 @@ class LexerTest(unittest.TestCase):
         return rv
       rv.append(tok)
 
-  def _SingleTokenForInput(self, input):
+  def _SingleTokenForInput(self, input_string):
     """Gets the single token for the given input string. (Raises an exception if
     the input string does not result in exactly one token.)"""
-    toks = self._TokensForInput(input)
+    toks = self._TokensForInput(input_string)
     assert len(toks) == 1
     return toks[0]
 

@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -28,7 +28,7 @@ def main():
   loader = unittest.loader.TestLoader()
   print "Running Python unit tests under mojo/public/tools/bindings/pylib ..."
   suite = loader.discover(os.path.join(chromium_src_dir, 'mojo', 'public',
-                                      'tools', 'bindings', 'pylib'),
+                                       'tools', 'bindings', 'pylib'),
                           pattern='*_unittest.py')
 
   runner = unittest.runner.TextTestRunner(verbosity=(options.verbose+1))
