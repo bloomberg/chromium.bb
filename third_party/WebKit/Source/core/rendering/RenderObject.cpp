@@ -1334,11 +1334,10 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
     if (!isRooted())
         return 0;
 
-    // FIXME: Repaint container should never be null when we're rooted. crbug.com/363699
     RenderLayerModelObject* repaintContainer = 0;
 
-    RenderView* v = view();
-    if (v->usesCompositing()) {
+    RenderView* renderView = view();
+    if (renderView->usesCompositing()) {
         // FIXME: CompositingState is not necessarily up to date for many callers of this function.
         DisableCompositingQueryAsserts disabler;
 
@@ -1360,7 +1359,7 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
         if (!repaintContainer || repaintContainer->flowThreadContainingBlock() != parentRenderFlowThread)
             repaintContainer = parentRenderFlowThread;
     }
-    return repaintContainer;
+    return repaintContainer ? repaintContainer : renderView;
 }
 
 template<typename T> PassRefPtr<JSONValue> jsonObjectForRect(const T& rect)
@@ -1386,15 +1385,11 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     if (r.isEmpty())
         return;
 
+    ASSERT(isRooted());
+
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintUsingContainer()",
         "object", this->debugName().ascii(),
         "info", TracedValue::fromJSONValue(jsonObjectForRepaintInfo(r, invalidationReasonToString(invalidationReason))));
-
-    // FIXME: Repaint container should never be null. crbug.com/363699
-    if (!repaintContainer) {
-        view()->repaintViewRectangle(r);
-        return;
-    }
 
     // FIXME: Don't read compositing state here since we do this in the middle of recalc/layout.
     DisableCompositingQueryAsserts disabler;
@@ -1465,7 +1460,7 @@ void RenderObject::repaint() const
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
     RenderLayerModelObject* repaintContainer = containerForRepaint();
-    repaintUsingContainer(repaintContainer ? repaintContainer : view(), pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)), InvalidationRepaint);
+    repaintUsingContainer(repaintContainer, pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)), InvalidationRepaint);
 }
 
 void RenderObject::repaintRectangle(const LayoutRect& r) const
@@ -1486,7 +1481,7 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
 
     RenderLayerModelObject* repaintContainer = containerForRepaint();
     computeRectForRepaint(repaintContainer, dirtyRect);
-    repaintUsingContainer(repaintContainer ? repaintContainer : view(), pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
+    repaintUsingContainer(repaintContainer, pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
 }
 
 IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
@@ -1593,9 +1588,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     if (invalidationReason == InvalidationIncremental && (oldBounds.size().isZero() || newBounds.size().isZero()))
         invalidationReason = InvalidationBoundsChange;
 
-    // FIXME: Repaint container should never be null. crbug.com/363699
-    if (!repaintContainer)
-        repaintContainer = v;
+    ASSERT(repaintContainer);
 
     if (invalidationReason != InvalidationIncremental) {
         repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), invalidationReason);

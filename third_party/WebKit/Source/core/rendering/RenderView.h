@@ -143,9 +143,8 @@ public:
 
     bool canUseLayoutStateForContainer(const RenderObject* repaintContainer) const
     {
-        // FIXME: Repaint container should never be null. crbug.com/363699
         // FIXME: LayoutState should be enabled for other repaint containers than the RenderView. crbug.com/363834
-        return layoutStateEnabled() && (!repaintContainer || repaintContainer == this);
+        return layoutStateEnabled() && (repaintContainer == this);
     }
 
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) OVERRIDE;

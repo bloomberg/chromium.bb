@@ -382,8 +382,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     else
         quadForFakeMouseMoveEvent = FloatQuad(layer()->repainter().repaintRect());
 
-    if (repaintContainer)
-        quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
+    quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
     frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
 
     bool requiresRepaint = true;

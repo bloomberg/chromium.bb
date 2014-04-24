@@ -681,8 +681,11 @@ bool FrameView::hasCompositedContent() const
 
 bool FrameView::isEnclosedInCompositingLayer() const
 {
+    // FIXME: It's a bug that compositing state isn't always up to date when this is called. crbug.com/366314
+    DisableCompositingQueryAsserts disabler;
+
     RenderObject* frameOwnerRenderer = m_frame->ownerRenderer();
-    if (frameOwnerRenderer && frameOwnerRenderer->containerForRepaint())
+    if (frameOwnerRenderer && frameOwnerRenderer->enclosingLayer()->enclosingCompositingLayerForRepaint())
         return true;
 
     if (FrameView* parentView = parentFrameView())
