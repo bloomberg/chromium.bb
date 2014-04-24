@@ -500,9 +500,13 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
             compositor->scrollingLayerDidChange(&m_owningLayer);
     }
 
-    // FIXME: Why do we update the mask layer after checking layerConfigChanged?
+    // A mask layer is not part of the hierarchy proper, it's an auxiliary layer
+    // that's plugged into another GraphicsLayer that is part of the hierarchy.
+    // It has no parent or child GraphicsLayer. For that reason, we process it
+    // here, after the hierarchy has been updated.
+    bool maskLayerChanged = false;
     if (updateMaskLayer(renderer->hasMask())) {
-        layerConfigChanged = true;
+        maskLayerChanged = true;
         m_graphicsLayer->setMaskLayer(m_maskLayer.get());
     }
 
@@ -549,7 +553,9 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     if (renderer->isRenderPart())
         layerConfigChanged = RenderLayerCompositor::parentFrameContentLayers(toRenderPart(renderer));
 
-    if (layerConfigChanged)
+    // Changes to either the internal hierarchy or the mask layer have an impact
+    // on painting phases, so we need to update when either are updated.
+    if (layerConfigChanged || maskLayerChanged)
         updatePaintingPhases();
 
     return layerConfigChanged;
