@@ -23,28 +23,43 @@ void splitStringHelper(const String& str, HashSet<String>& set)
 
 } // anonymous namespace
 
+PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(blink::WebGraphicsContext3D* context)
+{
+    OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(context));
+    if (!out->initializeExtensions())
+        return nullptr;
+    return out.release();
+}
+
 Extensions3DUtil::Extensions3DUtil(blink::WebGraphicsContext3D* context)
     : m_context(context)
 {
-    initializeExtensions();
 }
 
 Extensions3DUtil::~Extensions3DUtil()
 {
 }
 
-void Extensions3DUtil::initializeExtensions()
+bool Extensions3DUtil::initializeExtensions()
 {
-    bool success = m_context->makeContextCurrent();
-    ASSERT(success);
-    if (!success)
-        return;
+    if (!m_context->makeContextCurrent()) {
+        // Most likely the GPU process exited and the attempt to reconnect to it failed.
+        // Need to try to restore the context again later.
+        return false;
+    }
+
+    if (m_context->isContextLost()) {
+        // Need to try to restore the context again later.
+        return false;
+    }
 
     String extensionsString = m_context->getString(GL_EXTENSIONS);
     splitStringHelper(extensionsString, m_enabledExtensions);
 
     String requestableExtensionsString = m_context->getRequestableExtensionsCHROMIUM();
     splitStringHelper(requestableExtensionsString, m_requestableExtensions);
+
+    return true;
 }
 
 

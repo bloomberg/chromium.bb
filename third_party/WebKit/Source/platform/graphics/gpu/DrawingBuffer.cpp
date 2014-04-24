@@ -81,24 +81,29 @@ private:
 PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<blink::WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
     ASSERT(context);
-    Extensions3DUtil extensionsUtil(context.get());
-    bool multisampleSupported = extensionsUtil.supportsExtension("GL_CHROMIUM_framebuffer_multisample")
-        && extensionsUtil.supportsExtension("GL_OES_rgb8_rgba8");
-    if (multisampleSupported) {
-        extensionsUtil.ensureExtensionEnabled("GL_CHROMIUM_framebuffer_multisample");
-        extensionsUtil.ensureExtensionEnabled("GL_OES_rgb8_rgba8");
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
+    if (!extensionsUtil) {
+        // This might be the first time we notice that the WebGraphicsContext3D is lost.
+        return nullptr;
     }
-    bool packedDepthStencilSupported = extensionsUtil.supportsExtension("GL_OES_packed_depth_stencil");
+    bool multisampleSupported = extensionsUtil->supportsExtension("GL_CHROMIUM_framebuffer_multisample")
+        && extensionsUtil->supportsExtension("GL_OES_rgb8_rgba8");
+    if (multisampleSupported) {
+        extensionsUtil->ensureExtensionEnabled("GL_CHROMIUM_framebuffer_multisample");
+        extensionsUtil->ensureExtensionEnabled("GL_OES_rgb8_rgba8");
+    }
+    bool packedDepthStencilSupported = extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil");
     if (packedDepthStencilSupported)
-        extensionsUtil.ensureExtensionEnabled("GL_OES_packed_depth_stencil");
+        extensionsUtil->ensureExtensionEnabled("GL_OES_packed_depth_stencil");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, extensionsUtil.release(), multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
     if (!drawingBuffer->initialize(size))
         return PassRefPtr<DrawingBuffer>();
     return drawingBuffer.release();
 }
 
 DrawingBuffer::DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context,
+    PassOwnPtr<Extensions3DUtil> extensionsUtil,
     bool multisampleExtensionSupported,
     bool packedDepthStencilExtensionSupported,
     PreserveDrawingBuffer preserve,
@@ -109,6 +114,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context,
     , m_framebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
     , m_context(context)
+    , m_extensionsUtil(extensionsUtil)
     , m_size(-1, -1)
     , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_packedDepthStencilExtensionSupported(packedDepthStencilExtensionSupported)
@@ -281,8 +287,18 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(unsigned 
 
 bool DrawingBuffer::initialize(const IntSize& size)
 {
+    if (!m_context->makeContextCurrent()) {
+        // Most likely the GPU process exited and the attempt to reconnect to it failed.
+        // Need to try to restore the context again later.
+        return false;
+    }
+
+    if (m_context->isContextLost()) {
+        // Need to try to restore the context again later.
+        return false;
+    }
+
     m_attributes = m_context->getContextAttributes();
-    Extensions3DUtil extensionsUtil(m_context.get());
 
     if (m_attributes.alpha) {
         m_internalColorFormat = GL_RGBA;
@@ -301,7 +317,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
     if (m_attributes.antialias && m_multisampleExtensionSupported) {
         m_context->getIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSampleCount);
         m_multisampleMode = ExplicitResolve;
-        if (extensionsUtil.supportsExtension("GL_EXT_multisampled_render_to_texture"))
+        if (m_extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture"))
             m_multisampleMode = ImplicitResolve;
     }
     m_sampleCount = std::min(4, maxSampleCount);

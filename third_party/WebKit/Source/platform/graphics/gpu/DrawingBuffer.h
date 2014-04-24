@@ -53,6 +53,7 @@ class WebLayer;
 }
 
 namespace WebCore {
+class Extensions3DUtil;
 class ImageData;
 class ImageBuffer;
 
@@ -139,8 +140,11 @@ public:
     PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(int&, int&);
 
 private:
-    DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>, bool multisampleExtensionSupported,
-                  bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
+    DrawingBuffer(
+        PassOwnPtr<blink::WebGraphicsContext3D>,
+        PassOwnPtr<Extensions3DUtil>,
+        bool multisampleExtensionSupported,
+        bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
     bool initialize(const IntSize&);
     void releaseResources();
@@ -196,6 +200,7 @@ private:
     GLenum m_activeTextureUnit;
 
     OwnPtr<blink::WebGraphicsContext3D> m_context;
+    OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;

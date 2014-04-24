@@ -20,7 +20,8 @@ namespace WebCore {
 
 class PLATFORM_EXPORT Extensions3DUtil {
 public:
-    Extensions3DUtil(blink::WebGraphicsContext3D*);
+    // Creates a new Extensions3DUtil. If the passed WebGraphicsContext3D has been spontaneously lost, returns null.
+    static PassOwnPtr<Extensions3DUtil> create(blink::WebGraphicsContext3D*);
     ~Extensions3DUtil();
 
     bool supportsExtension(const String& name);
@@ -30,7 +31,8 @@ public:
     static bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
 
 private:
-    void initializeExtensions();
+    Extensions3DUtil(blink::WebGraphicsContext3D*);
+    bool initializeExtensions();
 
     blink::WebGraphicsContext3D* m_context;
     HashSet<String> m_enabledExtensions;

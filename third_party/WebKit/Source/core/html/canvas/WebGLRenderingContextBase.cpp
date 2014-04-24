@@ -4232,7 +4232,7 @@ Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil()
 {
     ASSERT(!isContextLost());
     if (!m_extensionsUtil)
-        m_extensionsUtil = adoptPtr(new Extensions3DUtil(webContext()));
+        m_extensionsUtil = Extensions3DUtil::create(webContext());
     return m_extensionsUtil.get();
 }
 
@@ -5446,6 +5446,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument().url().string(), settings);
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
     RefPtr<DrawingBuffer> drawingBuffer;
+    // Even if a non-null WebGraphicsContext3D is created, until it's made current, it isn't known whether the context is still lost.
     if (context) {
         RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
 

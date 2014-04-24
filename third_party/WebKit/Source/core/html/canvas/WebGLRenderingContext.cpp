@@ -90,8 +90,10 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
         return nullptr;
     }
 
-    Extensions3DUtil extensionsUtil(context.get());
-    if (extensionsUtil.supportsExtension("GL_EXT_debug_marker"))
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
+    if (!extensionsUtil)
+        return nullptr;
+    if (extensionsUtil->supportsExtension("GL_EXT_debug_marker"))
         context->pushGroupMarkerEXT("WebGLRenderingContext");
 
     OwnPtr<WebGLRenderingContext> renderingContext = adoptPtr(new WebGLRenderingContext(canvas, context.release(), attrs));
