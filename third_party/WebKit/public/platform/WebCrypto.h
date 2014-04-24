@@ -180,7 +180,7 @@ public:
     // them, as they come directly from the user. Few checks have been done on
     // algorithm parameters prior to passing to the embedder.
     //
-    // Only the following checks can be assumed as having alread passed:
+    // Only the following checks can be assumed as having already passed:
     //
     //  * The key is extractable when calling into exportKey/wrapKey.
     //  * The key usages permit the operation being requested.
