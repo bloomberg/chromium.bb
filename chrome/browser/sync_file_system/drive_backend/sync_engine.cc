@@ -187,6 +187,7 @@ void SyncEngine::Initialize(const base::FilePath& base_dir,
       new SyncEngineContext(drive_service_.get(),
                             drive_uploader_.get(),
                             base::MessageLoopProxy::current(),
+                            worker_task_runner_,
                             file_task_runner));
   worker_observer_.reset(
       new WorkerObserver(base::MessageLoopProxy::current(),

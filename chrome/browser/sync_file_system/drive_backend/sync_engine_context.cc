@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -19,12 +20,14 @@ namespace drive_backend {
 SyncEngineContext::SyncEngineContext(
     drive::DriveServiceInterface* drive_service,
     drive::DriveUploaderInterface* drive_uploader,
-    base::SequencedTaskRunner* ui_task_runner,
+    base::SingleThreadTaskRunner* ui_task_runner,
+    base::SequencedTaskRunner* worker_task_runner,
     base::SequencedTaskRunner* file_task_runner)
     : drive_service_(drive_service),
       drive_uploader_(drive_uploader),
       remote_change_processor_(NULL),
       ui_task_runner_(ui_task_runner),
+      worker_task_runner_(worker_task_runner),
       file_task_runner_(file_task_runner) {}
 
 SyncEngineContext::~SyncEngineContext() {}
@@ -49,8 +52,12 @@ RemoteChangeProcessor* SyncEngineContext::GetRemoteChangeProcessor() {
   return remote_change_processor_;
 }
 
-base::SequencedTaskRunner* SyncEngineContext::GetUiTaskRunner() {
+base::SingleThreadTaskRunner* SyncEngineContext::GetUITaskRunner() {
   return ui_task_runner_.get();
+}
+
+base::SequencedTaskRunner* SyncEngineContext::GetWorkerTaskRunner() {
+  return worker_task_runner_.get();
 }
 
 base::SequencedTaskRunner* SyncEngineContext::GetFileTaskRunner() {

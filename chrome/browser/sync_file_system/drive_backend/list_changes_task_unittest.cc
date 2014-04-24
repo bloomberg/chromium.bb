@@ -62,6 +62,7 @@ class ListChangesTaskTest : public testing::Test {
         new SyncEngineContext(fake_drive_service_.get(),
                               drive_uploader_.get(),
                               base::MessageLoopProxy::current(),
+                              base::MessageLoopProxy::current(),
                               base::MessageLoopProxy::current()));
 
     SetUpRemoteFolders();

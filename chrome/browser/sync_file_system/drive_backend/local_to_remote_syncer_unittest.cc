@@ -69,6 +69,7 @@ class LocalToRemoteSyncerTest : public testing::Test {
         fake_drive_service_.get(),
         drive_uploader_.get(),
         base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current()));
     context_->SetRemoteChangeProcessor(fake_remote_change_processor_.get());
 

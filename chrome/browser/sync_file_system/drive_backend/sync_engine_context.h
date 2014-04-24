@@ -12,6 +12,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace drive {
@@ -32,7 +33,8 @@ class SyncEngineContext {
   SyncEngineContext(
       drive::DriveServiceInterface* drive_service,
       drive::DriveUploaderInterface* drive_uploader,
-      base::SequencedTaskRunner* ui_task_runner,
+      base::SingleThreadTaskRunner* ui_task_runner,
+      base::SequencedTaskRunner* worker_task_runner,
       base::SequencedTaskRunner* file_task_runner);
   ~SyncEngineContext();
 
@@ -40,7 +42,8 @@ class SyncEngineContext {
   drive::DriveUploaderInterface* GetDriveUploader();
   MetadataDatabase* GetMetadataDatabase();
   RemoteChangeProcessor* GetRemoteChangeProcessor();
-  base::SequencedTaskRunner* GetUiTaskRunner();
+  base::SingleThreadTaskRunner* GetUITaskRunner();
+  base::SequencedTaskRunner* GetWorkerTaskRunner();
   base::SequencedTaskRunner* GetFileTaskRunner();
 
   void SetMetadataDatabase(scoped_ptr<MetadataDatabase> metadata_database);
@@ -54,7 +57,8 @@ class SyncEngineContext {
   RemoteChangeProcessor* remote_change_processor_;
 
   scoped_ptr<MetadataDatabase> metadata_database_;
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineContext);
