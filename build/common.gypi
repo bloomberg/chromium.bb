@@ -3886,7 +3886,10 @@
               '-B<!(cd <(DEPTH) && pwd -P)/<(binutils_dir)',
             ],
           }],
-          ['binutils_version>=224', {
+          # Some binutils 2.23 releases may or may not have new dtags enabled,
+          # but they are all compatible with --disable-new-dtags,
+          # because the new dynamic tags are not created by default.
+          ['binutils_version>=223', {
             # Newer binutils don't set DT_RPATH unless you disable "new" dtags
             # and the new DT_RUNPATH doesn't work without --no-as-needed flag.
             # FIXME(mithro): Figure out the --as-needed/--no-as-needed flags
