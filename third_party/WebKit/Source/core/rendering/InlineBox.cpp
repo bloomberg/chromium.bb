@@ -58,10 +58,10 @@ InlineBox::~InlineBox()
 
 #endif
 
-void InlineBox::remove()
+void InlineBox::remove(MarkLineBoxes markLineBoxes)
 {
     if (parent())
-        parent()->removeChild(this);
+        parent()->removeChild(this, markLineBoxes);
 }
 
 void* InlineBox::operator new(size_t sz)

@@ -1449,7 +1449,7 @@ void RenderText::positionLineBox(InlineBox* box)
     // FIXME: should not be needed!!!
     if (!s->len()) {
         // We want the box to be destroyed.
-        s->remove();
+        s->remove(DontMarkLineBoxes);
         if (m_firstTextBox == s)
             m_firstTextBox = s->nextTextBox();
         else

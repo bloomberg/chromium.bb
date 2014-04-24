@@ -1940,7 +1940,7 @@ void RenderBox::positionLineBox(InlineBox* box)
         }
 
         // Nuke the box.
-        box->remove();
+        box->remove(DontMarkLineBoxes);
         box->destroy();
     } else if (isReplaced()) {
         setLocation(roundedLayoutPoint(box->topLeft()));

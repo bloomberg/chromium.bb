@@ -197,7 +197,7 @@ public:
 
     void computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, GlyphOverflowAndFallbackFontsMap&);
 
-    void removeChild(InlineBox* child);
+    void removeChild(InlineBox* child, MarkLineBoxes);
 
     virtual RenderObject::SelectionState selectionState() OVERRIDE;
 

@@ -30,6 +30,8 @@ class HitTestRequest;
 class HitTestResult;
 class RootInlineBox;
 
+enum MarkLineBoxes { MarkLineBoxesDirty, DontMarkLineBoxes };
+
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
 // some RenderObject (i.e., it represents a portion of that RenderObject).
 class InlineBox {
@@ -147,7 +149,7 @@ public:
     void setFirstLineStyleBit(bool firstLine) { m_bitfields.setFirstLine(firstLine); }
     bool isFirstLineStyle() const { return m_bitfields.firstLine(); }
 
-    void remove();
+    void remove(MarkLineBoxes = MarkLineBoxesDirty);
 
     InlineBox* nextOnLine() const { return m_next; }
     InlineBox* prevOnLine() const { return m_prev; }

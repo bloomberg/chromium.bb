@@ -177,11 +177,11 @@ void InlineFlowBox::addToLine(InlineBox* child)
     checkConsistency();
 }
 
-void InlineFlowBox::removeChild(InlineBox* child)
+void InlineFlowBox::removeChild(InlineBox* child, MarkLineBoxes markDirty)
 {
     checkConsistency();
 
-    if (!isDirty())
+    if (markDirty == MarkLineBoxesDirty && !isDirty())
         dirtyLineBoxes();
 
     root().childRemoved(child);
