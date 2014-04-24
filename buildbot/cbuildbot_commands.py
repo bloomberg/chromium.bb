@@ -1984,7 +1984,8 @@ class ChromeSDK(object):
   DEFAULT_JOBS_GOMA = 500
 
   def __init__(self, cwd, board, extra_args=None, chrome_src=None, goma=False,
-               debug_log=True, cache_dir=None):
+               debug_log=True, cache_dir=None, target_tc=None,
+               toolchain_url=None):
     """Initialization.
 
     Args:
@@ -1995,6 +1996,8 @@ class ChromeSDK(object):
       goma: If True, run using goma.
       debug_log: If set, run with debug log-level.
       cache_dir: Specify non-default cache directory.
+      target_tc: Override target toolchain.
+      toolchain_url: Override toolchain url pattern.
     """
     self.cwd = cwd
     self.board = board
@@ -2006,6 +2009,8 @@ class ChromeSDK(object):
       self.extra_args.append('--nogoma')
     self.debug_log = debug_log
     self.cache_dir = cache_dir
+    self.target_tc = target_tc
+    self.toolchain_url = toolchain_url
 
   def Run(self, cmd, extra_args=None):
     """Run a command inside the chrome-sdk context."""
@@ -2014,6 +2019,10 @@ class ChromeSDK(object):
       cros_cmd += ['--log-level', 'debug']
     if self.cache_dir:
       cros_cmd += ['--cache-dir', self.cache_dir]
+    if self.target_tc:
+      self.extra_args += ['--target-tc', self.target_tc]
+    if self.toolchain_url:
+      self.extra_args += ['--toolchain-url', self.toolchain_url]
     cros_cmd += ['chrome-sdk', '--board', self.board] + self.extra_args
     cros_cmd += (extra_args or []) + ['--'] + cmd
     cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd)

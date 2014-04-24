@@ -481,8 +481,20 @@ def _CreateParser():
   group.add_option('--strip-flags', default=None,
                    help="Flags to call the 'strip' binutil tool with.  "
                         "Overrides the default arguments.")
-
   parser.add_option_group(group)
+
+  group = optparse.OptionGroup(parser, 'Metadata Overrides (Advanced)',
+                               description='Provide all of these overrides '
+                               'in order to remove dependencies on '
+                               'metadata.json existence.')
+  group.add_option('--target-tc', action='store', default=None,
+                   help='Override target toolchain name, e.g. '
+                   'x86_64-cros-linux-gnu')
+  group.add_option('--toolchain-url', action='store', default=None,
+                   help='Override toolchain url format pattern, e.g. '
+                   '2014/04/%%(target)s-2014.04.23.220740.tar.xz')
+  parser.add_option_group(group)
+
 
   # GYP_DEFINES that Chrome was built with.  Influences which files are staged
   # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
@@ -615,7 +627,8 @@ def _StripBinContext(options):
   else:
     sdk = cros_chrome_sdk.SDKFetcher(options.cache_dir, options.board)
     components = (sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR)
-    with sdk.Prepare(components=components) as ctx:
+    with sdk.Prepare(components=components, target_tc=options.target_tc,
+                     toolchain_url=options.toolchain_url) as ctx:
       env_path = os.path.join(ctx.key_map[constants.CHROME_ENV_TAR].path,
                               constants.CHROME_ENV_FILE)
       strip_bin = osutils.SourceEnvironment(env_path, ['STRIP'])['STRIP']

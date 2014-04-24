@@ -3014,6 +3014,8 @@ class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     super(ChromeSDKStageTest, self)._Prepare(bot_id, **kwargs)
 
     self.run.options.chrome_root = '/tmp/non-existent'
+    self.run.attrs.metadata.UpdateWithDict({'toolchain-tuple': ['target'],
+                                            'toolchain-url' : 'some-url'})
 
   def ConstructStage(self):
     self.run.GetArchive().SetupArchivePath()

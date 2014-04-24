@@ -62,7 +62,7 @@ class SDKFetcher(object):
   SDK_VERSION_ENV = '%SDK_VERSION'
 
   SDKContext = collections.namedtuple(
-      'SDKContext', ['version', 'metadata', 'key_map'])
+      'SDKContext', ['version', 'target_tc', 'key_map'])
 
   TARBALL_CACHE = 'tarballs'
   MISC_CACHE = 'misc'
@@ -284,12 +284,17 @@ class SDKFetcher(object):
     return (self.board, version_section, component)
 
   @contextlib.contextmanager
-  def Prepare(self, components, version=None):
+  def Prepare(self, components, version=None, target_tc=None,
+              toolchain_url=None):
     """Ensures the components of an SDK exist and are read-locked.
 
     For a given SDK version, pulls down missing components, and provides a
     context where the components are read-locked, which prevents the cache from
     deleting them during its purge operations.
+
+    If both target_tc and toolchain_url arguments are provided, then this
+    does not download metadata.json for the given version. Otherwise, this
+    function requires metadata.json for the given version to exist.
 
     Args:
       gs_ctx: GSContext object.
@@ -297,13 +302,15 @@ class SDKFetcher(object):
       version: The version to prepare.  If not set, uses the version returned by
         GetDefaultVersion().  If there is no default version set (this is the
         first time we are being executed), then we update the default version.
+      target_tc: Target toolchain name to use, e.g. x86_64-cros-linux-gnu
+      toolchain_url: Format pattern for path to fetch toolchain from,
+        e.g. 2014/04/%(target)s-2014.04.23.220740.tar.xz
 
     Yields:
       An SDKFetcher.SDKContext namedtuple object.  The attributes of the
       object are:
         version: The version that was prepared.
-        metadata: A dictionary containing the build metadata for the SDK
-          version.
+        target_tc: Target toolchain name.
         key_map: Dictionary that contains CacheReference objects for the SDK
           artifacts, indexed by cache key.
     """
@@ -316,13 +323,16 @@ class SDKFetcher(object):
     key_map = {}
     fetch_urls = {}
 
-    metadata = self._GetMetadata(version)
+    if not target_tc or not toolchain_url:
+      metadata = self._GetMetadata(version)
+      target_tc = target_tc or metadata['toolchain-tuple'][0]
+      toolchain_url = toolchain_url or metadata['toolchain-url']
+
     # Fetch toolchains from separate location.
     if self.TARGET_TOOLCHAIN_KEY in components:
-      tc_tuple = metadata['toolchain-tuple'][0]
       fetch_urls[self.TARGET_TOOLCHAIN_KEY] = os.path.join(
           'gs://', constants.SDK_GS_BUCKET,
-          metadata['toolchain-url'] % {'target': tc_tuple})
+          toolchain_url % {'target': target_tc})
       components.remove(self.TARGET_TOOLCHAIN_KEY)
 
     version_base = self._GetVersionGSBase(version)
@@ -343,7 +353,7 @@ class SDKFetcher(object):
       ctx_version = version
       if self.sdk_path is not None:
         ctx_version = CUSTOM_VERSION
-      yield self.SDKContext(ctx_version, metadata, key_map)
+      yield self.SDKContext(ctx_version, target_tc, key_map)
     finally:
       # TODO(rcui): Move to using cros_build_lib.ContextManagerStack()
       cros_build_lib.SafeRun([ref.Release for ref in key_map.itervalues()])
@@ -483,6 +493,17 @@ class ChromeSDKCommand(cros.CrosCommand):
         default=False,
         help='Removes everything in the SDK cache before starting.')
 
+    group = parser.add_option_group('Metadata Overrides (Advanced)',
+        description='Provide all of these overrides in order to remove '
+                    'dependencies on metadata.json existence.')
+    parser.add_option_to_group(
+        group, '--target-tc', action='store', default=None,
+        help='Override target toolchain name, e.g. x86_64-cros-linux-gnu')
+    parser.add_option_to_group(
+        group, '--toolchain-url', action='store', default=None,
+        help='Override toolchain url format pattern, e.g. '
+             '2014/04/%%(target)s-2014.04.23.220740.tar.xz')
+
   def __init__(self, options):
     cros.CrosCommand.__init__(self, options)
     self.board = options.board
@@ -532,28 +553,28 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   def _SetupTCEnvironment(self, sdk_ctx, options, env):
     """Sets up toolchain-related environment variables."""
-    target_tc = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
-    tc_bin = os.path.join(target_tc, 'bin')
-    env['PATH'] = '%s:%s' % (tc_bin, os.environ['PATH'])
+    target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
+    tc_bin_path = os.path.join(target_tc_path, 'bin')
+    env['PATH'] = '%s:%s' % (tc_bin_path, os.environ['PATH'])
 
     for var in ('CXX', 'CC', 'LD'):
-      env[var] = self._FixGoldPath(env[var], target_tc)
+      env[var] = self._FixGoldPath(env[var], target_tc_path)
 
     if options.clang:
       # clang++ requires C++ header paths to be explicitly specified.
       # See discussion on crbug.com/86037.
-      tc_tuple = sdk_ctx.metadata['toolchain-tuple'][0]
-      gcc_path = os.path.join(tc_bin, '%s-gcc' % tc_tuple)
+      target_tc = sdk_ctx.target_tc
+      gcc_path = os.path.join(tc_bin_path, '%s-gcc' % target_tc)
       gcc_version = cros_build_lib.DebugRunCommand(
           [gcc_path, '-dumpversion'], redirect_stdout=True).output.strip()
-      gcc_lib = 'usr/lib/gcc/%(tuple)s/%(ver)s/include/g++-v%(major_ver)s' % {
-          'tuple': tc_tuple,
+      gcc_lib = 'usr/lib/gcc/%(targ)s/%(ver)s/include/g++-v%(major_ver)s' % {
+          'targ': target_tc,
           'ver': gcc_version,
           'major_ver': gcc_version[0],
       }
-      tc_gcc_lib = os.path.join(target_tc, gcc_lib)
+      tc_gcc_lib = os.path.join(target_tc_path, gcc_lib)
       includes = []
-      for p in ('',  tc_tuple, 'backward'):
+      for p in ('',  target_tc, 'backward'):
         includes.append('-isystem %s' % os.path.join(tc_gcc_lib, p))
       env['CC'] = 'clang'
       env['CXX'] = 'clang++ %s' % ' '.join(includes)
@@ -850,7 +871,9 @@ class ChromeSDKCommand(cros.CrosCommand):
     if self.options.clang:
       self._SetupClang()
 
-    with self.sdk.Prepare(components, version=prepare_version) as ctx:
+    with self.sdk.Prepare(components, version=prepare_version,
+                          target_tc=self.options.target_tc,
+                          toolchain_url=self.options.toolchain_url) as ctx:
       env = self._SetupEnvironment(self.options.board, ctx, self.options,
                                    goma_dir=goma_dir, goma_port=goma_port)
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
