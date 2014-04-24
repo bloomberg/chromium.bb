@@ -512,6 +512,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // update the scale factor of the layers.
   void LayoutLayers();
 
+  bool HasPendingSwapAck() const { return pending_swap_ack_; }
+
  private:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;

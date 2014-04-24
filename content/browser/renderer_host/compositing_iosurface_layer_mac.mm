@@ -104,6 +104,21 @@
                 pixelFormat:(CGLPixelFormatObj)pixelFormat
                forLayerTime:(CFTimeInterval)timeInterval
                 displayTime:(const CVTimeStamp*)timeStamp {
+  if (!renderWidgetHostView_)
+    return NO;
+
+  // Add an instantaneous blip to the PendingSwapAck state to indicate
+  // that CoreAnimation asked if a frame is ready. A blip up to to 3 (usually
+  // from 2, indicating that a swap ack is pending) indicates that we requested
+  // a draw. A blip up to 1 (usually from 0, indicating there is no pending swap
+  // ack) indicates that we did not request a draw. This would be more natural
+  // to do with a tracing pseudo-thread
+  // http://crbug.com/366300
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck", renderWidgetHostView_,
+      needsDisplay_ ? 3 : 1);
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck", renderWidgetHostView_,
+      renderWidgetHostView_->HasPendingSwapAck() ? 2 : 0);
+
   return needsDisplay_;
 }
 
