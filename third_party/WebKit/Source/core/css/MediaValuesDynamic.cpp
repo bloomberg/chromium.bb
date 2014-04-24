@@ -9,6 +9,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -28,7 +29,7 @@ PassRefPtr<MediaValues> MediaValuesDynamic::copy() const
     return adoptRef(new MediaValuesDynamic(m_frame));
 }
 
-bool MediaValuesDynamic::computeLength(double value, unsigned short type, int& result) const
+bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitTypes type, int& result) const
 {
     return MediaValues::computeLength(value,
         type,

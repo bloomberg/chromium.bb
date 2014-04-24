@@ -3355,6 +3355,7 @@
             'css/CSSValueTestHelper.h',
             'css/DragUpdateTest.cpp',
             'css/HoverUpdateTest.cpp',
+            'css/MediaValuesTest.cpp',
             'css/MediaQueryEvaluatorTest.cpp',
             'css/MediaQuerySetTest.cpp',
             'css/RuleSetTest.cpp',

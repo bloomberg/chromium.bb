@@ -138,14 +138,14 @@ MediaValues::PointerDeviceType MediaValues::calculateLeastCapablePrimaryPointerD
     return MediaValues::UnknownPointer;
 }
 
-bool MediaValues::computeLength(double value, unsigned short type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, int& result)
+bool MediaValues::computeLength(double value, CSSPrimitiveValue::UnitTypes type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, int& result)
 {
     // The logic in this function is duplicated from CSSPrimitiveValue::computeLengthDouble
     // because MediaValues::computeLength needs nearly identical logic, but we haven't found a way to make
     // CSSPrimitiveValue::computeLengthDouble more generic (to solve both cases) without hurting performance.
 
     // FIXME - Unite the logic here with CSSPrimitiveValue in a performant way.
-    int factor = 0;
+    double factor = 0;
     switch (type) {
     case CSSPrimitiveValue::CSS_EMS:
     case CSSPrimitiveValue::CSS_REMS:
@@ -166,16 +166,16 @@ bool MediaValues::computeLength(double value, unsigned short type, unsigned defa
         factor = defaultFontSize / 2.0;
         break;
     case CSSPrimitiveValue::CSS_VW:
-        factor = viewportWidth / 100;
+        factor = viewportWidth / 100.0;
         break;
     case CSSPrimitiveValue::CSS_VH:
-        factor = viewportHeight / 100;
+        factor = viewportHeight / 100.0;
         break;
     case CSSPrimitiveValue::CSS_VMIN:
-        factor = std::min(viewportWidth, viewportHeight) / 100;
+        factor = std::min(viewportWidth, viewportHeight) / 100.0;
         break;
     case CSSPrimitiveValue::CSS_VMAX:
-        factor = std::max(viewportWidth, viewportHeight) / 100;
+        factor = std::max(viewportWidth, viewportHeight) / 100.0;
         break;
     case CSSPrimitiveValue::CSS_CM:
         factor = cssPixelsPerCentimeter;

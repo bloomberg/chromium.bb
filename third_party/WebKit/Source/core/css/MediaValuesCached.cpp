@@ -72,7 +72,7 @@ PassRefPtr<MediaValues> MediaValuesCached::copy() const
     return adoptRef(new MediaValuesCached(m_data));
 }
 
-bool MediaValuesCached::computeLength(double value, unsigned short type, int& result) const
+bool MediaValuesCached::computeLength(double value, CSSPrimitiveValue::UnitTypes type, int& result) const
 {
     return MediaValues::computeLength(value, type, m_data.defaultFontSize, m_data.viewportWidth, m_data.viewportHeight, result);
 }
