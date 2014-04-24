@@ -4,12 +4,12 @@
 
 #include "ui/views/views_delegate.h"
 
-#include "ui/views/touchui/touch_selection_controller_impl.h"
+#include "ui/views/views_touch_selection_controller_factory.h"
 
 namespace views {
 
 ViewsDelegate::ViewsDelegate()
-    : views_tsc_factory_(new views::ViewsTouchSelectionControllerFactory) {
+    : views_tsc_factory_(new ViewsTouchSelectionControllerFactory) {
   ui::TouchSelectionControllerFactory::SetInstance(views_tsc_factory_.get());
 }
 

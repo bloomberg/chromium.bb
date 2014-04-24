@@ -18,6 +18,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
+#include "ui/views/views_touch_selection_controller_factory.h"
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
