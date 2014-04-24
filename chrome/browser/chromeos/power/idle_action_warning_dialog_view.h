@@ -7,7 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/views/window/dialog_delegate.h"
+
+namespace views {
+class Label;
+}
 
 namespace chromeos {
 
@@ -16,8 +22,10 @@ namespace chromeos {
 // the warning is hard-coded to warn about logout.
 class IdleActionWarningDialogView : public views::DialogDelegateView {
  public:
-  IdleActionWarningDialogView();
+  explicit IdleActionWarningDialogView(base::TimeTicks idle_action_time);
   void CloseDialog();
+
+  void Update(base::TimeTicks idle_action_time);
 
   // views::DialogDelegateView:
   virtual ui::ModalType GetModalType() const OVERRIDE;
@@ -28,7 +36,13 @@ class IdleActionWarningDialogView : public views::DialogDelegateView {
  private:
   virtual ~IdleActionWarningDialogView();
 
-  bool closing_;
+  void UpdateLabel();
+
+  base::TimeTicks idle_action_time_;
+
+  views::Label* label_;
+
+  base::RepeatingTimer<IdleActionWarningDialogView> update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleActionWarningDialogView);
 };

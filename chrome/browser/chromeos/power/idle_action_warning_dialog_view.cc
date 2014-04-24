@@ -4,10 +4,14 @@
 
 #include "chrome/browser/chromeos/power/idle_action_warning_dialog_view.h"
 
+#include <algorithm>
+
 #include "ash/shell.h"
+#include "base/location.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/text_constants.h"
@@ -24,9 +28,11 @@ namespace {
 
 const int kIdleActionWarningContentWidth = 300;
 
+const int kCountdownUpdateIntervalMs = 1000;  // 1 second.
+
 class FixedWidthLabel : public views::Label {
  public:
-  FixedWidthLabel(const base::string16& text, int width);
+  explicit FixedWidthLabel(int width);
   virtual ~FixedWidthLabel();
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -37,9 +43,7 @@ class FixedWidthLabel : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(FixedWidthLabel);
 };
 
-FixedWidthLabel::FixedWidthLabel(const base::string16& text, int width)
-    : Label(text),
-      width_(width) {
+FixedWidthLabel::FixedWidthLabel(int width) : width_(width) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetMultiLine(true);
 }
@@ -53,25 +57,39 @@ gfx::Size FixedWidthLabel::GetPreferredSize() {
 
 }  // namespace
 
-IdleActionWarningDialogView::IdleActionWarningDialogView() : closing_(false) {
-  FixedWidthLabel* content = new FixedWidthLabel(
-        l10n_util::GetStringUTF16(IDS_IDLE_WARNING_LOGOUT_WARNING),
-        kIdleActionWarningContentWidth);
-  content->SetBorder(
+IdleActionWarningDialogView::IdleActionWarningDialogView(
+    base::TimeTicks idle_action_time)
+    : idle_action_time_(idle_action_time),
+      label_(NULL) {
+  label_ = new FixedWidthLabel(kIdleActionWarningContentWidth);
+  label_->SetBorder(
       views::Border::CreateEmptyBorder(views::kPanelVertMargin,
                                        views::kButtonHEdgeMarginNew,
                                        views::kPanelVertMargin,
                                        views::kButtonHEdgeMarginNew));
-  AddChildView(content);
+  AddChildView(label_);
   SetLayoutManager(new views::FillLayout());
+
+  UpdateLabel();
 
   views::DialogDelegate::CreateDialogWidget(
       this, ash::Shell::GetPrimaryRootWindow(), NULL)->Show();
+
+  update_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kCountdownUpdateIntervalMs),
+      this,
+      &IdleActionWarningDialogView::UpdateLabel);
 }
 
 void IdleActionWarningDialogView::CloseDialog() {
-  closing_ = true;
+  update_timer_.Stop();
   GetDialogClientView()->CancelWindow();
+}
+
+void IdleActionWarningDialogView::Update(base::TimeTicks idle_action_time) {
+  idle_action_time_ = idle_action_time;
+  UpdateLabel();
 }
 
 ui::ModalType IdleActionWarningDialogView::GetModalType() const {
@@ -87,10 +105,22 @@ int IdleActionWarningDialogView::GetDialogButtons() const {
 }
 
 bool IdleActionWarningDialogView::Cancel() {
-  return closing_;
+  return !update_timer_.IsRunning();
 }
 
 IdleActionWarningDialogView::~IdleActionWarningDialogView() {
+}
+
+void IdleActionWarningDialogView::UpdateLabel() {
+  const base::TimeDelta time_until_idle_action =
+      std::max(idle_action_time_ - base::TimeTicks::Now(),
+               base::TimeDelta());
+  label_->SetText(l10n_util::GetStringFUTF16(
+      IDS_IDLE_WARNING_LOGOUT_WARNING,
+      ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
+                               ui::TimeFormat::LENGTH_LONG,
+                               10,
+                               time_until_idle_action)));
 }
 
 }  // namespace chromeos

@@ -4764,7 +4764,7 @@ Battery full
     Are you still there?
   </message>
   <message name="IDS_IDLE_WARNING_LOGOUT_WARNING" desc="Content of the warning dialog shown when the user becomes idle and is about to get logged out.">
-    If you keep doing nothing, you'll be logged out in a few moments.
+    If you keep doing nothing, you will be signed out in <ph name="LOGOUT_TIME_LEFT">$1<ex>5 seconds</ex></ph>.
   </message>
   <message name="IDS_KIOSK_APP_FAILED_TO_LAUNCH" desc="Generic error message used when a kiosk app fails to launch.">
     Darn, the kiosk application could not be launched.
