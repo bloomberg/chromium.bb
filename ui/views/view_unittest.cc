@@ -203,7 +203,7 @@ typedef ViewsTestBase ViewTest;
 // A derived class for testing purpose.
 class TestView : public View {
  public:
-  TestView() : View(), delete_on_pressed_(false) {}
+  TestView() : View(), delete_on_pressed_(false), native_theme_(NULL) {}
   virtual ~TestView() {}
 
   // Reset all test state
@@ -244,6 +244,9 @@ class TestView : public View {
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* native_theme)
+      OVERRIDE;
+
   // OnBoundsChanged.
   bool did_change_bounds_;
   gfx::Rect new_bounds_;
@@ -267,6 +270,9 @@ class TestView : public View {
 
   // Accelerators.
   std::map<ui::Accelerator, int> accelerator_count_map_;
+
+  // Native theme.
+  const ui::NativeTheme* native_theme_;
 };
 
 // A view subclass that consumes all Gesture events for testing purposes.
@@ -3617,6 +3623,45 @@ TEST_F(ViewTest, UpdateViewStorageOnDelete) {
     view_storage->StoreView(storage_id, &view);
   }
   EXPECT_TRUE(view_storage->RetrieveView(storage_id) == NULL);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeTheme
+////////////////////////////////////////////////////////////////////////////////
+
+void TestView::OnNativeThemeChanged(const ui::NativeTheme* native_theme) {
+  native_theme_ = native_theme;
+}
+
+TEST_F(ViewTest, OnNativeThemeChanged) {
+  TestView* test_view = new TestView();
+  EXPECT_FALSE(test_view->native_theme_);
+  TestView* test_view_child = new TestView();
+  EXPECT_FALSE(test_view_child->native_theme_);
+
+  // Child view added before the widget hierarchy exists should get the
+  // new native theme notification.
+  test_view->AddChildView(test_view_child);
+
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+
+  widget->GetRootView()->AddChildView(test_view);
+  EXPECT_TRUE(test_view->native_theme_);
+  EXPECT_EQ(widget->GetNativeTheme(), test_view->native_theme_);
+  EXPECT_TRUE(test_view_child->native_theme_);
+  EXPECT_EQ(widget->GetNativeTheme(), test_view_child->native_theme_);
+
+  // Child view added after the widget hierarchy exists should also get the
+  // notification.
+  TestView* test_view_child_2 = new TestView();
+  test_view->AddChildView(test_view_child_2);
+  EXPECT_TRUE(test_view_child_2->native_theme_);
+  EXPECT_EQ(widget->GetNativeTheme(), test_view_child_2->native_theme_);
+
+  widget->CloseNow();
 }
 
 }  // namespace views

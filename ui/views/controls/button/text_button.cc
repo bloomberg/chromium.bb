@@ -207,8 +207,6 @@ TextButtonBase::TextButtonBase(ButtonListener* listener,
       use_hover_color_from_theme_(true),
       focus_painter_(Painter::CreateDashedFocusPainter()) {
   SetText(text);
-  // OnNativeThemeChanged sets the color member variables.
-  TextButtonBase::OnNativeThemeChanged(GetNativeTheme());
   SetAnimationDuration(kHoverAnimationDurationMs);
 }
 
