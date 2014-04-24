@@ -155,14 +155,14 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
   struct test_data {
     const base::FilePath::StringType path;
     size_t count;
-    const base::FilePath::StringType components[3];
+    const base::FilePath::StringType components[2];
   } test_cases[] = {
     { FILE_PATH_LITERAL("foo/bar"),
       2,
       { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
     { FILE_PATH_LITERAL("foo"),
       1,
-      { FILE_PATH_LITERAL("foo") } },
+      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("") } },
     { FILE_PATH_LITERAL("foo////bar"),
       2,
       { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },

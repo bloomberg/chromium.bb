@@ -299,14 +299,15 @@ TEST_F(BookmarkProviderTest, Rankings) {
     const size_t match_count;
     // |matches| specifies the titles for all bookmarks expected to be matched
     // by the |query|
-    const std::string matches[99];
+    const std::string matches[3];
   } query_data[] = {
     // Basic ranking test.
     {"abc",       3, {"abcde",      // Most complete match.
                       "abcdef",
                       "abc def"}},  // Least complete match.
     {"ghi",       2, {"ghi jkl",    // Matched earlier.
-                      "jkl ghi"}},  // Matched later.
+                      "jkl ghi",    // Matched later.
+                      ""}},
     // Rankings of exact-word matches with different URLs.
     {"achlorhydric",
                   3, {"achlorhydric mockingbirds resuscitates featherhead",
@@ -314,14 +315,16 @@ TEST_F(BookmarkProviderTest, Rankings) {
                       "featherhead resuscitates achlorhydric mockingbirds"}},
     {"achlorhydric featherheads",
                   2, {"achlorhydric featherheads resuscitates mockingbirds",
-                      "mockingbirds resuscitates featherheads achlorhydric"}},
+                      "mockingbirds resuscitates featherheads achlorhydric",
+                      ""}},
     {"mockingbirds resuscitates",
                   3, {"mockingbirds resuscitates featherheads achlorhydric",
                       "achlorhydric mockingbirds resuscitates featherhead",
                       "featherhead resuscitates achlorhydric mockingbirds"}},
     // Ranking of exact-word matches with URL boost.
     {"worms",     2, {"burning worms #2",    // boosted
-                      "burning worms #1"}},  // not boosted
+                      "burning worms #1",    // not boosted
+                      ""}},
     // Ranking of prefix matches with URL boost. Note that a query of
     // "worm burn" will have the same results.
     {"burn worm", 3, {"burning worms #2",    // boosted
