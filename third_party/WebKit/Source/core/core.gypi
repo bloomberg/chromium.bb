@@ -3387,6 +3387,7 @@
             'html/parser/HTMLSrcsetParserTest.cpp',
             'html/track/vtt/BufferedLineReaderTest.cpp',
             'html/track/vtt/VTTScannerTest.cpp',
+            'loader/MixedContentCheckerTest.cpp',
             'rendering/RenderOverflowTest.cpp',
             'rendering/shapes/BoxShapeTest.cpp',
             'testing/UnitTestHelpers.cpp',
