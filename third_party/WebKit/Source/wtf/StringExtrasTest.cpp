@@ -79,12 +79,12 @@ void testBoundaries()
     const IntegerType min = std::numeric_limits<IntegerType>::min();
     CString minStringData = String::number(min).latin1();
     snprintf(buffer.data(), bufferSize, PrintfFormatTrait<IntegerType>::format, min);
-    ASSERT_STREQ(buffer.data(), minStringData.data());
+    EXPECT_STREQ(buffer.data(), minStringData.data());
 
     const IntegerType max = std::numeric_limits<IntegerType>::max();
     CString maxStringData = String::number(max).latin1();
     snprintf(buffer.data(), bufferSize, PrintfFormatTrait<IntegerType>::format, max);
-    ASSERT_STREQ(buffer.data(), maxStringData.data());
+    EXPECT_STREQ(buffer.data(), maxStringData.data());
 }
 
 template<typename IntegerType>
@@ -98,11 +98,11 @@ void testNumbers()
         const IntegerType number = static_cast<IntegerType>(i);
         CString numberStringData = String::number(number).latin1();
         snprintf(buffer.data(), bufferSize, PrintfFormatTrait<IntegerType>::format, number);
-        ASSERT_STREQ(buffer.data(), numberStringData.data());
+        EXPECT_STREQ(buffer.data(), numberStringData.data());
     }
 }
 
-TEST(WTF, IntegerToStringConversionSignedIntegerBoundaries)
+TEST(StringExtraTest, IntegerToStringConversionSignedIntegerBoundaries)
 {
     testBoundaries<short>();
     testBoundaries<int>();
@@ -110,7 +110,7 @@ TEST(WTF, IntegerToStringConversionSignedIntegerBoundaries)
     testBoundaries<long long>();
 }
 
-TEST(WTF, IntegerToStringConversionSignedIntegerRegularNumbers)
+TEST(StringExtraTest, IntegerToStringConversionSignedIntegerRegularNumbers)
 {
     testNumbers<short>();
     testNumbers<int>();
@@ -118,7 +118,7 @@ TEST(WTF, IntegerToStringConversionSignedIntegerRegularNumbers)
     testNumbers<long long>();
 }
 
-TEST(WTF, IntegerToStringConversionUnsignedIntegerBoundaries)
+TEST(StringExtraTest, IntegerToStringConversionUnsignedIntegerBoundaries)
 {
     testBoundaries<unsigned short>();
     testBoundaries<unsigned>();
@@ -126,7 +126,7 @@ TEST(WTF, IntegerToStringConversionUnsignedIntegerBoundaries)
     testBoundaries<unsigned long long>();
 }
 
-TEST(WTF, IntegerToStringConversionUnsignedIntegerRegularNumbers)
+TEST(StringExtraTest, IntegerToStringConversionUnsignedIntegerRegularNumbers)
 {
     testNumbers<unsigned short>();
     testNumbers<unsigned>();

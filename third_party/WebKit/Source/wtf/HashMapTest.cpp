@@ -36,22 +36,22 @@ namespace {
 
 typedef WTF::HashMap<int, int> IntHashMap;
 
-TEST(WTF, HashTableIteratorComparison)
+TEST(HashMapTest, IteratorComparison)
 {
     IntHashMap map;
     map.add(1, 2);
-    ASSERT_TRUE(map.begin() != map.end());
-    ASSERT_FALSE(map.begin() == map.end());
+    EXPECT_TRUE(map.begin() != map.end());
+    EXPECT_FALSE(map.begin() == map.end());
 
     IntHashMap::const_iterator begin = map.begin();
-    ASSERT_TRUE(begin == map.begin());
-    ASSERT_TRUE(map.begin() == begin);
-    ASSERT_TRUE(begin != map.end());
-    ASSERT_TRUE(map.end() != begin);
-    ASSERT_FALSE(begin != map.begin());
-    ASSERT_FALSE(map.begin() != begin);
-    ASSERT_FALSE(begin == map.end());
-    ASSERT_FALSE(map.end() == begin);
+    EXPECT_TRUE(begin == map.begin());
+    EXPECT_TRUE(map.begin() == begin);
+    EXPECT_TRUE(begin != map.end());
+    EXPECT_TRUE(map.end() != begin);
+    EXPECT_FALSE(begin != map.begin());
+    EXPECT_FALSE(map.begin() != begin);
+    EXPECT_FALSE(begin == map.end());
+    EXPECT_FALSE(map.end() == begin);
 }
 
 struct TestDoubleHashTraits : HashTraits<double> {
@@ -65,7 +65,7 @@ static int bucketForKey(double key)
     return DefaultHash<double>::Hash::hash(key) & (TestDoubleHashTraits::minimumTableSize - 1);
 }
 
-TEST(WTF, DoubleHashCollisions)
+TEST(HashMapTest, DoubleHashCollisions)
 {
     // The "clobber" key here is one that ends up stealing the bucket that the -0 key
     // originally wants to be in. This makes the 0 and -0 keys collide and the test then
@@ -80,10 +80,10 @@ TEST(WTF, DoubleHashCollisions)
     map.add(zeroKey, 2);
     map.add(negativeZeroKey, 3);
 
-    ASSERT_EQ(bucketForKey(clobberKey), bucketForKey(negativeZeroKey));
-    ASSERT_EQ(map.get(clobberKey), 1);
-    ASSERT_EQ(map.get(zeroKey), 2);
-    ASSERT_EQ(map.get(negativeZeroKey), 3);
+    EXPECT_EQ(bucketForKey(clobberKey), bucketForKey(negativeZeroKey));
+    EXPECT_EQ(1, map.get(clobberKey));
+    EXPECT_EQ(2, map.get(zeroKey));
+    EXPECT_EQ(3, map.get(negativeZeroKey));
 }
 
 class DestructCounter {
@@ -103,7 +103,7 @@ private:
 
 typedef WTF::HashMap<int, OwnPtr<DestructCounter> > OwnPtrHashMap;
 
-TEST(WTF, HashMapWithOwnPtrAsValue)
+TEST(HashMapTest, OwnPtrAsValue)
 {
     int destructNumber = 0;
     OwnPtrHashMap map;
@@ -111,29 +111,29 @@ TEST(WTF, HashMapWithOwnPtrAsValue)
     map.add(2, adoptPtr(new DestructCounter(2, &destructNumber)));
 
     DestructCounter* counter1 = map.get(1);
-    ASSERT_EQ(1, counter1->get());
+    EXPECT_EQ(1, counter1->get());
     DestructCounter* counter2 = map.get(2);
-    ASSERT_EQ(2, counter2->get());
-    ASSERT_EQ(0, destructNumber);
+    EXPECT_EQ(2, counter2->get());
+    EXPECT_EQ(0, destructNumber);
 
     for (OwnPtrHashMap::iterator iter = map.begin(); iter != map.end(); ++iter) {
         OwnPtr<DestructCounter>& ownCounter = iter->value;
-        ASSERT_EQ(iter->key, ownCounter->get());
+        EXPECT_EQ(iter->key, ownCounter->get());
     }
     ASSERT_EQ(0, destructNumber);
 
     OwnPtr<DestructCounter> ownCounter1 = map.take(1);
-    ASSERT_EQ(ownCounter1.get(), counter1);
-    ASSERT_FALSE(map.contains(1));
-    ASSERT_EQ(0, destructNumber);
+    EXPECT_EQ(ownCounter1.get(), counter1);
+    EXPECT_FALSE(map.contains(1));
+    EXPECT_EQ(0, destructNumber);
 
     map.remove(2);
-    ASSERT_FALSE(map.contains(2));
-    ASSERT_EQ(0UL, map.size());
-    ASSERT_EQ(1, destructNumber);
+    EXPECT_FALSE(map.contains(2));
+    EXPECT_EQ(0UL, map.size());
+    EXPECT_EQ(1, destructNumber);
 
     ownCounter1.clear();
-    ASSERT_EQ(2, destructNumber);
+    EXPECT_EQ(2, destructNumber);
 }
 
 
@@ -156,32 +156,32 @@ private:
 
 int DummyRefCounted::m_refInvokesCount = 0;
 
-TEST(WTF, HashMapWithRefPtrAsKey)
+TEST(HashMapTest, RefPtrAsKey)
 {
     bool isDeleted;
     RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
-    ASSERT_EQ(0, DummyRefCounted::m_refInvokesCount);
+    EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
     HashMap<RefPtr<DummyRefCounted>, int> map;
     map.add(ptr, 1);
     // Referenced only once (to store a copy in the container).
-    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
-    ASSERT_EQ(1, map.get(ptr));
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+    EXPECT_EQ(1, map.get(ptr));
 
     DummyRefCounted* rawPtr = ptr.get();
 
-    ASSERT_TRUE(map.contains(rawPtr));
-    ASSERT_NE(map.end(), map.find(rawPtr));
-    ASSERT_TRUE(map.contains(ptr));
-    ASSERT_NE(map.end(), map.find(ptr));
-    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
+    EXPECT_TRUE(map.contains(rawPtr));
+    EXPECT_NE(map.end(), map.find(rawPtr));
+    EXPECT_TRUE(map.contains(ptr));
+    EXPECT_NE(map.end(), map.find(ptr));
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
 
     ptr.clear();
-    ASSERT_FALSE(isDeleted);
+    EXPECT_FALSE(isDeleted);
 
     map.remove(rawPtr);
-    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
-    ASSERT_TRUE(isDeleted);
-    ASSERT_TRUE(map.isEmpty());
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+    EXPECT_TRUE(isDeleted);
+    EXPECT_TRUE(map.isEmpty());
 }
 
 class SimpleClass {

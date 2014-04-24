@@ -39,7 +39,7 @@ public:
     static PassRefPtr<TestTree> create() { return adoptRef(new TestTree()); }
 };
 
-TEST(WTF, TreeNodeAppendChild)
+TEST(TreeNodeTest, AppendChild)
 {
     RefPtr<TestTree> root = TestTree::create();
     RefPtr<TestTree> firstChild = TestTree::create();
@@ -58,7 +58,7 @@ TEST(WTF, TreeNodeAppendChild)
     EXPECT_EQ(lastChild->parent(), root.get());
 }
 
-TEST(WTF, TreeNodeInsertBefore)
+TEST(TreeNodeTest, InsertBefore)
 {
     RefPtr<TestTree> root = TestTree::create();
     RefPtr<TestTree> firstChild = TestTree::create();
@@ -91,7 +91,7 @@ TEST(WTF, TreeNodeInsertBefore)
 
 }
 
-TEST(WTF, TreeNodeRemoveSingle)
+TEST(TreeNodeTest, RemoveSingle)
 {
     RefPtr<TestTree> root = TestTree::create();
     RefPtr<TestTree> child = TestTree::create();
@@ -129,7 +129,7 @@ public:
     RefPtr<TestTree> lastChild;
 };
 
-TEST(WTF, TreeNodeRemoveMiddle)
+TEST(TreeNodeTest, RemoveMiddle)
 {
     Trio trio;
     trio.appendChildren();
@@ -142,7 +142,7 @@ TEST(WTF, TreeNodeRemoveMiddle)
     EXPECT_EQ(trio.root->lastChild(), trio.lastChild.get());
 }
 
-TEST(WTF, TreeNodeRemoveLast)
+TEST(TreeNodeTest, RemoveLast)
 {
     RefPtr<TestTree> nullNode;
     Trio trio;
@@ -155,7 +155,7 @@ TEST(WTF, TreeNodeRemoveLast)
     EXPECT_EQ(trio.root->lastChild(), trio.middleChild.get());
 }
 
-TEST(WTF, TreeNodeRemoveFirst)
+TEST(TreeNodeTest, RemoveFirst)
 {
     RefPtr<TestTree> nullNode;
     Trio trio;
@@ -168,7 +168,7 @@ TEST(WTF, TreeNodeRemoveFirst)
     EXPECT_EQ(trio.root->lastChild(), trio.lastChild.get());
 }
 
-TEST(WTF, TreeNodeTakeChildrenFrom)
+TEST(TreeNodeTest, TakeChildrenFrom)
 {
     RefPtr<TestTree> newParent = TestTree::create();
     Trio trio;
@@ -199,7 +199,7 @@ public:
     RefPtr<TestTree> grandChild;
 };
 
-TEST(WTF, TreeNodeTraverseNext)
+TEST(TreeNodeTest, TraverseNext)
 {
     TrioWithGrandChild trio;
     trio.appendChildren();
@@ -215,7 +215,7 @@ TEST(WTF, TreeNodeTraverseNext)
     EXPECT_EQ(orderIndex, sizeof(order) / sizeof(TestTree*));
 }
 
-TEST(WTF, TreeNodeTraverseNextPostORder)
+TEST(TreeNodeTest, TraverseNextPostORder)
 {
     TrioWithGrandChild trio;
     trio.appendChildren();

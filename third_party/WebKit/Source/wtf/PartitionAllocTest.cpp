@@ -149,7 +149,7 @@ static void CycleGenericFreeCache(size_t size)
 }
 
 // Check that the most basic of allocate / free pairs work.
-TEST(WTF_PartitionAlloc, Basic)
+TEST(PartitionAllocTest, Basic)
 {
     TestSetup();
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[kTestBucketIndex];
@@ -173,7 +173,7 @@ TEST(WTF_PartitionAlloc, Basic)
 }
 
 // Check that we can detect a memory leak.
-TEST(WTF_PartitionAlloc, SimpleLeak)
+TEST(PartitionAllocTest, SimpleLeak)
 {
     TestSetup();
     void* leakedPtr = partitionAlloc(allocator.root(), kTestAllocSize);
@@ -185,7 +185,7 @@ TEST(WTF_PartitionAlloc, SimpleLeak)
 }
 
 // Test multiple allocations, and freelist handling.
-TEST(WTF_PartitionAlloc, MultiAlloc)
+TEST(PartitionAllocTest, MultiAlloc)
 {
     TestSetup();
 
@@ -221,7 +221,7 @@ TEST(WTF_PartitionAlloc, MultiAlloc)
 }
 
 // Test a bucket with multiple pages.
-TEST(WTF_PartitionAlloc, MultiPages)
+TEST(PartitionAllocTest, MultiPages)
 {
     TestSetup();
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[kTestBucketIndex];
@@ -263,7 +263,7 @@ TEST(WTF_PartitionAlloc, MultiPages)
 }
 
 // Test some finer aspects of internal page transitions.
-TEST(WTF_PartitionAlloc, PageTransitions)
+TEST(PartitionAllocTest, PageTransitions)
 {
     TestSetup();
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[kTestBucketIndex];
@@ -323,7 +323,7 @@ TEST(WTF_PartitionAlloc, PageTransitions)
 
 // Test some corner cases relating to page transitions in the internal
 // free page list metadata bucket.
-TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
+TEST(PartitionAllocTest, FreePageListPageTransitions)
 {
     TestSetup();
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[kTestBucketIndex];
@@ -381,7 +381,7 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
 
 // Test a large series of allocations that cross more than one underlying
 // 64KB super page allocation.
-TEST(WTF_PartitionAlloc, MultiPageAllocs)
+TEST(PartitionAllocTest, MultiPageAllocs)
 {
     TestSetup();
     // This is guaranteed to cross a super page boundary because the first
@@ -417,7 +417,7 @@ TEST(WTF_PartitionAlloc, MultiPageAllocs)
 
 // Test the generic allocation functions that can handle arbitrary sizes and
 // reallocing etc.
-TEST(WTF_PartitionAlloc, GenericAlloc)
+TEST(PartitionAllocTest, GenericAlloc)
 {
     TestSetup();
 
@@ -504,7 +504,7 @@ TEST(WTF_PartitionAlloc, GenericAlloc)
 
 // Test the generic allocation functions can handle some specific sizes of
 // interest.
-TEST(WTF_PartitionAlloc, GenericAllocSizes)
+TEST(PartitionAllocTest, GenericAllocSizes)
 {
     TestSetup();
 
@@ -588,7 +588,7 @@ TEST(WTF_PartitionAlloc, GenericAllocSizes)
 }
 
 // Test that we can fetch the real allocated size after an allocation.
-TEST(WTF_PartitionAlloc, GenericAllocGetSize)
+TEST(PartitionAllocTest, GenericAllocGetSize)
 {
     TestSetup();
 
@@ -651,7 +651,7 @@ TEST(WTF_PartitionAlloc, GenericAllocGetSize)
 }
 
 // Test the realloc() contract.
-TEST(WTF_PartitionAlloc, Realloc)
+TEST(PartitionAllocTest, Realloc)
 {
     TestSetup();
 
@@ -713,7 +713,7 @@ TEST(WTF_PartitionAlloc, Realloc)
 }
 
 // Tests the handing out of freelists for partial pages.
-TEST(WTF_PartitionAlloc, PartialPageFreelists)
+TEST(PartitionAllocTest, PartialPageFreelists)
 {
     TestSetup();
 
@@ -854,7 +854,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
 }
 
 // Test some of the fragmentation-resistant properties of the allocator.
-TEST(WTF_PartitionAlloc, PageRefilling)
+TEST(PartitionAllocTest, PageRefilling)
 {
     TestSetup();
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[kTestBucketIndex];
@@ -889,7 +889,7 @@ TEST(WTF_PartitionAlloc, PageRefilling)
 }
 
 // Basic tests to ensure that allocations work for partial page buckets.
-TEST(WTF_PartitionAlloc, PartialPages)
+TEST(PartitionAllocTest, PartialPages)
 {
     TestSetup();
 
@@ -913,7 +913,7 @@ TEST(WTF_PartitionAlloc, PartialPages)
 }
 
 // Test correct handling if our mapping collides with another.
-TEST(WTF_PartitionAlloc, MappingCollision)
+TEST(PartitionAllocTest, MappingCollision)
 {
     TestSetup();
     // The -2 is because the first and last partition pages in a super page are
@@ -976,7 +976,7 @@ TEST(WTF_PartitionAlloc, MappingCollision)
 }
 
 // Tests that pages in the free page cache do get freed as appropriate.
-TEST(WTF_PartitionAlloc, FreeCache)
+TEST(PartitionAllocTest, FreeCache)
 {
     TestSetup();
 
@@ -1020,7 +1020,7 @@ TEST(WTF_PartitionAlloc, FreeCache)
 }
 
 // Tests for a bug we had with losing references to free pages.
-TEST(WTF_PartitionAlloc, LostFreePagesBug)
+TEST(PartitionAllocTest, LostFreePagesBug)
 {
     TestSetup();
 
@@ -1086,7 +1086,7 @@ TEST(WTF_PartitionAlloc, LostFreePagesBug)
 // Make sure that malloc(-1) dies.
 // In the past, we had an integer overflow that would alias malloc(-1) to
 // malloc(0), which is not good.
-TEST(WTF_PartitionAllocDeathTest, LargeAllocs)
+TEST(PartitionAllocDeathTest, LargeAllocs)
 {
     TestSetup();
     // Largest alloc.
@@ -1098,7 +1098,7 @@ TEST(WTF_PartitionAllocDeathTest, LargeAllocs)
 }
 
 // Check that our immediate double-free detection works.
-TEST(WTF_PartitionAllocDeathTest, ImmediateDoubleFree)
+TEST(PartitionAllocDeathTest, ImmediateDoubleFree)
 {
     TestSetup();
 
@@ -1112,7 +1112,7 @@ TEST(WTF_PartitionAllocDeathTest, ImmediateDoubleFree)
 }
 
 // Check that our refcount-based double-free detection works.
-TEST(WTF_PartitionAllocDeathTest, RefcountDoubleFree)
+TEST(PartitionAllocDeathTest, RefcountDoubleFree)
 {
     TestSetup();
 
@@ -1131,7 +1131,7 @@ TEST(WTF_PartitionAllocDeathTest, RefcountDoubleFree)
 }
 
 // Check that guard pages are present where expected.
-TEST(WTF_PartitionAllocDeathTest, GuardPages)
+TEST(PartitionAllocDeathTest, GuardPages)
 {
     TestSetup();
 
@@ -1156,7 +1156,7 @@ TEST(WTF_PartitionAllocDeathTest, GuardPages)
 // It doesn't seem worth the overhead of a whole new file for these tests, so
 // we'll put them here since partitionAllocGeneric will depend heavily on these
 // functions working correctly.
-TEST(WTF_PartitionAlloc, CLZWorks)
+TEST(PartitionAllocTest, CLZWorks)
 {
     EXPECT_EQ(32u, WTF::countLeadingZeros32(0));
     EXPECT_EQ(31u, WTF::countLeadingZeros32(1));

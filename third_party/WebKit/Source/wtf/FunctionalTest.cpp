@@ -39,11 +39,11 @@ static int returnFortyTwo()
 TEST(FunctionalTest, Basic)
 {
     Function<int ()> emptyFunction;
-    ASSERT_TRUE(emptyFunction.isNull());
+    EXPECT_TRUE(emptyFunction.isNull());
 
     Function<int ()> returnFortyTwoFunction = bind(returnFortyTwo);
-    ASSERT_FALSE(returnFortyTwoFunction.isNull());
-    ASSERT_EQ(42, returnFortyTwoFunction());
+    EXPECT_FALSE(returnFortyTwoFunction.isNull());
+    EXPECT_EQ(42, returnFortyTwoFunction());
 }
 
 static int multiplyByTwo(int n)
@@ -59,10 +59,10 @@ static double multiplyByOneAndAHalf(double d)
 TEST(FunctionalTest, UnaryBind)
 {
     Function<int ()> multiplyFourByTwoFunction = bind(multiplyByTwo, 4);
-    ASSERT_EQ(8, multiplyFourByTwoFunction());
+    EXPECT_EQ(8, multiplyFourByTwoFunction());
 
     Function<double ()> multiplyByOneAndAHalfFunction = bind(multiplyByOneAndAHalf, 3);
-    ASSERT_EQ(4.5, multiplyByOneAndAHalfFunction());
+    EXPECT_EQ(4.5, multiplyByOneAndAHalfFunction());
 }
 
 static int multiply(int x, int y)
@@ -78,10 +78,10 @@ static int subtract(int x, int y)
 TEST(FunctionalTest, BinaryBind)
 {
     Function<int ()> multiplyFourByTwoFunction = bind(multiply, 4, 2);
-    ASSERT_EQ(8, multiplyFourByTwoFunction());
+    EXPECT_EQ(8, multiplyFourByTwoFunction());
 
     Function<int ()> subtractTwoFromFourFunction = bind(subtract, 4, 2);
-    ASSERT_EQ(2, subtractTwoFromFourFunction());
+    EXPECT_EQ(2, subtractTwoFromFourFunction());
 }
 
 class A {
@@ -102,10 +102,10 @@ TEST(FunctionalTest, MemberFunctionBind)
 {
     A a(10);
     Function<int ()> function1 = bind(&A::f, &a);
-    ASSERT_EQ(10, function1());
+    EXPECT_EQ(10, function1());
 
     Function<int ()> function2 = bind(&A::addF, &a, 15);
-    ASSERT_EQ(25, function2());
+    EXPECT_EQ(25, function2());
 }
 
 class Number : public RefCounted<Number> {
@@ -140,15 +140,15 @@ TEST(FunctionalTest, RefCountedStorage)
 {
     RefPtr<Number> five = Number::create(5);
     Function<int ()> multiplyFiveByTwoFunction = bind(multiplyNumberByTwo, five);
-    ASSERT_EQ(10, multiplyFiveByTwoFunction());
+    EXPECT_EQ(10, multiplyFiveByTwoFunction());
 
     Function<int ()> multiplyFourByTwoFunction = bind(multiplyNumberByTwo, Number::create(4));
-    ASSERT_EQ(8, multiplyFourByTwoFunction());
+    EXPECT_EQ(8, multiplyFourByTwoFunction());
 
     RefPtr<Number> six = Number::create(6);
     Function<int ()> multiplySixByTwoFunction = bind(multiplyNumberByTwo, six.release());
-    ASSERT_FALSE(six);
-    ASSERT_EQ(12, multiplySixByTwoFunction());
+    EXPECT_FALSE(six);
+    EXPECT_EQ(12, multiplySixByTwoFunction());
 }
 
 } // namespace

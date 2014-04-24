@@ -34,7 +34,7 @@
 
 namespace {
 
-TEST(WTF_Deque, Basic)
+TEST(DequeTest, Basic)
 {
     Deque<int> intDeque;
     EXPECT_TRUE(intDeque.isEmpty());
@@ -73,7 +73,7 @@ void checkNumberSequenceReverse(Deque<int>& deque, int from, int to, bool increm
     EXPECT_EQ(increment ? deque.rend() : deque.rbegin(), it);
 }
 
-TEST(WTF_Deque, Reverse)
+TEST(DequeTest, Reverse)
 {
     Deque<int> intDeque;
     intDeque.append(10);
@@ -95,14 +95,14 @@ TEST(WTF_Deque, Reverse)
     checkNumberSequenceReverse(intDeque, 14, 11, true);
     checkNumberSequenceReverse(intDeque, 11, 14, false);
 
-    for (int i = 15; i < 200; i++)
+    for (int i = 15; i < 200; ++i)
         intDeque.append(i);
     checkNumberSequence(intDeque, 11, 199, true);
     checkNumberSequence(intDeque, 199, 11, false);
     checkNumberSequenceReverse(intDeque, 199, 11, true);
     checkNumberSequenceReverse(intDeque, 11, 199, false);
 
-    for (int i = 0; i < 180; i++)
+    for (int i = 0; i < 180; ++i)
         EXPECT_EQ(i + 11, intDeque.takeFirst());
     checkNumberSequence(intDeque, 191, 199, true);
     checkNumberSequence(intDeque, 199, 191, false);
@@ -149,70 +149,70 @@ private:
 
 typedef WTF::Deque<OwnPtr<DestructCounter> > OwnPtrDeque;
 
-TEST(WTF_Deque, OwnPtr)
+TEST(DequeTest, OwnPtr)
 {
     int destructNumber = 0;
     OwnPtrDeque deque;
     deque.append(adoptPtr(new DestructCounter(0, &destructNumber)));
     deque.append(adoptPtr(new DestructCounter(1, &destructNumber)));
-    ASSERT_EQ(2u, deque.size());
+    EXPECT_EQ(2u, deque.size());
 
     OwnPtr<DestructCounter>& counter0 = deque.first();
-    ASSERT_EQ(0, counter0->get());
+    EXPECT_EQ(0, counter0->get());
     int counter1 = deque.last()->get();
-    ASSERT_EQ(1, counter1);
-    ASSERT_EQ(0, destructNumber);
+    EXPECT_EQ(1, counter1);
+    EXPECT_EQ(0, destructNumber);
 
     size_t index = 0;
     for (OwnPtrDeque::iterator iter = deque.begin(); iter != deque.end(); ++iter) {
         OwnPtr<DestructCounter>& refCounter = *iter;
-        ASSERT_EQ(index, static_cast<size_t>(refCounter->get()));
-        ASSERT_EQ(index, static_cast<size_t>((*refCounter).get()));
+        EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
+        EXPECT_EQ(index, static_cast<size_t>((*refCounter).get()));
         index++;
     }
-    ASSERT_EQ(0, destructNumber);
+    EXPECT_EQ(0, destructNumber);
 
     OwnPtrDeque::iterator it = deque.begin();
-    for (index = 0; index < deque.size(); index++) {
+    for (index = 0; index < deque.size(); ++index) {
         OwnPtr<DestructCounter>& refCounter = *it;
-        ASSERT_EQ(index, static_cast<size_t>(refCounter->get()));
+        EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
         index++;
         ++it;
     }
-    ASSERT_EQ(0, destructNumber);
+    EXPECT_EQ(0, destructNumber);
 
-    ASSERT_EQ(0, deque.first()->get());
+    EXPECT_EQ(0, deque.first()->get());
     deque.removeFirst();
-    ASSERT_EQ(1, deque.first()->get());
-    ASSERT_EQ(1u, deque.size());
-    ASSERT_EQ(1, destructNumber);
+    EXPECT_EQ(1, deque.first()->get());
+    EXPECT_EQ(1u, deque.size());
+    EXPECT_EQ(1, destructNumber);
 
     OwnPtr<DestructCounter> ownCounter1 = deque.first().release();
     deque.removeFirst();
-    ASSERT_EQ(counter1, ownCounter1->get());
-    ASSERT_EQ(0u, deque.size());
-    ASSERT_EQ(1, destructNumber);
+    EXPECT_EQ(counter1, ownCounter1->get());
+    EXPECT_EQ(0u, deque.size());
+    EXPECT_EQ(1, destructNumber);
 
     ownCounter1.clear();
-    ASSERT_EQ(2, destructNumber);
+    EXPECT_EQ(2, destructNumber);
 
     size_t count = 1025;
     destructNumber = 0;
-    for (size_t i = 0; i < count; i++)
+    for (size_t i = 0; i < count; ++i)
         deque.prepend(adoptPtr(new DestructCounter(i, &destructNumber)));
 
     // Deque relocation must not destruct OwnPtr element.
-    ASSERT_EQ(0, destructNumber);
-    ASSERT_EQ(count, deque.size());
+    EXPECT_EQ(0, destructNumber);
+    EXPECT_EQ(count, deque.size());
 
     OwnPtrDeque copyDeque;
     deque.swap(copyDeque);
-    ASSERT_EQ(0, destructNumber);
-    ASSERT_EQ(count, copyDeque.size());
-    ASSERT_EQ(0u, deque.size());
+    EXPECT_EQ(0, destructNumber);
+    EXPECT_EQ(count, copyDeque.size());
+    EXPECT_EQ(0u, deque.size());
 
     copyDeque.clear();
-    ASSERT_EQ(count, static_cast<size_t>(destructNumber));
+    EXPECT_EQ(count, static_cast<size_t>(destructNumber));
 }
 
 // WrappedInt class will fail if it was memmoved or memcpyed.
@@ -253,7 +253,7 @@ private:
     int m_i;
 };
 
-TEST(WTF_Deque, SwapWithoutInlineCapacity)
+TEST(DequeTest, SwapWithoutInlineCapacity)
 {
     Deque<WrappedInt> dequeA;
     dequeA.append(WrappedInt(1));

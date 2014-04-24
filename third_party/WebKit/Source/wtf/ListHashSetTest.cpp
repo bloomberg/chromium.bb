@@ -63,13 +63,13 @@ void removeFirstHelper()
     EXPECT_TRUE(list.isEmpty());
 }
 
-TEST(WTF, ListHashSetRemoveFirst)
+TEST(ListHashSetTest, RemoveFirst)
 {
     removeFirstHelper<ListHashSet<int> >();
     removeFirstHelper<ListHashSet<int, 1> >();
 }
 
-TEST(WTF, LinkedHashSetRemoveFirst)
+TEST(LinkedHashSetTest, RemoveFirst)
 {
     removeFirstHelper<LinkedHashSet<int> >();
 }
@@ -97,13 +97,13 @@ void appendOrMoveToLastNewItems()
     ++iterator;
 }
 
-TEST(WTF, ListHashSetAppendOrMoveToLastNewItems)
+TEST(ListHashSetTest, AppendOrMoveToLastNewItems)
 {
     appendOrMoveToLastNewItems<ListHashSet<int> >();
     appendOrMoveToLastNewItems<ListHashSet<int, 1> >();
 }
 
-TEST(WTF, LinkedHashSetAppendOrMoveToLastNewItems)
+TEST(LinkedHashSetTest, AppendOrMoveToLastNewItems)
 {
     appendOrMoveToLastNewItems<LinkedHashSet<int> >();
 }
@@ -148,13 +148,13 @@ void appendOrMoveToLastWithDuplicates()
     ++iterator;
 }
 
-TEST(WTF, ListHashSetAppendOrMoveToLastWithDuplicates)
+TEST(ListHashSetTest, AppendOrMoveToLastWithDuplicates)
 {
     appendOrMoveToLastWithDuplicates<ListHashSet<int> >();
     appendOrMoveToLastWithDuplicates<ListHashSet<int, 1> >();
 }
 
-TEST(WTF, LinkedHashSetAppendOrMoveToLastWithDuplicates)
+TEST(LinkedHashSetTest, AppendOrMoveToLastWithDuplicates)
 {
     appendOrMoveToLastWithDuplicates<LinkedHashSet<int> >();
 }
@@ -182,13 +182,13 @@ void prependOrMoveToFirstNewItems()
     ++iterator;
 }
 
-TEST(WTF, ListHashSetPrependOrMoveToFirstNewItems)
+TEST(ListHashSetTest, PrependOrMoveToFirstNewItems)
 {
     prependOrMoveToFirstNewItems<ListHashSet<int> >();
     prependOrMoveToFirstNewItems<ListHashSet<int, 1> >();
 }
 
-TEST(WTF, LinkedHashSetPrependOrMoveToFirstNewItems)
+TEST(LinkedHashSetTest, PrependOrMoveToFirstNewItems)
 {
     prependOrMoveToFirstNewItems<LinkedHashSet<int> >();
 }
@@ -233,13 +233,13 @@ void prependOrMoveToLastWithDuplicates()
     ++iterator;
 }
 
-TEST(WTF, ListHashSetPrependOrMoveToLastWithDuplicates)
+TEST(ListHashSetTest, PrependOrMoveToLastWithDuplicates)
 {
     prependOrMoveToLastWithDuplicates<ListHashSet<int> >();
     prependOrMoveToLastWithDuplicates<ListHashSet<int, 1> >();
 }
 
-TEST(WTF, LinkedHashSetPrependOrMoveToLastWithDuplicates)
+TEST(LinkedHashSetTest, PrependOrMoveToLastWithDuplicates)
 {
     prependOrMoveToLastWithDuplicates<LinkedHashSet<int> >();
 }
@@ -293,13 +293,13 @@ void withRefPtr()
     EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
 }
 
-TEST(WTF, ListHashSetWithRefPtr)
+TEST(ListHashSetTest, WithRefPtr)
 {
     withRefPtr<ListHashSet<RefPtr<DummyRefCounted> > >();
     withRefPtr<ListHashSet<RefPtr<DummyRefCounted>, 1> >();
 }
 
-TEST(WTF, LinkedHashSetWithRefPtr)
+TEST(LinkedHashSetTest, WithRefPtr)
 {
     withRefPtr<LinkedHashSet<RefPtr<DummyRefCounted> > >();
 }
@@ -324,7 +324,7 @@ void findHelper()
     EXPECT_EQ(1, *it);
 }
 
-TEST(WTF, ListHashSetFind)
+TEST(ListHashSetTest, Find)
 {
     findHelper<ListHashSet<int>, const ListHashSet<int>&, ListHashSet<int>::const_iterator>();
     findHelper<ListHashSet<int>, ListHashSet<int>&, ListHashSet<int>::iterator>();
@@ -332,7 +332,7 @@ TEST(WTF, ListHashSetFind)
     findHelper<ListHashSet<int, 1>, ListHashSet<int, 1>&, ListHashSet<int, 1>::iterator>();
 }
 
-TEST(WTF, LinkedHashSetFind)
+TEST(LinkedHashSetTest, Find)
 {
     findHelper<LinkedHashSet<int>, const LinkedHashSet<int>&, LinkedHashSet<int>::const_iterator>();
     findHelper<LinkedHashSet<int>, LinkedHashSet<int>&, LinkedHashSet<int>::iterator>();
@@ -384,13 +384,13 @@ void insertBeforeHelper(bool canModifyWhileIterating)
     EXPECT_EQ(7u, set.size());
 }
 
-TEST(WTF, ListHashSetInsertBefore)
+TEST(ListHashSetTest, InsertBefore)
 {
     insertBeforeHelper<ListHashSet<int> >(true);
     insertBeforeHelper<ListHashSet<int, 1> >(true);
 }
 
-TEST(WTF, LinkedHashSetInsertBefore)
+TEST(LinkedHashSetTest, InsertBefore)
 {
     insertBeforeHelper<LinkedHashSet<int> >(false);
 }
@@ -442,13 +442,13 @@ void addReturnIterator(bool canModifyWhileIterating)
     EXPECT_EQ(4, set.last());
 }
 
-TEST(WTF, ListHashSetAddReturnIterator)
+TEST(ListHashSetTest, AddReturnIterator)
 {
     addReturnIterator<ListHashSet<int> >(true);
     addReturnIterator<ListHashSet<int, 1> >(true);
 }
 
-TEST(WTF, LinkedHashSetAddReturnIterator)
+TEST(LinkedHashSetTest, AddReturnIterator)
 {
     addReturnIterator<LinkedHashSet<int> >(false);
 }
@@ -490,13 +490,13 @@ void excerciseValuePeekInType()
     EXPECT_EQ(0u, set.size());
 }
 
-TEST(WTF, ListHashSetExcerciseValuePeekInType)
+TEST(ListHashSetTest, ExcerciseValuePeekInType)
 {
     excerciseValuePeekInType<ListHashSet<RefPtr<DummyRefCounted> > >();
     excerciseValuePeekInType<ListHashSet<RefPtr<DummyRefCounted>, 1> >();
 }
 
-TEST(WTF, LinkedHashSetExcerciseValuePeekInType)
+TEST(LinkedHashSetTest, ExcerciseValuePeekInType)
 {
     excerciseValuePeekInType<LinkedHashSet<RefPtr<DummyRefCounted> > >();
 }
@@ -561,13 +561,13 @@ void translatorTest()
     EXPECT_EQ(baseLine, Complicated::s_objectsConstructed);
 }
 
-TEST(WTF, ListHashSetComplexityTranslator)
+TEST(ListHashSetTest, ComplexityTranslator)
 {
     translatorTest<ListHashSet<Complicated, 256, ComplicatedHashFunctions> >();
     translatorTest<ListHashSet<Complicated, 1, ComplicatedHashFunctions> >();
 }
 
-TEST(WTF, LinkedHashSetComplexityTranslator)
+TEST(LinkedHashSetTest, ComplexityTranslator)
 {
     translatorTest<LinkedHashSet<Complicated, ComplicatedHashFunctions> >();
 }

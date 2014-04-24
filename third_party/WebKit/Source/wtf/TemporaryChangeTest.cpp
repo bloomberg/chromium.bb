@@ -30,7 +30,7 @@
 
 namespace {
 
-TEST(WTF, TemporaryChangeNested)
+TEST(TemporaryChangeTest, Nested)
 {
     bool originallyFalse = false;
     {

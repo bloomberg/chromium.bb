@@ -30,28 +30,28 @@
 
 namespace {
 
-TEST(WTF, Lrint)
+TEST(MathExtrasTest, Lrint)
 {
-    EXPECT_EQ(lrint(-7.5), -8);
-    EXPECT_EQ(lrint(-8.5), -8);
-    EXPECT_EQ(lrint(-0.5), 0);
-    EXPECT_EQ(lrint(0.5), 0);
-    EXPECT_EQ(lrint(-0.5), 0);
-    EXPECT_EQ(lrint(1.3), 1);
-    EXPECT_EQ(lrint(1.7), 2);
-    EXPECT_EQ(lrint(0), 0);
-    EXPECT_EQ(lrint(-0), 0);
+    EXPECT_EQ(-8, lrint(-7.5));
+    EXPECT_EQ(-8, lrint(-8.5));
+    EXPECT_EQ(0, lrint(-0.5));
+    EXPECT_EQ(0, lrint(0.5));
+    EXPECT_EQ(0, lrint(-0.5));
+    EXPECT_EQ(1, lrint(1.3));
+    EXPECT_EQ(2, lrint(1.7));
+    EXPECT_EQ(0, lrint(0));
+    EXPECT_EQ(0, lrint(-0));
     if (sizeof(long int) == 8) {
         // Largest double number with 0.5 precision and one halfway rounding case below.
-        EXPECT_EQ(lrint(pow(2.0, 52) - 0.5), pow(2.0, 52));
-        EXPECT_EQ(lrint(pow(2.0, 52) - 1.5), pow(2.0, 52) - 2);
+        EXPECT_EQ(pow(2.0, 52), lrint(pow(2.0, 52) - 0.5));
+        EXPECT_EQ(pow(2.0, 52) - 2, lrint(pow(2.0, 52) - 1.5));
         // Smallest double number with 0.5 precision and one halfway rounding case above.
-        EXPECT_EQ(lrint(-pow(2.0, 52) + 0.5), -pow(2.0, 52));
-        EXPECT_EQ(lrint(-pow(2.0, 52) + 1.5), -pow(2.0, 52) + 2);
+        EXPECT_EQ(-pow(2.0, 52), lrint(-pow(2.0, 52) + 0.5));
+        EXPECT_EQ(-pow(2.0, 52) + 2, lrint(-pow(2.0, 52) + 1.5));
     }
 }
 
-TEST(WTF, clampToIntLong)
+TEST(MathExtrasTest, clampToIntLong)
 {
     if (sizeof(long) == sizeof(int))
         return;
@@ -64,14 +64,14 @@ TEST(WTF, clampToIntLong)
     EXPECT_GT(overflowInt, maxInt);
     EXPECT_LT(underflowInt, minInt);
 
-    EXPECT_EQ(clampTo<int>(maxInt), maxInt);
-    EXPECT_EQ(clampTo<int>(minInt), minInt);
+    EXPECT_EQ(maxInt, clampTo<int>(maxInt));
+    EXPECT_EQ(minInt, clampTo<int>(minInt));
 
-    EXPECT_EQ(clampTo<int>(overflowInt), maxInt);
-    EXPECT_EQ(clampTo<int>(underflowInt), minInt);
+    EXPECT_EQ(maxInt, clampTo<int>(overflowInt));
+    EXPECT_EQ(minInt, clampTo<int>(underflowInt));
 }
 
-TEST(WTF, clampToIntLongLong)
+TEST(MathExtrasTest, clampToIntLongLong)
 {
     long long maxInt = std::numeric_limits<int>::max();
     long long minInt = std::numeric_limits<int>::min();
@@ -81,14 +81,14 @@ TEST(WTF, clampToIntLongLong)
     EXPECT_GT(overflowInt, maxInt);
     EXPECT_LT(underflowInt, minInt);
 
-    EXPECT_EQ(clampTo<int>(maxInt), maxInt);
-    EXPECT_EQ(clampTo<int>(minInt), minInt);
+    EXPECT_EQ(maxInt, clampTo<int>(maxInt));
+    EXPECT_EQ(minInt, clampTo<int>(minInt));
 
-    EXPECT_EQ(clampTo<int>(overflowInt), maxInt);
-    EXPECT_EQ(clampTo<int>(underflowInt), minInt);
+    EXPECT_EQ(maxInt, clampTo<int>(overflowInt));
+    EXPECT_EQ(minInt, clampTo<int>(underflowInt));
 }
 
-TEST(WTF, clampToIntegerFloat)
+TEST(MathExtrasTest, clampToIntegerFloat)
 {
     // This test is inaccurate as floats will round the min / max integer
     // due to the narrow mantissa. However it will properly checks within
@@ -103,13 +103,13 @@ TEST(WTF, clampToIntegerFloat)
 
     // If maxInt == 2^31 - 1 (ie on I32 architecture), the closest float used to represent it is 2^31.
     EXPECT_NEAR(clampToInteger(maxInt), maxInt, 1);
-    EXPECT_EQ(clampToInteger(minInt), minInt);
+    EXPECT_EQ(minInt, clampToInteger(minInt));
 
     EXPECT_NEAR(clampToInteger(overflowInt), maxInt, 1);
-    EXPECT_EQ(clampToInteger(underflowInt), minInt);
+    EXPECT_EQ(minInt, clampToInteger(underflowInt));
 }
 
-TEST(WTF, clampToIntegerDouble)
+TEST(MathExtrasTest, clampToIntegerDouble)
 {
     double maxInt = std::numeric_limits<int>::max();
     double minInt = std::numeric_limits<int>::min();
@@ -119,14 +119,14 @@ TEST(WTF, clampToIntegerDouble)
     EXPECT_GT(overflowInt, maxInt);
     EXPECT_LT(underflowInt, minInt);
 
-    EXPECT_EQ(clampToInteger(maxInt), maxInt);
-    EXPECT_EQ(clampToInteger(minInt), minInt);
+    EXPECT_EQ(maxInt, clampToInteger(maxInt));
+    EXPECT_EQ(minInt, clampToInteger(minInt));
 
     EXPECT_EQ(clampToInteger(overflowInt), maxInt);
     EXPECT_EQ(clampToInteger(underflowInt), minInt);
 }
 
-TEST(WTF, clampToFloat)
+TEST(MathExtrasTest, clampToFloat)
 {
     double maxFloat = std::numeric_limits<float>::max();
     double minFloat = -maxFloat;
@@ -136,17 +136,17 @@ TEST(WTF, clampToFloat)
     EXPECT_GT(overflowFloat, maxFloat);
     EXPECT_LT(underflowFloat, minFloat);
 
-    EXPECT_EQ(clampToFloat(maxFloat), maxFloat);
-    EXPECT_EQ(clampToFloat(minFloat), minFloat);
+    EXPECT_EQ(maxFloat, clampToFloat(maxFloat));
+    EXPECT_EQ(minFloat, clampToFloat(minFloat));
 
-    EXPECT_EQ(clampToFloat(overflowFloat), maxFloat);
-    EXPECT_EQ(clampToFloat(underflowFloat), minFloat);
+    EXPECT_EQ(maxFloat, clampToFloat(overflowFloat));
+    EXPECT_EQ(minFloat, clampToFloat(underflowFloat));
 
-    EXPECT_EQ(clampToFloat(std::numeric_limits<float>::infinity()), maxFloat);
-    EXPECT_EQ(clampToFloat(-std::numeric_limits<float>::infinity()), minFloat);
+    EXPECT_EQ(maxFloat, clampToFloat(std::numeric_limits<float>::infinity()));
+    EXPECT_EQ(minFloat, clampToFloat(-std::numeric_limits<float>::infinity()));
 }
 
-TEST(WTF, clampToUnsignedLong)
+TEST(MathExtrasTest, clampToUnsignedLong)
 {
     if (sizeof(unsigned long) == sizeof(unsigned))
         return;
@@ -156,48 +156,48 @@ TEST(WTF, clampToUnsignedLong)
 
     EXPECT_GT(overflowUnsigned, maxUnsigned);
 
-    EXPECT_EQ(clampTo<unsigned>(maxUnsigned), maxUnsigned);
+    EXPECT_EQ(maxUnsigned, clampTo<unsigned>(maxUnsigned));
 
-    EXPECT_EQ(clampTo<unsigned>(overflowUnsigned), maxUnsigned);
-    EXPECT_EQ(clampTo<unsigned>(-1), 0u);
+    EXPECT_EQ(maxUnsigned, clampTo<unsigned>(overflowUnsigned));
+    EXPECT_EQ(0u, clampTo<unsigned>(-1));
 }
 
-TEST(WTF, clampToUnsignedLongLong)
+TEST(MathExtrasTest, clampToUnsignedLongLong)
 {
     unsigned long long maxUnsigned = std::numeric_limits<unsigned>::max();
     unsigned long long overflowUnsigned = maxUnsigned + 1;
 
     EXPECT_GT(overflowUnsigned, maxUnsigned);
 
-    EXPECT_EQ(clampTo<unsigned>(maxUnsigned), maxUnsigned);
+    EXPECT_EQ(maxUnsigned, clampTo<unsigned>(maxUnsigned));
 
-    EXPECT_EQ(clampTo<unsigned>(overflowUnsigned), maxUnsigned);
-    EXPECT_EQ(clampTo<unsigned>(-1), 0u);
+    EXPECT_EQ(maxUnsigned, clampTo<unsigned>(overflowUnsigned));
+    EXPECT_EQ(0u, clampTo<unsigned>(-1));
 }
 
 // Make sure that various +-inf cases are handled properly (they aren't
 // by default on VS).
-TEST(WTF, infinityMath)
+TEST(MathExtrasTest, infinityMath)
 {
     double posInf = std::numeric_limits<double>::infinity();
     double negInf = -std::numeric_limits<double>::infinity();
     double nan = std::numeric_limits<double>::quiet_NaN();
 
-    EXPECT_EQ(atan2(posInf, posInf), M_PI_4);
-    EXPECT_EQ(atan2(posInf, negInf), 3.0 * M_PI_4);
-    EXPECT_EQ(atan2(negInf, posInf), -M_PI_4);
-    EXPECT_EQ(atan2(negInf, negInf), -3.0 * M_PI_4);
+    EXPECT_EQ(M_PI_4, atan2(posInf, posInf));
+    EXPECT_EQ(3.0 * M_PI_4, atan2(posInf, negInf));
+    EXPECT_EQ(-M_PI_4, atan2(negInf, posInf));
+    EXPECT_EQ(-3.0 * M_PI_4, atan2(negInf, negInf));
 
-    EXPECT_EQ(fmod(0.0, posInf), 0.0);
-    EXPECT_EQ(fmod(7.0, posInf), 7.0);
-    EXPECT_EQ(fmod(-7.0, posInf), -7.0);
-    EXPECT_EQ(fmod(0.0, negInf), 0.0);
-    EXPECT_EQ(fmod(7.0, negInf), 7.0);
-    EXPECT_EQ(fmod(-7.0, negInf), -7.0);
+    EXPECT_EQ(0.0, fmod(0.0, posInf));
+    EXPECT_EQ(7.0, fmod(7.0, posInf));
+    EXPECT_EQ(-7.0, fmod(-7.0, posInf));
+    EXPECT_EQ(0.0, fmod(0.0, negInf));
+    EXPECT_EQ(7.0, fmod(7.0, negInf));
+    EXPECT_EQ(-7.0, fmod(-7.0, negInf));
 
-    EXPECT_EQ(pow(5.0, 0.0), 1.0);
-    EXPECT_EQ(pow(-5.0, 0.0), 1.0);
-    EXPECT_EQ(pow(nan, 0.0), 1.0);
+    EXPECT_EQ(1.0, pow(5.0, 0.0));
+    EXPECT_EQ(1.0, pow(-5.0, 0.0));
+    EXPECT_EQ(1.0, pow(nan, 0.0));
 }
 
 } // namespace

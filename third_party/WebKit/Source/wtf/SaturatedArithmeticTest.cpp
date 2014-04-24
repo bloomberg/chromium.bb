@@ -36,72 +36,72 @@
 
 namespace {
 
-TEST(WTF, SaturatedArithmeticAddition)
+TEST(SaturatedArithmeticTest, Addition)
 {
-    ASSERT_EQ(saturatedAddition(0, 0), 0);
-    ASSERT_EQ(saturatedAddition(0, 1), 1);
-    ASSERT_EQ(saturatedAddition(0, 100), 100);
-    ASSERT_EQ(saturatedAddition(100, 50), 150);
+    EXPECT_EQ(0, saturatedAddition(0, 0));
+    EXPECT_EQ(1, saturatedAddition(0, 1));
+    EXPECT_EQ(100, saturatedAddition(0, 100));
+    EXPECT_EQ(150, saturatedAddition(100, 50));
 
-    ASSERT_EQ(saturatedAddition(0, -1), -1);
-    ASSERT_EQ(saturatedAddition(1, -1), 0);
-    ASSERT_EQ(saturatedAddition(100, -50), 50);
-    ASSERT_EQ(saturatedAddition(50, -100), -50);
+    EXPECT_EQ(-1, saturatedAddition(0, -1));
+    EXPECT_EQ(0, saturatedAddition(1, -1));
+    EXPECT_EQ(50, saturatedAddition(100, -50));
+    EXPECT_EQ(-50, saturatedAddition(50, -100));
 
-    ASSERT_EQ(saturatedAddition(INT_MAX - 1, 0), INT_MAX - 1);
-    ASSERT_EQ(saturatedAddition(INT_MAX - 1, 1), INT_MAX);
-    ASSERT_EQ(saturatedAddition(INT_MAX - 1, 2), INT_MAX);
-    ASSERT_EQ(saturatedAddition(0, INT_MAX - 1), INT_MAX - 1);
-    ASSERT_EQ(saturatedAddition(1, INT_MAX - 1), INT_MAX);
-    ASSERT_EQ(saturatedAddition(2, INT_MAX - 1), INT_MAX);
-    ASSERT_EQ(saturatedAddition(INT_MAX - 1, INT_MAX - 1), INT_MAX);
-    ASSERT_EQ(saturatedAddition(INT_MAX, INT_MAX), INT_MAX);
+    EXPECT_EQ(INT_MAX - 1, saturatedAddition(INT_MAX - 1, 0));
+    EXPECT_EQ(INT_MAX, saturatedAddition(INT_MAX - 1, 1));
+    EXPECT_EQ(INT_MAX, saturatedAddition(INT_MAX - 1, 2));
+    EXPECT_EQ(INT_MAX - 1, saturatedAddition(0, INT_MAX - 1));
+    EXPECT_EQ(INT_MAX, saturatedAddition(1, INT_MAX - 1));
+    EXPECT_EQ(INT_MAX, saturatedAddition(2, INT_MAX - 1));
+    EXPECT_EQ(INT_MAX, saturatedAddition(INT_MAX - 1, INT_MAX - 1));
+    EXPECT_EQ(INT_MAX, saturatedAddition(INT_MAX, INT_MAX));
 
-    ASSERT_EQ(saturatedAddition(INT_MIN, 0), INT_MIN);
-    ASSERT_EQ(saturatedAddition(INT_MIN + 1, 0), INT_MIN + 1);
-    ASSERT_EQ(saturatedAddition(INT_MIN + 1, 1), INT_MIN + 2);
-    ASSERT_EQ(saturatedAddition(INT_MIN + 1, 2), INT_MIN + 3);
-    ASSERT_EQ(saturatedAddition(INT_MIN + 1, -1), INT_MIN);
-    ASSERT_EQ(saturatedAddition(INT_MIN + 1, -2), INT_MIN);
-    ASSERT_EQ(saturatedAddition(0, INT_MIN + 1), INT_MIN + 1);
-    ASSERT_EQ(saturatedAddition(-1, INT_MIN + 1), INT_MIN);
-    ASSERT_EQ(saturatedAddition(-2, INT_MIN + 1), INT_MIN);
+    EXPECT_EQ(INT_MIN, saturatedAddition(INT_MIN, 0));
+    EXPECT_EQ(INT_MIN + 1, saturatedAddition(INT_MIN + 1, 0));
+    EXPECT_EQ(INT_MIN + 2, saturatedAddition(INT_MIN + 1, 1));
+    EXPECT_EQ(INT_MIN + 3, saturatedAddition(INT_MIN + 1, 2));
+    EXPECT_EQ(INT_MIN, saturatedAddition(INT_MIN + 1, -1));
+    EXPECT_EQ(INT_MIN, saturatedAddition(INT_MIN + 1, -2));
+    EXPECT_EQ(INT_MIN + 1, saturatedAddition(0, INT_MIN + 1));
+    EXPECT_EQ(INT_MIN, saturatedAddition(-1, INT_MIN + 1));
+    EXPECT_EQ(INT_MIN, saturatedAddition(-2, INT_MIN + 1));
 
-    ASSERT_EQ(saturatedAddition(INT_MAX / 2, 10000), INT_MAX / 2 + 10000);
-    ASSERT_EQ(saturatedAddition(INT_MAX / 2 + 1, INT_MAX / 2 + 1), INT_MAX);
-    ASSERT_EQ(saturatedAddition(INT_MIN, INT_MAX), -1);
+    EXPECT_EQ(INT_MAX / 2 + 10000, saturatedAddition(INT_MAX / 2, 10000));
+    EXPECT_EQ(INT_MAX, saturatedAddition(INT_MAX / 2 + 1, INT_MAX / 2 + 1));
+    EXPECT_EQ(-1, saturatedAddition(INT_MIN, INT_MAX));
 }
 
-TEST(WTF, SaturatedArithmeticSubtraction)
+TEST(SaturatedArithmeticTest, Subtraction)
 {
-    ASSERT_EQ(saturatedSubtraction(0, 0), 0);
-    ASSERT_EQ(saturatedSubtraction(0, 1), -1);
-    ASSERT_EQ(saturatedSubtraction(0, 100), -100);
-    ASSERT_EQ(saturatedSubtraction(100, 50), 50);
+    EXPECT_EQ(0, saturatedSubtraction(0, 0));
+    EXPECT_EQ(-1, saturatedSubtraction(0, 1));
+    EXPECT_EQ(-100, saturatedSubtraction(0, 100));
+    EXPECT_EQ(50, saturatedSubtraction(100, 50));
 
-    ASSERT_EQ(saturatedSubtraction(0, -1), 1);
-    ASSERT_EQ(saturatedSubtraction(1, -1), 2);
-    ASSERT_EQ(saturatedSubtraction(100, -50), 150);
-    ASSERT_EQ(saturatedSubtraction(50, -100), 150);
+    EXPECT_EQ(1, saturatedSubtraction(0, -1));
+    EXPECT_EQ(2, saturatedSubtraction(1, -1));
+    EXPECT_EQ(150, saturatedSubtraction(100, -50));
+    EXPECT_EQ(150, saturatedSubtraction(50, -100));
 
-    ASSERT_EQ(saturatedSubtraction(INT_MAX, 0), INT_MAX);
-    ASSERT_EQ(saturatedSubtraction(INT_MAX, 1), INT_MAX - 1);
-    ASSERT_EQ(saturatedSubtraction(INT_MAX - 1, 0), INT_MAX - 1);
-    ASSERT_EQ(saturatedSubtraction(INT_MAX - 1, -1), INT_MAX);
-    ASSERT_EQ(saturatedSubtraction(INT_MAX - 1, -2), INT_MAX);
-    ASSERT_EQ(saturatedSubtraction(0, INT_MAX - 1), -INT_MAX + 1);
-    ASSERT_EQ(saturatedSubtraction(-1, INT_MAX - 1), -INT_MAX);
-    ASSERT_EQ(saturatedSubtraction(-2, INT_MAX - 1), -INT_MAX - 1);
-    ASSERT_EQ(saturatedSubtraction(-3, INT_MAX - 1), -INT_MAX - 1);
+    EXPECT_EQ(INT_MAX, saturatedSubtraction(INT_MAX, 0));
+    EXPECT_EQ(INT_MAX - 1, saturatedSubtraction(INT_MAX, 1));
+    EXPECT_EQ(INT_MAX - 1, saturatedSubtraction(INT_MAX - 1, 0));
+    EXPECT_EQ(INT_MAX, saturatedSubtraction(INT_MAX - 1, -1));
+    EXPECT_EQ(INT_MAX, saturatedSubtraction(INT_MAX - 1, -2));
+    EXPECT_EQ(-INT_MAX + 1, saturatedSubtraction(0, INT_MAX - 1));
+    EXPECT_EQ(-INT_MAX, saturatedSubtraction(-1, INT_MAX - 1));
+    EXPECT_EQ(-INT_MAX - 1, saturatedSubtraction(-2, INT_MAX - 1));
+    EXPECT_EQ(-INT_MAX - 1, saturatedSubtraction(-3, INT_MAX - 1));
 
-    ASSERT_EQ(saturatedSubtraction(INT_MIN, 0), INT_MIN);
-    ASSERT_EQ(saturatedSubtraction(INT_MIN + 1, 0), INT_MIN + 1);
-    ASSERT_EQ(saturatedSubtraction(INT_MIN + 1, 1), INT_MIN);
-    ASSERT_EQ(saturatedSubtraction(INT_MIN + 1, 2), INT_MIN);
+    EXPECT_EQ(INT_MIN, saturatedSubtraction(INT_MIN, 0));
+    EXPECT_EQ(INT_MIN + 1, saturatedSubtraction(INT_MIN + 1, 0));
+    EXPECT_EQ(INT_MIN, saturatedSubtraction(INT_MIN + 1, 1));
+    EXPECT_EQ(INT_MIN, saturatedSubtraction(INT_MIN + 1, 2));
 
-    ASSERT_EQ(saturatedSubtraction(INT_MIN, INT_MIN), 0);
-    ASSERT_EQ(saturatedSubtraction(INT_MAX, INT_MAX), 0);
-    ASSERT_EQ(saturatedSubtraction(INT_MAX, INT_MIN), INT_MAX);
+    EXPECT_EQ(0, saturatedSubtraction(INT_MIN, INT_MIN));
+    EXPECT_EQ(0, saturatedSubtraction(INT_MAX, INT_MAX));
+    EXPECT_EQ(INT_MAX, saturatedSubtraction(INT_MAX, INT_MIN));
 }
 
 } // namespace

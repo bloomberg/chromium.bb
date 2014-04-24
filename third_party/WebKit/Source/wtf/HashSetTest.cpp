@@ -42,19 +42,19 @@ void testInitialCapacity()
     HashSet<int, DefaultHash<int>::Hash, InitialCapacityTestHashTraits<initialCapacity> > testSet;
 
     // Initial capacity is null.
-    ASSERT_EQ(0UL, testSet.capacity());
+    EXPECT_EQ(0UL, testSet.capacity());
 
     // Adding items up to size should never change the capacity.
     for (size_t i = 0; i < size; ++i) {
         testSet.add(i);
-        ASSERT_EQ(initialCapacity, testSet.capacity());
+        EXPECT_EQ(initialCapacity, testSet.capacity());
     }
 
     // Adding items up to less than half the capacity should not change the capacity.
     unsigned capacityLimit = initialCapacity / 2 - 1;
     for (size_t i = size; i < capacityLimit; ++i) {
         testSet.add(i);
-        ASSERT_EQ(initialCapacity, testSet.capacity());
+        EXPECT_EQ(initialCapacity, testSet.capacity());
     }
 
     // Adding one more item increase the capacity.
@@ -72,7 +72,7 @@ template<unsigned size> void generateTestCapacityUpToSize()
     testInitialCapacity<size>();
 }
 
-TEST(WTF, HashSetInitialCapacity)
+TEST(HashSetTest, InitialCapacity)
 {
     generateTestCapacityUpToSize<128>();
 }

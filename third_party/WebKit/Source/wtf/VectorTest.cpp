@@ -33,7 +33,7 @@
 
 namespace {
 
-TEST(WTF_Vector, Basic)
+TEST(VectorTest, Basic)
 {
     Vector<int> intVector;
     EXPECT_TRUE(intVector.isEmpty());
@@ -41,7 +41,7 @@ TEST(WTF_Vector, Basic)
     EXPECT_EQ(0ul, intVector.capacity());
 }
 
-TEST(WTF_Vector, Reverse)
+TEST(VectorTest, Reverse)
 {
     Vector<int> intVector;
     intVector.append(10);
@@ -65,7 +65,7 @@ TEST(WTF_Vector, Reverse)
     EXPECT_EQ(13, intVector[4]);
 }
 
-TEST(WTF_Vector, Iterator)
+TEST(VectorTest, Iterator)
 {
     Vector<int> intVector;
     intVector.append(10);
@@ -89,7 +89,7 @@ TEST(WTF_Vector, Iterator)
     EXPECT_TRUE(end == it);
 }
 
-TEST(WTF_Vector, ReverseIterator)
+TEST(VectorTest, ReverseIterator)
 {
     Vector<int> intVector;
     intVector.append(10);
@@ -130,7 +130,7 @@ private:
 
 typedef WTF::Vector<OwnPtr<DestructCounter> > OwnPtrVector;
 
-TEST(WTF_Vector, OwnPtr)
+TEST(VectorTest, OwnPtr)
 {
     int destructNumber = 0;
     OwnPtrVector vector;
@@ -233,7 +233,7 @@ private:
     int m_i;
 };
 
-TEST(WTF_Vector, SwapWithInlineCapacity)
+TEST(VectorTest, SwapWithInlineCapacity)
 {
     const size_t inlineCapacity = 2;
     Vector<WrappedInt, inlineCapacity> vectorA;

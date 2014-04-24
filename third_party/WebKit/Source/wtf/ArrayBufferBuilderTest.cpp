@@ -38,7 +38,7 @@
 
 namespace WTF {
 
-TEST(ArrayBufferBuilder, Constructor)
+TEST(ArrayBufferBuilderTest, Constructor)
 {
     ArrayBufferBuilder zeroBuilder(0);
     EXPECT_EQ(0u, zeroBuilder.byteLength());
@@ -53,7 +53,7 @@ TEST(ArrayBufferBuilder, Constructor)
     EXPECT_EQ(2048u, bigBuilder.capacity());
 }
 
-TEST(ArrayBufferBuilder, Append)
+TEST(ArrayBufferBuilderTest, Append)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
@@ -73,7 +73,7 @@ TEST(ArrayBufferBuilder, Append)
     EXPECT_GE(builder.capacity(), dataSize * 3);
 }
 
-TEST(ArrayBufferBuilder, AppendRepeatedly)
+TEST(ArrayBufferBuilderTest, AppendRepeatedly)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
@@ -87,7 +87,7 @@ TEST(ArrayBufferBuilder, AppendRepeatedly)
     }
 }
 
-TEST(ArrayBufferBuilder, DefaultConstructorAndAppendRepeatedly)
+TEST(ArrayBufferBuilderTest, DefaultConstructorAndAppendRepeatedly)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
@@ -101,7 +101,7 @@ TEST(ArrayBufferBuilder, DefaultConstructorAndAppendRepeatedly)
     }
 }
 
-TEST(ArrayBufferBuilder, AppendFixedCapacity)
+TEST(ArrayBufferBuilderTest, AppendFixedCapacity)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
@@ -122,7 +122,7 @@ TEST(ArrayBufferBuilder, AppendFixedCapacity)
     EXPECT_EQ(15u, builder.capacity());
 }
 
-TEST(ArrayBufferBuilder, ToArrayBuffer)
+TEST(ArrayBufferBuilderTest, ToArrayBuffer)
 {
     const char data1[] = "HelloWorld";
     size_t data1Size = sizeof(data1) - 1;
@@ -143,7 +143,7 @@ TEST(ArrayBufferBuilder, ToArrayBuffer)
     EXPECT_EQ(0, memcmp(expected, result->data(), expectedSize));
 }
 
-TEST(ArrayBufferBuilder, ToArrayBufferSameAddressIfExactCapacity)
+TEST(ArrayBufferBuilderTest, ToArrayBufferSameAddressIfExactCapacity)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
@@ -156,7 +156,7 @@ TEST(ArrayBufferBuilder, ToArrayBufferSameAddressIfExactCapacity)
     EXPECT_EQ(result1.get(), result2.get());
 }
 
-TEST(ArrayBufferBuilder, ToString)
+TEST(ArrayBufferBuilderTest, ToString)
 {
     const char data1[] = "HelloWorld";
     size_t data1Size = sizeof(data1) - 1;
@@ -177,7 +177,7 @@ TEST(ArrayBufferBuilder, ToString)
         EXPECT_EQ(expected[i], result[i]);
 }
 
-TEST(ArrayBufferBuilder, ShrinkToFitNoAppend)
+TEST(ArrayBufferBuilderTest, ShrinkToFitNoAppend)
 {
     ArrayBufferBuilder builder(1024);
     EXPECT_EQ(1024u, builder.capacity());
@@ -186,7 +186,7 @@ TEST(ArrayBufferBuilder, ShrinkToFitNoAppend)
     EXPECT_EQ(0u, builder.capacity());
 }
 
-TEST(ArrayBufferBuilder, ShrinkToFit)
+TEST(ArrayBufferBuilderTest, ShrinkToFit)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
@@ -202,7 +202,7 @@ TEST(ArrayBufferBuilder, ShrinkToFit)
     EXPECT_EQ(dataSize, builder.capacity());
 }
 
-TEST(ArrayBufferBuilder, ShrinkToFitFullyUsed)
+TEST(ArrayBufferBuilderTest, ShrinkToFitFullyUsed)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
@@ -221,7 +221,7 @@ TEST(ArrayBufferBuilder, ShrinkToFitFullyUsed)
     EXPECT_EQ(dataSize, builder.capacity());
 }
 
-TEST(ArrayBufferBuilder, ShrinkToFitAfterGrowth)
+TEST(ArrayBufferBuilderTest, ShrinkToFitAfterGrowth)
 {
     const char data[] = "HelloWorld";
     size_t dataSize = sizeof(data) - 1;
