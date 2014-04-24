@@ -86,13 +86,6 @@ cr.define('extensions', function() {
     __proto__: HTMLDivElement.prototype,
 
     /**
-     * Whether the App Developer Tools promo has been dismissed on this page.
-     * @type {boolean}
-     * @private
-     */
-    promoDismissed_: false,
-
-    /**
      * Perform initial setup.
      */
     initialize: function() {
@@ -124,8 +117,8 @@ cr.define('extensions', function() {
       // Set up the close dialog for the apps developer tools promo.
       $('apps-developer-tools-promo').querySelector('.close-button').
           addEventListener('click', function(e) {
-        this.promoDismissed_ = true;
         $('extension-settings').classList.remove('adt-promo');
+        chrome.send('extensionSettingsDismissADTPromo');
       }.bind(this));
 
       if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
@@ -311,8 +304,7 @@ cr.define('extensions', function() {
       $('toggle-dev-on').checked = false;
     }
 
-    var showPromo = extensionsData.promoteAppsDevTools && !this.promoDismissed_;
-    pageDiv.classList.toggle('adt-promo', showPromo);
+    pageDiv.classList.toggle('adt-promo', extensionsData.promoteAppsDevTools);
 
     $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
 

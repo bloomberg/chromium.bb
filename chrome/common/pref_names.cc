@@ -940,6 +940,11 @@ const char kCurrentThemeDisplayProperties[] = "extensions.theme.properties";
 // (showing developer packing tools and extensions details)
 const char kExtensionsUIDeveloperMode[] = "extensions.ui.developer_mode";
 
+// Boolean pref which indicates whether the Chrome Apps & Extensions Developer
+// Tool promotion has been dismissed by the user.
+const char kExtensionsUIDismissedADTPromo[] =
+    "extensions.ui.dismissed_adt_promo";
+
 // Dictionary pref that tracks which command belongs to which
 // extension + named command pair.
 const char kExtensionCommands[] = "extensions.commands";

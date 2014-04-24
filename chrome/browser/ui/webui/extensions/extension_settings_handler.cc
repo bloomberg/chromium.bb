@@ -198,6 +198,10 @@ void ExtensionSettingsHandler::RegisterProfilePrefs(
       prefs::kExtensionsUIDeveloperMode,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kExtensionsUIDismissedADTPromo,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
@@ -582,6 +586,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsLoadUnpackedExtension",
       base::Bind(&ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage,
                  AsWeakPtr()));
+  web_ui()->RegisterMessageCallback("extensionSettingsDismissADTPromo",
+      base::Bind(&ExtensionSettingsHandler::HandleDismissADTPromoMessage,
+                 AsWeakPtr()));
 }
 
 void ExtensionSettingsHandler::LoadUnpackedExtension(
@@ -841,12 +848,16 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   results.SetBoolean("profileIsManaged", is_managed);
   results.SetBoolean("developerMode", developer_mode);
 
-  // Promote the Apps Developer Tools if they're not installed.
-  bool promote_apps_dev_tools =
-      GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
+  // Promote the Chrome Apps & Extensions Developer Tools if they are not
+  // installed and the user has not previously dismissed the warning.
+  bool promote_apps_dev_tools = false;
+  if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
       !ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->
           GetExtensionById(kAppsDeveloperToolsExtensionId,
-                           ExtensionRegistry::EVERYTHING);
+                           ExtensionRegistry::EVERYTHING) &&
+      !profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDismissedADTPromo)) {
+    promote_apps_dev_tools = true;
+  }
   results.SetBoolean("promoteAppsDevTools", promote_apps_dev_tools);
 
   bool load_unpacked_disabled =
@@ -1153,6 +1164,13 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
       NULL);
 
   content::RecordComputedAction("Options_LoadUnpackedExtension");
+}
+
+void ExtensionSettingsHandler::HandleDismissADTPromoMessage(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
+      prefs::kExtensionsUIDismissedADTPromo, true);
 }
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
