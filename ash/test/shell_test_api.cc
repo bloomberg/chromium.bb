@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/output_configurator_animation.h"
+#include "ash/display/display_configurator_animation.h"
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
@@ -59,12 +59,12 @@ MaximizeModeWindowManager* ShellTestApi::maximize_mode_window_manager() {
   return shell_->maximize_mode_window_manager_.get();
 }
 
-void ShellTestApi::DisableOutputConfiguratorAnimation() {
+void ShellTestApi::DisableDisplayConfiguratorAnimation() {
 #if defined(OS_CHROMEOS)
-  if (shell_->output_configurator_animation_) {
+  if (shell_->display_configurator_animation_) {
     shell_->display_configurator_->RemoveObserver(
-        shell_->output_configurator_animation_.get());
-    shell_->output_configurator_animation_.reset();
+        shell_->display_configurator_animation_.get());
+    shell_->display_configurator_animation_.reset();
   }
 #endif  // defined(OS_CHROMEOS)
 }

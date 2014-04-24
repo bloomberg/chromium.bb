@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_OUTPUT_CONFIGURATOR_ANIMATION_H_
-#define ASH_DISPLAY_OUTPUT_CONFIGURATOR_ANIMATION_H_
+#ifndef ASH_DISPLAY_DISPLAY_CONFIGURATOR_ANIMATION_H_
+#define ASH_DISPLAY_DISPLAY_CONFIGURATOR_ANIMATION_H_
 
 #include <map>
 
@@ -23,14 +23,14 @@ class Layer;
 
 namespace ash {
 
-// OutputConfiguratorAnimation provides the visual effects for
+// DisplayConfiguratorAnimation provides the visual effects for
 // ui::DisplayConfigurator, such like fade-out/in during changing
 // the display mode.
-class ASH_EXPORT OutputConfiguratorAnimation
+class ASH_EXPORT DisplayConfiguratorAnimation
     : public ui::DisplayConfigurator::Observer {
  public:
-  OutputConfiguratorAnimation();
-  virtual ~OutputConfiguratorAnimation();
+  DisplayConfiguratorAnimation();
+  virtual ~DisplayConfiguratorAnimation();
 
   // Starts the fade-out animation for the all root windows.  It will
   // call |callback| once all of the animations have finished.
@@ -54,11 +54,11 @@ class ASH_EXPORT OutputConfiguratorAnimation
   void ClearHidingLayers();
 
   std::map<aura::Window*, ui::Layer*> hiding_layers_;
-  scoped_ptr<base::OneShotTimer<OutputConfiguratorAnimation> > timer_;
+  scoped_ptr<base::OneShotTimer<DisplayConfiguratorAnimation> > timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(OutputConfiguratorAnimation);
+  DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorAnimation);
 };
 
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_OUTPUT_CONFIGURATION_CONTROLLER_H_
+#endif  // ASH_DISPLAY_DISPLAY_CONFIGURATION_CONTROLLER_H_

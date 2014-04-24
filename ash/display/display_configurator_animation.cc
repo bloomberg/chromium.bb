@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/output_configurator_animation.h"
+#include "ash/display/display_configurator_animation.h"
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -97,14 +97,14 @@ class CallbackRunningObserver {
 
 }  // namespace
 
-OutputConfiguratorAnimation::OutputConfiguratorAnimation() {
+DisplayConfiguratorAnimation::DisplayConfiguratorAnimation() {
 }
 
-OutputConfiguratorAnimation::~OutputConfiguratorAnimation() {
+DisplayConfiguratorAnimation::~DisplayConfiguratorAnimation() {
   ClearHidingLayers();
 }
 
-void OutputConfiguratorAnimation::StartFadeOutAnimation(
+void DisplayConfiguratorAnimation::StartFadeOutAnimation(
     base::Closure callback) {
   CallbackRunningObserver* observer = new CallbackRunningObserver(callback);
   ClearHidingLayers();
@@ -140,20 +140,20 @@ void OutputConfiguratorAnimation::StartFadeOutAnimation(
   // In case that OnDisplayModeChanged() isn't called or its animator is
   // canceled due to some unknown errors, we set a timer to clear these
   // hiding layers.
-  timer_.reset(new base::OneShotTimer<OutputConfiguratorAnimation>());
+  timer_.reset(new base::OneShotTimer<DisplayConfiguratorAnimation>());
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kFadingTimeoutDurationInSeconds),
                 this,
-                &OutputConfiguratorAnimation::ClearHidingLayers);
+                &DisplayConfiguratorAnimation::ClearHidingLayers);
 }
 
-void OutputConfiguratorAnimation::StartFadeInAnimation() {
+void DisplayConfiguratorAnimation::StartFadeInAnimation() {
   // We want to make sure clearing all of hiding layers after the animation
   // finished.  Note that this callback can be canceled, but the cancel only
   // happens when the next animation is scheduled.  Thus the hiding layers
   // should be deleted eventually.
   CallbackRunningObserver* observer = new CallbackRunningObserver(
-      base::Bind(&OutputConfiguratorAnimation::ClearHidingLayers,
+      base::Bind(&DisplayConfiguratorAnimation::ClearHidingLayers,
                  base::Unretained(this)));
 
   // Ensure that layers are not animating.
@@ -202,19 +202,19 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
   }
 }
 
-void OutputConfiguratorAnimation::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& outputs) {
+void DisplayConfiguratorAnimation::OnDisplayModeChanged(
+    const ui::DisplayConfigurator::DisplayStateList& displays) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }
 
-void OutputConfiguratorAnimation::OnDisplayModeChangeFailed(
+void DisplayConfiguratorAnimation::OnDisplayModeChangeFailed(
     ui::MultipleDisplayState failed_new_state) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }
 
-void OutputConfiguratorAnimation::ClearHidingLayers() {
+void DisplayConfiguratorAnimation::ClearHidingLayers() {
   if (timer_) {
     timer_->Stop();
     timer_.reset();

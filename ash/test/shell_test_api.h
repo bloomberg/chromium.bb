@@ -41,7 +41,7 @@ public:
   DragDropController* drag_drop_controller();
   AppListController* app_list_controller();
   MaximizeModeWindowManager* maximize_mode_window_manager();
-  void DisableOutputConfiguratorAnimation();
+  void DisableDisplayConfiguratorAnimation();
 
   // Set ShelfDelegate.
   void SetShelfDelegate(ShelfDelegate* delegate);

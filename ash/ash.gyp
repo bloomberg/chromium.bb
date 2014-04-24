@@ -112,6 +112,8 @@
         'display/cursor_window_controller.h',
         'display/display_change_observer_chromeos.cc',
         'display/display_change_observer_chromeos.h',
+        'display/display_configurator_animation.cc',
+        'display/display_configurator_animation.h',
         'display/display_controller.cc',
         'display/display_controller.h',
         'display/display_error_observer_chromeos.cc',
@@ -131,8 +133,6 @@
         'display/mirror_window_controller.h',
         'display/mouse_cursor_event_filter.cc',
         'display/mouse_cursor_event_filter.h',
-        'display/output_configurator_animation.cc',
-        'display/output_configurator_animation.h',
         'display/projecting_observer_chromeos.cc',
         'display/projecting_observer_chromeos.h',
         'display/resolution_notification_controller.cc',
@@ -724,8 +724,8 @@
           ],
         }, { # else: chromeos!=1
           'sources/': [
-            ['exclude', 'display/output_configurator_animation.cc'],
-            ['exclude', 'display/output_configurator_animation.h'],
+            ['exclude', 'display/display_configurator_animation.cc'],
+            ['exclude', 'display/display_configurator_animation.h'],
             ['exclude', 'display/resolution_notification_controller.cc'],
             ['exclude', 'display/resolution_notification_controller.h'],
           ],

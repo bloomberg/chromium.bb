@@ -36,7 +36,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/output_configurator_animation.h"
+#include "ash/display/display_configurator_animation.h"
 #include "base/sys_info.h"
 #endif
 
@@ -890,8 +890,8 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
   }
   UpdateDisplays(display_info_list);
 #if defined(OS_CHROMEOS)
-  if (Shell::GetInstance()->output_configurator_animation()) {
-    Shell::GetInstance()->output_configurator_animation()->
+  if (Shell::GetInstance()->display_configurator_animation()) {
+    Shell::GetInstance()->display_configurator_animation()->
         StartFadeInAnimation();
   }
 #endif
