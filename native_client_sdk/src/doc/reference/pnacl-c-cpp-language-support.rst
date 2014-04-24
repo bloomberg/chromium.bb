@@ -198,6 +198,111 @@ NaCl supports a fairly wide subset of inline assembly through GCC's
 inline assembly syntax, with the restriction that the sandboxing model
 for the target architecture has to be respected.
 
+.. _portable_simd_vectors:
+
+Portable SIMD Vectors
+=====================
+
+SIMD vectors aren't part of the C/C++ standards and are traditionally
+very hardware-specific. Portable Native Client offers a portable version
+of SIMD vector datatypes and operations which map well to modern
+architectures and offer performance which matches or approaches
+hardware-specific uses.
+
+SIMD vector support was added to Portable Native Client for version 36
+of Chrome, and more features are expected to be added in subsequent
+releases.
+
+Hand-Coding Vector Extensions
+-----------------------------
+
+The initial vector support in Portable Native Client adds `LLVM vectors
+<http://clang.llvm.org/docs/LanguageExtensions.html#vectors-and-extended-vectors>`_
+and `GCC vectors
+<http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html>`_ since these
+are well supported by different hardware platforms and don't require any
+new compiler intrinsics.
+
+Vector types can be used through the ``vector_size`` attribute:
+
+.. naclcode::
+
+  typedef int v4si __attribute__((vector_size(16)));
+  v4si a = {1,2,3,4};
+  v4si b = {5,6,7,8};
+  v4si c, d, e;
+  c = b + 1;  /* c = b + {1,1,1,1}; */
+  d = 2 * b;  /* d = {2,2,2,2} * b; */
+  e = c + d;
+
+Vector comparisons are represented as a bitmask as wide as the compared
+elements of all ``0`` or all ``1``:
+
+.. naclcode::
+
+  typedef int v4si __attribute__((vector_size(16)));
+  v4si snip(v2si in) {
+    v4si limit = {32,64,128,256};
+    vs4i mask = in > limit;
+    vs4i ret = in & mask;
+    return ret;
+  }
+
+Vector datatypes are currently expected to be 128-bit wide with one of
+the following element types:
+
+============  ============  ================
+Type          Num Elements  Vector Bit Width
+============  ============  ================
+``uint8_t``   16            128
+``int8_t``    16            128
+``uint16_t``  8             128
+``int16_t``   8             128
+``uint32_t``  4             128
+``int32_t``   4             128
+``float``     4             128
+============  ============  ================
+
+64-bit integers and double-precision floating point will be supported in
+a future release, as will 256-bit and 512-bit vectors.
+
+The following operators are supported on vectors:
+
++----------------------------------------------+
+| unary ``+``, ``-``                           |
++----------------------------------------------+
+| ``++``, ``--``                               |
++----------------------------------------------+
+| ``+``, ``-``, ``*``, ``/``, ``%``            |
++----------------------------------------------+
+| ``&``, ``|``, ``^``, ``~``                   |
++----------------------------------------------+
+| ``>>``, ``<<``                               |
++----------------------------------------------+
+| ``!``, ``&&``, ``||``                        |
++----------------------------------------------+
+| ``==``, ``!=``, ``>``, ``<``, ``>=``, ``<=`` |
++----------------------------------------------+
+| ``=``                                        |
++----------------------------------------------+
+
+Furthermore, C-style casts can be used for:
+
+* Truncation.
+* Zero- and sign-extension.
+* Conversion to/from floating-point and signed/unsigned integer.
+
+It is also possible to use array-style indexing into vectors to extract
+individual elements using ``[]``.
+
+Vector shuffles are currently unsupported but will be added soon.
+
+Auto-Vectorization
+------------------
+
+Auto-vectorization is currently not enabled for Portable Native Client,
+but will be in a future release.
+
 Undefined Behavior
 ==================
 
@@ -249,14 +354,6 @@ NaCl supports computed ``goto`` without any transformation.
 
 Future Directions
 =================
-
-SIMD
-----
-
-PNaCl currently doesn't support SIMD. We plan to add SIMD support in the
-very near future.
-
-NaCl supports SIMD.
 
 Inter-Process Communication
 ---------------------------

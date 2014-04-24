@@ -168,6 +168,9 @@ LLVM:</p>
 cases are likely to achieve better or worse performance than the above
 averages. For example floating-point heavy code usually exhibits much
 lower overheads whereas very branch-heavy code often performs worse.</p>
+<p>Note that PNaCl supports performance features that are often used in
+native code such as <a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html#language-support-threading"><em>threading</em></a> and
+<a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html#portable-simd-vectors"><em>Portable SIMD Vectors</em></a>.</p>
 <p>For details, see:</p>
 <ul class="small-gap">
 <li><a class="reference external" href="https://nativeclient.googlecode.com/svn/data/site/NaCl_SFI.pdf">Adapting Software Fault Isolation to Contemporary CPU Architectures</a> (PDF).</li>
@@ -277,7 +280,8 @@ Chrome</a>.</p>
 <h3 id="does-native-client-support-simd-vector-instructions">Does Native Client support SIMD vector instructions?</h3>
 <p>Native Client currently supports SSE on x86 and NEON on ARM. Support for
 AVX on x86 is under way.</p>
-<p>Portable Native Client should support SIMD vectors in the near future.</p>
+<p>Portable Native Client supports portable SIMD vectors, as detailed in
+<a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html#portable-simd-vectors"><em>Portable SIMD Vectors</em></a>.</p>
 </section><section id="can-i-use-native-client-for-3d-graphics">
 <h3 id="can-i-use-native-client-for-3d-graphics">Can I use Native Client for 3D graphics?</h3>
 <p>Yes. Native Client supports <a class="reference external" href="https://www.khronos.org/opengles/">OpenGL ES 2.0</a>.</p>

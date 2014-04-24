@@ -177,6 +177,18 @@ sources of undefined behavior which are believed to be fixable:
   function implementation isn't, e.g. ``std::min`` and ``std::max``), is
   well-defined in the *pexe*.
 
+SIMD Vectors
+^^^^^^^^^^^^
+
+SIMD vector instructions aren't part of the C/C++ standards and as such
+their behavior isn't specified at all in C/C++; it is usually left up to
+the target architecture to specify behavior. Portable Native Client
+instead exposed :ref:`Portable SIMD Vectors <portable_simd_vectors>` and
+offers the same guarantees on these vectors as the guarantees offered by
+the contained elements. Of notable interest amongst these guarantees are
+those of alignment for load/store instructions on vectors: they have the
+same alignment restriction as the contained elements.
+
 Hard to Fix
 ^^^^^^^^^^^
 

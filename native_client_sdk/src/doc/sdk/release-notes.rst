@@ -4,6 +4,17 @@
 Release Notes
 #############
 
+Chrome/Pepper 36 (09 May 2014)
+==============================
+
+PNaCl
+-----
+* Support `LLVM vectors
+  <http://clang.llvm.org/docs/LanguageExtensions.html#vectors-and-extended-vectors>`_
+  and `GCC vectors
+  <http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html>`_ for SIMD
+  vectors.
+
 Chrome/Pepper 35 (31 Mar 2014)
 ==============================
 

@@ -4,31 +4,36 @@
 <h1 id="pnacl-c-c-language-support">PNaCl C/C++ Language Support</h1>
 <div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
-<li><p class="first"><a class="reference internal" href="#source-language-support" id="id2">Source language support</a></p>
+<li><p class="first"><a class="reference internal" href="#source-language-support" id="id3">Source language support</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#versions" id="id3">Versions</a></li>
-<li><a class="reference internal" href="#preprocessor-definitions" id="id4">Preprocessor definitions</a></li>
+<li><a class="reference internal" href="#versions" id="id4">Versions</a></li>
+<li><a class="reference internal" href="#preprocessor-definitions" id="id5">Preprocessor definitions</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#memory-model-and-atomics" id="id5">Memory Model and Atomics</a></p>
+<li><p class="first"><a class="reference internal" href="#memory-model-and-atomics" id="id6">Memory Model and Atomics</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#memory-model-for-concurrent-operations" id="id6">Memory Model for Concurrent Operations</a></li>
-<li><a class="reference internal" href="#atomic-memory-ordering-constraints" id="id7">Atomic Memory Ordering Constraints</a></li>
-<li><a class="reference internal" href="#volatile-memory-accesses" id="id8">Volatile Memory Accesses</a></li>
+<li><a class="reference internal" href="#memory-model-for-concurrent-operations" id="id7">Memory Model for Concurrent Operations</a></li>
+<li><a class="reference internal" href="#atomic-memory-ordering-constraints" id="id8">Atomic Memory Ordering Constraints</a></li>
+<li><a class="reference internal" href="#volatile-memory-accesses" id="id9">Volatile Memory Accesses</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#threading" id="id9">Threading</a></li>
-<li><a class="reference internal" href="#setjmp-and-longjmp" id="id10"><code>setjmp</code> and <code>longjmp</code></a></li>
-<li><a class="reference internal" href="#c-exception-handling" id="id11">C++ Exception Handling</a></li>
-<li><a class="reference internal" href="#inline-assembly" id="id12">Inline Assembly</a></li>
-<li><a class="reference internal" href="#undefined-behavior" id="id13">Undefined Behavior</a></li>
-<li><a class="reference internal" href="#floating-point" id="id14">Floating-Point</a></li>
-<li><a class="reference internal" href="#computed-goto" id="id15">Computed <code>goto</code></a></li>
-<li><p class="first"><a class="reference internal" href="#future-directions" id="id16">Future Directions</a></p>
+<li><a class="reference internal" href="#threading" id="id10">Threading</a></li>
+<li><a class="reference internal" href="#setjmp-and-longjmp" id="id11"><code>setjmp</code> and <code>longjmp</code></a></li>
+<li><a class="reference internal" href="#c-exception-handling" id="id12">C++ Exception Handling</a></li>
+<li><a class="reference internal" href="#inline-assembly" id="id13">Inline Assembly</a></li>
+<li><p class="first"><a class="reference internal" href="#portable-simd-vectors" id="id14">Portable SIMD Vectors</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#simd" id="id17">SIMD</a></li>
-<li><a class="reference internal" href="#inter-process-communication" id="id18">Inter-Process Communication</a></li>
-<li><a class="reference internal" href="#posix-style-signal-handling" id="id19">POSIX-style Signal Handling</a></li>
+<li><a class="reference internal" href="#hand-coding-vector-extensions" id="id15">Hand-Coding Vector Extensions</a></li>
+<li><a class="reference internal" href="#auto-vectorization" id="id16">Auto-Vectorization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#undefined-behavior" id="id17">Undefined Behavior</a></li>
+<li><a class="reference internal" href="#floating-point" id="id18">Floating-Point</a></li>
+<li><a class="reference internal" href="#computed-goto" id="id19">Computed <code>goto</code></a></li>
+<li><p class="first"><a class="reference internal" href="#future-directions" id="id20">Future Directions</a></p>
+<ul class="small-gap">
+<li><a class="reference internal" href="#inter-process-communication" id="id21">Inter-Process Communication</a></li>
+<li><a class="reference internal" href="#posix-style-signal-handling" id="id22">POSIX-style Signal Handling</a></li>
 </ul>
 </li>
 </ul>
@@ -180,7 +185,124 @@ prevent reordering of memory accesses to objects which may escape.</p>
 <p>NaCl supports a fairly wide subset of inline assembly through GCC&#8217;s
 inline assembly syntax, with the restriction that the sandboxing model
 for the target architecture has to be respected.</p>
-</section><section id="undefined-behavior">
+</section><section id="portable-simd-vectors">
+<span id="id2"></span><h2 id="portable-simd-vectors"><span id="id2"></span>Portable SIMD Vectors</h2>
+<p>SIMD vectors aren&#8217;t part of the C/C++ standards and are traditionally
+very hardware-specific. Portable Native Client offers a portable version
+of SIMD vector datatypes and operations which map well to modern
+architectures and offer performance which matches or approaches
+hardware-specific uses.</p>
+<p>SIMD vector support was added to Portable Native Client for version 36
+of Chrome, and more features are expected to be added in subsequent
+releases.</p>
+<section id="hand-coding-vector-extensions">
+<h3 id="hand-coding-vector-extensions">Hand-Coding Vector Extensions</h3>
+<p>The initial vector support in Portable Native Client adds <a class="reference external" href="http://clang.llvm.org/docs/LanguageExtensions.html#vectors-and-extended-vectors">LLVM vectors</a>
+and <a class="reference external" href="http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html">GCC vectors</a> since these
+are well supported by different hardware platforms and don&#8217;t require any
+new compiler intrinsics.</p>
+<p>Vector types can be used through the <code>vector_size</code> attribute:</p>
+<pre class="prettyprint">
+typedef int v4si __attribute__((vector_size(16)));
+v4si a = {1,2,3,4};
+v4si b = {5,6,7,8};
+v4si c, d, e;
+c = b + 1;  /* c = b + {1,1,1,1}; */
+d = 2 * b;  /* d = {2,2,2,2} * b; */
+e = c + d;
+</pre>
+<p>Vector comparisons are represented as a bitmask as wide as the compared
+elements of all <code>0</code> or all <code>1</code>:</p>
+<pre class="prettyprint">
+typedef int v4si __attribute__((vector_size(16)));
+v4si snip(v2si in) {
+  v4si limit = {32,64,128,256};
+  vs4i mask = in &gt; limit;
+  vs4i ret = in &amp; mask;
+  return ret;
+}
+</pre>
+<p>Vector datatypes are currently expected to be 128-bit wide with one of
+the following element types:</p>
+<table border="1" class="docutils">
+<colgroup>
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Num Elements</th>
+<th class="head">Vector Bit Width</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code>uint8_t</code></td>
+<td>16</td>
+<td>128</td>
+</tr>
+<tr class="row-odd"><td><code>int8_t</code></td>
+<td>16</td>
+<td>128</td>
+</tr>
+<tr class="row-even"><td><code>uint16_t</code></td>
+<td>8</td>
+<td>128</td>
+</tr>
+<tr class="row-odd"><td><code>int16_t</code></td>
+<td>8</td>
+<td>128</td>
+</tr>
+<tr class="row-even"><td><code>uint32_t</code></td>
+<td>4</td>
+<td>128</td>
+</tr>
+<tr class="row-odd"><td><code>int32_t</code></td>
+<td>4</td>
+<td>128</td>
+</tr>
+<tr class="row-even"><td><code>float</code></td>
+<td>4</td>
+<td>128</td>
+</tr>
+</tbody>
+</table>
+<p>64-bit integers and double-precision floating point will be supported in
+a future release, as will 256-bit and 512-bit vectors.</p>
+<p>The following operators are supported on vectors:</p>
+<table border="1" class="docutils">
+<colgroup>
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>unary <code>+</code>, <code>-</code></td>
+</tr>
+<tr class="row-even"><td><code>++</code>, <code>--</code></td>
+</tr>
+<tr class="row-odd"><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code></td>
+</tr>
+<tr class="row-even"><td><code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code></td>
+</tr>
+<tr class="row-odd"><td><code>&gt;&gt;</code>, <code>&lt;&lt;</code></td>
+</tr>
+<tr class="row-even"><td><code>!</code>, <code>&amp;&amp;</code>, <code>||</code></td>
+</tr>
+<tr class="row-odd"><td><code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></td>
+</tr>
+<tr class="row-even"><td><code>=</code></td>
+</tr>
+</tbody>
+</table>
+<p>Furthermore, C-style casts can be used for:</p>
+<ul class="small-gap">
+<li>Truncation.</li>
+<li>Zero- and sign-extension.</li>
+<li>Conversion to/from floating-point and signed/unsigned integer.</li>
+</ul>
+<p>It is also possible to use array-style indexing into vectors to extract
+individual elements using <code>[]</code>.</p>
+<p>Vector shuffles are currently unsupported but will be added soon.</p>
+</section><section id="auto-vectorization">
+<h3 id="auto-vectorization">Auto-Vectorization</h3>
+<p>Auto-vectorization is currently not enabled for Portable Native Client,
+but will be in a future release.</p>
+</section></section><section id="undefined-behavior">
 <h2 id="undefined-behavior">Undefined Behavior</h2>
 <p>The C and C++ languages expose some undefined behavior which is
 discussed in <a class="reference internal" href="/native-client/reference/pnacl-undefined-behavior.html#undefined-behavior"><em>PNaCl Undefined Behavior</em></a>.</p>
@@ -226,12 +348,7 @@ does extra work to take advantage of computed <code>goto</code>).</p>
 <p>NaCl supports computed <code>goto</code> without any transformation.</p>
 </section><section id="future-directions">
 <h2 id="future-directions">Future Directions</h2>
-<section id="simd">
-<h3 id="simd">SIMD</h3>
-<p>PNaCl currently doesn&#8217;t support SIMD. We plan to add SIMD support in the
-very near future.</p>
-<p>NaCl supports SIMD.</p>
-</section><section id="inter-process-communication">
+<section id="inter-process-communication">
 <h3 id="inter-process-communication">Inter-Process Communication</h3>
 <p>Inter-process communication through shared memory is currently not
 supported by PNaCl/NaCl. When implemented, it may be limited to

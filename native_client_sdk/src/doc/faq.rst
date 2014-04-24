@@ -65,7 +65,7 @@ Portable Native client further enhances the above:
 .. causes of slowness? How can code be made faster? What's the best way
 .. to use Pepper's asynchronous APIs? What do I need to know about
 .. threads and inter-thread communications? Can I use SIMD or other
-.. processor-specific instructions? What aboutt he GPU?
+.. processor-specific instructions? What about the GPU?
 
 For more details, refer to the :doc:`history behind and comparison of
 NaCl and PNaCl <nacl-and-pnacl>`.
@@ -112,6 +112,10 @@ Note that benchmark performance is sometimes bimodal, so different use
 cases are likely to achieve better or worse performance than the above
 averages. For example floating-point heavy code usually exhibits much
 lower overheads whereas very branch-heavy code often performs worse.
+
+Note that PNaCl supports performance features that are often used in
+native code such as :ref:`threading <language_support_threading>` and
+:ref:`Portable SIMD Vectors <portable_simd_vectors>`.
 
 For details, see:
 
@@ -271,7 +275,8 @@ Does Native Client support SIMD vector instructions?
 Native Client currently supports SSE on x86 and NEON on ARM. Support for
 AVX on x86 is under way.
 
-Portable Native Client should support SIMD vectors in the near future.
+Portable Native Client supports portable SIMD vectors, as detailed in
+:ref:`Portable SIMD Vectors <portable_simd_vectors>`.
 
 Can I use Native Client for 3D graphics?
 ----------------------------------------

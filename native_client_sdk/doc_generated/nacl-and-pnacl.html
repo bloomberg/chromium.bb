@@ -92,15 +92,13 @@ for all supported architectures.</p>
 these limitations are critical for your application, you should use
 non-portable NaCl:</p>
 <ul class="small-gap">
-<li>By its nature, PNaCl does not support architecture-specific instructions in
-an application (i.e., inline assembly). Future editions of PNaCl will
-attempt to mitigate this problem by introducing portable intrinsics for vector
-operations.</li>
+<li>By its nature, PNaCl does not support architecture-specific
+instructions in an application (i.e., inline assembly), but tries to
+offer high-performance portable equivalents.</li>
 <li>Currently PNaCl only supports static linking with the <code>newlib</code>
 C standard library (the Native Client SDK provides a PNaCl port of
 <code>newlib</code>). Dynamic linking and <code>glibc</code> are not yet supported.
 Work is under way to enable dynamic linking in future versions of PNaCl.</li>
-<li>In the initial release, PNaCl does not support vector types and SIMD.</li>
 <li>In the initial release, PNaCl does not support some GNU extensions
 like taking the address of a label for computed <code>goto</code>, or nested
 functions.</li>
