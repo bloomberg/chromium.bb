@@ -52,7 +52,7 @@
         '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/WebKit/public/blink.gyp:blink_web_test_support',
+        '../third_party/WebKit/public/blink.gyp:blink_test_support',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
