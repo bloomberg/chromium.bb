@@ -298,6 +298,7 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
                    False,
                    SubstructureRedirectMask | SubstructureNotifyMask,
                    &reply_event);
+        XFlush(xdisplay_);
       }
       break;
     }
@@ -488,6 +489,7 @@ void WindowTreeHostX11::PostNativeEvent(
       break;
   }
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
+  XFlush(xdisplay_);
 }
 
 void WindowTreeHostX11::OnDeviceScaleFactorChanged(
