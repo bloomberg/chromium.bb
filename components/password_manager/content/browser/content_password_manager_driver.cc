@@ -23,10 +23,12 @@ namespace password_manager {
 
 ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     content::WebContents* web_contents,
-    PasswordManagerClient* client)
+    PasswordManagerClient* client,
+    autofill::AutofillManagerDelegate* autofill_manager_delegate)
     : WebContentsObserver(web_contents),
       password_manager_(client),
-      password_generation_manager_(client) {
+      password_generation_manager_(client),
+      password_autofill_manager_(client, autofill_manager_delegate) {
   DCHECK(web_contents);
 }
 
@@ -50,6 +52,16 @@ void ContentPasswordManagerDriver::AccountCreationFormsFound(
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_AccountCreationFormsDetected(host->GetRoutingID(),
                                                           forms));
+}
+
+void ContentPasswordManagerDriver::AcceptPasswordAutofillSuggestion(
+    const base::string16& username,
+    const base::string16& password) {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(
+      new AutofillMsg_AcceptPasswordAutofillSuggestion(host->GetRoutingID(),
+                                                       username,
+                                                       password));
 }
 
 bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
@@ -78,6 +90,11 @@ PasswordManager* ContentPasswordManagerDriver::GetPasswordManager() {
   return &password_manager_;
 }
 
+PasswordAutofillManager*
+ContentPasswordManagerDriver::GetPasswordAutofillManager() {
+  return &password_autofill_manager_;
+}
+
 void ContentPasswordManagerDriver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
@@ -97,6 +114,12 @@ bool ContentPasswordManagerDriver::OnMessageReceived(
   IPC_MESSAGE_FORWARD(AutofillHostMsg_PasswordFormSubmitted,
                       &password_manager_,
                       PasswordManager::OnPasswordFormSubmitted)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordSuggestions,
+                      &password_autofill_manager_,
+                      PasswordAutofillManager::OnShowPasswordSuggestions)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_AddPasswordFormMapping,
+                      &password_autofill_manager_,
+                      PasswordAutofillManager::OnAddPasswordFormMapping)
   IPC_MESSAGE_FORWARD(AutofillHostMsg_RecordSavePasswordProgress,
                       password_manager_.client(),
                       PasswordManagerClient::LogSavePasswordProgress)

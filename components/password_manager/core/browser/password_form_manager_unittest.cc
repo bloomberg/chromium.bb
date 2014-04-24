@@ -55,9 +55,12 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
   MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetAutofillManager, autofill::AutofillManager*());
+  MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
   MOCK_METHOD1(AccountCreationFormsFound,
                void(const std::vector<autofill::FormData>&));
+  MOCK_METHOD2(AcceptPasswordAutofillSuggestion,
+               void(const base::string16&, const base::string16&));
 };
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {

@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -31,6 +32,7 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
   TestPasswordManagerDriver(PasswordManagerClient* client)
       : password_manager_(client),
         password_generation_manager_(client),
+        password_autofill_manager_(client, NULL),
         is_off_the_record_(false) {}
   virtual ~TestPasswordManagerDriver() {}
 
@@ -48,12 +50,19 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
   virtual autofill::AutofillManager* GetAutofillManager() OVERRIDE {
     return NULL;
   }
+  virtual PasswordAutofillManager* GetPasswordAutofillManager() OVERRIDE {
+    return &password_autofill_manager_;
+  }
   virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form)
       OVERRIDE {}
   virtual void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) OVERRIDE {
     found_account_creation_forms_.insert(
         found_account_creation_forms_.begin(), forms.begin(), forms.end());
+  }
+  virtual void AcceptPasswordAutofillSuggestion(
+      const base::string16& username,
+      const base::string16& password) OVERRIDE {
   }
 
   const std::vector<autofill::FormData>& GetFoundAccountCreationForms() {
@@ -66,6 +75,7 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
  private:
   PasswordManager password_manager_;
   PasswordGenerationManager password_generation_manager_;
+  PasswordAutofillManager password_autofill_manager_;
   std::vector<autofill::FormData> found_account_creation_forms_;
   bool is_off_the_record_;
 };

@@ -140,14 +140,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                                 bool display_warning);
   void OnDidEndTextFieldEditing();
   void OnHidePopup();
-  void OnAddPasswordFormMapping(
-      const FormFieldData& username_field,
-      const PasswordFormFillData& fill_data);
-  void OnShowPasswordSuggestions(
-      const FormFieldData& field,
-      const gfx::RectF& bounds,
-      const std::vector<base::string16>& suggestions,
-      const std::vector<base::string16>& realms);
   void OnSetDataList(const std::vector<base::string16>& values,
                      const std::vector<base::string16>& labels);
 

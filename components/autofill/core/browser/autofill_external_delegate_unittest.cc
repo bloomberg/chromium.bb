@@ -397,52 +397,6 @@ TEST_F(AutofillExternalDelegateUnitTest,
   external_delegate_->DidEndTextFieldEditing();
 }
 
-// Test that the popup is marked as visible after recieving password
-// suggestions.
-TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
-  static const base::string16 kUsername = ASCIIToUTF16("username");
-  static const base::string16 kSignonRealm = ASCIIToUTF16("http://foo.com/");
-  std::vector<base::string16> suggestions;
-  suggestions.push_back(kUsername);
-  std::vector<base::string16> realms;
-  realms.push_back(kSignonRealm);
-
-  FormFieldData field;
-  field.is_focusable = true;
-  field.should_autocomplete = true;
-  const gfx::RectF element_bounds;
-
-  FormFieldData username_field_data;
-  username_field_data.value = kUsername;
-  PasswordFormFillData password_form_fill_data;
-  password_form_fill_data.basic_data.fields.push_back(username_field_data);
-  external_delegate_->AddPasswordFormMapping(field, password_form_fill_data);
-
-  // The enums must be cast to ints to prevent compile errors on linux_rel.
-  EXPECT_CALL(
-      manager_delegate_,
-      ShowAutofillPopup(
-          _,
-          _,
-          _,
-          _,
-          _,
-          testing::ElementsAre(static_cast<int>(POPUP_ITEM_ID_PASSWORD_ENTRY)),
-          _));
-
-  external_delegate_->OnShowPasswordSuggestions(suggestions,
-                                                realms,
-                                                field,
-                                                element_bounds);
-
-  EXPECT_CALL(manager_delegate_, HideAutofillPopup());
-
-  // This should trigger a call to hide the popup since
-  // we've selected an option.
-  external_delegate_->DidAcceptSuggestion(suggestions[0],
-                                          POPUP_ITEM_ID_PASSWORD_ENTRY);
-}
-
 // Test that the driver is directed to accept the data list after being notified
 // that the user accepted the data list suggestion.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateAcceptSuggestion) {

@@ -141,9 +141,11 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,
 IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
                     base::string16 /* generated_password */)
 
-// Tells the renderer that the password field has accept the suggestion.
-IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
-                    base::string16 /* username value*/)
+// Tells the renderer that the user accepted a password autofill suggestion,
+// and that renderer should set the username and password to the given values.
+IPC_MESSAGE_ROUTED2(AutofillMsg_AcceptPasswordAutofillSuggestion,
+                    base::string16 /* username */,
+                    base::string16 /* password */)
 
 // Tells the renderer that this password form is not blacklisted.  A form can
 // be blacklisted if a user chooses "never save passwords for this site".

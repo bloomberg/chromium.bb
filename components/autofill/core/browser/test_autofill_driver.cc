@@ -47,10 +47,6 @@ void TestAutofillDriver::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
 }
 
-void TestAutofillDriver::RendererShouldAcceptPasswordAutofillSuggestion(
-    const base::string16& username) {
-}
-
 void TestAutofillDriver::RendererShouldClearFilledForm() {
 }
 

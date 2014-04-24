@@ -170,11 +170,6 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
                                                         &autofill_param))
           return false;
         break;
-      case AutofillMsg_AcceptPasswordAutofillSuggestion::ID:
-        if (!AutofillMsg_AcceptPasswordAutofillSuggestion::Read(
-                message, &autofill_param))
-          return false;
-        break;
       default:
         NOTREACHED();
     }
@@ -292,15 +287,6 @@ TEST_F(ContentAutofillDriverTest, AcceptDataListSuggestion) {
   driver_->RendererShouldAcceptDataListSuggestion(input_value);
   EXPECT_TRUE(GetString16FromMessageWithID(
       AutofillMsg_AcceptDataListSuggestion::ID, &output_value));
-  EXPECT_EQ(input_value, output_value);
-}
-
-TEST_F(ContentAutofillDriverTest, AcceptPasswordAutofillSuggestion) {
-  base::string16 input_value(base::ASCIIToUTF16("barbaz"));
-  base::string16 output_value;
-  driver_->RendererShouldAcceptPasswordAutofillSuggestion(input_value);
-  EXPECT_TRUE(GetString16FromMessageWithID(
-      AutofillMsg_AcceptPasswordAutofillSuggestion::ID, &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 

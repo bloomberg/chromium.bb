@@ -133,15 +133,6 @@ void ContentAutofillDriver::RendererShouldAcceptDataListSuggestion(
       new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(), value));
 }
 
-void ContentAutofillDriver::RendererShouldAcceptPasswordAutofillSuggestion(
-    const base::string16& username) {
-  if (!RendererIsAvailable())
-    return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_AcceptPasswordAutofillSuggestion(
-      host->GetRoutingID(), username));
-}
-
 void ContentAutofillDriver::RendererShouldClearFilledForm() {
   if (!RendererIsAvailable())
     return;
@@ -199,12 +190,6 @@ bool ContentAutofillDriver::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_FORWARD(AutofillHostMsg_HidePopup,
                       autofill_manager_.get(),
                       AutofillManager::OnHidePopup)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_AddPasswordFormMapping,
-                      autofill_manager_.get(),
-                      AutofillManager::OnAddPasswordFormMapping)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordSuggestions,
-                      autofill_manager_.get(),
-                      AutofillManager::OnShowPasswordSuggestions)
   IPC_MESSAGE_FORWARD(AutofillHostMsg_SetDataList,
                       autofill_manager_.get(),
                       AutofillManager::OnSetDataList)

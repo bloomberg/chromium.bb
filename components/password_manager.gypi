@@ -28,6 +28,8 @@
         'password_manager/core/browser/login_database_posix.cc',
         'password_manager/core/browser/login_database_win.cc',
         'password_manager/core/browser/login_model.h',
+        'password_manager/core/browser/password_autofill_manager.cc',
+        'password_manager/core/browser/password_autofill_manager.h',
         'password_manager/core/browser/password_form_manager.cc',
         'password_manager/core/browser/password_form_manager.h',
         'password_manager/core/browser/password_generation_manager.cc',

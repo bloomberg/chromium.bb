@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -26,22 +27,29 @@ namespace password_manager {
 class ContentPasswordManagerDriver : public PasswordManagerDriver,
                                      public content::WebContentsObserver {
  public:
-  ContentPasswordManagerDriver(content::WebContents* web_contents,
-                               PasswordManagerClient* client);
+  ContentPasswordManagerDriver(
+      content::WebContents* web_contents,
+      PasswordManagerClient* client,
+      autofill::AutofillManagerDelegate* autofill_manager_delegate);
   virtual ~ContentPasswordManagerDriver();
 
   // PasswordManagerDriver implementation.
   virtual void FillPasswordForm(const autofill::PasswordFormFillData& form_data)
       OVERRIDE;
+  virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
+  virtual bool IsOffTheRecord() OVERRIDE;
   virtual void AllowPasswordGenerationForForm(autofill::PasswordForm* form)
       OVERRIDE;
   virtual void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) OVERRIDE;
-  virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual void AcceptPasswordAutofillSuggestion(
+      const base::string16& username,
+      const base::string16& password) OVERRIDE;
+
   virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE;
   virtual PasswordManager* GetPasswordManager() OVERRIDE;
   virtual autofill::AutofillManager* GetAutofillManager() OVERRIDE;
+  virtual PasswordAutofillManager* GetPasswordAutofillManager() OVERRIDE;
 
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -52,6 +60,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
  private:
   PasswordManager password_manager_;
   PasswordGenerationManager password_generation_manager_;
+  PasswordAutofillManager password_autofill_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentPasswordManagerDriver);
 };

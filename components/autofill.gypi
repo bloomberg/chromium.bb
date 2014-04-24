@@ -168,8 +168,6 @@
         'autofill/core/browser/form_structure.h',
         'autofill/core/browser/name_field.cc',
         'autofill/core/browser/name_field.h',
-        'autofill/core/browser/password_autofill_manager.cc',
-        'autofill/core/browser/password_autofill_manager.h',
         'autofill/core/browser/password_generator.cc',
         'autofill/core/browser/password_generator.h',
         'autofill/core/browser/personal_data_manager.cc',

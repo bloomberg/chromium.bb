@@ -40,7 +40,8 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  ChromePasswordManagerClient::CreateForWebContents(web_contents());
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillManagerDelegate(
+      web_contents(), NULL);
 }
 
 ChromePasswordManagerClient* ChromePasswordManagerClientTest::GetClient() {

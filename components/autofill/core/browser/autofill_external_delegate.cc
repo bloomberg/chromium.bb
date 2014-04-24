@@ -19,7 +19,6 @@ AutofillExternalDelegate::AutofillExternalDelegate(
     AutofillDriver* driver)
     : manager_(manager),
       driver_(driver),
-      password_manager_(driver),
       query_id_(0),
       display_warning_if_disabled_(false),
       has_suggestion_(false),
@@ -111,32 +110,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   }
 }
 
-void AutofillExternalDelegate::OnShowPasswordSuggestions(
-    const std::vector<base::string16>& suggestions,
-    const std::vector<base::string16>& realms,
-    const FormFieldData& field,
-    const gfx::RectF& element_bounds) {
-  query_field_ = field;
-  element_bounds_ = element_bounds;
-
-  if (suggestions.empty()) {
-    manager_->delegate()->HideAutofillPopup();
-    return;
-  }
-
-  std::vector<base::string16> empty(suggestions.size());
-  std::vector<int> password_ids(suggestions.size(),
-                                POPUP_ITEM_ID_PASSWORD_ENTRY);
-  manager_->delegate()->ShowAutofillPopup(
-      element_bounds_,
-      query_field_.text_direction,
-      suggestions,
-      realms,
-      empty,
-      password_ids,
-      GetWeakPtr());
-}
-
 void AutofillExternalDelegate::SetCurrentDataListValues(
     const std::vector<base::string16>& data_list_values,
     const std::vector<base::string16>& data_list_labels) {
@@ -178,9 +151,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     // User selected 'Clear form'.
     driver_->RendererShouldClearFilledForm();
   } else if (identifier == POPUP_ITEM_ID_PASSWORD_ENTRY) {
-    bool success = password_manager_.DidAcceptAutofillSuggestion(
-        query_field_, value);
-    DCHECK(success);
+    NOTREACHED();  // Should be handled elsewhere.
   } else if (identifier == POPUP_ITEM_ID_DATALIST_ENTRY) {
     driver_->RendererShouldAcceptDataListSuggestion(value);
   } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
@@ -213,14 +184,6 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
 
 void AutofillExternalDelegate::Reset() {
   manager_->delegate()->HideAutofillPopup();
-
-  password_manager_.Reset();
-}
-
-void AutofillExternalDelegate::AddPasswordFormMapping(
-      const FormFieldData& username_field,
-      const PasswordFormFillData& fill_data) {
-  password_manager_.AddPasswordFormMapping(username_field, fill_data);
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {

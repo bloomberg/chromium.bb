@@ -68,11 +68,6 @@ class AutofillDriver {
   virtual void RendererShouldAcceptDataListSuggestion(
       const base::string16& value) = 0;
 
-  // Tells the renderer to accept the password autofill suggestion for
-  // |username|.
-  virtual void RendererShouldAcceptPasswordAutofillSuggestion(
-      const base::string16& username) = 0;
-
   // Tells the renderer to clear the currently filled Autofill results.
   virtual void RendererShouldClearFilledForm() = 0;
 

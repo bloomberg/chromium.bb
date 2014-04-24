@@ -344,21 +344,29 @@ bool PasswordAutofillAgent::TextFieldHandlingKeyDown(
   return true;
 }
 
-bool PasswordAutofillAgent::DidAcceptAutofillSuggestion(
+bool PasswordAutofillAgent::AcceptSuggestion(
     const blink::WebNode& node,
-    const blink::WebString& username) {
-  blink::WebInputElement input;
-  PasswordInfo password;
-  if (!FindLoginInfo(node, &input, &password))
-    return false;
+    const blink::WebString& username,
+    const blink::WebString& password) {
+  blink::WebInputElement username_element;
+  PasswordInfo password_info;
 
-  // Set the incoming |username| in the text field and |FillUserNameAndPassword|
-  // will do the rest.
-  input.setValue(username, true);
-  return FillUserNameAndPassword(&input, &password.password_field,
-                                 password.fill_data,
-                                 true /* exact_username_match */,
-                                 true /* set_selection */);
+  if (!FindLoginInfo(node, &username_element, &password_info) ||
+      !IsElementAutocompletable(username_element) ||
+      !IsElementAutocompletable(password_info.password_field)) {
+    return false;
+  }
+
+  base::string16 current_username = username_element.value();
+  username_element.setValue(username, true);
+  username_element.setAutofilled(true);
+  username_element.setSelectionRange(current_username.length(),
+                                     username.length());
+
+  password_info.password_field.setValue(password, true);
+  password_info.password_field.setAutofilled(true);
+
+  return true;
 }
 
 bool PasswordAutofillAgent::DidClearAutofillSelection(

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "components/autofill/core/common/password_autofill_util.h"
+#include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -228,8 +229,10 @@ void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
 void PasswordManager::DidNavigateMainFrame(bool is_in_page) {
   // Clear data after main frame navigation if the navigation was to a
   // different page.
-  if (!is_in_page)
+  if (!is_in_page) {
     pending_login_managers_.clear();
+    driver_->GetPasswordAutofillManager()->Reset();
+  }
 }
 
 void PasswordManager::OnPasswordFormSubmitted(

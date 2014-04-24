@@ -19,7 +19,7 @@ class BrowserContext;
 namespace password_manager {
 
 // A very simple PasswordStore implementation that keeps all of the passwords
-// in memory and does all it's manipulations on the main thread. Since this
+// in memory and does all its manipulations on the main thread. Since this
 // is only used for testing, only the parts of the interface that are needed
 // for testing have been implemented.
 class TestPasswordStore : public PasswordStore {

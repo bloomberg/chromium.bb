@@ -11,15 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
-#include "components/autofill/core/browser/password_autofill_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/password_form_fill_data.h"
 #include "ui/gfx/rect.h"
-
-namespace gfx {
-class Rect;
-}
 
 namespace autofill {
 
@@ -73,12 +67,6 @@ class AutofillExternalDelegate
       const std::vector<base::string16>& icons,
       const std::vector<int>& unique_ids);
 
-  // Show password suggestions in the popup.
-  void OnShowPasswordSuggestions(const std::vector<base::string16>& suggestions,
-                                 const std::vector<base::string16>& realms,
-                                 const FormFieldData& field,
-                                 const gfx::RectF& bounds);
-
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(
       const std::vector<base::string16>& data_list_values,
@@ -91,10 +79,6 @@ class AutofillExternalDelegate
   // Returns the delegate to its starting state by removing any page specific
   // values or settings.
   void Reset();
-
-  // Inform the Password Manager of a filled form.
-  void AddPasswordFormMapping(const FormFieldData& username_field,
-                              const PasswordFormFillData& fill_data);
 
  protected:
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
@@ -132,9 +116,6 @@ class AutofillExternalDelegate
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   AutofillDriver* driver_;  // weak
-
-  // Password Autofill manager, handles all password-related Autofilling.
-  PasswordAutofillManager password_manager_;
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.

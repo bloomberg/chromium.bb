@@ -650,32 +650,6 @@ void AutofillManager::SetTestDelegate(
   test_delegate_ = delegate;
 }
 
-void AutofillManager::OnAddPasswordFormMapping(
-      const FormFieldData& username_field,
-      const PasswordFormFillData& fill_data) {
-  if (!IsValidFormFieldData(username_field) ||
-      !IsValidPasswordFormFillData(fill_data))
-    return;
-
-  external_delegate_->AddPasswordFormMapping(username_field, fill_data);
-}
-
-void AutofillManager::OnShowPasswordSuggestions(
-    const FormFieldData& field,
-    const gfx::RectF& bounds,
-    const std::vector<base::string16>& suggestions,
-    const std::vector<base::string16>& realms) {
-  if (!IsValidString16Vector(suggestions) ||
-      !IsValidString16Vector(realms) ||
-      suggestions.size() != realms.size())
-    return;
-
-  external_delegate_->OnShowPasswordSuggestions(suggestions,
-                                                realms,
-                                                field,
-                                                bounds);
-}
-
 void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
                                     const std::vector<base::string16>& labels) {
   if (!IsValidString16Vector(values) ||
