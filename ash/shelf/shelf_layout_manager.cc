@@ -1028,7 +1028,9 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_->shelf() && shelf_->shelf()->IsShowingOverflowBubble())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_->IsActive() || shelf_->status_area_widget()->IsActive())
+  if (shelf_->IsActive() ||
+      (shelf_->status_area_widget() &&
+       shelf_->status_area_widget()->IsActive()))
     return SHELF_AUTO_HIDE_SHOWN;
 
   const std::vector<aura::Window*> windows =
