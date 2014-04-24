@@ -21,7 +21,6 @@ import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.IChildProcessCallback;
-import org.chromium.content.common.IChildProcessService;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -34,9 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChildProcessLauncher {
     private static final String TAG = "ChildProcessLauncher";
 
-    private static final int CALLBACK_FOR_UNKNOWN_PROCESS = 0;
-    private static final int CALLBACK_FOR_GPU_PROCESS = 1;
-    private static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
+    static final int CALLBACK_FOR_UNKNOWN_PROCESS = 0;
+    static final int CALLBACK_FOR_GPU_PROCESS = 1;
+    static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
 
     private static final String SWITCH_PROCESS_TYPE = "type";
     private static final String SWITCH_PPAPI_BROKER_PROCESS = "ppapi-broker";
@@ -118,6 +117,12 @@ public class ChildProcessLauncher {
                 }
             }
         }
+
+        /** @return the count of connections managed by the allocator */
+        @VisibleForTesting
+        int allocatedConnectionsCountForTesting() {
+            return mChildProcessConnections.length - mFreeConnectionIndices.size();
+        }
     }
 
     // Service class for child process. As the default value it uses SandboxedProcessService0 and
@@ -151,8 +156,12 @@ public class ChildProcessLauncher {
         ChildProcessConnection.DeathCallback deathCallback =
             new ChildProcessConnection.DeathCallback() {
                 @Override
-                public void onChildProcessDied(int pid) {
-                    stop(pid);
+                public void onChildProcessDied(ChildProcessConnection connection) {
+                    if (connection.getPid() != 0) {
+                        stop(connection.getPid());
+                    } else {
+                        freeConnection(connection);
+                    }
                 }
             };
         sConnectionAllocated = true;
@@ -196,11 +205,7 @@ public class ChildProcessLauncher {
     }
 
     private static void freeConnection(ChildProcessConnection connection) {
-        if (connection == null) {
-            return;
-        }
         getConnectionAllocator(connection.isInSandbox()).free(connection);
-        return;
     }
 
     // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
@@ -282,22 +287,6 @@ public class ChildProcessLauncher {
     }
 
     /**
-     * Returns the child process service interface for the given pid. This may be called on
-     * any thread, but the caller must assume that the service can disconnect at any time. All
-     * service calls should catch and handle android.os.RemoteException.
-     *
-     * @param pid The pid (process handle) of the service obtained from {@link #start}.
-     * @return The IChildProcessService or null if the service no longer exists.
-     */
-    public static IChildProcessService getChildService(int pid) {
-        ChildProcessConnection connection = sServiceMap.get(pid);
-        if (connection != null) {
-            return connection.getService();
-        }
-        return null;
-    }
-
-    /**
      * Should be called early in startup so the work needed to spawn the child process can be done
      * in parallel to other startup work. Must not be called on the UI thread. Spare connection is
      * created in sandboxed child process.
@@ -348,7 +337,7 @@ public class ChildProcessLauncher {
             int[] fileIds,
             int[] fileFds,
             boolean[] fileAutoClose,
-            final long clientContext) {
+            long clientContext) {
         assert fileIds.length == fileFds.length && fileFds.length == fileAutoClose.length;
         FileDescriptorInfo[] filesToBeMapped = new FileDescriptorInfo[fileFds.length];
         for (int i = 0; i < fileFds.length; i++) {
@@ -383,9 +372,21 @@ public class ChildProcessLauncher {
                 return;
             }
         }
-        final ChildProcessConnection connection = allocatedConnection;
-        Log.d(TAG, "Setting up connection to process: slot=" + connection.getServiceNumber());
 
+        Log.d(TAG, "Setting up connection to process: slot=" +
+                allocatedConnection.getServiceNumber());
+        triggerConnectionSetup(allocatedConnection, commandLine, childProcessId, filesToBeMapped,
+                callbackType, clientContext);
+    }
+
+    @VisibleForTesting
+    static void triggerConnectionSetup(
+            final ChildProcessConnection connection,
+            String[] commandLine,
+            int childProcessId,
+            FileDescriptorInfo[] filesToBeMapped,
+            int callbackType,
+            final long clientContext) {
         ChildProcessConnection.ConnectionCallback connectionCallback =
                 new ChildProcessConnection.ConnectionCallback() {
                     @Override
@@ -394,10 +395,13 @@ public class ChildProcessLauncher {
                         if (pid != NULL_PROCESS_HANDLE) {
                             sBindingManager.addNewConnection(pid, connection);
                             sServiceMap.put(pid, connection);
-                        } else {
-                            freeConnection(connection);
                         }
-                        nativeOnChildProcessStarted(clientContext, pid);
+                        // If the connection fails and pid == 0, the Java-side cleanup was already
+                        // handled by DeathCallback. We still have to call back to native for
+                        // cleanup there.
+                        if (clientContext != 0) {  // Will be 0 in Java instrumentation tests.
+                            nativeOnChildProcessStarted(clientContext, pid);
+                        }
                     }
                 };
 
@@ -499,6 +503,23 @@ public class ChildProcessLauncher {
         if (pid > 0 && !nativeIsSingleProcess()) {
             Log.w(TAG, message + ", pid=" + pid);
         }
+    }
+
+    @VisibleForTesting
+    static ChildProcessConnection allocateBoundConnectionForTesting(Context context) {
+        return allocateBoundConnection(context, null, true);
+    }
+
+    /** @return the count of sandboxed connections managed by the allocator */
+    @VisibleForTesting
+    static int allocatedConnectionsCountForTesting() {
+        return sSandboxedChildConnectionAllocator.allocatedConnectionsCountForTesting();
+    }
+
+    /** @return the count of services set up and working */
+    @VisibleForTesting
+    static int connectedServicesCountForTesting() {
+        return sServiceMap.size();
     }
 
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);

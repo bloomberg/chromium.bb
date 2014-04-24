@@ -104,6 +104,11 @@ public class ChildProcessService extends Service {
             }
             return Process.myPid();
         }
+
+        @Override
+        public void crashIntentionallyForTesting() {
+            Process.killProcess(Process.myPid());
+        }
     };
 
     /* package */ static Context getContext() {
