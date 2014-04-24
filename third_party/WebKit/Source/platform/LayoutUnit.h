@@ -54,7 +54,8 @@ while (0)
 
 #endif
 
-static const int kFixedPointDenominator = 64;
+static const int kLayoutUnitFractionalBits = 6;
+static const int kFixedPointDenominator = 1 << kLayoutUnitFractionalBits;
 
 const int intMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
 const int intMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
@@ -145,9 +146,7 @@ public:
     }
     int round() const
     {
-        if (m_value > 0)
-            return saturatedAddition(rawValue(), kFixedPointDenominator / 2) / kFixedPointDenominator;
-        return saturatedSubtraction(rawValue(), (kFixedPointDenominator / 2) - 1) / kFixedPointDenominator;
+        return saturatedAddition(rawValue(), kFixedPointDenominator / 2) >> kLayoutUnitFractionalBits;
     }
 
     int floor() const
@@ -155,9 +154,7 @@ public:
         if (UNLIKELY(m_value <= INT_MIN + kFixedPointDenominator - 1))
             return intMinForLayoutUnit;
 
-        if (m_value >= 0)
-            return toInt();
-        return (m_value - kFixedPointDenominator + 1) / kFixedPointDenominator;
+        return m_value >> kLayoutUnitFractionalBits;
     }
 
     LayoutUnit fraction() const
