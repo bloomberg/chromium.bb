@@ -91,7 +91,7 @@ void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   ContentLayerClient* painter = layer->client();
   gfx::Size content_bounds = layer->content_bounds();
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   tile_grid_info.fTileInterval.set(kTileGridSize - 2 * kTileGridBorder,
                                    kTileGridSize - 2 * kTileGridBorder);
   tile_grid_info.fMargin.set(kTileGridBorder, kTileGridBorder);

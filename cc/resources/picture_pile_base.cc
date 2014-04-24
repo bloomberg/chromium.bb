@@ -154,7 +154,7 @@ void PicturePileBase::SetMinContentsScale(float min_contents_scale) {
 // static
 void PicturePileBase::ComputeTileGridInfo(
     const gfx::Size& tile_grid_size,
-    SkTileGridPicture::TileGridInfo* info) {
+    SkTileGridFactory::TileGridInfo* info) {
   DCHECK(info);
   info->fTileInterval.set(tile_grid_size.width() - 2 * kTileGridBorderPixels,
                           tile_grid_size.height() - 2 * kTileGridBorderPixels);

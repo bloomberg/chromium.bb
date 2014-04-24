@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFlattenableBuffers.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -82,6 +83,7 @@ SkCanvas* StartRecording(SkPictureRecorder* recorder, gfx::Rect layer_rect) {
   SkCanvas* canvas = recorder->beginRecording(
       layer_rect.width(),
       layer_rect.height(),
+      NULL,
       SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
   canvas->save();

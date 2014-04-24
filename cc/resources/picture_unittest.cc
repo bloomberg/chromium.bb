@@ -10,10 +10,10 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBBHFactory.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/core/SkTileGridPicture.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -25,7 +25,7 @@ TEST(PictureTest, AsBase64String) {
 
   gfx::Rect layer_rect(100, 100);
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   tile_grid_info.fTileInterval = SkISize::Make(100, 100);
   tile_grid_info.fMargin.setEmpty();
   tile_grid_info.fOffset.setZero();
@@ -110,7 +110,7 @@ TEST(PictureTest, AsBase64String) {
 TEST(PictureTest, PixelRefIterator) {
   gfx::Rect layer_rect(2048, 2048);
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   tile_grid_info.fTileInterval = SkISize::Make(512, 512);
   tile_grid_info.fMargin.setEmpty();
   tile_grid_info.fOffset.setZero();
@@ -211,7 +211,7 @@ TEST(PictureTest, PixelRefIterator) {
 TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   gfx::Rect layer_rect(1024, 0, 2048, 2048);
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   tile_grid_info.fTileInterval = SkISize::Make(512, 512);
   tile_grid_info.fMargin.setEmpty();
   tile_grid_info.fOffset.setZero();
@@ -335,7 +335,7 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
 TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
   gfx::Rect layer_rect(2048, 2048);
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   tile_grid_info.fTileInterval = SkISize::Make(512, 512);
   tile_grid_info.fMargin.setEmpty();
   tile_grid_info.fOffset.setZero();
@@ -393,7 +393,7 @@ TEST(PictureTest, CreateFromSkpValue) {
 
   gfx::Rect layer_rect(100, 200);
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   tile_grid_info.fTileInterval = SkISize::Make(100, 200);
   tile_grid_info.fMargin.setEmpty();
   tile_grid_info.fOffset.setZero();
@@ -448,7 +448,7 @@ TEST(PictureTest, RecordingModes) {
 
   gfx::Rect layer_rect(100, 200);
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   tile_grid_info.fTileInterval = SkISize::Make(100, 200);
   tile_grid_info.fMargin.setEmpty();
   tile_grid_info.fOffset.setZero();

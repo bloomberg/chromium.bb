@@ -20,7 +20,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkTileGridPicture.h"
+#include "third_party/skia/include/core/SkBBHFactory.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
 
 class SkPixelRef;
@@ -54,7 +55,7 @@ class CC_EXPORT Picture
   static scoped_refptr<Picture> Create(
       const gfx::Rect& layer_rect,
       ContentLayerClient* client,
-      const SkTileGridPicture::TileGridInfo& tile_grid_info,
+      const SkTileGridFactory::TileGridInfo& tile_grid_info,
       bool gather_pixels_refs,
       int num_raster_threads,
       RecordingMode recording_mode);
@@ -146,11 +147,11 @@ class CC_EXPORT Picture
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
   void Record(ContentLayerClient* client,
-              const SkTileGridPicture::TileGridInfo& tile_grid_info,
+              const SkTileGridFactory::TileGridInfo& tile_grid_info,
               RecordingMode recording_mode);
 
   // Gather pixel refs from recording.
-  void GatherPixelRefs(const SkTileGridPicture::TileGridInfo& tile_grid_info);
+  void GatherPixelRefs(const SkTileGridFactory::TileGridInfo& tile_grid_info);
 
   gfx::Rect layer_rect_;
   gfx::Rect opaque_rect_;

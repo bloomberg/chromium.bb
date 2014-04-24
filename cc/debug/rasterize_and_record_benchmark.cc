@@ -108,7 +108,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   DCHECK(host_);
   gfx::Size tile_grid_size = host_->settings().default_tile_size;
 
-  SkTileGridPicture::TileGridInfo tile_grid_info;
+  SkTileGridFactory::TileGridInfo tile_grid_info;
   PicturePileBase::ComputeTileGridInfo(tile_grid_size, &tile_grid_info);
 
   gfx::Rect visible_content_rect = gfx::ScaleToEnclosingRect(

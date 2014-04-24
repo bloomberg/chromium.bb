@@ -7,6 +7,7 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -192,7 +193,7 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
   gfx::RectF opaque;
 
   SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(width, height);
+  SkCanvas* canvas = recorder.beginRecording(width, height, NULL, 0);
   client_->PaintContents(canvas, gfx::Rect(width, height), &opaque);
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
   return picture;

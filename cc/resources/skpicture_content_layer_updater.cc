@@ -10,6 +10,7 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_update_queue.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 
 namespace cc {
 
@@ -28,8 +29,8 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
     float contents_height_scale,
     gfx::Rect* resulting_opaque_rect) {
   SkPictureRecorder recorder;
-  SkCanvas* canvas =
-      recorder.beginRecording(content_rect.width(), content_rect.height());
+  SkCanvas* canvas = recorder.beginRecording(
+      content_rect.width(), content_rect.height(), NULL, 0);
   DCHECK_EQ(content_rect.width(), canvas->getBaseLayerSize().width());
   DCHECK_EQ(content_rect.height(), canvas->getBaseLayerSize().height());
   base::TimeTicks start_time =

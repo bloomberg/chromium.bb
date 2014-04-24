@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDrawFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
@@ -85,7 +86,7 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
 scoped_refptr<Picture> Picture::Create(
     const gfx::Rect& layer_rect,
     ContentLayerClient* client,
-    const SkTileGridPicture::TileGridInfo& tile_grid_info,
+    const SkTileGridFactory::TileGridInfo& tile_grid_info,
     bool gather_pixel_refs,
     int num_raster_threads,
     RecordingMode recording_mode) {
@@ -238,7 +239,7 @@ void Picture::CloneForDrawing(int num_threads) {
 }
 
 void Picture::Record(ContentLayerClient* painter,
-                     const SkTileGridPicture::TileGridInfo& tile_grid_info,
+                     const SkTileGridFactory::TileGridInfo& tile_grid_info,
                      RecordingMode recording_mode) {
   TRACE_EVENT2("cc",
                "Picture::Record",
@@ -250,14 +251,14 @@ void Picture::Record(ContentLayerClient* painter,
   DCHECK(!picture_);
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
 
-  skia::RefPtr<SkPictureFactory> factory =
-      skia::AdoptRef(new SkTileGridPictureFactory(tile_grid_info));
-  SkPictureRecorder recorder(factory.get());
+  SkTileGridFactory factory(tile_grid_info);
+  SkPictureRecorder recorder;
 
   skia::RefPtr<SkCanvas> canvas;
   canvas = skia::SharePtr(
       recorder.beginRecording(layer_rect_.width(),
                               layer_rect_.height(),
+                              &factory,
                               SkPicture::kUsePathBoundsForClip_RecordingFlag));
 
   switch (recording_mode) {
@@ -302,7 +303,7 @@ void Picture::Record(ContentLayerClient* painter,
 }
 
 void Picture::GatherPixelRefs(
-    const SkTileGridPicture::TileGridInfo& tile_grid_info) {
+    const SkTileGridFactory::TileGridInfo& tile_grid_info) {
   TRACE_EVENT2("cc", "Picture::GatherPixelRefs",
                "width", layer_rect_.width(),
                "height", layer_rect_.height());

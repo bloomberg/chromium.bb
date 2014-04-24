@@ -12,6 +12,7 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -348,6 +349,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   SkCanvas* canvas =
       recorder.beginRecording(tiling_rect.width(),
                               tiling_rect.height(),
+                              NULL,
                               SkPicture::kUsePathBoundsForClip_RecordingFlag);
   if (!tiling_rect.IsEmpty())
     RasterToBitmap(canvas, tiling_rect, 1.0, NULL);
