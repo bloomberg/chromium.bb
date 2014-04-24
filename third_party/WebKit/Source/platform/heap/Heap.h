@@ -144,6 +144,10 @@ public:
     // the stack.
     virtual bool checkAndMarkPointer(Visitor*, Address) = 0;
 
+#if ENABLE(GC_TRACING)
+    virtual const GCInfo* findGCInfo(Address) = 0;
+#endif
+
     Address address() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
     ThreadState* threadState() const { return m_threadState; }
@@ -180,6 +184,13 @@ public:
     }
 
     virtual bool checkAndMarkPointer(Visitor*, Address);
+
+#if ENABLE(GC_TRACING)
+    virtual const GCInfo* findGCInfo(Address)
+    {
+        return gcInfo();
+    }
+#endif
 
     void link(LargeHeapObject<Header>** previousNext)
     {
@@ -283,6 +294,8 @@ public:
 
     inline void mark();
     inline void unmark();
+
+    inline const GCInfo* gcInfo() { return 0; }
 
     inline Address payload();
     inline size_t payloadSize();
@@ -450,12 +463,16 @@ public:
     void clearObjectStartBitMap();
     void finalize(Header*);
     virtual bool checkAndMarkPointer(Visitor*, Address);
+#if ENABLE(GC_TRACING)
+    const GCInfo* findGCInfo(Address) OVERRIDE;
+#endif
     ThreadHeap<Header>* heap() { return m_heap; }
 #if defined(ADDRESS_SANITIZER)
     void poisonUnmarkedObjects();
 #endif
 
 protected:
+    Header* findHeaderFromAddress(Address);
     void populateObjectStartBitMap();
     bool isObjectStartBitMapComputed() { return m_objectStartBitMapComputed; }
     TraceCallback traceCallback(Header*);
@@ -615,6 +632,10 @@ public:
     // page in this thread heap.
     virtual BaseHeapPage* largeHeapObjectFromAddress(Address) = 0;
 
+#if ENABLE(GC_TRACING)
+    virtual const GCInfo* findGCInfoOfLargeHeapObject(Address) = 0;
+#endif
+
     // Check if the given address could point to an object in this
     // heap. If so, find the start of that object and mark it using
     // the given Visitor.
@@ -670,6 +691,9 @@ public:
 
     virtual BaseHeapPage* heapPageFromAddress(Address);
     virtual BaseHeapPage* largeHeapObjectFromAddress(Address);
+#if ENABLE(GC_TRACING)
+    virtual const GCInfo* findGCInfoOfLargeHeapObject(Address);
+#endif
     virtual bool checkAndMarkLargeHeapObject(Visitor*, Address);
     virtual void sweep();
     virtual void assertEmpty();
@@ -809,6 +833,16 @@ public:
     // Conservatively checks whether an address is a pointer in any of the thread
     // heaps. If so marks the object pointed to as live.
     static Address checkAndMarkPointer(Visitor*, Address);
+
+#if ENABLE(GC_TRACING)
+    // Dump the path to specified object on the next GC. This method is to be invoked from GDB.
+    static void dumpPathToObjectOnNextGC(void* p);
+
+    // Forcibly find GCInfo of the object at Address.
+    // This is slow and should only be used for debug purposes.
+    // It involves finding the heap page and scanning the heap page for an object header.
+    static const GCInfo* findGCInfo(Address);
+#endif
 
     // Collect heap stats for all threads attached to the Blink
     // garbage collector. Should only be called during garbage
@@ -972,7 +1006,7 @@ public:
     RefCountedGarbageCollected()
         : m_refCount(1)
     {
-        m_keepAlive = new Persistent<T>(static_cast<T*>(this));
+        makeKeepAlive();
     }
 
     // Implement method to increase reference count for use with
@@ -992,9 +1026,8 @@ public:
     void ref()
     {
         if (UNLIKELY(!m_refCount)) {
-            ASSERT(!m_keepAlive);
             ASSERT(ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(reinterpret_cast<Address>(this)));
-            m_keepAlive = new Persistent<T>(static_cast<T*>(this));
+            makeKeepAlive();
         }
         ++m_refCount;
     }
@@ -1025,6 +1058,12 @@ protected:
     ~RefCountedGarbageCollected() { }
 
 private:
+    void makeKeepAlive()
+    {
+        ASSERT(!m_keepAlive);
+        m_keepAlive = new Persistent<T>(static_cast<T*>(this));
+    }
+
     int m_refCount;
     Persistent<T>* m_keepAlive;
 };
@@ -1559,90 +1598,115 @@ struct ThreadingTrait<HeapDeque<T, inlineCapacity> > : public ThreadingTrait<Deq
 
 template<typename Key, typename Value, typename T, typename U, typename V>
 struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
-    static const GCInfo* get() { return &info; }
-    static const GCInfo info;
-};
-
-template<typename Key, typename Value, typename T, typename U, typename V>
-const GCInfo GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> >::info = {
-    TraceTrait<HashMap<Key, Value, T, U, V, HeapAllocator> >::trace,
-    0,
-    false, // HashMap needs no finalizer.
+    static const GCInfo* get()
+    {
+        typedef HashMap<Key, Value, T, U, V, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            0,
+            false, // HashMap needs no finalizer.
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
 };
 
 template<typename T, typename U, typename V>
 struct GCInfoTrait<HashSet<T, U, V, HeapAllocator> > {
-    static const GCInfo* get() { return &info; }
-    static const GCInfo info;
-};
-
-template<typename T, typename U, typename V>
-const GCInfo GCInfoTrait<HashSet<T, U, V, HeapAllocator> >::info = {
-    TraceTrait<HashSet<T, U, V, HeapAllocator> >::trace,
-    0,
-    false, // HashSet needs no finalizer.
+    static const GCInfo* get()
+    {
+        typedef HashSet<T, U, V, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            0,
+            false, // HashSet needs no finalizer.
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
 };
 
 template<typename T, typename U, typename V>
 struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > {
-    static const GCInfo* get() { return &info; }
+    static const GCInfo* get()
+    {
+        typedef LinkedHashSet<T, U, V, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            LinkedHashSet<T, U, V, HeapAllocator>::finalize,
+            true, // Needs finalization. The anchor needs to unlink itself from the chain.
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
     static const GCInfo info;
-};
-
-template<typename T, typename U, typename V>
-const GCInfo GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> >::info = {
-    TraceTrait<LinkedHashSet<T, U, V, HeapAllocator> >::trace,
-    LinkedHashSet<T, U, V, HeapAllocator>::finalize,
-    true, // Needs finalization. The anchor needs to unlink itself from the chain.
 };
 
 template<typename T>
 struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
-    static const GCInfo* get() { return &info; }
-    static const GCInfo info;
-};
-
-template<typename T>
-const GCInfo GCInfoTrait<Vector<T, 0, HeapAllocator> >::info = {
-    TraceTrait<Vector<T, 0, HeapAllocator> >::trace,
-    0,
-    false, // Vector needs no finalizer if it has no inline capacity.
-};
-
-template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > {
-    static const GCInfo* get() { return &info; }
-    static const GCInfo info;
+    static const GCInfo* get()
+    {
+        typedef Vector<T, 0, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<Vector<T, 0, HeapAllocator> >::trace,
+            0,
+            false, // Vector needs no finalizer if it has no inline capacity.
+            VTableTrait<Vector<T, 0, HeapAllocator> >::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
 };
 
 template<typename T, size_t inlineCapacity>
 struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> > : public FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, true> { };
 
 template<typename T, size_t inlineCapacity>
-const GCInfo GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> >::info = {
-    TraceTrait<Vector<T, inlineCapacity, HeapAllocator> >::trace,
-    FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> >::finalize,
-    // Finalizer is needed to destruct things stored in the inline capacity.
-    inlineCapacity && VectorTraits<T>::needsDestruction,
-    VTableTrait<Vector<T, inlineCapacity, HeapAllocator> >::hasVTable,
+struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > {
+    static const GCInfo* get()
+    {
+        typedef Vector<T, inlineCapacity, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            FinalizerTrait<TargetType>::finalize,
+            // Finalizer is needed to destruct things stored in the inline capacity.
+            inlineCapacity && VectorTraits<T>::needsDestruction,
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
 };
 
 template<typename T>
 struct GCInfoTrait<Deque<T, 0, HeapAllocator> > {
-    static const GCInfo* get() { return &info; }
-    static const GCInfo info;
-};
-
-template<typename T>
-const GCInfo GCInfoTrait<Deque<T, 0, HeapAllocator> >::info = {
-    TraceTrait<Deque<T, 0, HeapAllocator> >::trace,
-    0,
-    false, // Deque needs no finalizer if it has no inline capacity.
-};
-
-template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > {
-    static const GCInfo* get() { return &info; }
+    static const GCInfo* get()
+    {
+        typedef Deque<T, 0, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            0,
+            false, // Deque needs no finalizer if it has no inline capacity.
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
     static const GCInfo info;
 };
 
@@ -1650,38 +1714,59 @@ template<typename T, size_t inlineCapacity>
 struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator> > : public FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, true> { };
 
 template<typename T, size_t inlineCapacity>
-const GCInfo GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> >::info = {
-    TraceTrait<Deque<T, inlineCapacity, HeapAllocator> >::trace,
-    FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator> >::finalize,
-    // Finalizer is needed to destruct things stored in the inline capacity.
-    inlineCapacity && VectorTraits<T>::needsDestruction,
+struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > {
+    static const GCInfo* get()
+    {
+        typedef Deque<T, inlineCapacity, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            FinalizerTrait<TargetType>::finalize,
+            // Finalizer is needed to destruct things stored in the inline capacity.
+            inlineCapacity && VectorTraits<T>::needsDestruction,
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
+    static const GCInfo info;
 };
 
 template<typename T, typename Traits>
 struct GCInfoTrait<HeapVectorBacking<T, Traits> > {
-    static const GCInfo* get() { return &info; }
-    static const GCInfo info;
-};
-
-template<typename T, typename Traits>
-const GCInfo GCInfoTrait<HeapVectorBacking<T, Traits> >::info = {
-    TraceTrait<HeapVectorBacking<T, Traits> >::trace,
-    FinalizerTrait<HeapVectorBacking<T, Traits> >::finalize,
-    Traits::needsDestruction,
-    false, // We don't support embedded objects in HeapVectors with vtables.
+    static const GCInfo* get()
+    {
+        typedef HeapVectorBacking<T, Traits> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            FinalizerTrait<TargetType>::finalize,
+            Traits::needsDestruction,
+            false, // We don't support embedded objects in HeapVectors with vtables.
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
 };
 
 template<typename Table>
 struct GCInfoTrait<HeapHashTableBacking<Table> > {
-    static const GCInfo* get() { return &info; }
-    static const GCInfo info;
-};
-
-template<typename Table>
-const GCInfo GCInfoTrait<HeapHashTableBacking<Table> >::info = {
-    TraceTrait<HeapHashTableBacking<Table> >::trace,
-    HeapHashTableBacking<Table>::finalize,
-    Table::ValueTraits::needsDestruction,
+    static const GCInfo* get()
+    {
+        typedef HeapHashTableBacking<Table> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            HeapHashTableBacking<Table>::finalize,
+            Table::ValueTraits::needsDestruction,
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
 };
 
 template<typename T, typename Traits>

@@ -34,12 +34,14 @@ namespace WTF {
 class String;
 WTF_EXPORT String dumpRefCountedInstanceCounts();
 
-#ifdef ENABLE_INSTANCE_COUNTER
-WTF_EXPORT void incrementInstanceCount(const char* extractNameFuncName, void* ptr);
-WTF_EXPORT void decrementInstanceCount(const char* extractNameFuncName, void* ptr);
+#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_TRACING)
+WTF_EXPORT void incrementInstanceCount(const char* extractNameFunctionName, void* ptr);
+WTF_EXPORT void decrementInstanceCount(const char* extractNameFunctionName, void* ptr);
+
+WTF_EXPORT String extractTypeNameFromFunctionName(const char* funcName);
 
 template<typename T>
-inline const char* extractNameFunc()
+inline const char* extractNameFunction()
 {
     return WTF_PRETTY_FUNCTION;
 }
@@ -47,16 +49,16 @@ inline const char* extractNameFunc()
 template<typename T>
 inline void incrementInstanceCount(T* p)
 {
-    incrementInstanceCount(extractNameFunc<T>(), p);
+    incrementInstanceCount(extractNameFunction<T>(), p);
 }
 
 template<typename T>
 inline void decrementInstanceCount(T* p)
 {
-    decrementInstanceCount(extractNameFunc<T>(), p);
+    decrementInstanceCount(extractNameFunction<T>(), p);
 }
 
-#endif // ENABLE_INSTANCE_COUNTER
+#endif // ENABLE(INSTANCE_COUNTER) || ENABLE(GC_TRACING)
 
 } // namespace WTF
 

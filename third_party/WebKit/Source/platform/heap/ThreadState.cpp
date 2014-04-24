@@ -479,6 +479,23 @@ bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
     return false;
 }
 
+#if ENABLE(GC_TRACING)
+const GCInfo* ThreadState::findGCInfo(Address address)
+{
+    BaseHeapPage* page = heapPageFromAddress(address);
+    if (page) {
+        return page->findGCInfo(address);
+    }
+
+    // Not in heap pages, check large objects
+    for (int i = 0; i < NumberOfHeaps; i++) {
+        if (const GCInfo* info = m_heaps[i]->findGCInfoOfLargeHeapObject(address))
+            return info;
+    }
+    return 0;
+}
+#endif
+
 void ThreadState::pushWeakObjectPointerCallback(void* object, WeakPointerCallback callback)
 {
     CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry(&m_weakCallbackStack);

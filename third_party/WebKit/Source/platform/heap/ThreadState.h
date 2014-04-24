@@ -46,6 +46,7 @@ namespace WebCore {
 class BaseHeap;
 class BaseHeapPage;
 class FinalizedHeapObjectHeader;
+struct GCInfo;
 class HeapContainsCache;
 class HeapObjectHeader;
 class PersistentNode;
@@ -492,6 +493,10 @@ public:
     // Checks a given address and if a pointer into the oilpan heap marks
     // the object to which it points.
     bool checkAndMarkPointer(Visitor*, Address);
+
+#if ENABLE(GC_TRACING)
+    const GCInfo* findGCInfo(Address);
+#endif
 
     void pushWeakObjectPointerCallback(void*, WeakPointerCallback);
     bool popAndInvokeWeakPointerCallback(Visitor*);

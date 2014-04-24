@@ -39,12 +39,16 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/HashTraits.h"
+#include "wtf/InstanceCounter.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TypeTraits.h"
 #include "wtf/WeakPtr.h"
+#if ENABLE(GC_TRACING)
+#include "wtf/text/WTFString.h"
+#endif
 
 #ifndef NDEBUG
 #define DEBUG_ONLY(x) x
@@ -93,6 +97,10 @@ struct GCInfo {
     FinalizationCallback m_finalize;
     bool m_nonTrivialFinalizer;
     bool m_hasVTable;
+#if ENABLE(GC_TRACING)
+    // |m_className| is held as a reference to prevent dtor being called at exit.
+    const String& m_className;
+#endif
 };
 
 // The FinalizerTraitImpl specifies how to finalize objects. Object
@@ -418,8 +426,20 @@ public:
     FOR_EACH_TYPED_HEAP(DECLARE_VISITOR_METHODS)
 #undef DECLARE_VISITOR_METHODS
 
+#if ENABLE(GC_TRACING)
+    void setHostInfo(void* object, const String& name)
+    {
+        m_hostObject = object;
+        m_hostName = name;
+    }
+#endif
+
 protected:
     virtual void registerWeakCell(void**, WeakPointerCallback) = 0;
+#if ENABLE(GC_TRACING)
+    void* m_hostObject;
+    String m_hostName;
+#endif
 
 private:
     template<typename T>
@@ -638,6 +658,17 @@ public: \
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
 #endif
 
+#if ENABLE(GC_TRACING)
+template<typename T>
+struct TypenameStringTrait {
+    static const String& get()
+    {
+        DEFINE_STATIC_LOCAL(String, typenameString, (WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>())));
+        return typenameString;
+    }
+};
+#endif
+
 template<typename T>
 struct GCInfoAtBase {
     static const GCInfo* get()
@@ -647,6 +678,9 @@ struct GCInfoAtBase {
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
             VTableTrait<T>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<T>::get()
+#endif
         };
         return &gcInfo;
     }

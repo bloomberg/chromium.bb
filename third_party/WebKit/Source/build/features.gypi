@@ -42,7 +42,8 @@
     # through GYP_DEFINES.
     'variables': {
       # Enables the Oilpan garbage-collection infrastructure.
-      'enable_oilpan%': 0
+      'enable_oilpan%': 0,
+      'gc_tracing%': 0
     },
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
@@ -91,6 +92,11 @@
       ['enable_oilpan==1', {
         'feature_defines': [
           'ENABLE_OILPAN=1',
+        ],
+      }],
+      ['gc_tracing==1', {
+        'feature_defines': [
+          'ENABLE_GC_TRACING=1',
         ],
       }],
     ],

@@ -33,7 +33,16 @@
 
 #include "platform/heap/ThreadState.h"
 
+#include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
+#if ENABLE(GC_TRACING)
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
+#include <stdio.h>
+#include <utility>
+#endif
 
 #if OS(POSIX)
 #include <sys/mman.h>
@@ -43,6 +52,17 @@
 #endif
 
 namespace WebCore {
+
+#if ENABLE(GC_TRACING)
+static String classOf(const void* object)
+{
+    const GCInfo* gcInfo = Heap::findGCInfo(reinterpret_cast<Address>(const_cast<void*>(object)));
+    if (gcInfo)
+        return gcInfo->m_className;
+
+    return "unknown";
+}
+#endif
 
 static bool vTableInitialized(void* objectPointer)
 {
@@ -379,6 +399,9 @@ template<typename Header>
 bool LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     if (contains(address)) {
+#if ENABLE(GC_TRACING)
+        visitor->setHostInfo(&address, "stack");
+#endif
         mark(visitor);
         return true;
     }
@@ -517,6 +540,18 @@ BaseHeapPage* ThreadHeap<Header>::largeHeapObjectFromAddress(Address address)
     }
     return 0;
 }
+
+#if ENABLE(GC_TRACING)
+template<typename Header>
+const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeHeapObject(Address address)
+{
+    for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next()) {
+        if (current->contains(address))
+            return current->gcInfo();
+    }
+    return 0;
+}
+#endif
 
 template<typename Header>
 bool ThreadHeap<Header>::checkAndMarkLargeHeapObject(Visitor* visitor, Address address)
@@ -987,13 +1022,13 @@ static int numberOfLeadingZeroes(uint8_t byte)
 }
 
 template<typename Header>
-bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address addr)
+Header* HeapPage<Header>::findHeaderFromAddress(Address address)
 {
-    if (addr < payload())
-        return false;
+    if (address < payload())
+        return 0;
     if (!isObjectStartBitMapComputed())
         populateObjectStartBitMap();
-    size_t objectOffset = addr - payload();
+    size_t objectOffset = address - payload();
     size_t objectStartNumber = objectOffset / allocationGranularity;
     size_t mapIndex = objectStartNumber / 8;
     ASSERT(mapIndex < objectStartBitMapSize);
@@ -1009,14 +1044,44 @@ bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address addr)
     Address objectAddress = objectOffset + payload();
     Header* header = reinterpret_cast<Header*>(objectAddress);
     if (header->isFree())
+        return 0;
+    return header;
+}
+
+template<typename Header>
+bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
+{
+    Header* header = findHeaderFromAddress(address);
+    if (!header)
         return false;
 
+#if ENABLE(GC_TRACING)
+    visitor->setHostInfo(&address, "stack");
+#endif
     if (hasVTable(header) && !vTableInitialized(header->payload()))
         visitor->markConservatively(header);
     else
         visitor->mark(header, traceCallback(header));
     return true;
 }
+
+#if ENABLE(GC_TRACING)
+template<typename Header>
+const GCInfo* HeapPage<Header>::findGCInfo(Address address)
+{
+    if (address < payload())
+        return 0;
+
+    if (gcInfo()) // for non FinalizedObjectHeader
+        return gcInfo();
+
+    Header* header = findHeaderFromAddress(address);
+    if (!header)
+        return 0;
+
+    return header->gcInfo();
+}
+#endif
 
 #if defined(ADDRESS_SANITIZER)
 template<typename Header>
@@ -1180,6 +1245,10 @@ bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor
     Item* item = --m_current;
 
     VisitorCallback callback = item->callback();
+#if ENABLE(GC_TRACING)
+    if (ThreadState::isAnyThreadInGC()) // weak-processing will also use popAndInvokeCallback
+        visitor->setHostInfo(item->object(), classOf(item->object()));
+#endif
     callback(visitor, item->object());
 
     return true;
@@ -1187,6 +1256,12 @@ bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor
 
 class MarkingVisitor : public Visitor {
 public:
+#if ENABLE(GC_TRACING)
+    typedef HashSet<uintptr_t> LiveObjectSet;
+    typedef HashMap<String, LiveObjectSet> LiveObjectMap;
+    typedef HashMap<uintptr_t, std::pair<uintptr_t, String> > ObjectGraph;
+#endif
+
     inline void visitHeader(HeapObjectHeader* header, const void* objectPointer, TraceCallback callback)
     {
         ASSERT(header);
@@ -1194,6 +1269,16 @@ public:
         if (header->isMarked())
             return;
         header->mark();
+#if ENABLE(GC_TRACING)
+        String className(classOf(objectPointer));
+        {
+            LiveObjectMap::AddResult result = currentlyLive().add(className, LiveObjectSet());
+            result.storedValue->value.add(reinterpret_cast<uintptr_t>(objectPointer));
+        }
+        ObjectGraph::AddResult result = objectGraph().add(reinterpret_cast<uintptr_t>(objectPointer), std::make_pair(reinterpret_cast<uintptr_t>(m_hostObject), m_hostName));
+        ASSERT(result.isNewEntry);
+        // printf("%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
+#endif
         if (callback)
             Heap::pushTraceCallback(const_cast<void*>(objectPointer), callback);
     }
@@ -1277,6 +1362,94 @@ public:
     FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
 #undef DEFINE_VISITOR_METHODS
 
+#if ENABLE(GC_TRACING)
+    void reportStats()
+    {
+        printf("\n---------- AFTER MARKING -------------------\n");
+        for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().end(); it != end; ++it) {
+            printf("%s %u", it->key.ascii().data(), it->value.size());
+
+            if (it->key == "WebCore::Document")
+                reportStillAlive(it->value, previouslyLive().get(it->key));
+
+            printf("\n");
+        }
+
+        previouslyLive().swap(currentlyLive());
+        currentlyLive().clear();
+
+        for (HashSet<uintptr_t>::iterator it = objectsToFindPath().begin(), end = objectsToFindPath().end(); it != end; ++it) {
+            dumpPathToObjectFromObjectGraph(objectGraph(), *it);
+        }
+    }
+
+    static void reportStillAlive(LiveObjectSet current, LiveObjectSet previous)
+    {
+        int count = 0;
+
+        printf(" [previously %u]", previous.size());
+        for (LiveObjectSet::iterator it = current.begin(), end = current.end(); it != end; ++it) {
+            if (previous.find(*it) == previous.end())
+                continue;
+            count++;
+        }
+
+        if (!count)
+            return;
+
+        printf(" {survived 2GCs %d: ", count);
+        for (LiveObjectSet::iterator it = current.begin(), end = current.end(); it != end; ++it) {
+            if (previous.find(*it) == previous.end())
+                continue;
+            printf("%ld", *it);
+            if (--count)
+                printf(", ");
+        }
+        ASSERT(!count);
+        printf("}");
+    }
+
+    static void dumpPathToObjectFromObjectGraph(const ObjectGraph& graph, uintptr_t target)
+    {
+        printf("Path to %lx of %s\n", target, classOf(reinterpret_cast<const void*>(target)).ascii().data());
+        ObjectGraph::const_iterator it = graph.find(target);
+        while (it != graph.end()) {
+            printf("<- %lx of %s\n", it->value.first, it->value.second.ascii().data());
+            it = graph.find(it->value.first);
+        }
+        printf("\n");
+    }
+
+    static void dumpPathToObjectOnNextGC(void* p)
+    {
+        objectsToFindPath().add(reinterpret_cast<uintptr_t>(p));
+    }
+
+    static LiveObjectMap& previouslyLive()
+    {
+        DEFINE_STATIC_LOCAL(LiveObjectMap, map, ());
+        return map;
+    }
+
+    static LiveObjectMap& currentlyLive()
+    {
+        DEFINE_STATIC_LOCAL(LiveObjectMap, map, ());
+        return map;
+    }
+
+    static ObjectGraph& objectGraph()
+    {
+        DEFINE_STATIC_LOCAL(ObjectGraph, graph, ());
+        return graph;
+    }
+
+    static HashSet<uintptr_t>& objectsToFindPath()
+    {
+        DEFINE_STATIC_LOCAL(HashSet<uintptr_t>, set, ());
+        return set;
+    }
+#endif
+
 protected:
     virtual void registerWeakCell(void** cell, WeakPointerCallback callback) OVERRIDE
     {
@@ -1341,6 +1514,24 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
     return 0;
 }
 
+#if ENABLE(GC_TRACING)
+const GCInfo* Heap::findGCInfo(Address address)
+{
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        if (const GCInfo* gcInfo = (*it)->findGCInfo(address)) {
+            return gcInfo;
+        }
+    }
+    return 0;
+}
+
+void Heap::dumpPathToObjectOnNextGC(void* p)
+{
+    static_cast<MarkingVisitor*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
+}
+#endif
+
 void Heap::pushTraceCallback(void* object, TraceCallback callback)
 {
     ASSERT(Heap::contains(object));
@@ -1385,7 +1576,12 @@ void Heap::prepareForGC()
 void Heap::collectGarbage(ThreadState::StackState stackState)
 {
     ThreadState::current()->clearGCRequested();
+
     GCScope gcScope(stackState);
+
+#if ENABLE(GC_TRACING)
+    static_cast<MarkingVisitor*>(s_markingVisitor)->objectGraph().clear();
+#endif
 
     // Disallow allocation during garbage collection (but not
     // during the finalization that happens when the gcScope is
@@ -1405,6 +1601,10 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
     s_markingStack->assertIsEmpty();
+
+#if ENABLE(GC_TRACING)
+    static_cast<MarkingVisitor*>(s_markingVisitor)->reportStats();
+#endif
 }
 
 void Heap::collectAllGarbage()

@@ -317,7 +317,13 @@ public:
         return static_cast<U*>(m_raw);
     }
 
-    void trace(Visitor* visitor) { visitor->mark(m_raw); }
+    void trace(Visitor* visitor)
+    {
+#if ENABLE(GC_TRACING)
+        visitor->setHostInfo(this, "Persistent");
+#endif
+        visitor->mark(m_raw);
+    }
 
     T* release()
     {
