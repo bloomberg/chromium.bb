@@ -1359,6 +1359,9 @@ const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
+// Prevents Chrome from quitting when Chrome Apps are open.
+const char kAppsKeepChromeAlive[]           = "apps-keep-chrome-alive";
+
 // Disables the creation and launch of app shims for platform apps.
 const char kDisableAppShims[]               = "disable-app-shims";
 

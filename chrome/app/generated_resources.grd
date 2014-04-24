@@ -2174,6 +2174,22 @@ Even if you have downloaded files from this website before, the website might ha
         Open as tab
       </message>
 
+      <!-- Quit all apps confirmation dialog -->
+      <if expr="is_macosx">
+        <message name="IDS_QUIT_WITH_APPS_NOTIFICATION_DISPLAY_SOURCE" desc="Display source for the notification when quitting with apps open.">
+          Quit
+        </message>
+        <message name="IDS_QUIT_WITH_APPS_EXPLANATION" desc="Text displayed in a notification explaining that Chrome will continue running in the background as long as there are Chrome Apps open.">
+          Chrome will keep running while Chrome Apps are open.
+        </message>
+        <message name="IDS_QUIT_WITH_APPS_QUIT_LABEL" desc="Button text to quit all running Chrome apps.">
+          Quit all apps
+        </message>
+        <message name="IDS_QUIT_WITH_APPS_SUPPRESSION_LABEL" desc="Button text to prevent a notification from showing in future.">
+          Don't show this again
+        </message>
+      </if>
+
       <!-- "Create application shortcuts" menu item -->
       <if expr="not use_titlecase">
         <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
@@ -6530,6 +6546,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables directory support for sync filesystem.
       </message>
       <if expr="is_macosx">
+        <message name="IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_NAME" desc="Title for the flag to prevent Chrome from quitting when Chrome Apps are open.">
+          Apps keep Chrome alive.
+        </message>
+        <message name="IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_DESCRIPTION" desc="Description for the flag to prevent Chrome from quitting when Chrome Apps are open.">
+          Prevent Chrome from quitting when Chrome Apps are open.
+        </message>
         <message name="IDS_FLAGS_DISABLE_APP_SHIMS_NAME" desc="Title for the flag to disable shortcuts for packaged apps from being added to Applications and from appearing in the dock.">
           Disable packaged app shortcuts.
         </message>

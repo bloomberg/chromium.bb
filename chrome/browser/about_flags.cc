@@ -1778,6 +1778,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableFileManagerMTP)
   },
 #endif
+#if defined(OS_MACOSX)
+  {
+    "apps-keep-chrome-alive",
+    IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_NAME,
+    IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kAppsKeepChromeAlive)
+  }
+#endif
 };
 
 const Experiment* experiments = kExperiments;

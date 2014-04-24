@@ -755,6 +755,7 @@ extern const char kCustomHandlersEnabled[];
 extern const char kUserRemovedLoginItem[];
 extern const char kChromeCreatedLoginItem[];
 extern const char kMigratedLoginItemPref[];
+extern const char kNotifyWhenAppsKeepChromeAlive[];
 #endif
 
 extern const char kBackgroundModeEnabled[];

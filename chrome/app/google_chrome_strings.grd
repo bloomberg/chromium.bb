@@ -581,6 +581,13 @@ Google Chrome is unable to recover your settings.
         Yes, exit Chrome
       </message>
 
+      <!-- Quit all apps confirmation dialog -->
+      <if expr="is_macosx">
+        <message name="IDS_QUIT_WITH_APPS_TITLE" desc="Title for a notification explaining that Chrome is running in the background.">
+          Google Chrome is running in the background.
+        </message>
+      </if>
+
       <!-- Autolaunch infobar -->
       <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chrome was automatically launched on startup">
         Google Chrome is configured to automatically launch when you start your computer.
