@@ -35,6 +35,7 @@ import errors
 SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
 LOGCAT_DIR = os.path.join(bb_utils.CHROME_OUT_DIR, 'logcat')
 GS_URL = 'https://storage.googleapis.com'
+GS_AUTH_URL = 'https://storage.cloud.google.com'
 
 # Describes an instrumation test suite:
 #   test: Name of test we're running.
@@ -512,6 +513,8 @@ def MakeGSPath(options, gs_base_dir):
   bot_id = options.build_properties.get('buildername', 'testing')
   randhash = hashlib.sha1(str(random.random())).hexdigest()
   gs_path = '%s/%s/%s/%s' % (gs_base_dir, bot_id, revision, randhash)
+  # remove double slashes, happens with blank revisions and confuses gsutil
+  gs_path = re.sub('/+', '/', gs_path)
   return gs_path
 
 def UploadHTML(options, gs_base_dir, dir_to_upload, link_text,
@@ -553,8 +556,9 @@ def LogcatDump(options):
   RunCmd([SrcPath('build' , 'android', 'adb_logcat_printer.py'),
           '--output-path', logcat_file, LOGCAT_DIR])
   gs_path = MakeGSPath(options, 'chromium-android/logcat_dumps')
-  RunCmd([bb_utils.GSUTIL_PATH, 'cp', logcat_file, 'gs://%s' % gs_path])
-  bb_annotations.PrintLink('logcat dump', '%s/%s' % (GS_URL, gs_path))
+  RunCmd([bb_utils.GSUTIL_PATH, '-h', 'Content-Type:text/plain',
+          'cp', logcat_file, 'gs://%s' % gs_path])
+  bb_annotations.PrintLink('logcat dump', '%s/%s' % (GS_AUTH_URL, gs_path))
 
 
 def RunStackToolSteps(options):
