@@ -111,7 +111,7 @@ bool SelectorChecker::scopeContainsLastMatchedElement(const SelectorCheckingCont
         return context.scope->contains(context.element);
 
     // If a given element is scope, i.e. shadow host, matches.
-    if (context.element == context.scope)
+    if (context.element == context.scope && (!context.previousElement || context.previousElement->isInDescendantTreeOf(context.element)))
         return true;
 
     ShadowRoot* root = context.element->containingShadowRoot();
@@ -255,6 +255,7 @@ template<typename SiblingTraversalStrategy>
 SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
+    nextContext.previousElement = context.element;
 
     CSSSelector::Relation relation = context.selector->relation();
 

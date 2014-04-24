@@ -64,6 +64,7 @@ public:
         SelectorCheckingContext(const CSSSelector& selector, Element* element, VisitedMatchType visitedMatchType)
             : selector(&selector)
             , element(element)
+            , previousElement(0)
             , scope(0)
             , visitedMatchType(visitedMatchType)
             , pseudoId(NOPSEUDO)
@@ -78,6 +79,7 @@ public:
 
         const CSSSelector* selector;
         Element* element;
+        Element* previousElement;
         const ContainerNode* scope;
         VisitedMatchType visitedMatchType;
         PseudoId pseudoId;

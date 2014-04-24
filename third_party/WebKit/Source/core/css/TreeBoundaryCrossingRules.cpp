@@ -79,11 +79,10 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
         unsigned boundaryBehavior = SelectorChecker::ScopeContainsLastMatchedElement;
         bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
 
-        // If a given scoping node is a shadow root and a given element is in a descendant tree of tree hosted by
-        // the scoping node's shadow host, we should use ScopeIsShadowHost.
+        // If a given scoping node is a shadow root,
+        // we should use ScopeIsShadowHost.
         if (scopingNode && scopingNode->isShadowRoot()) {
-            if (element->isInDescendantTreeOf(toShadowRoot(scopingNode)->host()))
-                boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
+            boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
             scopingNode = toShadowRoot(scopingNode)->host();
         }
 
