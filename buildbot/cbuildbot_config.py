@@ -433,6 +433,11 @@ _settings = dict(
 # vm_tests -- A list of vm tests to run.
   vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
 
+# vm_test_runs -- The number of times to run the VMTest stage. If this is >1,
+#                 then we will run the stage this many times, stopping if we
+#                 encounter any failures.
+  vm_test_runs=1,
+
 # A list of HWTestConfig objects to run.
   hw_tests=[],
 

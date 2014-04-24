@@ -125,6 +125,46 @@ class RetryStage(object):
         results_lib.RetriableStepFailure, self.max_retry, self._PerformStage)
 
 
+class RepeatStage(object):
+  """Run a given stage multiple times to see if it fails."""
+
+  def __init__(self, builder_run, count, stage, *args, **kwargs):
+    """Create a RepeatStage object.
+
+    Args:
+      builder_run: See arguments to bs.BuilderStage.__init__()
+      count: The number of times to try the given stage.
+      stage: The stage class to create.
+      *args: A list of arguments to pass to the stage constructor.
+      **kwargs: A list of keyword arguments to pass to the stage constructor.
+    """
+    self._run = builder_run
+    self.count = count
+    self.stage = stage
+    self.args = (builder_run,) + args
+    self.kwargs = kwargs
+    self.names = []
+    self.attempt = None
+
+  def GetStageNames(self):
+    """Get a list of the places where this stage has recorded results."""
+    return self.names[:]
+
+  def _PerformStage(self):
+    """Run the stage once."""
+    suffix = ' (attempt %d)' % (self.attempt,)
+    stage_obj = self.stage(
+        *self.args, attempt=self.attempt, suffix=suffix, **self.kwargs)
+    self.names.extend(stage_obj.GetStageNames())
+    stage_obj.Run()
+
+  def Run(self):
+    """Retry the given stage multiple times to see if it passes."""
+    for i in range(self.count):
+      self.attempt = i + 1
+      self._PerformStage()
+
+
 class BoardSpecificBuilderStage(bs.BuilderStage):
   """Builder stage that is specific to a board.
 

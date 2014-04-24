@@ -490,8 +490,16 @@ class SimpleBuilder(Builder):
     stage_list = []
     if builder_run.options.chrome_sdk and config.chrome_sdk:
       stage_list.append([stages.ChromeSDKStage, board])
+
+    if config.vm_test_runs > 1:
+      # Run the VMTests multiple times to see if they fail.
+      stage_list += [
+          [stages.RepeatStage, config.vm_test_runs, stages.VMTestStage, board]]
+    else:
+      # Give the VMTests one retry attempt in case failures are flaky.
+      stage_list += [[stages.RetryStage, 1, stages.VMTestStage, board]]
+
     stage_list += [
-        [stages.RetryStage, 1, stages.VMTestStage, board],
         [stages.SignerTestStage, board, archive_stage],
         [stages.SignerResultsStage, board, archive_stage],
         [stages.PaygenStage, board, archive_stage],

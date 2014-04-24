@@ -92,6 +92,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -189,6 +190,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -285,6 +287,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -381,6 +384,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -477,6 +481,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -571,6 +576,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -667,6 +673,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -761,6 +768,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "amd64-generic-nowithdebug-paladin": {
@@ -857,6 +865,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "amd64-generic-paladin": {
@@ -949,6 +958,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -1043,6 +1053,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "telemetry_suite"
         ]
@@ -1137,6 +1148,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "telemetry_suite"
         ]
@@ -1233,6 +1245,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -1327,6 +1340,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -1421,6 +1435,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -1517,6 +1532,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "arm-generic-telemetry": {
@@ -1609,6 +1625,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "arm64-generic-full": {
@@ -1797,6 +1814,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "bayleybay-depthcharge-full-firmware": {
@@ -1891,6 +1909,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "bayleybay-firmware": {
@@ -1988,6 +2007,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "bayleybay-full": {
@@ -2082,6 +2102,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -2179,6 +2200,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "bayleybay-payloads": {
@@ -2271,6 +2293,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "bayleybay-release": {
@@ -2370,6 +2393,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beaglebone-incremental": {
@@ -2466,6 +2490,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beaglebone-paladin": {
@@ -2565,6 +2590,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beaglebone-release": {
@@ -2666,6 +2692,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beaglebone-release-group": {
@@ -2784,6 +2811,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -2885,6 +2913,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -2970,6 +2999,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beaglebone_servo-paladin": {
@@ -3069,6 +3099,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beaglebone_servo-release": {
@@ -3170,6 +3201,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beltino-firmware": {
@@ -3267,6 +3299,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beltino-full": {
@@ -3361,6 +3394,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -3474,6 +3508,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -3570,6 +3605,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -3664,6 +3700,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -3742,6 +3779,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -3839,6 +3877,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beltino-payloads": {
@@ -3931,6 +3970,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beltino-release": {
@@ -4030,6 +4070,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "beltino-release-group": {
@@ -4150,6 +4191,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -4257,6 +4299,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -4360,6 +4403,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -4447,6 +4491,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4544,6 +4589,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "butterfly-firmware": {
@@ -4641,6 +4687,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "butterfly-full": {
@@ -4735,6 +4782,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -4832,6 +4880,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "butterfly-payloads": {
@@ -4924,6 +4973,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "butterfly-release": {
@@ -5027,6 +5077,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5127,6 +5178,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -5223,6 +5275,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "clapper-depthcharge-full-firmware": {
@@ -5317,6 +5370,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "clapper-firmware": {
@@ -5414,6 +5468,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "clapper-full": {
@@ -5508,6 +5563,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -5605,6 +5661,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "clapper-payloads": {
@@ -5697,6 +5754,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "clapper-release": {
@@ -5800,6 +5858,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5902,6 +5961,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-chromium-pfq": {
@@ -5994,6 +6054,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-factory": {
@@ -6093,6 +6154,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-firmware": {
@@ -6190,6 +6252,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-full": {
@@ -6284,6 +6347,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-full-group": {
@@ -6395,6 +6459,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -6489,6 +6554,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -6583,6 +6649,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -6661,6 +6728,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-incremental": {
@@ -6753,6 +6821,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-paladin": {
@@ -6850,6 +6919,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-payloads": {
@@ -6942,6 +7012,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-release": {
@@ -7045,6 +7116,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-release-group": {
@@ -7165,6 +7237,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -7268,6 +7341,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -7371,6 +7445,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -7458,6 +7533,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-release-pgo": {
@@ -7580,6 +7656,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -7689,6 +7766,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -7782,6 +7860,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -7891,6 +7970,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -8000,6 +8080,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -8096,6 +8177,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-webrtc-chrome-pfq-informational": {
@@ -8190,6 +8272,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy-webrtc-chromium-pfq-informational": {
@@ -8282,6 +8365,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_skate-firmware": {
@@ -8379,6 +8463,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_skate-full": {
@@ -8473,6 +8558,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_skate-payloads": {
@@ -8565,6 +8651,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_skate-release": {
@@ -8668,6 +8755,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_spring-chrome-pfq": {
@@ -8765,6 +8853,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_spring-firmware": {
@@ -8862,6 +8951,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_spring-full": {
@@ -8956,6 +9046,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_spring-paladin": {
@@ -9053,6 +9144,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_spring-payloads": {
@@ -9145,6 +9237,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_spring-pre-cq": {
@@ -9240,6 +9333,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "daisy_spring-release": {
@@ -9343,6 +9437,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "duck-paladin": {
@@ -9438,6 +9533,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "duck-payloads": {
@@ -9530,6 +9626,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "duck-release": {
@@ -9628,6 +9725,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "enguarde-depthcharge-firmware": {
@@ -9722,6 +9820,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "enguarde-depthcharge-full-firmware": {
@@ -9816,6 +9915,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "enguarde-firmware": {
@@ -9913,6 +10013,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "enguarde-full": {
@@ -10007,6 +10108,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -10104,6 +10206,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "enguarde-payloads": {
@@ -10196,6 +10299,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "enguarde-release": {
@@ -10299,6 +10403,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10397,6 +10502,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "expresso-depthcharge-full-firmware": {
@@ -10491,6 +10597,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "expresso-firmware": {
@@ -10588,6 +10695,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "expresso-full": {
@@ -10682,6 +10790,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -10779,6 +10888,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "expresso-payloads": {
@@ -10871,6 +10981,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "expresso-release": {
@@ -10974,6 +11085,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11075,6 +11187,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -11174,6 +11287,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "falco-full": {
@@ -11268,6 +11382,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -11365,6 +11480,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "falco-payloads": {
@@ -11457,6 +11573,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "falco-release": {
@@ -11560,6 +11677,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11658,6 +11776,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -11752,6 +11871,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "falco_li-release": {
@@ -11855,6 +11975,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11954,6 +12075,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "fox_wtm2-payloads": {
@@ -12046,6 +12168,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "fox_wtm2-release": {
@@ -12145,6 +12268,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "gizmo-paladin": {
@@ -12240,6 +12364,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "gizmo-release": {
@@ -12338,6 +12463,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "glimmer-depthcharge-firmware": {
@@ -12432,6 +12558,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "glimmer-depthcharge-full-firmware": {
@@ -12526,6 +12653,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "glimmer-firmware": {
@@ -12623,6 +12751,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "glimmer-full": {
@@ -12717,6 +12846,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -12814,6 +12944,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "glimmer-payloads": {
@@ -12906,6 +13037,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "glimmer-release": {
@@ -13009,6 +13141,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -13107,6 +13240,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "gnawty-depthcharge-full-firmware": {
@@ -13201,6 +13335,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "gnawty-firmware": {
@@ -13298,6 +13433,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "gnawty-full": {
@@ -13392,6 +13528,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -13489,6 +13626,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "gnawty-payloads": {
@@ -13581,6 +13719,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "gnawty-release": {
@@ -13684,6 +13823,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -13786,6 +13926,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -13886,6 +14027,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -13999,6 +14141,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -14095,6 +14238,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -14173,6 +14317,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -14295,6 +14440,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -14402,6 +14548,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -14489,6 +14636,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -14587,6 +14735,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "kip-depthcharge-full-firmware": {
@@ -14681,6 +14830,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "kip-firmware": {
@@ -14778,6 +14928,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "kip-full": {
@@ -14872,6 +15023,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -14969,6 +15121,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "kip-payloads": {
@@ -15061,6 +15214,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "kip-release": {
@@ -15164,6 +15318,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15262,6 +15417,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "leon-depthcharge-full-firmware": {
@@ -15356,6 +15512,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "leon-firmware": {
@@ -15453,6 +15610,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "leon-full": {
@@ -15547,6 +15705,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -15644,6 +15803,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "leon-payloads": {
@@ -15736,6 +15896,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "leon-release": {
@@ -15839,6 +16000,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15937,6 +16099,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "link-depthcharge-full-firmware": {
@@ -16031,6 +16194,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "link-firmware": {
@@ -16128,6 +16292,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "link-full": {
@@ -16222,6 +16387,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -16321,6 +16487,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "link-payloads": {
@@ -16413,6 +16580,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "link-release": {
@@ -16517,6 +16685,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16618,6 +16787,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "lumpy-chrome-perf": {
@@ -16716,6 +16886,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "lumpy-chrome-pfq": {
@@ -16811,6 +16982,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -16910,6 +17082,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "lumpy-full": {
@@ -17004,6 +17177,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -17101,6 +17275,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "lumpy-paladin": {
@@ -17198,6 +17373,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "lumpy-payloads": {
@@ -17290,6 +17466,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "lumpy-pre-cq": {
@@ -17385,6 +17562,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "lumpy-release": {
@@ -17488,6 +17666,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17614,6 +17793,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -17723,6 +17903,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -17816,6 +17997,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17925,6 +18107,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -18034,6 +18217,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -18133,6 +18317,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -18229,6 +18414,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -18323,6 +18509,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -18422,6 +18609,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "monroe-firmware": {
@@ -18519,6 +18707,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "monroe-full": {
@@ -18613,6 +18802,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -18710,6 +18900,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "monroe-payloads": {
@@ -18802,6 +18993,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "monroe-release": {
@@ -18905,6 +19097,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -19003,6 +19196,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan-full-group": {
@@ -19114,6 +19308,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -19208,6 +19403,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -19302,6 +19498,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -19380,6 +19577,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan-paladin": {
@@ -19475,6 +19673,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan-payloads": {
@@ -19567,6 +19766,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan-release": {
@@ -19670,6 +19870,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan-release-group": {
@@ -19790,6 +19991,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -19893,6 +20095,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -19996,6 +20199,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -20083,6 +20287,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan_big-full": {
@@ -20177,6 +20382,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan_big-payloads": {
@@ -20269,6 +20475,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan_big-release": {
@@ -20372,6 +20579,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan_blaze-full": {
@@ -20466,6 +20674,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan_blaze-payloads": {
@@ -20558,6 +20767,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "nyan_blaze-release": {
@@ -20661,6 +20871,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "panther-firmware": {
@@ -20758,6 +20969,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "panther-full": {
@@ -20852,6 +21064,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -20949,6 +21162,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "panther-payloads": {
@@ -21041,6 +21255,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "panther-release": {
@@ -21144,6 +21359,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -21240,6 +21456,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "parrot-chrome-perf": {
@@ -21338,6 +21555,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "parrot-firmware": {
@@ -21435,6 +21653,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "parrot-full": {
@@ -21529,6 +21748,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -21628,6 +21848,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "parrot-payloads": {
@@ -21720,6 +21941,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "parrot-pre-cq": {
@@ -21815,6 +22037,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -21920,6 +22143,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22044,6 +22268,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -22151,6 +22376,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -22238,6 +22464,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22364,6 +22591,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -22473,6 +22701,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -22566,6 +22795,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22675,6 +22905,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22784,6 +23015,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22882,6 +23114,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -22976,6 +23209,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "parrot_ivb-release": {
@@ -23079,6 +23313,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach-full-group": {
@@ -23190,6 +23425,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -23284,6 +23520,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -23362,6 +23599,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach-release-group": {
@@ -23482,6 +23720,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -23585,6 +23824,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -23672,6 +23912,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pi-firmware": {
@@ -23769,6 +24010,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pi-full": {
@@ -23863,6 +24105,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pi-payloads": {
@@ -23955,6 +24198,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pi-release": {
@@ -24058,6 +24302,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pit-firmware": {
@@ -24155,6 +24400,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pit-full": {
@@ -24249,6 +24495,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pit-paladin": {
@@ -24346,6 +24593,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pit-payloads": {
@@ -24438,6 +24686,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peach_pit-release": {
@@ -24541,6 +24790,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peppy-firmware": {
@@ -24638,6 +24888,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peppy-full": {
@@ -24732,6 +24983,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -24829,6 +25081,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "dev_mode_test"
         ]
@@ -24923,6 +25176,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "peppy-release": {
@@ -25026,6 +25280,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -25141,6 +25396,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -25237,6 +25493,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -25331,6 +25588,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -25425,6 +25683,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -25519,6 +25778,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -25597,6 +25857,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -25719,6 +25980,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -25826,6 +26088,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -25929,6 +26192,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -26028,6 +26292,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -26127,6 +26392,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -26214,6 +26480,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -26330,6 +26597,7 @@
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite"
                 ]
@@ -26427,6 +26695,7 @@
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -26522,6 +26791,7 @@
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -26617,6 +26887,7 @@
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite"
                 ]
@@ -26698,6 +26969,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -26795,6 +27067,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "quawks-depthcharge-firmware": {
@@ -26889,6 +27162,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "quawks-depthcharge-full-firmware": {
@@ -26983,6 +27257,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "quawks-firmware": {
@@ -27080,6 +27355,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "quawks-full": {
@@ -27174,6 +27450,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -27271,6 +27548,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "quawks-payloads": {
@@ -27363,6 +27641,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "quawks-release": {
@@ -27466,6 +27745,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -27581,6 +27861,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -27677,6 +27958,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -27771,6 +28053,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -27865,6 +28148,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -27959,6 +28243,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -28037,6 +28322,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -28159,6 +28445,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -28266,6 +28553,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -28369,6 +28657,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -28472,6 +28761,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -28575,6 +28865,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -28662,6 +28953,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -28777,6 +29069,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -28873,6 +29166,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -28967,6 +29261,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -29061,6 +29356,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -29155,6 +29451,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -29233,6 +29530,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -29355,6 +29653,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -29462,6 +29761,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -29565,6 +29865,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -29668,6 +29969,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -29771,6 +30073,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -30266,6 +30569,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -30364,6 +30668,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "rambi-depthcharge-full-firmware": {
@@ -30458,6 +30763,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "rambi-firmware": {
@@ -30555,6 +30861,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "rambi-full": {
@@ -30649,6 +30956,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -30746,6 +31054,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "rambi-payloads": {
@@ -30838,6 +31147,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "rambi-pre-cq": {
@@ -30933,6 +31243,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -31038,6 +31349,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -31135,6 +31447,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -31231,6 +31544,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "samus-depthcharge-full-firmware": {
@@ -31325,6 +31639,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "samus-firmware": {
@@ -31422,6 +31737,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "samus-full": {
@@ -31516,6 +31832,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -31613,6 +31930,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "samus-payloads": {
@@ -31705,6 +32023,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "samus-release": {
@@ -31808,6 +32127,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -31923,6 +32243,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -32019,6 +32340,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -32113,6 +32435,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -32207,6 +32530,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -32285,6 +32609,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -32398,6 +32723,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -32494,6 +32820,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -32588,6 +32915,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -32682,6 +33010,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -32776,6 +33105,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -32870,6 +33200,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -32948,6 +33279,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -33070,6 +33402,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -33177,6 +33510,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -33280,6 +33614,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -33383,6 +33718,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -33486,6 +33822,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -33589,6 +33926,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -33676,6 +34014,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -33800,6 +34139,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -33907,6 +34247,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -34010,6 +34351,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -34113,6 +34455,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -34200,6 +34543,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -34301,6 +34645,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "slippy-full": {
@@ -34395,6 +34740,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -34508,6 +34854,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "pfq_suite"
                 ]
@@ -34604,6 +34951,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -34698,6 +35046,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -34792,6 +35141,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -34886,6 +35236,7 @@
                 "useflags": [],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -34964,6 +35315,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -35061,6 +35413,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "slippy-payloads": {
@@ -35153,6 +35506,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "slippy-release": {
@@ -35256,6 +35610,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35380,6 +35735,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -35487,6 +35843,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -35590,6 +35947,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -35693,6 +36051,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -35796,6 +36155,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -35883,6 +36243,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35983,6 +36344,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "sonic-payloads": {
@@ -36075,6 +36437,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "sonic-release": {
@@ -36173,6 +36536,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "squawks-depthcharge-firmware": {
@@ -36267,6 +36631,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "squawks-depthcharge-full-firmware": {
@@ -36361,6 +36726,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "squawks-firmware": {
@@ -36458,6 +36824,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "squawks-full": {
@@ -36552,6 +36919,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -36649,6 +37017,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "squawks-payloads": {
@@ -36741,6 +37110,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "squawks-release": {
@@ -36844,6 +37214,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -36945,6 +37316,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stout-full": {
@@ -37039,6 +37411,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -37136,6 +37509,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "cros_vm_test"
         ]
@@ -37230,6 +37604,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stout-release": {
@@ -37333,6 +37708,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -37434,6 +37810,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stumpy-full": {
@@ -37528,6 +37905,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -37627,6 +38005,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stumpy-payloads": {
@@ -37719,6 +38098,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stumpy-release": {
@@ -37822,6 +38202,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -37918,6 +38299,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stumpy_moblab-paladin": {
@@ -38017,6 +38399,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stumpy_moblab-payloads": {
@@ -38109,6 +38492,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "stumpy_moblab-release": {
@@ -38210,6 +38594,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "swanky-depthcharge-firmware": {
@@ -38304,6 +38689,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "swanky-depthcharge-full-firmware": {
@@ -38398,6 +38784,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "swanky-firmware": {
@@ -38495,6 +38882,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "swanky-full": {
@@ -38589,6 +38977,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -38686,6 +39075,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "swanky-payloads": {
@@ -38778,6 +39168,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "swanky-release": {
@@ -38881,6 +39272,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -38994,6 +39386,7 @@
                 "useflags": [],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
+                "vm_test_runs": 1,
                 "vm_tests": []
             },
             {
@@ -39086,6 +39479,7 @@
                 "useflags": [],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -39162,6 +39556,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "toolchain-major": {
@@ -39258,6 +39653,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -39356,6 +39752,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -39452,6 +39849,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "winky-depthcharge-full-firmware": {
@@ -39546,6 +39944,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "winky-firmware": {
@@ -39643,6 +40042,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "winky-full": {
@@ -39737,6 +40137,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -39834,6 +40235,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "winky-payloads": {
@@ -39926,6 +40328,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "winky-release": {
@@ -40029,6 +40432,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40130,6 +40534,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "wolf-full": {
@@ -40224,6 +40629,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -40321,6 +40727,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "wolf-payloads": {
@@ -40413,6 +40820,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "wolf-release": {
@@ -40516,6 +40924,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40614,6 +41023,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -40708,6 +41118,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x32-generic-paladin": {
@@ -40800,6 +41211,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -40894,6 +41306,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -40990,6 +41403,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -41089,6 +41503,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-alex-payloads": {
@@ -41181,6 +41596,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-alex-pre-flight-branch": {
@@ -41276,6 +41692,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -41381,6 +41798,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41505,6 +41923,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -41608,6 +42027,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -41695,6 +42115,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41821,6 +42242,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -41930,6 +42352,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -42023,6 +42446,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42132,6 +42556,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42241,6 +42666,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42339,6 +42765,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -42433,6 +42860,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-alex_he-release": {
@@ -42532,6 +42960,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-generic-asan": {
@@ -42626,6 +43055,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -42722,6 +43152,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -42816,6 +43247,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -42912,6 +43344,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -43006,6 +43439,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -43104,6 +43538,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-generic-paladin": {
@@ -43196,6 +43631,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -43290,6 +43726,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "telemetry_suite"
         ]
@@ -43384,6 +43821,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "telemetry_suite"
         ]
@@ -43480,6 +43918,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -43574,6 +44013,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -43675,6 +44115,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43776,6 +44217,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-mario-full": {
@@ -43870,6 +44312,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -43968,6 +44411,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-mario-paladin": {
@@ -44063,6 +44507,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -44157,6 +44602,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-mario-release": {
@@ -44260,6 +44706,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -44358,6 +44805,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -44452,6 +44900,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -44548,6 +44997,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -44645,6 +45095,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-zgb-payloads": {
@@ -44737,6 +45188,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-zgb-release": {
@@ -44840,6 +45292,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -44964,6 +45417,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -45067,6 +45521,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
+                "vm_test_runs": 1,
                 "vm_tests": []
             }
         ],
@@ -45154,6 +45609,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -45252,6 +45708,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -45346,6 +45803,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "x86-zgb_he-release": {
@@ -45445,6 +45903,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "zako-depthcharge-firmware": {
@@ -45539,6 +45998,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "zako-depthcharge-full-firmware": {
@@ -45633,6 +46093,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "zako-firmware": {
@@ -45730,6 +46191,7 @@
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "zako-full": {
@@ -45824,6 +46286,7 @@
         "useflags": [],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "pfq_suite"
         ]
@@ -45918,6 +46381,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
+        "vm_test_runs": 1,
         "vm_tests": []
     },
     "zako-release": {
@@ -46021,6 +46485,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
+        "vm_test_runs": 1,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",

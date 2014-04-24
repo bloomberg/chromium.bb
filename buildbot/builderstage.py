@@ -65,9 +65,6 @@ class BuilderStage(object):
     """
     self._run = builder_run
 
-    if bool(attempt) != bool(max_retry):
-      raise ValueError('max_retry and attempt must be specified together.')
-
     self._attempt = attempt
     self._max_retry = max_retry
 
