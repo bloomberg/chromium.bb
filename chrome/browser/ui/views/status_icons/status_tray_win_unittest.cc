@@ -16,29 +16,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-class FakeStatusTrayStateChangerProxy : public StatusTrayStateChangerProxy {
- public:
-  FakeStatusTrayStateChangerProxy()
-      : enqueue_called_(false), icon_id_(0), window_(NULL) {}
-
-  virtual void EnqueueChange(UINT icon_id, HWND window) {
-    enqueue_called_ = true;
-    icon_id_ = icon_id;
-    window_ = window;
-  }
-
-  bool enqueue_called() { return enqueue_called_; }
-  UINT icon_id() { return icon_id_; }
-  HWND window() { return window_; }
-
- private:
-  bool enqueue_called_;
-  UINT icon_id_;
-  HWND window_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeStatusTrayStateChangerProxy);
-};
-
 class FakeStatusIconObserver : public StatusIconObserver {
  public:
   FakeStatusIconObserver()
@@ -127,21 +104,3 @@ TEST(StatusTrayWinTest, HandleOldIconId) {
   tray.WndProc(NULL, message_id, icon_id, WM_LBUTTONDOWN);
 }
 #endif  // !defined(USE_AURA)
-
-TEST(StatusTrayWinTest, EnsureVisibleTest) {
-  StatusTrayWin tray;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-
-  FakeStatusTrayStateChangerProxy* proxy =
-      new FakeStatusTrayStateChangerProxy();
-  tray.SetStatusTrayStateChangerProxyForTest(make_scoped_ptr(proxy));
-
-  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip")));
-
-  icon->ForceVisible();
-  EXPECT_TRUE(proxy->enqueue_called());
-  EXPECT_EQ(proxy->window(), icon->window());
-  EXPECT_EQ(proxy->icon_id(), icon->icon_id());
-}

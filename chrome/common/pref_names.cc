@@ -2125,9 +2125,6 @@ const char kRollbackRequested[] = "RollbackRequested";
 const char kMessageCenterShowedFirstRunBalloon[] =
     "message_center.showed_first_run_balloon";
 
-const char kMessageCenterForcedOnTaskbar[] =
-    "message_center.was_forced_on_taskbar";
-
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

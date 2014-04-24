@@ -22,12 +22,10 @@ namespace views {
 class MenuRunner;
 }
 
-class StatusTrayWin;
-
 class StatusIconWin : public StatusIcon {
  public:
   // Constructor which provides this icon's unique ID and messaging window.
-  StatusIconWin(StatusTrayWin* tray, UINT id, HWND window, UINT message);
+  StatusIconWin(UINT id, HWND window, UINT message);
   virtual ~StatusIconWin();
 
   // Handles a click event from the user - if |left_button_click| is true and
@@ -42,7 +40,6 @@ class StatusIconWin : public StatusIcon {
   void ResetIcon();
 
   UINT icon_id() const { return icon_id_; }
-  HWND window() const { return window_; }
   UINT message_id() const { return message_id_; }
 
   // Overridden from StatusIcon:
@@ -52,17 +49,14 @@ class StatusIconWin : public StatusIcon {
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const base::string16& title,
                               const base::string16& contents) OVERRIDE;
-  virtual void ForceVisible() OVERRIDE;
 
  protected:
   // Overridden from StatusIcon:
-  virtual void UpdatePlatformContextMenu(StatusIconMenuModel* menu) OVERRIDE;
+  virtual void UpdatePlatformContextMenu(
+      StatusIconMenuModel* menu) OVERRIDE;
 
  private:
   void InitIconData(NOTIFYICONDATA* icon_data);
-
-  // The tray that owns us.  Weak.
-  StatusTrayWin* tray_;
 
   // The unique ID corresponding to this icon.
   UINT icon_id_;

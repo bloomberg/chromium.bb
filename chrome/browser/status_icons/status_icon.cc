@@ -34,8 +34,6 @@ void StatusIcon::DispatchBalloonClickEvent() {
 }
 #endif
 
-void StatusIcon::ForceVisible() {}
-
 void StatusIcon::SetContextMenu(scoped_ptr<StatusIconMenuModel> menu) {
   // The UI may been showing a menu for the current model, don't destroy it
   // until we've notified the UI of the change.

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
 #include <windows.h>
+
 #include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -55,10 +56,4 @@ void WebNotificationTray::DisplayFirstRunBalloon() {
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_BALLOON_TITLE),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_BALLOON_TEXT));
 }
-
-void WebNotificationTray::EnforceStatusIconVisible() {
-  DCHECK(status_icon_);
-  status_icon_->ForceVisible();
-}
-
 }  // namespace message_center

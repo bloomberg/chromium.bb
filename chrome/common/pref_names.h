@@ -766,7 +766,6 @@ extern const char kFactoryResetRequested[];
 extern const char kRollbackRequested[];
 
 extern const char kMessageCenterShowedFirstRunBalloon[];
-extern const char kMessageCenterForcedOnTaskbar[];
 
 extern const char kRecoveryComponentVersion[];
 extern const char kComponentUpdaterState[];

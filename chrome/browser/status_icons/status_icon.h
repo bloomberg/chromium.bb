@@ -60,13 +60,6 @@ class StatusIcon {
   void DispatchBalloonClickEvent();
 #endif
 
-  // Attempts to make the status icon directly visible on system UI.  Currently
-  // this only applies to Windows, where status icons are hidden by default
-  // inside an overflow window.
-  // WARNING: This currently uses undocumented Windows APIs and spawns a worker
-  // thread to do it.  Use sparingly.
-  virtual void ForceVisible();
-
  protected:
   // Invoked after a call to SetContextMenu() to let the platform-specific
   // subclass update the native context menu based on the new model. If NULL is
