@@ -329,7 +329,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return self.device.old_interface.RunInstrumentationTest(
           test, self.test_pkg.GetPackageName(),
           self._GetInstrumentationArgs(), timeout)
-    except adb_wrapper.CommandTimeoutError:
+    except (adb_wrapper.CommandTimeoutError,
+            # TODO(jbudorick) Remove this once the underlying implementations
+            #                 for the above are switched or wrapped.
+            android_commands.errors.WaitForResponseTimedOutError):
       logging.info('Ran the test with timeout of %ds.' % timeout)
       raise
 
@@ -368,8 +371,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     # See ../../third_party/android/testrunner/adb_interface.py
     except (adb_wrapper.CommandTimeoutError,
             adb_wrapper.DeviceUnreachableError,
-            # TODO(jbudorick) Remove this once the underlying implementations
+            # TODO(jbudorick) Remove these once the underlying implementations
             #                 for the above are switched or wrapped.
+            android_commands.errors.WaitForResponseTimedOutError,
+            android_commands.errors.DeviceUnresponsiveError,
             android_commands.errors.InstrumentationError), e:
       if start_date_ms:
         duration_ms = int(time.time()) * 1000 - start_date_ms

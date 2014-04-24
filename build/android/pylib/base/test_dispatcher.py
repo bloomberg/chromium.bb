@@ -217,7 +217,10 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     runner = runner_factory(device, index)
     runner.SetUp()
     out_runners.append(runner)
-  except adb_wrapper.DeviceUnreachableError as e:
+  except (adb_wrapper.DeviceUnreachableError,
+          # TODO(jbudorick) Remove this once the underlying implementations
+          #                 for the above are switched or wrapped.
+          android_commands.errors.DeviceUnresponsiveError) as e:
     logging.warning('Failed to create shard for %s: [%s]', device, e)
 
 
@@ -259,7 +262,10 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   # Catch DeviceUnreachableErrors and set a warning exit code
   try:
     workers.JoinAll(watcher)
-  except adb_wrapper.DeviceUnreachableError as e:
+  except (adb_wrapper.DeviceUnreachableError,
+          # TODO(jbudorick) Remove this once the underlying implementations
+          #                 for the above are switched or wrapped.
+          android_commands.errors.DeviceUnresponsiveError) as e:
     logging.error(e)
     exit_code = constants.WARNING_EXIT_CODE
 
@@ -365,5 +371,8 @@ def RunTests(tests, runner_factory, devices, shard=True,
   finally:
     try:
       _TearDownRunners(runners, setup_timeout)
-    except adb_wrapper.DeviceUnreachableError as e:
+    except (adb_wrapper.DeviceUnreachableError,
+            # TODO(jbudorick) Remove this once the underlying implementations
+            #                 for the above are switched or wrapped.
+            android_commands.errors.DeviceUnresponsiveError) as e:
       logging.warning('Device unresponsive during TearDown: [%s]', e)
