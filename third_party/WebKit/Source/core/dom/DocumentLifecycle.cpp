@@ -105,22 +105,9 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
         return false;
     }
     if (m_state == AfterPerformLayout) {
-        // We shouldn't really be able to re-enter style recalc from
-        // AfterPerformLayout because we shouldn't be doing anything
-        // at this point in the lifecycle that dirties style information,
-        // but this happens in editing/pasteboard/paste-noscript.html.
-        // FIXME: Remove whatever is dirtying style during layout.
-        if (state == InStyleRecalc)
-            return true;
         // We can synchronously recompute layout in AfterPerformLayout.
         // FIXME: Ideally, we would unnest this recursion into a loop.
-        if (state == InPreLayout)
-            return true;
-        // If we're doing a partial layout, we won't actually end up cleaning
-        // out all the layout dirty bits. Instead, we'll return to StyleClean.
-        if (state == StyleClean)
-            return true;
-        return false;
+        return state == InPreLayout;
     }
     if (m_state == LayoutClean) {
         // We can synchronously recalc style.
