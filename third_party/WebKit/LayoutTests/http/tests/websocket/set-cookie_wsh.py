@@ -35,16 +35,16 @@ def web_socket_do_extra_handshake(request):
     max_age = ''
     if 'clear' in urlparse.parse_qs(query):
         max_age = '; Max-Age=0'
+    request.extra_headers.append(
+        ('Set-Cookie', 'WK-WebSocket-test-domain-pass=1; Domain=127.0.0.1' + max_age))
+    request.extra_headers.append(
+        ('Set-Cookie', 'WK-WebSocket-test-domain-fail=1; Domain=example.com' + max_age))
+    request.extra_headers.append(
+        ('Set-Cookie', 'WK-WebSocket-test-path-pass=1; Path=/' + max_age))
+    request.extra_headers.append(
+        ('Set-Cookie', 'WK-WebSocket-test-path-fail=1; Path=/foo/bar' + max_age))
     request.extra_headers.append(('Set-Cookie',
-        'WK-WebSocket-test-domain-pass=1; Domain=127.0.0.1' + max_age))
-    request.extra_headers.append(('Set-Cookie',
-        'WK-WebSocket-test-domain-fail=1; Domain=example.com' + max_age))
-    request.extra_headers.append(('Set-Cookie',
-        'WK-WebSocket-test-path-pass=1; Path=/' + max_age))
-    request.extra_headers.append(('Set-Cookie',
-        'WK-WebSocket-test-path-fail=1; Path=/foo/bar' + max_age))
-    request.extra_headers.append(('Set-Cookie',
-        'WK-WebSocket-test=1' + max_age))
+                                  'WK-WebSocket-test=1' + max_age))
 
 
 def web_socket_transfer_data(request):

@@ -43,7 +43,8 @@ def web_socket_do_extra_handshake(request):
     # continue writing data until the client disconnects
     while True:
         time.sleep(1)
-        numFrames = 1024 / len(frame) # write over 1024 bytes including the above handshake
+        # write over 1024 bytes including the above handshake
+        numFrames = 1024 / len(frame)
         for i in range(0, numFrames):
             request.connection.write(frame)
 

@@ -32,4 +32,5 @@ def web_socket_transfer_data(request):
     # the WebSocket object should be closed cleanly.
     request.connection.write(stream.create_close_frame('', mask=False))
 
-    raise handshake.AbortedByUserException('Abort the connection') # Prevents pywebsocket from starting its own closing handshake.
+    # Prevents pywebsocket from starting its own closing handshake.
+    raise handshake.AbortedByUserException('Abort the connection')

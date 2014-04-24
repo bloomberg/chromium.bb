@@ -2,8 +2,10 @@ import struct
 
 from mod_pywebsocket import stream
 
+
 def web_socket_do_extra_handshake(request):
     pass
+
 
 def web_socket_transfer_data(request):
     line = request.ws_stream.receive_message()

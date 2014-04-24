@@ -12,7 +12,7 @@ def web_socket_transfer_data(request):
 
     # pywebsocket refuses to send a frame with too long payload.
     # Thus, we need to build a frame manually.
-    header = chr(0x80 | common.OPCODE_TEXT) # 0x80 is for "fin" bit.
+    header = chr(0x80 | common.OPCODE_TEXT)  # 0x80 is for "fin" bit.
     header += chr(127)
     header += struct.pack('!Q', length)
     request.connection.write(header)

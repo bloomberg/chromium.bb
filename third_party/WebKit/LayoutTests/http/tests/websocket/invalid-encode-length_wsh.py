@@ -19,8 +19,9 @@ def web_socket_transfer_data(request):
 
     # pywebsocket refuses to create a frame with error encode length.
     # Thus, we need to build a frame manually.
-    header = chr(0x80 | common.OPCODE_TEXT) # 0x80 is for "fin" bit.
-    header += chr(payload_length) # No Mask and two bytes extended payload length.
+    header = chr(0x80 | common.OPCODE_TEXT)  # 0x80 is for "fin" bit.
+    # No Mask and two bytes extended payload length.
+    header += chr(payload_length)
     if payload_length == 126:
         header += struct.pack('!H', extended_length)
     elif payload_length == 127:

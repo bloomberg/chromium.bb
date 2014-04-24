@@ -24,7 +24,7 @@ def web_socket_do_extra_handshake(request):
     global bit
     compressed = match.group(1)
     bit = int(match.group(2))
-    if compressed == "false":
+    if compressed == 'false':
         request.ws_extension_processors = []  # using no extension response
     else:
         processor = _get_deflate_frame_extension_processor(request)
@@ -35,7 +35,7 @@ def web_socket_do_extra_handshake(request):
 
 
 def web_socket_transfer_data(request):
-    text = "This message should be ignored."
+    text = 'This message should be ignored.'
     opcode = common.OPCODE_TEXT
     if bit == 1:
         frame = stream.create_header(opcode, len(text), 1, 1, 0, 0, 0) + text

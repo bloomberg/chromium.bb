@@ -45,9 +45,9 @@ def web_socket_transfer_data(request):
     if len(r) == 1:
         return
     param = cgi.parse_qs(r[1])
-    if "p" not in param:
+    if 'p' not in param:
         return
-    page_group = param["p"][0]
+    page_group = param['p'][0]
     if page_group in connections:
         connections[page_group].add(request)
     else:
@@ -59,8 +59,8 @@ def web_socket_transfer_data(request):
         # notify to client that message is received by server.
         msgutil.send_message(request, message)
         msgutil.receive_message(request)
-        dataToBroadcast["message"] = message
-        dataToBroadcast["closeCode"] = str(request.ws_close_code)
+        dataToBroadcast['message'] = message
+        dataToBroadcast['closeCode'] = str(request.ws_close_code)
     finally:
         # request is closed. notify this dataToBroadcast to other WebSockets.
         connections[page_group].remove(request)
