@@ -164,7 +164,12 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, unsigned s
             break;
     }
 
+    if (imageCandidates[i].srcOrigin() && ignoreSrc) {
+        ASSERT(i > 0);
+        --i;
+    }
     float winningScaleFactor = imageCandidates[i].scaleFactor();
+
     unsigned winner = i;
     // 16. If an entry b in candidates has the same associated ... pixel density as an earlier entry a in candidates,
     // then remove entry b

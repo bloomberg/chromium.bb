@@ -20,6 +20,8 @@
         shouldBe('document.getElementById("invalid_length").currentSrc', '"../../hidpi/resources/image-set-2x.png"');
         shouldBe('document.getElementById("src_and_w").clientWidth', '700');
         shouldBe('document.getElementById("src_and_w").currentSrc', '"resources/image-set-4x.png"');
+        shouldBe('document.getElementById("src_and_w2").clientWidth', '700');
+        shouldBe('document.getElementById("src_and_w2").currentSrc', '"../../hidpi/resources/image-set-1x.png"');
         shouldBe('document.getElementById("x_and_w").clientWidth', '700');
         shouldBe('document.getElementById("x_and_w").currentSrc', '"resources/image-set-4x.png"');
         shouldBe('document.getElementById("x_and_w2").clientWidth', '400');
@@ -43,7 +45,9 @@
     <!-- Missing sizes or an invalid one, give a source size of 100vw -->
     <img id="default_sizes" src="" srcset="../../hidpi/resources/image-set-1x.png 400w, ../../hidpi/resources/image-set-2x.png 800w, resources/image-set-4x.png 1600w">
     <img id="invalid_length" src="" sizes="(max-width: 300px) 400w, 800w" srcset="../../hidpi/resources/image-set-1x.png 400w, ../../hidpi/resources/image-set-2x.png 800w">
+    <!-- Make sure that the img src is not picked when 'w' is present -->
     <img id="src_and_w" src="../../hidpi/resources/image-set-1x.png" sizes="700px" srcset="resources/image-set-4x.png 1600w">
+    <img id="src_and_w2" src="../../hidpi/resources/image-set-2x.png" sizes="700px" srcset="../../hidpi/resources/image-set-1x.png 400w">
     <img id="x_and_w" sizes="700px" srcset="../../hidpi/resources/image-set-1x.png 0.5x, resources/image-set-4x.png 1600w">
     <!-- The 'x' resource should be picked, and 'sizes' have no impact on its intrisic size -->
     <img id="x_and_w2" sizes="700px" srcset="../../hidpi/resources/image-set-2x.png 2x, resources/image-set-4x.png 16000w">
