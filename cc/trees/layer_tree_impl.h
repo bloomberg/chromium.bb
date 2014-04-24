@@ -72,6 +72,7 @@ class CC_EXPORT LayerTreeImpl {
   PaintTimeCounter* paint_time_counter() const;
   MemoryHistory* memory_history() const;
   bool device_viewport_valid_for_tile_management() const;
+  gfx::Size device_viewport_size() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;
   bool IsRecycleTree() const;

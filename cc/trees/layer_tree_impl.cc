@@ -644,6 +644,10 @@ bool LayerTreeImpl::device_viewport_valid_for_tile_management() const {
   return layer_tree_host_impl_->device_viewport_valid_for_tile_management();
 }
 
+gfx::Size LayerTreeImpl::device_viewport_size() const {
+  return layer_tree_host_impl_->device_viewport_size();
+}
+
 bool LayerTreeImpl::IsActiveTree() const {
   return layer_tree_host_impl_->active_tree() == this;
 }

@@ -300,6 +300,7 @@ class CC_EXPORT LayerTreeHostImpl
   int memory_allocation_priority_cutoff() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
+  gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
   float overdraw_bottom_height() const { return overdraw_bottom_height_; }
