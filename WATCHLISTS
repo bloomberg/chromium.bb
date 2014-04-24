@@ -17,10 +17,13 @@
   },
 
   'WATCHLISTS': {
-    'this_file': ['nirnimesh@chromium.org'],
-    'depot_tools': ['maruel@chromium.org', 'dpranke@chromium.org',
-                    'cmp-cc@chromium.org', 'iannucci+depot_tools@chromium.org',
-                    'ilevy-cc@chromium.org'],
+    'this_file': [],
+    'depot_tools': [
+      'cmp-cc@chromium.org',
+      'dpranke@chromium.org',
+      'iannucci+depot_tools@chromium.org',
+      'ilevy-cc@chromium.org',
+    ],
   },
 
 }
