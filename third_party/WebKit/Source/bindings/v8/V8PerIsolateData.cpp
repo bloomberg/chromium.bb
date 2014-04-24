@@ -33,12 +33,21 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/V8RecursionScope.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
 
 static V8PerIsolateData* mainThreadPerIsolateData = 0;
+
+#ifndef NDEBUG
+static void assertV8RecursionScope()
+{
+    ASSERT(V8RecursionScope::properlyUsed(v8::Isolate::GetCurrent()));
+}
+#endif
 
 V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     : m_isolate(isolate)
@@ -53,6 +62,11 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_gcEventData(adoptPtr(new GCEventData()))
     , m_performingMicrotaskCheckpoint(false)
 {
+#ifndef NDEBUG
+    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
+    if (blink::Platform::current()->currentThread())
+        isolate->AddCallCompletedCallback(&assertV8RecursionScope);
+#endif
     if (isMainThread()) {
         mainThreadPerIsolateData = this;
         PageScriptDebugServer::setMainThreadIsolate(isolate);
@@ -92,6 +106,10 @@ v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 
 void V8PerIsolateData::dispose(v8::Isolate* isolate)
 {
+#ifndef NDEBUG
+    if (blink::Platform::current()->currentThread())
+        isolate->RemoveCallCompletedCallback(&assertV8RecursionScope);
+#endif
     void* data = isolate->GetData(gin::kEmbedderBlink);
     delete static_cast<V8PerIsolateData*>(data);
     isolate->SetData(gin::kEmbedderBlink, 0);
