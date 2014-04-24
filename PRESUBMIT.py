@@ -1062,6 +1062,20 @@ def _CheckUserActionUpdate(input_api, output_api):
   return []
 
 
+def _CheckJSONParsability(input_api, output_api):
+  results = []
+  file_filter = lambda f: f.LocalPath().endswith('.json')
+  for fpath in input_api.AffectedFiles(file_filter=file_filter):
+    with open(fpath.LocalPath(), 'r') as f:
+      try:
+        input_api.json.load(f)
+      except ValueError:
+        results.append(output_api.PresubmitError(
+          "File %r does not parse as valid JSON" % (fpath.LocalPath())
+        ))
+  return results
+
+
 def _CheckJavaStyle(input_api, output_api):
   """Runs checkstyle on changed java files and returns errors if any exist."""
   original_sys_path = sys.path
@@ -1112,6 +1126,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckCygwinShell(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
+  results.extend(_CheckJSONParsability(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
