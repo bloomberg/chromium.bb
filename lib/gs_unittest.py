@@ -560,7 +560,7 @@ class GSContextTest(AbstractGSContextTest):
     """Test ability to atomically increment a counter."""
     ctx = gs.GSContext()
     ctx.Counter('gs://abc/1').Increment()
-    self.gs_mock.assertCommandContains(['cp', '-', 'gs://abc/1'])
+    self.gs_mock.assertCommandContains(['cp', 'gs://abc/1'])
 
   def testGetGeneration(self):
     """Test ability to get the generation of a file."""
@@ -618,7 +618,7 @@ class GSContextTest(AbstractGSContextTest):
   def testNoParallelOpWithStdin(self):
     """Tests that "-m" is not used when we pipe the input."""
     ctx = gs.GSContext()
-    ctx.Copy('-', 'gs://abc/1', input='foo', parallel=True)
+    ctx.Copy('gs://abc/1', 'gs://abc/2', input='foo', parallel=True)
     self.assertFalse(any('-m' in cmd for cmd in self.gs_mock.raw_gs_cmds))
 
 

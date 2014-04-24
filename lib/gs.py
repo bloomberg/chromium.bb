@@ -11,6 +11,7 @@ import hashlib
 import logging
 import os
 import re
+import tempfile
 import urlparse
 import uuid
 
@@ -600,14 +601,24 @@ class GSContext(object):
     if acl is not None:
       cmd += ['-a', acl]
 
-    cmd += ['--', src_path, dest_path]
+    with cros_build_lib.ContextManagerStack() as stack:
+      # Write the input into a tempfile if possible. This is needed so that
+      # gsutil can retry failed requests.
+      if src_path == '-' and kwargs.get('input') is not None:
+        f = stack.Add(tempfile.NamedTemporaryFile)
+        f.write(kwargs['input'])
+        f.flush()
+        del kwargs['input']
+        src_path = f.name
 
-    if not (src_path.startswith(BASE_GS_URL) or
-            dest_path.startswith(BASE_GS_URL)):
-      # Don't retry on local copies.
-      kwargs.setdefault('retries', 0)
+      cmd += ['--', src_path, dest_path]
 
-    return self.DoCommand(cmd, **kwargs)
+      if not (src_path.startswith(BASE_GS_URL) or
+              dest_path.startswith(BASE_GS_URL)):
+        # Don't retry on local copies.
+        kwargs.setdefault('retries', 0)
+
+      return self.DoCommand(cmd, **kwargs)
 
   # TODO(mtennant): Merge with LS() after it supports returning details.
   def LSWithDetails(self, path, **kwargs):
