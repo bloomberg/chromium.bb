@@ -107,6 +107,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void UpdateTouchPoint(unsigned index, int x, int y);
   void CancelTouchPoint(unsigned index);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
+  void SetTouchCancelable(bool cancelable);
   void ThrowTouchPointError();
 
   void DumpFilenameBeingDragged();
@@ -232,6 +233,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   bool is_drag_mode_;
 
   int touch_modifiers_;
+  bool touch_cancelable_;
   std::vector<blink::WebTouchPoint> touch_points_;
 
   scoped_ptr<blink::WebContextMenuData> last_context_menu_data_;

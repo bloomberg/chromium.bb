@@ -13,11 +13,11 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
-#include "content/browser/renderer_host/input/web_touch_event_traits.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/touch_action.h"
+#include "content/common/input/web_touch_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -446,8 +446,17 @@ void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
 
   OfferToRenderer(input_event, latency_info, is_keyboard_shortcut);
 
+  // Touch events should always indicate in the event whether they are
+  // cancelable (respect ACK disposition) or not.
+  bool ignoresAck =
+      WebInputEventTraits::IgnoresAckDisposition(input_event.type);
+  if (WebInputEvent::isTouchEventType(input_event.type)) {
+    DCHECK(!ignoresAck ==
+           static_cast<const blink::WebTouchEvent&>(input_event).cancelable);
+  }
+
   // If we don't care about the ack disposition, send the ack immediately.
-  if (WebInputEventTraits::IgnoresAckDisposition(input_event.type)) {
+  if (ignoresAck) {
     ProcessInputEventAck(input_event.type,
                          INPUT_EVENT_ACK_STATE_IGNORED,
                          latency_info,

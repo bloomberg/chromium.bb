@@ -74,11 +74,6 @@ class CONTENT_EXPORT SyntheticWebTouchEvent
   void SetTimestamp(base::TimeDelta timestamp);
 };
 
-class CONTENT_EXPORT SyntheticWebTouchEventBuilder {
- public:
-  static SyntheticWebTouchEvent Build(blink::WebInputEvent::Type type);
-};
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_

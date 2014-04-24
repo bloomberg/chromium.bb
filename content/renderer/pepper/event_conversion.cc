@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/input/web_touch_event_traits.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/usb_key_code_conversion.h"
 #include "ppapi/c/pp_input_event.h"
@@ -291,32 +292,33 @@ void SetWebTouchPoints(const std::vector<PP_TouchPoint>& pp_touches,
 WebTouchEvent* BuildTouchEvent(const InputEventData& event) {
   WebTouchEvent* web_event = new WebTouchEvent();
   WebTouchPoint::State state = WebTouchPoint::StateUndefined;
+  WebInputEvent::Type type = WebInputEvent::Undefined;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_TOUCHSTART:
-      web_event->type = WebInputEvent::TouchStart;
+      type = WebInputEvent::TouchStart;
       state = WebTouchPoint::StatePressed;
       break;
     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
-      web_event->type = WebInputEvent::TouchMove;
+      type = WebInputEvent::TouchMove;
       state = WebTouchPoint::StateMoved;
       break;
     case PP_INPUTEVENT_TYPE_TOUCHEND:
-      web_event->type = WebInputEvent::TouchEnd;
+      type = WebInputEvent::TouchEnd;
       state = WebTouchPoint::StateReleased;
       break;
     case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
-      web_event->type = WebInputEvent::TouchCancel;
+      type = WebInputEvent::TouchCancel;
       state = WebTouchPoint::StateCancelled;
       break;
     default:
       NOTREACHED();
   }
+  WebTouchEventTraits::ResetType(
+      type, PPTimeTicksToEventTime(event.event_time_stamp), web_event);
 
   TouchStateMap states_map;
   for (uint32_t i = 0; i < event.changed_touches.size(); i++)
     states_map[event.changed_touches[i].id] = state;
-
-  web_event->timeStampSeconds = PPTimeTicksToEventTime(event.event_time_stamp);
 
   SetWebTouchPoints(event.changed_touches,
                     states_map,

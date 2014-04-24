@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/motion_event_web.h"
 
 #include "base/logging.h"
+#include "content/common/input/web_touch_event_traits.h"
 
 using blink::WebInputEvent;
 using blink::WebTouchEvent;
@@ -13,31 +14,24 @@ using blink::WebTouchPoint;
 namespace content {
 namespace {
 
-bool AllTouchPointsHaveState(const WebTouchEvent& event,
-                             WebTouchPoint::State state) {
-  for (size_t i = 0; i < event.touchesLength; ++i) {
-    if (event.touches[i].state != state)
-      return false;
-  }
-  return true;
-}
-
 ui::MotionEvent::Action GetActionFrom(const WebTouchEvent& event) {
-  // TODO(jdduke): Use WebTouchEventTraits.
   DCHECK(event.touchesLength);
   switch (event.type) {
     case WebInputEvent::TouchStart:
-      if (AllTouchPointsHaveState(event, WebTouchPoint::StatePressed))
+      if (WebTouchEventTraits::AllTouchPointsHaveState(
+              event, WebTouchPoint::StatePressed))
         return ui::MotionEvent::ACTION_DOWN;
       else
         return ui::MotionEvent::ACTION_POINTER_DOWN;
     case WebInputEvent::TouchEnd:
-      if (AllTouchPointsHaveState(event, WebTouchPoint::StateReleased))
+      if (WebTouchEventTraits::AllTouchPointsHaveState(
+              event, WebTouchPoint::StateReleased))
         return ui::MotionEvent::ACTION_UP;
       else
         return ui::MotionEvent::ACTION_POINTER_UP;
     case WebInputEvent::TouchCancel:
-      DCHECK(AllTouchPointsHaveState(event, WebTouchPoint::StateCancelled));
+      DCHECK(WebTouchEventTraits::AllTouchPointsHaveState(
+          event, WebTouchPoint::StateCancelled));
       return ui::MotionEvent::ACTION_CANCEL;
     case WebInputEvent::TouchMove:
       return ui::MotionEvent::ACTION_MOVE;
@@ -145,11 +139,11 @@ scoped_ptr<ui::MotionEvent> MotionEventWeb::Clone() const {
 
 scoped_ptr<ui::MotionEvent> MotionEventWeb::Cancel() const {
   WebTouchEvent cancel_event(event_);
-
-  cancel_event.type = WebInputEvent::TouchCancel;
-  for (size_t i = 0; i < cancel_event.touchesLength; ++i)
-    cancel_event.touches[i].state = WebTouchPoint::StateCancelled;
-
+  WebTouchEventTraits::ResetTypeAndTouchStates(
+      blink::WebInputEvent::TouchCancel,
+      // TODO(rbyers): Shouldn't we use a fresh timestamp?
+      event_.timeStampSeconds,
+      &cancel_event);
   return scoped_ptr<MotionEvent>(new MotionEventWeb(cancel_event));
 }
 

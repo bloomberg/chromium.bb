@@ -259,6 +259,7 @@ TEST_F(TouchEventQueueTest, Basic) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
+  EXPECT_TRUE(acked_event().cancelable);
 
   // Receive an ACK for the second touch-event.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -266,6 +267,7 @@ TEST_F(TouchEventQueueTest, Basic) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
+  EXPECT_TRUE(acked_event().cancelable);
 }
 
 // Tests that the touch-queue is emptied if a page stops listening for touch
@@ -854,6 +856,7 @@ TEST_F(TouchEventQueueTest, TouchCancelOnScroll) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(2U, queued_event_count());
   EXPECT_EQ(WebInputEvent::TouchCancel, sent_event().type);
+  EXPECT_FALSE(sent_event().cancelable);
   EXPECT_EQ(WebInputEvent::TouchStart, latest_event().type);
 
   // Acking the TouchCancel will result in dispatch of the next TouchStart.
@@ -1053,6 +1056,8 @@ TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(WebInputEvent::TouchCancel, sent_event().type);
+  EXPECT_FALSE(sent_event().cancelable);
 
   // Touch events should not be forwarded until we receive the cancel acks.
   MoveTouchPoint(0, 1, 1);
@@ -1073,6 +1078,8 @@ TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
   PressTouchPoint(0, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
+  EXPECT_TRUE(sent_event().cancelable);
 }
 
 // Tests that the timeout is never started if the renderer consumes

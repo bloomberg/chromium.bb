@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/ui_events_helper.h"
 
+#include "content/common/input/web_touch_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -325,8 +326,9 @@ blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
   }
 
   // Update the type of the touch event.
-  web_event->type = TouchEventTypeFromEvent(event);
-  web_event->timeStampSeconds = event.time_stamp().InSecondsF();
+  WebTouchEventTraits::ResetType(TouchEventTypeFromEvent(event),
+                                 event.time_stamp().InSecondsF(),
+                                 web_event);
   web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
 
   return point;

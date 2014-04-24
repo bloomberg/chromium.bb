@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 
 #include "base/strings/string_util.h"
+#include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
@@ -216,11 +217,10 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const ui::MotionEvent& event) {
   blink::WebTouchEvent result;
 
-  result.type = ToWebInputEventType(event.GetAction());
-  DCHECK(WebInputEvent::isTouchEventType(result.type));
-
-  result.timeStampSeconds =
-      (event.GetEventTime() - base::TimeTicks()).InSecondsF();
+  WebTouchEventTraits::ResetType(
+      ToWebInputEventType(event.GetAction()),
+      (event.GetEventTime() - base::TimeTicks()).InSecondsF(),
+      &result);
 
   result.touchesLength =
       std::min(event.GetPointerCount(),

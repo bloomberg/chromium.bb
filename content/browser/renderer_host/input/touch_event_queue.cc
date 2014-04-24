@@ -9,7 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
-#include "content/browser/renderer_host/input/web_touch_event_traits.h"
+#include "content/common/input/web_touch_event_traits.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -31,9 +31,11 @@ typedef std::vector<TouchEventWithLatencyInfo> WebTouchEventWithLatencyList;
 TouchEventWithLatencyInfo ObtainCancelEventForTouchEvent(
     const TouchEventWithLatencyInfo& event_to_cancel) {
   TouchEventWithLatencyInfo event = event_to_cancel;
-  event.event.type = WebInputEvent::TouchCancel;
-  for (size_t i = 0; i < event.event.touchesLength; i++)
-    event.event.touches[i].state = WebTouchPoint::StateCancelled;
+  WebTouchEventTraits::ResetTypeAndTouchStates(
+      WebInputEvent::TouchCancel,
+      // TODO(rbyers): Shouldn't we use a fresh timestamp?
+      event.event.timeStampSeconds,
+      &event.event);
   return event;
 }
 

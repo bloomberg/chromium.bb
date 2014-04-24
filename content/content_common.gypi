@@ -321,6 +321,8 @@
     'common/input/synthetic_web_input_event_builders.h',
     'common/input/web_input_event_traits.cc',
     'common/input/web_input_event_traits.h',
+    'common/input/web_touch_event_traits.cc',
+    'common/input/web_touch_event_traits.h',
     'common/input_messages.h',
     'common/inter_process_time_ticks_converter.cc',
     'common/inter_process_time_ticks_converter.h',

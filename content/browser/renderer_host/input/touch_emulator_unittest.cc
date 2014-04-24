@@ -76,6 +76,8 @@ class TouchEmulatorTest : public testing::Test,
     EXPECT_EQ(1U, event.touchesLength);
     EXPECT_EQ(last_mouse_x_, event.touches[0].position.x);
     EXPECT_EQ(last_mouse_y_, event.touches[0].position.y);
+    int expectedCancelable = event.type != WebInputEvent::TouchCancel;
+    EXPECT_EQ(expectedCancelable, event.cancelable);
     emulator()->HandleTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   }
 

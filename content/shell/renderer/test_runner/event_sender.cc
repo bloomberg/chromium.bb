@@ -341,6 +341,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void UpdateTouchPoint(unsigned index, double x, double y);
   void CancelTouchPoint(unsigned index);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
+  void SetTouchCancelable(bool cancelable);
   void DumpFilenameBeingDragged();
   void GestureFlingCancel();
   void GestureFlingStart(float x, float y, float velocity_x, float velocity_y);
@@ -458,6 +459,7 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("updateTouchPoint", &EventSenderBindings::UpdateTouchPoint)
       .SetMethod("cancelTouchPoint", &EventSenderBindings::CancelTouchPoint)
       .SetMethod("setTouchModifier", &EventSenderBindings::SetTouchModifier)
+      .SetMethod("setTouchCancelable", &EventSenderBindings::SetTouchCancelable)
       .SetMethod("dumpFilenameBeingDragged",
                  &EventSenderBindings::DumpFilenameBeingDragged)
       .SetMethod("gestureFlingCancel", &EventSenderBindings::GestureFlingCancel)
@@ -622,6 +624,11 @@ void EventSenderBindings::SetTouchModifier(const std::string& key_name,
                                            bool set_mask) {
   if (sender_)
     sender_->SetTouchModifier(key_name, set_mask);
+}
+
+void EventSenderBindings::SetTouchCancelable(bool cancelable) {
+  if (sender_)
+    sender_->SetTouchCancelable(cancelable);
 }
 
 void EventSenderBindings::DumpFilenameBeingDragged() {
@@ -992,6 +999,7 @@ EventSender::EventSender(WebTestRunner::TestInterfaces* interfaces)
       force_layout_on_events_(false),
       is_drag_mode_(true),
       touch_modifiers_(0),
+      touch_cancelable_(true),
       replaying_saved_events_(false),
       current_drag_effects_allowed_(blink::WebDragOperationNone),
       last_click_time_sec_(0),
@@ -1046,6 +1054,10 @@ void EventSender::Reset() {
 
   time_offset_ms_ = 0;
   click_count_ = 0;
+
+  touch_modifiers_ = 0;
+  touch_cancelable_ = true;
+  touch_points_.clear();
 }
 
 void EventSender::Install(WebFrame* frame) {
@@ -1435,6 +1447,10 @@ void EventSender::SetTouchModifier(const std::string& key_name,
     touch_modifiers_ &= ~mask;
 }
 
+void EventSender::SetTouchCancelable(bool cancelable) {
+  touch_cancelable_ = cancelable;
+}
+
 void EventSender::DumpFilenameBeingDragged() {
   WebString filename;
   WebVector<WebDragData::Item> items = current_drag_data_.items();
@@ -1763,6 +1779,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type) {
   WebTouchEvent touch_event;
   touch_event.type = type;
   touch_event.modifiers = touch_modifiers_;
+  touch_event.cancelable = touch_cancelable_;
   touch_event.timeStampSeconds = GetCurrentEventTimeSec();
   touch_event.touchesLength = touch_points_.size();
   for (size_t i = 0; i < touch_points_.size(); ++i)

@@ -13,6 +13,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "content/common/input/web_touch_event_traits.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/public/common/content_switches.h"
@@ -531,8 +532,12 @@ void RenderWidgetHostViewGuest::DispatchCancelTouchEvent(
     return;
 
   blink::WebTouchEvent cancel_event;
-  cancel_event.type = blink::WebInputEvent::TouchCancel;
-  cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
+  // TODO(rbyers): This event has no touches in it.  Don't we need to know what
+  // touches are currently active in order to cancel them all properly?
+  WebTouchEventTraits::ResetType(blink::WebInputEvent::TouchCancel,
+                                 event->time_stamp().InSecondsF(),
+                                 &cancel_event);
+
   host_->ForwardTouchEventWithLatencyInfo(cancel_event, *event->latency());
 }
 

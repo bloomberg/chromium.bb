@@ -535,6 +535,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&press);
   EXPECT_FALSE(press.handled());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_.type);
+  EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StatePressed,
             view_->touch_event_.touches[0].state);
@@ -542,6 +543,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&move);
   EXPECT_FALSE(move.handled());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_.type);
+  EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StateMoved,
             view_->touch_event_.touches[0].state);
@@ -549,6 +551,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&release);
   EXPECT_FALSE(release.handled());
   EXPECT_EQ(blink::WebInputEvent::TouchEnd, view_->touch_event_.type);
+  EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(0U, view_->touch_event_.touchesLength);
 
   // Now install some touch-event handlers and do the same steps. The touch
@@ -560,6 +563,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&press);
   EXPECT_TRUE(press.stopped_propagation());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_.type);
+  EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StatePressed,
             view_->touch_event_.touches[0].state);
@@ -567,6 +571,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&move);
   EXPECT_TRUE(move.stopped_propagation());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_.type);
+  EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StateMoved,
             view_->touch_event_.touches[0].state);
@@ -574,6 +579,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&release);
   EXPECT_TRUE(release.stopped_propagation());
   EXPECT_EQ(blink::WebInputEvent::TouchEnd, view_->touch_event_.type);
+  EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(0U, view_->touch_event_.touchesLength);
 
   // Now start a touch event, and remove the event-handlers before the release.
