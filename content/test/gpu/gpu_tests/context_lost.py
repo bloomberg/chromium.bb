@@ -50,38 +50,53 @@ class _ContextLostValidator(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
         '--disable-domain-blocking-for-3d-apis')
+    options.AppendExtraBrowserArgs(
+        '--disable-gpu-process-crash-limit')
     # Required for about:gpucrash handling from Telemetry.
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
   def ValidatePage(self, page, tab, results):
     if page.kill_gpu_process:
-      if not tab.browser.supports_tab_control:
-        raise page_test.Failure('Browser must support tab control')
-      # Crash the GPU process.
-      new_tab = tab.browser.tabs.New()
-      # To access these debug URLs from Telemetry, they have to be
-      # written using the chrome:// scheme.
-      new_tab.Navigate('chrome://gpucrash')
-      # Activate the original tab and wait for completion.
-      tab.Activate()
-      completed = False
-      try:
-        util.WaitFor(lambda: tab.EvaluateJavaScript(
-            'window.domAutomationController._finished'), wait_timeout)
-        completed = True
-      except util.TimeoutException:
-        pass
-      new_tab.Close()
-      if not completed:
-        raise page_test.Failure(
-            'Test didn\'t complete (no context lost event?)')
-    if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
-      raise page_test.Failure('Test failed (context not restored properly?)')
+      # Doing the GPU process kill operation cooperatively -- in the
+      # same page's context -- is much more stressful than restarting
+      # the browser every time.
+      for x in range(page.number_of_gpu_process_kills):
+        if not tab.browser.supports_tab_control:
+          raise page_test.Failure('Browser must support tab control')
+        # Reset the test's state.
+        tab.EvaluateJavaScript(
+          'window.domAutomationController._succeeded = false');
+        tab.EvaluateJavaScript(
+          'window.domAutomationController._finished = false');
+        # Crash the GPU process.
+        new_tab = tab.browser.tabs.New()
+        # To access these debug URLs from Telemetry, they have to be
+        # written using the chrome:// scheme.
+        new_tab.Navigate('chrome://gpucrash')
+        # Activate the original tab and wait for completion.
+        tab.Activate()
+        completed = False
+        try:
+          util.WaitFor(lambda: tab.EvaluateJavaScript(
+              'window.domAutomationController._finished'), wait_timeout)
+          completed = True
+        except util.TimeoutException:
+          pass
+        new_tab.Close()
+        if not completed:
+          raise page_test.Failure(
+              'Test didn\'t complete (no context lost event?)')
+        if not tab.EvaluateJavaScript(
+          'window.domAutomationController._succeeded'):
+          raise page_test.Failure(
+            'Test failed (context not restored properly?)')
 
 class ContextLost(test_module.Test):
   enabled = True
   test = _ContextLostValidator
-
+  # For the record, this would have been another way to get the pages
+  # to repeat. pageset_repeat would be another option.
+  # options = {'page_repeat': 5}
   def CreatePageSet(self, options):
     page_set_dict = {
       'description': 'Test cases for real and synthetic context lost events',
@@ -97,7 +112,8 @@ class ContextLost(test_module.Test):
             { 'action': 'wait',
               'javascript': 'window.domAutomationController._loaded' }
           ],
-          'kill_gpu_process': True
+          'kill_gpu_process': True,
+          'number_of_gpu_process_kills': 30,
         },
         {
           'name': 'ContextLost.WebGLContextLostFromLoseContextExtension',
