@@ -9,13 +9,13 @@
   <template>
     <style>
       :host {
-        background-color: #3b3b3e;
-        border-radius: 2px;
+        background-color: #ffffff;
+        border-radius: 1px;
         border-style: solid;
-        border-width: 1px 0px;
-        color: #ffffff;
-        font-family: roboto-bold;
-        font-weight: 300;
+        border-width: 0px 0px;
+        color: #666666;
+        font-family: 'Droid Sans';
+        font-weight: 100;
       }
 
       :host .key {
@@ -58,20 +58,20 @@
         height: 80%;
       }
 
+      :host .hint,
+      :host([invert]) key {
+        color: #bbbbbb;
+      }
+
       :host .hint {
-        color: #313131;
         font-size: 70%;
         position: absolute;
         right: 7%;
         top: 5%;
       }
 
-      :host([invert]) .key {
-        color: #313131;
-      }
-
       :host([invert]) .hint {
-        color: #ffffff;
+        color: #666666;
       }
 
       :host(.dark) {
@@ -79,26 +79,17 @@
       }
 
       :host(.active) {
-        -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f;
-        background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
+        background-color: #dddddd;
         background-size: cover;
-        border-bottom-color: #5b5b5b;
-        border-top-color: #a4a4a4;
       }
 
       :host(.dark:not(.active)) {
-        -webkit-box-shadow: inset 0px 1px #313131, inset 0px -1px #202020;
-        background-color: #222222;
-        border-bottom-color: #1c1c1c;
-        border-top-color: #4f4f4f;
+        background-color: #555555;
       }
 
       :host(:not(.dark):not(.active)) {
-        -webkit-box-shadow: inset 0px 1px #6f6f6f, inset 0px -1px #565656;
-        background-image: -webkit-linear-gradient(#636363, #5b5b5b);
+        background-color: #ffffff;
         background-size: cover;
-        border-bottom-color: #4a4a4a;
-        border-top-color: #878787;
       }
     </style>
     <div id="key" class="key">

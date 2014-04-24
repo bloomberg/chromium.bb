@@ -15,7 +15,7 @@
  */
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
 kb-keyboard.alt-active kb-modifier-key[char=Alt] {
-  color: lightblue;
+  background-color: #bbbbbb;
 }
 
 kb-keyboard[keyset="upper"] kb-shift-key.dark /deep/ .key {
@@ -31,74 +31,24 @@ kb-keyboard[keyset="lower"] kb-shift-key /deep/ .key{
 */
 kb-keyboard.caps-locked kb-shift-key.dark /deep/
     .shift-light {
-  -webkit-box-shadow: 0 1px 1px rgba(213, 213, 213, 0.5),
-    0 -1px 1px rgba(213, 213, 213, 0.5);
-  background-image: -webkit-linear-gradient(#d5d5d5, #d5d5d5);
-  border: none;
-  height: 0.2em;
-}
-kb-keyboard.caps-locked kb-shift-key.dark /deep/
-    .shift-light-wrapper {
-  bottom: 2px;
+    background-color: rgba(0, 0, 255, 0.5);
 }
 
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl]  {
-  color: lightblue;
+  color: blue;
 }
 
-/** TODO(rsadam@): Move these rules to kb-row once we uprev to latest Polymer.*/
-kb-row:nth-child(2) kb-key:not(.dark):not(.active){
-  -webkit-box-shadow: inset 0px 1px #666666, inset 0px -1px #4c4c4c;
-  background-image: -webkit-linear-gradient(#5a5a5a, #515151);
-  background-size: cover;
-  border-bottom-color: #414141;
-  border-top-color: #7f7f7f;
-}
-
-kb-row:nth-child(3) kb-key:not(.dark):not(.active){
-  -webkit-box-shadow: inset 0px 1px #5d5d5d, inset 0px -1px #444444;
-  background-image: -webkit-linear-gradient(#505050, #494949);
-  background-size: cover;
-  border-bottom-color: #3a3a3a;
-  border-top-color: #787878;
-}
-
-kb-row:nth-child(n+3) kb-key:not(.dark):not(.active){
-  -webkit-box-shadow: inset 0px 1px #565656, inset 0px -1px #434343;
-  background-image: -webkit-linear-gradient(#484848, #474747);
-  background-size: cover;
-  border-bottom-color: #393939;
-  border-top-color: #717171;
-}
-
-kb-row:nth-child(2) kb-key:not([invert]) /deep/ .hint {
-  color: #2C2C2C;
-}
-
-kb-row:nth-child(3) kb-key:not([invert]) /deep/ .hint {
-  color: #272727;
-}
-
-kb-row:nth-child(n+3) kb-key:not([invert]) /deep/ .hint {
-  color: #232323;
-}
-
+.space,
 .dark {
   font-size: 70%;
 }
 
-.dark:not(.active) {
-  -webkit-box-shadow: inset 0px 1px #313131, inset 0px -1px #202020;
-  background-color: #222222;
-  border-bottom-color: #1c1c1c;
-  border-top-color: #4f4f4f;
+.dark:not(.active),
+:not(kb-altkey-set) > :not(.dark).active {
+  background-color: #dddddd;
 }
 
-:not(kb-altkey-set) > .active {
-  -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f;
-  background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
-  background-size: cover;
-  border-bottom-color: #5b5b5b;
-  border-top-color: #a4a4a4;
+.space {
+  color: bbbbbb;
 }
