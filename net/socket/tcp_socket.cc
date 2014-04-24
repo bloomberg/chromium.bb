@@ -11,7 +11,7 @@ namespace net {
 
 namespace {
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 
 // Checks to see if the system supports TCP FastOpen. Notably, it requires
 // kernel support. Additionally, this checks system configuration to ensure that
