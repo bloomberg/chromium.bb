@@ -343,18 +343,6 @@ void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int opener_id,
 }
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
-TransportDIB* RenderWidgetHelper::MapTransportDIB(TransportDIB::Id dib_id) {
-  base::AutoLock locked(allocated_dibs_lock_);
-
-  const std::map<TransportDIB::Id, int>::iterator
-      i = allocated_dibs_.find(dib_id);
-  if (i == allocated_dibs_.end())
-    return NULL;
-
-  base::FileDescriptor fd(dup(i->second), true);
-  return TransportDIB::Map(fd);
-}
-
 void RenderWidgetHelper::AllocTransportDIB(uint32 size,
                                            bool cache_in_browser,
                                            TransportDIB::Handle* result) {

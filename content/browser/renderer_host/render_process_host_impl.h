@@ -22,7 +22,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/system/core.h"
-#include "ui/surface/transport_dib.h"
 
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 
@@ -104,8 +103,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual void DumpHandles() OVERRIDE;
   virtual base::ProcessHandle GetHandle() const OVERRIDE;
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
-  virtual TransportDIB* MapTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual bool InSameStoragePartition(
       StoragePartition* partition) const OVERRIDE;
@@ -332,18 +329,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // The filter for MessagePort messages coming from the renderer.
   scoped_refptr<MessagePortMessageFilter> message_port_message_filter_;
-
-  // A map of transport DIB ids to cached TransportDIBs
-  std::map<TransportDIB::Id, TransportDIB*> cached_dibs_;
-
-  enum {
-    // This is the maximum size of |cached_dibs_|
-    MAX_MAPPED_TRANSPORT_DIBS = 3,
-  };
-
-  void ClearTransportDIBCache();
-  // This is used to clear our cache five seconds after the last use.
-  base::DelayTimer<RenderProcessHostImpl> cached_dibs_cleaner_;
 
   // Used in single-process mode.
   scoped_ptr<base::Thread> in_process_renderer_;

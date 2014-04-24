@@ -394,10 +394,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       pending_views_(0),
       visible_widgets_(0),
       backgrounded_(true),
-      cached_dibs_cleaner_(FROM_HERE,
-                           base::TimeDelta::FromSeconds(5),
-                           this,
-                           &RenderProcessHostImpl::ClearTransportDIBCache),
       is_initialized_(false),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       browser_context_(browser_context),
@@ -491,7 +487,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
     queued_messages_.pop();
   }
 
-  ClearTransportDIBCache();
   UnregisterHost(GetID());
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1262,69 +1257,6 @@ void RenderProcessHostImpl::DumpHandles() {
 #endif
 }
 
-// This is a platform specific function for mapping a transport DIB given its id
-TransportDIB* RenderProcessHostImpl::MapTransportDIB(
-    TransportDIB::Id dib_id) {
-#if defined(OS_WIN)
-  // On Windows we need to duplicate the handle from the remote process
-  HANDLE section;
-  DuplicateHandle(GetHandle(), dib_id.handle, GetCurrentProcess(), &section,
-                  FILE_MAP_READ | FILE_MAP_WRITE,
-                  FALSE, 0);
-  return TransportDIB::Map(section);
-#elif defined(OS_ANDROID)
-  return TransportDIB::Map(dib_id);
-#else
-  // On POSIX, the browser allocates all DIBs and keeps a file descriptor around
-  // for each.
-  return widget_helper_->MapTransportDIB(dib_id);
-#endif
-}
-
-TransportDIB* RenderProcessHostImpl::GetTransportDIB(
-    TransportDIB::Id dib_id) {
-  if (!TransportDIB::is_valid_id(dib_id))
-    return NULL;
-
-  const std::map<TransportDIB::Id, TransportDIB*>::iterator
-      i = cached_dibs_.find(dib_id);
-  if (i != cached_dibs_.end()) {
-    cached_dibs_cleaner_.Reset();
-    return i->second;
-  }
-
-  TransportDIB* dib = MapTransportDIB(dib_id);
-  if (!dib)
-    return NULL;
-
-  if (cached_dibs_.size() >= MAX_MAPPED_TRANSPORT_DIBS) {
-    // Clean a single entry from the cache
-    std::map<TransportDIB::Id, TransportDIB*>::iterator smallest_iterator;
-    size_t smallest_size = std::numeric_limits<size_t>::max();
-
-    for (std::map<TransportDIB::Id, TransportDIB*>::iterator
-         i = cached_dibs_.begin(); i != cached_dibs_.end(); ++i) {
-      if (i->second->size() <= smallest_size) {
-        smallest_iterator = i;
-        smallest_size = i->second->size();
-      }
-    }
-
-    delete smallest_iterator->second;
-    cached_dibs_.erase(smallest_iterator);
-  }
-
-  cached_dibs_[dib_id] = dib;
-  cached_dibs_cleaner_.Reset();
-  return dib;
-}
-
-void RenderProcessHostImpl::ClearTransportDIBCache() {
-  STLDeleteContainerPairSecondPointers(
-      cached_dibs_.begin(), cached_dibs_.end());
-  cached_dibs_.clear();
-}
-
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::Send");
   if (!channel_) {
@@ -1894,8 +1826,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
                                       exit_code));
     iter.Advance();
   }
-
-  ClearTransportDIBCache();
 
   render_process_host_mojo_.reset();
 

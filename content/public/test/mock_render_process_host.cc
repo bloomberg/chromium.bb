@@ -19,8 +19,7 @@
 namespace content {
 
 MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
-    : transport_dib_(NULL),
-      bad_msg_count_(0),
+    : bad_msg_count_(0),
       factory_(NULL),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       browser_context_(browser_context),
@@ -37,7 +36,6 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
 
 MockRenderProcessHost::~MockRenderProcessHost() {
   ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
-  delete transport_dib_;
   if (factory_)
     factory_->Remove(this);
 
@@ -139,34 +137,6 @@ bool MockRenderProcessHost::Send(IPC::Message* msg) {
   sink_.OnMessageReceived(*msg);
   delete msg;
   return true;
-}
-
-TransportDIB* MockRenderProcessHost::MapTransportDIB(TransportDIB::Id dib_id) {
-#if defined(OS_WIN)
-  // NULL should be used here instead of INVALID_HANDLE_VALUE (or pseudo-handle)
-  // except for when dealing with the small number of Win16-derived APIs
-  // that require INVALID_HANDLE_VALUE (e.g. CreateFile and friends).
-  HANDLE duped = NULL;
-  if (!DuplicateHandle(GetCurrentProcess(), dib_id.handle, GetCurrentProcess(),
-                       &duped, 0, TRUE, DUPLICATE_SAME_ACCESS))
-    duped = NULL;
-  return TransportDIB::Map(duped);
-#elif defined(OS_ANDROID)
-  // On Android, Handles and Ids are the same underlying type.
-  return TransportDIB::Map(dib_id);
-#else
-  // On POSIX, TransportDIBs are always created in the browser, so we cannot map
-  // one from a dib_id.
-  return TransportDIB::Create(100 * 100 * 4, 0);
-#endif
-}
-
-TransportDIB* MockRenderProcessHost::GetTransportDIB(TransportDIB::Id dib_id) {
-  if (transport_dib_)
-    return transport_dib_;
-
-  transport_dib_ = MapTransportDIB(dib_id);
-  return transport_dib_;
 }
 
 int MockRenderProcessHost::GetID() const {

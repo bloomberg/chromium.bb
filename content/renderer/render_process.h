@@ -28,31 +28,12 @@ class RenderProcess : public ChildProcess {
   RenderProcess() {}
   virtual ~RenderProcess() {}
 
-  // Get a canvas suitable for drawing and transporting to the browser
-  //   memory: (output) the transport DIB memory
-  //   rect: the rectangle which will be painted, use for sizing the canvas
-  //   returns: NULL on error
-  //
-  // When no longer needed, you should pass the TransportDIB to
-  // ReleaseTransportDIB so that it can be recycled.
-  virtual SkCanvas* GetDrawingCanvas(TransportDIB** memory,
-                                     const gfx::Rect& rect) = 0;
-
-  // Frees shared memory allocated by AllocSharedMemory.  You should only use
-  // this function to free the SharedMemory object.
-  virtual void ReleaseTransportDIB(TransportDIB* memory) = 0;
-
   // Keep track of the cumulative set of enabled bindings for this process,
   // across any view.
   virtual void AddBindings(int bindings) = 0;
 
   // The cumulative set of enabled bindings for this process.
   virtual int GetEnabledBindings() const = 0;
-
-  // Create a new transport DIB of, at least, the given size. Return NULL on
-  // error.
-  virtual TransportDIB* CreateTransportDIB(size_t size) = 0;
-  virtual void FreeTransportDIB(TransportDIB*) = 0;
 
   // Returns a pointer to the RenderProcess singleton instance. Assuming that
   // we're actually a renderer or a renderer test, this static cast will

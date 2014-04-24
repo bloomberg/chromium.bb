@@ -14,7 +14,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/surface/transport_dib.h"
 
 class GURL;
 struct ViewMsg_SwapOut_Params;
@@ -127,19 +126,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Init starts the process asynchronously.  It's guaranteed to be valid after
   // the first IPC arrives.
   virtual base::ProcessHandle GetHandle() const = 0;
-
-  // Transport DIB functions ---------------------------------------------------
-
-  // Return the TransportDIB for the given id. On Linux, this can involve
-  // mapping shared memory. On Mac, the shared memory is created in the browser
-  // process and the cached metadata is returned. On Windows, this involves
-  // duplicating the handle from the remote process.  The RenderProcessHost
-  // still owns the returned DIB.
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) = 0;
-
-  // Return the TransportDIB for the given id. In contrast to GetTransportDIB,
-  // the caller owns the resulting TransportDIB.
-  virtual TransportDIB* MapTransportDIB(TransportDIB::Id dib_id) = 0;
 
   // Returns the user browser context associated with this renderer process.
   virtual content::BrowserContext* GetBrowserContext() const = 0;

@@ -43,14 +43,7 @@
 namespace content {
 
 RenderProcessImpl::RenderProcessImpl()
-    : shared_mem_cache_cleaner_(
-          FROM_HERE, base::TimeDelta::FromSeconds(5),
-          this, &RenderProcessImpl::ClearTransportDIBCache),
-      transport_dib_next_sequence_number_(0),
-      enabled_bindings_(0) {
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i)
-    shared_mem_cache_[i] = NULL;
-
+    : enabled_bindings_(0) {
 #if defined(OS_WIN)
   // HACK:  See http://b/issue?id=1024307 for rationale.
   if (GetModuleHandle(L"LPK.DLL") == NULL) {
@@ -96,7 +89,6 @@ RenderProcessImpl::~RenderProcessImpl() {
 #endif
 
   GetShutDownEvent()->Signal();
-  ClearTransportDIBCache();
 }
 
 void RenderProcessImpl::AddBindings(int bindings) {
@@ -105,141 +97,6 @@ void RenderProcessImpl::AddBindings(int bindings) {
 
 int RenderProcessImpl::GetEnabledBindings() const {
   return enabled_bindings_;
-}
-
-// -----------------------------------------------------------------------------
-// Platform specific code for dealing with bitmap transport...
-
-TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // POSIX creates transport DIBs in the browser, so we need to do a sync IPC to
-  // get one.  The TransportDIB is cached in the browser.
-  TransportDIB::Handle handle;
-  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, true, &handle);
-  if (!main_thread()->Send(msg))
-    return NULL;
-  if (handle.fd < 0)
-    return NULL;
-  return TransportDIB::Map(handle);
-#else
-  // Windows and Android create transport DIBs inside the renderer.
-  return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
-#endif
-}
-
-void RenderProcessImpl::FreeTransportDIB(TransportDIB* dib) {
-  if (!dib)
-    return;
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // On POSIX we need to tell the browser that it can drop a reference to the
-  // shared memory.
-  IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());
-  main_thread()->Send(msg);
-#endif
-
-  delete dib;
-}
-
-// -----------------------------------------------------------------------------
-
-
-skia::PlatformCanvas* RenderProcessImpl::GetDrawingCanvas(
-    TransportDIB** memory, const gfx::Rect& rect) {
-  int width = rect.width();
-  int height = rect.height();
-  const size_t stride = skia::PlatformCanvasStrideForWidth(rect.width());
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  const size_t max_size = base::SysInfo::MaxSharedMemorySize();
-#else
-  const size_t max_size = 0;
-#endif
-
-  // If the requested size is too big, reduce the height. Ideally we might like
-  // to reduce the width as well to make the size reduction more "balanced", but
-  // it rarely comes up in practice.
-  if ((max_size != 0) && (height * stride > max_size))
-    height = max_size / stride;
-
-  const size_t size = height * stride;
-
-  if (!GetTransportDIBFromCache(memory, size)) {
-    *memory = CreateTransportDIB(size);
-    if (!*memory)
-      return NULL;
-  }
-
-  return (*memory)->GetPlatformCanvas(width, height);
-}
-
-void RenderProcessImpl::ReleaseTransportDIB(TransportDIB* mem) {
-  if (PutSharedMemInCache(mem)) {
-    shared_mem_cache_cleaner_.Reset();
-    return;
-  }
-
-  FreeTransportDIB(mem);
-}
-
-bool RenderProcessImpl::GetTransportDIBFromCache(TransportDIB** mem,
-                                             size_t size) {
-  // look for a cached object that is suitable for the requested size.
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
-    if (shared_mem_cache_[i] &&
-        size <= shared_mem_cache_[i]->size()) {
-      *mem = shared_mem_cache_[i];
-      shared_mem_cache_[i] = NULL;
-      return true;
-    }
-  }
-
-  return false;
-}
-
-int RenderProcessImpl::FindFreeCacheSlot(size_t size) {
-  // simple algorithm:
-  //  - look for an empty slot to store mem, or
-  //  - if full, then replace smallest entry which is smaller than |size|
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
-    if (shared_mem_cache_[i] == NULL)
-      return i;
-  }
-
-  size_t smallest_size = size;
-  int smallest_index = -1;
-
-  for (size_t i = 1; i < arraysize(shared_mem_cache_); ++i) {
-    const size_t entry_size = shared_mem_cache_[i]->size();
-    if (entry_size < smallest_size) {
-      smallest_size = entry_size;
-      smallest_index = i;
-    }
-  }
-
-  if (smallest_index != -1) {
-    FreeTransportDIB(shared_mem_cache_[smallest_index]);
-    shared_mem_cache_[smallest_index] = NULL;
-  }
-
-  return smallest_index;
-}
-
-bool RenderProcessImpl::PutSharedMemInCache(TransportDIB* mem) {
-  const int slot = FindFreeCacheSlot(mem->size());
-  if (slot == -1)
-    return false;
-
-  shared_mem_cache_[slot] = mem;
-  return true;
-}
-
-void RenderProcessImpl::ClearTransportDIBCache() {
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
-    if (shared_mem_cache_[i]) {
-      FreeTransportDIB(shared_mem_cache_[i]);
-      shared_mem_cache_[i] = NULL;
-    }
-  }
 }
 
 }  // namespace content

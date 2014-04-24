@@ -21,44 +21,10 @@ class RenderProcessImpl : public RenderProcess {
   virtual ~RenderProcessImpl();
 
   // RenderProcess implementation.
-  virtual SkCanvas* GetDrawingCanvas(
-      TransportDIB** memory,
-      const gfx::Rect& rect) OVERRIDE;
-  virtual void ReleaseTransportDIB(TransportDIB* memory) OVERRIDE;
   virtual void AddBindings(int bindings) OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
-  virtual TransportDIB* CreateTransportDIB(size_t size) OVERRIDE;
-  virtual void FreeTransportDIB(TransportDIB*) OVERRIDE;
 
  private:
-  // Look in the shared memory cache for a suitable object to reuse.
-  //   result: (output) the memory found
-  //   size: the resulting memory will be >= this size, in bytes
-  //   returns: false if a suitable DIB memory could not be found
-  bool GetTransportDIBFromCache(TransportDIB** result, size_t size);
-
-  // Maybe put the given shared memory into the shared memory cache. Returns
-  // true if the SharedMemory object was stored in the cache; otherwise, false
-  // is returned.
-  bool PutSharedMemInCache(TransportDIB* memory);
-
-  void ClearTransportDIBCache();
-
-  // Return the index of a free cache slot in which to install a transport DIB
-  // of the given size. If all entries in the cache are larger than the given
-  // size, this doesn't free any slots and returns -1.
-  int FindFreeCacheSlot(size_t size);
-
-  // A very simplistic and small cache.  If an entry in this array is non-null,
-  // then it points to a SharedMemory object that is available for reuse.
-  TransportDIB* shared_mem_cache_[2];
-
-  // This DelayTimer cleans up our cache 5 seconds after the last use.
-  base::DelayTimer<RenderProcessImpl> shared_mem_cache_cleaner_;
-
-  // TransportDIB sequence number
-  uint32 transport_dib_next_sequence_number_;
-
   // Bitwise-ORed set of extra bindings that have been enabled anywhere in this
   // process.  See BindingsPolicy for details.
   int enabled_bindings_;

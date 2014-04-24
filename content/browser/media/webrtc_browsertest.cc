@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/browser/media/webrtc_internals.h"

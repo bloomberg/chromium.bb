@@ -134,11 +134,6 @@ class RenderWidgetHelper
   // created by CreateNewWindow which initially blocked the requests.
   void ResumeRequestsForView(int route_id);
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // Given the id of a transport DIB, return a mapping to it or NULL on error.
-  TransportDIB* MapTransportDIB(TransportDIB::Id dib_id);
-#endif
-
   // IO THREAD ONLY -----------------------------------------------------------
 
   // Called on the IO thread when a BackingStore message is received.

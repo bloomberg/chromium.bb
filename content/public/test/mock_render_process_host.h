@@ -13,7 +13,6 @@
 #include "ipc/ipc_test_sink.h"
 
 class StoragePartition;
-class TransportDIB;
 
 namespace content {
 
@@ -55,8 +54,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool FastShutdownStarted() const OVERRIDE;
   virtual void DumpHandles() OVERRIDE;
   virtual base::ProcessHandle GetHandle() const OVERRIDE;
-  virtual TransportDIB* MapTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
   virtual int GetID() const OVERRIDE;
   virtual bool HasConnection() const OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
@@ -107,7 +104,6 @@ class MockRenderProcessHost : public RenderProcessHost {
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
-  TransportDIB* transport_dib_;
   int bad_msg_count_;
   const MockRenderProcessHostFactory* factory_;
   int id_;
