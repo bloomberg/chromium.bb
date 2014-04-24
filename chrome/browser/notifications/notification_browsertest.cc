@@ -762,7 +762,14 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
   ASSERT_EQ(1, GetNotificationCount());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
+// See http://crbug.com/366539
+#if defined(OS_LINUX)
+#define MAYBE_TestNotificationReplacement DISABLED_TestNotificationReplacement
+#else
+#define MAYBE_TestNotificationReplacement TestNotificationReplacement
+#endif
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, MAYBE_TestNotificationReplacement) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Test that we can replace a notification using the replaceId.
