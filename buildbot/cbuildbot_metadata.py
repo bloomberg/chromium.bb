@@ -21,7 +21,6 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import parallel
-from chromite.lib import toolchain
 
 # Number of parallel processes used when uploading/downloading GS files.
 MAX_PARALLEL = 40
@@ -180,9 +179,6 @@ class CBuildbotMetadata(object):
     current_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=current_time)
     duration = '%s' % (current_time - start_time,)
 
-    sdk_verinfo = cros_build_lib.LoadKeyValueFile(
-        os.path.join(build_root, constants.SDK_VERSION_FILE),
-        ignore_missing=True)
     verinfo = builder_run.GetVersionInfo(build_root)
     platform_tag = getattr(builder_run.attrs, 'release_tag')
     if not platform_tag:
@@ -204,17 +200,7 @@ class CBuildbotMetadata(object):
             'milestone': verinfo.chrome_branch,
             'platform': platform_tag,
         },
-        # Data for the toolchain used.
-        'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
-        'toolchain-url': sdk_verinfo.get('TC_PATH', '<unknown>'),
     }
-    if len(config['boards']) == 1:
-      toolchains = toolchain.GetToolchainsForBoard(config['boards'][0],
-                                                   buildroot=build_root)
-      metadata['toolchain-tuple'] = (
-          toolchain.FilterToolchains(toolchains, 'default', True).keys() +
-          toolchain.FilterToolchains(toolchains, 'default', False).keys())
-
     metadata['results'] = []
     for entry in results_lib.Results.Get():
       timestr = datetime.timedelta(seconds=math.ceil(entry.time))

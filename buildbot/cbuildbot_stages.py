@@ -42,6 +42,7 @@ from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.lib import toolchain
 
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
@@ -4224,12 +4225,18 @@ class ReportBuildStartStage(bs.BuilderStage, ArchivingStageMixin):
 
   def PerformStage(self):
     config = self._run.config
+    build_root = self._build_root
 
     # Flat list of all child config boards. Since child configs
     # are not allowed to have children, it is not necessary to search
     # deeper than one generation.
     child_configs = [{'name': c['name'], 'boards' : c['boards']}
                      for c in config['child_configs']]
+
+    sdk_verinfo = cros_build_lib.LoadKeyValueFile(
+        os.path.join(build_root, constants.SDK_VERSION_FILE),
+        ignore_missing=True)
+
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
@@ -4239,8 +4246,19 @@ class ReportBuildStartStage(bs.BuilderStage, ArchivingStageMixin):
         'boards': config['boards'],
         'build-number': self._run.buildnumber,
         'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
-        'child-configs': child_configs
+        'child-configs': child_configs,
+
+        # Data for the toolchain used.
+        'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
+        'toolchain-url': sdk_verinfo.get('TC_PATH', '<unknown>'),
     }
+
+    if len(config['boards']) == 1:
+      toolchains = toolchain.GetToolchainsForBoard(config['boards'][0],
+                                                   buildroot=build_root)
+      metadata['toolchain-tuple'] = (
+          toolchain.FilterToolchains(toolchains, 'default', True).keys() +
+          toolchain.FilterToolchains(toolchains, 'default', False).keys())
 
     logging.info('Metadata being written: %s', metadata)
     self._run.attrs.metadata.UpdateWithDict(metadata)
