@@ -365,6 +365,11 @@ bool Resource::unlock()
     return true;
 }
 
+bool Resource::hasRightHandleCountApartFromCache(unsigned targetCount) const
+{
+    return m_handleCount == targetCount + (memoryCache()->contains(this) ? 1 : 0);
+}
+
 void Resource::responseReceived(const ResourceResponse& response)
 {
     setResponse(response);
@@ -402,6 +407,17 @@ void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t s
     m_cachedMetadata = CachedMetadata::create(dataTypeID, data, size);
     const Vector<char>& serializedData = m_cachedMetadata->serialize();
     blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
+}
+
+bool Resource::canDelete() const
+{
+    return !hasClients() && !m_loader && !m_preloadCount && hasRightHandleCountApartFromCache(0)
+        && !m_protectorCount && !m_resourceToRevalidate && !m_proxyResource;
+}
+
+bool Resource::hasOneHandle() const
+{
+    return hasRightHandleCountApartFromCache(1);
 }
 
 CachedMetadata* Resource::cachedMetadata(unsigned dataTypeID) const
@@ -739,11 +755,6 @@ void Resource::revalidationFailed()
     clearResourceToRevalidate();
 }
 
-bool Resource::hasOneHandle() const
-{
-    return m_handleCount == 1 || (memoryCache()->contains(this) && m_handleCount == 2);
-}
-
 void Resource::registerHandle(ResourcePtrBase* h)
 {
     assertAlive();
@@ -767,6 +778,8 @@ void Resource::unregisterHandle(ResourcePtrBase* h)
         unlock();
     } else if (m_handleCount == 1 && memoryCache()->contains(this)) {
         unlock();
+        if (!hasClients())
+            memoryCache()->prune(this);
     }
 }
 

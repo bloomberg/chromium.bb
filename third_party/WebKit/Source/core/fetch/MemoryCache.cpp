@@ -233,10 +233,14 @@ void MemoryCache::pruneDeadResources()
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
-            if (current->m_resource->wasPurged()) {
+            // Main Resources in the cache are only substitue data that was
+            // precached and should not be evicted.
+            if (current->m_resource->wasPurged() && current->m_resource->canDelete()
+                && current->m_resource->type() != Resource::MainResource) {
                 ASSERT(!current->m_resource->hasClients());
                 ASSERT(!current->m_resource->isPreloaded());
-                evict(current);
+                bool wasEvicted = evict(current);
+                ASSERT_UNUSED(wasEvicted, wasEvicted);
             }
             current = previous;
         }
@@ -275,8 +279,13 @@ void MemoryCache::pruneDeadResources()
         while (current) {
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
             ASSERT(!previous || contains(previous->m_resource.get()));
-            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded() && !current->m_resource->isCacheValidator()) {
-                evict(current);
+            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded()
+                && !current->m_resource->isCacheValidator() && current->m_resource->canDelete()
+                && current->m_resource->type() != Resource::MainResource) {
+                // Main Resources in the cache are only substitue data that was
+                // precached and should not be evicted.
+                bool wasEvicted = evict(current);
+                ASSERT_UNUSED(wasEvicted, wasEvicted);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
             }
@@ -310,13 +319,19 @@ bool MemoryCache::evict(MemoryCacheEntry* entry)
     ASSERT(WTF::isMainThread());
 
     Resource* resource = entry->m_resource.get();
+    bool canDelete = resource->canDelete();
     WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().string().latin1().data());
     // The resource may have already been removed by someone other than our caller,
     // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
     update(resource, resource->size(), 0, false);
     removeFromLiveDecodedResourcesList(entry);
-    m_resources.remove(resource->url());
-    return resource->deleteIfPossible();
+
+    ResourceMap::iterator it = m_resources.find(resource->url());
+    ASSERT(it != m_resources.end());
+    OwnPtr<MemoryCacheEntry> entryPtr;
+    entryPtr.swap(it->value);
+    m_resources.remove(it);
+    return canDelete;
 }
 
 MemoryCache::LRUList* MemoryCache::lruListFor(unsigned accessCount, size_t size)
@@ -630,7 +645,9 @@ void MemoryCache::prune(Resource* justReleasedResource)
         // objects O(N^2) if we pruned immediately. This immediate eviction is a
         // safeguard against runaway memory consumption by dead resources
         // while a prune is pending.
-        if (contains(justReleasedResource))
+        // Main Resources in the cache are only substitue data that was
+        // precached and should not be evicted.
+        if (contains(justReleasedResource) && justReleasedResource->type() != Resource::MainResource)
             evict(m_resources.get(justReleasedResource->url()));
 
         // As a last resort, prune immediately
