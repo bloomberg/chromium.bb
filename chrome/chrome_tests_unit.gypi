@@ -2142,6 +2142,7 @@
         }],
         ['chromeos==0', {
           'sources!': [
+            'browser/extensions/image_loader_unittest.cc',
             # TODO(zturner): Enable this on Windows.  See
             # BrowserWithTestWindowTest::SetUp() for a comment explaining why
             # this is broken.
