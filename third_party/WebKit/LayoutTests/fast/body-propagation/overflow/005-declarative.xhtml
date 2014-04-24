@@ -8,6 +8,11 @@
    .filler { color:gray; }
   </style>
  </head>
+ <script>
+  if (window.internals) {
+      window.internals.settings.setForceCompositingMode(true);
+  }
+ </script>
  <body xmlns="urn:foo:bogus"/><body>
   <p>There should be scrollbars for the viewport -- not for this box. (Additionally, there should be a box above that does have scrollbars.)</p>
   <p class="filler">This is filler text.</p>

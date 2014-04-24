@@ -13,6 +13,9 @@
      document.documentElement.insertBefore(newElm, document.getElementsByTagName("body")[0]);
      document.getElementsByTagName("p")[0].firstChild.data = "There should be scrollbars for the viewport -- not for this box. (Additionally, there should be a box above that does have scrollbars.)";
    }
+   if (window.internals) {
+     window.internals.settings.setForceCompositingMode(true);
+   }
   </script>
  </head>
  <body>

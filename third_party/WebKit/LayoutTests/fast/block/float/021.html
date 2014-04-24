@@ -36,6 +36,11 @@
   background-color: green;
 }
 </style>
+<script>
+if (window.internals) {
+    window.internals.settings.setForceCompositingMode(true);
+}
+</script>
 </head>
 <body >
 In all of the examples, you should be able to see blue and green rectangles that spill way out of their

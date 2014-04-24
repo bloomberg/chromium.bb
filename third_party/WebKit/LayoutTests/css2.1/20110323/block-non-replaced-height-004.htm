@@ -34,6 +34,11 @@
             }
         </style>
     </head>
+    <script>
+    if (window.internals) {
+        window.internals.settings.setForceCompositingMode(true);
+    }
+    </script>
     <body>
         <p>Test passes if the blue and orange boxes below are the same height.</p>
         <div>

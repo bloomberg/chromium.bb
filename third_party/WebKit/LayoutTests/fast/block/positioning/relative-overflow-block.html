@@ -1,4 +1,9 @@
 <html>
+<script>
+if (window.internals) {
+    window.internals.settings.setForceCompositingMode(true);
+}
+</script>
 <body>
 Document canvas should be big enough to fit both blue and red (relative positioned) rectangles (ie. have scrollbars if they don't fit to the view)
 <div style="width: 500px; height: 500px; position: absolute; border: 2px solid blue;">
