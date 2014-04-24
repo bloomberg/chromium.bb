@@ -5,7 +5,6 @@
 #include "mojo/shell/context.h"
 
 #include "base/command_line.h"
-#include "build/build_config.h"
 #include "mojo/embedder/embedder.h"
 #include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/service_manager/service_loader.h"
@@ -17,10 +16,6 @@
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
 #include "mojo/shell/switches.h"
 #include "mojo/spy/spy.h"
-
-#if defined(OS_LINUX)
-#include "mojo/shell/dbus_service_loader_linux.h"
-#endif  // defined(OS_LINUX)
 
 namespace mojo {
 namespace shell {
@@ -70,12 +65,6 @@ Context::Context()
   service_manager_.SetLoaderForURL(
       scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
       GURL("mojo:mojo_native_viewport_service"));
-
-#if defined(OS_LINUX)
-  service_manager_.SetLoaderForScheme(
-      scoped_ptr<ServiceLoader>(new DBusServiceLoader(this)),
-      "dbus");
-#endif  // defined(OS_LINUX)
 
   if (cmdline->HasSwitch(switches::kSpy)) {
     spy_.reset(new mojo::Spy(&service_manager_,

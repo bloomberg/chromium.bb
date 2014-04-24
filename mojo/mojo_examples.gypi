@@ -297,25 +297,5 @@
         },
       ],
     }],
-    ['OS=="linux"', {
-      'targets': [
-        {
-          'target_name': 'mojo_dbus_echo',
-          'type': 'shared_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            'mojo_bindings',
-            'mojo_environment_standalone',
-            'mojo_echo_bindings',
-            'mojo_shell_client',
-            'mojo_system',
-            'mojo_utility',
-          ],
-          'sources': [
-            'examples/dbus_echo/dbus_echo_app.cc',
-          ],
-        },
-      ],
-    }],
   ],
 }
