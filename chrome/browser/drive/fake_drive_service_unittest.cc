@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
@@ -23,9 +24,9 @@
 
 using google_apis::AboutResource;
 using google_apis::AppList;
-using google_apis::GDataErrorCode;
 using google_apis::GDATA_NO_CONNECTION;
 using google_apis::GDATA_OTHER_ERROR;
+using google_apis::GDataErrorCode;
 using google_apis::GetContentCallback;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_NOT_FOUND;
@@ -38,9 +39,18 @@ using google_apis::ProgressCallback;
 using google_apis::ResourceEntry;
 using google_apis::ResourceList;
 using google_apis::UploadRangeResponse;
-namespace test_util = google_apis::test_util;
 
 namespace drive {
+
+namespace test_util {
+
+using google_apis::test_util::AppendProgressCallbackResult;
+using google_apis::test_util::CreateCopyResultCallback;
+using google_apis::test_util::ProgressInfo;
+using google_apis::test_util::TestGetContentCallback;
+using google_apis::test_util::WriteStringToFile;
+
+}  // namespace test_util
 
 namespace {
 
@@ -107,8 +117,7 @@ class FakeDriveServiceTest : public testing::Test {
 };
 
 TEST_F(FakeDriveServiceTest, GetAllResourceList) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -124,8 +133,7 @@ TEST_F(FakeDriveServiceTest, GetAllResourceList) {
 }
 
 TEST_F(FakeDriveServiceTest, GetAllResourceList_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -139,8 +147,7 @@ TEST_F(FakeDriveServiceTest, GetAllResourceList_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -157,8 +164,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InNonRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -176,8 +182,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InNonRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -192,8 +197,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, Search) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -210,8 +214,7 @@ TEST_F(FakeDriveServiceTest, Search) {
 }
 
 TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -228,8 +231,7 @@ TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
 }
 
 TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -255,8 +257,7 @@ TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
 }
 
 TEST_F(FakeDriveServiceTest, Search_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -271,8 +272,7 @@ TEST_F(FakeDriveServiceTest, Search_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, Search_Deleted) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource("file:2_file_resource_id",
@@ -296,8 +296,7 @@ TEST_F(FakeDriveServiceTest, Search_Deleted) {
 }
 
 TEST_F(FakeDriveServiceTest, Search_Trashed) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:2_file_resource_id",
@@ -320,8 +319,7 @@ TEST_F(FakeDriveServiceTest, Search_Trashed) {
 }
 
 TEST_F(FakeDriveServiceTest, SearchByTitle) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -339,8 +337,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle) {
 }
 
 TEST_F(FakeDriveServiceTest, SearchByTitle_EmptyDirectoryResourceId) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -358,8 +355,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_EmptyDirectoryResourceId) {
 }
 
 TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -375,8 +371,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
@@ -397,8 +392,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
@@ -425,8 +419,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -441,8 +434,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
@@ -477,8 +469,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
@@ -511,8 +502,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
 }
 
 TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetAllResourceList) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(6);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -570,8 +560,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetAllResourceList) {
 
 TEST_F(FakeDriveServiceTest,
        GetRemainingFileList_GetResourceListInDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(3);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -629,8 +618,7 @@ TEST_F(FakeDriveServiceTest,
 }
 
 TEST_F(FakeDriveServiceTest, GetRemainingFileList_Search) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(2);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -668,8 +656,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_Search) {
 }
 
 TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(2);
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
@@ -796,8 +783,7 @@ TEST_F(FakeDriveServiceTest, GetAppList_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceEntry_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -814,8 +800,7 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceEntry_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:nonexisting_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -830,8 +815,7 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceEntry_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "file:2_file_resource_id";
@@ -847,8 +831,7 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, GetShareUrl) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -864,8 +847,7 @@ TEST_F(FakeDriveServiceTest, GetShareUrl) {
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   // Resource "file:2_file_resource_id" should now exist.
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
@@ -890,8 +872,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource("file:nonexisting_resource_id",
@@ -903,8 +884,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_ETagMatch) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   // Resource "file:2_file_resource_id" should now exist.
   scoped_ptr<ResourceEntry> entry = FindEntry("file:2_file_resource_id");
@@ -933,8 +913,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ETagMatch) {
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -947,8 +926,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   // Resource "file:2_file_resource_id" should now exist.
   ASSERT_TRUE(Exists("file:2_file_resource_id"));
@@ -971,8 +949,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, TrashResource_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.TrashResource("file:nonexisting_resource_id",
@@ -983,8 +960,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, TrashResource_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -996,8 +972,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -1032,8 +1007,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -1054,8 +1028,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   base::ScopedTempDir temp_dir;
@@ -1079,8 +1052,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
 TEST_F(FakeDriveServiceTest, CopyResource) {
   const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
 
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1111,8 +1083,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
 }
 
 TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "document:nonexisting_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1129,8 +1100,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
 }
 
 TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1158,8 +1128,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
 }
 
 TEST_F(FakeDriveServiceTest, CopyResource_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "file:2_file_resource_id";
@@ -1181,8 +1150,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
   const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
   const base::Time::Exploded kViewedDate = {2013, 8, 1, 20, 16, 00, 14, 234};
 
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1216,8 +1184,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
 }
 
 TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "document:nonexisting_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1235,8 +1202,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
 }
 
 TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1269,8 +1235,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
 }
 
 TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "file:2_file_resource_id";
@@ -1290,8 +1255,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1315,8 +1279,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:nonexisting_file";
 
@@ -1330,8 +1293,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "file:2_file_resource_id";
@@ -1346,8 +1308,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1378,8 +1339,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1410,8 +1370,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:nonexisting_file";
   const std::string kNewParentResourceId = "folder:1_folder_resource_id";
@@ -1427,8 +1386,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1458,8 +1416,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "file:2_file_resource_id";
@@ -1476,8 +1433,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1512,8 +1468,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:nonexisting_file";
   const std::string kParentResourceId = "folder:1_folder_resource_id";
@@ -1529,8 +1484,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_OrphanFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:1_orphanfile_resource_id";
   const std::string kParentResourceId = fake_service_.GetRootResourceId();
@@ -1546,8 +1500,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_OrphanFile) {
 }
 
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "file:subdirectory_file_1_id";
@@ -1564,8 +1517,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1592,8 +1544,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1645,8 +1596,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -1674,8 +1624,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kParentResourceId = "folder:nonexisting_resource_id";
 
@@ -1693,8 +1642,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1711,8 +1659,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1731,8 +1678,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -1750,8 +1696,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -1771,8 +1716,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1790,8 +1734,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -1808,8 +1751,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   FakeDriveService::InitiateUploadExistingFileOptions options;
   options.etag = "invalid_etag";
@@ -1829,11 +1771,13 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
 }
 
 TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+
+  scoped_ptr<ResourceEntry> entry = FindEntry("file:2_file_resource_id");
+  ASSERT_TRUE(entry);
 
   FakeDriveService::InitiateUploadExistingFileOptions options;
-  options.etag = "\"HhMOFgxXHit7ImBr\"";
+  options.etag = entry->etag();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -1850,8 +1794,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -1886,8 +1829,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -1924,11 +1866,13 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   std::string contents("hogefugapiyo");
   ASSERT_TRUE(test_util::WriteStringToFile(local_file_path, contents));
 
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+
+  scoped_ptr<ResourceEntry> entry = FindEntry("file:2_file_resource_id");
+  ASSERT_TRUE(entry);
 
   FakeDriveService::InitiateUploadExistingFileOptions options;
-  options.etag = "\"HhMOFgxXHit7ImBr\"";
+  options.etag = entry->etag();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -1943,7 +1887,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   ASSERT_EQ(HTTP_SUCCESS, error);
 
   UploadRangeResponse response;
-  scoped_ptr<ResourceEntry> entry;
+  entry.reset();
   std::vector<test_util::ProgressInfo> upload_progress_values;
   fake_service_.ResumeUpload(
       upload_location,
@@ -1993,8 +1937,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   std::string contents("hogefugapiyo");
   ASSERT_TRUE(test_util::WriteStringToFile(local_file_path, contents));
 
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
@@ -2055,8 +1998,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -2128,8 +2070,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
@@ -2166,8 +2107,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";
@@ -2190,8 +2130,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kContentType = "text/plain";
@@ -2214,8 +2153,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";
@@ -2254,8 +2192,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
 }
 
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:2_file_resource_id";
   base::Time time;
@@ -2275,8 +2212,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_NonexistingFile) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   const std::string kResourceId = "file:nonexisting_resource_id";
   base::Time time;
@@ -2295,8 +2231,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_NonexistingFile) {
 }
 
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_Offline) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "gdata/root_feed.json"));
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
   const std::string kResourceId = "file:2_file_resource_id";

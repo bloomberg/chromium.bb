@@ -173,7 +173,8 @@ FakeDriveService::FakeDriveService()
       app_list_load_count_(0),
       blocked_resource_list_load_count_(0),
       offline_(false),
-      never_return_all_resource_list_(false) {
+      never_return_all_resource_list_(false),
+      share_url_base_("https://share_url/") {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   about_resource_->set_largest_change_id(654321);
