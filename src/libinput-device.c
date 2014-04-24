@@ -147,6 +147,9 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 	uint32_t time;
 	int32_t slot;
 
+	if (!device->output)
+		return;
+
 	time = libinput_event_touch_get_time(touch_event);
 	slot = libinput_event_touch_get_seat_slot(touch_event);
 
