@@ -55,7 +55,6 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
       worker_route_id_(worker_route_id),
       load_failed_(false),
       closed_(false),
-      fast_shutdown_detected_(false),
       creation_time_(base::TimeTicks::Now()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
@@ -79,17 +78,11 @@ SharedWorkerHost::~SharedWorkerHost() {
                                          parent_iter->render_frame_id()));
     }
   }
-  // If |fast_shutdown_detected_| is true,
-  // SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed was already
-  // called when the fast shutdown was detected while SharedWorkerServiceImpl
-  // was reserving the rendere process.
-  if (!fast_shutdown_detected_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
-            &NotifyWorkerDestroyedOnUI, worker_process_id_, worker_route_id_));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &NotifyWorkerDestroyedOnUI, worker_process_id_, worker_route_id_));
   SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
       worker_process_id_, worker_route_id_);
 }
