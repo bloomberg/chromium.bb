@@ -50,6 +50,7 @@ enum WebCryptoKeyUsage {
     WebCryptoKeyUsageDeriveKey = 1 << 4,
     WebCryptoKeyUsageWrapKey = 1 << 5,
     WebCryptoKeyUsageUnwrapKey = 1 << 6,
+    WebCryptoKeyUsageDeriveBits = 1 << 7,
 #if INSIDE_BLINK
     EndOfWebCryptoKeyUsage,
 #endif

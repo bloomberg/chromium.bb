@@ -51,6 +51,7 @@ enum AlgorithmOperation {
     GenerateKey,
     ImportKey,
     DeriveKey,
+    DeriveBits,
     WrapKey,
     UnwrapKey,
     // <---- End of list (keep this up-to-date)

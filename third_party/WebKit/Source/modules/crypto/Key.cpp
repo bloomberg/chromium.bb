@@ -69,11 +69,12 @@ const KeyUsageMapping keyUsageMappings[] = {
     { blink::WebCryptoKeyUsageSign, "sign" },
     { blink::WebCryptoKeyUsageVerify, "verify" },
     { blink::WebCryptoKeyUsageDeriveKey, "deriveKey" },
+    { blink::WebCryptoKeyUsageDeriveBits, "deriveBits" },
     { blink::WebCryptoKeyUsageWrapKey, "wrapKey" },
     { blink::WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
 };
 
-COMPILE_ASSERT(blink::EndOfWebCryptoKeyUsage == (1 << 6) + 1, update_keyUsageMappings);
+COMPILE_ASSERT(blink::EndOfWebCryptoKeyUsage == (1 << 7) + 1, update_keyUsageMappings);
 
 const char* keyUsageToString(blink::WebCryptoKeyUsage usage)
 {
@@ -107,6 +108,8 @@ blink::WebCryptoKeyUsageMask toKeyUsage(AlgorithmOperation operation)
         return blink::WebCryptoKeyUsageVerify;
     case DeriveKey:
         return blink::WebCryptoKeyUsageDeriveKey;
+    case DeriveBits:
+        return blink::WebCryptoKeyUsageDeriveBits;
     case WrapKey:
         return blink::WebCryptoKeyUsageWrapKey;
     case UnwrapKey:
