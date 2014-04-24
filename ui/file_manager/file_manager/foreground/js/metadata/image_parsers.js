@@ -136,31 +136,43 @@ WebpParser.prototype.parseHeader = function(metadata, br) {
     throw new Error('Invalid WEBP signature: ' + webpSignature);
 
   var chunkFormat = br.readString(4);
-  if (chunkFormat != 'VP8 ' && chunkFormat != 'VP8L')
-    throw new Error('Invalid chunk format: ' + chunkFormat);
-
-  if (chunkFormat == 'VP8 ') {
+  switch (chunkFormat) {
     // VP8 lossy bitstream format.
-    br.seek(23);
-    var lossySignature = br.readScalar(2) | (br.readScalar(1) << 16);
-    if (lossySignature != 0x2a019d)
-      throw new Error('Invalid VP8 lossy bitstream signature: ' +
-        lossySignature);
+    case 'VP8 ':
+      br.seek(23);
+      var lossySignature = br.readScalar(2) | (br.readScalar(1) << 16);
+      if (lossySignature != 0x2a019d) {
+        throw new Error('Invalid VP8 lossy bitstream signature: ' +
+          lossySignature);
+      }
+      var dimensionBits = br.readScalar(4);
+      metadata.width = dimensionBits & 0x3fff;
+      metadata.height = (dimensionBits >> 16) & 0x3fff;
+      break;
 
-    var dimensionBits = br.readScalar(4);
-    metadata.width = dimensionBits & 0x3fff;
-    metadata.height = (dimensionBits >> 16) & 0x3fff;
-  } else {
     // VP8 lossless bitstream format.
-    br.seek(20);
-    var losslessSignature = br.readScalar(1);
-    if (losslessSignature != 0x2f)
-      throw new Error('Invalid VP8 lossless bitstream signature: ' +
-        losslessSignature);
+    case 'VP8L':
+      br.seek(20);
+      var losslessSignature = br.readScalar(1);
+      if (losslessSignature != 0x2f) {
+        throw new Error('Invalid VP8 lossless bitstream signature: ' +
+          losslessSignature);
+      }
+      var dimensionBits = br.readScalar(4);
+      metadata.width = (dimensionBits & 0x3fff) + 1;
+      metadata.height = ((dimensionBits >> 14) & 0x3fff) + 1;
+      break;
 
-    var dimensionBits = br.readScalar(4);
-    metadata.width = (dimensionBits & 0x3fff) + 1;
-    metadata.height = ((dimensionBits >> 14) & 0x3fff) + 1;
+    // VP8 extended file format.
+    case 'VP8X':
+      br.seek(20);
+      // Read 24-bit value. ECMAScript assures left-to-right evaluation order.
+      metadata.width = (br.readScalar(2) | (br.readScalar(1) << 16)) + 1;
+      metadata.height = (br.readScalar(2) | (br.readScalar(1) << 16)) + 1;
+      break;
+
+    default:
+      throw new Error('Invalid chunk format: ' + chunkFormat);
   }
 };
 
