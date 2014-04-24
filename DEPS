@@ -256,7 +256,7 @@ deps = {
     (Var("googlecode_url") % "libyuv") + "/trunk@1000",
 
   "src/third_party/smhasher/src":
-    (Var("googlecode_url") % "smhasher") + "/trunk@151",
+    (Var("googlecode_url") % "smhasher") + "/trunk@152",
 
   "src/third_party/libaddressinput/src/cpp":
     (Var("googlecode_url") % "libaddressinput") + "/trunk/cpp@" +
