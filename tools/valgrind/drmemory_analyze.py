@@ -122,9 +122,13 @@ class DrMemoryAnalyzer:
         self.ReadLine()
         while self.line_.strip() != "":
           line = self.line_.strip()
-          (count, name) = re.match(" *([0-9]+)x(?: \(leaked .*\))?: (.*)",
+          (count, name) = re.match(" *([0-9\?]+)x(?: \(.*?\))?: (.*)",
                                    line).groups()
-          count = int(count)
+          if (count == "?"):
+            # Whole-module have no count available: assume 1
+            count = 1
+          else:
+            count = int(count)
           self.used_suppressions[name] += count
           self.ReadLine()
 

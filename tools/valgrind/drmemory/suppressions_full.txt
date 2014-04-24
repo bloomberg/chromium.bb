@@ -586,6 +586,7 @@ name=http://code.google.com/p/drmemory/issues/detail?id=512 b
 ...
 *!Encrypt*
 
+# TODO(bruening): remove these once we have v8 bitfields handled
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=513 a
 *!v8*
@@ -600,6 +601,19 @@ name=http://code.google.com/p/drmemory/issues/detail?id=513 c
 <not in a module>
 ...
 *!v8*
+
+# We have seen some cases (not yet understood: crbug.com/364146) where v8.dll
+# has no symbols.  These are all on the bots using component build, so we use
+# v8.dll.  TODO(bruening): remove these once we've fixed the symbol issue.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=513 d
+v8.dll!*
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=513 e
+<not in a module>
+...
+v8.dll!*
 
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=546
@@ -2001,8 +2015,16 @@ content.dll!content::BrowserAccessibilityManagerWin::*
 ...
 *!*::UpdateNode
 
+# There are so many osmesa errors we have to suppress (mostly the unpack_RGB*
+# variety) that it's a performance hit.  We avoid that by requesting
+# whole-module suppression
+# (see https://code.google.com/p/drmemory/issues/detail?id=1529).
 UNINITIALIZED READ
-name=bug_347976
+name=bug_347967_all_osmesa
+osmesa.dll!*
+
+UNINITIALIZED READ
+name=bug_347967
 osmesa.dll!unpack_RGB*888
 osmesa.dll!_mesa_unpack_rgba_row
 osmesa.dll!slow_read_rgba_pixels
@@ -2014,7 +2036,7 @@ gpu.dll!gpu::CommandParser::ProcessCommand
 gpu.dll!gpu::GpuScheduler::PutChanged
 
 UNINITIALIZED READ
-name=bug_347976,bug_348357
+name=bug_347967,bug_348357
 osmesa.dll!clip_span
 osmesa.dll!_swrast_write_rgba_span
 osmesa.dll!general_triangle
