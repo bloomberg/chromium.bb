@@ -304,4 +304,4 @@ content::BrowserContext* AppWindowRegistry::Factory::GetBrowserContextToUse(
       context);
 }
 
-}  // namespace extensions
+}  // namespace apps

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_APP_WINDOW_CONTENTS_H_
-#define CHROME_BROWSER_EXTENSIONS_APP_WINDOW_CONTENTS_H_
+#ifndef APPS_APP_WINDOW_CONTENTS_H_
+#define APPS_APP_WINDOW_CONTENTS_H_
 
 #include <vector>
 
@@ -77,4 +77,4 @@ class AppWindowContentsImpl
 
 }  // namespace apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_APP_WINDOW_CONTENTS_H_
+#endif  // APPS_APP_WINDOW_CONTENTS_H_

@@ -37,6 +37,6 @@ bool UserMayModifySettings(const Extension* extension, base::string16* error);
 bool MustRemainEnabled(const Extension* extension, base::string16* error);
 
 }  // namespace
-}  // namespace
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_ADMIN_POLICY_H_

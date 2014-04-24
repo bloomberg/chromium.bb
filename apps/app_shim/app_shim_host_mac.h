@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MAC_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MAC_H_
+#ifndef APPS_APP_SHIM_APP_SHIM_HOST_MAC_H_
+#define APPS_APP_SHIM_APP_SHIM_HOST_MAC_H_
 
 #include <string>
 #include <vector>
@@ -82,4 +82,4 @@ class AppShimHost : public IPC::Listener,
   bool initial_launch_finished_;
 };
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MAC_H_
+#endif  // APPS_APP_SHIM_APP_SHIM_HOST_MAC_H_

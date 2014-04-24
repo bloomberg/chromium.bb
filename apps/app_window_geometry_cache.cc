@@ -150,7 +150,6 @@ bool AppWindowGeometryCache::GetGeometry(const std::string& extension_id,
                                          gfx::Rect* bounds,
                                          gfx::Rect* screen_bounds,
                                          ui::WindowShowState* window_state) {
-
   std::map<std::string, ExtensionData>::const_iterator extension_data_it =
       cache_.find(extension_id);
 

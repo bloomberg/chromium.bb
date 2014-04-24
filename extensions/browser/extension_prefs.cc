@@ -1915,7 +1915,6 @@ int64 ExtensionPrefs::GetNextStorageThreshold(
 
 void ExtensionPrefs::SetNextStorageThreshold(const std::string& extension_id,
                                              int64 next_threshold) {
-
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
   SaveInt64(update.Get(), kPrefNextStorageThreshold, next_threshold);
 }

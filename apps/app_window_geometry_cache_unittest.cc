@@ -342,4 +342,4 @@ TEST_F(AppWindowGeometryCacheTest, MaxWindows) {
   }
 }
 
-}  // namespace extensions
+}  // namespace apps

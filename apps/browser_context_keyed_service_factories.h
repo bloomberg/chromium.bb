@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_
-#define APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_
+#ifndef APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_H_
+#define APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_H_
 
 namespace apps {
 
@@ -13,4 +13,4 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
 }  // namespace apps
 
-#endif  // APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_
+#endif  // APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_H_

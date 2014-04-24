@@ -113,11 +113,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
     virtual T* Create();
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedUpdate);
-
     DictionaryPrefUpdate update_;
     const std::string extension_id_;
     const std::string key_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedUpdate);
   };
   typedef ScopedUpdate<base::DictionaryValue, base::Value::TYPE_DICTIONARY>
       ScopedDictionaryUpdate;

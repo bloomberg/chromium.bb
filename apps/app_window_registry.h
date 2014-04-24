@@ -142,6 +142,6 @@ class AppWindowRegistry : public KeyedService {
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 };
 
-}  // namespace extensions
+}  // namespace apps
 
 #endif  // APPS_APP_WINDOW_REGISTRY_H_

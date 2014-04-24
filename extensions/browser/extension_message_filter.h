@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_EXTENSION_RENDER_MESSAGE_FILTER_H_
-#define EXTENSIONS_BROWSER_EXTENSION_RENDER_MESSAGE_FILTER_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_MESSAGE_FILTER_H_
+#define EXTENSIONS_BROWSER_EXTENSION_MESSAGE_FILTER_H_
 
 #include <string>
 
@@ -88,4 +88,4 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_EXTENSION_RENDER_MESSAGE_FILTER_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_MESSAGE_FILTER_H_

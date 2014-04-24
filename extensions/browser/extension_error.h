@@ -84,6 +84,7 @@ class ExtensionError {
   // The number of times this error has occurred.
   size_t occurrences_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionError);
 };
 

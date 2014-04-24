@@ -1033,7 +1033,6 @@ AppWindow::CreateParams AppWindow::LoadDefaults(CreateParams params)
                            &cached_bounds,
                            &cached_screen_bounds,
                            &cached_state)) {
-
       // App window has cached screen bounds, make sure it fits on screen in
       // case the screen resolution changed.
       gfx::Screen* screen = gfx::Screen::GetNativeScreen();

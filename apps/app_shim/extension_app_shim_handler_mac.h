@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_H_
-#define APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_H_
+#ifndef APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
+#define APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
 
 #include <map>
 #include <string>
@@ -144,4 +144,4 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
 }  // namespace apps
 
-#endif  // APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_H_
+#endif  // APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_

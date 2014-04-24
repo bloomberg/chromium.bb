@@ -35,15 +35,16 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
                             content::kStandardSchemeSeparator +
                             extension_id);
 
-  return scoped_ptr<ExtensionError>(new RuntimeError(
-      extension_id,
-      from_incognito,
-      source,
-      base::UTF8ToUTF16(message),
-      stack_trace,
-      GURL::EmptyGURL(),  // no context url
-      logging::LOG_INFO,
-      0, 0 /* Render [View|Process] ID */ ));
+  return scoped_ptr<ExtensionError>(
+      new RuntimeError(extension_id,
+                       from_incognito,
+                       source,
+                       base::UTF8ToUTF16(message),
+                       stack_trace,
+                       GURL::EmptyGURL(),  // no context url
+                       logging::LOG_INFO,
+                       0,
+                       0 /* Render [View|Process] ID */));
 }
 
 scoped_ptr<ExtensionError> CreateNewRuntimeError(
