@@ -80,14 +80,11 @@ public:
     void invalidateRegions();
     bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_regionList.isEmpty(); }
 
-    static PassRefPtr<RenderStyle> createFlowThreadStyle(RenderStyle* parentStyle);
-
     void repaintRectangleInRegions(const LayoutRect&) const;
 
     LayoutPoint adjustedPositionRelativeToOffsetParent(const RenderBoxModelObject&, const LayoutPoint&);
 
     LayoutUnit pageLogicalTopForOffset(LayoutUnit);
-    LayoutUnit pageLogicalWidthForOffset(LayoutUnit);
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule = IncludePageBoundary);
 
@@ -106,9 +103,6 @@ public:
 
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
-
-    bool previousRegionCountChanged() const { return m_previousRegionCount != m_regionList.size(); }
-    void updatePreviousRegionCount() { m_previousRegionCount = m_regionList.size(); }
 
     void setRegionRangeForBox(const RenderBox*, LayoutUnit offsetFromLogicalTopOfFirstPage);
     void getRegionRangeForBox(const RenderBox*, RenderRegion*& startRegion, RenderRegion*& endRegion) const;
@@ -150,7 +144,6 @@ protected:
     const RenderBox* currentStatePusherRenderBox() const;
 
     RenderRegionList m_regionList;
-    unsigned short m_previousRegionCount;
 
     class RenderRegionRange {
     public:

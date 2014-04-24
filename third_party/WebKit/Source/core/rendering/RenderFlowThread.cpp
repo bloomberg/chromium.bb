@@ -47,28 +47,11 @@ namespace WebCore {
 
 RenderFlowThread::RenderFlowThread()
     : RenderBlockFlow(0)
-    , m_previousRegionCount(0)
     , m_regionsInvalidated(false)
     , m_regionsHaveUniformLogicalHeight(true)
     , m_pageLogicalSizeChanged(false)
 {
     setFlowThreadState(InsideOutOfFlowThread);
-}
-
-PassRefPtr<RenderStyle> RenderFlowThread::createFlowThreadStyle(RenderStyle* parentStyle)
-{
-    RefPtr<RenderStyle> newStyle(RenderStyle::create());
-    newStyle->inheritFrom(parentStyle);
-    newStyle->setDisplay(BLOCK);
-    newStyle->setPosition(AbsolutePosition);
-    newStyle->setZIndex(0);
-    newStyle->setLeft(Length(0, Fixed));
-    newStyle->setTop(Length(0, Fixed));
-    newStyle->setWidth(Length(100, Percent));
-    newStyle->setHeight(Length(100, Percent));
-    newStyle->font().update(nullptr);
-
-    return newStyle.release();
 }
 
 void RenderFlowThread::addRegionToThread(RenderRegion* renderRegion)
@@ -314,12 +297,6 @@ LayoutUnit RenderFlowThread::pageLogicalTopForOffset(LayoutUnit offset)
 {
     RenderRegion* region = regionAtBlockOffset(offset);
     return region ? region->pageLogicalTopForOffset(offset) : LayoutUnit();
-}
-
-LayoutUnit RenderFlowThread::pageLogicalWidthForOffset(LayoutUnit offset)
-{
-    RenderRegion* region = regionAtBlockOffset(offset, true);
-    return region ? region->pageLogicalWidth() : contentLogicalWidth();
 }
 
 LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
