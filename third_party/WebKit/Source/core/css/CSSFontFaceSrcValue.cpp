@@ -105,6 +105,9 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document)
         if (shouldSetCrossOriginAccessControl(request.url(), securityOrigin)) {
             request.setCrossOriginAccessControl(securityOrigin, DoNotAllowStoredCredentials);
         }
+        if (!m_referrer.isEmpty())
+            request.mutableResourceRequest().setHTTPReferrer(Referrer(m_referrer, ReferrerPolicyDefault));
+
         m_fetched = document->fetcher()->fetchFont(request);
     }
     return m_fetched.get();
