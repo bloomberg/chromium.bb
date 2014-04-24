@@ -78,8 +78,9 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'webview:android_webview/test/data/device_files'),
     ])
 
-VALID_TESTS = set(['chromedriver', 'gpu', 'ui', 'unit', 'webkit',
-                   'webkit_layout', 'webrtc_chromium', 'webrtc_native'])
+VALID_TESTS = set(['chromedriver', 'gpu', 'telemetry_perf_unittests',
+                   'ui', 'unit', 'webkit', 'webkit_layout', 'webrtc_chromium',
+                   'webrtc_native'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -163,6 +164,21 @@ def RunChromeDriverTests(options):
            'chromedriver_webview_shell'),
           '--revision=%s' % _GetRevision(options),
           '--update-log'])
+
+
+def RunTelemetryPerfUnitTests(options):
+  """Runs the telemetry perf unit tests.
+
+  Args:
+    options: options object.
+  """
+  InstallApk(options, INSTRUMENTATION_TESTS['ChromeShell'], False)
+  args = ['--browser', 'android-chromium-testshell']
+  devices = android_commands.GetAttachedDevices()
+  if devices:
+    args = args + ['--device', devices[0]]
+  bb_annotations.PrintNamedStep('telemetry_perf_unittests')
+  RunCmd(['tools/perf/run_tests'] + args)
 
 
 def InstallApk(options, test, print_step=False):
@@ -481,6 +497,7 @@ def GetTestStepCmds():
   return [
       ('chromedriver', RunChromeDriverTests),
       ('gpu', RunGPUTests),
+      ('telemetry_perf_unittests', RunTelemetryPerfUnitTests),
       ('unit', RunUnitTests),
       ('ui', RunInstrumentationTests),
       ('webkit', RunWebkitTests),

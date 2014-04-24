@@ -119,6 +119,7 @@ def GetBotStepMap():
   std_build_steps = ['compile', 'zip_build']
   std_test_steps = ['extract_build']
   std_tests = ['ui', 'unit']
+  telemetry_tests = ['telemetry_perf_unittests']
   flakiness_server = (
       '--flakiness-server=%s' % constants.UPSTREAM_FLAKINESS_SERVER)
   experimental = ['--experimental']
@@ -138,7 +139,8 @@ def GetBotStepMap():
       B('main-clang-builder',
         H(compile_step, extra_gyp='clang=1 component=shared_library')),
       B('main-clobber', H(compile_step)),
-      B('main-tests', H(std_test_steps), T(std_tests, [flakiness_server])),
+      B('main-tests', H(std_test_steps), T(std_tests + telemetry_tests,
+                                           [flakiness_server])),
 
       # Other waterfalls
       B('asan-builder-tests', H(compile_step,
