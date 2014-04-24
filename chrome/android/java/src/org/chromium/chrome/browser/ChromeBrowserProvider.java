@@ -645,7 +645,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         // then use the synced node (Mobile Bookmarks).
         BookmarkNode lastModified = getBookmarkNode(getLastModifiedBookmarkFolderId(), false, false,
                 false, false);
-        if (lastModified == null) {
+        if (lastModified == null || lastModified.isUrl()) {
             lastModified = getMobileBookmarksFolder();
             mLastModifiedBookmarkFolderId = lastModified != null ? lastModified.id() :
                     INVALID_BOOKMARK_ID;
