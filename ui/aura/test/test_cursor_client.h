@@ -26,6 +26,11 @@ class TestCursorClient : public aura::client::CursorClient {
   int calls_to_set_cursor() const { return calls_to_set_cursor_; }
   void reset_calls_to_set_cursor() { calls_to_set_cursor_ = 0; }
 
+  // Set whether or not to hide cursor on key events.
+  void set_should_hide_cursor_on_key_event(bool hide) {
+    should_hide_cursor_on_key_event_ = hide;
+  }
+
   // Overridden from aura::client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual gfx::NativeCursor GetCursor() const OVERRIDE;
@@ -50,6 +55,7 @@ class TestCursorClient : public aura::client::CursorClient {
 
  private:
   bool visible_;
+  bool should_hide_cursor_on_key_event_;
   bool mouse_events_enabled_;
   int cursor_lock_count_;
   int calls_to_set_cursor_;

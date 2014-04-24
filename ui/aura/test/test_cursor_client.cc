@@ -11,6 +11,7 @@ namespace test {
 
 TestCursorClient::TestCursorClient(aura::Window* root_window)
     : visible_(true),
+      should_hide_cursor_on_key_event_(true),
       mouse_events_enabled_(true),
       cursor_lock_count_(0),
       calls_to_set_cursor_(0),
@@ -94,7 +95,7 @@ void TestCursorClient::RemoveObserver(
 
 bool TestCursorClient::ShouldHideCursorOnKeyEvent(
     const ui::KeyEvent& event) const {
-  return true;
+  return should_hide_cursor_on_key_event_;
 }
 
 }  // namespace test
