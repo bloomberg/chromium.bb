@@ -33,7 +33,6 @@
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/text_input_controller.h"
 
 #include "ppapi/native_client/src/trusted/plugin/file_utils.h"
 #include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
@@ -64,33 +63,6 @@ const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
 
 }  // namespace
-
-bool Plugin::EarlyInit() {
-  PLUGIN_PRINTF(("Plugin::EarlyInit (instance=%p)\n",
-                 static_cast<void*>(this)));
-
-#ifdef NACL_OSX
-  // TODO(kochi): For crbug.com/102808, this is a stopgap solution for Lion
-  // until we expose IME API to .nexe. This disables any IME interference
-  // against key inputs, so you cannot use off-the-spot IME input for NaCl apps.
-  // This makes discrepancy among platforms and therefore we should remove
-  // this hack when IME API is made available.
-  // The default for non-Mac platforms is still off-the-spot IME mode.
-  pp::TextInputController(this).SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
-#endif
-
-  // Set up the factory used to produce DescWrappers.
-  wrapper_factory_ = new nacl::DescWrapperFactory();
-  if (NULL == wrapper_factory_) {
-    return false;
-  }
-  PLUGIN_PRINTF(("Plugin::Init (wrapper_factory=%p)\n",
-                 static_cast<void*>(wrapper_factory_)));
-
-  PLUGIN_PRINTF(("Plugin::Init (return 1)\n"));
-  // Return success.
-  return true;
-}
 
 void Plugin::ShutDownSubprocesses() {
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses (this=%p)\n",
@@ -395,23 +367,16 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
   nacl_interface_->InitializePlugin(pp_instance(), argc, argn, argv);
-
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL)
     return false;
 
-  PLUGIN_PRINTF(("Plugin::Init (url_util_=%p)\n",
-                 static_cast<const void*>(url_util_)));
-
-  bool status = EarlyInit();
-  if (status) {
-    pp::Var manifest_url(pp::PASS_REF, nacl_interface_->GetManifestURLArgument(
-        pp_instance()));
-    if (manifest_url.is_string() && !manifest_url.AsString().empty())
-      RequestNaClManifest(manifest_url.AsString());
-  }
-  PLUGIN_PRINTF(("Plugin::Init (status=%d)\n", status));
-  return status;
+  wrapper_factory_ = new nacl::DescWrapperFactory();
+  pp::Var manifest_url(pp::PASS_REF, nacl_interface_->GetManifestURLArgument(
+      pp_instance()));
+  if (manifest_url.is_string() && !manifest_url.AsString().empty())
+    RequestNaClManifest(manifest_url.AsString());
+  return true;
 }
 
 Plugin::Plugin(PP_Instance pp_instance)

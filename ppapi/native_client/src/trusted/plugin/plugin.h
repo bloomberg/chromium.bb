@@ -183,7 +183,6 @@ class Plugin : public pp::Instance {
   // pointer to this object, not from base's Delete().
   ~Plugin();
 
-  bool EarlyInit();
   // Shuts down socket connection, service runtime, and receive thread,
   // in this order, for the main nacl subprocess.
   void ShutDownSubprocesses();

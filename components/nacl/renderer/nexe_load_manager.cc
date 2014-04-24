@@ -419,6 +419,17 @@ void NexeLoadManager::InitializePlugin(
 
   // Store mime_type_ at initialization time since we make it lowercase.
   mime_type_ = StringToLowerASCII(LookupAttribute(args_, kTypeAttribute));
+
+#if defined(OS_MACOSX)
+  // TODO(kochi): For crbug.com/102808, this is a stopgap solution for Lion
+  // until we expose IME API to .nexe. This disables any IME interference
+  // against key inputs, so you cannot use off-the-spot IME input for NaCl
+  // apps.
+  // This makes discrepancy among platforms and therefore we should remove
+  // this hack when IME API is made available.
+  // The default for non-Mac platforms is still off-the-spot IME mode.
+  plugin_instance_->SetTextInputType(ui::TEXT_INPUT_TYPE_NONE);
+#endif  // defined(OS_MACOSX)
 }
 
 void NexeLoadManager::ReportStartupOverhead() const {

@@ -1248,6 +1248,11 @@ void PepperPluginInstanceImpl::SetLinkUnderCursor(const std::string& url) {
   link_under_cursor_ = base::UTF8ToUTF16(url);
 }
 
+void PepperPluginInstanceImpl::SetTextInputType(ui::TextInputType type) {
+  text_input_type_ = type;
+  render_frame_->PepperTextInputTypeChanged(this);
+}
+
 base::string16 PepperPluginInstanceImpl::GetSelectedText(bool html) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
@@ -2600,8 +2605,7 @@ void PepperPluginInstanceImpl::SetTextInputType(PP_Instance instance,
   int itype = type;
   if (itype < 0 || itype > ui::TEXT_INPUT_TYPE_URL)
     itype = ui::TEXT_INPUT_TYPE_NONE;
-  text_input_type_ = static_cast<ui::TextInputType>(itype);
-  render_frame_->PepperTextInputTypeChanged(this);
+  SetTextInputType(static_cast<ui::TextInputType>(itype));
 }
 
 void PepperPluginInstanceImpl::UpdateCaretPosition(

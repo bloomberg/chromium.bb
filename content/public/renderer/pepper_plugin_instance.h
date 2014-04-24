@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_instance_private.h"
+#include "ui/base/ime/text_input_type.h"
 
 class GURL;
 
@@ -110,6 +111,9 @@ class PepperPluginInstance {
 
   // Sets the link currently under the cursor.
   virtual void SetLinkUnderCursor(const std::string& url) = 0;
+
+  // Sets the text input type for this plugin.
+  virtual void SetTextInputType(ui::TextInputType type) = 0;
 };
 
 }  // namespace content
