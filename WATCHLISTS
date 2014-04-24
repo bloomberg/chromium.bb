@@ -294,8 +294,7 @@
                   'filebrowse'
     },
     'filesapp': {
-      'filepath': 'chrome/browser/resources/file_manager|' \
-                  'ui/file_manager'
+      'filepath': 'ui/file_manager'
     },
     'ftp': {
       'filepath': 'ftp',

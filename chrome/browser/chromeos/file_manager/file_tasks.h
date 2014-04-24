@@ -23,7 +23,7 @@
 // This information also comes from FileBrowserHandler::GetHandlers().
 //
 // See also:
-// chrome/browser/resources/file_manager/manifest.json
+// ui/file_manager/file_manager/manifest.json
 //
 // 3) Drive app, which is a hosted app (i.e. just web site), that can work
 // with Drive (ex. Pixlr Editor). This information comes from
@@ -104,7 +104,7 @@
 // should be simplified: crbug.com/267313
 //
 // See also:
-// chrome/browser/resources/file_manager/js/file_tasks.js
+// ui/file_manager/file_manager/js/file_tasks.js
 //
 
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILE_TASKS_H_

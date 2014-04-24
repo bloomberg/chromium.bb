@@ -83,8 +83,8 @@ const IdrBySize kVideoIdrs = {
 
 IconMapper::IconMapper() {
   // The code below should match translation in
-  // chrome/browser/resources/file_manager/js/file_manager.js
-  // chrome/browser/resources/file_manager/css/file_manager.css
+  // ui/file_manager/file_manager/js/file_manager.js
+  // ui/file_manager/file_manager/css/file_manager.css
   // 'audio': /\.(mp3|m4a|oga|ogg|wav)$/i,
   // 'html': /\.(html?)$/i,
   // 'image': /\.(bmp|gif|jpe?g|ico|png|webp)$/i,
