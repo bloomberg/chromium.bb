@@ -35,7 +35,7 @@ class CSSUnicodeRangeValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSUnicodeRangeValue> create(UChar32 from, UChar32 to)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSUnicodeRangeValue(from, to));
+        return adoptRefWillBeNoop(new CSSUnicodeRangeValue(from, to));
     }
 
     UChar32 from() const { return m_from; }

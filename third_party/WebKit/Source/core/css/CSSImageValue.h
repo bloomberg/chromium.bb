@@ -38,11 +38,11 @@ class CSSImageValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleImage* image = 0)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSImageValue(url, url, image));
+        return adoptRefWillBeNoop(new CSSImageValue(url, url, image));
     }
     static PassRefPtrWillBeRawPtr<CSSImageValue> create(const String& rawValue, const KURL& url, StyleImage* image = 0)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSImageValue(rawValue, url, image));
+        return adoptRefWillBeNoop(new CSSImageValue(rawValue, url, image));
     }
     ~CSSImageValue();
 

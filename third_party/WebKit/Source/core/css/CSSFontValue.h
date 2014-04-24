@@ -34,7 +34,7 @@ class CSSFontValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSFontValue> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontValue);
+        return adoptRefWillBeNoop(new CSSFontValue);
     }
 
     String customCSSText() const;

@@ -39,7 +39,7 @@ public:
     static PassRefPtrWillBeRawPtr<CSSReflectValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> direction,
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, PassRefPtrWillBeRawPtr<CSSValue> mask)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSReflectValue(direction, offset, mask));
+        return adoptRefWillBeNoop(new CSSReflectValue(direction, offset, mask));
     }
 
     CSSPrimitiveValue* direction() const { return m_direction.get(); }

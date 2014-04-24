@@ -223,39 +223,39 @@ public:
 
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSValueID valueID)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(valueID));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(valueID));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSPropertyID propertyID)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(propertyID));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(propertyID));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createParserOperator(int parserOperator)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(parserOperator, CSS_PARSER_OPERATOR));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(parserOperator, CSS_PARSER_OPERATOR));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(unsigned rgbValue)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(rgbValue, CSS_RGBCOLOR));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(rgbValue, CSS_RGBCOLOR));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(double value, UnitTypes type)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value, type));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(value, type));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const String& value, UnitTypes type)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value, type));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(value, type));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const Length& value, float zoom)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value, zoom));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(value, zoom));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const LengthSize& value)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(value));
     }
     template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(T value)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPrimitiveValue(value));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(value));
     }
 
     // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
@@ -266,7 +266,7 @@ public:
     {
         CSSPrimitiveValue* quirkValue = new CSSPrimitiveValue(value, type);
         quirkValue->m_isQuirkValue = true;
-        return adoptRefWillBeRefCountedGarbageCollected(quirkValue);
+        return adoptRefWillBeNoop(quirkValue);
     }
 
     ~CSSPrimitiveValue();

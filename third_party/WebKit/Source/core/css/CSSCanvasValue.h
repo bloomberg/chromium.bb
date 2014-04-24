@@ -37,7 +37,7 @@ class CSSCanvasValue : public CSSImageGeneratorValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSCanvasValue> create(const String& name)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSCanvasValue(name));
+        return adoptRefWillBeNoop(new CSSCanvasValue(name));
     }
     ~CSSCanvasValue();
 

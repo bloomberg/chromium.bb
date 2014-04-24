@@ -41,11 +41,11 @@ class CSSFontFaceSrcValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> create(const String& resource)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceSrcValue(resource, false));
+        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(resource, false));
     }
     static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> createLocal(const String& resource)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceSrcValue(resource, true));
+        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(resource, true));
     }
 
     const String& resource() const { return m_resource; }

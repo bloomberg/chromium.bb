@@ -37,12 +37,12 @@ class CSSFunctionValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSFunctionValue> create(CSSParserFunction* function)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFunctionValue(function));
+        return adoptRefWillBeNoop(new CSSFunctionValue(function));
     }
 
     static PassRefPtrWillBeRawPtr<CSSFunctionValue> create(String name, PassRefPtrWillBeRawPtr<CSSValueList> args)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFunctionValue(name, args));
+        return adoptRefWillBeNoop(new CSSFunctionValue(name, args));
     }
 
     String customCSSText() const;

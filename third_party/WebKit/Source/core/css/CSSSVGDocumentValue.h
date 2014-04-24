@@ -37,7 +37,7 @@ class CSSSVGDocumentValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSSVGDocumentValue> create(const String& url)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSSVGDocumentValue(url));
+        return adoptRefWillBeNoop(new CSSSVGDocumentValue(url));
     }
     ~CSSSVGDocumentValue();
 

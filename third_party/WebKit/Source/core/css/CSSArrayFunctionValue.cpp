@@ -49,7 +49,7 @@ String CSSArrayFunctionValue::customCSSText() const
 
 PassRefPtrWillBeRawPtr<CSSArrayFunctionValue> CSSArrayFunctionValue::cloneForCSSOM() const
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new CSSArrayFunctionValue(*this));
+    return adoptRefWillBeNoop(new CSSArrayFunctionValue(*this));
 }
 
 bool CSSArrayFunctionValue::equals(const CSSArrayFunctionValue& other) const

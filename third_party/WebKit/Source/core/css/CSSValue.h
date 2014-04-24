@@ -41,7 +41,7 @@ enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
 // They should be handled by separate wrapper classes.
 
 // Please don't expose more CSSValue types to the web.
-class CSSValue : public RefCountedWillBeRefCountedGarbageCollected<CSSValue> {
+class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
 public:
     enum Type {
         CSS_INHERIT = 0,

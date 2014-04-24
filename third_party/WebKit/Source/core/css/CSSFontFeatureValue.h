@@ -35,7 +35,7 @@ class CSSFontFeatureValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSFontFeatureValue> create(const AtomicString& tag, int value)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFeatureValue(tag, value));
+        return adoptRefWillBeNoop(new CSSFontFeatureValue(tag, value));
     }
 
     const AtomicString& tag() const { return m_tag; }

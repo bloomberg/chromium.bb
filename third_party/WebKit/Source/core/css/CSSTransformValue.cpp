@@ -84,7 +84,7 @@ CSSTransformValue::CSSTransformValue(const CSSTransformValue& cloneFrom)
 
 PassRefPtrWillBeRawPtr<CSSTransformValue> CSSTransformValue::cloneForCSSOM() const
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new CSSTransformValue(*this));
+    return adoptRefWillBeNoop(new CSSTransformValue(*this));
 }
 
 }

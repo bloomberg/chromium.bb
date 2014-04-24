@@ -40,7 +40,7 @@ class CSSGridLineNamesValue : public CSSValueList {
 public:
     static PassRefPtrWillBeRawPtr<CSSGridLineNamesValue> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSGridLineNamesValue());
+        return adoptRefWillBeNoop(new CSSGridLineNamesValue());
     }
 
     String customCSSText() const;

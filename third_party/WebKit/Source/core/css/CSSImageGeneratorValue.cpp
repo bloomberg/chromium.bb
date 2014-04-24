@@ -44,9 +44,16 @@ CSSImageGeneratorValue::~CSSImageGeneratorValue()
 
 void CSSImageGeneratorValue::addClient(RenderObject* renderer, const IntSize& size)
 {
-    ref();
-
     ASSERT(renderer);
+#if !ENABLE(OILPAN)
+    ref();
+#else
+    if (m_clients.isEmpty()) {
+        ASSERT(!m_keepAlive);
+        m_keepAlive = adoptPtr(new Persistent<CSSImageGeneratorValue>(this));
+    }
+#endif
+
     if (!size.isEmpty())
         m_sizes.add(size);
 
@@ -77,7 +84,14 @@ void CSSImageGeneratorValue::removeClient(RenderObject* renderer)
     if (!--sizeCount.count)
         m_clients.remove(renderer);
 
+#if !ENABLE(OILPAN)
     deref();
+#else
+    if (m_clients.isEmpty()) {
+        ASSERT(m_keepAlive);
+        m_keepAlive = nullptr;
+    }
+#endif
 }
 
 Image* CSSImageGeneratorValue::getImage(RenderObject* renderer, const IntSize& size)

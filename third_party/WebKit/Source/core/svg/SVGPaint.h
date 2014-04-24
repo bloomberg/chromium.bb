@@ -49,48 +49,48 @@ public:
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createUnknown()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_UNKNOWN));
+        return adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_UNKNOWN));
     }
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createNone()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_NONE));
+        return adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_NONE));
     }
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createCurrentColor()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_CURRENTCOLOR));
+        return adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_CURRENTCOLOR));
     }
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createColor(const Color& color)
     {
-        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_RGBCOLOR));
+        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_RGBCOLOR));
         paint->m_color = color;
         return paint.release();
     }
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createURI(const String& uri)
     {
-        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_URI, uri));
+        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_URI, uri));
         return paint.release();
     }
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createURIAndColor(const String& uri, const Color& color)
     {
-        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_URI_RGBCOLOR, uri));
+        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_URI_RGBCOLOR, uri));
         paint->m_color = color;
         return paint.release();
     }
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createURIAndNone(const String& uri)
     {
-        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_URI_NONE, uri));
+        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_URI_NONE, uri));
         return paint.release();
     }
 
     static PassRefPtrWillBeRawPtr<SVGPaint> createURIAndCurrentColor(const String& uri)
     {
-        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_URI_CURRENTCOLOR, uri));
+        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeNoop(new SVGPaint(SVG_PAINTTYPE_URI_CURRENTCOLOR, uri));
         return paint.release();
     }
 
@@ -115,7 +115,7 @@ private:
 
     static PassRefPtrWillBeRawPtr<SVGPaint> create(const SVGPaintType& type, const String& uri, const Color& color)
     {
-        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(type, uri));
+        RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeNoop(new SVGPaint(type, uri));
         paint->m_color = color;
         return paint.release();
     }

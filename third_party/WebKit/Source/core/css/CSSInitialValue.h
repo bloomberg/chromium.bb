@@ -30,11 +30,11 @@ class CSSInitialValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSInitialValue> createExplicit()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSInitialValue(/* implicit */ false));
+        return adoptRefWillBeNoop(new CSSInitialValue(/* implicit */ false));
     }
     static PassRefPtrWillBeRawPtr<CSSInitialValue> createImplicit()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSInitialValue(/* implicit */ true));
+        return adoptRefWillBeNoop(new CSSInitialValue(/* implicit */ true));
     }
 
     String customCSSText() const;

@@ -74,7 +74,7 @@ SVGPaint::SVGPaint(const SVGPaint& cloneFrom)
 
 PassRefPtrWillBeRawPtr<SVGPaint> SVGPaint::cloneForCSSOM() const
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(*this));
+    return adoptRefWillBeNoop(new SVGPaint(*this));
 }
 
 bool SVGPaint::equals(const SVGPaint& other) const

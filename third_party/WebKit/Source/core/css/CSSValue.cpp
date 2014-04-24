@@ -59,7 +59,7 @@
 
 namespace WebCore {
 
-struct SameSizeAsCSSValue : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsCSSValue> {
+struct SameSizeAsCSSValue : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSValue> {
     uint32_t bitfields;
 };
 
@@ -69,7 +69,7 @@ class TextCloneCSSValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<TextCloneCSSValue> create(ClassType classType, const String& text)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TextCloneCSSValue(classType, text));
+        return adoptRefWillBeNoop(new TextCloneCSSValue(classType, text));
     }
 
     String cssText() const { return m_cssText; }

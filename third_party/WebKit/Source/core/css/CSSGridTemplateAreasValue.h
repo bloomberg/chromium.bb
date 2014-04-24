@@ -41,7 +41,7 @@ class CSSGridTemplateAreasValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSGridTemplateAreasValue> create(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSGridTemplateAreasValue(gridAreaMap, rowCount, columnCount));
+        return adoptRefWillBeNoop(new CSSGridTemplateAreasValue(gridAreaMap, rowCount, columnCount));
     }
     ~CSSGridTemplateAreasValue() { }
 
