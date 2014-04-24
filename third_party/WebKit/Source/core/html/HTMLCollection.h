@@ -43,6 +43,7 @@ public:
     static PassRefPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
     virtual ~HTMLCollection();
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
+    void invalidateCacheForAttribute(const QualifiedName*) const;
 
     // DOM API
     unsigned length() const { return m_collectionIndexCache.nodeCount(*this); }
@@ -140,9 +141,17 @@ private:
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
     mutable OwnPtr<NamedItemCache> m_namedItemCache;
     mutable CollectionIndexCache<HTMLCollection, Element> m_collectionIndexCache;
-
-    friend class LiveNodeListBase;
 };
+
+DEFINE_TYPE_CASTS(HTMLCollection, LiveNodeListBase, collection, isHTMLCollectionType(collection->type()), isHTMLCollectionType(collection.type()));
+
+inline void HTMLCollection::invalidateCacheForAttribute(const QualifiedName* attrName) const
+{
+    if (!attrName || shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
+        invalidateCache();
+    else if (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr)
+        invalidateIdNameCacheMaps();
+}
 
 } // namespace
 

@@ -47,7 +47,7 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
 {
     NodeListAtomicNameCacheMap::const_iterator atomicNameCacheEnd = m_atomicNameCaches.end();
     for (NodeListAtomicNameCacheMap::const_iterator it = m_atomicNameCaches.begin(); it != atomicNameCacheEnd; ++it)
-        it->value->invalidateCache(attrName);
+        it->value->invalidateCacheForAttribute(attrName);
 
     if (attrName)
         return;

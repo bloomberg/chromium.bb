@@ -5596,7 +5596,7 @@ void Document::invalidateNodeListCaches(const QualifiedName* attrName)
 {
     HashSet<LiveNodeListBase*>::iterator end = m_listsInvalidatedAtDocument.end();
     for (HashSet<LiveNodeListBase*>::iterator it = m_listsInvalidatedAtDocument.begin(); it != end; ++it)
-        (*it)->invalidateCache(attrName);
+        (*it)->invalidateCacheForAttribute(attrName);
 }
 
 void Document::trace(Visitor* visitor)

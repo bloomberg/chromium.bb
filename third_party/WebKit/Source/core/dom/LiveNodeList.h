@@ -45,7 +45,9 @@ public:
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
     virtual bool elementMatches(const Element&) const = 0;
 
-    virtual void invalidateCache(Document* oldDocument) const OVERRIDE FINAL;
+    virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE FINAL;
+    void invalidateCacheForAttribute(const QualifiedName*) const;
+
     bool shouldOnlyIncludeDirectChildren() const { return false; }
 
     // Collection IndexCache API.
@@ -60,6 +62,14 @@ private:
 
     mutable CollectionIndexCache<LiveNodeList, Element> m_collectionIndexCache;
 };
+
+DEFINE_TYPE_CASTS(LiveNodeList, LiveNodeListBase, list, isLiveNodeListType(list->type()), isLiveNodeListType(list.type()));
+
+inline void LiveNodeList::invalidateCacheForAttribute(const QualifiedName* attrName) const
+{
+    if (!attrName || shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
+        invalidateCache();
+}
 
 } // namespace WebCore
 

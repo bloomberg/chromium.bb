@@ -63,19 +63,13 @@ public:
     ContainerNode& rootNode() const;
 
     void didMoveToDocument(Document& oldDocument, Document& newDocument);
-    ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument; }
     ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
     ALWAYS_INLINE CollectionType type() const { return static_cast<CollectionType>(m_collectionType); }
     ContainerNode& ownerNode() const { return *m_ownerNode; }
-    ALWAYS_INLINE void invalidateCache(const QualifiedName* attrName) const
-    {
-        if (!attrName || shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
-            invalidateCache();
-        else if (hasIdNameCache() && (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr))
-            invalidateIdNameCacheMaps();
-    }
+
     virtual void invalidateCache(Document* oldDocument = 0) const = 0;
+    void invalidateCacheForAttribute(const QualifiedName*) const;
 
     static bool shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType, const QualifiedName&);
 
@@ -98,8 +92,6 @@ protected:
     static Element* traverseMatchingElementsBackwardToOffset(const NodeListType&, unsigned offset, Element& currentElement, unsigned& currentOffset);
 
 private:
-    void invalidateIdNameCacheMaps() const;
-
     RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
     const unsigned m_rootType : 1;
     const unsigned m_invalidationType : 4;

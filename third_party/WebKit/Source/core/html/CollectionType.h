@@ -72,6 +72,11 @@ inline bool isUnnamedHTMLCollectionType(CollectionType type)
     return type < FirstNamedCollectionType;
 }
 
+inline bool isHTMLCollectionType(CollectionType type)
+{
+    return type < FirstLiveNodeListType;
+}
+
 inline bool isLiveNodeListType(CollectionType type)
 {
     return type >= FirstLiveNodeListType;

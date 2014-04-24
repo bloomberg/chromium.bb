@@ -24,9 +24,18 @@
 #include "config.h"
 #include "core/dom/LiveNodeListBase.h"
 
+#include "core/dom/LiveNodeList.h"
 #include "core/html/HTMLCollection.h"
 
 namespace WebCore {
+
+void LiveNodeListBase::invalidateCacheForAttribute(const QualifiedName* attrName) const
+{
+    if (isLiveNodeListType(type()))
+        toLiveNodeList(this)->invalidateCacheForAttribute(attrName);
+    else
+        toHTMLCollection(this)->invalidateCacheForAttribute(attrName);
+}
 
 ContainerNode& LiveNodeListBase::rootNode() const
 {
@@ -40,12 +49,6 @@ void LiveNodeListBase::didMoveToDocument(Document& oldDocument, Document& newDoc
     invalidateCache(&oldDocument);
     oldDocument.unregisterNodeList(this);
     newDocument.registerNodeList(this);
-}
-
-void LiveNodeListBase::invalidateIdNameCacheMaps() const
-{
-    ASSERT(hasIdNameCache());
-    static_cast<const HTMLCollection*>(this)->invalidateIdNameCacheMaps();
 }
 
 } // namespace WebCore
