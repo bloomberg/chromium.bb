@@ -1330,6 +1330,15 @@ public class ContentViewCore
     }
 
     /**
+     * Cancel any fling gestures active.
+     * @param timeMs Current time (in milliseconds).
+     */
+    public void cancelFling(long timeMs) {
+        if (mNativeContentViewCore == 0) return;
+        nativeFlingCancel(mNativeContentViewCore, timeMs);
+    }
+
+    /**
      * Add a listener that gets alerted on gesture state changes.
      * @param listener Listener to add.
      */
