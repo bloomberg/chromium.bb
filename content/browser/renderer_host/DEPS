@@ -22,10 +22,12 @@ specific_include_rules = {
     "+content/public/browser/web_contents_view.h",
     "+media/filters",
   ],
-  "render_sandbox_host_linux\.cc": [
-    "+content/child/blink_platform_impl.h",
+  "sandbox_ipc_linux\.cc": [
     "+third_party/WebKit/public/platform/linux/WebFontInfo.h",
     "+third_party/WebKit/public/web/WebKit.h",
+  ],
+  "sandbox_ipc_linux\.h": [
+    "+content/child/blink_platform_impl.h",
   ],
   "render_process_host_impl\.cc": [
     "+content/browser/frame_host/render_frame_message_filter.h",
