@@ -9,6 +9,8 @@ function runRepaintTest()
         return;
     }
 
+    window.internals.settings.setForceCompositingMode(true);
+
     if (window.enablePixelTesting)
         testRunner.dumpAsTextWithPixelResults();
     else
@@ -47,7 +49,7 @@ function finishRepaintTest()
     // Force a style recalc.
     forceStyleRecalc();
 
-    var repaintRects = window.internals.repaintRectsAsText(document);
+    var repaintRects = window.internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
 
     internals.stopTrackingRepaints(document);
 
