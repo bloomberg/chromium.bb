@@ -30,6 +30,22 @@ public final class AwCookieManager {
     }
 
     /**
+     * Control whether third party cookies are enabled or disabled
+     * @param accept TRUE if accept third party cookies
+     */
+    public void setAcceptThirdPartyCookie(boolean accept) {
+        nativeSetAcceptThirdPartyCookie(accept);
+    }
+
+    /**
+     * Return whether third party cookies are enabled
+     * @return TRUE if accept third party cookies
+     */
+    public boolean acceptThirdPartyCookie() {
+        return nativeAcceptThirdPartyCookie();
+    }
+
+    /**
      * Set cookie for a given url. The old cookie with same host/path/name will
      * be removed. The new cookie will be added if it is not expired or it does
      * not have expiration which implies it is session cookie.
@@ -106,6 +122,9 @@ public final class AwCookieManager {
 
     private native void nativeSetAcceptCookie(boolean accept);
     private native boolean nativeAcceptCookie();
+
+    private native void nativeSetAcceptThirdPartyCookie(boolean accept);
+    private native boolean nativeAcceptThirdPartyCookie();
 
     private native void nativeSetCookie(String url, String value);
     private native String nativeGetCookie(String url);

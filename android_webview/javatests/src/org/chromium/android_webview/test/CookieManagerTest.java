@@ -234,4 +234,167 @@ public class CookieManagerTest extends AwTestBase {
             }
         });
     }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyCookie() throws Throwable {
+        TestWebServer webServer = null;
+        try {
+            // In theory we need two servers to test this, one server ('the first party')
+            // which returns a response with a link to a second server ('the third party')
+            // at different origin. This second server attempts to set a cookie which should
+            // fail if AcceptThirdPartyCookie() is false.
+            // Strictly according to the letter of RFC6454 it should be possible to set this
+            // situation up with two TestServers on different ports (these count as having
+            // different origins) but Chrome is not strict about this and does not check the
+            // port. Instead we cheat making some of the urls come from localhost and some
+            // from 127.0.0.1 which count (both in theory and pratice) as having different
+            // origins.
+            webServer = new TestWebServer(false);
+
+            // Turn global allow on.
+            mCookieManager.setAcceptCookie(true);
+            mCookieManager.removeAllCookie();
+            assertTrue(mCookieManager.acceptCookie());
+            assertFalse(mCookieManager.hasCookies());
+
+            // When third party cookies are disabled...
+            mCookieManager.setAcceptThirdPartyCookie(false);
+            assertFalse(mCookieManager.acceptThirdPartyCookie());
+
+            // ...we can't set third party cookies.
+            // First on the third party server we create a url which tries to set a cookie.
+            String cookieUrl = toThirdPartyUrl(
+                    makeCookieUrl(webServer, "/cookie_1.js", "test1", "value1"));
+            // Then we create a url on the first party server which links to the first url.
+            String url = makeScriptLinkUrl(webServer, "/content_1.html", cookieUrl);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            assertNull(mCookieManager.getCookie(cookieUrl));
+
+            // When third party cookies are enabled...
+            mCookieManager.setAcceptThirdPartyCookie(true);
+            assertTrue(mCookieManager.acceptThirdPartyCookie());
+
+            // ...we can set third party cookies.
+            cookieUrl = toThirdPartyUrl(
+                    makeCookieUrl(webServer, "/cookie_2.js", "test2", "value2"));
+            url = makeScriptLinkUrl(webServer, "/content_2.html", cookieUrl);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            waitForCookie(cookieUrl);
+            String cookie = mCookieManager.getCookie(cookieUrl);
+            assertNotNull(cookie);
+            validateCookies(cookie, "test2");
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    /**
+     * Creates a response on the TestWebServer which attempts to set a cookie when fetched.
+     * @param  webServer  the webServer on which to create the response
+     * @param  path the path component of the url (e.g "/cookie_test.html")
+     * @param  key the key of the cookie
+     * @param  value the value of the cookie
+     * @return  the url which gets the response
+     */
+    private String makeCookieUrl(TestWebServer webServer, String path, String key, String value) {
+        String response = "";
+        List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
+        responseHeaders.add(
+            Pair.create("Set-Cookie", key + "=" + value + "; path=" + path));
+        return webServer.setResponse(path, response, responseHeaders);
+    }
+
+    /**
+     * Creates a response on the TestWebServer which contains a script tag with an external src.
+     * @param  webServer  the webServer on which to create the response
+     * @param  path the path component of the url (e.g "/my_thing_with_script.html")
+     * @param  url the url which which should appear as the src of the script tag.
+     * @return  the url which gets the response
+     */
+    private String makeScriptLinkUrl(TestWebServer webServer, String path, String url) {
+        String responseStr = "<html><head><title>Content!</title></head>" +
+                    "<body><script src=" + url + "></script></body></html>";
+        return webServer.setResponse(path, responseStr, null);
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyJavascriptCookie() throws Throwable {
+        TestWebServer webServer = null;
+        try {
+            // This test again uses 127.0.0.1/localhost trick to simulate a third party.
+            webServer = new TestWebServer(false);
+
+            mCookieManager.setAcceptCookie(true);
+            mCookieManager.removeAllCookie();
+            assertTrue(mCookieManager.acceptCookie());
+            assertFalse(mCookieManager.hasCookies());
+
+            // When third party cookies are disabled...
+            mCookieManager.setAcceptThirdPartyCookie(false);
+            assertFalse(mCookieManager.acceptThirdPartyCookie());
+
+            // ...we can't set third party cookies.
+            // We create a script which tries to set a cookie on a third party.
+            String cookieUrl = toThirdPartyUrl(
+                    makeCookieScriptUrl(webServer, "/cookie_1.html", "test1", "value1"));
+            // Then we load it as an iframe.
+            String url = makeIframeUrl(webServer, "/content_1.html", cookieUrl);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            assertNull(mCookieManager.getCookie(cookieUrl));
+
+            // When third party cookies are enabled...
+            mCookieManager.setAcceptThirdPartyCookie(true);
+            assertTrue(mCookieManager.acceptThirdPartyCookie());
+
+            // ...we can set third party cookies.
+            cookieUrl = toThirdPartyUrl(
+                    makeCookieScriptUrl(webServer, "/cookie_2.html", "test2", "value2"));
+            url = makeIframeUrl(webServer, "/content_2.html", cookieUrl);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            String cookie = mCookieManager.getCookie(cookieUrl);
+            assertNotNull(cookie);
+            validateCookies(cookie, "test2");
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    /**
+     * Creates a response on the TestWebServer which attempts to set a cookie when fetched.
+     * @param  webServer  the webServer on which to create the response
+     * @param  path the path component of the url (e.g "/my_thing_with_iframe.html")
+     * @param  url the url which which should appear as the src of the iframe.
+     * @return  the url which gets the response
+     */
+    private String makeIframeUrl(TestWebServer webServer, String path, String url) {
+        String responseStr = "<html><head><title>Content!</title></head>" +
+                    "<body><iframe src=" + url + "></iframe></body></html>";
+        return webServer.setResponse(path, responseStr, null);
+    }
+
+    /**
+     * Creates a response on the TestWebServer with a script that attempts to set a cookie.
+     * @param  webServer  the webServer on which to create the response
+     * @param  path the path component of the url (e.g "/cookie_test.html")
+     * @param  key the key of the cookie
+     * @param  value the value of the cookie
+     * @return  the url which gets the response
+     */
+    private String makeCookieScriptUrl(TestWebServer webServer, String path, String key,
+            String value) {
+        String response = "<html><head></head><body>" +
+            "<script>document.cookie = \"" + key + "=" + value + "\";</script></body></html>";
+        return webServer.setResponse(path, response, null);
+    }
+
+    /**
+     * Makes a url look as if it comes from a different host.
+     * @param  url the url to fake.
+     * @return  the resulting after faking.
+     */
+    private String toThirdPartyUrl(String url) {
+        return url.replace("localhost", "127.0.0.1");
+    }
 }

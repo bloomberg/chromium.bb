@@ -8,7 +8,9 @@
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
+#include "net/base/static_cookie_policy.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 class ResourceContext;
@@ -16,7 +18,6 @@ class ResourceContext;
 
 namespace net {
 class CookieOptions;
-class URLRequest;
 }
 
 class GURL;
@@ -32,6 +33,11 @@ class AwCookieAccessPolicy {
   // source (i.e. network or JavaScript).
   bool GetGlobalAllowAccess();
   void SetGlobalAllowAccess(bool allow);
+
+  // These allow more fine grained control over requests depending on whether
+  // the cookie is third party or not.
+  bool GetThirdPartyAllowAccess();
+  void SetThirdPartyAllowAccess(bool allow);
 
   // These are the functions called when operating over cookies from the
   // network. See NetworkDelegate for further descriptions.
@@ -63,7 +69,17 @@ class AwCookieAccessPolicy {
   AwCookieAccessPolicy();
   ~AwCookieAccessPolicy();
   bool allow_access_;
+  bool allow_third_party_access_;
   base::Lock lock_;
+
+  // We have two bits of state but only three different cases:
+  // If !GlobalAllowAccess then reject all cookies.
+  // If GlobalAllowAccess and !ThirdPartyAllowAccess then reject third party.
+  // If GlobalAllowAccess and ThirdPartyAllowAccess then allow all cookies.
+  net::StaticCookiePolicy::Type GetPolicy(void);
+
+  bool AllowGet(const GURL& url, const GURL& first_party);
+  bool AllowSet(const GURL& url, const GURL& first_party);
 
   DISALLOW_COPY_AND_ASSIGN(AwCookieAccessPolicy);
 };

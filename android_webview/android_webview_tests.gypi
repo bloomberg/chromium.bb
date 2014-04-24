@@ -96,6 +96,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/android_webview_unittests',
       ],
       'sources': [
+        'browser/aw_cookie_access_policy_unittest.cc',
         'browser/aw_form_database_service_unittest.cc',
         'browser/net/android_stream_reader_url_request_job_unittest.cc',
         'browser/net/input_stream_reader_unittest.cc',

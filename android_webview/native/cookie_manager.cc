@@ -96,6 +96,8 @@ class CookieManager {
 
   void SetAcceptCookie(bool accept);
   bool AcceptCookie();
+  void SetAcceptThirdPartyCookie(bool accept);
+  bool AcceptThirdPartyCookie();
   void SetCookie(const GURL& host, const std::string& cookie_value);
   std::string GetCookie(const GURL& host);
   void RemoveSessionCookie();
@@ -273,6 +275,14 @@ bool CookieManager::AcceptCookie() {
   return AwCookieAccessPolicy::GetInstance()->GetGlobalAllowAccess();
 }
 
+void CookieManager::SetAcceptThirdPartyCookie(bool accept) {
+  AwCookieAccessPolicy::GetInstance()->SetThirdPartyAllowAccess(accept);
+}
+
+bool CookieManager::AcceptThirdPartyCookie() {
+  return AwCookieAccessPolicy::GetInstance()->GetThirdPartyAllowAccess();
+}
+
 void CookieManager::SetCookie(const GURL& host,
                               const std::string& cookie_value) {
   ExecCookieTask(base::Bind(&CookieManager::SetCookieAsyncHelper,
@@ -445,6 +455,16 @@ static void SetAcceptCookie(JNIEnv* env, jobject obj, jboolean accept) {
 
 static jboolean AcceptCookie(JNIEnv* env, jobject obj) {
   return CookieManager::GetInstance()->AcceptCookie();
+}
+
+static void SetAcceptThirdPartyCookie(JNIEnv* env,
+                                      jobject obj,
+                                      jboolean accept) {
+  CookieManager::GetInstance()->SetAcceptThirdPartyCookie(accept);
+}
+
+static jboolean AcceptThirdPartyCookie(JNIEnv* env, jobject obj) {
+  return CookieManager::GetInstance()->AcceptThirdPartyCookie();
 }
 
 static void SetCookie(JNIEnv* env, jobject obj, jstring url, jstring value) {
