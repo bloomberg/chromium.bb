@@ -56,7 +56,7 @@ class RenderLayerModelObject;
 class RenderLayerBlendInfo {
     WTF_MAKE_NONCOPYABLE(RenderLayerBlendInfo);
 public:
-    explicit RenderLayerBlendInfo(RenderLayerModelObject*);
+    explicit RenderLayerBlendInfo(RenderLayerModelObject&);
 
     bool hasBlendMode() const;
     void updateBlendMode();
@@ -79,7 +79,7 @@ public:
     blink::WebBlendMode blendMode() const { return m_blendMode; }
 
 private:
-    RenderLayerModelObject* m_renderer;
+    RenderLayerModelObject& m_renderer;
     blink::WebBlendMode m_blendMode;
 
     unsigned m_childLayerHasBlendMode : 1;

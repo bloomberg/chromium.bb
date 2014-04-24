@@ -70,7 +70,7 @@ struct ClipRectsContext {
 class RenderLayerClipper FINAL {
     WTF_MAKE_NONCOPYABLE(RenderLayerClipper);
 public:
-    explicit RenderLayerClipper(RenderLayerModelObject* renderer)
+    explicit RenderLayerClipper(RenderLayerModelObject& renderer)
         : m_renderer(renderer)
         , m_compositingClipRectsDirty(false)
     {
@@ -117,7 +117,7 @@ private:
     bool isClippingRootForContext(const ClipRectsContext&) const;
 
     // FIXME: Could this be a RenderBox?
-    RenderLayerModelObject* m_renderer;
+    RenderLayerModelObject& m_renderer;
     OwnPtr<ClipRectsCache> m_clipRectsCache;
     unsigned m_compositingClipRectsDirty : 1;
 };

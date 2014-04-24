@@ -145,9 +145,9 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_styleDeterminedCompositingReasons(CompositingReasonNone)
     , m_compositingReasons(CompositingReasonNone)
     , m_groupedMapping(0)
-    , m_repainter(renderer)
-    , m_clipper(renderer)
-    , m_blendInfo(renderer)
+    , m_repainter(*renderer)
+    , m_clipper(*renderer)
+    , m_blendInfo(*renderer)
 {
     updateStackingNode();
 
@@ -1737,7 +1737,7 @@ void RenderLayer::updateReflectionInfo(const RenderStyle* oldStyle)
     ASSERT(!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle));
     if (renderer()->hasReflection()) {
         if (!m_reflectionInfo)
-            m_reflectionInfo = adoptPtr(new RenderLayerReflectionInfo(toRenderBox(renderer())));
+            m_reflectionInfo = adoptPtr(new RenderLayerReflectionInfo(*renderBox()));
         m_reflectionInfo->updateAfterStyleChange(oldStyle);
     } else if (m_reflectionInfo) {
         m_reflectionInfo = nullptr;
@@ -1755,7 +1755,7 @@ void RenderLayer::updateStackingNode()
 void RenderLayer::updateScrollableArea()
 {
     if (requiresScrollableArea())
-        m_scrollableArea = adoptPtr(new RenderLayerScrollableArea(renderBox()));
+        m_scrollableArea = adoptPtr(new RenderLayerScrollableArea(*renderBox()));
     else
         m_scrollableArea = nullptr;
 }

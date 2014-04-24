@@ -807,7 +807,7 @@ IntRect RenderListBox::convertFromScrollbarToContainingView(const Scrollbar* scr
     int scrollbarTop = borderTop();
     rect.move(scrollbarLeft(), scrollbarTop);
 
-    return view->frameView()->convertFromRenderer(this, rect);
+    return view->frameView()->convertFromRenderer(*this, rect);
 }
 
 IntRect RenderListBox::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
@@ -816,7 +816,7 @@ IntRect RenderListBox::convertFromContainingViewToScrollbar(const Scrollbar* scr
     if (!view)
         return parentRect;
 
-    IntRect rect = view->frameView()->convertToRenderer(this, parentRect);
+    IntRect rect = view->frameView()->convertToRenderer(*this, parentRect);
 
     int scrollbarTop = borderTop();
     rect.move(-scrollbarLeft(), -scrollbarTop);
@@ -834,7 +834,7 @@ IntPoint RenderListBox::convertFromScrollbarToContainingView(const Scrollbar* sc
     int scrollbarTop = borderTop();
     point.move(scrollbarLeft(), scrollbarTop);
 
-    return view->frameView()->convertFromRenderer(this, point);
+    return view->frameView()->convertFromRenderer(*this, point);
 }
 
 IntPoint RenderListBox::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
@@ -843,7 +843,7 @@ IntPoint RenderListBox::convertFromContainingViewToScrollbar(const Scrollbar* sc
     if (!view)
         return parentPoint;
 
-    IntPoint point = view->frameView()->convertToRenderer(this, parentPoint);
+    IntPoint point = view->frameView()->convertToRenderer(*this, parentPoint);
 
     int scrollbarTop = borderTop();
     point.move(-scrollbarLeft(), -scrollbarTop);

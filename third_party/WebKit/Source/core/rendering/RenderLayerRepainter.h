@@ -63,7 +63,7 @@ class RenderLayerModelObject;
 class RenderLayerRepainter {
     WTF_MAKE_NONCOPYABLE(RenderLayerRepainter);
 public:
-    RenderLayerRepainter(RenderLayerModelObject*);
+    RenderLayerRepainter(RenderLayerModelObject&);
 
     // Return a cached repaint rect, computed relative to the layer renderer's containerForRepaint.
     LayoutRect repaintRect() const { return m_repaintRect; }
@@ -91,7 +91,7 @@ private:
 
     RenderLayer* enclosingFilterRepaintLayer() const;
 
-    RenderLayerModelObject* m_renderer;
+    RenderLayerModelObject& m_renderer;
 
     unsigned m_repaintStatus; // RepaintStatus
 

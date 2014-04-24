@@ -50,7 +50,7 @@
 
 namespace WebCore {
 
-RenderLayerBlendInfo::RenderLayerBlendInfo(RenderLayerModelObject* renderer)
+RenderLayerBlendInfo::RenderLayerBlendInfo(RenderLayerModelObject& renderer)
     : m_renderer(renderer)
     , m_blendMode(blink::WebBlendModeNormal)
     , m_childLayerHasBlendMode(false)
@@ -60,7 +60,7 @@ RenderLayerBlendInfo::RenderLayerBlendInfo(RenderLayerModelObject* renderer)
 
 bool RenderLayerBlendInfo::hasBlendMode() const
 {
-    return RuntimeEnabledFeatures::cssCompositingEnabled() && m_renderer->hasBlendMode();
+    return RuntimeEnabledFeatures::cssCompositingEnabled() && m_renderer.hasBlendMode();
 }
 
 void RenderLayerBlendInfo::updateBlendMode()
@@ -68,14 +68,14 @@ void RenderLayerBlendInfo::updateBlendMode()
     if (!RuntimeEnabledFeatures::cssCompositingEnabled())
         return;
 
-    blink::WebBlendMode newBlendMode = m_renderer->style()->blendMode();
+    blink::WebBlendMode newBlendMode = m_renderer.style()->blendMode();
     if (newBlendMode == m_blendMode)
         return;
 
     bool hadBlendMode = m_blendMode != blink::WebBlendModeNormal;
     m_blendMode = newBlendMode;
 
-    RenderLayer* layer = m_renderer->layer();
+    RenderLayer* layer = m_renderer.layer();
     // Only update the flag if a blend mode is set or unset.
     if (layer->parent() && (!hadBlendMode || !hasBlendMode()))
         layer->parent()->blendInfo().dirtyAncestorChainBlendedDescendantStatus();
@@ -86,7 +86,7 @@ void RenderLayerBlendInfo::updateBlendMode()
 
 void RenderLayerBlendInfo::dirtyAncestorChainBlendedDescendantStatus()
 {
-    for (RenderLayer* layer = m_renderer->layer(); layer; layer = layer->parent()) {
+    for (RenderLayer* layer = m_renderer.layer(); layer; layer = layer->parent()) {
         if (layer->blendInfo().childLayerHasBlendModeStatusDirty())
             break;
 
@@ -99,7 +99,7 @@ void RenderLayerBlendInfo::dirtyAncestorChainBlendedDescendantStatus()
 
 void RenderLayerBlendInfo::setAncestorChainBlendedDescendant()
 {
-    for (RenderLayer* layer = m_renderer->layer(); layer; layer = layer->parent()) {
+    for (RenderLayer* layer = m_renderer.layer(); layer; layer = layer->parent()) {
         if (!layer->blendInfo().childLayerHasBlendModeStatusDirty() && layer->blendInfo().childLayerHasBlendMode())
             break;
 

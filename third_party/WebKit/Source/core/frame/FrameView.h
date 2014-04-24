@@ -234,10 +234,10 @@ public:
     void scrollContentsIfNeededRecursive();
 
     // Methods to convert points and rects between the coordinate space of the renderer, and this view.
-    IntRect convertFromRenderer(const RenderObject*, const IntRect&) const;
-    IntRect convertToRenderer(const RenderObject*, const IntRect&) const;
-    IntPoint convertFromRenderer(const RenderObject*, const IntPoint&) const;
-    IntPoint convertToRenderer(const RenderObject*, const IntPoint&) const;
+    IntRect convertFromRenderer(const RenderObject&, const IntRect&) const;
+    IntRect convertToRenderer(const RenderObject&, const IntRect&) const;
+    IntPoint convertFromRenderer(const RenderObject&, const IntPoint&) const;
+    IntPoint convertToRenderer(const RenderObject&, const IntPoint&) const;
 
     bool isFrameViewScrollCorner(RenderScrollbarPart* scrollCorner) const { return m_scrollCorner == scrollCorner; }
 
@@ -277,8 +277,8 @@ public:
     // right of the object. We keep track of these resizer areas for checking if touches
     // (implemented using Scroll gesture) are targeting the resizer.
     typedef HashSet<RenderBox*> ResizerAreaSet;
-    void addResizerArea(RenderBox*);
-    void removeResizerArea(RenderBox*);
+    void addResizerArea(RenderBox&);
+    void removeResizerArea(RenderBox&);
     const ResizerAreaSet* resizerAreas() const { return m_resizerAreas.get(); }
 
     virtual void removeChild(Widget*) OVERRIDE;

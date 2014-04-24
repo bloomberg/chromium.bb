@@ -57,7 +57,7 @@ class RenderReplica;
 class RenderLayerReflectionInfo {
     WTF_MAKE_NONCOPYABLE(RenderLayerReflectionInfo);
 public:
-    explicit RenderLayerReflectionInfo(RenderBox*);
+    explicit RenderLayerReflectionInfo(RenderBox&);
     ~RenderLayerReflectionInfo();
 
     RenderReplica* reflection() const { return m_reflection; }
@@ -72,9 +72,7 @@ public:
     String debugName() const;
 
 private:
-    RenderBox* renderer() const { return m_renderer; }
-
-    RenderBox* m_renderer;
+    RenderBox& m_box;
     RenderReplica* m_reflection;
 
     // A state bit tracking if we are painting inside a replica.
