@@ -782,13 +782,13 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     if (!parent() || !parent()->isRenderBlockFlow())
         return;
 
-    // Attempt to locate a previous sibling with overhanging floats. We skip any elements that are
-    // out of flow (like floating/positioned elements), and we also skip over any objects that may have shifted
-    // to avoid floats.
+    // Attempt to locate a previous sibling with overhanging floats. We skip any elements that
+    // may have shifted to avoid floats, and any objects whose floats cannot interact with objects
+    // outside it (i.e. objects that create a new block formatting context).
     RenderBlockFlow* parentBlockFlow = toRenderBlockFlow(parent());
     bool parentHasFloats = false;
     RenderObject* prev = previousSibling();
-    while (prev && (prev->isFloatingOrOutOfFlowPositioned() || !prev->isBox() || !prev->isRenderBlock() || toRenderBlock(prev)->avoidsFloats())) {
+    while (prev && (!prev->isBox() || !prev->isRenderBlock() || toRenderBlock(prev)->avoidsFloats() || toRenderBlock(prev)->createsBlockFormattingContext())) {
         if (prev->isFloating())
             parentHasFloats = true;
         prev = prev->previousSibling();
@@ -2402,6 +2402,10 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
 {
     ASSERT(!avoidsFloats());
 
+    // If we create our own block formatting context then our contents don't interact with floats outside it, even those from our parent.
+    if (createsBlockFormattingContext())
+        return;
+
     // If the parent or previous sibling doesn't have any floats to add, don't bother.
     if (!prev->m_floatingObjects)
         return;
@@ -2436,7 +2440,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
 void RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool makeChildPaintOtherFloats)
 {
     // Prevent floats from being added to the canvas by the root element, e.g., <html>.
-    if (child->hasOverflowClip() || !child->containsFloats() || child->isRenderFlowThread() || child->isRenderRegion() || child->isDocumentElement() || child->hasColumns() || child->isWritingModeRoot())
+    if (!child->containsFloats() || child->isRenderRegion() || child->createsBlockFormattingContext())
         return;
 
     LayoutUnit childLogicalTop = child->logicalTop();
