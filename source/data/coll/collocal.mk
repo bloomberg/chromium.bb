@@ -51,7 +51,7 @@ COLLATION_EMPTY_SOURCE = ar_AE.txt ar_BH.txt ar_DZ.txt ar_EG.txt\
  ko_KR.txt lt_LT.txt lv_LV.txt\
  nb_NO.txt nl.txt nl_BE.txt nl_NL.txt nn_NO.txt\
  pl_PL.txt\
- pt.txt pt_BR.txt pt_PT.txt ro_RO.txt ru_RU.txt\
+ pt.txt pt_BR.txt pt_PT.txt ro_RO.txt ro_MD.txt ru_RU.txt\
  ru_UA.txt sk_SK.txt sl_SI.txt sr_Cyrl.txt\
  sr_Cyrl_BA.txt sr_Cyrl_ME.txt sr_Cyrl_RS.txt sr_Latn_BA.txt sr_Latn_ME.txt\
  sr_Latn_RS.txt sv_FI.txt sv_SE.txt\
