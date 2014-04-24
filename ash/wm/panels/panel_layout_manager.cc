@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -363,13 +364,9 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   PanelInfo panel_info;
   panel_info.window = child;
   panel_info.callout_widget = new PanelCalloutWidget(panel_container_);
-  if (child != dragged_panel_) {
-    // Set the panel to 0 opacity until it has been positioned to prevent it
-    // from flashing briefly at position (0, 0).
-    child->layer()->SetOpacity(0);
-    panel_info.slide_in = true;
-  }
+  panel_info.slide_in = child != dragged_panel_;
   panel_windows_.push_back(panel_info);
+  child->AddObserver(this);
   wm::GetWindowState(child)->AddObserver(this);
   Relayout();
 }
@@ -386,6 +383,9 @@ void PanelLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
     delete found->callout_widget;
     panel_windows_.erase(found);
   }
+  if (restore_windows_on_shelf_visible_)
+    restore_windows_on_shelf_visible_->Remove(child);
+  child->RemoveObserver(this);
   wm::GetWindowState(child)->RemoveObserver(this);
 
   if (dragged_panel_ == child)
@@ -458,6 +458,18 @@ void PanelLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
 
 /////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, WindowObserver implementation:
+
+void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
+                                                 const void* key,
+                                                 intptr_t old) {
+  // Trigger a relayout to position the panels whenever the panel icon is set
+  // or changes.
+  if (key == kShelfID)
+    Relayout();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// PanelLayoutManager, WindowStateObserver implementation:
 
 void PanelLayoutManager::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
@@ -552,20 +564,17 @@ void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
       shelf_->shelf_widget()->GetAlignment()));
   SetChildBoundsDirect(panel, bounds);
   panel->Hide();
-  PanelList::iterator found =
-      std::find(panel_windows_.begin(), panel_windows_.end(), panel);
-  if (found != panel_windows_.end()) {
-    layer->SetOpacity(0);
-    // The next time the window is visible it should slide into place.
-    found->slide_in = true;
-  }
+  layer->SetOpacity(0);
   if (wm::IsActiveWindow(panel))
     wm::DeactivateWindow(panel);
   Relayout();
 }
 
 void PanelLayoutManager::RestorePanel(aura::Window* panel) {
-  panel->Show();
+  PanelList::iterator found =
+      std::find(panel_windows_.begin(), panel_windows_.end(), panel);
+  DCHECK(found != panel_windows_.end());
+  found->slide_in = true;
   Relayout();
 }
 
@@ -595,7 +604,7 @@ void PanelLayoutManager::Relayout() {
 
     // Consider the dragged panel as part of the layout as long as it is
     // touching the shelf.
-    if (!panel->IsVisible() ||
+    if ((!panel->IsVisible() && !iter->slide_in) ||
         (panel == dragged_panel_ &&
          !BoundsAdjacent(panel->bounds(), shelf_bounds))) {
       continue;
@@ -698,7 +707,8 @@ void PanelLayoutManager::Relayout() {
 
     ui::Layer* layer = visible_panels[i].window->layer();
     if (slide_in) {
-      // New windows shift up from the shelf into position.
+      // New windows shift up from the shelf into position and fade in.
+      layer->SetOpacity(0);
       gfx::Rect initial_bounds(bounds);
       initial_bounds.Offset(GetSlideInAnimationOffset(alignment));
       SetChildBoundsDirect(visible_panels[i].window, initial_bounds);
@@ -714,8 +724,10 @@ void PanelLayoutManager::Relayout() {
       panel_slide_settings.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
       SetChildBoundsDirect(visible_panels[i].window, bounds);
-      if (slide_in)
+      if (slide_in) {
         layer->SetOpacity(1);
+        visible_panels[i].window->Show();
+      }
     } else {
       // If the shelf moved don't animate, move immediately to the new
       // target location.

@@ -160,8 +160,8 @@ WindowOverview::~WindowOverview() {
         ScopedTransformOverviewWindow::kTransitionMilliseconds));
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    (*iter)->Show();
     (*iter)->layer()->SetOpacity(1);
+    (*iter)->Show();
   }
   if (cursor_client_)
     cursor_client_->UnlockCursor();
@@ -217,10 +217,13 @@ void WindowOverview::SetSelection(size_t index) {
       old_selection->SetBoundsInScreen(
           GetSelectionBounds(selection_index_) + fade_out_direction,
           dst_display);
+      old_selection->Hide();
       old_selection->layer()->SetOpacity(0);
       InitializeSelectionWidget();
       selection_widget_->GetNativeWindow()->SetBoundsInScreen(
           target_bounds - fade_out_direction, dst_display);
+      // New selection widget starts with 0 opacity and fades in.
+      selection_widget_->GetNativeWindow()->layer()->SetOpacity(0);
     }
     ui::ScopedLayerAnimationSettings animation_settings(
         selection_widget_->GetNativeWindow()->layer()->GetAnimator());
@@ -234,8 +237,6 @@ void WindowOverview::SetSelection(size_t index) {
   } else {
     InitializeSelectionWidget();
     selection_widget_->SetBounds(target_bounds);
-    selection_widget_->GetNativeWindow()->layer()->SetOpacity(
-        kWindowOverviewSelectionOpacity);
   }
   selection_index_ = index;
 }
@@ -447,7 +448,8 @@ void WindowOverview::InitializeSelectionWidget() {
   selection_widget_->Show();
   selection_widget_->GetNativeWindow()->parent()->StackChildAtBottom(
       selection_widget_->GetNativeWindow());
-  selection_widget_->GetNativeWindow()->layer()->SetOpacity(0);
+  selection_widget_->GetNativeWindow()->layer()->SetOpacity(
+      kWindowOverviewSelectionOpacity);
 }
 
 gfx::Rect WindowOverview::GetSelectionBounds(size_t index) {

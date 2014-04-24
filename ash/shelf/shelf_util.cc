@@ -12,7 +12,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfItemDetails*);
 
 namespace ash {
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ShelfID, kShelfID, kInvalidShelfID);
+DEFINE_WINDOW_PROPERTY_KEY(ShelfID, kShelfID, kInvalidShelfID);
 
 // ShelfItemDetails for kShelfItemDetaildKey is owned by the window
 // and will be freed automatically.
