@@ -6018,6 +6018,36 @@ TEST_F(URLRequestTestHTTP, Redirect307Tests) {
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
 }
 
+TEST_F(URLRequestTestHTTP, Redirect308Tests) {
+  ASSERT_TRUE(test_server_.Start());
+
+  const GURL url = test_server_.GetURL("files/redirect308-to-echo");
+
+  HTTPRedirectMethodTest(url, "POST", "POST", true);
+  HTTPRedirectMethodTest(url, "PUT", "PUT", true);
+  HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
+}
+
+// Make sure that 308 responses without bodies are not treated as redirects.
+// Certain legacy apis that pre-date the response code expect this behavior
+// (Like Google Drive).
+TEST_F(URLRequestTestHTTP, NoRedirectOn308WithoutLocationHeader) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  const GURL url = test_server_.GetURL("files/308-without-location-header");
+
+  URLRequest request(url, DEFAULT_PRIORITY, &d, &default_context_);
+
+  request.Start();
+  base::RunLoop().Run();
+  EXPECT_EQ(URLRequestStatus::SUCCESS, request.status().status());
+  EXPECT_EQ(OK, request.status().error());
+  EXPECT_EQ(0, d.received_redirect_count());
+  EXPECT_EQ(308, request.response_headers()->response_code());
+  EXPECT_EQ("This is not a redirect.", d.data_received());
+}
+
 TEST_F(URLRequestTestHTTP, Redirect302PreserveReferenceFragment) {
   ASSERT_TRUE(test_server_.Start());
 

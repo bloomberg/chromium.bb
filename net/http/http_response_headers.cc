@@ -922,7 +922,8 @@ bool HttpResponseHeaders::IsRedirectResponseCode(int response_code) {
   return (response_code == 301 ||
           response_code == 302 ||
           response_code == 303 ||
-          response_code == 307);
+          response_code == 307 ||
+          response_code == 308);
 }
 
 // From RFC 2616 section 13.2.4:
@@ -1021,6 +1022,9 @@ TimeDelta HttpResponseHeaders::GetFreshnessLifetime(
   //   time, if, based solely on the origin server's Expires or max-age value,
   //   the cached response is stale.)
   //
+  // https://datatracker.ietf.org/doc/draft-reschke-http-status-308/ is an
+  // experimental RFC that adds 308 permanent redirect as well, for which "any
+  // future references ... SHOULD use one of the returned URIs."
   if ((response_code_ == 200 || response_code_ == 203 ||
        response_code_ == 206) &&
       !HasHeaderValue("cache-control", "must-revalidate")) {
@@ -1034,8 +1038,10 @@ TimeDelta HttpResponseHeaders::GetFreshnessLifetime(
   }
 
   // These responses are implicitly fresh (unless otherwise overruled):
-  if (response_code_ == 300 || response_code_ == 301 || response_code_ == 410)
+  if (response_code_ == 300 || response_code_ == 301 || response_code_ == 308 ||
+      response_code_ == 410) {
     return TimeDelta::Max();
+  }
 
   return TimeDelta();  // not fresh
 }

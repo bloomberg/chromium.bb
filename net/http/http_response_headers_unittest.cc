@@ -812,6 +812,11 @@ TEST(HttpResponseHeadersTest, RequiresValidation) {
       "\n",
       false
     },
+    // another cached permanent redirect
+    { "HTTP/1.1 308 Permanent Redirect\n"
+      "\n",
+      false
+    },
     // cached redirect: not reusable even though by default it would be
     { "HTTP/1.1 300 Multiple Choices\n"
       "Cache-Control: no-cache\n"

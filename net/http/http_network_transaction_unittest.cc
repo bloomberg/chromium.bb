@@ -3950,6 +3950,10 @@ TEST_P(HttpNetworkTransactionTest, ConnectStatus307) {
   ConnectStatusHelper(MockRead("HTTP/1.1 307 Temporary Redirect\r\n"));
 }
 
+TEST_P(HttpNetworkTransactionTest, ConnectStatus308) {
+  ConnectStatusHelper(MockRead("HTTP/1.1 308 Permanent Redirect\r\n"));
+}
+
 TEST_P(HttpNetworkTransactionTest, ConnectStatus400) {
   ConnectStatusHelper(MockRead("HTTP/1.1 400 Bad Request\r\n"));
 }
