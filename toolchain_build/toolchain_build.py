@@ -208,6 +208,7 @@ NATIVE_ENOUGH_MAP = {
 
 # The list of targets to build toolchains for.
 TARGET_LIST = ['arm', 'i686']
+UPLOAD_TARGETS = ['arm']
 
 # These are extra arguments to pass gcc's configure that vary by target.
 TARGET_GCC_CONFIG = {
@@ -889,7 +890,7 @@ def GetPackageTargets():
   """
   package_targets = collections.defaultdict(dict)
 
-  for target_arch in TARGET_LIST:
+  for target_arch in UPLOAD_TARGETS:
     # Each package target contains non-platform specific newlib and gcc libs.
     # These packages are added inside of TargetLibs(host, target).
     newlib_package = 'newlib_%s' % target_arch
