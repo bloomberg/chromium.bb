@@ -235,10 +235,21 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
                                 SessionManagerOperation* operation,
                                 Status status);
 
+  // Updates status and invokes the callback immediately.
+  void HandleError(Status status, const base::Closure& callback);
+
   // Assembles PolicyData based on |settings| and the current |policy_data_|
   // and |username_|.
   scoped_ptr<enterprise_management::PolicyData> AssemblePolicy(
-      const enterprise_management::ChromeDeviceSettingsProto& settings);
+      const enterprise_management::ChromeDeviceSettingsProto& settings) const;
+
+  // Returns the current management mode.
+  enterprise_management::PolicyData::ManagementMode GetManagementMode() const;
+
+  // Returns true if it is okay to transfer from the current mode to the new
+  // mode. This function should be called in SetManagementMode().
+  bool CheckManagementModeTransition(
+      enterprise_management::PolicyData::ManagementMode new_mode) const;
 
   SessionManagerClient* session_manager_client_;
   scoped_refptr<OwnerKeyUtil> owner_key_util_;

@@ -223,6 +223,120 @@ TEST_F(DeviceSettingsServiceTest, SignAndStoreSuccess) {
             policy_data->username());
 }
 
+TEST_F(DeviceSettingsServiceTest, SetManagementSettingsModeTransition) {
+  ReloadDeviceSettings();
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+
+  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
+  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  FlushDeviceSettings();
+
+  // The initial management mode should be NOT_MANAGED.
+  EXPECT_EQ(em::PolicyData::NOT_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // NOT_MANAGED -> CONSUMER_MANAGED: Okay.
+  device_settings_service_.SetManagementSettings(
+      em::PolicyData::CONSUMER_MANAGED,
+      "fake_request_token",
+      "fake_device_id",
+      base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(operation_completed_);
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+  EXPECT_EQ(em::PolicyData::CONSUMER_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // CONSUMER_MANAGED -> ENTERPRISE_MANAGED: Invalid.
+  device_settings_service_.SetManagementSettings(
+      em::PolicyData::ENTERPRISE_MANAGED,
+      "fake_request_token",
+      "fake_device_id",
+      base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(operation_completed_);
+  EXPECT_EQ(DeviceSettingsService::STORE_POLICY_ERROR,
+            device_settings_service_.status());
+  EXPECT_EQ(em::PolicyData::CONSUMER_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // CONSUMER_MANAGED -> NOT_MANAGED: Okay.
+  device_settings_service_.SetManagementSettings(
+      em::PolicyData::NOT_MANAGED,
+      "fake_request_token",
+      "fake_device_id",
+      base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(operation_completed_);
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+  EXPECT_EQ(em::PolicyData::NOT_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // NOT_MANAGED -> ENTERPRISE_MANAGED: Invalid.
+  device_settings_service_.SetManagementSettings(
+      em::PolicyData::ENTERPRISE_MANAGED,
+      "fake_request_token",
+      "fake_device_id",
+      base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(operation_completed_);
+  EXPECT_EQ(DeviceSettingsService::STORE_POLICY_ERROR,
+            device_settings_service_.status());
+  EXPECT_EQ(em::PolicyData::NOT_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // Inject a policy data with management mode set to ENTERPRISE_MANAGED.
+  device_policy_.policy_data().set_management_mode(
+      em::PolicyData::ENTERPRISE_MANAGED);
+  device_policy_.Build();
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  ReloadDeviceSettings();
+  EXPECT_EQ(em::PolicyData::ENTERPRISE_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // ENTERPRISE_MANAGED -> NOT_MANAGED: Invalid.
+  device_settings_service_.SetManagementSettings(
+      em::PolicyData::NOT_MANAGED,
+      "fake_request_token",
+      "fake_device_id",
+      base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(operation_completed_);
+  EXPECT_EQ(DeviceSettingsService::STORE_POLICY_ERROR,
+            device_settings_service_.status());
+  EXPECT_EQ(em::PolicyData::ENTERPRISE_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // ENTERPRISE_MANAGED -> CONSUMER_MANAGED: Invalid.
+  device_settings_service_.SetManagementSettings(
+      em::PolicyData::CONSUMER_MANAGED,
+      "fake_request_token",
+      "fake_device_id",
+      base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(operation_completed_);
+  EXPECT_EQ(DeviceSettingsService::STORE_POLICY_ERROR,
+            device_settings_service_.status());
+  EXPECT_EQ(em::PolicyData::ENTERPRISE_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+}
+
 TEST_F(DeviceSettingsServiceTest, SetManagementSettingsSuccess) {
   ReloadDeviceSettings();
   EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,

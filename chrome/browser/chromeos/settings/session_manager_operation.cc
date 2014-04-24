@@ -257,11 +257,6 @@ SignAndStoreSettingsOperation::SignAndStoreSettingsOperation(
 SignAndStoreSettingsOperation::~SignAndStoreSettingsOperation() {}
 
 void SignAndStoreSettingsOperation::Run() {
-  if (!new_policy_) {
-    ReportResult(DeviceSettingsService::STORE_POLICY_ERROR);
-    return;
-  }
-
   EnsureOwnerKey(base::Bind(&SignAndStoreSettingsOperation::StartSigning,
                             weak_factory_.GetWeakPtr()));
 }
