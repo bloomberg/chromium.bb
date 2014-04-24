@@ -1999,8 +1999,10 @@ bool RenderViewImpl::isPointerLocked() {
 
 void RenderViewImpl::didActivateCompositor() {
 #if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // render_thread may be NULL in tests.
   InputHandlerManager* input_handler_manager =
-      RenderThreadImpl::current()->input_handler_manager();
+      render_thread ? render_thread->input_handler_manager() : NULL;
   if (input_handler_manager) {
      input_handler_manager->AddInputHandler(
         routing_id_,

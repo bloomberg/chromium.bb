@@ -1484,7 +1484,9 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
-  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // render_thread may be NULL in tests.
+  if (render_thread && render_thread->compositor_message_loop_proxy().get() &&
       compositor_) {
       compositor_->setNeedsAnimate();
   } else {

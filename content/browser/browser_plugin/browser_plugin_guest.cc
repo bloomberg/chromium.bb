@@ -473,10 +473,6 @@ void BrowserPluginGuest::Initialize(
 
   WebPreferences prefs = GetWebContents()->GetWebkitPrefs();
   prefs.navigate_on_drag_drop = false;
-  if (!embedder_web_contents_->
-          GetWebkitPrefs().accelerated_compositing_enabled) {
-    prefs.accelerated_compositing_enabled = false;
-  }
   GetWebContents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 
   // Enable input method for guest if it's enabled for the embedder.

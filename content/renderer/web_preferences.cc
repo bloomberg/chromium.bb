@@ -203,9 +203,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   // overlay of rects, if requested on the command line.
   settings->setShowPaintRects(prefs.show_paint_rects);
 
-  // Enable gpu-accelerated compositing if requested on the command line.
-  settings->setAcceleratedCompositingEnabled(
-      prefs.accelerated_compositing_enabled);
+  // Enable gpu-accelerated compositing always.
+  settings->setAcceleratedCompositingEnabled(true);
 
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   settings->setAccelerated2dCanvasEnabled(prefs.accelerated_2d_canvas_enabled);

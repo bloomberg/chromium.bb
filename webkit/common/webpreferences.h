@@ -109,7 +109,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool show_paint_rects;
   bool asynchronous_spell_checking_enabled;
   bool unified_textchecker_enabled;
-  bool accelerated_compositing_enabled;
   bool force_compositing_mode;
   bool accelerated_compositing_for_3d_transforms_enabled;
   bool accelerated_compositing_for_animation_enabled;
