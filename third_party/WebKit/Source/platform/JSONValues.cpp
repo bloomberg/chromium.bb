@@ -264,10 +264,56 @@ PassRefPtr<JSONObject> JSONObjectBase::asObject()
     return openAccessors();
 }
 
+void JSONObjectBase::setBoolean(const String& name, bool value)
+{
+    setValue(name, JSONBasicValue::create(value));
+}
+
+void JSONObjectBase::setNumber(const String& name, double value)
+{
+    setValue(name, JSONBasicValue::create(value));
+}
+
+void JSONObjectBase::setString(const String& name, const String& value)
+{
+    setValue(name, JSONString::create(value));
+}
+
+void JSONObjectBase::setValue(const String& name, PassRefPtr<JSONValue> value)
+{
+    ASSERT(value);
+    if (m_data.set(name, value).isNewEntry)
+        m_order.append(name);
+}
+
+void JSONObjectBase::setObject(const String& name, PassRefPtr<JSONObject> value)
+{
+    ASSERT(value);
+    if (m_data.set(name, value).isNewEntry)
+        m_order.append(name);
+}
+
+void JSONObjectBase::setArray(const String& name, PassRefPtr<JSONArray> value)
+{
+    ASSERT(value);
+    if (m_data.set(name, value).isNewEntry)
+        m_order.append(name);
+}
+
 JSONObject* JSONObjectBase::openAccessors()
 {
     COMPILE_ASSERT(sizeof(JSONObject) == sizeof(JSONObjectBase), cannot_cast);
     return static_cast<JSONObject*>(this);
+}
+
+JSONObjectBase::iterator JSONObjectBase::find(const String& name)
+{
+    return m_data.find(name);
+}
+
+JSONObjectBase::const_iterator JSONObjectBase::find(const String& name) const
+{
+    return m_data.find(name);
 }
 
 bool JSONObjectBase::getBoolean(const String& name, bool* output) const
@@ -375,6 +421,44 @@ JSONArrayBase::JSONArrayBase()
     : JSONValue(TypeArray)
     , m_data()
 {
+}
+
+void JSONArrayBase::pushBoolean(bool value)
+{
+    m_data.append(JSONBasicValue::create(value));
+}
+
+void JSONArrayBase::pushInt(int value)
+{
+    m_data.append(JSONBasicValue::create(value));
+}
+
+void JSONArrayBase::pushNumber(double value)
+{
+    m_data.append(JSONBasicValue::create(value));
+}
+
+void JSONArrayBase::pushString(const String& value)
+{
+    m_data.append(JSONString::create(value));
+}
+
+void JSONArrayBase::pushValue(PassRefPtr<JSONValue> value)
+{
+    ASSERT(value);
+    m_data.append(value);
+}
+
+void JSONArrayBase::pushObject(PassRefPtr<JSONObject> value)
+{
+    ASSERT(value);
+    m_data.append(value);
+}
+
+void JSONArrayBase::pushArray(PassRefPtr<JSONArray> value)
+{
+    ASSERT(value);
+    m_data.append(value);
 }
 
 PassRefPtr<JSONValue> JSONArrayBase::get(size_t index)
