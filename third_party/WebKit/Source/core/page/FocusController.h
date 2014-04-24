@@ -67,6 +67,7 @@ public:
     static PassOwnPtr<FocusController> create(Page*);
 
     void setFocusedFrame(PassRefPtr<Frame>);
+    void focusDocumentView(PassRefPtr<Frame>);
     Frame* focusedFrame() const { return m_focusedFrame.get(); }
     Frame* focusedOrMainFrame() const;
 

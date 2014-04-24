@@ -3778,7 +3778,7 @@ void EventHandler::focusDocumentView()
     Page* page = m_frame->page();
     if (!page)
         return;
-    page->focusController().setFocusedFrame(m_frame);
+    page->focusController().focusDocumentView(m_frame);
 }
 
 unsigned EventHandler::accessKeyModifiers()

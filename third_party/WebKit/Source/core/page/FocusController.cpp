@@ -262,6 +262,43 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
     m_page->chrome().client().focusedFrameChanged(newFrame.get());
 }
 
+void FocusController::focusDocumentView(PassRefPtr<Frame> frame)
+{
+    ASSERT(!frame || frame->page() == m_page);
+    if (m_focusedFrame == frame)
+        return;
+
+    RefPtr<LocalFrame> focusedFrame = (m_focusedFrame && m_focusedFrame->isLocalFrame()) ? toLocalFrame(m_focusedFrame.get()) : 0;
+    if (focusedFrame && focusedFrame->view()) {
+        RefPtr<Document> document = focusedFrame->document();
+        Element* focusedElement = document ? document->focusedElement() : 0;
+        if (focusedElement) {
+            focusedElement->dispatchBlurEvent(0);
+            if (focusedElement == document->focusedElement()) {
+                focusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, 0);
+                if (focusedElement == document->focusedElement())
+                    focusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, 0);
+            }
+        }
+    }
+
+    RefPtr<LocalFrame> newFocusedFrame = (frame && frame->isLocalFrame()) ? toLocalFrame(frame.get()) : 0;
+    if (newFocusedFrame && newFocusedFrame->view()) {
+        RefPtr<Document> document = newFocusedFrame->document();
+        Element* focusedElement = document ? document->focusedElement() : 0;
+        if (focusedElement) {
+            focusedElement->dispatchFocusEvent(0, FocusTypePage);
+            if (focusedElement == document->focusedElement()) {
+                document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, 0);
+                if (focusedElement == document->focusedElement())
+                    document->focusedElement()->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, 0);
+            }
+        }
+    }
+
+    setFocusedFrame(frame);
+}
+
 Frame* FocusController::focusedOrMainFrame() const
 {
     if (Frame* frame = focusedFrame())
