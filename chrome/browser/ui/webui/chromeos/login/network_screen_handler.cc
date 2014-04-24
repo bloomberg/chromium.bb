@@ -33,6 +33,9 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -145,6 +148,12 @@ void NetworkScreenHandler::Show() {
     HandleOnLanguageChanged(startup_manifest->initial_locale_default());
   }
 
+  // Make sure all our network technologies are turned on. On OOBE, the user
+  // should be able to select any of the available networks on the device.
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  handler->SetTechnologyEnabled(NetworkTypePattern::NonVirtual(),
+                                true,
+                                chromeos::network_handler::ErrorCallback());
   ShowScreen(OobeUI::kScreenOobeNetwork, NULL);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))

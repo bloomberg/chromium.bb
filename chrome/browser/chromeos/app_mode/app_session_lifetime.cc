@@ -25,6 +25,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "content/public/browser/web_contents.h"
 
 using apps::AppWindowRegistry;
@@ -53,6 +56,17 @@ class AppWindowHandler : public AppWindowRegistry::Observer {
   virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
   virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {
     if (window_registry_->app_windows().empty()) {
+      if (DemoAppLauncher::IsDemoAppSession(
+          chromeos::UserManager::Get()->GetActiveUser()->email())) {
+        // If we were in demo mode, we disabled all our network technologies,
+        // re-enable them.
+        NetworkStateHandler* handler =
+            NetworkHandler::Get()->network_state_handler();
+        handler->SetTechnologyEnabled(
+            NetworkTypePattern::NonVirtual(),
+            true,
+            chromeos::network_handler::ErrorCallback());
+      }
       chrome::AttemptUserExit();
       window_registry_->RemoveObserver(this);
     }

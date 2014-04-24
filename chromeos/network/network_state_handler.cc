@@ -127,11 +127,16 @@ void NetworkStateHandler::SetTechnologyEnabled(
     const NetworkTypePattern& type,
     bool enabled,
     const network_handler::ErrorCallback& error_callback) {
-  std::string technology = GetTechnologyForType(type);
-  NET_LOG_USER("SetTechnologyEnabled",
-               base::StringPrintf("%s:%d", technology.c_str(), enabled));
-  shill_property_handler_->SetTechnologyEnabled(
-      technology, enabled, error_callback);
+  ScopedVector<std::string> technologies = GetTechnologiesForType(type);
+  for (ScopedVector<std::string>::iterator it = technologies.begin();
+      it != technologies.end(); ++it) {
+    std::string* technology = *it;
+    DCHECK(technology);
+    NET_LOG_USER("SetTechnologyEnabled",
+                 base::StringPrintf("%s:%d", technology->c_str(), enabled));
+    shill_property_handler_->SetTechnologyEnabled(
+        *technology, enabled, error_callback);
+  }
   // Signal Device/Technology state changed.
   NotifyDeviceListChanged();
 }
@@ -833,6 +838,26 @@ std::string NetworkStateHandler::GetTechnologyForType(
 
   NOTREACHED();
   return std::string();
+}
+
+ScopedVector<std::string> NetworkStateHandler::GetTechnologiesForType(
+    const NetworkTypePattern& type) const {
+  ScopedVector<std::string> technologies;
+  if (type.MatchesType(shill::kTypeEthernet))
+    technologies.push_back(new std::string(shill::kTypeEthernet));
+  if (type.MatchesType(shill::kTypeWifi))
+    technologies.push_back(new std::string(shill::kTypeWifi));
+  if (type.MatchesType(shill::kTypeWimax))
+    technologies.push_back(new std::string(shill::kTypeWimax));
+  if (type.MatchesType(shill::kTypeCellular))
+    technologies.push_back(new std::string(shill::kTypeCellular));
+  if (type.MatchesType(shill::kTypeBluetooth))
+    technologies.push_back(new std::string(shill::kTypeBluetooth));
+  if (type.MatchesType(shill::kTypeVPN))
+    technologies.push_back(new std::string(shill::kTypeVPN));
+
+  CHECK_GT(technologies.size(), 0ul);
+  return technologies.Pass();
 }
 
 }  // namespace chromeos

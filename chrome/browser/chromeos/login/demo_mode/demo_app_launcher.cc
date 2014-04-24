@@ -13,10 +13,14 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "grit/browser_resources.h"
@@ -74,10 +78,23 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 
   const extensions::Extension* extension =
       extension_service->GetExtensionById(extension_id, true);
+  if (!extension) {
+    // We've already done too much setup at this point to just return out, it
+    // is safer to just restart.
+    chrome::AttemptUserExit();
+    return;
+  }
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kForceAppMode);
   command_line->AppendSwitchASCII(switches::kAppId, extension_id);
+
+  // Disable network before launching the app.
+  LOG(WARNING) << "Disabling network before launching demo app..";
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  handler->SetTechnologyEnabled(NetworkTypePattern::NonVirtual(),
+                                false,
+                                chromeos::network_handler::ErrorCallback());
 
   OpenApplication(AppLaunchParams(
       profile, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));

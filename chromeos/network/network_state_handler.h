@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_state.h"
@@ -327,8 +328,13 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Called whenever Device.Scanning state transitions to false.
   void ScanCompleted(const std::string& type);
 
-  // Returns the technology type for |type|.
+  // Returns one technology type for |type|. This technology will be the
+  // highest priority technology in the type pattern.
   std::string GetTechnologyForType(const NetworkTypePattern& type) const;
+
+  // Returns all the technology types for |type|.
+  ScopedVector<std::string> GetTechnologiesForType(
+      const NetworkTypePattern& type) const;
 
   // Shill property handler instance, owned by this class.
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
