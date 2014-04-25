@@ -677,16 +677,6 @@ ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
   return SelectFileDialogImpl::Create(listener, policy);
 }
 
-void Gtk2UI::AddNativeThemeChangeObserver(
-    views::NativeThemeChangeObserver* observer) {
-  theme_change_observers_.AddObserver(observer);
-}
-
-void Gtk2UI::RemoveNativeThemeChangeObserver(
-    views::NativeThemeChangeObserver* observer) {
-  theme_change_observers_.RemoveObserver(observer);
-}
-
 bool Gtk2UI::UnityIsRunning() {
   return unity::IsRunning();
 }
@@ -1391,9 +1381,7 @@ void Gtk2UI::ClearAllThemeData() {
 void Gtk2UI::OnStyleSet(GtkWidget* widget, GtkStyle* previous_style) {
   ClearAllThemeData();
   LoadGtkValues();
-
-  FOR_EACH_OBSERVER(views::NativeThemeChangeObserver, theme_change_observers_,
-                    OnNativeThemeChanged());
+  NativeThemeGtk2::instance()->NotifyNativeThemeObservers();
 }
 
 }  // namespace libgtk2ui

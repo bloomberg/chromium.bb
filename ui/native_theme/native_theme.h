@@ -5,6 +5,7 @@
 #ifndef UI_NATIVE_THEME_NATIVE_THEME_H_
 #define UI_NATIVE_THEME_NATIVE_THEME_H_
 
+#include "base/observer_list.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme_export.h"
@@ -17,6 +18,8 @@ class Size;
 }
 
 namespace ui {
+
+class NativeThemeObserver;
 
 // This class supports drawing UI controls (like buttons, text fields, lists,
 // comboboxes, etc) that look like the native UI controls of the underlying
@@ -311,13 +314,24 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // function, returning the port's subclass.
   static NativeTheme* instance();
 
+  // Add or remove observers to be notified when the native theme changes.
+  void AddObserver(NativeThemeObserver* observer);
+  void RemoveObserver(NativeThemeObserver* observer);
+
  protected:
+  // Notify observers of native theme changes.
+  void NotifyObservers();
+
   NativeTheme();
   virtual ~NativeTheme();
 
   unsigned int thumb_inactive_color_;
   unsigned int thumb_active_color_;
   unsigned int track_color_;
+
+ private:
+  // Observers to notify when the native theme changes.
+  ObserverList<NativeThemeObserver> native_theme_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

@@ -183,7 +183,8 @@ Widget::Widget()
       last_mouse_event_was_move_(false),
       auto_release_capture_(true),
       root_layers_dirty_(false),
-      movement_disabled_(false) {
+      movement_disabled_(false),
+      observer_manager_(this) {
 }
 
 Widget::~Widget() {
@@ -368,6 +369,7 @@ void Widget::Init(const InitParams& in_params) {
         internal::NativeWidgetPrivate::IsMouseButtonDown();
   }
   native_widget_->InitNativeWidget(params);
+  observer_manager_.Add(GetNativeTheme());
   if (RequiresNonClientView(params.type)) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
@@ -1336,6 +1338,14 @@ View* Widget::GetFocusTraversableParentView() {
   // up and as a result this should not be called.
   NOTREACHED();
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, ui::NativeThemeObserver implementation:
+
+void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  DCHECK_EQ(observed_theme, GetNativeTheme());
+  root_view_->PropagateNativeThemeChanged(GetNativeTheme());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

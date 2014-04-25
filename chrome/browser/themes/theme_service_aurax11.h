@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_THEMES_THEME_SERVICE_AURAX11_H_
 
 #include "chrome/browser/themes/theme_service.h"
-#include "ui/views/linux_ui/native_theme_change_observer.h"
 
 // A subclass of ThemeService that manages the CustomThemeSupplier which
 // provides the native X11 theme.
-class ThemeServiceAuraX11 : public ThemeService,
-                            public views::NativeThemeChangeObserver {
+class ThemeServiceAuraX11 : public ThemeService {
  public:
   ThemeServiceAuraX11();
   virtual ~ThemeServiceAuraX11();
@@ -21,9 +19,6 @@ class ThemeServiceAuraX11 : public ThemeService,
   virtual void SetNativeTheme() OVERRIDE;
   virtual bool UsingDefaultTheme() const OVERRIDE;
   virtual bool UsingNativeTheme() const OVERRIDE;
-
-  // Overridden from views::NativeThemeChangeObserver:
-  virtual void OnNativeThemeChanged() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceAuraX11);

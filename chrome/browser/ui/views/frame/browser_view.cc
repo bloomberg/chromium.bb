@@ -129,7 +129,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
@@ -419,7 +418,6 @@ BrowserView::BrowserView()
 #if defined(OS_CHROMEOS)
       scroll_end_effect_controller_(ScrollEndEffectController::Create()),
 #endif
-      color_change_listener_(this),
       activate_modal_dialog_factory_(this) {
 }
 
@@ -1837,6 +1835,15 @@ void BrowserView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_CLIENT;
 }
 
+void BrowserView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  // Do not handle native theme changes before the browser view is initialized.
+  if (!initialized_)
+    return;
+  ClientView::OnNativeThemeChanged(theme);
+  UserChangedTheme();
+  chrome::MaybeShowInvertBubbleView(this);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, ui::AcceleratorTarget overrides:
 
@@ -1892,10 +1899,6 @@ bool BrowserView::DrawInfoBarArrows(int* x) const {
     *x = anchor.x();
   }
   return true;
-}
-
-void BrowserView::OnSysColorChange() {
-  chrome::MaybeShowInvertBubbleView(this);
 }
 
 void BrowserView::InitViews() {

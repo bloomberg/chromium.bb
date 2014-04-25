@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
 #if defined(OS_WIN)
@@ -12,6 +11,8 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "ui/gfx/color_utils.h"
+
 #if defined(OS_WIN)
 #include "ui/gfx/win/singleton_hwnd.h"
 #endif

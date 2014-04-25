@@ -39,6 +39,8 @@
         'native_theme_base.h',
         'native_theme_mac.h',
         'native_theme_mac.mm',
+        'native_theme_observer.cc',
+        'native_theme_observer.h',
         'native_theme_switches.cc',
         'native_theme_switches.h',
         'native_theme_win.cc',

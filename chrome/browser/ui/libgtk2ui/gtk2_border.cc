@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
+#include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
 #include "third_party/skia/include/effects/SkLerpXfermode.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation.h"
@@ -73,12 +74,12 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
 Gtk2Border::Gtk2Border(Gtk2UI* gtk2_ui,
                        views::LabelButton* owning_button)
     : gtk2_ui_(gtk2_ui),
-      owning_button_(owning_button) {
-  gtk2_ui_->AddNativeThemeChangeObserver(this);
+      owning_button_(owning_button),
+      observer_manager_(this) {
+  observer_manager_.Add(NativeThemeGtk2::instance());
 }
 
 Gtk2Border::~Gtk2Border() {
-  gtk2_ui_->RemoveNativeThemeChangeObserver(this);
 }
 
 void Gtk2Border::Paint(const views::View& view, gfx::Canvas* canvas) {
@@ -122,7 +123,8 @@ gfx::Size Gtk2Border::GetMinimumSize() const {
   return gfx::Size(insets.width(), insets.height());
 }
 
-void Gtk2Border::OnNativeThemeChanged() {
+void Gtk2Border::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  DCHECK_EQ(observed_theme, NativeThemeGtk2::instance());
   for (int i = 0; i < kNumberOfFocusedStates; ++i) {
     for (int j = 0; j < views::Button::STATE_COUNT; ++j) {
       button_images_[i][j] = gfx::ImageSkia();

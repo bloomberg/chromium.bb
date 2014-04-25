@@ -112,10 +112,6 @@ class Gtk2UI : public views::LinuxUI {
       views::WindowButtonOrderObserver* observer) OVERRIDE;
   virtual void RemoveWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) OVERRIDE;
-  virtual void AddNativeThemeChangeObserver(
-      views::NativeThemeChangeObserver* observer) OVERRIDE;
-  virtual void RemoveNativeThemeChangeObserver(
-      views::NativeThemeChangeObserver* observer) OVERRIDE;
   virtual bool UnityIsRunning() OVERRIDE;
   virtual NonClientMiddleClickAction GetNonClientMiddleClickAction() OVERRIDE;
   virtual void NotifyWindowManagerStartupComplete() OVERRIDE;
@@ -250,9 +246,6 @@ class Gtk2UI : public views::LinuxUI {
 
   // Objects to notify when the window frame button order changes.
   ObserverList<views::WindowButtonOrderObserver> observer_list_;
-
-  // Observers to notify when the theme state changes.
-  ObserverList<views::NativeThemeChangeObserver> theme_change_observers_;
 
   // Whether we should lower the window on a middle click to the non client
   // area.

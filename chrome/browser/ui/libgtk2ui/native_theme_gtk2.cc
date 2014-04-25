@@ -171,6 +171,10 @@ void NativeThemeGtk2::PaintMenuItemBackground(
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
+void NativeThemeGtk2::NotifyNativeThemeObservers() {
+  NotifyObservers();
+}
+
 GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
   switch (color_id) {
     // Windows

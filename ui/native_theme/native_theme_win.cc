@@ -27,7 +27,6 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
-#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/common_theme.h"
 
@@ -213,16 +212,6 @@ bool NativeThemeWin::IsClassicTheme(ThemeName name) const {
   return !GetThemeHandle(name);
 }
 
-// TODO(sky): seems like we should default to NativeThemeWin, but that currently
-// breaks a couple of tests (FocusTraversalTest.NormalTraversal in
-// views_unittests).
-#if !defined(USE_AURA)
-// static
-NativeTheme* NativeTheme::instance() {
-  return NativeThemeWin::instance();
-}
-#endif
-
 // static
 NativeThemeWin* NativeThemeWin::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeWin, s_native_theme, ());
@@ -400,6 +389,7 @@ NativeThemeWin::~NativeThemeWin() {
 void NativeThemeWin::OnSysColorChange() {
   UpdateSystemColors();
   is_using_high_contrast_valid_ = false;
+  NotifyObservers();
 }
 
 void NativeThemeWin::UpdateSystemColors() {

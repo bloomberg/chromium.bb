@@ -245,7 +245,7 @@ void View::AddChildViewAt(View* view, int index) {
     RegisterChildrenForVisibleBoundsNotification(view);
     const ui::NativeTheme* new_theme = widget->GetNativeTheme();
     if (new_theme != old_theme)
-      PropagateNativeThemeChanged(new_theme);
+      view->PropagateNativeThemeChanged(new_theme);
     if (view->visible())
       view->SchedulePaint();
   }
