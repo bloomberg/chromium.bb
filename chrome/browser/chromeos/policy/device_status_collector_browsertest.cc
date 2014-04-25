@@ -152,6 +152,10 @@ class DeviceStatusCollectorTest : public testing::Test {
     : ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
       io_thread_(content::BrowserThread::IO, &message_loop_),
+      install_attributes_("managed.com",
+                          "user@managed.com",
+                          "device_id",
+                          DEVICE_MODE_ENTERPRISE),
       user_manager_(new chromeos::MockUserManager()),
       user_manager_enabler_(user_manager_) {
     // Run this test with a well-known timezone so that Time::LocalMidnight()
@@ -172,13 +176,6 @@ class DeviceStatusCollectorTest : public testing::Test {
     EXPECT_TRUE(
         cros_settings_->RemoveSettingsProvider(device_settings_provider_));
     cros_settings_->AddSettingsProvider(&stub_settings_provider_);
-
-    // Set up fake install attributes.
-    StubEnterpriseInstallAttributes* attributes =
-        new StubEnterpriseInstallAttributes();
-    attributes->SetDomain("managed.com");
-    attributes->SetRegistrationUser("user@managed.com");
-    BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(attributes);
 
     RestartStatusCollector();
   }
@@ -261,6 +258,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
+  ScopedStubEnterpriseInstallAttributes install_attributes_;
   TestingPrefServiceSimple prefs_;
   chromeos::system::MockStatisticsProvider statistics_provider_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
