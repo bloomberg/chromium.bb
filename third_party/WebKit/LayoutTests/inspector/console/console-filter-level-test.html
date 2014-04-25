@@ -28,7 +28,7 @@ function test()
 
     function dumpVisibleMessages()
     {
-        var children = WebInspector.ConsolePanel._view()._topGroup.element.childNodes[0].childNodes;
+        var children = WebInspector.ConsolePanel._view()._topGroup._messagesElement.childNodes;
 
         for (var i = 0; i < children.length; i++)
             InspectorTest.addResult(">" + children[i].textContent);

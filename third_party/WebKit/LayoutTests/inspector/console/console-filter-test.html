@@ -43,34 +43,24 @@ function onload()
 
 function test()
 {
-    var messagesElement = WebInspector.ConsolePanel._view()._messagesElement;
+    var messagesElement = WebInspector.ConsolePanel._view()._topGroup._messagesElement;
 
     function dumpVisibleMessages(root, indent)
     {
-        indent = indent || "";
-        root = root || WebInspector.ConsolePanel._view()._topGroup.element; // .console-group
+        root = root || WebInspector.ConsolePanel._view()._topGroup._messagesElement; // .console-group
         var children = root.childNodes;
-
-        for (var i = 0; i < children.length; i++) {
-            if (children[i].classList.contains("console-message")) {
-                InspectorTest.addResult(indent + ">" + children[i].textContent);
-                indent = indent + "  ";
-            } else if (children[i].classList.contains("console-group-messages")) {
-                var groupMessages = children[i].childNodes;
-                for (var j = 0; j < groupMessages.length; j++) {
-                    if (groupMessages[j].classList.contains("console-message"))
-                        InspectorTest.addResult(indent + groupMessages[j].textContent);
-                    else if (groupMessages[j].classList.contains("console-group"))
-                        dumpVisibleMessages(groupMessages[j], indent);
-                }
-            }
+        for (var i = 0; i < children.length; ++i) {
+            var viewMessage = children[i].message;
+            var delimeter = WebInspector.ConsoleGroup.isGroupStartMessage(viewMessage) ? ">" : "";
+            var indent = "";
+            for (var j = 0; j < viewMessage.nestingLevel(); ++j)
+                indent += "  ";
+            InspectorTest.addResult(indent + delimeter + children[i].textContent);
         }
     }
 
-    var groupMessages = messagesElement.querySelector(".console-group-messages");
-
-    var url1 = groupMessages.childNodes[0].message.consoleMessage().url;
-    var url2 = groupMessages.childNodes[1].message.consoleMessage().url;
+    var url1 = messagesElement.childNodes[0].message.consoleMessage().url;
+    var url2 = messagesElement.childNodes[1].message.consoleMessage().url;
 
     InspectorTest.runTestSuite([
         function beforeFilter(next)

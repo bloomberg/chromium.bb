@@ -26,7 +26,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];
         var message = uiMessage.consoleMessage();
-        var element = uiMessage.toMessageElement();
+        var element = uiMessage.contentElement();
 
         if (dumpClassNames) {
             var classNames = [];
@@ -52,7 +52,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 
 InspectorTest.dumpConsoleTableMessage = function(viewMessage)
 {
-    var table = viewMessage.toMessageElement();
+    var table = viewMessage.contentElement();
     var headers = table.querySelectorAll("th div");
     if (!headers.length)
         return false;
@@ -84,7 +84,7 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
     var result = [];
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].toMessageElement();
+        var element = messageViews[i].contentElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
         InspectorTest.addResult(messageText);
         var spans = element.querySelectorAll(".console-message-text > span > span");
@@ -98,7 +98,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].toMessageElement();
+        var element = messageViews[i].contentElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element);
         result.push(messageText + " " + element.getAttribute("class"));
     }
@@ -114,7 +114,7 @@ InspectorTest.expandConsoleMessages = function(callback)
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var message = messageViews[i].consoleMessage();
-        var element = messageViews[i].toMessageElement();
+        var element = messageViews[i].contentElement();
         var node = element;
         while (node) {
             if (node.treeElementForTest)

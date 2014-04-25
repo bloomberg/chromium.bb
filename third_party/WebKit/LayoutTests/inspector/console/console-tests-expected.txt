@@ -30,7 +30,6 @@ error console-tests.html:13 console-message console-error-level
 count: 1 console-tests.html:17 console-message console-debug-level
 count: 2 console-tests.html:17 console-message console-debug-level
 group console-tests.html:18 console-message console-log-level console-group-title
- console-message console-log-level
 1 2 3 console-tests.html:20 console-message console-log-level
 groupCollapsed console-tests.html:21 console-message console-log-level console-group-title
 Object console-tests.html:22 console-message console-log-level
@@ -43,7 +42,6 @@ function () { } console-tests.html:28 console-message console-log-level
 function f() { } console-tests.html:29 console-message console-log-level
 Array[3] console-tests.html:30 console-message console-log-level
 /regexp.*/ console-tests.html:31 console-message console-log-level
- console-message console-log-level
 : 1 console-tests.html:33 console-message console-debug-level
 : 1 console-tests.html:34 console-message console-debug-level
 : 1 console-tests.html:35 console-message console-debug-level

@@ -101,7 +101,7 @@ function test()
 
     function completeTest()
     {
-        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(WebInspector.ConsolePanel._view()._topGroup.element));
+        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(WebInspector.ConsolePanel._view()._topGroup._messagesElement));
         InspectorTest.completeTest();
     }
 }
