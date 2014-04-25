@@ -32,7 +32,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   if (!surface)
     return surface;
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
-      manager, stub, surface.get(), false));
+      manager, stub, surface.get()));
 }
 
 }  // namespace content

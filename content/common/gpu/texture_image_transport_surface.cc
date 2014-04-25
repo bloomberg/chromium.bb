@@ -351,10 +351,6 @@ void TextureImageTransportSurface::BufferPresentedImpl(const Mailbox& mailbox) {
   }
 }
 
-void TextureImageTransportSurface::OnResizeViewACK() {
-  NOTREACHED();
-}
-
 void TextureImageTransportSurface::ReleaseBackTexture() {
   DCHECK(IsContextValid(helper_.get()));
   backbuffer_ = NULL;

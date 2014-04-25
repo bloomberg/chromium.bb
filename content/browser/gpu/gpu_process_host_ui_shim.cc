@@ -196,8 +196,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnUpdateVSyncParameters)
     IPC_MESSAGE_HANDLER(GpuHostMsg_FrameDrawn, OnFrameDrawn)
 
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
-
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
@@ -236,24 +234,6 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
   TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
 
   GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
-}
-
-void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
-                                        int32 route_id,
-                                        gfx::Size size) {
-  // Always respond even if the window no longer exists. The GPU process cannot
-  // make progress on the resizing command buffer until it receives the
-  // response.
-  ScopedSendOnIOThread delayed_send(
-      host_id_,
-      new AcceleratedSurfaceMsg_ResizeViewACK(route_id));
-
-  RenderWidgetHostViewPort* view =
-      GetRenderWidgetHostViewFromSurfaceID(surface_id);
-  if (!view)
-    return;
-
-  view->ResizeCompositingSurface(size);
 }
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceInitialized(int32 surface_id,

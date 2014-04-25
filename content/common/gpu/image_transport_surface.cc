@@ -86,7 +86,6 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
                         OnBufferPresented)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_WakeUpGpu, OnWakeUpGpu);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -116,12 +115,6 @@ void ImageTransportHelper::SendAcceleratedSurfaceRelease() {
   GpuHostMsg_AcceleratedSurfaceRelease_Params params;
   params.surface_id = stub_->surface_id();
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
-}
-
-void ImageTransportHelper::SendResizeView(const gfx::Size& size) {
-  manager_->Send(new GpuHostMsg_ResizeView(stub_->surface_id(),
-                                           route_id_,
-                                           size));
 }
 
 void ImageTransportHelper::SendUpdateVSyncParameters(
@@ -191,10 +184,6 @@ void ImageTransportHelper::OnBufferPresented(
   surface_->OnBufferPresented(params);
 }
 
-void ImageTransportHelper::OnResizeViewACK() {
-  surface_->OnResizeViewACK();
-}
-
 void ImageTransportHelper::OnWakeUpGpu() {
   surface_->WakeUpGpu();
 }
@@ -216,13 +205,9 @@ void ImageTransportHelper::SetLatencyInfo(
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::GLSurface* surface,
-    bool transport)
+    gfx::GLSurface* surface)
     : GLSurfaceAdapter(surface),
-      transport_(transport),
-      did_set_swap_interval_(false),
-      did_unschedule_(false),
-      is_swap_buffers_pending_(false) {
+      did_set_swap_interval_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -237,16 +222,6 @@ bool PassThroughImageTransportSurface::Initialize() {
 void PassThroughImageTransportSurface::Destroy() {
   helper_->Destroy();
   GLSurfaceAdapter::Destroy();
-}
-
-bool PassThroughImageTransportSurface::DeferDraws() {
-  if (is_swap_buffers_pending_) {
-    DCHECK(!did_unschedule_);
-    did_unschedule_ = true;
-    helper_->SetScheduled(false);
-    return true;
-  }
-  return false;
 }
 
 void PassThroughImageTransportSurface::SetLatencyInfo(
@@ -265,20 +240,7 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   }
 
-  if (transport_) {
-    DCHECK(!is_swap_buffers_pending_);
-    is_swap_buffers_pending_ = true;
-
-    // Round trip to the browser UI thread, for throttling, by sending a dummy
-    // SwapBuffers message.
-    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-    params.surface_handle = 0;
-    params.latency_info.swap(latency_info_);
-    params.size = surface()->GetSize();
-    helper_->SendAcceleratedSurfaceBuffersSwapped(params);
-  } else {
-    helper_->SendLatencyInfo(latency_info_);
-  }
+  helper_->SendLatencyInfo(latency_info_);
   latency_info_.clear();
   return result;
 }
@@ -292,26 +254,7 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
   }
 
-  if (transport_) {
-    DCHECK(!is_swap_buffers_pending_);
-    is_swap_buffers_pending_ = true;
-
-    // Round trip to the browser UI thread, for throttling, by sending a dummy
-    // PostSubBuffer message.
-    GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-    params.surface_handle = 0;
-    params.latency_info.swap(latency_info_);
-    params.surface_size = surface()->GetSize();
-    params.x = x;
-    params.y = y;
-    params.width = width;
-    params.height = height;
-    helper_->SendAcceleratedSurfacePostSubBuffer(params);
-
-    helper_->SetScheduled(false);
-  } else {
-    helper_->SendLatencyInfo(latency_info_);
-  }
+  helper_->SendLatencyInfo(latency_info_);
   latency_info_.clear();
   return result;
 }
@@ -326,35 +269,12 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
 void PassThroughImageTransportSurface::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& /* params */) {
-  DCHECK(transport_);
-  DCHECK(is_swap_buffers_pending_);
-  is_swap_buffers_pending_ = false;
-  if (did_unschedule_) {
-    did_unschedule_ = false;
-    helper_->SetScheduled(true);
-  }
-}
-
-void PassThroughImageTransportSurface::OnResizeViewACK() {
-  DCHECK(transport_);
-  Resize(new_size_);
-
-  TRACE_EVENT_ASYNC_END0("gpu", "OnResize", this);
-  helper_->SetScheduled(true);
+  NOTREACHED();
 }
 
 void PassThroughImageTransportSurface::OnResize(gfx::Size size,
                                                 float scale_factor) {
-  new_size_ = size;
-
-  if (transport_) {
-    helper_->SendResizeView(size);
-    helper_->SetScheduled(false);
-    TRACE_EVENT_ASYNC_BEGIN2("gpu", "OnResize", this,
-                             "width", size.width(), "height", size.height());
-  } else {
-    Resize(new_size_);
-  }
+  Resize(size);
 }
 
 gfx::Size PassThroughImageTransportSurface::GetSize() {

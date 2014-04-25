@@ -60,8 +60,7 @@ class DirectSurfaceAndroid : public PassThroughImageTransportSurface {
  public:
   DirectSurfaceAndroid(GpuChannelManager* manager,
                        GpuCommandBufferStub* stub,
-                       gfx::GLSurface* surface,
-                       bool transport);
+                       gfx::GLSurface* surface);
 
   // gfx::GLSurface implementation.
   virtual bool SwapBuffers() OVERRIDE;
@@ -78,7 +77,7 @@ ImageTransportSurfaceAndroid::ImageTransportSurfaceAndroid(
     GpuCommandBufferStub* stub,
     gfx::GLSurface* surface,
     uint32 parent_client_id)
-    : PassThroughImageTransportSurface(manager, stub, surface, true),
+    : PassThroughImageTransportSurface(manager, stub, surface),
       parent_client_id_(parent_client_id) {}
 
 ImageTransportSurfaceAndroid::~ImageTransportSurfaceAndroid() {}
@@ -148,9 +147,8 @@ void ImageTransportSurfaceAndroid::DoWakeUpGpu() {
 
 DirectSurfaceAndroid::DirectSurfaceAndroid(GpuChannelManager* manager,
                                            GpuCommandBufferStub* stub,
-                                           gfx::GLSurface* surface,
-                                           bool transport)
-    : PassThroughImageTransportSurface(manager, stub, surface, transport) {}
+                                           gfx::GLSurface* surface)
+    : PassThroughImageTransportSurface(manager, stub, surface) {}
 
 DirectSurfaceAndroid::~DirectSurfaceAndroid() {}
 
@@ -188,7 +186,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     return scoped_refptr<gfx::GLSurface>();
 
   return scoped_refptr<gfx::GLSurface>(
-      new DirectSurfaceAndroid(manager, stub, surface.get(), false));
+      new DirectSurfaceAndroid(manager, stub, surface.get()));
 }
 
 }  // namespace content

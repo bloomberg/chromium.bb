@@ -50,7 +50,6 @@ class TextureImageTransportSurface
   // ImageTransportSurface implementation.
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
-  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;

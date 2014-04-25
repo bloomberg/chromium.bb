@@ -60,7 +60,6 @@ class ImageTransportSurface {
 
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) = 0;
-  virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size, float scale_factor) = 0;
   virtual void SetLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info) = 0;
@@ -121,7 +120,6 @@ class ImageTransportHelper
   void SendAcceleratedSurfacePostSubBuffer(
       GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params);
   void SendAcceleratedSurfaceRelease();
-  void SendResizeView(const gfx::Size& size);
   void SendUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 
@@ -153,7 +151,6 @@ class ImageTransportHelper
   // IPC::Message handlers.
   void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params);
-  void OnResizeViewACK();
   void OnWakeUpGpu();
 
   // Backbuffer resize callback.
@@ -180,13 +177,11 @@ class PassThroughImageTransportSurface
  public:
   PassThroughImageTransportSurface(GpuChannelManager* manager,
                                    GpuCommandBufferStub* stub,
-                                   gfx::GLSurface* surface,
-                                   bool transport);
+                                   gfx::GLSurface* surface);
 
   // GLSurface implementation.
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual bool DeferDraws() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
@@ -194,7 +189,6 @@ class PassThroughImageTransportSurface
   // ImageTransportSurface implementation.
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
-  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void SetLatencyInfo(
@@ -212,11 +206,7 @@ class PassThroughImageTransportSurface
 
  private:
   scoped_ptr<ImageTransportHelper> helper_;
-  gfx::Size new_size_;
-  bool transport_;
   bool did_set_swap_interval_;
-  bool did_unschedule_;
-  bool is_swap_buffers_pending_;
   std::vector<ui::LatencyInfo> latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);

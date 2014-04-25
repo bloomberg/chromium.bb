@@ -61,7 +61,6 @@ class IOSurfaceImageTransportSurface
   // ImageTransportSurface implementation
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
-  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(
       const std::vector<ui::LatencyInfo>&) OVERRIDE;
@@ -299,10 +298,6 @@ void IOSurfaceImageTransportSurface::OnBufferPresented(
     did_unschedule_ = false;
     helper_->SetScheduled(true);
   }
-}
-
-void IOSurfaceImageTransportSurface::OnResizeViewACK() {
-  NOTREACHED();
 }
 
 void IOSurfaceImageTransportSurface::OnResize(gfx::Size size,
@@ -545,7 +540,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
       if (!surface.get() || !surface->Initialize())
         return surface;
       return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
-          manager, stub, surface.get(), false));
+          manager, stub, surface.get()));
   }
 }
 
