@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/time.h>
 
 #include "wayland-private.h"
 #include "wayland-server.h"
@@ -196,6 +197,79 @@ TEST(event_loop_timer)
 	assert(got_it);
 
 	wl_event_source_remove(source);
+	wl_event_loop_destroy(loop);
+}
+
+struct timer_update_context {
+	struct wl_event_source *source1, *source2;
+	int count;
+};
+
+static int
+timer_update_callback_1(void *data)
+{
+	struct timer_update_context *context = data;
+
+	context->count++;
+	wl_event_source_timer_update(context->source2, 1000);
+	return 1;
+}
+
+static int
+timer_update_callback_2(void *data)
+{
+	struct timer_update_context *context = data;
+
+	context->count++;
+	wl_event_source_timer_update(context->source1, 1000);
+	return 1;
+}
+
+TEST(event_loop_timer_updates)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct wl_event_source *source;
+	struct timer_update_context context;
+	struct timeval start_time, end_time, interval;
+
+	/* Create two timers that should expire at the same time (after 10ms).
+	 * The first timer to receive its expiry callback updates the other timer
+	 * with a much larger timeout (1s). This highlights a bug where
+	 * wl_event_source_timer_dispatch would block for this larger timeout
+	 * when reading from the timer fd, before calling the second timer's
+	 * callback.
+	 */
+
+	context.source1 = wl_event_loop_add_timer(loop, timer_update_callback_1,
+											  &context);
+	assert(context.source1);
+	wl_event_source_timer_update(context.source1, 10);
+
+	context.source2 = wl_event_loop_add_timer(loop, timer_update_callback_2,
+											  &context);
+	assert(context.source2);
+	wl_event_source_timer_update(context.source2, 10);
+
+	context.count = 0;
+
+	gettimeofday(&start_time, NULL);
+	wl_event_loop_dispatch(loop, 20);
+	gettimeofday(&end_time, NULL);
+
+	assert(context.count == 2);
+
+	/* Dispatching the events should not have taken much more than 20ms,
+	 * since this is the timeout passed to wl_event_loop_dispatch. If it
+	 * blocked, then it will have taken over 1s.
+	 * Of course, it could take over 1s anyway on a very slow or heavily
+	 * loaded system, so this test isn't 100% perfect.
+	 */
+
+	timersub(&end_time, &start_time, &interval);
+	assert(interval.tv_sec < 1);
+
+	wl_event_source_remove(context.source1);
+	wl_event_source_remove(context.source2);
 	wl_event_loop_destroy(loop);
 }
 
