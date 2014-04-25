@@ -824,10 +824,13 @@ class ExecutionQueue(object):
               self.last_subproc_output > self.last_join):
             if self.progress:
               print >> sys.stdout, ''
+              sys.stdout.flush()
             elapsed = Elapsed()
             print >> sys.stdout, '[%s] Still working on:' % elapsed
+            sys.stdout.flush()
             for task in self.running:
               print >> sys.stdout, '[%s]   %s' % (elapsed, task.item.name)
+              sys.stdout.flush()
         except KeyboardInterrupt:
           # Help debugging by printing some information:
           print >> sys.stderr, (
