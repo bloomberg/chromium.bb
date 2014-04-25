@@ -19,7 +19,6 @@
 namespace plugin {
 
 static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
-const char PnaclUrls::kResourceInfoUrl[] = "pnacl.json";
 
 nacl::string PnaclUrls::GetBaseUrl() {
   return nacl::string(kPnaclBaseUrl);
@@ -49,6 +48,10 @@ nacl::string PnaclUrls::PnaclComponentURLToFilename(
     replace_pos = r.find_first_not_of(white_list);
   }
   return r;
+}
+
+nacl::string PnaclUrls::GetResourceInfoUrl() {
+  return "pnacl.json";
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -108,7 +111,7 @@ void PnaclResources::ReadResourceInfo(
   if (fd < 0) {
     // File-open failed. Assume this means that the file is
     // not actually installed.
-    ReadResourceInfoError(
+    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         nacl::string("The Portable Native Client (pnacl) component is not "
                      "installed. Please consult chrome://components for more "
                      "information."));
@@ -118,7 +121,7 @@ void PnaclResources::ReadResourceInfo(
   nacl::string json_buffer;
   file_utils::StatusCode status = file_utils::SlurpFile(fd, json_buffer);
   if (status != file_utils::PLUGIN_FILE_SUCCESS) {
-    ReadResourceInfoError(
+    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         nacl::string("PnaclResources::ReadResourceInfo reading "
                      "failed for: ") + resource_info_filename);
     return;
@@ -126,63 +129,54 @@ void PnaclResources::ReadResourceInfo(
 
   // Finally, we have the resource info JSON data in json_buffer.
   PLUGIN_PRINTF(("Resource info JSON data:\n%s\n", json_buffer.c_str()));
-  nacl::string error_message;
-  if (!ParseResourceInfo(json_buffer, error_message)) {
-    ReadResourceInfoError(nacl::string("Parsing resource info failed: ") +
-                          error_message + "\n");
+  if (!ParseResourceInfo(json_buffer))
     return;
-  }
 
   // Done. Queue the completion callback.
   pp::Core* core = pp::Module::Get()->core();
   core->CallOnMainThread(0, resource_info_read_cb, PP_OK);
 }
 
-void PnaclResources::ReadResourceInfoError(const nacl::string& msg) {
-  coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH, msg);
-}
-
-bool PnaclResources::ParseResourceInfo(const nacl::string& buf,
-                                       nacl::string& errmsg) {
+bool PnaclResources::ParseResourceInfo(const nacl::string& buf) {
   // Expect the JSON file to contain a top-level object (dictionary).
   Json::Reader json_reader;
   Json::Value json_data;
   if (!json_reader.parse(buf, json_data)) {
-    errmsg = nacl::string("JSON parse error: ") +
-             json_reader.getFormatedErrorMessages();
+    std::string errmsg = nacl::string("JSON parse error: ") +
+        json_reader.getFormatedErrorMessages();
+    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        nacl::string("Parsing resource info failed: ") + errmsg + "\n");
     return false;
   }
 
   if (!json_data.isObject()) {
-    errmsg = nacl::string("Malformed JSON dictionary");
+    coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        nacl::string("Parsing resource info failed: "
+                     "Malformed JSON dictionary\n"));
     return false;
   }
 
   if (json_data.isMember("pnacl-llc-name")) {
     Json::Value json_name = json_data["pnacl-llc-name"];
     if (json_name.isString()) {
-      llc_tool_name = json_name.asString();
-      PLUGIN_PRINTF(("Set llc_tool_name=%s\n", llc_tool_name.c_str()));
+      llc_tool_name_ = json_name.asString();
+      PLUGIN_PRINTF(("Set llc_tool_name=%s\n", llc_tool_name_.c_str()));
     }
   }
 
   if (json_data.isMember("pnacl-ld-name")) {
     Json::Value json_name = json_data["pnacl-ld-name"];
     if (json_name.isString()) {
-      ld_tool_name = json_name.asString();
-      PLUGIN_PRINTF(("Set ld_tool_name=%s\n", ld_tool_name.c_str()));
+      ld_tool_name_ = json_name.asString();
+      PLUGIN_PRINTF(("Set ld_tool_name=%s\n", ld_tool_name_.c_str()));
     }
   }
-
   return true;
 }
 
 nacl::string PnaclResources::GetFullUrl(
     const nacl::string& partial_url, const nacl::string& sandbox_arch) const {
-  const nacl::string& url_with_platform_prefix =
-      sandbox_arch + "/" + partial_url;
-  nacl::string full_url = PnaclUrls::GetBaseUrl() + url_with_platform_prefix;
-  return full_url;
+  return PnaclUrls::GetBaseUrl() + sandbox_arch + "/" + partial_url;
 }
 
 void PnaclResources::StartLoad(
@@ -199,12 +193,6 @@ void PnaclResources::StartLoad(
   for (size_t i = 0; i < resource_urls.size(); ++i) {
     nacl::string full_url = GetFullUrl(
         resource_urls[i], plugin_->nacl_interface()->GetSandboxArch());
-    if (full_url == "") {
-      coordinator_->ReportNonPpapiError(
-          PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-          nacl::string("failed to resolve ") + resource_urls[i] + ".");
-      break;
-    }
     nacl::string filename = PnaclUrls::PnaclComponentURLToFilename(full_url);
 
     int32_t fd = PnaclResources::GetPnaclFD(plugin_, filename.c_str());

@@ -35,11 +35,7 @@ class PnaclUrls {
 
   // Get the URL for the resource info JSON file that contains information
   // about loadable resources.
-  static const nacl::string GetResourceInfoUrl() {
-    return nacl::string(kResourceInfoUrl);
-  }
- private:
-  static const char kResourceInfoUrl[];
+  static nacl::string GetResourceInfoUrl();
 };
 
 // Loads a list of resources, providing a way to get file descriptors for
@@ -64,13 +60,8 @@ class PnaclResources {
   virtual void StartLoad(
       const pp::CompletionCallback& all_loaded_callback);
 
-  const nacl::string& GetLlcUrl() {
-    return llc_tool_name;
-  }
-
-  const nacl::string& GetLdUrl() {
-    return ld_tool_name;
-  }
+  const nacl::string& GetLlcUrl() { return llc_tool_name_; }
+  const nacl::string& GetLdUrl() { return ld_tool_name_; }
 
   nacl::string GetFullUrl(const nacl::string& partial_url,
                           const nacl::string& sandbox_arch) const;
@@ -93,16 +84,12 @@ class PnaclResources {
   std::map<nacl::string, nacl::DescWrapper*> resource_wrappers_;
 
   // Tool names for llc and ld; read from the resource info file.
-  nacl::string llc_tool_name;
-  nacl::string ld_tool_name;
+  nacl::string llc_tool_name_;
+  nacl::string ld_tool_name_;
 
   // Parses resource info json data in |buf|.  Returns true if successful.
-  // Otherwise returns false and places an error message in |errmsg|.
-  bool ParseResourceInfo(const nacl::string& buf, nacl::string& errmsg);
-
-  // Convenience function for reporting an error while reading the resource
-  // info file.
-  void ReadResourceInfoError(const nacl::string& msg);
+  // Otherwise returns false.
+  bool ParseResourceInfo(const nacl::string& buf);
 };
 
 }  // namespace plugin;
