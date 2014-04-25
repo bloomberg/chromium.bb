@@ -196,8 +196,6 @@ void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
       handlers_.erase(wait_state.handles[i]);
       handler->OnHandleError(wait_state.handles[i], result);
       return;
-    } else {
-      DCHECK_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, result);
     }
   }
 }
