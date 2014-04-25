@@ -10,4 +10,14 @@ PASS Math.round(overComposite1.k3.baseVal * 1000) is 100
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
 
