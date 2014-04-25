@@ -84,7 +84,9 @@ class StatusTrayStateChangerWinTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(StatusTrayStateChangerWinTest);
 };
 
-TEST_F(StatusTrayStateChangerWinTest, Setup) {
+// Test is disabled due to multiple COM initialization errors.  See
+// http//crbug.com/367199 for details.
+TEST_F(StatusTrayStateChangerWinTest, DISABLED_Setup) {
   // This tests the code path that will read the NOTIFYITEM data structure for
   // use in future tests.
   scoped_ptr<NOTIFYITEM> notify_item = SetupAndGetCurrentNotifyItem();
