@@ -33,6 +33,7 @@ namespace blink {
 class WebInputEvent;
 class WebMouseEvent;
 class WebContentDecryptionModule;
+class WebMIDIClient;
 class WebNotificationPresenter;
 class WebSecurityOrigin;
 class WebUserMediaClient;
@@ -344,6 +345,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler);
   virtual blink::WebUserMediaClient* userMediaClient();
+  virtual blink::WebMIDIClient* webMIDIClient();
   virtual bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebFrame* targetFrame,

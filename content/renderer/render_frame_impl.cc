@@ -2564,6 +2564,10 @@ blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
   return render_view_->userMediaClient();
 }
 
+blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {
+  return render_view_->webMIDIClient();
+}
+
 bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
     blink::WebLocalFrame* sourceFrame,
     blink::WebFrame* targetFrame,
