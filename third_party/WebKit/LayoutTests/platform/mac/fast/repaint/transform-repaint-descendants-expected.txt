@@ -7,19 +7,5 @@ Test for https://bugs.webkit.org/show_bug.cgi?id=22088. The rotated box should b
   (rect 76 118 266 266)
   (rect 564 218 6 185)
   (rect 176 403 388 18)
-  (rect 0 0 800 600)
-  (rect 0 0 800 260)
-  (rect 76 118 266 266)
-  (rect 176 218 388 203)
-)
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
 )
 

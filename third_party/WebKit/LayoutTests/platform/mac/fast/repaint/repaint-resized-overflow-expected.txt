@@ -4,21 +4,11 @@ TEST PASS: There should be a white square with a blue border below, and no line 
 
 TEST FAIL: The white square will have a blue border and a blue horizontal line running through its middle.
 
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 132.00 152.00 10.00 48.00)
-        (rect 132.00 152.00 10.00 52.00)
-        (rect 8.00 204.00 784.00 52.00)
-        (rect 0.00 212.00 800.00 52.00)
-        (rect 8.00 204.00 784.00 52.00)
-      )
-    )
-  )
+(repaint rects
+  (rect 132 152 10 48)
+  (rect 132 152 10 52)
+  (rect 8 204 784 52)
+  (rect 0 212 800 52)
+  (rect 8 204 784 52)
 )
 

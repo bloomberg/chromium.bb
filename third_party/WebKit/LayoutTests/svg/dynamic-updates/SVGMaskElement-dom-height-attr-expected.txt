@@ -10,18 +10,8 @@ PASS maskElement.getAttribute('height') is "100%"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 30.00 30.00 151.00 151.00)
-        (rect 30.00 30.00 151.00 151.00)
-      )
-    )
-  )
+(repaint rects
+  (rect 30 30 151 151)
+  (rect 30 30 151 151)
 )
 

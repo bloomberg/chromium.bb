@@ -21,18 +21,5 @@
   (rect 37 37 18 18)
   (rect 37 37 18 18)
   (rect -100 -100 18 18)
-  (rect 0 0 800 600)
-  (rect 0 0 800 600)
-  (rect -100 -100 18 18)
-)
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
 )
 

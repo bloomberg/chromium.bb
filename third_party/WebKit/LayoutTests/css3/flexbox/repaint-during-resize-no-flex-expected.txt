@@ -5,17 +5,5 @@
   (rect 110 20 10 50)
   (rect 120 20 10 50)
   (rect 160 20 10 50)
-  (rect 0 0 800 600)
-  (rect 0 0 800 90)
-)
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
 )
 

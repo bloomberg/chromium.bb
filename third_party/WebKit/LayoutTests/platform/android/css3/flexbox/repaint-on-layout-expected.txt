@@ -1,6 +1,0 @@
-(repaint rects
-  (rect 712 8 80 20)
-  (rect 712 8 80 24)
-  (rect 712 8 80 24)
-)
-
