@@ -12,7 +12,6 @@ namespace services {
 namespace view_manager {
 
 struct NodeId;
-struct ViewId;
 
 class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
  public:
@@ -20,11 +19,6 @@ class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
   virtual void OnNodeHierarchyChanged(const NodeId& node,
                                       const NodeId& new_parent,
                                       const NodeId& old_parent) = 0;
-
-  // Invoked when the View associated with a node changes.
-  virtual void OnNodeViewReplaced(const NodeId& node,
-                                  const ViewId& new_view_id,
-                                  const ViewId& old_view_id) = 0;
 
  protected:
   virtual ~NodeDelegate() {}

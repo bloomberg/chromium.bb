@@ -5,8 +5,6 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_NODE_H_
 #define MOJO_SERVICES_VIEW_MANAGER_NODE_H_
 
-#include <vector>
-
 #include "base/logging.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_export.h"
@@ -18,7 +16,6 @@ namespace services {
 namespace view_manager {
 
 class NodeDelegate;
-class View;
 
 // Represents a node in the graph. Delegate is informed of interesting events.
 class MOJO_VIEW_MANAGER_EXPORT Node : public aura::WindowObserver {
@@ -36,12 +33,6 @@ class MOJO_VIEW_MANAGER_EXPORT Node : public aura::WindowObserver {
 
   Node* GetParent();
 
-  std::vector<Node*> GetChildren();
-
-  // Sets the view associated with this node. Node does not own its View.
-  void SetView(View* view);
-  View* view() { return view_; }
-
  private:
   // WindowObserver overrides:
   virtual void OnWindowHierarchyChanged(
@@ -49,12 +40,7 @@ class MOJO_VIEW_MANAGER_EXPORT Node : public aura::WindowObserver {
 
   NodeDelegate* delegate_;
   const NodeId id_;
-
-  // Weak pointer to view associated with this node.
-  View* view_;
-
   ViewId view_id_;
-
   aura::Window window_;
 
   DISALLOW_COPY_AND_ASSIGN(Node);

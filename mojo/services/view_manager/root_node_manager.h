@@ -50,23 +50,13 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   void AddConnection(ViewManagerConnection* connection);
   void RemoveConnection(ViewManagerConnection* connection);
 
-  // Returns the connection by id.
-  ViewManagerConnection* GetConnection(uint16_t connection_id);
-
   // Returns the Node identified by |id|.
   Node* GetNode(const NodeId& id);
 
-  // Returns the View identified by |id|.
-  View* GetView(const ViewId& id);
-
-  // These functions trivially delegate to all ViewManagerConnections, which in
-  // term notify their clients.
+  // Notifies all ViewManagerConnections of a hierarchy change.
   void NotifyNodeHierarchyChanged(const NodeId& node,
                                   const NodeId& new_parent,
                                   const NodeId& old_parent);
-  void NotifyNodeViewReplaced(const NodeId& node,
-                              const ViewId& new_view_id,
-                              const ViewId& old_view_id);
 
  private:
   // Tracks a change.
@@ -104,9 +94,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   virtual void OnNodeHierarchyChanged(const NodeId& node,
                                       const NodeId& new_parent,
                                       const NodeId& old_parent) OVERRIDE;
-  virtual void OnNodeViewReplaced(const NodeId& node,
-                                  const ViewId& new_view_id,
-                                  const ViewId& old_view_id) OVERRIDE;
 
   // ID to use for next ViewManagerConnection.
   uint16_t next_connection_id_;
