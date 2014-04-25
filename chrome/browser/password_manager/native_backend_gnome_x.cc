@@ -143,11 +143,14 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
 
 // Parse all the results from the given GList into a PasswordFormList, and free
 // the GList. PasswordForms are allocated on the heap, and should be deleted by
-// the consumer. If not empty, |filter_by_signon_realm| is used to filter out
-// results -- only credentials with signon realms passing the PSL matching
-// (done by |helper|) against |filter_by_signon_realm| will be kept.
+// the consumer. If not NULL, |lookup_form| is used to filter out results --
+// only credentials with signon realms passing the PSL matching (done by
+// |helper|) against |lookup_form->signon_realm| will be kept. PSL matched
+// results get their signon_realm, origin, and action rewritten to those of
+// |lookup_form_|, with the original signon_realm saved into the result's
+// original_signon_realm data member.
 void ConvertFormList(GList* found,
-                     const std::string& filter_by_signon_realm,
+                     const PasswordForm* lookup_form,
                      const PSLMatchingHelper& helper,
                      NativeBackendGnome::PasswordFormList* forms) {
   PSLMatchingHelper::PSLDomainMatchMetric psl_domain_match_metric =
@@ -159,15 +162,17 @@ void ConvertFormList(GList* found,
 
     scoped_ptr<PasswordForm> form(FormFromAttributes(attrs));
     if (form) {
-      if (!filter_by_signon_realm.empty() &&
-          form->signon_realm != filter_by_signon_realm) {
+      if (lookup_form && form->signon_realm != lookup_form->signon_realm) {
         // This is not an exact match, we try PSL matching.
         if (!(PSLMatchingHelper::IsPublicSuffixDomainMatch(
-                 filter_by_signon_realm, form->signon_realm))) {
+                lookup_form->signon_realm, form->signon_realm))) {
           continue;
         }
         psl_domain_match_metric = PSLMatchingHelper::PSL_DOMAIN_MATCH_FOUND;
         form->original_signon_realm = form->signon_realm;
+        form->signon_realm = lookup_form->signon_realm;
+        form->origin = lookup_form->origin;
+        form->action = lookup_form->action;
       }
       if (data->secret) {
         form->password_value = UTF8ToUTF16(data->secret);
@@ -179,7 +184,7 @@ void ConvertFormList(GList* found,
       LOG(WARNING) << "Could not initialize PasswordForm from attributes!";
     }
   }
-  if (!filter_by_signon_realm.empty()) {
+  if (lookup_form) {
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordManager.PslDomainMatchTriggering",
         helper.IsMatchingEnabled()
@@ -287,11 +292,14 @@ class GKRMethod : public GnomeKeyringLoader {
   base::WaitableEvent event_;
   GnomeKeyringResult result_;
   NativeBackendGnome::PasswordFormList forms_;
-  // Two additional arguments to OnOperationGetList:
-  // If the credential search is related to a particular form,
-  // |original_signon_realm_| contains the signon realm of that form. It is used
-  // to filter the relevant results out of all the found ones.
-  std::string original_signon_realm_;
+  // If the credential search is specified by a single form and needs to use PSL
+  // matching, then the specifying form is stored in |lookup_form_|. If PSL
+  // matching is used to find a result, then the results signon realm, origin
+  // and action are stored are replaced by those of |lookup_form_|.
+  // Additionally, |lookup_form_->signon_realm| is also used to narrow down the
+  // found logins to those which indeed PSL-match the look-up. And finally,
+  // |lookup_form_| set to NULL means that PSL matching is not required.
+  scoped_ptr<PasswordForm> lookup_form_;
   const PSLMatchingHelper helper_;
 };
 
@@ -331,7 +339,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
 void GKRMethod::AddLoginSearch(const PasswordForm& form,
                                const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  original_signon_realm_ = form.signon_realm;
+  lookup_form_.reset(NULL);
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendString(&attrs, "origin_url", form.origin.spec());
@@ -351,7 +359,7 @@ void GKRMethod::AddLoginSearch(const PasswordForm& form,
 void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
                                   const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  original_signon_realm_ = form.signon_realm;
+  lookup_form_.reset(NULL);
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendString(&attrs, "origin_url", form.origin.spec());
@@ -388,7 +396,7 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
 
 void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  original_signon_realm_ = form.signon_realm;
+  lookup_form_.reset(new PasswordForm(form));
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   if (!helper_.ShouldPSLDomainMatchingApply(
@@ -407,7 +415,7 @@ void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
                               const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  original_signon_realm_.clear();
+  lookup_form_.reset(NULL);
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendUint32(&attrs, "blacklisted_by_user", blacklisted_by_user);
@@ -421,7 +429,7 @@ void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
 
 void GKRMethod::GetAllLogins(const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  original_signon_realm_.clear();
+  lookup_form_.reset(NULL);
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
@@ -489,8 +497,8 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
   method->forms_.clear();
   // |list| will be freed after this callback returns, so convert it now.
   ConvertFormList(
-      list, method->original_signon_realm_, method->helper_, &method->forms_);
-  method->original_signon_realm_.clear();
+      list, method->lookup_form_.get(), method->helper_, &method->forms_);
+  method->lookup_form_.reset(NULL);
   method->event_.Signal();
 }
 
