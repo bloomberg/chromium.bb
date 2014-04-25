@@ -256,7 +256,7 @@ void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtr<I
         return;
 
     ASSERT(!m_pendingCursor);
-    RefPtrWillBeRawPtr<IDBCursor> cursor;
+    RefPtrWillBeRawPtr<IDBCursor> cursor = nullptr;
     switch (m_cursorType) {
     case IndexedDB::CursorKeyOnly:
         cursor = IDBCursor::create(backend, m_cursorDirection, this, m_source.get(), m_transaction.get());
