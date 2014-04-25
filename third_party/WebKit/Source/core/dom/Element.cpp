@@ -1404,7 +1404,7 @@ void Element::attach(const AttachContext& context)
         }
     }
 
-    InspectorInstrumentation::didRecalculateStyleForElement(this);
+    document().didRecalculateStyleForElement();
 }
 
 void Element::detach(const AttachContext& context)
@@ -1577,7 +1577,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 
     ASSERT(oldStyle);
 
-    InspectorInstrumentation::didRecalculateStyleForElement(this);
+    document().didRecalculateStyleForElement();
 
     if (localChange != NoChange)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());

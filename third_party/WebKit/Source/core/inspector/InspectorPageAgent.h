@@ -137,7 +137,7 @@ public:
     void didLayout(RenderObject*);
     void didScroll();
     void didResizeMainFrame();
-    void didRecalculateStyle();
+    void didRecalculateStyle(int);
     void scriptsEnabled(bool isEnabled);
 
     // Inspector Controller API

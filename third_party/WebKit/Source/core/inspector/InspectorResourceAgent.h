@@ -108,7 +108,7 @@ public:
 
     // FIXME: InspectorResourceAgent should not be aware of style recalculation.
     void willRecalculateStyle(Document*);
-    void didRecalculateStyle();
+    void didRecalculateStyle(int);
     void didScheduleStyleRecalculation(Document*);
 
     void frameScheduledNavigation(LocalFrame*, double);

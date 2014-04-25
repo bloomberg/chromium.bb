@@ -557,24 +557,17 @@ void InspectorTimelineAgent::didScheduleStyleRecalculation(Document* document)
 bool InspectorTimelineAgent::willRecalculateStyle(Document* document)
 {
     pushCurrentRecord(JSONObject::create(), TimelineRecordType::RecalculateStyles, true, document->frame());
-    ASSERT(!m_styleRecalcElementCounter);
     return true;
 }
 
-void InspectorTimelineAgent::didRecalculateStyle()
+void InspectorTimelineAgent::didRecalculateStyle(int elementCount)
 {
     if (m_recordStack.isEmpty())
         return;
     TimelineRecordEntry& entry = m_recordStack.last();
     ASSERT(entry.type == TimelineRecordType::RecalculateStyles);
-    TimelineRecordFactory::setStyleRecalcDetails(entry.data.get(), m_styleRecalcElementCounter);
-    m_styleRecalcElementCounter = 0;
+    TimelineRecordFactory::setStyleRecalcDetails(entry.data.get(), elementCount);
     didCompleteCurrentRecord(TimelineRecordType::RecalculateStyles);
-}
-
-void InspectorTimelineAgent::didRecalculateStyleForElement()
-{
-    ++m_styleRecalcElementCounter;
 }
 
 void InspectorTimelineAgent::willPaint(RenderObject* renderer, const GraphicsLayer* graphicsLayer)
@@ -1197,7 +1190,6 @@ InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, In
     , m_platformInstrumentationClientInstalledAtStackDepth(0)
     , m_imageBeingPainted(0)
     , m_paintSetupStart(0)
-    , m_styleRecalcElementCounter(0)
     , m_mayEmitFirstPaint(false)
     , m_lastProgressTimestamp(0)
 {

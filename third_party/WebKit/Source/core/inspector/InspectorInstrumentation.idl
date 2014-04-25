@@ -260,10 +260,7 @@ interface InspectorInstrumentation {
     InspectorInstrumentationCookie willRecalculateStyle([Keep] Document*);
 
     [Timeline, Resource, Page, Inline=FastReturn]
-    void didRecalculateStyle(const InspectorInstrumentationCookie&);
-
-    [Timeline, Inline=FastReturn]
-    void didRecalculateStyleForElement(Element*);
+    void didRecalculateStyle(const InspectorInstrumentationCookie&, int elementCount);
 
     [Timeline, Resource, Inline=FastReturn]
     void didScheduleStyleRecalculation([Keep] Document*);

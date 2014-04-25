@@ -1066,6 +1066,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
     bool hasElementsRequiringLayerUpdate() const { return m_layerUpdateElements.size(); }
+    void didRecalculateStyleForElement() { ++m_styleRecalcElementCounter; }
 
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
@@ -1377,6 +1378,8 @@ private:
     bool m_hasViewportUnits;
 
     HashSet<DocumentVisibilityObserver*> m_visibilityObservers;
+
+    int m_styleRecalcElementCounter;
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()

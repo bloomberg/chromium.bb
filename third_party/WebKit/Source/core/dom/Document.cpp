@@ -478,6 +478,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_templateDocumentHost(0)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
     , m_hasViewportUnits(false)
+    , m_styleRecalcElementCounter(0)
 {
     setClient(this);
     ScriptWrappable::init(this);
@@ -1613,6 +1614,8 @@ void Document::scheduleRenderTreeUpdate()
     page()->animator().scheduleVisualUpdate();
     m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
 
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScheduleStyleRecalculation", "frame", frame());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didScheduleStyleRecalculation(this);
 }
 
@@ -1777,6 +1780,9 @@ void Document::updateRenderTree(StyleRecalcChange change)
     TRACE_EVENT0("webkit", "Document::updateRenderTree");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "UpdateRenderTree");
 
+    m_styleRecalcElementCounter = 0;
+    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "frame", frame());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     updateDistributionIfNeeded();
@@ -1812,7 +1818,9 @@ void Document::updateRenderTree(StyleRecalcChange change)
     if (svgExtensions())
         accessSVGExtensions().removePendingSVGFontFaceElementsForRemoval();
 #endif
-    InspectorInstrumentation::didRecalculateStyle(cookie);
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "elementCount", m_styleRecalcElementCounter);
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
+    InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);
 }
 
 void Document::updateStyle(StyleRecalcChange change)

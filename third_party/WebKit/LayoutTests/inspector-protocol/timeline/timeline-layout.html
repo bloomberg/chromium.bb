@@ -47,9 +47,17 @@ function test()
     {
         InspectorTest.log("Tracing complete");
 
+        var schedRecalc = findEvent("ScheduleStyleRecalculation", "I");
+        var recalcBegin = findEvent("RecalculateStyles", "B");
+        var recalcEnd = findEvent("RecalculateStyles", "E");
+        InspectorTest.assertEquals(schedRecalc.args.frame, recalcBegin.args.frame, "RecalculateStyles frame");
+        InspectorTest.assert(recalcEnd.args.elementCount > 0, "RecalculateStyles elementCount");
+
         var invalidate = findEvent("InvalidateLayout", "I");
         var layoutBegin = findEvent("Layout", "B");
         var layoutEnd = findEvent("Layout", "E");
+
+        InspectorTest.assertEquals(recalcBegin.args.frame, invalidate.args.frame, "InvalidateLayout frame");
 
         var beginData = layoutBegin.args.beginData;
         InspectorTest.assertEquals(invalidate.args.frame, beginData.frame, "Layout frame");

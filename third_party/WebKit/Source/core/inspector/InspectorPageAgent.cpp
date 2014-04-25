@@ -1061,7 +1061,7 @@ void InspectorPageAgent::didResizeMainFrame()
     m_frontend->frameResized();
 }
 
-void InspectorPageAgent::didRecalculateStyle()
+void InspectorPageAgent::didRecalculateStyle(int)
 {
     if (m_enabled)
         m_overlay->update();

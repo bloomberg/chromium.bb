@@ -162,8 +162,7 @@ public:
 
     void didScheduleStyleRecalculation(Document*);
     bool willRecalculateStyle(Document*);
-    void didRecalculateStyle();
-    void didRecalculateStyleForElement();
+    void didRecalculateStyle(int elementCount);
 
     void willPaint(RenderObject*, const GraphicsLayer*);
     void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
@@ -321,7 +320,6 @@ private:
     double m_paintSetupEnd;
     RefPtr<JSONObject> m_gpuTask;
     RefPtr<JSONValue> m_pendingLayerTreeData;
-    unsigned m_styleRecalcElementCounter;
     typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
     ThreadStateMap m_threadStates;
     bool m_mayEmitFirstPaint;
