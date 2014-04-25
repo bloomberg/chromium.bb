@@ -102,7 +102,11 @@ class PolicyTemplateChecker(object):
     Returns: |container[key]| if the key is present, None otherwise.
     '''
     if identifier is None:
-      identifier = container.get('name')
+      try:
+        identifier = container.get('name')
+      except:
+        self._Error('Cannot access container name of "%s".' % container_name)
+        return None
     if container_name is None:
       container_name = parent_element
     if offending == '__CONTAINER__':
@@ -436,11 +440,11 @@ class PolicyTemplateChecker(object):
     except:
       import traceback
       traceback.print_exc(file=sys.stdout)
-      self._Error('Invalid JSON syntax.')
-      return
+      self._Error('Invalid Python/JSON syntax.')
+      return 1
     if data == None:
-      self._Error('Invalid JSON syntax.')
-      return
+      self._Error('Invalid Python/JSON syntax.')
+      return 1
     self.options = options
 
     # First part: check JSON structure.
