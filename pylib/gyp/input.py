@@ -2207,37 +2207,28 @@ def SetUpConfigurations(target, target_dict):
   if not 'configurations' in target_dict:
     target_dict['configurations'] = {'Default': {}}
   if not 'default_configuration' in target_dict:
-    concrete = [i for i in target_dict['configurations'].iterkeys()
-                if not target_dict['configurations'][i].get('abstract')]
+    concrete = [i for (i, config) in target_dict['configurations'].iteritems()
+                if not config.get('abstract')]
     target_dict['default_configuration'] = sorted(concrete)[0]
 
   merged_configurations = {}
-  for configuration in target_dict['configurations'].keys():
-    old_configuration_dict = target_dict['configurations'][configuration]
+  configs = target_dict['configurations']
+  for (configuration, old_configuration_dict) in configs.iteritems():
     # Skip abstract configurations (saves work only).
     if old_configuration_dict.get('abstract'):
       continue
     # Configurations inherit (most) settings from the enclosing target scope.
     # Get the inheritance relationship right by making a copy of the target
     # dict.
-    new_configuration_dict = copy.deepcopy(target_dict)
-
-    # Take out the bits that don't belong in a "configurations" section.
-    # Since configuration setup is done before conditional, exclude, and rules
-    # processing, be careful with handling of the suffix characters used in
-    # those phases.
-    delete_keys = []
-    for key in new_configuration_dict:
+    new_configuration_dict = {}
+    for (key, target_val) in target_dict.iteritems():
       key_ext = key[-1:]
       if key_ext in key_suffixes:
         key_base = key[:-1]
       else:
         key_base = key
-      if key_base in non_configuration_keys:
-        delete_keys.append(key)
-
-    for key in delete_keys:
-      del new_configuration_dict[key]
+      if not key_base in non_configuration_keys:
+        new_configuration_dict[key] = copy.deepcopy(target_val)
 
     # Merge in configuration (with all its parents first).
     MergeConfigWithInheritance(new_configuration_dict, build_file,
