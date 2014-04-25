@@ -207,6 +207,8 @@ crbug.com/361729 fast/overflow/paged-x-with-column-gap.html [ NeedsRebaseline ]
 crbug.com/361729 [ Linux Win ] printing/return-from-printing-mode.html [ NeedsRebaseline ]
 crbug.com/361729 [ SnowLeopard Lion MountainLion ] printing/return-from-printing-mode.html [ NeedsRebaseline ]
 
+crbug.com/361729 fast/frames/transparent-scrollbar.html [ NeedsRebaseline ]
+
 # ThemePainter-related diffs, could rebaseline them or implement the clipping/transform code.
 crbug.com/229207 [ Win ] fast/transforms/transformed-focused-text-input.html [ ImageOnlyFailure ]
 crbug.com/229207 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ ImageOnlyFailure ]
