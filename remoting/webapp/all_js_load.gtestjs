@@ -15,6 +15,7 @@ AllJsLoadTest.prototype = {
 
   /** @inheritDoc */
   extraLibraries: [
+    'base.js',
     'browser_globals.gtestjs',
     // All of our Javascript files should be listed here unless they are
     // only used by JSCompiler
