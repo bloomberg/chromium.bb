@@ -673,4 +673,4 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page23(self))
     self.AddPage(Page24(self))
     self.AddPage(Page25(self))
-    self.AddPage(Page26(self))
+    # self.AddPage(Page26(self))  # crbug.com/366371
