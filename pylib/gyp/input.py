@@ -24,6 +24,7 @@ import threading
 import time
 import traceback
 from gyp.common import GypError
+from gyp.common import OrderedSet
 
 
 # A list of types that are treated as linkable.
@@ -1499,10 +1500,7 @@ class DependencyGraphNode(object):
     # are the "ref" attributes of DependencyGraphNodes.  Every target will
     # appear in flat_list after all of its dependencies, and before all of its
     # dependents.
-    flat_list = []
-    # flat_set is to make "is in" checks of flat_list. At all times
-    # set(flat_list) == flat_set.
-    flat_set = set()
+    flat_list = OrderedSet()
 
     # in_degree_zeros is the list of DependencyGraphNodes that have no
     # dependencies not in flat_list.  Initially, it is a copy of the children
@@ -1516,8 +1514,7 @@ class DependencyGraphNode(object):
       # as work progresses, so that the next node to process from the list can
       # always be accessed at a consistent position.
       node = in_degree_zeros.pop()
-      flat_list.append(node.ref)
-      flat_set.add(node.ref)
+      flat_list.add(node.ref)
 
       # Look at dependents of the node just added to flat_list.  Some of them
       # may now belong in in_degree_zeros.
@@ -1527,7 +1524,7 @@ class DependencyGraphNode(object):
         # node_dependent.dependencies list but if it's long and we
         # always start at the beginning, then we get O(n^2) behaviour.
         for node_dependent_dependency in node_dependent.dependencies:
-          if not node_dependent_dependency.ref in flat_set:
+          if not node_dependent_dependency.ref in flat_list:
             # The dependent one or more dependencies not in flat_list.  There
             # will be more chances to add it to flat_list when examining
             # it again as a dependent of those other dependencies, provided
@@ -1541,7 +1538,7 @@ class DependencyGraphNode(object):
           # iteration of the outer loop.
           in_degree_zeros.add(node_dependent)
 
-    return flat_list
+    return list(flat_list)
 
   def FindCycles(self, path=None):
     """
@@ -1627,28 +1624,26 @@ class DependencyGraphNode(object):
     return self._AddImportedDependencies(targets, dependencies)
 
   def DeepDependencies(self, dependencies=None):
-    """Returns a list of all of a target's dependencies, recursively."""
-    if dependencies == None:
+    """Returns an OrderedSet of all of a target's dependencies, recursively."""
+    if dependencies is None:
       # Using a list to get ordered output and a set to do fast "is it
       # already added" checks.
-      dependencies = ([], set())
-
-    dependency_list, dependency_set = dependencies
+      dependencies = OrderedSet()
 
     for dependency in self.dependencies:
       # Check for None, corresponding to the root node.
       if dependency.ref is None:
         continue
-      if dependency.ref not in dependency_set:
-        dependency_list.append(dependency.ref)
-        dependency_set.add(dependency.ref)
+      if dependency.ref not in dependencies:
+        dependencies.add(dependency.ref)
         dependency.DeepDependencies(dependencies)
 
-    return dependency_list
+    return dependencies
 
   def _LinkDependenciesInternal(self, targets, include_shared_libraries,
                                 dependencies=None, initial=True):
-    """Returns a list of dependency targets that are linked into this target.
+    """Returns an OrderedSet of dependency targets that are linked
+    into this target.
 
     This function has a split personality, depending on the setting of
     |initial|.  Outside callers should always leave |initial| at its default
@@ -1661,11 +1656,13 @@ class DependencyGraphNode(object):
     If |include_shared_libraries| is False, the resulting dependencies will not
     include shared_library targets that are linked into this target.
     """
-    if dependencies == None:
-      dependencies = []
+    if dependencies is None:
+      # Using a list to get ordered output and a set to do fast "is it
+      # already added" checks.
+      dependencies = OrderedSet()
 
     # Check for None, corresponding to the root node.
-    if self.ref == None:
+    if self.ref is None:
       return dependencies
 
     # It's kind of sucky that |targets| has to be passed into this function,
@@ -1693,8 +1690,7 @@ class DependencyGraphNode(object):
     # Don't traverse 'none' targets if explicitly excluded.
     if (target_type == 'none' and
         not targets[self.ref].get('dependencies_traverse', True)):
-      if self.ref not in dependencies:
-        dependencies.append(self.ref)
+      dependencies.add(self.ref)
       return dependencies
 
     # Executables and loadable modules are already fully and finally linked.
@@ -1716,7 +1712,7 @@ class DependencyGraphNode(object):
 
     # The target is linkable, add it to the list of link dependencies.
     if self.ref not in dependencies:
-      dependencies.append(self.ref)
+      dependencies.add(self.ref)
       if initial or not is_linkable:
         # If this is a subsequent target and it's linkable, don't look any
         # further for linkable dependencies, as they'll already be linked into
