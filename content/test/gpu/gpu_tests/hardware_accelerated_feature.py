@@ -44,7 +44,7 @@ class HardwareAcceleratedFeature(test.Test):
     return expectations.HardwareAcceleratedFeatureExpectations()
 
   def CreatePageSet(self, options):
-    features = ['WebGL', 'Canvas', '3D CSS']
+    features = ['WebGL', 'Canvas']
 
     page_set_dict = {
       'description': 'Tests GPU acceleration is reported as active',

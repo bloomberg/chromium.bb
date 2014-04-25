@@ -50,21 +50,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           true
       },
       {
-          "3d_css",
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS),
-          command_line.HasSwitch(switches::kDisableAcceleratedLayers),
-          "Accelerated layers have been disabled at the command line.",
-          false
-      },
-      {
-          "css_animation",
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS),
-          command_line.HasSwitch(cc::switches::kDisableThreadedAnimation) ||
-          command_line.HasSwitch(switches::kDisableAcceleratedLayers),
-          "Accelerated CSS animation has been disabled at the command line.",
-          true
-      },
-      {
           "webgl",
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
           command_line.HasSwitch(switches::kDisableExperimentalWebGL),
@@ -254,9 +239,7 @@ base::Value* GetFeatureStatus() {
     std::string status;
     if (gpu_feature_info.disabled) {
       status = "disabled";
-      if (gpu_feature_info.name == "css_animation") {
-        status += "_software_animated";
-      } else if (gpu_feature_info.name == "raster") {
+      if (gpu_feature_info.name == "raster") {
         if (IsImplSidePaintingEnabled())
           status += "_software_multithreaded";
         else
@@ -281,12 +264,7 @@ base::Value* GetFeatureStatus() {
       if (gpu_feature_info.name == "webgl" &&
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
         status += "_readback";
-      if (gpu_feature_info.name == "css_animation") {
-        if (IsThreadedCompositingEnabled())
-          status = "accelerated_threaded";
-        else
-          status = "accelerated";
-      } else if (gpu_feature_info.name == "raster") {
+      if (gpu_feature_info.name == "raster") {
         if (IsForceGpuRasterizationEnabled())
           status += "_force";
       }

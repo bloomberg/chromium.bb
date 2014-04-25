@@ -81,9 +81,6 @@ const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 const char kDisableAcceleratedFixedRootBackground[] =
     "disable-accelerated-fixed-root-background";
 
-// Disables the hardware acceleration of 3D CSS and animation.
-const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
-
 // Disables accelerated compositing for overflow scroll.
 const char kDisableAcceleratedOverflowScroll[] =
     "disable-accelerated-overflow-scroll";

@@ -231,17 +231,14 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setGestureTapHighlightEnabled(prefs.gesture_tap_highlight_enabled);
 
   // Enabling accelerated layers from the command line enabled accelerated
-  // 3D CSS, Video, and Animations.
-  settings->setAcceleratedCompositingFor3DTransformsEnabled(
-      prefs.accelerated_compositing_for_3d_transforms_enabled);
+  // Video.
   settings->setAcceleratedCompositingForVideoEnabled(
       prefs.accelerated_compositing_for_video_enabled);
-  settings->setAcceleratedCompositingForAnimationEnabled(
-      prefs.accelerated_compositing_for_animation_enabled);
 
-  // Enabling accelerated plugins if specified from the command line.
-  settings->setAcceleratedCompositingForPluginsEnabled(
-      prefs.accelerated_compositing_for_plugins_enabled);
+  // Always enable composited 3D css, animations and plugins.
+  settings->setAcceleratedCompositingFor3DTransformsEnabled(true);
+  settings->setAcceleratedCompositingForAnimationEnabled(true);
+  settings->setAcceleratedCompositingForPluginsEnabled(true);
 
   // WebGL and accelerated 2D canvas are always gpu composited.
   settings->setAcceleratedCompositingForCanvasEnabled(

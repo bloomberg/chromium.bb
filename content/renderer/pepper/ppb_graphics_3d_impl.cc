@@ -212,11 +212,6 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   // 3D access might be disabled or blacklisted.
   if (!prefs.pepper_3d_enabled)
     return false;
-  // If accelerated compositing of plugins is disabled, fail to create a 3D
-  // context, because it won't be visible. This allows graceful fallback in the
-  // modules.
-  if (!prefs.accelerated_compositing_for_plugins_enabled)
-    return false;
 
   platform_context_.reset(new PlatformContext3D);
   if (!platform_context_)

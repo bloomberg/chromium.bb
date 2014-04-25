@@ -110,8 +110,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool asynchronous_spell_checking_enabled;
   bool unified_textchecker_enabled;
   bool force_compositing_mode;
-  bool accelerated_compositing_for_3d_transforms_enabled;
-  bool accelerated_compositing_for_animation_enabled;
   bool accelerated_compositing_for_video_enabled;
   bool accelerated_2d_canvas_enabled;
   int minimum_accelerated_2d_canvas_size;
@@ -121,7 +119,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool deferred_filters_enabled;
   bool container_culling_enabled;
   bool gesture_tap_highlight_enabled;
-  bool accelerated_compositing_for_plugins_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
   bool password_echo_enabled;
