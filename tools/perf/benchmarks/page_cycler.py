@@ -61,6 +61,7 @@ class PageCyclerMoz(test.Test):
   options = {'pageset_repeat': 10}
 
 
+@test.Disabled('win')  # crbug.com/353260
 class PageCyclerNetsimTop10(test.Test):
   """Measures load time of the top 10 sites under simulated cable network."""
   tag = 'netsim'
