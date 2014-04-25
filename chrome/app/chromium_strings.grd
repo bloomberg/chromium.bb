@@ -494,57 +494,51 @@ Chromium is unable to recover your settings.
         <message name="IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT" desc="Text for the dialog box that prompts the user for their OS account password before revealing plaintext passwords on the password page.">
           Chromium is trying to show passwords. Type your Windows password to allow this.
         </message>
+        <message name="IDS_MACHINE_LEVEL_INSTALL_CONFLICT" desc="Error message to display when user tries to run user level Chromium even though machine level Chromium is already installed.">
+          An administrator has installed Chromium on this system, and it is available for all users. The system-level Chromium will replace your user-level installation now.
+        </message>
+        <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
+          This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.
+        </message>
+        <message name="IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER" desc="Error displayed when higher version of the Chromium App Launcher already exists.">
+          This computer already has a more recent version of the Chromium components. Please use a more recent installer.
+        </message>
+        <message name="IDS_INSTALL_FAILED" desc="Error displayed if installation fails due to some unknown error.">
+          Installation failed due to unspecified error. If Chromium is currently running, please close it and try again.
+        </message>
+        <message name="IDS_SAME_VERSION_REPAIR_FAILED" desc="Error displayed if installation fails due to Chrome running.">
+          Can not install the same Chromium version that is currently running. Please close Chromium and try again.
+        </message>
+        <message name="IDS_SETUP_PATCH_FAILED" desc="Error message when setup.exe fails to patch itself.">
+          Installation failed due to unspecified error. Please download Chromium again.
+        </message>
+        <message name="IDS_INSTALL_OS_NOT_SUPPORTED" desc="Error displayed if OS is not supported">
+          Chromium requires Windows Vista or Windows XP with SP2 or higher.
+        </message>
+        <message name="IDS_INSTALL_OS_ERROR" desc="Error displayed when any Windows API call fails and we do not have more specific information.">
+          An operating system error occurred during installation. Please download Chromium again.
+        </message>
+        <message name="IDS_INSTALL_TEMP_DIR_FAILED" desc="Error displayed when we fail to create temporary directory during installation.">
+          The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.
+        </message>
+        <message name="IDS_INSTALL_UNCOMPRESSION_FAILED" desc="Error when when we can not uncompress installation archive.">
+          The installer failed to uncompress archive. Please download Chromium again.
+        </message>
+        <message name="IDS_INSTALL_INVALID_ARCHIVE" desc="Error displayed when we can not open the installation archive.">
+          The installer archive is corrupted or invalid. Please download Chromium again.
+        </message>
+        <message name="IDS_INSTALL_INSUFFICIENT_RIGHTS" desc="Error displayed when a non admin user tries to attempt system level install/uninstall.">
+          You do not have appropriate rights for system-level install. Try running the installer again as Administrator.
+        </message>
+        <message name="IDS_INSTALL_NO_PRODUCTS_TO_UPDATE" desc="Error displayed if the installer is not provided one or more products to install/update.">
+          No installation of Chromium found to update.
+        </message>
+        <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Chromium is present, thereby preventing the installation of a single-install Chromium.">
+          A conflicting installation of Chromium was found on the system. Please uninstall it and try again.
+        </message>
+        <message name="IDS_INSTALL_INCONSISTENT_UPDATE_POLICY" desc="This message does not apply to Chromium.">
+        </message>
       </if>
-      <message name="IDS_MACHINE_LEVEL_INSTALL_CONFLICT" desc="Error message to display when user tries to run user level Chromium even though machine level Chromium is already installed.">
-        An administrator has installed Chromium on this system, and it is available for all users. The system-level Chromium will replace your user-level installation now.
-      </message>
-      <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
-        This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.
-      </message>
-      <message name="IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER" desc="Error displayed when higher version of the Chromium App Launcher already exists.">
-        This computer already has a more recent version of the Chromium components. Please use a more recent installer.
-      </message>
-      <message name="IDS_INSTALL_FAILED" desc="Error displayed if installation fails due to some unknown error.">
-        Installation failed due to unspecified error. If Chromium is currently running, please close it and try again.
-      </message>
-      <message name="IDS_SAME_VERSION_REPAIR_FAILED" desc="Error displayed if installation fails due to Chrome running.">
-        Can not install the same Chromium version that is currently running. Please close Chromium and try again.
-      </message>
-      <message name="IDS_SETUP_PATCH_FAILED" desc="Error message when setup.exe fails to patch itself.">
-        Installation failed due to unspecified error. Please download Chromium again.
-      </message>
-      <message name="IDS_INSTALL_OS_NOT_SUPPORTED" desc="Error displayed if OS is not supported">
-        Chromium requires Windows Vista or Windows XP with SP2 or higher.
-      </message>
-      <message name="IDS_INSTALL_OS_ERROR" desc="Error displayed when any Windows API call fails and we do not have more specific information.">
-        An operating system error occurred during installation. Please download Chromium again.
-      </message>
-      <message name="IDS_INSTALL_TEMP_DIR_FAILED" desc="Error displayed when we fail to create temporary directory during installation.">
-        The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.
-      </message>
-      <message name="IDS_INSTALL_UNCOMPRESSION_FAILED" desc="Error when when we can not uncompress installation archive.">
-        The installer failed to uncompress archive. Please download Chromium again.
-      </message>
-      <message name="IDS_INSTALL_INVALID_ARCHIVE" desc="Error displayed when we can not open the installation archive.">
-        The installer archive is corrupted or invalid. Please download Chromium again.
-      </message>
-      <message name="IDS_INSTALL_INSUFFICIENT_RIGHTS" desc="Error displayed when a non admin user tries to attempt system level install/uninstall.">
-        You do not have appropriate rights for system-level install. Try running the installer again as Administrator.
-      </message>
-      <message name="IDS_INSTALL_NO_PRODUCTS_TO_UPDATE" desc="Error displayed if the installer is not provided one or more products to install/update.">
-        No installation of Chromium found to update.
-      </message>
-      <message name="IDS_UNINSTALL_COMPLETE" desc="Text displayed on dialog that is shown when uninstall is complete and no reboot is required.">
-        Uninstallation complete.
-      </message>
-      <message name="IDS_INSTALL_DIR_IN_USE" desc="Error during install if Chromium version is missing from registry but the installation directory exists and can not be deleted.">
-        Chromium installation directory seems to be in use. Please reboot your computer and try again.
-      </message>
-      <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Chromium is present, thereby preventing the installation of a single-install Chromium.">
-        A conflicting installation of Chromium was found on the system. Please uninstall it and try again.
-      </message>
-      <message name="IDS_INSTALL_INCONSISTENT_UPDATE_POLICY" desc="This message does not apply to Chromium.">
-      </message>
       <!-- Options Dialog -->
       <message name="IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
         Chromium may use web services to improve your browsing experience.
