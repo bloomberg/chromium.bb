@@ -73,16 +73,43 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return MockMotionEvent(action, event_time, x0, y0, x1, y1);
   }
 
+  static MockMotionEvent ObtainMotionEvent(
+      base::TimeTicks event_time,
+      MotionEvent::Action action,
+      const std::vector<gfx::PointF>& positions) {
+    switch (positions.size()) {
+      case 1:
+        return MockMotionEvent(
+            action, event_time, positions[0].x(), positions[0].y());
+      case 2:
+        return MockMotionEvent(action,
+                               event_time,
+                               positions[0].x(),
+                               positions[0].y(),
+                               positions[1].x(),
+                               positions[1].y());
+      case 3:
+        return MockMotionEvent(action,
+                               event_time,
+                               positions[0].x(),
+                               positions[0].y(),
+                               positions[1].x(),
+                               positions[1].y(),
+                               positions[2].x(),
+                               positions[2].y());
+      default:
+        CHECK(false) << "MockMotionEvent only supports 1-3 pointers";
+        return MockMotionEvent();
+    }
+  }
+
   static MockMotionEvent ObtainMotionEvent(base::TimeTicks event_time,
                                            MotionEvent::Action action) {
     return ObtainMotionEvent(event_time, action, kFakeCoordX, kFakeCoordY);
   }
 
   // Test
-  virtual void SetUp() OVERRIDE {
-    gesture_provider_.reset(new GestureProvider(GetDefaultConfig(), this));
-    gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
-  }
+  virtual void SetUp() OVERRIDE { SetUpWithConfig(GetDefaultConfig()); }
 
   virtual void TearDown() OVERRIDE {
     gestures_.clear();
@@ -96,6 +123,15 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     gestures_.push_back(gesture);
   }
 
+  void SetUpWithConfig(const GestureProvider::Config& config) {
+    gesture_provider_.reset(new GestureProvider(config, this));
+    gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
+  }
+
+  void ResetGestureDetection() {
+    CancelActiveTouchSequence();
+    gestures_.clear();
+  }
   bool CancelActiveTouchSequence() {
     if (!gesture_provider_->current_down_event())
       return false;
@@ -141,6 +177,10 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return GetDefaultConfig().gesture_detector_config.touch_slop;
   }
 
+  float GetMinSwipeVelocity() const {
+    return GetDefaultConfig().gesture_detector_config.minimum_swipe_velocity;
+  }
+
   base::TimeDelta GetLongPressTimeout() const {
     return GetDefaultConfig().gesture_detector_config.longpress_timeout;
   }
@@ -153,11 +193,16 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return GetDefaultConfig().gesture_detector_config.double_tap_timeout;
   }
 
-  void SetBeginEndTypesEnabled(bool enabled) {
+  void EnableBeginEndTypes() {
     GestureProvider::Config config = GetDefaultConfig();
     config.gesture_begin_end_types_enabled = true;
-    gesture_provider_.reset(new GestureProvider(config, this));
-    gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
+    SetUpWithConfig(config);
+  }
+
+  void EnableMultiFingerSwipe() {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_detector_config.swipe_enabled = true;
+    SetUpWithConfig(config);
   }
 
   bool HasDownEvent() const { return gesture_provider_->current_down_event(); }
@@ -210,6 +255,72 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
     EXPECT_EQ(BoundsForSingleMockTouchAtLocation(scroll_to_x, scroll_to_y),
               GetMostRecentGestureEvent().details.bounding_box());
+  }
+
+  void TwoFingerSwipe(float vx0, float vy0, float vx1, float vy1) {
+    std::vector<gfx::Vector2dF> velocities;
+    velocities.push_back(gfx::Vector2dF(vx0, vy0));
+    velocities.push_back(gfx::Vector2dF(vx1, vy1));
+    MultiFingerSwipe(velocities);
+  }
+
+  void ThreeFingerSwipe(float vx0,
+                        float vy0,
+                        float vx1,
+                        float vy1,
+                        float vx2,
+                        float vy2) {
+    std::vector<gfx::Vector2dF> velocities;
+    velocities.push_back(gfx::Vector2dF(vx0, vy0));
+    velocities.push_back(gfx::Vector2dF(vx1, vy1));
+    velocities.push_back(gfx::Vector2dF(vx2, vy2));
+    MultiFingerSwipe(velocities);
+  }
+
+  void MultiFingerSwipe(std::vector<gfx::Vector2dF> velocities) {
+    ASSERT_GT(velocities.size(), 0U);
+
+    base::TimeTicks event_time = base::TimeTicks::Now();
+
+    std::vector<gfx::PointF> positions(velocities.size());
+    for (size_t i = 0; i < positions.size(); ++i)
+      positions[i] = gfx::PointF(kFakeCoordX * (i + 1), kFakeCoordY * (i + 1));
+
+    float dt = kDeltaTimeForFlingSequences.InSecondsF();
+
+    // Each pointer down should be a separate event.
+    for (size_t i = 0; i < positions.size(); ++i) {
+      const size_t pointer_count = i + 1;
+      std::vector<gfx::PointF> event_positions(pointer_count);
+      event_positions.assign(positions.begin(),
+                             positions.begin() + pointer_count);
+      MockMotionEvent event =
+          ObtainMotionEvent(event_time,
+                            pointer_count > 1 ? MotionEvent::ACTION_POINTER_DOWN
+                                              : MotionEvent::ACTION_DOWN,
+                            event_positions);
+      EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+    }
+
+    for (size_t i = 0; i < positions.size(); ++i)
+      positions[i] += gfx::ScaleVector2d(velocities[i], dt);
+    MockMotionEvent event =
+        ObtainMotionEvent(event_time + kDeltaTimeForFlingSequences,
+                          MotionEvent::ACTION_MOVE,
+                          positions);
+    EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+    for (size_t i = 0; i < positions.size(); ++i)
+      positions[i] += gfx::ScaleVector2d(velocities[i], dt);
+    event = ObtainMotionEvent(event_time + 2 * kDeltaTimeForFlingSequences,
+                              MotionEvent::ACTION_MOVE,
+                              positions);
+    EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+    event = ObtainMotionEvent(event_time + 2 * kDeltaTimeForFlingSequences,
+                              MotionEvent::ACTION_POINTER_UP,
+                              positions);
+    EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   }
 
   static void RunTasksAndWait(base::TimeDelta delay) {
@@ -1323,6 +1434,105 @@ TEST_F(GestureProviderTest, PinchZoom) {
             GetMostRecentGestureEvent().details.bounding_box());
 }
 
+// Verify that multi-finger swipe sends the proper event sequence.
+TEST_F(GestureProviderTest, MultiFingerSwipe) {
+  EnableMultiFingerSwipe();
+  gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
+  const float min_swipe_velocity = GetMinSwipeVelocity();
+
+  // Swipe right.
+  TwoFingerSwipe(min_swipe_velocity * 2, 0, min_swipe_velocity * 2, 0);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_right());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // Swipe left.
+  TwoFingerSwipe(-min_swipe_velocity * 2, 0, -min_swipe_velocity * 2, 0);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_left());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // No swipe with different touch directions.
+  TwoFingerSwipe(min_swipe_velocity * 2, 0, -min_swipe_velocity * 2, 0);
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  ResetGestureDetection();
+
+  // No swipe without a dominant direction.
+  TwoFingerSwipe(min_swipe_velocity * 2,
+                 min_swipe_velocity * 2,
+                 min_swipe_velocity * 2,
+                 min_swipe_velocity * 2);
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  ResetGestureDetection();
+
+  // Swipe up with non-zero velocities on both axes and dominant direction.
+  TwoFingerSwipe(-min_swipe_velocity,
+                 min_swipe_velocity * 4,
+                 -min_swipe_velocity,
+                 min_swipe_velocity * 4);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_down());
+  EXPECT_FALSE(GetMostRecentGestureEvent().details.swipe_left());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // Swipe down with non-zero velocities on both axes.
+  TwoFingerSwipe(min_swipe_velocity,
+                 -min_swipe_velocity * 4,
+                 min_swipe_velocity,
+                 -min_swipe_velocity * 4);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_up());
+  EXPECT_FALSE(GetMostRecentGestureEvent().details.swipe_right());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // No swipe without sufficient velocity.
+  TwoFingerSwipe(min_swipe_velocity / 2, 0, 0, 0);
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  ResetGestureDetection();
+
+  // Swipe up with one small and one medium velocity in slightly different but
+  // not opposing directions.
+  TwoFingerSwipe(min_swipe_velocity / 2,
+                 min_swipe_velocity / 2,
+                 0,
+                 min_swipe_velocity * 2);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_down());
+  EXPECT_FALSE(GetMostRecentGestureEvent().details.swipe_right());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // No swipe in orthogonal directions.
+  TwoFingerSwipe(min_swipe_velocity * 2, 0, 0, min_swipe_velocity * 7);
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  ResetGestureDetection();
+
+  // Three finger swipe in same directions.
+  ThreeFingerSwipe(min_swipe_velocity * 2,
+                   0,
+                   min_swipe_velocity * 3,
+                   0,
+                   min_swipe_velocity * 4,
+                   0);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+  EXPECT_TRUE(GetMostRecentGestureEvent().details.swipe_right());
+  EXPECT_EQ(3, GetMostRecentGestureEvent().details.touch_points());
+  ResetGestureDetection();
+
+  // No three finger swipe in different directions.
+  ThreeFingerSwipe(min_swipe_velocity * 2,
+                   0,
+                   0,
+                   min_swipe_velocity * 3,
+                   min_swipe_velocity * 4,
+                   0);
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_MULTIFINGER_SWIPE));
+}
+
 // Verify that the timer of LONG_PRESS will be cancelled when scrolling begins
 // so LONG_PRESS and LONG_TAP won't be triggered.
 TEST_F(GestureProviderTest, GesturesCancelledAfterLongPressCausesLostFocus) {
@@ -1445,7 +1655,7 @@ TEST_F(GestureProviderTest, DoubleTapDragZoomCancelledOnSecondaryPointerDown) {
 
 // Verify that gesture begin and gesture end events are dispatched correctly.
 TEST_F(GestureProviderTest, GestureBeginAndEnd) {
-  SetBeginEndTypesEnabled(true);
+  EnableBeginEndTypes();
   base::TimeTicks event_time = base::TimeTicks::Now();
 
   EXPECT_EQ(0U, GetReceivedGestureCount());

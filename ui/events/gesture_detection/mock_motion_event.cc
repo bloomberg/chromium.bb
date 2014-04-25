@@ -35,6 +35,20 @@ MockMotionEvent::MockMotionEvent(Action action,
   points[1].SetPoint(x1, y1);
 }
 
+MockMotionEvent::MockMotionEvent(Action action,
+                                 TimeTicks time,
+                                 float x0,
+                                 float y0,
+                                 float x1,
+                                 float y1,
+                                 float x2,
+                                 float y2)
+    : action(action), pointer_count(3), time(time), id(0) {
+  points[0].SetPoint(x0, y0);
+  points[1].SetPoint(x1, y1);
+  points[2].SetPoint(x2, y2);
+}
+
 MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
     : action(other.action),
       pointer_count(other.pointer_count),

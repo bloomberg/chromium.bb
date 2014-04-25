@@ -281,7 +281,7 @@ class GestureProvider::GestureListenerImpl
       SetIgnoreSingleTap(true);
 
     if (e.GetAction() == MotionEvent::ACTION_DOWN)
-      gesture_detector_.set_is_longpress_enabled(true);
+      gesture_detector_.set_longpress_enabled(true);
 
     return gesture_detector_.OnTouchEvent(e);
   }
@@ -371,6 +371,17 @@ class GestureProvider::GestureListenerImpl
     return true;
   }
 
+  virtual bool OnSwipe(const MotionEvent& e1,
+                       const MotionEvent& e2,
+                       float velocity_x,
+                       float velocity_y) OVERRIDE {
+    GestureEventDetails swipe_details(
+        ET_GESTURE_MULTIFINGER_SWIPE, velocity_x, velocity_y);
+    provider_->Send(
+        CreateGesture(ET_GESTURE_MULTIFINGER_SWIPE, e2, swipe_details));
+    return true;
+  }
+
   virtual void OnShowPress(const MotionEvent& e) OVERRIDE {
     GestureEventDetails show_press_details(ET_GESTURE_SHOW_PRESS, 0, 0);
     provider_->Send(
@@ -425,7 +436,7 @@ class GestureProvider::GestureListenerImpl
   virtual bool OnDoubleTapEvent(const MotionEvent& e) OVERRIDE {
     switch (e.GetAction()) {
       case MotionEvent::ACTION_DOWN:
-        gesture_detector_.set_is_longpress_enabled(false);
+        gesture_detector_.set_longpress_enabled(false);
         break;
 
       case MotionEvent::ACTION_UP:

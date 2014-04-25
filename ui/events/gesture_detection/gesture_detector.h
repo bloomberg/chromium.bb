@@ -40,6 +40,18 @@ class GestureDetector {
 
     // Maximum velocity of an initiated fling (in dips/second).
     float maximum_fling_velocity;
+
+    // Whether |OnSwipe| should be called after a secondary touch is released
+    // while a logical swipe gesture is active. Defaults to false.
+    bool swipe_enabled;
+
+    // Minimum velocity to initiate a swipe (in dips/second).
+    float minimum_swipe_velocity;
+
+    // Maximum angle of the swipe from its dominant component axis, between
+    // (0, 45] degrees. The closer this is to 0, the closer the dominant
+    // direction of the swipe must be to up, down left or right.
+    float maximum_swipe_deviation_angle;
   };
 
   class GestureListener {
@@ -49,10 +61,19 @@ class GestureDetector {
     virtual void OnShowPress(const MotionEvent& e) = 0;
     virtual bool OnSingleTapUp(const MotionEvent& e) = 0;
     virtual bool OnLongPress(const MotionEvent& e) = 0;
-    virtual bool OnScroll(const MotionEvent& e1, const MotionEvent& e2,
-                          float distance_x, float distance_y) = 0;
-    virtual bool OnFling(const MotionEvent& e1, const MotionEvent& e2,
-                         float velocity_x, float velocity_y) = 0;
+    virtual bool OnScroll(const MotionEvent& e1,
+                          const MotionEvent& e2,
+                          float distance_x,
+                          float distance_y) = 0;
+    virtual bool OnFling(const MotionEvent& e1,
+                         const MotionEvent& e2,
+                         float velocity_x,
+                         float velocity_y) = 0;
+    // Added for Chromium (Aura).
+    virtual bool OnSwipe(const MotionEvent& e1,
+                         const MotionEvent& e2,
+                         float velocity_x,
+                         float velocity_y) = 0;
   };
 
   class DoubleTapListener {
@@ -75,10 +96,18 @@ class GestureDetector {
     virtual void OnShowPress(const MotionEvent& e) OVERRIDE;
     virtual bool OnSingleTapUp(const MotionEvent& e) OVERRIDE;
     virtual bool OnLongPress(const MotionEvent& e) OVERRIDE;
-    virtual bool OnScroll(const MotionEvent& e1, const MotionEvent& e2,
-                          float distance_x, float distance_y) OVERRIDE;
-    virtual bool OnFling(const MotionEvent& e1, const MotionEvent& e2,
-                         float velocity_x, float velocity_y) OVERRIDE;
+    virtual bool OnScroll(const MotionEvent& e1,
+                          const MotionEvent& e2,
+                          float distance_x,
+                          float distance_y) OVERRIDE;
+    virtual bool OnFling(const MotionEvent& e1,
+                         const MotionEvent& e2,
+                         float velocity_x,
+                         float velocity_y) OVERRIDE;
+    virtual bool OnSwipe(const MotionEvent& e1,
+                         const MotionEvent& e2,
+                         float velocity_x,
+                         float velocity_y) OVERRIDE;
 
     // DoubleTapListener implementation.
     virtual bool OnSingleTapConfirmed(const MotionEvent& e) OVERRIDE;
@@ -102,11 +131,7 @@ class GestureDetector {
 
   bool is_double_tapping() const { return is_double_tapping_; }
 
-  void set_is_longpress_enabled(bool is_longpress_enabled) {
-    is_longpress_enabled_ = is_longpress_enabled;
-  }
-
-  bool is_longpress_enabled() const { return is_longpress_enabled_; }
+  void set_longpress_enabled(bool enabled) { longpress_enabled_ = enabled; }
 
  private:
   void Init(const Config& config);
@@ -129,6 +154,8 @@ class GestureDetector {
   float double_tap_slop_square_;
   float min_fling_velocity_;
   float max_fling_velocity_;
+  float min_swipe_velocity_;
+  float min_swipe_direction_component_ratio_;
   base::TimeDelta double_tap_timeout_;
 
   bool still_down_;
@@ -149,7 +176,8 @@ class GestureDetector {
   float down_focus_x_;
   float down_focus_y_;
 
-  bool is_longpress_enabled_;
+  bool longpress_enabled_;
+  bool swipe_enabled_;
 
   // Determines speed during touch scrolling.
   VelocityTrackerState velocity_tracker_;

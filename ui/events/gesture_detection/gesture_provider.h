@@ -43,7 +43,7 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
 
     // If |gesture_begin_end_types_enabled| is true, fire an ET_GESTURE_BEGIN
     // event for every added touch point, and an ET_GESTURE_END event for every
-    // removed touch point.
+    // removed touch point. Defaults to false.
     bool gesture_begin_end_types_enabled;
   };
 

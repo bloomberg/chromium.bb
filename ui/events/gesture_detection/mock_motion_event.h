@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/motion_event.h"
@@ -22,6 +24,17 @@ struct MockMotionEvent : public MotionEvent {
                   float y0,
                   float x1,
                   float y1);
+  MockMotionEvent(Action action,
+                  base::TimeTicks time,
+                  float x0,
+                  float y0,
+                  float x1,
+                  float y1,
+                  float x2,
+                  float y2);
+  MockMotionEvent(Action action,
+                  base::TimeTicks time,
+                  const std::vector<gfx::PointF>& positions);
   MockMotionEvent(const MockMotionEvent& other);
   virtual ~MockMotionEvent();
 

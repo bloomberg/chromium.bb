@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MSVC++ requires this to be set before any other includes to get M_PI.
+#define _USE_MATH_DEFINES
+
 #include "ui/events/gesture_detection/gesture_detector.h"
 
 #include <cmath>
@@ -20,6 +23,8 @@ const float kSlopEpsilon = .05f;
 // Minimum distance a scroll must have traveled from the last scroll/focal point
 // to trigger an |OnScroll| callback.
 const float kScrollEpsilon = .1f;
+
+const float kDegreesToRadians = static_cast<float>(M_PI) / 180.0f;
 
 // Constants used by TimeoutGestureHandler.
 enum TimeoutEvent {
@@ -40,7 +45,11 @@ GestureDetector::Config::Config()
       touch_slop(8),
       double_tap_slop(100),
       minimum_fling_velocity(50),
-      maximum_fling_velocity(8000) {}
+      maximum_fling_velocity(8000),
+      swipe_enabled(false),
+      minimum_swipe_velocity(20),
+      maximum_swipe_deviation_angle(20.f) {
+}
 
 GestureDetector::Config::~Config() {}
 
@@ -68,6 +77,13 @@ bool GestureDetector::SimpleGestureListener::OnScroll(const MotionEvent& e1,
 }
 
 bool GestureDetector::SimpleGestureListener::OnFling(const MotionEvent& e1,
+                                                     const MotionEvent& e2,
+                                                     float velocity_x,
+                                                     float velocity_y) {
+  return false;
+}
+
+bool GestureDetector::SimpleGestureListener::OnSwipe(const MotionEvent& e1,
                                                      const MotionEvent& e2,
                                                      float velocity_x,
                                                      float velocity_y) {
@@ -158,7 +174,7 @@ GestureDetector::GestureDetector(
       last_focus_y_(0),
       down_focus_x_(0),
       down_focus_y_(0),
-      is_longpress_enabled_(true) {
+      longpress_enabled_(true) {
   DCHECK(listener_);
   Init(config);
 }
@@ -206,20 +222,49 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       {
         const int up_index = ev.GetActionIndex();
         const int id1 = ev.GetPointerId(up_index);
-        const float x1 = velocity_tracker_.GetXVelocity(id1);
-        const float y1 = velocity_tracker_.GetYVelocity(id1);
+        const float vx1 = velocity_tracker_.GetXVelocity(id1);
+        const float vy1 = velocity_tracker_.GetYVelocity(id1);
+        float vx_total = vx1;
+        float vy_total = vy1;
         for (int i = 0; i < count; i++) {
           if (i == up_index)
             continue;
 
           const int id2 = ev.GetPointerId(i);
-          const float x = x1 * velocity_tracker_.GetXVelocity(id2);
-          const float y = y1 * velocity_tracker_.GetYVelocity(id2);
-
-          const float dot = x + y;
+          const float vx2 = velocity_tracker_.GetXVelocity(id2);
+          const float vy2 = velocity_tracker_.GetYVelocity(id2);
+          const float dot = vx1 * vx2 + vy1 * vy2;
           if (dot < 0) {
+            vx_total = 0;
+            vy_total = 0;
             velocity_tracker_.Clear();
             break;
+          }
+          vx_total += vx2;
+          vy_total += vy2;
+        }
+
+        if (swipe_enabled_ && (vx_total || vy_total)) {
+          float vx = vx_total / count;
+          float vy = vy_total / count;
+          float vx_abs = std::abs(vx);
+          float vy_abs = std::abs(vy);
+
+          if (vx_abs < min_swipe_velocity_)
+            vx_abs = vx = 0;
+          if (vy_abs < min_swipe_velocity_)
+            vy_abs = vy = 0;
+
+          // Note that the ratio will be 0 if both velocites are below the min.
+          float ratio = vx_abs > vy_abs ? vx_abs / std::max(vy_abs, 0.001f)
+                                        : vy_abs / std::max(vx_abs, 0.001f);
+          if (ratio > min_swipe_direction_component_ratio_) {
+            if (vx_abs > vy_abs)
+              vy = 0;
+            else
+              vx = 0;
+
+            handled = listener_->OnSwipe(*current_down_event_, ev, vx, vy);
           }
         }
       }
@@ -259,7 +304,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       // Always start the SHOW_PRESS timer before the LONG_PRESS timer to ensure
       // proper timeout ordering.
       timeout_handler_->StartTimeout(SHOW_PRESS);
-      if (is_longpress_enabled_)
+      if (longpress_enabled_)
         timeout_handler_->StartTimeout(LONG_PRESS);
       handled |= listener_->OnDown(ev);
       break;
@@ -377,6 +422,15 @@ void GestureDetector::Init(const Config& config) {
   double_tap_timeout_ = config.double_tap_timeout;
   min_fling_velocity_ = config.minimum_fling_velocity;
   max_fling_velocity_ = config.maximum_fling_velocity;
+
+  swipe_enabled_ = config.swipe_enabled;
+  min_swipe_velocity_ = config.minimum_swipe_velocity;
+  DCHECK_GT(config.maximum_swipe_deviation_angle, 0);
+  DCHECK_LE(config.maximum_swipe_deviation_angle, 45);
+  const float maximum_swipe_deviation_angle =
+      std::min(45.f, std::max(0.001f, config.maximum_swipe_deviation_angle));
+  min_swipe_direction_component_ratio_ =
+      1.f / tan(maximum_swipe_deviation_angle * kDegreesToRadians);
 }
 
 void GestureDetector::OnShowPressTimeout() {

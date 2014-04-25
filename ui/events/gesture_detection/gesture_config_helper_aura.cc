@@ -27,6 +27,10 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
       GestureConfiguration::min_scroll_velocity();
   config.maximum_fling_velocity =
       GestureConfiguration::fling_velocity_cap();
+  config.swipe_enabled = true;
+  config.minimum_swipe_velocity = GestureConfiguration::min_swipe_speed();
+  config.maximum_swipe_deviation_angle =
+      atan2(1.f, GestureConfiguration::max_swipe_deviation_ratio());
 
   return config;
 }
