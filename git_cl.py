@@ -1211,7 +1211,7 @@ def CMDstatus(parser, args):
     return 0
 
   changes = (Changelist(branchref=b) for b in branches.splitlines())
-  branches = dict((c.GetBranch(), c.GetIssueURL()) for c in changes)
+  branches = [c.GetBranch() for c in changes]
   alignment = max(5, max(len(b) for b in branches))
   print 'Branches associated with reviews:'
   # Adhoc thread pool to request data concurrently.
@@ -1257,7 +1257,12 @@ def CMDstatus(parser, args):
         color = Fore.BLUE
       output.put((b, i, color))
 
-    threads = [threading.Thread(target=fetch, args=(b,)) for b in branches]
+    # Process one branch synchronously to work through authentication, then
+    # spawn threads to process all the other branches in parallel.
+    if branches:
+      fetch(branches[0])
+    threads = [
+      threading.Thread(target=fetch, args=(b,)) for b in branches[1:]]
     for t in threads:
       t.daemon = True
       t.start()
