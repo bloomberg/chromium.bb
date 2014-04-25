@@ -149,7 +149,6 @@ CrxUpdateItem UpdateCheckerTest::BuildCrxUpdateItem() {
   crx_component.name = "test_jebg";
   crx_component.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
   crx_component.installer = NULL;
-  crx_component.observer = NULL;
   crx_component.version = base::Version("0.9");
   crx_component.fingerprint = "fp1";
 

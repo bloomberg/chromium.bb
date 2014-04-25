@@ -35,10 +35,10 @@ namespace component_updater {
 #define POST_INTERCEPT_HOSTNAME  "localhost2"
 #define POST_INTERCEPT_PATH      "/update2"
 
-MockComponentObserver::MockComponentObserver() {
+MockServiceObserver::MockServiceObserver() {
 }
 
-MockComponentObserver::~MockComponentObserver() {
+MockServiceObserver::~MockServiceObserver() {
 }
 
 bool PartialMatch::Match(const std::string& actual) const {
@@ -254,16 +254,17 @@ TEST_F(ComponentUpdaterTest, StartStop) {
 // the COMPONENT_UPDATER_STARTED and COMPONENT_UPDATER_SLEEPING notifications
 // are generated. No pings are sent.
 TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
-  MockComponentObserver observer;
+  MockServiceObserver observer;
 
   EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+              OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
               .Times(1);
   EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+              OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
               .Times(2);
   EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+              OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                      "abagagagagagagagagagagagagagagag"))
               .Times(2);
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
@@ -273,7 +274,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 
   TestInstaller installer;
   CrxComponent com;
-  com.observer = &observer;
+  component_updater()->AddObserver(&observer);
   EXPECT_EQ(ComponentUpdateService::kOk,
             RegisterComponent(&com,
                               kTestComponent_abag,
@@ -308,13 +309,14 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   // Loop twice again but this case we simulate a server error by returning
   // an empty file. Expect the behavior of the service to be the same as before.
   EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+              OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
               .Times(1);
   EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+              OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
               .Times(2);
   EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+              OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                      "abagagagagagagagagagagagagagagag"))
               .Times(2);
 
   post_interceptor_->Reset();
@@ -356,49 +358,41 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 // 3- ping
 // 4- second update check.
 TEST_F(ComponentUpdaterTest, InstallCrx) {
-  MockComponentObserver observer1;
+  MockServiceObserver observer;
   {
     InSequence seq;
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_FOUND,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_READY,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-  }
-
-  MockComponentObserver observer2;
-  {
-    InSequence seq;
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
   }
 
@@ -412,13 +406,13 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
       GURL(expected_crx_url),
       test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
+  component_updater()->AddObserver(&observer);
+
   TestInstaller installer1;
   CrxComponent com1;
-  com1.observer = &observer1;
   RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
-  com2.observer = &observer2;
   RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   test_configurator()->SetLoopCount(2);
@@ -537,55 +531,44 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 //  - We make an on demand call.
 //  - This triggers a second loop, which has a reply that triggers an install.
 TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
-  MockComponentObserver observer1;
+  MockServiceObserver observer;
   {
     InSequence seq;
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_FOUND,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-  }
-
-  MockComponentObserver observer2;
-  {
-    InSequence seq;
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_READY,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
   }
 
@@ -596,13 +579,13 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
       GURL(expected_crx_url),
       test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
+  component_updater()->AddObserver(&observer);
+
   TestInstaller installer1;
   CrxComponent com1;
-  com1.observer = &observer1;
   RegisterComponent(&com1, kTestComponent_abag, Version("2.2"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
-  com2.observer = &observer2;
   RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"), &installer2);
 
   // No update normally.
@@ -670,30 +653,22 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
 
   // Test a few error cases. NOTE: We don't have callbacks for
   // when the updates failed yet.
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
   {
     InSequence seq;
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-  }
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
-  {
-    InSequence seq;
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
   }
 
@@ -716,30 +691,22 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
       << post_interceptor_->GetRequestsAsString();
 
   // No update: already updated to 1.0 so nothing new
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
   {
     InSequence seq;
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-  }
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
-  {
-    InSequence seq;
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
   }
 
@@ -765,49 +732,41 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
 // Verify that a previously registered component can get re-registered
 // with a different version.
 TEST_F(ComponentUpdaterTest, CheckReRegistration) {
-  MockComponentObserver observer1;
+  MockServiceObserver observer;
   {
     InSequence seq;
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_FOUND,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATE_READY,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-  }
-
-  MockComponentObserver observer2;
-  {
-    InSequence seq;
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
   }
 
@@ -821,13 +780,13 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
       GURL(expected_crx_url),
       test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
+  component_updater()->AddObserver(&observer);
+
   TestInstaller installer1;
   CrxComponent com1;
-  com1.observer = &observer1;
   RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
-  com2.observer = &observer2;
   RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   // Loop twice to issue two checks: (1) with original 0.9 version, update to
@@ -862,31 +821,22 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   component_updater()->Stop();
 
   // Now re-register, pretending to be an even newer version (2.2)
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
   {
     InSequence seq;
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "jebgalgnebhfojomionfpkfelancnnkf"))
                 .Times(1);
-    EXPECT_CALL(observer1,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
                 .Times(1);
-  }
-
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
-  {
-    InSequence seq;
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-                .Times(1);
-    EXPECT_CALL(observer2,
-                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
                 .Times(1);
   }
 
@@ -1272,23 +1222,27 @@ void RequestAndDeleteResourceThrottle(
 }
 
 TEST_F(ComponentUpdaterTest, ResourceThrottleDeletedNoUpdate) {
-  MockComponentObserver observer;
-  EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
-              .Times(1);
-  EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
-              .Times(1);
-  EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-              .Times(1);
+  MockServiceObserver observer;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
+                .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
+                .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
+                .Times(1);
+  }
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
       "updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   TestInstaller installer;
   CrxComponent com;
-  com.observer = &observer;
+  component_updater()->AddObserver(&observer);
   EXPECT_EQ(ComponentUpdateService::kOk,
             RegisterComponent(&com,
                               kTestComponent_abag,
@@ -1357,23 +1311,27 @@ class  CancelResourceController: public TestResourceController {
 };
 
 TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
-  MockComponentObserver observer;
-  EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
-              .Times(1);
-  EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
-              .Times(1);
-  EXPECT_CALL(observer,
-              OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0))
-              .Times(1);
+  MockServiceObserver observer;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
+                .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
+                .Times(1);
+    EXPECT_CALL(observer,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
+                .Times(1);
+  }
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
       "updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   TestInstaller installer;
   CrxComponent com;
-  com.observer = &observer;
+  component_updater()->AddObserver(&observer);
   EXPECT_EQ(ComponentUpdateService::kOk,
             RegisterComponent(&com,
                               kTestComponent_abag,
@@ -1409,6 +1367,86 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
   component_updater()->Stop();
 }
 
+// Tests adding and removing observers.
+TEST_F(ComponentUpdaterTest, Observer) {
+  MockServiceObserver observer1, observer2;
+
+  // Expect that two observers see the events.
+  {
+    InSequence seq;
+    EXPECT_CALL(observer1,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
+                .Times(1);
+  }
+
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(new PartialMatch(
+      "updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  component_updater()->AddObserver(&observer1);
+  component_updater()->AddObserver(&observer2);
+
+  TestInstaller installer;
+  CrxComponent com;
+  EXPECT_EQ(ComponentUpdateService::kOk,
+            RegisterComponent(&com,
+                              kTestComponent_abag,
+                              Version("1.1"),
+                              &installer));
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+  RunThreads();
+
+  // After removing the first observer, it's only the second observer that
+  // gets the events.
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer2,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_STARTED, ""))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ServiceObserver::COMPONENT_NOT_UPDATED,
+                        "abagagagagagagagagagagagagagagag"))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ServiceObserver::COMPONENT_UPDATER_SLEEPING, ""))
+                .Times(1);
+  }
+
+  component_updater()->RemoveObserver(&observer1);
+
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+  RunThreads();
+
+  // Both observers are removed and no one gets the events.
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
+  component_updater()->RemoveObserver(&observer2);
+
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+  RunThreads();
+
+  component_updater()->Stop();
+}
 
 }  // namespace component_updater
-

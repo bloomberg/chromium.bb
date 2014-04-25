@@ -158,11 +158,11 @@ class ComponentUpdaterTest : public testing::Test {
 const char expected_crx_url[] =
     "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
 
-class MockComponentObserver : public ComponentObserver {
+class MockServiceObserver : public ServiceObserver {
  public:
-  MockComponentObserver();
-  ~MockComponentObserver();
-  MOCK_METHOD2(OnEvent, void(Events event, int extra));
+  MockServiceObserver();
+  ~MockServiceObserver();
+  MOCK_METHOD2(OnEvent, void(Events event, const std::string&));
 };
 
 class OnDemandTester {

@@ -58,44 +58,11 @@ class ComponentInstaller {
   virtual ~ComponentInstaller() {}
 };
 
-// Defines an interface to observe a CrxComponent.
-class ComponentObserver {
- public:
-  enum Events {
-    // Sent when the component updater starts doing update checks.
-    COMPONENT_UPDATER_STARTED,
-
-    // Sent when the component updater is going to take a long nap.
-    COMPONENT_UPDATER_SLEEPING,
-
-    // Sent when there is a new version of a registered component. After
-    // the notification is sent the component will be downloaded.
-    COMPONENT_UPDATE_FOUND,
-
-    // Sent when the new component has been downloaded and an installation
-    // or upgrade is about to be attempted.
-    COMPONENT_UPDATE_READY,
-
-    // Sent when a component has been successfully updated.
-    COMPONENT_UPDATED,
-
-    // Sent when a component has not been updated following an update check:
-    // either there was no update available, or an update failed.
-    COMPONENT_NOT_UPDATED,
-  };
-
-  virtual ~ComponentObserver() {}
-
-  // The component updater service will call this function when an interesting
-  // event happens for a specific component. |extra| is |event| dependent.
-  virtual void OnEvent(Events event, int extra) = 0;
-};
-
 // Describes a particular component that can be installed or updated. This
 // structure is required to register a component with the component updater.
 // |pk_hash| is the SHA256 hash of the component's public key. If the component
 // is to be installed then version should be "0" or "0.0", else it should be
-// the current version. |observer|, |fingerprint|, and |name| are optional.
+// the current version. |fingerprint|, and |name| are optional.
 // |allow_background_download| specifies that the component can be background
 // downloaded in some cases. The default for this value is |true| and the value
 // can be overriden at the registration time. This is a temporary change until
@@ -103,7 +70,6 @@ class ComponentObserver {
 struct CrxComponent {
   std::vector<uint8> pk_hash;
   ComponentInstaller* installer;
-  ComponentObserver* observer;
   Version version;
   std::string fingerprint;
   std::string name;
@@ -184,6 +150,51 @@ class ComponentUpdateService {
     virtual bool UseBackgroundDownloader() const = 0;
   };
 
+  // Defines an interface to observe ComponentUpdateService. It provides
+  // notifications when state changes occur for the service or for the
+  // registered components.
+  class Observer {
+   public:
+    enum Events {
+      // Sent when the component updater starts doing update checks.
+      COMPONENT_UPDATER_STARTED,
+
+      // Sent when the component updater is going to take a long nap.
+      COMPONENT_UPDATER_SLEEPING,
+
+      // Sent when there is a new version of a registered component. After
+      // the notification is sent the component will be downloaded.
+      COMPONENT_UPDATE_FOUND,
+
+      // Sent when the new component has been downloaded and an installation
+      // or upgrade is about to be attempted.
+      COMPONENT_UPDATE_READY,
+
+      // Sent when a component has been successfully updated.
+      COMPONENT_UPDATED,
+
+      // Sent when a component has not been updated following an update check:
+      // either there was no update available, or an update failed.
+      COMPONENT_NOT_UPDATED,
+    };
+
+    virtual ~Observer() {}
+
+    // The component updater service will call this function when an interesting
+    // state change happens. If the |id| is specified, then the event is fired
+    // on behalf of a specific component. The implementors of this interface are
+    // expected to filter the relevant events based on the component id.
+    virtual void OnEvent(Events event, const std::string& id) = 0;
+  };
+
+  // Adds an observer for this class. An observer should not be added more
+  // than once. The caller retains the ownership of the observer object.
+  virtual void AddObserver(Observer* observer) = 0;
+
+  // Removes an observer. It is safe for an observer to be removed while
+  // the observers are being notified.
+  virtual void RemoveObserver(Observer* observer) = 0;
+
   // Start doing update checks and installing new versions of registered
   // components after Configurator::InitialDelay() seconds.
   virtual Status Start() = 0;
@@ -219,6 +230,8 @@ class ComponentUpdateService {
   // know the outcome of the check.
   virtual Status OnDemandUpdate(const std::string& component_id) = 0;
 };
+
+typedef ComponentUpdateService::Observer ServiceObserver;
 
 // Creates the component updater. You must pass a valid |config| allocated on
 // the heap which the component updater will own.

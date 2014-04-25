@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -83,7 +84,6 @@ CrxUpdateItem::~CrxUpdateItem() {
 
 CrxComponent::CrxComponent()
     : installer(NULL),
-      observer(NULL),
       allow_background_download(true) {
 }
 
@@ -163,6 +163,8 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual ~CrxUpdateService();
 
   // Overrides for ComponentUpdateService.
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual Status Start() OVERRIDE;
   virtual Status Stop() OVERRIDE;
   virtual Status RegisterComponent(const CrxComponent& component) OVERRIDE;
@@ -241,8 +243,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   CrxUpdateItem* FindUpdateItemById(const std::string& id);
 
-  void NotifyComponentObservers(ComponentObserver::Events event,
-                                int extra) const;
+  void NotifyObservers(Observer::Events event, const std::string& id);
 
   bool HasOnDemandItems() const;
 
@@ -271,6 +272,8 @@ class CrxUpdateService : public ComponentUpdateService {
 
   bool running_;
 
+  ObserverList<Observer> observer_list_;
+
   DISALLOW_COPY_AND_ASSIGN(CrxUpdateService);
 };
 
@@ -296,6 +299,16 @@ CrxUpdateService::~CrxUpdateService() {
   STLDeleteElements(&work_items_);
 }
 
+void CrxUpdateService::AddObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observer_list_.AddObserver(observer);
+}
+
+void CrxUpdateService::RemoveObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observer_list_.RemoveObserver(observer);
+}
+
 ComponentUpdateService::Status CrxUpdateService::Start() {
   // Note that RegisterComponent will call Start() when the first
   // component is registered, so it can be called twice. This way
@@ -304,7 +317,7 @@ ComponentUpdateService::Status CrxUpdateService::Start() {
   if (work_items_.empty())
     return kOk;
 
-  NotifyComponentObservers(ComponentObserver::COMPONENT_UPDATER_STARTED, 0);
+  NotifyObservers(Observer::COMPONENT_UPDATER_STARTED, "");
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(config_->InitialDelay()),
                this, &CrxUpdateService::ProcessPendingItems);
@@ -369,7 +382,7 @@ void CrxUpdateService::ScheduleNextRun(StepDelayInterval step_delay) {
   }
 
   if (step_delay != kStepDelayShort) {
-    NotifyComponentObservers(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0);
+    NotifyObservers(Observer::COMPONENT_UPDATER_SLEEPING, "");
 
     // Zero is only used for unit tests.
     if (0 == delay_seconds)
@@ -405,31 +418,28 @@ void CrxUpdateService::ChangeItemState(CrxUpdateItem* item,
 
   item->status = to;
 
-  ComponentObserver* observer = item->component.observer;
-  if (observer) {
-    switch (to) {
-      case CrxUpdateItem::kCanUpdate:
-        observer->OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0);
-        break;
-      case CrxUpdateItem::kUpdatingDiff:
-      case CrxUpdateItem::kUpdating:
-        observer->OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0);
-        break;
-      case CrxUpdateItem::kUpdated:
-        observer->OnEvent(ComponentObserver::COMPONENT_UPDATED, 0);
-        break;
-      case CrxUpdateItem::kUpToDate:
-      case CrxUpdateItem::kNoUpdate:
-        observer->OnEvent(ComponentObserver::COMPONENT_NOT_UPDATED, 0);
-        break;
-      case CrxUpdateItem::kNew:
-      case CrxUpdateItem::kChecking:
-      case CrxUpdateItem::kDownloading:
-      case CrxUpdateItem::kDownloadingDiff:
-      case CrxUpdateItem::kLastStatus:
-        // No notification for these states.
-        break;
-    }
+  switch (to) {
+    case CrxUpdateItem::kCanUpdate:
+      NotifyObservers(Observer::COMPONENT_UPDATE_FOUND, item->id);
+      break;
+    case CrxUpdateItem::kUpdatingDiff:
+    case CrxUpdateItem::kUpdating:
+      NotifyObservers(Observer::COMPONENT_UPDATE_READY, item->id);
+      break;
+    case CrxUpdateItem::kUpdated:
+      NotifyObservers(Observer::COMPONENT_UPDATED, item->id);
+      break;
+    case CrxUpdateItem::kUpToDate:
+    case CrxUpdateItem::kNoUpdate:
+      NotifyObservers(Observer::COMPONENT_NOT_UPDATED, item->id);
+      break;
+    case CrxUpdateItem::kNew:
+    case CrxUpdateItem::kChecking:
+    case CrxUpdateItem::kDownloading:
+    case CrxUpdateItem::kDownloadingDiff:
+    case CrxUpdateItem::kLastStatus:
+      // No notification for these states.
+      break;
   }
 
   // Free possible pending network requests.
@@ -932,14 +942,10 @@ void CrxUpdateService::DoneInstalling(const std::string& component_id,
   ScheduleNextRun(kStepDelayMedium);
 }
 
-void CrxUpdateService::NotifyComponentObservers(
-    ComponentObserver::Events event, int extra) const {
-  for (UpdateItems::const_iterator it = work_items_.begin();
-       it != work_items_.end(); ++it) {
-    ComponentObserver* observer = (*it)->component.observer;
-    if (observer)
-      observer->OnEvent(event, 0);
-  }
+void CrxUpdateService::NotifyObservers(Observer::Events event,
+                                       const std::string& id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnEvent(event, id));
 }
 
 content::ResourceThrottle* CrxUpdateService::GetOnDemandResourceThrottle(
