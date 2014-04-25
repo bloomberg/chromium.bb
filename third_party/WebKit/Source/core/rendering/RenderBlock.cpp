@@ -2751,6 +2751,21 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
            return true;
     }
 
+    if (style()->clipPath()) {
+        switch (style()->clipPath()->type()) {
+        case ClipPathOperation::SHAPE: {
+            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style()->clipPath());
+            // FIXME: handle marginBox etc.
+            if (!clipPath->path(borderBoxRect()).contains(locationInContainer.point() - localOffset, clipPath->windRule()))
+                return false;
+            break;
+        }
+        case ClipPathOperation::REFERENCE:
+            // FIXME: handle REFERENCE
+            break;
+        }
+    }
+
     // If we have clipping, then we can't have any spillout.
     bool useOverflowClip = hasOverflowClip() && !hasSelfPaintingLayer();
     bool useClip = (hasControlClip() || useOverflowClip);
