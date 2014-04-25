@@ -46,6 +46,7 @@ group("root") {
     "//third_party/WebKit/Source/wtf",
     "//third_party/zlib",
     "//tools/gn",
+    "//ui/base/strings",
     "//ui/events",
     "//ui/gfx",
     "//ui/resources",
