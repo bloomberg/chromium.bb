@@ -7,6 +7,7 @@
 import contextlib
 import datetime
 import functools
+import fnmatch
 import glob
 import itertools
 import json
@@ -283,10 +284,29 @@ class ArchivingStageMixin(object):
       text_to_display = '%s%s' % (prefix, filename)
     cros_build_lib.PrintBuildbotLink(text_to_display, url)
 
-  def _GetUploadUrls(self):
-    """Returns a list of all urls to upload artifacts to."""
+  def _IsInUploadBlacklist(self, filename):
+    """Check if this file is blacklisted to go into a board's extra buckets.
+
+    Args:
+      filename: The filename of the file we want to check is in the blacklist.
+
+    Returns:
+      True if the file is blacklisted, False otherwise.
+    """
+    for blacklisted_file in constants.EXTRA_BUCKETS_FILES_BLACKLIST:
+      if fnmatch.fnmatch(filename, blacklisted_file):
+        return True
+    return False
+
+  def _GetUploadUrls(self, filename):
+    """Returns a list of all urls for which to upload filename to.
+
+    Args:
+      filename: The filename of the file we want to upload.
+    """
     urls = [self.upload_url]
-    if hasattr(self, '_current_board'):
+    if (not self._IsInUploadBlacklist(filename) and
+        hasattr(self, '_current_board')):
       custom_artifacts_file = portage_utilities.ReadOverlayFile(
           'scripts/artifacts.json', board=self._current_board)
       if custom_artifacts_file is not None:
@@ -306,9 +326,10 @@ class ArchivingStageMixin(object):
     filename = path
     if archive:
       filename = commands.ArchiveFile(path, self.archive_path)
+    upload_urls = self._GetUploadUrls(filename)
     try:
       commands.UploadArchivedFile(
-          self.archive_path, self._GetUploadUrls(), filename, self._run.debug,
+          self.archive_path, upload_urls, filename, self._run.debug,
           update_list=True, acl=self.acl)
     except (gs.GSContextException, timeout_util.TimeoutError):
       cros_build_lib.PrintBuildbotStepText('Upload failed')

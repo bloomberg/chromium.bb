@@ -467,3 +467,9 @@ PRE_CQ_GROUP = 'trybot-pre-cq-group'
 # Email validation regex. Not quite fully compliant with RFC 2822, but good
 # approximation.
 EMAIL_REGEX = r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}'
+
+# Blacklist of files not allowed to be uploaded into the Partner Project Google
+# Storage Buckets.
+EXTRA_BUCKETS_FILES_BLACKLIST = [
+    'manifest.xml'
+]
