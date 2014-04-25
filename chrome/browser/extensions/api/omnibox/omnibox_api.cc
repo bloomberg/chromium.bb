@@ -4,12 +4,9 @@
 
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 
-#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,9 +21,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system_provider.h"
-#include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/extension.h"
 #include "ui/gfx/image/image.h"
 
 namespace extensions {
@@ -176,13 +170,9 @@ void ExtensionOmniboxEventRouter::OnInputCancelled(
 
 OmniboxAPI::OmniboxAPI(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)),
-      url_service_(TemplateURLServiceFactory::GetForProfile(profile_)) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+      url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   if (url_service_) {
     template_url_sub_ = url_service_->RegisterOnLoadedCallback(
         base::Bind(&OmniboxAPI::OnTemplateURLsLoaded,
@@ -216,42 +206,34 @@ OmniboxAPI* OmniboxAPI::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<OmniboxAPI>::Get(context);
 }
 
-void OmniboxAPI::Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<const Extension>(details).ptr();
-    const std::string& keyword = OmniboxInfo::GetKeyword(extension);
-    if (!keyword.empty()) {
-      // Load the omnibox icon so it will be ready to display in the URL bar.
-      omnibox_popup_icon_manager_.LoadIcon(profile_, extension);
-      omnibox_icon_manager_.LoadIcon(profile_, extension);
+void OmniboxAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                   const Extension* extension) {
+  const std::string& keyword = OmniboxInfo::GetKeyword(extension);
+  if (!keyword.empty()) {
+    // Load the omnibox icon so it will be ready to display in the URL bar.
+    omnibox_popup_icon_manager_.LoadIcon(profile_, extension);
+    omnibox_icon_manager_.LoadIcon(profile_, extension);
 
-      if (url_service_) {
-        url_service_->Load();
-        if (url_service_->loaded()) {
-          url_service_->RegisterOmniboxKeyword(extension->id(),
-                                               extension->name(),
-                                               keyword);
-        } else {
-          pending_extensions_.insert(extension);
-        }
+    if (url_service_) {
+      url_service_->Load();
+      if (url_service_->loaded()) {
+        url_service_->RegisterOmniboxKeyword(
+            extension->id(), extension->name(), keyword);
+      } else {
+        pending_extensions_.insert(extension);
       }
     }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<UnloadedExtensionInfo>(details)->extension;
-    if (!OmniboxInfo::GetKeyword(extension).empty()) {
-      if (url_service_) {
-        if (url_service_->loaded())
-          url_service_->UnregisterOmniboxKeyword(extension->id());
-        else
-          pending_extensions_.erase(extension);
-      }
-    }
-  } else {
-    NOTREACHED();
+  }
+}
+
+void OmniboxAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                     const Extension* extension,
+                                     UnloadedExtensionInfo::Reason reason) {
+  if (!OmniboxInfo::GetKeyword(extension).empty() && url_service_) {
+    if (url_service_->loaded())
+      url_service_->UnregisterOmniboxKeyword(extension->id());
+    else
+      pending_extensions_.erase(extension);
   }
 }
 

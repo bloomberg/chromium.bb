@@ -4,9 +4,6 @@
 
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 
-#include <algorithm>
-#include <cctype>
-#include <iterator>
 #include <set>
 #include <string>
 
@@ -41,7 +38,6 @@
 #include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/platform_util.h"
@@ -68,14 +64,11 @@
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -508,8 +501,7 @@ void RunDownloadQuery(
     query_out.Limit(limit);
   }
 
-  std::string state_string =
-      downloads::ToString(query_in.state);
+  std::string state_string = downloads::ToString(query_in.state);
   if (!state_string.empty()) {
     DownloadItem::DownloadState state = StateEnumFromString(state_string);
     if (state == DownloadItem::MAX_DOWNLOAD_STATE) {
@@ -1522,11 +1514,12 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
     Profile* profile,
     DownloadManager* manager)
     : profile_(profile),
-      notifier_(manager, this) {
+      notifier_(manager, this),
+      extension_registry_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
   extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
   if (router)
     router->RegisterObserver(this,
@@ -1897,20 +1890,13 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
       content::Details<std::string>(&json_args));
 }
 
-void ExtensionDownloadsEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void ExtensionDownloadsEventRouter::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      extensions::UnloadedExtensionInfo* unloaded =
-          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
-      std::set<const extensions::Extension*>::iterator iter =
-        shelf_disabling_extensions_.find(unloaded->extension);
-      if (iter != shelf_disabling_extensions_.end())
-        shelf_disabling_extensions_.erase(iter);
-      break;
-    }
-  }
+  std::set<const extensions::Extension*>::iterator iter =
+      shelf_disabling_extensions_.find(extension);
+  if (iter != shelf_disabling_extensions_.end())
+    shelf_disabling_extensions_.erase(iter);
 }

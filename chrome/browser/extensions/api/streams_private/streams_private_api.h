@@ -7,17 +7,11 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
-#include "base/values.h"
-#include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/scoped_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
-#include "extensions/common/extension.h"
-
-class Profile;
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -25,11 +19,12 @@ class StreamHandle;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 
 class StreamsPrivateAPI : public BrowserContextKeyedAPI,
-                          public content::NotificationObserver {
+                          public ExtensionRegistryObserver {
  public:
-  // Convenience method to get the StreamsPrivateAPI for a profile.
+  // Convenience method to get the StreamsPrivateAPI for a BrowserContext.
   static StreamsPrivateAPI* Get(content::BrowserContext* context);
 
   explicit StreamsPrivateAPI(content::BrowserContext* context);
@@ -43,16 +38,17 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<StreamsPrivateAPI>* GetFactoryInstance();
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   friend class BrowserContextKeyedAPIFactory<StreamsPrivateAPI>;
   typedef std::map<std::string,
                    std::map<GURL,
                             linked_ptr<content::StreamHandle> > > StreamMap;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -61,10 +57,13 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
   static const bool kServiceRedirectedInIncognito = true;
 
-  Profile* const profile_;
-  content::NotificationRegistrar registrar_;
+  content::BrowserContext* const browser_context_;
   StreamMap streams_;
   base::WeakPtrFactory<StreamsPrivateAPI> weak_ptr_factory_;
+
+  // Listen to extension unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 };
 
 }  // namespace extensions

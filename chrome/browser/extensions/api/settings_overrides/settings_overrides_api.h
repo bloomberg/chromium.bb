@@ -8,18 +8,18 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class TemplateURL;
 
 namespace extensions {
+class ExtensionRegistry;
 
 class SettingsOverridesAPI : public BrowserContextKeyedAPI,
-                             public content::NotificationObserver {
+                             public ExtensionRegistryObserver {
  public:
   explicit SettingsOverridesAPI(content::BrowserContext* context);
   virtual ~SettingsOverridesAPI();
@@ -39,10 +39,15 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
                base::Value* value);
   void UnsetPref(const std::string& extension_id,
                  const std::string& pref_key);
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -59,7 +64,10 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
   // have search provider registered.
   PendingExtensions pending_extensions_;
 
-  content::NotificationRegistrar registrar_;
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
+
   scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsOverridesAPI);

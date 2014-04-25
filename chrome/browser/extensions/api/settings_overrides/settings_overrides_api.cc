@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,10 +13,9 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -89,14 +87,9 @@ TemplateURLData ConvertSearchProvider(
 
 SettingsOverridesAPI::SettingsOverridesAPI(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)),
-      url_service_(TemplateURLServiceFactory::GetForProfile(profile_)) {
-  DCHECK(profile_);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+      url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
 SettingsOverridesAPI::~SettingsOverridesAPI() {
@@ -130,93 +123,83 @@ void SettingsOverridesAPI::UnsetPref(const std::string& extension_id,
       kExtensionPrefsScopeRegular);
 }
 
-void SettingsOverridesAPI::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      const SettingsOverrides* settings =
-          SettingsOverrides::Get(extension);
-      if (settings) {
-        std::string install_parameter =
-            ExtensionPrefs::Get(profile_)->GetInstallParam(extension->id());
-        if (settings->homepage) {
-          SetPref(extension->id(),
-                  prefs::kHomePage,
-                  new base::StringValue(SubstituteInstallParam(
-                      settings->homepage->spec(), install_parameter)));
-          SetPref(extension->id(), prefs::kHomePageIsNewTabPage,
-                  new base::FundamentalValue(false));
-        }
-        if (!settings->startup_pages.empty()) {
-          SetPref(extension->id(), prefs::kRestoreOnStartup,
-                  new base::FundamentalValue(
-                      SessionStartupPref::kPrefValueURLs));
-          if (settings->startup_pages.size() > 1) {
-            VLOG(1) << extensions::ErrorUtils::FormatErrorMessage(
-                kManyStartupPagesWarning, manifest_keys::kSettingsOverride);
-          }
-          scoped_ptr<base::ListValue> url_list(new base::ListValue);
-          url_list->Append(new base::StringValue(SubstituteInstallParam(
-              settings->startup_pages[0].spec(), install_parameter)));
-          SetPref(extension->id(), prefs::kURLsToRestoreOnStartup,
-                  url_list.release());
-        }
-        if (settings->search_engine) {
-          // Bring the preference to the correct state. Before this code set it
-          // to "true" for all search engines. Thus, we should overwrite it for
-          // all search engines.
-          if (settings->search_engine->is_default) {
-            SetPref(extension->id(), prefs::kDefaultSearchProviderEnabled,
-                    new base::FundamentalValue(true));
-          } else {
-            UnsetPref(extension->id(), prefs::kDefaultSearchProviderEnabled);
-          }
-          DCHECK(url_service_);
-          if (url_service_->loaded()) {
-            RegisterSearchProvider(extension);
-          } else {
-            if (!template_url_sub_) {
-              template_url_sub_ = url_service_->RegisterOnLoadedCallback(
-                  base::Bind(&SettingsOverridesAPI::OnTemplateURLsLoaded,
-                             base::Unretained(this)));
-            }
-            url_service_->Load();
-            pending_extensions_.insert(extension);
-          }
-        }
-      }
-      break;
+void SettingsOverridesAPI::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  const SettingsOverrides* settings = SettingsOverrides::Get(extension);
+  if (settings) {
+    std::string install_parameter =
+        ExtensionPrefs::Get(profile_)->GetInstallParam(extension->id());
+    if (settings->homepage) {
+      SetPref(extension->id(),
+              prefs::kHomePage,
+              new base::StringValue(SubstituteInstallParam(
+                  settings->homepage->spec(), install_parameter)));
+      SetPref(extension->id(),
+              prefs::kHomePageIsNewTabPage,
+              new base::FundamentalValue(false));
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      const SettingsOverrides* settings = SettingsOverrides::Get(extension);
-      if (settings) {
-        if (settings->homepage) {
-          UnsetPref(extension->id(), prefs::kHomePage);
-          UnsetPref(extension->id(), prefs::kHomePageIsNewTabPage);
-        }
-        if (!settings->startup_pages.empty()) {
-          UnsetPref(extension->id(), prefs::kRestoreOnStartup);
-          UnsetPref(extension->id(), prefs::kURLsToRestoreOnStartup);
-        }
-        if (settings->search_engine) {
-          DCHECK(url_service_);
-          if (url_service_->loaded())
-            url_service_->RemoveExtensionControlledTURL(extension->id());
-          else
-            pending_extensions_.erase(extension);
-        }
+    if (!settings->startup_pages.empty()) {
+      SetPref(extension->id(),
+              prefs::kRestoreOnStartup,
+              new base::FundamentalValue(SessionStartupPref::kPrefValueURLs));
+      if (settings->startup_pages.size() > 1) {
+        VLOG(1) << extensions::ErrorUtils::FormatErrorMessage(
+                       kManyStartupPagesWarning,
+                       manifest_keys::kSettingsOverride);
       }
-      break;
+      scoped_ptr<base::ListValue> url_list(new base::ListValue);
+      url_list->Append(new base::StringValue(SubstituteInstallParam(
+          settings->startup_pages[0].spec(), install_parameter)));
+      SetPref(
+          extension->id(), prefs::kURLsToRestoreOnStartup, url_list.release());
     }
-    default: {
-      NOTREACHED();
-      break;
+    if (settings->search_engine) {
+      // Bring the preference to the correct state. Before this code set it
+      // to "true" for all search engines. Thus, we should overwrite it for
+      // all search engines.
+      if (settings->search_engine->is_default) {
+        SetPref(extension->id(),
+                prefs::kDefaultSearchProviderEnabled,
+                new base::FundamentalValue(true));
+      } else {
+        UnsetPref(extension->id(), prefs::kDefaultSearchProviderEnabled);
+      }
+      DCHECK(url_service_);
+      if (url_service_->loaded()) {
+        RegisterSearchProvider(extension);
+      } else {
+        if (!template_url_sub_) {
+          template_url_sub_ = url_service_->RegisterOnLoadedCallback(
+              base::Bind(&SettingsOverridesAPI::OnTemplateURLsLoaded,
+                         base::Unretained(this)));
+        }
+        url_service_->Load();
+        pending_extensions_.insert(extension);
+      }
+    }
+  }
+}
+void SettingsOverridesAPI::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  const SettingsOverrides* settings = SettingsOverrides::Get(extension);
+  if (settings) {
+    if (settings->homepage) {
+      UnsetPref(extension->id(), prefs::kHomePage);
+      UnsetPref(extension->id(), prefs::kHomePageIsNewTabPage);
+    }
+    if (!settings->startup_pages.empty()) {
+      UnsetPref(extension->id(), prefs::kRestoreOnStartup);
+      UnsetPref(extension->id(), prefs::kURLsToRestoreOnStartup);
+    }
+    if (settings->search_engine) {
+      DCHECK(url_service_);
+      if (url_service_->loaded())
+        url_service_->RemoveExtensionControlledTURL(extension->id());
+      else
+        pending_extensions_.erase(extension);
     }
   }
 }

@@ -7,18 +7,17 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/extensions/api/omnibox.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/window_open_disposition.h"
 
 class Profile;
@@ -39,6 +38,7 @@ class Image;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 
 // Event router class for events related to the omnibox API.
 class ExtensionOmniboxEventRouter {
@@ -84,7 +84,7 @@ class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
 };
 
 class OmniboxAPI : public BrowserContextKeyedAPI,
-                   public content::NotificationObserver {
+                   public ExtensionRegistryObserver {
  public:
   explicit OmniboxAPI(content::BrowserContext* context);
   virtual ~OmniboxAPI();
@@ -94,11 +94,6 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
 
   // Convenience method to get the OmniboxAPI for a profile.
   static OmniboxAPI* Get(content::BrowserContext* context);
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -117,6 +112,14 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
 
   void OnTemplateURLsLoaded();
 
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "OmniboxAPI";
@@ -131,7 +134,9 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
   // have keywords registered.
   PendingExtensions pending_extensions_;
 
-  content::NotificationRegistrar registrar_;
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;

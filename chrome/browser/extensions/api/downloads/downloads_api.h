@@ -9,20 +9,16 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/singleton.h"
-#include "base/strings/string16.h"
-#include "base/values.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/common/extensions/api/downloads.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class DownloadFileIconExtractor;
 class DownloadQuery;
@@ -30,6 +26,10 @@ class DownloadQuery;
 namespace content {
 class ResourceContext;
 class ResourceDispatcherHost;
+}
+
+namespace extensions {
+class ExtensionRegistry;
 }
 
 // Functions in the chrome.downloads namespace facilitate
@@ -296,9 +296,10 @@ class DownloadsGetFileIconFunction : public ChromeAsyncExtensionFunction {
 
 // Observes a single DownloadManager and many DownloadItems and dispatches
 // onCreated and onErased events.
-class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
-                                      public content::NotificationObserver,
-                                      public AllDownloadItemNotifier::Observer {
+class ExtensionDownloadsEventRouter
+    : public extensions::EventRouter::Observer,
+      public extensions::ExtensionRegistryObserver,
+      public AllDownloadItemNotifier::Observer {
  public:
   typedef base::Callback<void(
       const base::FilePath& changed_filename,
@@ -355,7 +356,7 @@ class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
       const base::Closure& no_change,
       const FilenameChangedCallback& change);
 
-  // AllDownloadItemNotifier::Observer
+  // AllDownloadItemNotifier::Observer.
   virtual void OnDownloadCreated(
       content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
@@ -366,7 +367,7 @@ class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
       content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
 
-  // extensions::EventRouter::Observer
+  // extensions::EventRouter::Observer.
   virtual void OnListenerRemoved(
       const extensions::EventListenerInfo& details) OVERRIDE;
 
@@ -383,15 +384,20 @@ class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
       const extensions::Event::WillDispatchCallback& will_dispatch_callback,
       base::Value* json_arg);
 
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // extensions::ExtensionRegistryObserver.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   Profile* profile_;
   AllDownloadItemNotifier notifier_;
   std::set<const extensions::Extension*> shelf_disabling_extensions_;
-  content::NotificationRegistrar registrar_;
+
+  // Listen to extension unloaded notifications.
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };

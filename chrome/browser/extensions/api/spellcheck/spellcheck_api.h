@@ -5,16 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SPELLCHECK_SPELLCHECK_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SPELLCHECK_SPELLCHECK_API_H_
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/scoped_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-
-class Profile;
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace extensions {
+class ExtensionRegistry;
 
 class SpellcheckAPI : public BrowserContextKeyedAPI,
-                      public content::NotificationObserver {
+                      public ExtensionRegistryObserver {
  public:
   explicit SpellcheckAPI(content::BrowserContext* context);
   virtual ~SpellcheckAPI();
@@ -25,17 +24,22 @@ class SpellcheckAPI : public BrowserContextKeyedAPI,
  private:
   friend class BrowserContextKeyedAPIFactory<SpellcheckAPI>;
 
-  // content::NotificationDelegate implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "SpellcheckAPI";
   }
 
-  content::NotificationRegistrar registrar_;
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckAPI);
 };

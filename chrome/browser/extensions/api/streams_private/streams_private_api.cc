@@ -4,20 +4,14 @@
 
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 
-#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/streams_private.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/stream_handle.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/http/http_response_headers.h"
 
 namespace {
@@ -54,10 +48,10 @@ StreamsPrivateAPI* StreamsPrivateAPI::Get(content::BrowserContext* context) {
 }
 
 StreamsPrivateAPI::StreamsPrivateAPI(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+    : browser_context_(context),
+      weak_ptr_factory_(this),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 StreamsPrivateAPI::~StreamsPrivateAPI() {
@@ -87,11 +81,18 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
       new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,
                 streams_private::OnExecuteMimeTypeHandler::Create(info)));
 
-  EventRouter::Get(profile_)->DispatchEventToExtension(
-      extension_id, event.Pass());
+  EventRouter::Get(browser_context_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 
   GURL url = stream->GetURL();
   streams_[extension_id][url] = make_linked_ptr(stream.release());
+}
+
+void StreamsPrivateAPI::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  streams_.erase(extension->id());
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<StreamsPrivateAPI> >
@@ -103,13 +104,4 @@ StreamsPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void StreamsPrivateAPI::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<const UnloadedExtensionInfo>(details)->extension;
-    streams_.erase(extension->id());
-  }
-}
 }  // namespace extensions
