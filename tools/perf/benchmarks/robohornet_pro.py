@@ -36,6 +36,7 @@ class _RobohornetProMeasurement(page_measurement.PageMeasurement):
     results.Add('Total', 'ms', result)
 
 
+@test.Disabled('android')  # crbug.com/357338
 class RobohornetPro(test.Test):
   test = _RobohornetProMeasurement
 
