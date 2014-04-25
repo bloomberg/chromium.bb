@@ -46,7 +46,7 @@ bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Handle<v8::Value> key, v8::Handle<
 // For use by Source/modules/indexeddb:
 PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
-ScriptValue idbAnyToScriptValue(NewScriptState*, PassRefPtr<IDBAny>);
+ScriptValue idbAnyToScriptValue(NewScriptState*, PassRefPtrWillBeRawPtr<IDBAny>);
 ScriptValue idbKeyToScriptValue(NewScriptState*, PassRefPtr<IDBKey>);
 PassRefPtr<IDBKey> scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
 PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);

@@ -65,7 +65,7 @@ ScriptValue IDBIndex::keyPath(NewScriptState* scriptState) const
     return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::openCursor");
     if (isDeleted()) {
@@ -96,15 +96,15 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const Scr
     return openCursor(context, keyRange.release(), direction);
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, WebIDBCursor::Direction direction)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, WebIDBCursor::Direction direction)
 {
-    RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
     backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, false, WebIDBDatabase::NormalTask, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptValue& range, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptValue& range, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::count");
     if (isDeleted()) {
@@ -129,12 +129,12 @@ PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptVa
         return nullptr;
     }
 
-    RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     backendDB()->count(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::openKeyCursor");
     if (isDeleted()) {
@@ -161,25 +161,25 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const 
         return nullptr;
     }
 
-    RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
     backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), direction, true, WebIDBDatabase::NormalTask, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::get");
     return getInternal(context, key, exceptionState, false);
 }
 
-PassRefPtr<IDBRequest> IDBIndex::getKey(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::getKey(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::getKey");
     return getInternal(context, key, exceptionState, true);
 }
 
-PassRefPtr<IDBRequest> IDBIndex::getInternal(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState, bool keyOnly)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::getInternal(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState, bool keyOnly)
 {
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
@@ -206,7 +206,7 @@ PassRefPtr<IDBRequest> IDBIndex::getInternal(ExecutionContext* context, const Sc
         return nullptr;
     }
 
-    RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     backendDB()->get(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), keyOnly, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }

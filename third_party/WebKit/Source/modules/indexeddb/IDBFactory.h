@@ -53,18 +53,18 @@ public:
     ~IDBFactory();
     void trace(Visitor*);
 
-    PassRefPtr<IDBRequest> getDatabaseNames(ExecutionContext*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> getDatabaseNames(ExecutionContext*, ExceptionState&);
 
-    PassRefPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, ExceptionState&);
-    PassRefPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
-    PassRefPtr<IDBOpenDBRequest> deleteDatabase(ExecutionContext*, const String& name, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> deleteDatabase(ExecutionContext*, const String& name, ExceptionState&);
 
     short cmp(ExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
     explicit IDBFactory(PassRefPtrWillBeRawPtr<IndexedDBClient>);
 
-    PassRefPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
 
     RefPtrWillBeMember<IndexedDBClient> m_permissionClient;
 };

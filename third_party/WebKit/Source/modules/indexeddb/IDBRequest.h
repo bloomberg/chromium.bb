@@ -51,6 +51,9 @@ class IDBCursor;
 struct IDBDatabaseMetadata;
 class SharedBuffer;
 
+#if ENABLE(OILPAN)
+typedef RefCountedGarbageCollected<IDBRequest> IDBRequestBase;
+#else
 // Base class to simplify usage of event target refcounting.
 class IDBRequestBase : public WTF::RefCountedBase {
 public:
@@ -59,13 +62,15 @@ public:
 protected:
     virtual ~IDBRequestBase() { }
 };
+#endif
 
 class IDBRequest : public IDBRequestBase, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING(IDBRequestBase);
 
 public:
-    static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
+    static PassRefPtrWillBeRawPtr<IDBRequest> create(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBAny> source, IDBTransaction*);
     virtual ~IDBRequest();
+    void trace(Visitor*);
 
     ScriptValue result(ExceptionState&);
     PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;
@@ -73,7 +78,7 @@ public:
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
 
     bool isResultDirty() const { return m_resultDirty; }
-    PassRefPtr<IDBAny> resultAsAny() const { return m_result; }
+    PassRefPtrWillBeRawPtr<IDBAny> resultAsAny() const { return m_result; }
 
     // Requests made during index population are implementation details and so
     // events should not be visible to script.
@@ -92,7 +97,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
     void setCursorDetails(IndexedDB::CursorType, blink::WebIDBCursor::Direction);
-    void setPendingCursor(PassRefPtr<IDBCursor>);
+    void setPendingCursor(PassRefPtrWillBeRawPtr<IDBCursor>);
     void abort();
 
     virtual void onError(PassRefPtrWillBeRawPtr<DOMError>);
@@ -127,6 +132,7 @@ public:
     // the upcoming "success" or "error").
     void transactionDidFinishAndDispatch();
 
+#if !ENABLE(OILPAN)
     virtual void deref() OVERRIDE FINAL
     {
         if (derefBase())
@@ -134,16 +140,17 @@ public:
         else if (hasOneRef())
             checkForReferenceCycle();
     }
+#endif
 
     IDBCursor* getResultCursor() const;
 
 protected:
-    IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
+    IDBRequest(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBAny> source, IDBTransaction*);
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
     void dequeueEvent(Event*);
     virtual bool shouldEnqueueEvent() const;
-    void onSuccessInternal(PassRefPtr<IDBAny>);
-    void setResult(PassRefPtr<IDBAny>);
+    void onSuccessInternal(PassRefPtrWillBeRawPtr<IDBAny>);
+    void setResult(PassRefPtrWillBeRawPtr<IDBAny>);
 
     bool m_contextStopped;
     RefPtr<IDBTransaction> m_transaction;
@@ -151,22 +158,24 @@ protected:
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
-    void setResultCursor(PassRefPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
+    void setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
+#if !ENABLE(OILPAN)
     void checkForReferenceCycle();
+#endif
 
     RefPtr<NewScriptState> m_scriptState;
-    RefPtr<IDBAny> m_source;
-    RefPtr<IDBAny> m_result;
-    RefPtrWillBePersistent<DOMError> m_error;
+    RefPtrWillBeMember<IDBAny> m_source;
+    RefPtrWillBeMember<IDBAny> m_result;
+    RefPtrWillBeMember<DOMError> m_error;
 
     bool m_hasPendingActivity;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
 
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;
     blink::WebIDBCursor::Direction m_cursorDirection;
     // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
-    RefPtr<IDBCursor> m_pendingCursor;
+    RefPtrWillBeMember<IDBCursor> m_pendingCursor;
     // New state is not applied to the cursor object until the event is dispatched.
     RefPtr<IDBKey> m_cursorKey;
     RefPtr<IDBKey> m_cursorPrimaryKey;

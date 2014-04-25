@@ -32,9 +32,9 @@ using blink::WebIDBCursor;
 
 namespace WebCore {
 
-PassRefPtr<IDBCursorWithValue> IDBCursorWithValue::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+PassRefPtrWillBeRawPtr<IDBCursorWithValue> IDBCursorWithValue::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
-    return adoptRef(new IDBCursorWithValue(backend, direction, request, source, transaction));
+    return adoptRefWillBeNoop(new IDBCursorWithValue(backend, direction, request, source, transaction));
 }
 
 IDBCursorWithValue::IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)

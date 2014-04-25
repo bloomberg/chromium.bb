@@ -46,35 +46,36 @@ class IDBKeyPath;
 class IDBObjectStore;
 class IDBTransaction;
 
-class IDBAny : public RefCounted<IDBAny> {
+class IDBAny : public RefCountedWillBeGarbageCollectedFinalized<IDBAny> {
 public:
-    static PassRefPtr<IDBAny> createUndefined();
-    static PassRefPtr<IDBAny> createNull();
-    static PassRefPtr<IDBAny> createString(const String&);
+    static PassRefPtrWillBeRawPtr<IDBAny> createUndefined();
+    static PassRefPtrWillBeRawPtr<IDBAny> createNull();
+    static PassRefPtrWillBeRawPtr<IDBAny> createString(const String&);
     template<typename T>
-    static PassRefPtr<IDBAny> create(T* idbObject)
+    static PassRefPtrWillBeRawPtr<IDBAny> create(T* idbObject)
     {
-        return adoptRef(new IDBAny(idbObject));
-    }
-    template<typename T>
-    static PassRefPtr<IDBAny> create(const T& idbObject)
-    {
-        return adoptRef(new IDBAny(idbObject));
+        return adoptRefWillBeNoop(new IDBAny(idbObject));
     }
     template<typename T>
-    static PassRefPtr<IDBAny> create(PassRefPtr<T> idbObject)
+    static PassRefPtrWillBeRawPtr<IDBAny> create(const T& idbObject)
     {
-        return adoptRef(new IDBAny(idbObject));
+        return adoptRefWillBeNoop(new IDBAny(idbObject));
     }
-    static PassRefPtr<IDBAny> create(int64_t value)
+    template<typename T>
+    static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<T> idbObject)
     {
-        return adoptRef(new IDBAny(value));
+        return adoptRefWillBeNoop(new IDBAny(idbObject));
     }
-    static PassRefPtr<IDBAny> create(PassRefPtr<SharedBuffer> value, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
+    static PassRefPtrWillBeRawPtr<IDBAny> create(int64_t value)
     {
-        return adoptRef(new IDBAny(value, key, keyPath));
+        return adoptRefWillBeNoop(new IDBAny(value));
+    }
+    static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<SharedBuffer> value, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
+    {
+        return adoptRefWillBeNoop(new IDBAny(value, key, keyPath));
     }
     ~IDBAny();
+    void trace(Visitor*);
     void contextWillBeDestroyed();
 
     enum Type {
@@ -113,7 +114,7 @@ public:
 private:
     explicit IDBAny(Type);
     explicit IDBAny(PassRefPtr<DOMStringList>);
-    explicit IDBAny(PassRefPtr<IDBCursor>);
+    explicit IDBAny(PassRefPtrWillBeRawPtr<IDBCursor>);
     explicit IDBAny(PassRefPtr<IDBDatabase>);
     explicit IDBAny(PassRefPtr<IDBIndex>);
     explicit IDBAny(PassRefPtr<IDBObjectStore>);
@@ -129,7 +130,7 @@ private:
 
     // Only one of the following should ever be in use at any given time.
     const RefPtr<DOMStringList> m_domStringList;
-    const RefPtr<IDBCursor> m_idbCursor;
+    const RefPtrWillBeMember<IDBCursor> m_idbCursor;
     const RefPtr<IDBDatabase> m_idbDatabase;
     const RefPtr<IDBIndex> m_idbIndex;
     const RefPtr<IDBObjectStore> m_idbObjectStore;

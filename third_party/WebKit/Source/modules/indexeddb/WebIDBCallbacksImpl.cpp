@@ -51,12 +51,12 @@ using blink::WebIDBMetadata;
 namespace WebCore {
 
 // static
-PassOwnPtr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(PassRefPtr<IDBRequest> request)
+PassOwnPtr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(PassRefPtrWillBeRawPtr<IDBRequest> request)
 {
     return adoptPtr(new WebIDBCallbacksImpl(request));
 }
 
-WebIDBCallbacksImpl::WebIDBCallbacksImpl(PassRefPtr<IDBRequest> request)
+WebIDBCallbacksImpl::WebIDBCallbacksImpl(PassRefPtrWillBeRawPtr<IDBRequest> request)
     : m_request(request)
 {
 }

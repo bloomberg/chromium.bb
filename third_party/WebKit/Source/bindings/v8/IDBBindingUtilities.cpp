@@ -401,7 +401,7 @@ bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate, const ScriptValue& scr
     return canInjectNthValueOnKeyPath(isolate, v8Value, keyPathElements, keyPathElements.size() - 1);
 }
 
-ScriptValue idbAnyToScriptValue(NewScriptState* scriptState, PassRefPtr<IDBAny> any)
+ScriptValue idbAnyToScriptValue(NewScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBAny> any)
 {
     v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);

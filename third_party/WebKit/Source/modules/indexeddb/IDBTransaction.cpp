@@ -202,7 +202,7 @@ void IDBTransaction::abort(ExceptionState& exceptionState)
         return;
 
     while (!m_requestList.isEmpty()) {
-        RefPtr<IDBRequest> request = *m_requestList.begin();
+        RefPtrWillBeRawPtr<IDBRequest> request = *m_requestList.begin();
         m_requestList.remove(request);
         request->abort();
     }
@@ -245,7 +245,7 @@ void IDBTransaction::onAbort(PassRefPtrWillBeRawPtr<DOMError> prpError)
         // Abort was not triggered by front-end, so outstanding requests must
         // be aborted now.
         while (!m_requestList.isEmpty()) {
-            RefPtr<IDBRequest> request = *m_requestList.begin();
+            RefPtrWillBeRawPtr<IDBRequest> request = *m_requestList.begin();
             m_requestList.remove(request);
             request->abort();
         }

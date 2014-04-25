@@ -50,7 +50,7 @@ class IDBRequest;
 
 class WebIDBCallbacksImpl FINAL : public blink::WebIDBCallbacks {
 public:
-    static PassOwnPtr<WebIDBCallbacksImpl> create(PassRefPtr<IDBRequest>);
+    static PassOwnPtr<WebIDBCallbacksImpl> create(PassRefPtrWillBeRawPtr<IDBRequest>);
 
     virtual ~WebIDBCallbacksImpl();
 
@@ -69,9 +69,9 @@ public:
     virtual void onUpgradeNeeded(long long oldVersion, blink::WebIDBDatabase*, const blink::WebIDBMetadata&, unsigned short dataLoss, blink::WebString dataLossMessage) OVERRIDE;
 
 private:
-    explicit WebIDBCallbacksImpl(PassRefPtr<IDBRequest>);
+    explicit WebIDBCallbacksImpl(PassRefPtrWillBeRawPtr<IDBRequest>);
 
-    RefPtr<IDBRequest> m_request;
+    RefPtrWillBePersistent<IDBRequest> m_request;
 };
 
 } // namespace WebCore

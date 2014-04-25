@@ -23,7 +23,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface IDBCursor {
+[
+    WillBeGarbageCollected
+] interface IDBCursor {
 
     readonly attribute DOMString direction;
     [CallWith=NewScriptState, CachedAttribute=isKeyDirty] readonly attribute any key;

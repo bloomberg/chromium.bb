@@ -44,7 +44,13 @@ class IDBTransaction;
 class ExecutionContext;
 class SharedBuffer;
 
-class IDBCursor : public ScriptWrappable, public WTF::RefCountedBase {
+#if ENABLE(OILPAN)
+typedef GarbageCollectedFinalized<IDBCursor> IDBCursorBase;
+#else
+typedef WTF::RefCountedBase IDBCursorBase;
+#endif
+
+class IDBCursor : public IDBCursorBase, public ScriptWrappable {
 public:
     static const AtomicString& directionNext();
     static const AtomicString& directionNextUnique();
@@ -54,8 +60,9 @@ public:
     static blink::WebIDBCursor::Direction stringToDirection(const String& modeString, ExceptionState&);
     static const AtomicString& directionToString(unsigned short mode);
 
-    static PassRefPtr<IDBCursor> create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static PassRefPtrWillBeRawPtr<IDBCursor> create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
+    void trace(Visitor*);
     void contextWillBeDestroyed() { m_backend.clear(); }
 
     // Implement the IDL
@@ -65,11 +72,11 @@ public:
     ScriptValue value(NewScriptState*);
     ScriptValue source(NewScriptState*) const;
 
-    PassRefPtr<IDBRequest> update(ExecutionContext*, ScriptValue&, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> update(ExecutionContext*, ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);
     void continueFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
     void continuePrimaryKey(ExecutionContext*, const ScriptValue& key, const ScriptValue& primaryKey, ExceptionState&);
-    PassRefPtr<IDBRequest> deleteFunction(ExecutionContext*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> deleteFunction(ExecutionContext*, ExceptionState&);
 
     bool isKeyDirty() const { return m_keyDirty; }
     bool isPrimaryKeyDirty() const { return m_primaryKeyDirty; }
@@ -85,6 +92,7 @@ public:
     virtual bool isKeyCursor() const { return true; }
     virtual bool isCursorWithValue() const { return false; }
 
+#if !ENABLE(OILPAN)
     void deref()
     {
         if (derefBase())
@@ -92,6 +100,7 @@ public:
         else if (hasOneRef())
             checkForReferenceCycle();
     }
+#endif
 
 protected:
     IDBCursor(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
@@ -99,12 +108,14 @@ protected:
 private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore() const;
 
+#if !ENABLE(OILPAN)
     void checkForReferenceCycle();
+#endif
 
     OwnPtr<blink::WebIDBCursor> m_backend;
-    RefPtr<IDBRequest> m_request;
+    RefPtrWillBeMember<IDBRequest> m_request;
     const blink::WebIDBCursor::Direction m_direction;
-    RefPtr<IDBAny> m_source;
+    RefPtrWillBeMember<IDBAny> m_source;
     RefPtr<IDBTransaction> m_transaction;
     bool m_gotValue;
     bool m_keyDirty;

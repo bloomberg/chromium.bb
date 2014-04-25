@@ -57,24 +57,24 @@ public:
     bool unique() const { return m_metadata.unique; }
     bool multiEntry() const { return m_metadata.multiEntry; }
 
-    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
-    PassRefPtr<IDBRequest> openKeyCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
-    PassRefPtr<IDBRequest> count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
-    PassRefPtr<IDBRequest> get(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> getKey(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, const ScriptValue& key, const String& direction, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> openKeyCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> get(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> getKey(ExecutionContext*, const ScriptValue& key, ExceptionState&);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const;
 
     // Used internally and by InspectorIndexedDBAgent:
-    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, blink::WebIDBCursor::Direction);
+    PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, blink::WebIDBCursor::Direction);
 
     blink::WebIDBDatabase* backendDB() const;
 
 private:
     IDBIndex(const IDBIndexMetadata&, IDBObjectStore*, IDBTransaction*);
 
-    PassRefPtr<IDBRequest> getInternal(ExecutionContext*, const ScriptValue& key, ExceptionState&, bool keyOnly);
+    PassRefPtrWillBeRawPtr<IDBRequest> getInternal(ExecutionContext*, const ScriptValue& key, ExceptionState&, bool keyOnly);
 
     IDBIndexMetadata m_metadata;
     RefPtr<IDBObjectStore> m_objectStore;

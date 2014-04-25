@@ -23,6 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface IDBCursorWithValue : IDBCursor {
+[
+    WillBeGarbageCollected
+] interface IDBCursorWithValue : IDBCursor {
     [CallWith=NewScriptState, CachedAttribute=isValueDirty] readonly attribute any value;
 };

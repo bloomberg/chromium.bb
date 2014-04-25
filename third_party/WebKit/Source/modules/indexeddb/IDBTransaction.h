@@ -128,7 +128,7 @@ private:
     bool m_contextStopped;
     RefPtrWillBePersistent<DOMError> m_error;
 
-    ListHashSet<RefPtr<IDBRequest> > m_requestList;
+    ListHashSet<RefPtrWillBePersistent<IDBRequest> > m_requestList;
 
     typedef HashMap<String, RefPtr<IDBObjectStore> > IDBObjectStoreMap;
     IDBObjectStoreMap m_objectStoreMap;

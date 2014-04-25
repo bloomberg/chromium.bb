@@ -111,7 +111,7 @@ public:
         }
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-        RefPtr<IDBAny> requestResult = idbRequest->resultAsAny();
+        RefPtrWillBeRawPtr<IDBAny> requestResult = idbRequest->resultAsAny();
         if (requestResult->type() != IDBAny::DOMStringListType) {
             m_requestCallback->sendFailure("Unexpected result type.");
             return;
@@ -169,7 +169,7 @@ public:
         }
 
         IDBOpenDBRequest* idbOpenDBRequest = static_cast<IDBOpenDBRequest*>(event->target());
-        RefPtr<IDBAny> requestResult = idbOpenDBRequest->resultAsAny();
+        RefPtrWillBeRawPtr<IDBAny> requestResult = idbOpenDBRequest->resultAsAny();
         if (requestResult->type() != IDBAny::IDBDatabaseType) {
             m_executableWithDatabase->requestCallback()->sendFailure("Unexpected result type.");
             return;
@@ -192,7 +192,7 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
 {
     RefPtr<OpenDatabaseCallback> callback = OpenDatabaseCallback::create(this);
     TrackExceptionState exceptionState;
-    RefPtr<IDBOpenDBRequest> idbOpenDBRequest = idbFactory->open(context(), databaseName, exceptionState);
+    RefPtrWillBeRawPtr<IDBOpenDBRequest> idbOpenDBRequest = idbFactory->open(context(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
         requestCallback()->sendFailure("Could not open database.");
         return;
@@ -409,7 +409,7 @@ public:
         }
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-        RefPtr<IDBAny> requestResult = idbRequest->resultAsAny();
+        RefPtrWillBeRawPtr<IDBAny> requestResult = idbRequest->resultAsAny();
         if (requestResult->type() == IDBAny::BufferType) {
             end(false);
             return;
@@ -419,7 +419,7 @@ public:
             return;
         }
 
-        RefPtr<IDBCursorWithValue> idbCursor = requestResult->idbCursorWithValue();
+        RefPtrWillBeRawPtr<IDBCursorWithValue> idbCursor = requestResult->idbCursorWithValue();
 
         if (m_skipCount) {
             TrackExceptionState exceptionState;
@@ -508,7 +508,7 @@ public:
 
         RefPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(scriptState(), m_requestCallback, m_skipCount, m_pageSize);
 
-        RefPtr<IDBRequest> idbRequest;
+        RefPtrWillBeRawPtr<IDBRequest> idbRequest;
         if (!m_indexName.isEmpty()) {
             RefPtr<IDBIndex> idbIndex = indexForObjectStore(idbObjectStore.get(), m_indexName);
             if (!idbIndex) {
@@ -631,7 +631,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
 
     NewScriptState::Scope scope(NewScriptState::forMainWorld(frame));
     TrackExceptionState exceptionState;
-    RefPtr<IDBRequest> idbRequest = idbFactory->getDatabaseNames(document, exceptionState);
+    RefPtrWillBeRawPtr<IDBRequest> idbRequest = idbFactory->getDatabaseNames(document, exceptionState);
     if (exceptionState.hadException()) {
         requestCallback->sendFailure("Could not obtain database names.");
         return;
@@ -745,7 +745,8 @@ public:
         }
 
         TrackExceptionState exceptionState;
-        RefPtr<IDBRequest> idbRequest = idbObjectStore->clear(context(), exceptionState);
+        // FXIME: Can we remove the local variable idbRequest?
+        RefPtrWillBeRawPtr<IDBRequest> idbRequest = idbObjectStore->clear(context(), exceptionState);
         ASSERT(!exceptionState.hadException());
         if (exceptionState.hadException()) {
             ExceptionCode ec = exceptionState.code();
@@ -753,6 +754,7 @@ public:
             return;
         }
         idbTransaction->addEventListener(EventTypeNames::complete, ClearObjectStoreListener::create(m_requestCallback), false);
+        idbRequest.clear();
     }
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }

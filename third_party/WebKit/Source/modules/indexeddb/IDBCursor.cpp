@@ -47,9 +47,9 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-PassRefPtr<IDBCursor> IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+PassRefPtrWillBeRawPtr<IDBCursor> IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
-    return adoptRef(new IDBCursor(backend, direction, request, source, transaction));
+    return adoptRefWillBeNoop(new IDBCursor(backend, direction, request, source, transaction));
 }
 
 const AtomicString& IDBCursor::directionNext()
@@ -98,7 +98,13 @@ IDBCursor::~IDBCursor()
 {
 }
 
-PassRefPtr<IDBRequest> IDBCursor::update(ExecutionContext* executionContext, ScriptValue& value, ExceptionState& exceptionState)
+void IDBCursor::trace(Visitor* visitor)
+{
+    visitor->trace(m_request);
+    visitor->trace(m_source);
+}
+
+PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::update(ExecutionContext* executionContext, ScriptValue& value, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::update");
 
@@ -244,7 +250,7 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> prim
     m_backend->continueFunction(key, primaryKey, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
-PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::delete");
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
@@ -280,7 +286,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, Exce
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
     ASSERT(!exceptionState.hadException());
 
-    RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
+    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
@@ -294,11 +300,12 @@ void IDBCursor::postSuccessHandlerCallback()
 void IDBCursor::close()
 {
     // The notifier may be the last reference to this cursor.
-    RefPtr<IDBCursor> protect(this);
+    RefPtrWillBeRawPtr<IDBCursor> protect(this);
     m_request.clear();
     m_backend.clear();
 }
 
+#if !ENABLE(OILPAN)
 void IDBCursor::checkForReferenceCycle()
 {
     // If this cursor and its request have the only references
@@ -311,6 +318,7 @@ void IDBCursor::checkForReferenceCycle()
 
     m_request.clear();
 }
+#endif
 
 ScriptValue IDBCursor::key(NewScriptState* scriptState)
 {
@@ -330,7 +338,7 @@ ScriptValue IDBCursor::value(NewScriptState* scriptState)
 
     RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
-    RefPtr<IDBAny> value;
+    RefPtrWillBeRawPtr<IDBAny> value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
         value = IDBAny::create(m_value, m_primaryKey, metadata.keyPath);
 #ifndef NDEBUG

@@ -34,19 +34,19 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBAny> IDBAny::createUndefined()
+PassRefPtrWillBeRawPtr<IDBAny> IDBAny::createUndefined()
 {
-    return adoptRef(new IDBAny(UndefinedType));
+    return adoptRefWillBeNoop(new IDBAny(UndefinedType));
 }
 
-PassRefPtr<IDBAny> IDBAny::createNull()
+PassRefPtrWillBeRawPtr<IDBAny> IDBAny::createNull()
 {
-    return adoptRef(new IDBAny(NullType));
+    return adoptRefWillBeNoop(new IDBAny(NullType));
 }
 
-PassRefPtr<IDBAny> IDBAny::createString(const String& value)
+PassRefPtrWillBeRawPtr<IDBAny> IDBAny::createString(const String& value)
 {
-    return adoptRef(new IDBAny(value));
+    return adoptRefWillBeNoop(new IDBAny(value));
 }
 
 IDBAny::IDBAny(Type type)
@@ -147,7 +147,7 @@ IDBAny::IDBAny(PassRefPtr<DOMStringList> value)
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<IDBCursor> value)
+IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBCursor> value)
     : m_type(value->isCursorWithValue() ? IDBCursorWithValueType : IDBCursorType)
     , m_idbCursor(value)
     , m_integer(0)
@@ -223,6 +223,11 @@ IDBAny::IDBAny(int64_t value)
     : m_type(IntegerType)
     , m_integer(value)
 {
+}
+
+void IDBAny::trace(Visitor* visitor)
+{
+    visitor->trace(m_idbCursor);
 }
 
 } // namespace WebCore

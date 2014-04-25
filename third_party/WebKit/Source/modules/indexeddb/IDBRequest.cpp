@@ -44,9 +44,9 @@ using blink::WebIDBCursor;
 
 namespace WebCore {
 
-PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBTransaction* transaction)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBAny> source, IDBTransaction* transaction)
 {
-    RefPtr<IDBRequest> request(adoptRef(new IDBRequest(context, source, transaction)));
+    RefPtrWillBeRawPtr<IDBRequest> request(adoptRefWillBeRefCountedGarbageCollected(new IDBRequest(context, source, transaction)));
     request->suspendIfNeeded();
     // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames) are not associated with transactions.
     if (transaction)
@@ -54,7 +54,7 @@ PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<
     return request.release();
 }
 
-IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBTransaction* transaction)
+IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBAny> source, IDBTransaction* transaction)
     : ActiveDOMObject(context)
     , m_contextStopped(false)
     , m_transaction(transaction)
@@ -76,6 +76,15 @@ IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDB
 IDBRequest::~IDBRequest()
 {
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
+}
+
+void IDBRequest::trace(Visitor* visitor)
+{
+    visitor->trace(m_source);
+    visitor->trace(m_result);
+    visitor->trace(m_error);
+    visitor->trace(m_enqueuedEvents);
+    visitor->trace(m_pendingCursor);
 }
 
 ScriptValue IDBRequest::result(ExceptionState& exceptionState)
@@ -129,7 +138,7 @@ void IDBRequest::abort()
         return;
 
     // Enqueued events may be the only reference to this object.
-    RefPtr<IDBRequest> self(this);
+    RefPtrWillBeRawPtr<IDBRequest> self(this);
 
     EventQueue* eventQueue = executionContext()->eventQueue();
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
@@ -152,7 +161,7 @@ void IDBRequest::setCursorDetails(IndexedDB::CursorType cursorType, WebIDBCursor
     m_cursorDirection = direction;
 }
 
-void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
+void IDBRequest::setPendingCursor(PassRefPtrWillBeRawPtr<IDBCursor> cursor)
 {
     ASSERT(m_readyState == DONE);
     ASSERT(executionContext());
@@ -162,7 +171,7 @@ void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
 
     m_hasPendingActivity = true;
     m_pendingCursor = cursor;
-    setResult(PassRefPtr<IDBAny>(nullptr));
+    setResult(PassRefPtrWillBeRawPtr<IDBAny>(nullptr));
     m_readyState = PENDING;
     m_error.clear();
     m_transaction->registerRequest(this);
@@ -179,7 +188,7 @@ IDBCursor* IDBRequest::getResultCursor() const
     return 0;
 }
 
-void IDBRequest::setResultCursor(PassRefPtr<IDBCursor> cursor, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
+void IDBRequest::setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor> cursor, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
 {
     ASSERT(m_readyState == PENDING);
     m_cursorKey = key;
@@ -189,6 +198,7 @@ void IDBRequest::setResultCursor(PassRefPtr<IDBCursor> cursor, PassRefPtr<IDBKey
     onSuccessInternal(IDBAny::create(cursor));
 }
 
+#if !ENABLE(OILPAN)
 void IDBRequest::checkForReferenceCycle()
 {
     // If this request and its cursor have the only references
@@ -202,6 +212,7 @@ void IDBRequest::checkForReferenceCycle()
 
     m_result.clear();
 }
+#endif
 
 bool IDBRequest::shouldEnqueueEvent() const
 {
@@ -245,7 +256,7 @@ void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtr<I
         return;
 
     ASSERT(!m_pendingCursor);
-    RefPtr<IDBCursor> cursor;
+    RefPtrWillBeRawPtr<IDBCursor> cursor;
     switch (m_cursorType) {
     case IndexedDB::CursorKeyOnly:
         cursor = IDBCursor::create(backend, m_cursorDirection, this, m_source.get(), m_transaction.get());
@@ -288,7 +299,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer)
 }
 
 #ifndef NDEBUG
-static PassRefPtr<IDBObjectStore> effectiveObjectStore(PassRefPtr<IDBAny> source)
+static PassRefPtr<IDBObjectStore> effectiveObjectStore(PassRefPtrWillBeRawPtr<IDBAny> source)
 {
     if (source->type() == IDBAny::IDBObjectStoreType)
         return source->idbObjectStore();
@@ -336,7 +347,7 @@ void IDBRequest::onSuccess()
     onSuccessInternal(IDBAny::createUndefined());
 }
 
-void IDBRequest::onSuccessInternal(PassRefPtr<IDBAny> result)
+void IDBRequest::onSuccessInternal(PassRefPtrWillBeRawPtr<IDBAny> result)
 {
     ASSERT(!m_contextStopped);
     ASSERT(!m_pendingCursor);
@@ -344,7 +355,7 @@ void IDBRequest::onSuccessInternal(PassRefPtr<IDBAny> result)
     enqueueEvent(Event::create(EventTypeNames::success));
 }
 
-void IDBRequest::setResult(PassRefPtr<IDBAny> result)
+void IDBRequest::setResult(PassRefPtrWillBeRawPtr<IDBAny> result)
 {
     m_result = result;
     m_resultDirty = true;
@@ -375,7 +386,7 @@ void IDBRequest::stop()
 
     m_contextStopped = true;
 
-    RefPtr<IDBRequest> protect(this);
+    RefPtrWillBeRawPtr<IDBRequest> protect(this);
 
     if (m_readyState == PENDING) {
         m_readyState = EarlyDeath;
@@ -432,7 +443,7 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     }
 
     // Cursor properties should not be updated until the success event is being dispatched.
-    RefPtr<IDBCursor> cursorToNotify;
+    RefPtrWillBeRawPtr<IDBCursor> cursorToNotify = nullptr;
     if (event->type() == EventTypeNames::success) {
         cursorToNotify = getResultCursor();
         if (cursorToNotify)
