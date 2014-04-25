@@ -15,6 +15,8 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "ui/gfx/vector2d_f.h"
 
 using blink::WebInputEvent;

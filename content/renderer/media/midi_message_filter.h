@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "media/midi/midi_port_info.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 
@@ -21,8 +21,7 @@ class MessageLoopProxy;
 namespace content {
 
 // MessageFilter that handles MIDI messages.
-class CONTENT_EXPORT MidiMessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
  public:
   explicit MidiMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
@@ -53,7 +52,7 @@ class CONTENT_EXPORT MidiMessageFilter
   // Sends an IPC message using |channel_|.
   void Send(IPC::Message* message);
 
-  // IPC::ChannelProxy::MessageFilter override. Called on |io_message_loop|.
+  // IPC::MessageFilter override. Called on |io_message_loop|.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;

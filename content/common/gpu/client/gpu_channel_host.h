@@ -20,8 +20,8 @@
 #include "content/common/message_router.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/message_filter.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -177,7 +177,7 @@ class GpuChannelHost : public IPC::Sender,
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between
   // all the contexts.
-  class MessageFilter : public IPC::ChannelProxy::MessageFilter {
+  class MessageFilter : public IPC::MessageFilter {
    public:
     MessageFilter();
 
@@ -188,7 +188,7 @@ class GpuChannelHost : public IPC::Sender,
     // Called on the IO thread.
     void RemoveRoute(int route_id);
 
-    // IPC::ChannelProxy::MessageFilter implementation
+    // IPC::MessageFilter implementation
     // (called on the IO thread):
     virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
     virtual void OnChannelError() OVERRIDE;

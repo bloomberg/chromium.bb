@@ -12,7 +12,9 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/input/input_event_filter.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
+#include "ipc/message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::WebInputEvent;
@@ -97,7 +99,7 @@ class IPCMessageRecorder : public IPC::Listener {
   std::vector<IPC::Message> messages_;
 };
 
-void AddMessagesToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
+void AddMessagesToFilter(IPC::MessageFilter* message_filter,
                          const std::vector<IPC::Message>& events) {
   for (size_t i = 0; i < events.size(); ++i) {
     message_filter->OnMessageReceived(events[i]);
@@ -106,7 +108,7 @@ void AddMessagesToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
   base::MessageLoop::current()->RunUntilIdle();
 }
 
-void AddEventsToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
+void AddEventsToFilter(IPC::MessageFilter* message_filter,
                        const WebMouseEvent events[],
                        size_t count) {
   std::vector<IPC::Message> messages;

@@ -10,11 +10,13 @@
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
+#include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace IPC {
+class MessageFilter;
 class MessageReplyDeserializer;
 }
 
@@ -44,8 +46,8 @@ class MockRenderThread : public RenderThread {
   virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;
   virtual int GenerateRoutingID() OVERRIDE;
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
+  virtual void AddFilter(IPC::MessageFilter* filter) OVERRIDE;
+  virtual void RemoveFilter(IPC::MessageFilter* filter) OVERRIDE;
   virtual void AddObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void SetResourceDispatcherDelegate(
@@ -156,7 +158,7 @@ class MockRenderThread : public RenderThread {
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
 
   // A list of message filters added to this thread.
-  std::vector<scoped_refptr<IPC::ChannelProxy::MessageFilter> > filters_;
+  std::vector<scoped_refptr<IPC::MessageFilter> > filters_;
 
   // Observers to notify.
   ObserverList<RenderProcessObserver> observers_;

@@ -13,6 +13,10 @@ namespace base {
 class FilePath;
 }
 
+namespace IPC {
+class MessageFilter;
+}
+
 namespace content {
 
 class ChildProcessHostDelegate;
@@ -90,7 +94,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   virtual bool IsChannelOpening() = 0;
 
   // Adds an IPC message filter.  A reference will be kept to the filter.
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
+  virtual void AddFilter(IPC::MessageFilter* filter) = 0;
 
 #if defined(OS_POSIX)
   // See IPC::Channel::TakeClientFileDescriptor.

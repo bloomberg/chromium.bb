@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/message_filter.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
@@ -25,9 +25,8 @@ class ResourceReplyThreadRegistrar;
 //
 // There is one instance of this class for each renderer channel (same as for
 // the PluginDispatchers).
-class PPAPI_PROXY_EXPORT PluginMessageFilter
-    : public IPC::ChannelProxy::MessageFilter,
-      public IPC::Sender {
+class PPAPI_PROXY_EXPORT PluginMessageFilter : public IPC::MessageFilter,
+                                               public IPC::Sender {
  public:
   // |seen_instance_ids| is a pointer to a set that will be used to uniquify
   // PP_Instances across all renderer channels. The same pointer should be

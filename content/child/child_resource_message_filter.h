@@ -6,7 +6,7 @@
 #define CONTENT_CHILD_CHILD_RESOURCE_MESSAGE_FILTER_H_
 
 #include "base/memory/ref_counted.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -27,11 +27,11 @@ class ResourceDispatcher;
 // When specific message is processed by this filter, new task charged
 // with timestamp is posted to main thread. This task is processed just before
 // resource message and invokes ResourceDispatcher::set_io_timestamp.
-class ChildResourceMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class ChildResourceMessageFilter : public IPC::MessageFilter {
  public:
   explicit ChildResourceMessageFilter(ResourceDispatcher* resource_dispatcher);
 
-  // IPC::ChannelProxy::MessageFilter implementation.
+  // IPC::MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:

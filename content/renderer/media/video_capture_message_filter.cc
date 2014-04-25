@@ -6,6 +6,7 @@
 
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/view_messages.h"
+#include "ipc/ipc_channel.h"
 
 namespace content {
 

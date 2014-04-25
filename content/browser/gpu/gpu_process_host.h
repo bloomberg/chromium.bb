@@ -23,8 +23,8 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_info.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/message_filter.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
@@ -96,7 +96,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Adds a message filter to the GpuProcessHost's channel.
-  void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
+  void AddFilter(IPC::MessageFilter* filter);
 
   // Tells the GPU process to create a new channel for communication with a
   // client. Once the GPU process responds asynchronously with the IPC handle

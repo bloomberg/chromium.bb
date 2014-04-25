@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "base/memory/scoped_ptr.h"
+#include "ipc/message_filter.h"
 
 namespace base {
 class HistogramDeltaSerialization;
@@ -18,11 +19,11 @@ class MessageLoopProxy;
 
 namespace content {
 
-class ChildHistogramMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class ChildHistogramMessageFilter : public IPC::MessageFilter {
  public:
   ChildHistogramMessageFilter();
 
-  // IPC::ChannelProxy::MessageFilter implementation.
+  // IPC::MessageFilter implementation.
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

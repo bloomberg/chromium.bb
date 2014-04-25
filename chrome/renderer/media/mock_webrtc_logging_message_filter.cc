@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/mock_webrtc_logging_message_filter.h"
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 MockWebRtcLoggingMessageFilter::MockWebRtcLoggingMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)

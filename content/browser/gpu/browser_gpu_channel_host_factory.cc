@@ -17,6 +17,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_forwarding_message_filter.h"
+#include "ipc/message_filter.h"
 
 namespace content {
 
@@ -399,7 +400,7 @@ scoped_ptr<gfx::GpuMemoryBuffer>
 // static
 void BrowserGpuChannelHostFactory::AddFilterOnIO(
     int host_id,
-    scoped_refptr<IPC::ChannelProxy::MessageFilter> filter) {
+    scoped_refptr<IPC::MessageFilter> filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);

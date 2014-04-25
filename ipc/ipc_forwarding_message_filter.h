@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 
 namespace IPC {
 
@@ -23,7 +23,7 @@ namespace IPC {
 //
 // The user of this class implements ForwardingMessageFilter::Client,
 // which will receive the intercepted messages, on the specified target thread.
-class IPC_EXPORT ForwardingMessageFilter : public ChannelProxy::MessageFilter {
+class IPC_EXPORT ForwardingMessageFilter : public MessageFilter {
  public:
 
   // The handler is invoked on the thread associated with
@@ -44,11 +44,10 @@ class IPC_EXPORT ForwardingMessageFilter : public ChannelProxy::MessageFilter {
   void AddRoute(int routing_id, const Handler& handler);
   void RemoveRoute(int routing_id);
 
-  // ChannelProxy::MessageFilter methods:
+  // MessageFilter methods:
   virtual bool OnMessageReceived(const Message& message) OVERRIDE;
 
  private:
-  friend class ChannelProxy::MessageFilter;
   virtual ~ForwardingMessageFilter();
 
   std::set<int> message_ids_to_filter_;

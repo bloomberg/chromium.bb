@@ -5,17 +5,18 @@
 #ifndef CONTENT_CHILD_DB_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_DB_MESSAGE_FILTER_H_
 
-#include "ipc/ipc_channel_proxy.h"
+#include "base/strings/string16.h"
+#include "ipc/message_filter.h"
 
 namespace content {
 
 // Receives database messages from the browser process and processes them on the
 // IO thread.
-class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class DBMessageFilter : public IPC::MessageFilter {
  public:
   DBMessageFilter();
 
-  // IPC::ChannelProxy::MessageFilter
+  // IPC::MessageFilter
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  protected:

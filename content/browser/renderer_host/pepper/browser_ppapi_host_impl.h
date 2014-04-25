@@ -19,7 +19,7 @@
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/common/process_type.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "ppapi/host/ppapi_host.h"
 
 namespace content {
@@ -69,7 +69,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
                    const PepperRendererInstanceData& instance_data);
   void DeleteInstance(PP_Instance instance);
 
-  scoped_refptr<IPC::ChannelProxy::MessageFilter> message_filter() {
+  scoped_refptr<IPC::MessageFilter> message_filter() {
     return message_filter_;
   }
 
@@ -83,12 +83,12 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   // Implementing MessageFilter on BrowserPpapiHostImpl makes it ref-counted,
   // preventing us from returning these to embedders without holding a
   // reference. To avoid that, define a message filter object.
-  class HostMessageFilter : public IPC::ChannelProxy::MessageFilter {
+  class HostMessageFilter : public IPC::MessageFilter {
    public:
     HostMessageFilter(ppapi::host::PpapiHost* ppapi_host,
                       BrowserPpapiHostImpl* browser_ppapi_host_impl);
 
-    // IPC::ChannelProxy::MessageFilter.
+    // IPC::MessageFilter.
     virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
     void OnHostDestroyed();

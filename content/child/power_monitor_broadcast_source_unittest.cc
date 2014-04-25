@@ -6,6 +6,7 @@
 #include "base/test/power_monitor_test_base.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/common/power_monitor_messages.h"
+#include "ipc/message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -32,8 +33,7 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
 };
 
 TEST_F(PowerMonitorBroadcastSourceTest, PowerMessageReceiveBroadcast) {
-  IPC::ChannelProxy::MessageFilter* message_filter =
-    source()->GetMessageFilter();
+  IPC::MessageFilter* message_filter = source()->GetMessageFilter();
 
   base::PowerMonitorTestObserver observer;
   monitor()->AddObserver(&observer);

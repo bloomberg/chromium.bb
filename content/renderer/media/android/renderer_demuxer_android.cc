@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/renderer/media/android/media_source_delegate.h"

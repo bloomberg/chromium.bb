@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/aura/remote_window_tree_host_win.h"

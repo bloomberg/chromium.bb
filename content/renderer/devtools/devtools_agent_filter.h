@@ -8,12 +8,13 @@
 #include <set>
 #include <string>
 
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 
 struct DevToolsMessageData;
 
 namespace base {
 class MessageLoop;
+class MessageLoopProxy;
 }
 
 namespace content {
@@ -24,14 +25,14 @@ namespace content {
 // are being dispatched there. While holding the thread in a tight loop,
 // v8 provides thread-safe Api for controlling debugger. In our case v8's Api
 // is being used from this communication agent on the IO thread.
-class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
+class DevToolsAgentFilter : public IPC::MessageFilter {
  public:
   // There is a single instance of this class instantiated by the RenderThread.
   DevToolsAgentFilter();
 
   static void SendRpcMessage(const DevToolsMessageData& data);
 
-  // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
+  // IPC::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Called on the main thread.

@@ -15,19 +15,20 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_sync_message.h"
+#include "ipc/message_filter.h"
 
 using content::BrowserMessageFilter;
 
 namespace content {
 
-class BrowserMessageFilter::Internal : public IPC::ChannelProxy::MessageFilter {
+class BrowserMessageFilter::Internal : public IPC::MessageFilter {
  public:
   explicit Internal(BrowserMessageFilter* filter) : filter_(filter) {}
 
  private:
   virtual ~Internal() {}
 
-  // IPC::ChannelProxy::MessageFilter implementation:
+  // IPC::MessageFilter implementation:
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
     filter_->channel_ = channel;
     filter_->OnFilterAdded(channel);
@@ -219,7 +220,7 @@ BrowserMessageFilter::~BrowserMessageFilter() {
 #endif
 }
 
-IPC::ChannelProxy::MessageFilter* BrowserMessageFilter::GetFilter() {
+IPC::MessageFilter* BrowserMessageFilter::GetFilter() {
   // We create this on demand so that if a filter is used in a unit test but
   // never attached to a channel, we don't leak Internal and this;
   DCHECK(!internal_) << "Should only be called once.";

@@ -22,6 +22,8 @@ class SingleThreadTaskRunner;
 
 namespace IPC {
 
+class MessageFilter;
+class MessageFilterRouter;
 class SendCallbackHelper;
 
 //-----------------------------------------------------------------------------
@@ -54,54 +56,6 @@ class SendCallbackHelper;
 //
 class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
  public:
-
-  // A class that receives messages on the thread where the IPC channel is
-  // running.  It can choose to prevent the default action for an IPC message.
-  class IPC_EXPORT MessageFilter
-      : public base::RefCountedThreadSafe<MessageFilter> {
-   public:
-    MessageFilter();
-
-    // Called on the background thread to provide the filter with access to the
-    // channel.  Called when the IPC channel is initialized or when AddFilter
-    // is called if the channel is already initialized.
-    virtual void OnFilterAdded(Channel* channel);
-
-    // Called on the background thread when the filter has been removed from
-    // the ChannelProxy and when the Channel is closing.  After a filter is
-    // removed, it will not be called again.
-    virtual void OnFilterRemoved();
-
-    // Called to inform the filter that the IPC channel is connected and we
-    // have received the internal Hello message from the peer.
-    virtual void OnChannelConnected(int32 peer_pid);
-
-    // Called when there is an error on the channel, typically that the channel
-    // has been closed.
-    virtual void OnChannelError();
-
-    // Called to inform the filter that the IPC channel will be destroyed.
-    // OnFilterRemoved is called immediately after this.
-    virtual void OnChannelClosing();
-
-    // Return true to indicate that the message was handled, or false to let
-    // the message be handled in the default way.
-    virtual bool OnMessageReceived(const Message& message);
-
-    // Called to query the Message classes supported by the filter.  Return
-    // false to indicate that all message types should reach the filter, or true
-    // if the resulting contents of |supported_message_classes| may be used to
-    // selectively offer messages of a particular class to the filter.
-    virtual bool GetSupportedMessageClasses(
-        std::vector<uint32>* supported_message_classes) const;
-
-   protected:
-    virtual ~MessageFilter();
-
-   private:
-    friend class base::RefCountedThreadSafe<MessageFilter>;
-  };
-
   // Initializes a channel proxy.  The channel_handle and mode parameters are
   // passed directly to the underlying IPC::Channel.  The listener is called on
   // the thread that creates the ChannelProxy.  The filter's OnMessageReceived
@@ -128,7 +82,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // background thread processes the command to close the channel.  It is ok to
   // call this method multiple times.  Redundant calls are ignored.
   //
-  // WARNING: The MessageFilter object held by the ChannelProxy is also
+  // WARNING: MessageFilter objects held by the ChannelProxy is also
   // released asynchronously, and it may in fact have its final reference
   // released on the background thread.  The caller should be careful to deal
   // with / allow for this possibility.
@@ -243,7 +197,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
     // Routes a given message to a proper subset of |filters_|, depending
     // on which message classes a filter might support.
-    class MessageFilterRouter;
     scoped_ptr<MessageFilterRouter> message_filter_router_;
 
     // Holds filters between the AddFilter call on the listerner thread and the

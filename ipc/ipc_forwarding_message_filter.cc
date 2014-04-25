@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "ipc/ipc_message.h"
 
 namespace IPC {
 

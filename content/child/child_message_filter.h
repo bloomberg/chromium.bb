@@ -5,10 +5,15 @@
 #ifndef CONTENT_CHILD_CROSS_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_CROSS_MESSAGE_FILTER_H_
 
-#include "ipc/ipc_channel_proxy.h"
+#include "base/memory/ref_counted.h"
+#include "ipc/ipc_sender.h"
 
 namespace base {
 class TaskRunner;
+}
+
+namespace IPC {
+class MessageFilter;
 }
 
 namespace content {
@@ -52,10 +57,10 @@ class ChildMessageFilter
 
   friend class base::RefCountedThreadSafe<ChildMessageFilter>;
 
-  IPC::ChannelProxy::MessageFilter* GetFilter();
+  IPC::MessageFilter* GetFilter();
 
-  // This implements IPC::ChannelProxy::MessageFilter to hide the actual
-  // filter methods from child classes.
+  // This implements IPC::MessageFilter to hide the actual filter methods from
+  // child classes.
   Internal* internal_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

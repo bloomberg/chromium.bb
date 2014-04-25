@@ -26,6 +26,7 @@ class WaitableEvent;
 }
 
 namespace IPC {
+class MessageFilter;
 class SyncChannel;
 class SyncMessageFilter;
 }
@@ -61,8 +62,8 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   virtual int GenerateRoutingID() = 0;
 
   // These map to IPC::ChannelProxy methods.
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
+  virtual void AddFilter(IPC::MessageFilter* filter) = 0;
+  virtual void RemoveFilter(IPC::MessageFilter* filter) = 0;
 
   // Add/remove observers for the process.
   virtual void AddObserver(RenderProcessObserver* observer) = 0;

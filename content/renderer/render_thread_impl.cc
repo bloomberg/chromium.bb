@@ -687,11 +687,11 @@ int RenderThreadImpl::GenerateRoutingID() {
   return routing_id;
 }
 
-void RenderThreadImpl::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void RenderThreadImpl::AddFilter(IPC::MessageFilter* filter) {
   channel()->AddFilter(filter);
 }
 
-void RenderThreadImpl::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void RenderThreadImpl::RemoveFilter(IPC::MessageFilter* filter) {
   channel()->RemoveFilter(filter);
 }
 

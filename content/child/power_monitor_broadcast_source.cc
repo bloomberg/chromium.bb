@@ -6,10 +6,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "content/common/power_monitor_messages.h"
+#include "ipc/message_filter.h"
 
 namespace content {
 
-class PowerMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class PowerMessageFilter : public IPC::MessageFilter {
  public:
   PowerMessageFilter(
       PowerMonitorBroadcastSource* source,
@@ -83,8 +84,7 @@ PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {
   message_filter_->RemoveSource();
 }
 
-IPC::ChannelProxy::MessageFilter*
-PowerMonitorBroadcastSource::GetMessageFilter() {
+IPC::MessageFilter* PowerMonitorBroadcastSource::GetMessageFilter() {
   return message_filter_.get();
 }
 

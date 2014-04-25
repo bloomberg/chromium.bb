@@ -27,7 +27,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
@@ -69,7 +69,7 @@ const int64 kStopPreemptThresholdMs = kVsyncIntervalMs;
 //   posting a task to insert the GpuCommandBufferMsg_RetireSyncPoint message
 //   into the channel's queue.
 // - it generates mailbox names for clients of the GPU process on the IO thread.
-class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class GpuChannelMessageFilter : public IPC::MessageFilter {
  public:
   // Takes ownership of gpu_channel (see below).
   GpuChannelMessageFilter(base::WeakPtr<GpuChannel>* gpu_channel,
@@ -845,11 +845,11 @@ void GpuChannel::CacheShader(const std::string& key,
       new GpuHostMsg_CacheShader(client_id_, key, shader));
 }
 
-void GpuChannel::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void GpuChannel::AddFilter(IPC::MessageFilter* filter) {
   channel_->AddFilter(filter);
 }
 
-void GpuChannel::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void GpuChannel::RemoveFilter(IPC::MessageFilter* filter) {
   channel_->RemoveFilter(filter);
 }
 

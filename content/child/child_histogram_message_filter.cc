@@ -12,6 +12,7 @@
 #include "content/child/child_process.h"
 #include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
+#include "ipc/ipc_channel.h"
 
 namespace content {
 

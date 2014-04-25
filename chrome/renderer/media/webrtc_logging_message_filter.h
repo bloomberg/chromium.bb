@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 
 #include "chrome/common/media/webrtc_logging_message_data.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -17,8 +17,7 @@ class ChromeWebRtcLogMessageDelegate;
 // Filter for WebRTC logging messages. Sits between
 // ChromeWebRtcLogMessageDelegate (renderer process) and
 // WebRtcLoggingHandlerHost (browser process). Must be called on the IO thread.
-class WebRtcLoggingMessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+class WebRtcLoggingMessageFilter : public IPC::MessageFilter {
  public:
   explicit WebRtcLoggingMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
@@ -47,7 +46,7 @@ class WebRtcLoggingMessageFilter
   ChromeWebRtcLogMessageDelegate* log_message_delegate_;
 
  private:
-  // IPC::ChannelProxy::MessageFilter implementation.
+  // IPC::MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;

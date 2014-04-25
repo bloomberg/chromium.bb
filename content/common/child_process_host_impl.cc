@@ -23,6 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/message_filter.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -150,7 +151,7 @@ ChildProcessHostImpl::~ChildProcessHostImpl() {
   base::CloseProcessHandle(peer_handle_);
 }
 
-void ChildProcessHostImpl::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void ChildProcessHostImpl::AddFilter(IPC::MessageFilter* filter) {
   filters_.push_back(filter);
 
   if (channel_)

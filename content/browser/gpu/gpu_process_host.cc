@@ -37,6 +37,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
+#include "ipc/message_filter.h"
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
@@ -547,7 +548,7 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
   return result;
 }
 
-void GpuProcessHost::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void GpuProcessHost::AddFilter(IPC::MessageFilter* filter) {
   DCHECK(CalledOnValidThread());
   process_->GetHost()->AddFilter(filter);
 }

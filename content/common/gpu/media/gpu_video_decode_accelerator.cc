@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "ipc/message_filter.h"
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -66,8 +67,7 @@ class DebugAutoLock {
 };
 #endif
 
-class GpuVideoDecodeAccelerator::MessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
  public:
   MessageFilter(GpuVideoDecodeAccelerator* owner, int32 host_route_id)
       : owner_(owner), host_route_id_(host_route_id) {}

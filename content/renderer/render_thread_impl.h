@@ -20,7 +20,6 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/renderer/render_thread.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_MACOSX)
@@ -50,6 +49,7 @@ class ContextProvider;
 
 namespace IPC {
 class ForwardingMessageFilter;
+class MessageFilter;
 }
 
 namespace media {
@@ -136,8 +136,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;
   virtual int GenerateRoutingID() OVERRIDE;
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
+  virtual void AddFilter(IPC::MessageFilter* filter) OVERRIDE;
+  virtual void RemoveFilter(IPC::MessageFilter* filter) OVERRIDE;
   virtual void AddObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void SetResourceDispatcherDelegate(

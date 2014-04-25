@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/child/child_message_filter.h"
 

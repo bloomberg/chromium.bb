@@ -12,7 +12,7 @@
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/base/audio_hardware_config.h"
 
@@ -26,8 +26,7 @@ namespace content {
 // renderers. Created on render thread, AudioMessageFilter is operated on
 // IO thread (secondary thread of render process) it intercepts audio messages
 // and process them on IO thread since these messages are time critical.
-class CONTENT_EXPORT AudioMessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
  public:
   explicit AudioMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
@@ -69,7 +68,7 @@ class CONTENT_EXPORT AudioMessageFilter
   // Sends an IPC message using |channel_|.
   void Send(IPC::Message* message);
 
-  // IPC::ChannelProxy::MessageFilter override. Called on |io_message_loop|.
+  // IPC::MessageFilter override. Called on |io_message_loop|.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;

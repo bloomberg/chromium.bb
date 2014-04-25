@@ -10,8 +10,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
+#include "ipc/message_filter.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -25,15 +26,14 @@ namespace IPC {
 // support fancy features that SyncChannel does, such as handling recursion or
 // receiving messages while waiting for a response.  Note that this object can
 // be used to send simultaneous synchronous messages from different threads.
-class IPC_EXPORT SyncMessageFilter : public ChannelProxy::MessageFilter,
-                                     public Sender {
+class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
  public:
   explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
 
   // MessageSender implementation.
   virtual bool Send(Message* message) OVERRIDE;
 
-  // ChannelProxy::MessageFilter implementation.
+  // MessageFilter implementation.
   virtual void OnFilterAdded(Channel* channel) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;

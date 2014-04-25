@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 
+#include "base/memory/ref_counted.h"
 #include "content/child/child_message_filter.h"
 
 struct IndexedDBDatabaseMetadata;
@@ -12,7 +13,11 @@ struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
 
 namespace base {
 class MessageLoopProxy;
-}  // namespace base
+}
+
+namespace IPC {
+class Message;
+}
 
 namespace content {
 

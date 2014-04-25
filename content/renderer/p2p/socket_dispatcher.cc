@@ -13,6 +13,7 @@
 #include "content/renderer/p2p/network_list_observer.h"
 #include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "ipc/ipc_channel.h"
 
 namespace content {
 

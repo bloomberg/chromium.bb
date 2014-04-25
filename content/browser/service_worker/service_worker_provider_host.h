@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "webkit/common/resource_type.h"
 
-namespace ipc {
+namespace IPC {
 class Sender;
 }
 

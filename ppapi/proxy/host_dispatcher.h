@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
 
@@ -31,7 +31,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   //
   // Note that there can be nested sync messages, so the begin/end status
   // actually represents a stack of blocking messages.
-  class SyncMessageStatusReceiver : public IPC::ChannelProxy::MessageFilter {
+  class SyncMessageStatusReceiver : public IPC::MessageFilter {
    public:
     // Notification that a sync message is about to be sent out.
     virtual void BeginBlockOnSyncMessage() = 0;

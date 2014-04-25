@@ -16,6 +16,7 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "ipc/message_filter.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
@@ -29,7 +30,7 @@ namespace {
 // a synchronous message is sent to flush all pending messages thru.
 // We expect to receive an 'ack' for each message sent. This object
 // observes receipt of the acks on the IPC thread to decrement a counter.
-class MessageThrottlingFilter : public IPC::ChannelProxy::MessageFilter {
+class MessageThrottlingFilter : public IPC::MessageFilter {
  public:
   explicit MessageThrottlingFilter(RenderThreadImpl* sender)
       : pending_count_(0), sender_(sender) {}

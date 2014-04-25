@@ -7,6 +7,10 @@
 
 #include "content/child/child_message_filter.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace content {
 
 class EmbeddedWorkerContextMessageFilter : public ChildMessageFilter {

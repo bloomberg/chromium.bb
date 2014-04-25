@@ -38,6 +38,10 @@ class ImageManager;
 }
 }
 
+namespace IPC {
+class MessageFilter;
+}
+
 namespace content {
 class DevToolsGpuAgent;
 class GpuChannelManager;
@@ -145,8 +149,8 @@ class GpuChannel : public IPC::Listener,
 
   void CacheShader(const std::string& key, const std::string& shader);
 
-  void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
-  void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
+  void AddFilter(IPC::MessageFilter* filter);
+  void RemoveFilter(IPC::MessageFilter* filter);
 
   uint64 GetMemoryUsage();
 

@@ -13,8 +13,17 @@
 #include "content/common/content_export.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/renderer/input/input_handler_manager_client.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+
+namespace base {
+class MessageLoopProxy;
+}
+
+namespace IPC {
+class Listener;
+class Sender;
+}
 
 // This class can be used to intercept InputMsg_HandleInputEvent messages
 // and have them be delivered to a target thread.  Input events are filtered
@@ -26,9 +35,8 @@
 
 namespace content {
 
-class CONTENT_EXPORT InputEventFilter
-    : public InputHandlerManagerClient,
-      public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
+                                        public IPC::MessageFilter {
  public:
   InputEventFilter(IPC::Listener* main_listener,
                    const scoped_refptr<base::MessageLoopProxy>& target_loop);
@@ -51,14 +59,13 @@ class CONTENT_EXPORT InputEventFilter
                              const DidOverscrollParams& params) OVERRIDE;
   virtual void DidStopFlinging(int routing_id) OVERRIDE;
 
-  // IPC::ChannelProxy::MessageFilter methods:
+  // IPC::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  friend class IPC::ChannelProxy::MessageFilter;
   virtual ~InputEventFilter();
 
   void ForwardToMainListener(const IPC::Message& message);

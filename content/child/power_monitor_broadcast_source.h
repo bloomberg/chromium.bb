@@ -8,7 +8,10 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
+
+namespace IPC {
+class MessageFilter;
+}
 
 namespace content {
 
@@ -22,7 +25,7 @@ class CONTENT_EXPORT PowerMonitorBroadcastSource :
   explicit PowerMonitorBroadcastSource();
   virtual ~PowerMonitorBroadcastSource();
 
-  IPC::ChannelProxy::MessageFilter* GetMessageFilter();
+  IPC::MessageFilter* GetMessageFilter();
 
  private:
   friend class PowerMessageFilter;

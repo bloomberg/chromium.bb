@@ -19,6 +19,10 @@ namespace base {
 class TaskRunner;
 }
 
+namespace IPC {
+class MessageFilter;
+}
+
 namespace content {
 struct BrowserMessageFilterTraits;
 
@@ -33,8 +37,8 @@ class CONTENT_EXPORT BrowserMessageFilter
   BrowserMessageFilter(const uint32* message_classes_to_filter,
                        size_t num_message_classes_to_filter);
 
-  // These match the corresponding IPC::ChannelProxy::MessageFilter methods and
-  // are always called on the IO thread.
+  // These match the corresponding IPC::MessageFilter methods and are always
+  // called on the IO thread.
   virtual void OnFilterAdded(IPC::Channel* channel) {}
   virtual void OnFilterRemoved() {}
   virtual void OnChannelClosing() {}
@@ -112,12 +116,12 @@ class CONTENT_EXPORT BrowserMessageFilter
   // This is private because the only classes that need access to it are made
   // friends above. This is only guaranteed to be valid on creation, after that
   // this class could outlive the filter.
-  IPC::ChannelProxy::MessageFilter* GetFilter();
+  IPC::MessageFilter* GetFilter();
 
-  // This implements IPC::ChannelProxy::MessageFilter so that we can hide that
-  // from child classes. Internal keeps a reference to this class, which is why
-  // there's a weak pointer back. This class could outlive Internal based on
-  // what the child class does in its OnDestruct method.
+  // This implements IPC::MessageFilter so that we can hide that from child
+  // classes. Internal keeps a reference to this class, which is why there's a
+  // weak pointer back. This class could outlive Internal based on what the
+  // child class does in its OnDestruct method.
   Internal* internal_;
 
   IPC::Channel* channel_;

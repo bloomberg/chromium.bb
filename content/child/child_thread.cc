@@ -110,9 +110,9 @@ bool CreateWaitAndExitThread(base::TimeDelta duration) {
 }
 #endif
 
-class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
+class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
  public:
-  // IPC::ChannelProxy::MessageFilter
+  // IPC::MessageFilter
   virtual void OnChannelError() OVERRIDE {
     // For renderer/worker processes:
     // On POSIX, at least, one can install an unload handler which loops

@@ -23,7 +23,7 @@ namespace content {
 class BrowserContext;
 }
 
-namespace ipc {
+namespace IPC {
 class Sender;
 }
 

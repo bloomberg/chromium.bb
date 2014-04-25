@@ -10,6 +10,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_test_base.h"
+#include "ipc/message_filter.h"
 
 namespace {
 
@@ -81,7 +82,7 @@ class ChannelReflectorListener : public IPC::Listener {
   IPC::Channel* channel_;
 };
 
-class MessageCountFilter : public IPC::ChannelProxy::MessageFilter {
+class MessageCountFilter : public IPC::MessageFilter {
  public:
   enum FilterEvent {
     NONE,

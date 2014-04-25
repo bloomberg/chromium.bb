@@ -7,8 +7,12 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/id_map.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "media/base/android/demuxer_stream_player_params.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace content {
 
@@ -19,7 +23,7 @@ class ThreadSafeSender;
 // media::DemuxerAndroid.
 //
 // Refer to BrowserDemuxerAndroid for the browser process half.
-class RendererDemuxerAndroid : public IPC::ChannelProxy::MessageFilter {
+class RendererDemuxerAndroid : public IPC::MessageFilter {
  public:
   RendererDemuxerAndroid();
 
@@ -39,7 +43,7 @@ class RendererDemuxerAndroid : public IPC::ChannelProxy::MessageFilter {
   // Must be called on media thread.
   void RemoveDelegate(int demuxer_client_id);
 
-  // IPC::ChannelProxy::MessageFilter overrides.
+  // IPC::MessageFilter overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::DemuxerAndroidClient "implementation".

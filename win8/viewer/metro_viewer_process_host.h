@@ -12,6 +12,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/message_filter.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -20,6 +21,7 @@ class WaitableEvent;
 }
 
 namespace IPC {
+class ChannelProxy;
 class Message;
 }
 
@@ -82,11 +84,11 @@ class MetroViewerProcessHost : public IPC::Listener,
   // proxy's background thread. This prevents consumers of
   // MetroViewerProcessHost from having to pump messages on their own message
   // loop.
-  class InternalMessageFilter : public IPC::ChannelProxy::MessageFilter {
+  class InternalMessageFilter : public IPC::MessageFilter {
    public:
     InternalMessageFilter(MetroViewerProcessHost* owner);
 
-    // IPC::ChannelProxy::MessageFilter implementation.
+    // IPC::MessageFilter implementation.
     virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
    private:

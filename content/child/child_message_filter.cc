@@ -10,10 +10,11 @@
 #include "base/task_runner.h"
 #include "content/child/child_thread.h"
 #include "content/child/thread_safe_sender.h"
+#include "ipc/message_filter.h"
 
 namespace content {
 
-class ChildMessageFilter::Internal : public IPC::ChannelProxy::MessageFilter {
+class ChildMessageFilter::Internal : public IPC::MessageFilter {
  public:
   explicit Internal(ChildMessageFilter* filter) : filter_(filter) {}
 
@@ -55,7 +56,7 @@ ChildMessageFilter::ChildMessageFilter()
 
 ChildMessageFilter::~ChildMessageFilter() {}
 
-IPC::ChannelProxy::MessageFilter* ChildMessageFilter::GetFilter() {
+IPC::MessageFilter* ChildMessageFilter::GetFilter() {
   if (!internal_)
     internal_ = new Internal(this);
   return internal_;

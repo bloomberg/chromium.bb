@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/tracked_objects.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppp.h"
@@ -22,6 +21,10 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/shared_impl/api_id.h"
+
+namespace IPC {
+class MessageFilter;
+}
 
 namespace ppapi {
 namespace proxy {
@@ -60,7 +63,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   InterfaceProxy* GetInterfaceProxy(ApiID id);
 
   // Adds the given filter to the IO thread. Takes ownership of the pointer.
-  void AddIOThreadMessageFilter(IPC::ChannelProxy::MessageFilter* filter);
+  void AddIOThreadMessageFilter(IPC::MessageFilter* filter);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

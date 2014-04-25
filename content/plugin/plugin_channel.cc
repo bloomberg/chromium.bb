@@ -20,6 +20,7 @@
 #include "content/plugin/webplugin_delegate_stub.h"
 #include "content/plugin/webplugin_proxy.h"
 #include "content/public/common/content_switches.h"
+#include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 
 #if defined(OS_POSIX)
@@ -40,7 +41,7 @@ const int kPluginReleaseTimeMinutes = 5;
 // If a sync call to the renderer results in a modal dialog, we need to have a
 // way to know so that we can run a nested message loop to simulate what would
 // happen in a single process browser and avoid deadlock.
-class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
+class PluginChannel::MessageFilter : public IPC::MessageFilter {
  public:
   MessageFilter() : channel_(NULL) { }
 
@@ -77,7 +78,7 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
     return channel_->Send(message);
   }
 
-  // IPC::ChannelProxy::MessageFilter:
+  // IPC::MessageFilter:
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
     channel_ = channel;
   }

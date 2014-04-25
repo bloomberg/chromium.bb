@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "content/common/child_process_messages.h"
+#include "ipc/ipc_channel.h"
 
 namespace content {
 namespace {

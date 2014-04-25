@@ -15,7 +15,7 @@
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/message_filter.h"
 #include "media/video/capture/video_capture.h"
 
 namespace gpu {
@@ -24,8 +24,7 @@ struct MailboxHolder;
 
 namespace content {
 
-class CONTENT_EXPORT VideoCaptureMessageFilter
-    : public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
  public:
   class CONTENT_EXPORT Delegate {
    public:
@@ -79,7 +78,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   // Send a message asynchronously.
   virtual bool Send(IPC::Message* message);
 
-  // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
+  // IPC::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;

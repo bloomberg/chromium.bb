@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/message_filter.h"
 
 namespace content {
 
@@ -122,9 +123,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static void OnImageCreated(
       const CreateImageCallback& callback, const gfx::Size size);
   void DeleteImageOnIO(int32 image_id, int32 sync_point);
-  static void AddFilterOnIO(
-      int gpu_host_id,
-      scoped_refptr<IPC::ChannelProxy::MessageFilter> filter);
+  static void AddFilterOnIO(int gpu_host_id,
+                            scoped_refptr<IPC::MessageFilter> filter);
 
   const int gpu_client_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
