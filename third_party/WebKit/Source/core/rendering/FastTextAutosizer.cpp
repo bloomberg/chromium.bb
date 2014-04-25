@@ -291,7 +291,7 @@ FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const
     m_blocksThatHaveBegunLayout.add(block);
 #endif
 
-    if (!m_firstBlockToBeginLayout)  {
+    if (!m_firstBlockToBeginLayout) {
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
         writeDebugPageInfo(m_document, m_baseMultiplier, m_layoutWidth, m_frameWidth);
 #endif
@@ -806,7 +806,6 @@ const RenderBlock* FastTextAutosizer::clusterWidthProvider(const RenderBlock* ro
     return deepestBlockContainingAllText(root);
 }
 
-
 const RenderBlock* FastTextAutosizer::maxClusterWidthProvider(const Supercluster* supercluster, const RenderBlock* currentRoot)
 {
     const RenderBlock* result = clusterWidthProvider(currentRoot);
@@ -933,7 +932,7 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
 
 void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
 {
-    ASSERT(renderer);
+    ASSERT(renderer && renderer->style());
     RenderStyle* currentStyle = renderer->style();
     if (currentStyle->textAutosizingMultiplier() == multiplier)
         return;
@@ -950,6 +949,7 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     switch (relayoutBehavior) {
     case AlreadyInLayout:
         renderer->setStyleInternal(style.release());
+        renderer->setNeedsLayout();
         if (renderer->isRenderBlock())
             toRenderBlock(renderer)->invalidateLineHeight();
         break;
