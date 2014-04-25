@@ -3188,8 +3188,6 @@ WL_EXPORT void
 weston_output_update_matrix(struct weston_output *output)
 {
 	float magnification;
-	struct weston_matrix camera;
-	struct weston_matrix modelview;
 
 	weston_matrix_init(&output->matrix);
 	weston_matrix_translate(&output->matrix,
@@ -3204,14 +3202,11 @@ weston_output_update_matrix(struct weston_output *output)
 
 	if (output->zoom.active) {
 		magnification = 1 / (1 - output->zoom.spring_z.current);
-		weston_matrix_init(&camera);
-		weston_matrix_init(&modelview);
 		weston_output_update_zoom(output);
-		weston_matrix_translate(&camera, output->zoom.trans_x,
-					-output->zoom.trans_y, 0);
-		weston_matrix_invert(&modelview, &camera);
-		weston_matrix_scale(&modelview, magnification, magnification, 1.0);
-		weston_matrix_multiply(&output->matrix, &modelview);
+		weston_matrix_translate(&output->matrix, -output->zoom.trans_x,
+					output->zoom.trans_y, 0);
+		weston_matrix_scale(&output->matrix, magnification,
+				    magnification, 1.0);
 	}
 
 	output->dirty = 0;
