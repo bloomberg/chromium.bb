@@ -938,18 +938,6 @@ crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
 
 crbug.com/366387 svg/as-object/nested-embedded-svg-size-changes.html [ Crash NeedsManualRebaseline ]
 
-crbug.com/361729 [ Mac ] svg/repaint/foreign-object-repaint.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/repaint/mask-clip-target-transform.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/repaint/repaint-paintorder.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/text/text-text-05-t.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/zoom/page/absolute-sized-document-no-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/zoom/page/relative-sized-document-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/zoom/text/absolute-sized-document-no-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/zoom/text/absolute-sized-document-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/zoom/text/relative-sized-document-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/zoom/text/zoom-coords-viewattr-01-b.svg [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
-
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
 
