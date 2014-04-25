@@ -755,9 +755,9 @@ class TestCoreLogic(MoxBase):
     patches = self.GetPatches(3)
     slave_pool.changes = patches
     for patch in patches:
-      # pylint: disable=E1120
+      # pylint: disable=E1120, E1123
       validation_pool.PatchSeries.ApplyChange(
-          patch, dryrun=mox.IgnoreArg())
+          patch, dryrun=mox.IgnoreArg(), manifest=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.assertEqual(True, slave_pool.ApplyPoolIntoRepo())

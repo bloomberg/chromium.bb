@@ -1790,7 +1790,9 @@ class ValidationPool(object):
       # changes were listed on the manifest.
       for change in self.changes:
         try:
-          patch_series.ApplyChange(change, dryrun=self.dryrun)
+          # pylint: disable=E1123
+          patch_series.ApplyChange(change, dryrun=self.dryrun,
+                                   manifest=manifest)
         except cros_patch.PatchException as e:
           # Fail if any patch cannot be applied.
           self._HandleApplyFailure([InternalCQError(change, e)])
