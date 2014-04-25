@@ -16,6 +16,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/native_cursor.h"
 
 namespace views {
 
@@ -47,7 +48,7 @@ const char* Link::GetClassName() const {
 gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
   if (!enabled())
     return gfx::kNullCursor;
-  return ui::kCursorHand;
+  return GetNativeHandCursor();
 }
 
 bool Link::HitTestRect(const gfx::Rect& rect) const {

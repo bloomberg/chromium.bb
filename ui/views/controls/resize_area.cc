@@ -9,6 +9,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/resize_area_delegate.h"
+#include "ui/views/native_cursor.h"
 
 namespace views {
 
@@ -30,7 +31,8 @@ const char* ResizeArea::GetClassName() const {
 }
 
 gfx::NativeCursor ResizeArea::GetCursor(const ui::MouseEvent& event) {
-  return enabled() ? ui::kCursorEastWestResize : gfx::kNullCursor;
+  return enabled() ? GetNativeEastWestResizeCursor()
+                   : gfx::kNullCursor;
 }
 
 bool ResizeArea::OnMousePressed(const ui::MouseEvent& event) {

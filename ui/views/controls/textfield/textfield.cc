@@ -32,6 +32,7 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/metrics.h"
+#include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -487,7 +488,7 @@ gfx::NativeCursor Textfield::GetCursor(const ui::MouseEvent& event) {
   bool in_selection = GetRenderText()->IsPointInSelection(event.location());
   bool drag_event = event.type() == ui::ET_MOUSE_DRAGGED;
   bool text_cursor = !initiating_drag_ && (drag_event || !in_selection);
-  return text_cursor ? ui::kCursorIBeam : ui::kCursorNull;
+  return text_cursor ? GetNativeIBeamCursor() : gfx::kNullCursor;
 }
 
 bool Textfield::OnMousePressed(const ui::MouseEvent& event) {

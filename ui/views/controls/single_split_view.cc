@@ -10,6 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/single_split_view_listener.h"
+#include "ui/views/native_cursor.h"
 
 namespace views {
 
@@ -88,8 +89,8 @@ gfx::Size SingleSplitView::GetPreferredSize() {
 gfx::NativeCursor SingleSplitView::GetCursor(const ui::MouseEvent& event) {
   if (!IsPointInDivider(event.location()))
     return gfx::kNullCursor;
-  return is_horizontal_ ?
-      ui::kCursorEastWestResize : ui::kCursorNorthSouthResize;
+  return is_horizontal_ ? GetNativeEastWestResizeCursor()
+                        : GetNativeNorthSouthResizeCursor();
 }
 
 int SingleSplitView::GetDividerSize() const {

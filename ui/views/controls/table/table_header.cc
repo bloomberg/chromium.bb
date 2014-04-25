@@ -12,6 +12,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/table/table_utils.h"
 #include "ui/views/controls/table/table_view.h"
+#include "ui/views/native_cursor.h"
 
 namespace views {
 
@@ -164,7 +165,7 @@ gfx::Size TableHeader::GetPreferredSize() {
 
 gfx::NativeCursor TableHeader::GetCursor(const ui::MouseEvent& event) {
   return GetResizeColumn(GetMirroredXInView(event.x())) != -1 ?
-      ui::kCursorColumnResize : View::GetCursor(event);
+      GetNativeColumnResizeCursor() : View::GetCursor(event);
 }
 
 bool TableHeader::OnMousePressed(const ui::MouseEvent& event) {
