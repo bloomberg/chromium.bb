@@ -507,6 +507,7 @@ def NativeLibs(host, arch):
                                    output_dir='%(output)s'),
               # libcrt_platform.a
               BuildTargetNativeCmd('pnacl_irt.c', 'pnacl_irt.o', arch),
+              BuildTargetNativeCmd('relocate.c', 'relocate.o', arch),
               BuildTargetNativeCmd(
                   'setjmp_%s.S' % setjmp_arch.replace('-', '_'),
                   'setjmp.o', arch),
@@ -596,8 +597,15 @@ def UnsandboxedIRT(arch):
       Mangle('unsandboxed_irt', arch): {
           'type': 'build',
           'output_subdir': 'lib-' + arch,
-          'inputs': { 'support': os.path.join(NACL_DIR, 'pnacl', 'support') },
+          # This lib #includes
+          # arbitrary stuff from native_client/src/{include,untrusted,trusted}
+          'inputs': { 'support': os.path.join(NACL_DIR, 'pnacl', 'support'),
+                      'include': os.path.join(NACL_DIR, 'src'), },
           'commands': [
+              # The NaCl headers insist on having a platform macro such as
+              # NACL_LINUX defined, but unsandboxed_irt.c does not itself use
+              # any of these macros, so defining NACL_LINUX here even on
+              # non-Linux systems is OK.
               # TODO(dschuff): this include path breaks the input encapsulation
               # for build rules.
               command.Command([
