@@ -193,11 +193,15 @@ void SyncEngine::Initialize(const base::FilePath& base_dir,
       new WorkerObserver(base::MessageLoopProxy::current(),
                          weak_ptr_factory_.GetWeakPtr()));
 
+  base::WeakPtr<ExtensionServiceInterface> extension_service_weak_ptr;
+  if (extension_service_)
+    extension_service_weak_ptr = extension_service_->AsWeakPtr();
+
   // TODO(peria): Use PostTask on |worker_task_runner_| to call this function.
   sync_worker_ = SyncWorker::CreateOnWorker(
       base_dir,
       worker_observer_.get(),
-      extension_service_,
+      extension_service_weak_ptr,
       sync_engine_context.Pass(),
       env_override);
 

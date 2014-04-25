@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
@@ -55,12 +56,37 @@ namespace {
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
+void QueryAppStatusOnUIThread(
+    const base::WeakPtr<ExtensionServiceInterface>& extension_service_ptr,
+    const std::vector<std::string>* app_ids,
+    SyncWorker::AppStatusMap* status,
+    const base::Closure& callback) {
+  ExtensionServiceInterface* extension_service = extension_service_ptr.get();
+  if (!extension_service) {
+    callback.Run();
+    return;
+  }
+
+  for (std::vector<std::string>::const_iterator itr = app_ids->begin();
+       itr != app_ids->end(); ++itr) {
+    const std::string& app_id = *itr;
+    if (!extension_service->GetInstalledExtension(app_id))
+      (*status)[app_id] = SyncWorker::APP_STATUS_UNINSTALLED;
+    else if (!extension_service->IsExtensionEnabled(app_id))
+      (*status)[app_id] = SyncWorker::APP_STATUS_DISABLED;
+    else
+      (*status)[app_id] = SyncWorker::APP_STATUS_ENABLED;
+  }
+
+  callback.Run();
+}
+
 }  // namespace
 
 scoped_ptr<SyncWorker> SyncWorker::CreateOnWorker(
     const base::FilePath& base_dir,
     Observer* observer,
-    ExtensionServiceInterface* extension_service,
+    const base::WeakPtr<ExtensionServiceInterface>& extension_service,
     scoped_ptr<SyncEngineContext> sync_engine_context,
     leveldb::Env* env_override) {
   scoped_ptr<SyncWorker> sync_worker(
@@ -355,7 +381,7 @@ void SyncWorker::AddObserver(Observer* observer) {
 
 SyncWorker::SyncWorker(
     const base::FilePath& base_dir,
-    ExtensionServiceInterface* extension_service,
+    const base::WeakPtr<ExtensionServiceInterface>& extension_service,
     scoped_ptr<SyncEngineContext> sync_engine_context,
     leveldb::Env* env_override)
     : base_dir_(base_dir),
@@ -433,47 +459,64 @@ void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
 }
 
 void SyncWorker::UpdateRegisteredApp() {
-  if (extension_service_)
-    return;
-
   MetadataDatabase* metadata_db = GetMetadataDatabase();
   DCHECK(metadata_db);
-  std::vector<std::string> app_ids;
-  metadata_db->GetRegisteredAppIDs(&app_ids);
+
+  scoped_ptr<std::vector<std::string> > app_ids(new std::vector<std::string>);
+  metadata_db->GetRegisteredAppIDs(app_ids.get());
+
+  AppStatusMap* app_status = new AppStatusMap;
+  base::Closure callback =
+      base::Bind(&SyncWorker::DidQueryAppStatus,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(app_status));
+
+  context_->GetUITaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&QueryAppStatusOnUIThread,
+                 extension_service_,
+                 base::Owned(app_ids.release()),
+                 app_status,
+                 RelayCallbackToTaskRunner(
+                     context_->GetWorkerTaskRunner(),
+                     FROM_HERE, callback)));
+}
+
+void SyncWorker::DidQueryAppStatus(const AppStatusMap* app_status) {
+  MetadataDatabase* metadata_db = GetMetadataDatabase();
+  DCHECK(metadata_db);
 
   // Update the status of every origin using status from ExtensionService.
-  for (std::vector<std::string>::const_iterator itr = app_ids.begin();
-       itr != app_ids.end(); ++itr) {
-    const std::string& app_id = *itr;
-        GURL origin =
-            extensions::Extension::GetBaseURLFromExtensionId(app_id);
+  for (AppStatusMap::const_iterator itr = app_status->begin();
+       itr != app_status->end(); ++itr) {
+    const std::string& app_id = itr->first;
+    GURL origin = extensions::Extension::GetBaseURLFromExtensionId(app_id);
 
-        // TODO(tzik): Switch |extension_service_| to a wrapper and make this
-        // call async.
-        if (!extension_service_->GetInstalledExtension(app_id)) {
-          // Extension has been uninstalled.
-          // (At this stage we can't know if it was unpacked extension or not,
-          // so just purge the remote folder.)
-          UninstallOrigin(origin,
-                          RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
-                          base::Bind(&EmptyStatusCallback));
-          continue;
-        }
-        FileTracker tracker;
-        if (!metadata_db->FindAppRootTracker(app_id, &tracker)) {
-          // App will register itself on first run.
-          continue;
-        }
+    if (itr->second == APP_STATUS_UNINSTALLED) {
+      // Extension has been uninstalled.
+      // (At this stage we can't know if it was unpacked extension or not,
+      // so just purge the remote folder.)
+      UninstallOrigin(origin,
+                      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
+                      base::Bind(&EmptyStatusCallback));
+      continue;
+    }
 
-        // TODO(tzik): Switch |extension_service_| to a wrapper and make this
-        // call async.
-        bool is_app_enabled = extension_service_->IsExtensionEnabled(app_id);
-            bool is_app_root_tracker_enabled =
-                tracker.tracker_kind() == TRACKER_KIND_APP_ROOT;
-            if (is_app_enabled && !is_app_root_tracker_enabled)
-              EnableOrigin(origin, base::Bind(&EmptyStatusCallback));
-            else if (!is_app_enabled && is_app_root_tracker_enabled)
-              DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
+    FileTracker tracker;
+    if (!metadata_db->FindAppRootTracker(app_id, &tracker)) {
+      // App will register itself on first run.
+      continue;
+    }
+
+    DCHECK(itr->second == APP_STATUS_ENABLED ||
+           itr->second == APP_STATUS_DISABLED);
+    bool is_app_enabled = (itr->second == APP_STATUS_ENABLED);
+    bool is_app_root_tracker_enabled =
+        (tracker.tracker_kind() == TRACKER_KIND_APP_ROOT);
+    if (is_app_enabled && !is_app_root_tracker_enabled)
+      EnableOrigin(origin, base::Bind(&EmptyStatusCallback));
+    else if (!is_app_enabled && is_app_root_tracker_enabled)
+      DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
   }
 }
 

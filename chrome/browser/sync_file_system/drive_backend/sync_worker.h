@@ -50,6 +50,14 @@ class SyncEngineInitializer;
 
 class SyncWorker : public SyncTaskManager::Client {
  public:
+  enum AppStatus {
+    APP_STATUS_ENABLED,
+    APP_STATUS_DISABLED,
+    APP_STATUS_UNINSTALLED,
+  };
+
+  typedef base::hash_map<std::string, AppStatus> AppStatusMap;
+
   class Observer {
    public:
     virtual void OnPendingFileListUpdated(int item_count) = 0;
@@ -67,7 +75,7 @@ class SyncWorker : public SyncTaskManager::Client {
   static scoped_ptr<SyncWorker> CreateOnWorker(
       const base::FilePath& base_dir,
       Observer* observer,
-      ExtensionServiceInterface* extension_service,
+      const base::WeakPtr<ExtensionServiceInterface>& extension_service,
       scoped_ptr<SyncEngineContext> sync_engine_context,
       leveldb::Env* env_override);
 
@@ -130,7 +138,7 @@ class SyncWorker : public SyncTaskManager::Client {
   friend class SyncEngineTest;
 
   SyncWorker(const base::FilePath& base_dir,
-             ExtensionServiceInterface* extension_service,
+             const base::WeakPtr<ExtensionServiceInterface>& extension_service,
              scoped_ptr<SyncEngineContext> sync_engine_context,
              leveldb::Env* env_override);
 
@@ -143,6 +151,7 @@ class SyncWorker : public SyncTaskManager::Client {
   void DidInitialize(SyncEngineInitializer* initializer,
                      SyncStatusCode status);
   void UpdateRegisteredApp();
+  void DidQueryAppStatus(const AppStatusMap* app_status);
   void DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                               const SyncFileCallback& callback,
                               SyncStatusCode status);
@@ -178,9 +187,7 @@ class SyncWorker : public SyncTaskManager::Client {
 
   scoped_ptr<SyncTaskManager> task_manager_;
 
-  // TODO(tzik): Add a proxy class for ExtensionServiceInterface to cross
-  // thread, and hold its instance as WeakPtr here.
-  ExtensionServiceInterface* extension_service_;
+  base::WeakPtr<ExtensionServiceInterface> extension_service_;
 
   scoped_ptr<SyncEngineContext> context_;
   ObserverList<Observer> observers_;
