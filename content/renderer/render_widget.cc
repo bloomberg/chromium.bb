@@ -1053,10 +1053,13 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     }
   }
 
+  // Unconsumed touchmove acks should never be throttled as they're required to
+  // dispatch compositor-handled scroll gestures.
   bool event_type_can_be_rate_limited =
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel ||
-      input_event->type == WebInputEvent::TouchMove;
+      (input_event->type == WebInputEvent::TouchMove &&
+       ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 
   bool frame_pending = has_frame_pending_;
   if (is_accelerated_compositing_active_) {
