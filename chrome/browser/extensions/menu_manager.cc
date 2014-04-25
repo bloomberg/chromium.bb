@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -302,12 +303,8 @@ const char MenuManager::kOnContextMenus[] = "contextMenus";
 const char MenuManager::kOnWebviewContextMenus[] = "webview.contextMenus";
 
 MenuManager::MenuManager(Profile* profile, StateStore* store)
-    : profile_(profile), store_(store) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
+    : extension_registry_observer_(this), profile_(profile), store_(store) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
   if (store_)
@@ -831,44 +828,37 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
   }
 }
 
+void MenuManager::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                    const Extension* extension) {
+  if (store_ && BackgroundInfo::HasLazyBackgroundPage(extension)) {
+    store_->GetExtensionValue(
+        extension->id(),
+        kContextMenusKey,
+        base::Bind(
+            &MenuManager::ReadFromStorage, AsWeakPtr(), extension->id()));
+  }
+}
+
+void MenuManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UnloadedExtensionInfo::Reason reason) {
+  MenuItem::ExtensionKey extension_key(extension->id());
+  if (ContainsKey(context_items_, extension_key)) {
+    RemoveAllContextItems(extension_key);
+  }
+}
+
 void MenuManager::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      // Remove menu items for disabled/uninstalled extensions.
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      MenuItem::ExtensionKey extension_key(extension->id());
-      if (ContainsKey(context_items_, extension_key)) {
-        RemoveAllContextItems(extension_key);
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      if (store_ && BackgroundInfo::HasLazyBackgroundPage(extension)) {
-        store_->GetExtensionValue(extension->id(), kContextMenusKey,
-            base::Bind(&MenuManager::ReadFromStorage,
-                       AsWeakPtr(), extension->id()));
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      // We cannot use profile_->HasOffTheRecordProfile as it may already be
-      // false at this point, if for example the incognito profile was destroyed
-      // using DestroyOffTheRecordProfile.
-      if (profile->GetOriginalProfile() == profile_ &&
-          profile->GetOriginalProfile() != profile) {
-        RemoveAllIncognitoContextItems();
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+  Profile* profile = content::Source<Profile>(source).ptr();
+  // We cannot use profile_->HasOffTheRecordProfile as it may already be
+  // false at this point, if for example the incognito profile was destroyed
+  // using DestroyOffTheRecordProfile.
+  if (profile->GetOriginalProfile() == profile_ &&
+      profile->GetOriginalProfile() != profile) {
+    RemoveAllIncognitoContextItems();
   }
 }
 

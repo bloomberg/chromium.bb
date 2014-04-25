@@ -15,14 +15,15 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/url_pattern_set.h"
-
 
 class Profile;
 class SkBitmap;
@@ -34,6 +35,7 @@ struct ContextMenuParams;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 class StateStore;
 
 // Represents a menu item added by an extension.
@@ -267,7 +269,8 @@ class MenuItem {
 // This class keeps track of menu items added by extensions.
 class MenuManager : public content::NotificationObserver,
                     public base::SupportsWeakPtr<MenuManager>,
-                    public KeyedService {
+                    public KeyedService,
+                    public ExtensionRegistryObserver {
  public:
   static const char kOnContextMenus[];
   static const char kOnWebviewContextMenus[];
@@ -334,9 +337,17 @@ class MenuManager : public content::NotificationObserver,
   // default extension icon.
   const SkBitmap& GetIconForExtension(const std::string& extension_id);
 
-  // Implements the content::NotificationObserver interface.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type, const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // Stores the menu items for the extension in the state storage.
   void WriteToStorage(const Extension* extension,
@@ -377,6 +388,10 @@ class MenuManager : public content::NotificationObserver,
   std::map<MenuItem::Id, MenuItem*> items_by_id_;
 
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   ExtensionIconManager icon_manager_;
 

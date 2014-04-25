@@ -25,6 +25,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,7 +49,9 @@ class MenuManagerTest : public testing::Test {
   MenuManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        manager_(&profile_, ExtensionSystem::Get(&profile_)->state_store()),
+        profile_(new TestingProfile()),
+        manager_(profile_.get(),
+                 ExtensionSystem::Get(profile_.get())->state_store()),
         prefs_(message_loop_.message_loop_proxy().get()),
         next_id_(1) {}
 
@@ -90,7 +93,7 @@ class MenuManagerTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
 
   MenuManager manager_;
   ExtensionList extensions_;
@@ -439,12 +442,10 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
 
   // Notify that the extension was unloaded, and make sure the right item is
   // gone.
-  UnloadedExtensionInfo details(
-      extension1, UnloadedExtensionInfo::REASON_DISABLE);
-  notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                   content::Source<Profile>(&profile_),
-                   content::Details<UnloadedExtensionInfo>(
-                      &details));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  registry->TriggerOnUnloaded(extension1,
+                              UnloadedExtensionInfo::REASON_DISABLE);
+
   ASSERT_EQ(NULL, manager_.MenuItems(MenuItem::ExtensionKey(extension1->id())));
   ASSERT_EQ(
       1u, manager_.MenuItems(MenuItem::ExtensionKey(extension2->id()))->size());
