@@ -385,7 +385,9 @@ class InputApi(object):
 
   def LocalPaths(self, include_dirs=False):
     """Returns local paths of input_api.AffectedFiles()."""
-    return [af.LocalPath() for af in self.AffectedFiles(include_dirs)]
+    paths = [af.LocalPath() for af in self.AffectedFiles(include_dirs)]
+    logging.debug("LocalPaths: %s", paths)
+    return paths
 
   def AbsoluteLocalPaths(self, include_dirs=False):
     """Returns absolute local paths of input_api.AffectedFiles()."""
