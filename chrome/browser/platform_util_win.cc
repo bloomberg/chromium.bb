@@ -98,17 +98,10 @@ void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
     if (hr == ERROR_FILE_NOT_FOUND) {
       ShellExecute(NULL, L"open", dir.value().c_str(), NULL, NULL, SW_SHOW);
     } else {
-      LPTSTR message = NULL;
-      DWORD message_length = FormatMessage(
-          FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-          0, hr, 0, reinterpret_cast<LPTSTR>(&message), 0, NULL);
       LOG(WARNING) << " " << __FUNCTION__
                    << "(): Can't open full_path = \""
                    << full_path.value() << "\""
-                   << " hr = " << hr
-                   << " " << reinterpret_cast<LPTSTR>(&message);
-      if (message)
-        LocalFree(message);
+                  << " hr = " << logging::SystemErrorCodeToString(hr);
     }
   }
 }

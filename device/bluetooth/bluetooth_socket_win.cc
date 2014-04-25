@@ -27,18 +27,6 @@ const char kSocketNotConnected[] = "Socket is not connected.";
 
 using device::BluetoothSocketWin;
 
-std::string FormatErrorMessage(DWORD error_code) {
-  TCHAR error_msg[1024];
-  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
-                0,
-                error_code,
-                0,
-                error_msg,
-                1024,
-                NULL);
-  return base::SysWideToUTF8(error_msg);
-}
-
 static void DeactivateSocket(
     const scoped_refptr<device::BluetoothSocketThreadWin>& socket_thread) {
   socket_thread->OnSocketDeactivate();
@@ -208,9 +196,9 @@ void BluetoothSocketWin::DoConnect(
   if (!(status == 0 || error_code == WSAEINPROGRESS)) {
     LOG(ERROR) << "Failed to connect bluetooth socket "
                << "(" << device_address_ << "): "
-               << "(" << error_code << ")" << FormatErrorMessage(error_code);
+               << logging::SystemErrorCodeToString(error_code);
     error_callback.Run("Error connecting to socket: " +
-                       FormatErrorMessage(error_code));
+                       logging::SystemErrorCodeToString(error_code));
     closesocket(socket_fd);
     return;
   }
