@@ -2051,11 +2051,6 @@ _arm_release.add_config('daisy-release',
   critical_for_chrome=True,
 )
 
-_arm_release.add_config('nyan_blaze-release',
-  boards=['nyan_blaze'],
-  hw_tests=[],
-)
-
 _release.add_config('sonic-release',
   sonic,
 )
