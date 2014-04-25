@@ -167,10 +167,10 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
         GetContainer(kShellWindowId_AppListContainer);
     if (app_list::switches::IsExperimentalAppListPositionEnabled()) {
       // The experimental app list is centered over the primary display.
-      view->InitAsBubbleAtFixedLocation(
+      view->InitAsBubbleCenteredOnPrimaryDisplay(
           NULL,
           pagination_model_.get(),
-          Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint(),
+          Shell::GetScreen(),
           views::BubbleBorder::FLOAT,
           true /* border_accepts_events */);
     } else {
