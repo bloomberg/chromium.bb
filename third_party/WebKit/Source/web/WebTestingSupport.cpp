@@ -26,7 +26,7 @@
 #include "config.h"
 #include "public/web/WebTestingSupport.h"
 
-#include "WebCoreTestSupport.h"
+#include "core/testing/v8/WebCoreTestSupport.h"
 #include "public/web/WebLocalFrame.h"
 #include <v8/include/v8.h>
 

@@ -33,10 +33,10 @@
 #import <Cocoa/Cocoa.h>
 #include <gtest/gtest.h>
 
-#include "WebInputEvent.h"
-#include "WebInputEventFactory.h"
 #include "core/events/KeyboardEvent.h"
 #include "platform/WindowsKeyboardCodes.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/mac/WebInputEventFactory.h"
 
 using blink::WebInputEventFactory;
 using blink::WebKeyboardEvent;

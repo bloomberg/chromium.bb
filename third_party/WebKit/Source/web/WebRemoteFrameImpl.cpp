@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebRemoteFrameImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 
-#include "WebDocument.h"
-#include "WebPerformance.h"
-#include "WebRange.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebPerformance.h"
+#include "public/web/WebRange.h"
 #include <v8/include/v8.h>
 
 namespace blink {

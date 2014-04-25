@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "WebScrollbarTheme.h"
+#include "public/web/mac/WebScrollbarTheme.h"
 
 #import <AppKit/AppKit.h>
 
-#include "platform/scroll/ScrollbarThemeMacCommon.h"
 #include "platform/mac/NSScrollerImpDetails.h"
+#include "platform/scroll/ScrollbarThemeMacCommon.h"
 
 using namespace WebCore;
 

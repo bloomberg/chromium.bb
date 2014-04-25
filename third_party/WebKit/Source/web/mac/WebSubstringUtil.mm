@@ -30,11 +30,10 @@
  */
 
 #include "config.h"
-#include "WebSubstringUtil.h"
+#include "public/web/mac/WebSubstringUtil.h"
 
 #import <Cocoa/Cocoa.h>
 
-#include "WebLocalFrameImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -43,18 +42,19 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/TextIterator.h"
-#include "core/html/HTMLElement.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/html/HTMLElement.h"
+#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/HitTestResult.h"
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
 #include "public/platform/WebRect.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebView.h"
+#include "web/WebLocalFrameImpl.h"
 
 using namespace WebCore;
 
