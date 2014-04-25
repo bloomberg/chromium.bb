@@ -5,7 +5,6 @@
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 
 #include <inttypes.h>
-#include <algorithm>
 #include <set>
 #include <string>
 
@@ -176,19 +175,8 @@ void MediaStreamTrackMetricsObserver::ReportAddedAndRemovedTracks(
     MediaStreamTrackMetrics::TrackType track_type) {
   DCHECK(has_reported_start_ && !has_reported_end_);
 
-  IdSet added_tracks;
-  std::set_difference(new_ids.begin(),
-                      new_ids.end(),
-                      old_ids.begin(),
-                      old_ids.end(),
-                      std::inserter(added_tracks, added_tracks.end()));
-
-  IdSet removed_tracks;
-  std::set_difference(old_ids.begin(),
-                      old_ids.end(),
-                      new_ids.begin(),
-                      new_ids.end(),
-                      std::inserter(removed_tracks, removed_tracks.end()));
+  IdSet added_tracks = base::STLSetDifference<IdSet>(new_ids, old_ids);
+  IdSet removed_tracks = base::STLSetDifference<IdSet>(old_ids, new_ids);
 
   ReportTracks(added_tracks, track_type, MediaStreamTrackMetrics::CONNECTED);
   ReportTracks(
