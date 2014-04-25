@@ -169,9 +169,9 @@ base::DictionaryValue* GetExceptionForPage(
   base::DictionaryValue* exception = new base::DictionaryValue();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kEmbeddingOrigin,
-                       secondary_pattern == ContentSettingsPattern::Wildcard()
-                           ? std::string()
-                           : secondary_pattern.ToString());
+                       secondary_pattern == ContentSettingsPattern::Wildcard() ?
+                           std::string() :
+                           secondary_pattern.ToString());
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kSource, provider_name);
   return exception;
@@ -1209,9 +1209,12 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
   rv = args->GetString(2, &pattern);
   DCHECK(rv);
 
+  // The third argument to this handler is optional.
   std::string secondary_pattern;
-  rv = args->GetString(3, &secondary_pattern);
-  DCHECK(rv);
+  if (args->GetSize() == 3U) {
+    rv = args->GetString(3, &secondary_pattern);
+    DCHECK(rv);
+  }
 
   HostContentSettingsMap* settings_map =
       mode == "normal" ? GetContentSettingsMap() :
@@ -1219,9 +1222,9 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
   if (settings_map) {
     settings_map->SetWebsiteSetting(
         ContentSettingsPattern::FromString(pattern),
-        secondary_pattern.empty()
-            ? ContentSettingsPattern::Wildcard()
-            : ContentSettingsPattern::FromString(secondary_pattern),
+        secondary_pattern.empty() ?
+            ContentSettingsPattern::Wildcard() :
+            ContentSettingsPattern::FromString(secondary_pattern),
         type,
         std::string(),
         NULL);
