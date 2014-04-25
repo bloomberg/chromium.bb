@@ -49,6 +49,18 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
         api_device_info.device_id = resource_id;
         api_device_info.vendor_id = device_info.vendor_id;
         api_device_info.product_id = device_info.product_id;
+        for (std::vector<device::HidUsageAndPage>::const_iterator usage_iter =
+                 device_info.usages.begin();
+             usage_iter != device_info.usages.end();
+             ++usage_iter) {
+          api::hid::HidUsageAndPage* usage_and_page =
+              new api::hid::HidUsageAndPage();
+          usage_and_page->usage_page = (*usage_iter).usage_page;
+          usage_and_page->usage = (*usage_iter).usage;
+          linked_ptr<api::hid::HidUsageAndPage> usage_and_page_ptr(
+              usage_and_page);
+          api_device_info.usages.push_back(usage_and_page_ptr);
+        }
         api_devices->Append(api_device_info.ToValue().release());
       }
     }

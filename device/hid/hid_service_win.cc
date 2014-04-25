@@ -175,11 +175,12 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
       preparsed_data) {
     HIDP_CAPS capabilities;
     if (HidP_GetCaps(preparsed_data, &capabilities) == HIDP_STATUS_SUCCESS) {
-      device_info.usage = capabilities.Usage;
-      device_info.usage_page = capabilities.UsagePage;
       device_info.input_report_size = capabilities.InputReportByteLength;
       device_info.output_report_size = capabilities.OutputReportByteLength;
       device_info.feature_report_size = capabilities.FeatureReportByteLength;
+      device_info.usages.push_back(HidUsageAndPage(
+        capabilities.Usage,
+        static_cast<HidUsageAndPage::Page>(capabilities.UsagePage)));
     }
     // Detect if the device supports report ids.
     if (capabilities.NumberInputValueCaps > 0) {

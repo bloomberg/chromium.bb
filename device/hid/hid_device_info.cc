@@ -18,8 +18,6 @@ HidDeviceInfo::HidDeviceInfo()
       input_report_size(0),
       output_report_size(0),
       feature_report_size(0),
-      usage_page(0),
-      usage(0),
       has_report_id(false) {}
 
 HidDeviceInfo::~HidDeviceInfo() {}

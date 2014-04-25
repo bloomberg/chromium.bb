@@ -42,21 +42,12 @@ scoped_refptr<net::IOBufferWithSize> CopyBufferWithReportId(
   return new_buffer;
 }
 
-const char kHidrawSubsystem[] = "hidraw";
-
 }  // namespace
 
 HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
-                                       ScopedUdevDevicePtr udev_raw_device)
+                                       std::string dev_node)
     : HidConnection(device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  udev_device* dev = udev_raw_device.get();
-  std::string dev_node;
-  if (!FindHidrawDevNode(dev, &dev_node)) {
-    LOG(ERROR) << "Cannot open HID device as hidraw device.";
-    return;
-  }
 
   int flags = base::File::FLAG_OPEN |
               base::File::FLAG_READ |
@@ -216,44 +207,4 @@ void HidConnectionLinux::ProcessReadQueue() {
   }
 }
 
-bool HidConnectionLinux::FindHidrawDevNode(udev_device* parent,
-                                           std::string* result) {
-  udev* udev = udev_device_get_udev(parent);
-  if (!udev) {
-      return false;
-  }
-  ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev));
-  if (!enumerate) {
-    return false;
-  }
-  if (udev_enumerate_add_match_subsystem(enumerate.get(), kHidrawSubsystem)) {
-    return false;
-  }
-  if (udev_enumerate_scan_devices(enumerate.get())) {
-    return false;
-  }
-  std::string parent_path(udev_device_get_devpath(parent));
-  if (parent_path.length() == 0 || *parent_path.rbegin() != '/')
-    parent_path += '/';
-  udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
-  for (udev_list_entry* i = devices; i != NULL;
-       i = udev_list_entry_get_next(i)) {
-    ScopedUdevDevicePtr hid_dev(
-        udev_device_new_from_syspath(udev, udev_list_entry_get_name(i)));
-    const char* raw_path = udev_device_get_devnode(hid_dev.get());
-    std::string device_path = udev_device_get_devpath(hid_dev.get());
-    if (raw_path &&
-        !device_path.compare(0, parent_path.length(), parent_path)) {
-      std::string sub_path = device_path.substr(parent_path.length());
-      if (sub_path.substr(0, sizeof(kHidrawSubsystem)-1) == kHidrawSubsystem) {
-        *result = raw_path;
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 }  // namespace device
-

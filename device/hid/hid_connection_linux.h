@@ -19,8 +19,7 @@ namespace device {
 class HidConnectionLinux : public HidConnection,
                            public base::MessagePumpLibevent::Watcher {
  public:
-  HidConnectionLinux(HidDeviceInfo device_info,
-                     ScopedUdevDevicePtr udev_raw_device);
+  HidConnectionLinux(HidDeviceInfo device_info, std::string dev_node);
 
   virtual void Read(scoped_refptr<net::IOBufferWithSize> buffer,
                     const IOCallback& callback) OVERRIDE;
@@ -41,8 +40,6 @@ class HidConnectionLinux : public HidConnection,
  private:
   friend class base::RefCountedThreadSafe<HidConnectionLinux>;
   virtual ~HidConnectionLinux();
-
-  static bool FindHidrawDevNode(udev_device* parent, std::string* result);
 
   void ProcessReadQueue();
   void Disconnect();

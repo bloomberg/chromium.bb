@@ -143,16 +143,30 @@ void HidServiceMac::PlatformAddDevice(IOHIDDeviceRef hid_device) {
       GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey));
   device_info.product_id =
       GetHidIntProperty(hid_device, CFSTR(kIOHIDProductIDKey));
-  device_info.usage =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDPrimaryUsageKey));
-  device_info.usage_page =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDPrimaryUsagePageKey));
   device_info.input_report_size =
       GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxInputReportSizeKey));
   device_info.output_report_size =
       GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxOutputReportSizeKey));
   device_info.feature_report_size =
       GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxFeatureReportSizeKey));
+  CFTypeRef deviceUsagePairsRaw =
+      IOHIDDeviceGetProperty(hid_device, CFSTR(kIOHIDDeviceUsagePairsKey));
+  CFArrayRef deviceUsagePairs =
+      base::mac::CFCast<CFArrayRef>(deviceUsagePairsRaw);
+  CFIndex deviceUsagePairsCount = CFArrayGetCount(deviceUsagePairs);
+  for (CFIndex i = 0; i < deviceUsagePairsCount; i++) {
+    CFDictionaryRef deviceUsagePair = base::mac::CFCast<CFDictionaryRef>(
+        CFArrayGetValueAtIndex(deviceUsagePairs, i));
+    CFNumberRef usage_raw = base::mac::CFCast<CFNumberRef>(
+        CFDictionaryGetValue(deviceUsagePair, CFSTR(kIOHIDDeviceUsageKey)));
+    uint16_t usage;
+    CFNumberGetValue(usage_raw, kCFNumberSInt32Type, &usage);
+    CFNumberRef page_raw = base::mac::CFCast<CFNumberRef>(
+        CFDictionaryGetValue(deviceUsagePair, CFSTR(kIOHIDDeviceUsagePageKey)));
+    HidUsageAndPage::Page page;
+    CFNumberGetValue(page_raw, kCFNumberSInt32Type, &page);
+    device_info.usages.push_back(HidUsageAndPage(usage, page));
+  }
   device_info.product_name =
       GetHidStringProperty(hid_device, CFSTR(kIOHIDProductKey));
   device_info.serial_number =

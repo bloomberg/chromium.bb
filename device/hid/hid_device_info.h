@@ -5,11 +5,11 @@
 #ifndef DEVICE_HID_HID_DEVICE_INFO_H_
 #define DEVICE_HID_HID_DEVICE_INFO_H_
 
-#include <stdint.h>
-
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
+#include "device/hid/hid_usage_and_page.h"
 
 #if defined(OS_MACOSX)
 #include <IOKit/hid/IOHIDDevice.h>
@@ -43,9 +43,7 @@ struct HidDeviceInfo {
   int input_report_size;
   int output_report_size;
   int feature_report_size;
-
-  uint16_t usage_page;
-  uint16_t usage;
+  std::vector<HidUsageAndPage> usages;
   bool has_report_id;
 
   std::string product_name;

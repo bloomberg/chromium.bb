@@ -7,12 +7,25 @@
 // Using this API, apps can function as drivers for hardware devices.
 namespace hid {
 
+  // HID usage pair.
+  // |usage_page|: HID usage page.
+  // |usage|: HID usage.
+  dictionary HidUsageAndPage {
+    long usage_page;
+    long usage;
+  };
+
   // Returned by <code>getDevices</code> functions to describes a connected HID
   // device. Use <code>connect</code> to connect to any of the returned devices.
+  // |deviceId|: Device opaque ID.
+  // |vendorId|: Vendor ID.
+  // |productId|: Product ID.
+  // |usages|: HID usage pairs exposed by underlying Top-level collections.
   dictionary HidDeviceInfo {
     long deviceId;
     long vendorId;
     long productId;
+    HidUsageAndPage[] usages;
   };
 
   // Returned by <code>connect</code> to represent a communication session with
