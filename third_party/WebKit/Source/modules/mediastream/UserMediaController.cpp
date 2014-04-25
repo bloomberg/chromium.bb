@@ -46,9 +46,9 @@ PassOwnPtr<UserMediaController> UserMediaController::create(UserMediaClient* cli
     return adoptPtr(new UserMediaController(client));
 }
 
-void provideUserMediaTo(Page& page, UserMediaClient* client)
+void provideUserMediaTo(LocalFrame& frame, UserMediaClient* client)
 {
-    UserMediaController::provideTo(page, UserMediaController::supplementName(), UserMediaController::create(client));
+    UserMediaController::provideTo(frame, UserMediaController::supplementName(), UserMediaController::create(client));
 }
 
 } // namespace WebCore

@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class Page;
+class LocalFrame;
 
 class UserMediaClient {
 public:
@@ -50,7 +50,7 @@ protected:
     virtual ~UserMediaClient() { }
 };
 
-void provideUserMediaTo(Page&, UserMediaClient*);
+void provideUserMediaTo(LocalFrame&, UserMediaClient*);
 
 } // namespace WebCore
 

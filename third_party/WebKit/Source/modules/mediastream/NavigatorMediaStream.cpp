@@ -52,7 +52,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
     if (!successCallback)
         return;
 
-    UserMediaController* userMedia = UserMediaController::from(navigator.frame() ? navigator.frame()->page() : 0);
+    UserMediaController* userMedia = UserMediaController::from(navigator.frame());
     if (!userMedia) {
         exceptionState.throwDOMException(NotSupportedError, "No user media controller available; is this a detached window?");
         return;
@@ -69,7 +69,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
 
 void NavigatorMediaStream::getMediaDevices(Navigator& navigator, PassOwnPtr<MediaDeviceInfoCallback> callback, ExceptionState& exceptionState)
 {
-    UserMediaController* userMedia = UserMediaController::from(navigator.frame() ? navigator.frame()->page() : 0);
+    UserMediaController* userMedia = UserMediaController::from(navigator.frame());
     if (!userMedia) {
         exceptionState.throwDOMException(NotSupportedError, "No media device controller available; is this a detached window?");
         return;
