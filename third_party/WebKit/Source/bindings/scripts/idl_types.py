@@ -20,9 +20,9 @@ BASIC_TYPES = set([
     # http://www.w3.org/TR/WebIDL/#dfn-primitive-type
     'boolean',
     'float',
-    # unrestricted float is not supported
+    'unrestricted float',
     'double',
-    # unrestricted double is not supported
+    'unrestricted double',
     # http://www.w3.org/TR/WebIDL/#idl-types
     'DOMString',
     'Date',
@@ -92,10 +92,13 @@ class IdlType(object):
     callback_interfaces = set()
     enums = {}  # name -> values
 
-    def __init__(self, base_type, is_array=False, is_sequence=False, is_nullable=False):
+    def __init__(self, base_type, is_array=False, is_sequence=False, is_nullable=False, is_unrestricted=False):
         if is_array and is_sequence:
             raise ValueError('Array of Sequences are not allowed.')
-        self.base_type = base_type
+        if is_unrestricted:
+            self.base_type = 'unrestricted %s' % base_type
+        else:
+            self.base_type = base_type
         self.is_array = is_array
         self.is_sequence = is_sequence
         self.is_nullable = is_nullable

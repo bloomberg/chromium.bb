@@ -113,6 +113,8 @@ CPP_SPECIAL_CONVERSION_RULES = {
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
     'XPathNSResolver': 'RefPtrWillBeRawPtr<XPathNSResolver>',
     'boolean': 'bool',
+    'unrestricted double': 'double',
+    'unrestricted float': 'float',
 }
 
 
@@ -352,7 +354,9 @@ V8_VALUE_TO_CPP_VALUE = {
     'DOMString': '{v8_value}',
     'boolean': '{v8_value}->BooleanValue()',
     'float': 'static_cast<float>({v8_value}->NumberValue())',
+    'unrestricted float': 'static_cast<float>({v8_value}->NumberValue())',
     'double': 'static_cast<double>({v8_value}->NumberValue())',
+    'unrestricted double': 'static_cast<double>({v8_value}->NumberValue())',
     'byte': 'toInt8({arguments})',
     'octet': 'toUInt8({arguments})',
     'short': 'toInt16({arguments})',
@@ -543,7 +547,9 @@ V8_SET_RETURN_VALUE = {
     'void': '',
     # No special v8SetReturnValue* function (set value directly)
     'float': 'v8SetReturnValue(info, {cpp_value})',
+    'unrestricted float': 'v8SetReturnValue(info, {cpp_value})',
     'double': 'v8SetReturnValue(info, {cpp_value})',
+    'unrestricted double': 'v8SetReturnValue(info, {cpp_value})',
     # No special v8SetReturnValue* function, but instead convert value to V8
     # and then use general v8SetReturnValue.
     'array': 'v8SetReturnValue(info, {cpp_value})',
@@ -618,7 +624,9 @@ CPP_VALUE_TO_V8_VALUE = {
     'int': 'v8::Integer::New({isolate}, {cpp_value})',
     'unsigned': 'v8::Integer::NewFromUnsigned({isolate}, {cpp_value})',
     'float': 'v8::Number::New({isolate}, {cpp_value})',
+    'unrestricted float': 'v8::Number::New({isolate}, {cpp_value})',
     'double': 'v8::Number::New({isolate}, {cpp_value})',
+    'unrestricted double': 'v8::Number::New({isolate}, {cpp_value})',
     'void': 'v8Undefined()',
     # Special cases
     'EventHandler': '{cpp_value} ? v8::Handle<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null({isolate}))',

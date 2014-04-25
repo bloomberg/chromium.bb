@@ -653,7 +653,9 @@ def type_node_inner_to_type(node, is_array=False, is_nullable=False):
     # either a typedef shorthand (but not a Typedef declaration itself) or an
     # interface type. We do not distinguish these, and just use the type name.
     if node_class in ['PrimitiveType', 'Typeref']:
-        return IdlType(node.GetName(), is_array=is_array, is_nullable=is_nullable)
+        # unrestricted syntax: unrestricted double | unrestricted float
+        is_unrestricted = node.GetProperty('UNRESTRICTED') or False
+        return IdlType(node.GetName(), is_array=is_array, is_nullable=is_nullable, is_unrestricted=is_unrestricted)
     elif node_class == 'Any':
         return IdlType('any', is_array=is_array, is_nullable=is_nullable)
     elif node_class == 'Sequence':

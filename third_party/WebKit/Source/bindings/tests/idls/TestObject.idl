@@ -96,6 +96,8 @@ interface TestObject {
     attribute long long longLongAttribute;
     attribute octet octetAttribute;
     attribute short shortAttribute;
+    attribute unrestricted double unrestrictedDoubleAttribute;
+    attribute unrestricted float unrestrictedFloatAttribute;
     attribute unsigned long unsignedLongAttribute;
     attribute unsigned long long unsignedLongLongAttribute;
     attribute unsigned short unsignedShortAttribute;
