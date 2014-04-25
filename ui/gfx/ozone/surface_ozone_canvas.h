@@ -28,15 +28,18 @@ class GFX_EXPORT SurfaceOzoneCanvas {
   // Returns an SkCanvas for drawing on the window.
   virtual skia::RefPtr<SkCanvas> GetCanvas() = 0;
 
-  // Attempts to resize the canvas to match the viewport size. Returns true if
-  // resizing was successful, otherwise false (platforms may require a fixed
-  // size canvas). After resizing, the compositor must call GetCanvas() to get
-  // the next canvas.
-  virtual bool ResizeCanvas(const gfx::Size& viewport_size) = 0;
+  // Attempts to resize the canvas to match the viewport size. After
+  // resizing, the compositor must call GetCanvas() to get the next
+  // canvas - this invalidates any previous canvas from GetCanvas().
+  virtual void ResizeCanvas(const gfx::Size& viewport_size) = 0;
 
-  // Present the current canvas. After presenting, the compositor must call
-  // GetCanvas() to get the next canvas.
-  virtual bool PresentCanvas() = 0;
+  // Present the current canvas. After presenting, the compositor must
+  // call GetCanvas() to get the next canvas - this invalidates any
+  // previous canvas from GetCanvas().
+  //
+  // The implementation may assume that any pixels outside the damage
+  // rectangle are unchanged since the previous call to PresentCanvas().
+  virtual void PresentCanvas(const gfx::Rect& damage) = 0;
 
   // Returns a gfx::VsyncProvider for this surface. Note that this may be
   // called after we have entered the sandbox so if there are operations (e.g.

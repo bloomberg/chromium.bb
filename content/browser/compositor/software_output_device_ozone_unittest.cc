@@ -25,18 +25,14 @@ class MockSurfaceOzone : public gfx::SurfaceOzoneCanvas {
   virtual ~MockSurfaceOzone() {}
 
   // gfx::SurfaceOzoneCanvas overrides:
-  virtual bool ResizeCanvas(const gfx::Size& size) OVERRIDE {
+  virtual void ResizeCanvas(const gfx::Size& size) OVERRIDE {
     surface_ = skia::AdoptRef(SkSurface::NewRaster(
         SkImageInfo::MakeN32Premul(size.width(), size.height())));
-    return true;
   }
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
     return skia::SharePtr(surface_->getCanvas());
   }
-  virtual bool PresentCanvas() OVERRIDE {
-    NOTIMPLEMENTED();
-    return true;
-  }
+  virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE {}
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE {
     return scoped_ptr<gfx::VSyncProvider>();
   }
@@ -138,31 +134,6 @@ void SoftwareOutputDeviceOzonePixelTest::SetUp() {
   SoftwareOutputDeviceOzoneTest::SetUp();
 }
 
-TEST_F(SoftwareOutputDeviceOzoneTest, CheckClipAfterBeginPaint) {
-  gfx::Rect damage(10, 10, 100, 100);
-  SkCanvas* canvas = output_device_->BeginPaint(damage);
-
-  SkIRect sk_bounds;
-  canvas->getClipDeviceBounds(&sk_bounds);
-
-  EXPECT_EQ(damage.ToString(), gfx::SkIRectToRect(sk_bounds).ToString());
-}
-
-TEST_F(SoftwareOutputDeviceOzoneTest, CheckClipAfterSecondBeginPaint) {
-  gfx::Rect damage(10, 10, 100, 100);
-  SkCanvas* canvas = output_device_->BeginPaint(damage);
-
-  cc::SoftwareFrameData frame;
-  output_device_->EndPaint(&frame);
-
-  damage = gfx::Rect(100, 100, 100, 100);
-  canvas = output_device_->BeginPaint(damage);
-  SkIRect sk_bounds;
-  canvas->getClipDeviceBounds(&sk_bounds);
-
-  EXPECT_EQ(damage.ToString(), gfx::SkIRectToRect(sk_bounds).ToString());
-}
-
 TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
   gfx::Rect damage(0, 0, 100, 100);
   gfx::Size size(200, 100);
@@ -201,6 +172,7 @@ TEST_F(SoftwareOutputDeviceOzonePixelTest, CheckCopyToBitmap) {
   // Draw a white rectangle.
   gfx::Rect damage(area.width() / 2, area.height() / 2);
   canvas = output_device_->BeginPaint(damage);
+  canvas->clipRect(gfx::RectToSkRect(damage), SkRegion::kReplace_Op);
 
   canvas->drawColor(SK_ColorWHITE);
 

@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
@@ -78,25 +79,48 @@ class DriSurfaceAdapter : public gfx::SurfaceOzoneCanvas {
       : widget_(w), dri_(dri) {}
   virtual ~DriSurfaceAdapter() {}
 
-  // gfx::SurfaceOzoneCanvas overrides:
-  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
-    return skia::SharePtr(dri_->GetCanvasForWidget(widget_));
-  }
-  virtual bool ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE {
-    NOTIMPLEMENTED();
-    return false;
-  }
-  virtual bool PresentCanvas() OVERRIDE {
-    return dri_->SchedulePageFlip(widget_);
-  }
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE {
-    return dri_->CreateVSyncProvider(widget_);
-  }
+  // SurfaceOzoneCanvas:
+  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
+  virtual void ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
+  virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE;
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
 
  private:
+  skia::RefPtr<SkSurface> surface_;
+  gfx::Rect last_damage_;
+
   gfx::AcceleratedWidget widget_;
   DriSurfaceFactory* dri_;
 };
+
+skia::RefPtr<SkCanvas> DriSurfaceAdapter::GetCanvas() {
+  return skia::SharePtr(surface_->getCanvas());
+}
+
+void DriSurfaceAdapter::ResizeCanvas(const gfx::Size& viewport_size) {
+  SkImageInfo info = SkImageInfo::MakeN32(
+      viewport_size.width(), viewport_size.height(), kOpaque_SkAlphaType);
+  surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
+}
+
+void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
+  SkCanvas* canvas = dri_->GetCanvasForWidget(widget_);
+
+  // The DriSurface is double buffered, so the current back buffer is
+  // missing the previous update. Expand damage region.
+  SkRect real_damage = RectToSkRect(UnionRects(damage, last_damage_));
+
+  // Copy damage region.
+  skia::RefPtr<SkImage> image = skia::AdoptRef(surface_->newImageSnapshot());
+  image->draw(canvas, &real_damage, real_damage, NULL);
+
+  last_damage_ = damage;
+  CHECK(dri_->SchedulePageFlip(widget_));
+}
+
+scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
+  return dri_->CreateVSyncProvider(widget_);
+}
 
 }  // namespace
 

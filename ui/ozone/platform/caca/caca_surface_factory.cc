@@ -27,8 +27,8 @@ class CacaSurface : public gfx::SurfaceOzoneCanvas {
 
   // gfx::SurfaceOzoneCanvas overrides:
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
-  virtual bool ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
-  virtual bool PresentCanvas() OVERRIDE;
+  virtual void ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
+  virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE;
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
 
  private:
@@ -77,12 +77,11 @@ skia::RefPtr<SkCanvas> CacaSurface::GetCanvas() {
   return skia::SharePtr<SkCanvas>(surface_->getCanvas());
 }
 
-bool CacaSurface::ResizeCanvas(const gfx::Size& viewport_size) {
+void CacaSurface::ResizeCanvas(const gfx::Size& viewport_size) {
   NOTIMPLEMENTED();
-  return false;
 }
 
-bool CacaSurface::PresentCanvas() {
+void CacaSurface::PresentCanvas(const gfx::Rect& damage) {
   SkImageInfo info;
   size_t row_bytes;
   const void* pixels = surface_->peekPixels(&info, &row_bytes);
@@ -94,8 +93,6 @@ bool CacaSurface::PresentCanvas() {
                      dither_,
                      static_cast<const uint8_t*>(pixels));
   caca_refresh_display(connection_->display());
-
-  return true;
 }
 
 scoped_ptr<gfx::VSyncProvider> CacaSurface::CreateVSyncProvider() {

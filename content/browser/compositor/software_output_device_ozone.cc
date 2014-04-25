@@ -45,25 +45,13 @@ SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(const gfx::Rect& damage_rect) {
   // Get canvas for next frame.
   canvas_ = surface_ozone_->GetCanvas();
 
-  canvas_->clipRect(gfx::RectToSkRect(damage_rect), SkRegion::kReplace_Op);
-  // Save the current state so we can restore once we're done drawing. This is
-  // saved after the clip since we want to keep the clip information after we're
-  // done drawing such that OZONE knows what was updated.
-  canvas_->save();
-
   return SoftwareOutputDevice::BeginPaint(damage_rect);
 }
 
 void SoftwareOutputDeviceOzone::EndPaint(cc::SoftwareFrameData* frame_data) {
   SoftwareOutputDevice::EndPaint(frame_data);
 
-  canvas_->restore();
-
-  if (damage_rect_.IsEmpty())
-    return;
-
-  bool scheduled = surface_ozone_->PresentCanvas();
-  DCHECK(scheduled) << "Failed to present canvas";
+  surface_ozone_->PresentCanvas(damage_rect_);
 }
 
 }  // namespace content

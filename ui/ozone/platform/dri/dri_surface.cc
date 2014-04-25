@@ -18,30 +18,6 @@
 
 namespace ui {
 
-namespace {
-
-// TODO(dnicoara) Remove this once Skia implements this between 2 SkCanvases.
-void CopyRect(DriBuffer* dst, DriBuffer* src, const gfx::Rect& damage) {
-  SkImageInfo src_info, dst_info;
-  size_t src_stride, dst_stride;
-  uint8_t* src_pixels = static_cast<uint8_t*>(
-      const_cast<void*>(src->canvas()->peekPixels(&src_info, &src_stride)));
-  uint8_t* dst_pixels = static_cast<uint8_t*>(
-      const_cast<void*>(dst->canvas()->peekPixels(&dst_info, &dst_stride)));
-
-  // The 2 buffers should have the same properties.
-  DCHECK(src_info == dst_info);
-  DCHECK(src_stride == dst_stride);
-
-  int bpp = src_info.bytesPerPixel();
-  for (int height = damage.y(); height < damage.y() + damage.height(); ++height)
-    memcpy(dst_pixels + height * dst_stride + damage.x() * bpp,
-           src_pixels + height * src_stride + damage.x() * bpp,
-           damage.width() * bpp);
-}
-
-}  // namespace
-
 DriSurface::DriSurface(
     DriWrapper* dri, const gfx::Size& size)
     : dri_(dri),
@@ -88,10 +64,6 @@ void DriSurface::SwapBuffers() {
 
   // Update our front buffer pointer.
   front_buffer_ ^= 1;
-
-  SkIRect device_damage;
-  frontbuffer()->canvas()->getClipDeviceBounds(&device_damage);
-  CopyRect(backbuffer(), frontbuffer(), gfx::SkIRectToRect(device_damage));
 }
 
 SkCanvas* DriSurface::GetDrawableForWidget() {
