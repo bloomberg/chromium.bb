@@ -113,7 +113,7 @@ def run_shell_commands(commands, verbose=False, environment=None):
 
 def destdir_configure_make_install(parsed_arguments, environment,
                                    install_prefix):
-  configure_command = './configure %s' % parsed_arguments.custom_configure_flags
+  configure_command = './configure %s' % parsed_arguments.extra_configure_flags
   configure_command += ' --libdir=/lib/'
   # Installing to a temporary directory allows us to safely clean up the .la
   # files below.
@@ -136,7 +136,7 @@ def destdir_configure_make_install(parsed_arguments, environment,
 def prefix_configure_make_install(parsed_arguments, environment,
                                   install_prefix):
   configure_command = './configure %s --prefix=%s' % (
-      parsed_arguments.custom_configure_flags, install_prefix)
+      parsed_arguments.extra_configure_flags, install_prefix)
   shell_call(configure_command, parsed_arguments.verbose, environment)
   shell_call('make -j%s' % parsed_arguments.jobs,
              parsed_arguments.verbose, environment)
@@ -243,9 +243,9 @@ def build_and_install(parsed_arguments, environment, install_prefix):
   elif parsed_arguments.build_method == 'custom_libcap':
     libcap2_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_pango':
-    parsed_arguments.custom_configure_flags += \
+    parsed_arguments.extra_configure_flags += \
       ' --x-libraries=%s/lib' % install_prefix
-    parsed_arguments.custom_configure_flags += \
+    parsed_arguments.extra_configure_flags += \
       ' --x-includes=%s/include' % install_prefix
     prefix_configure_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_libpci3':
@@ -261,10 +261,10 @@ def download_build_install(parsed_arguments):
   environment = os.environ.copy()
   # Usage of environment variables CC and CXX prefers usage flags --c-compiler
   # and --cxx-compiler
-  if 'CC' not in environment and parsed_arguments.c_compiler:
-    environment['CC'] = parsed_arguments.c_compiler
-  if 'CXX' not in environment and parsed_arguments.cxx_compiler:
-    environment['CXX'] = parsed_arguments.cxx_compiler
+  if 'CC' not in environment and parsed_arguments.cc:
+    environment['CC'] = parsed_arguments.cc
+  if 'CXX' not in environment and parsed_arguments.cxx:
+    environment['CXX'] = parsed_arguments.cxx
 
   product_directory = os.path.normpath('%s/%s' % (
       get_script_absolute_path(),
@@ -276,10 +276,10 @@ def download_build_install(parsed_arguments):
         product_directory,
         parsed_arguments.sanitizer_blacklist)
   environment['CFLAGS'] = '%s %s' % (compiler_flags,
-                                     parsed_arguments.custom_c_compiler_flags)
+                                     parsed_arguments.extra_cflags)
   environment['CXXFLAGS'] = '%s %s' % (
       compiler_flags,
-      parsed_arguments.custom_cxx_compiler_flags)
+      parsed_arguments.extra_cxxflags)
 
   install_prefix = '%s/instrumented_libraries/%s' % (
       product_directory,
@@ -289,7 +289,7 @@ def download_build_install(parsed_arguments):
   # library dependencies.
   environment['LDFLAGS'] = '%s -L%s/lib %s' % (
       sanitizer_params['linker_flags'],
-      install_prefix, parsed_arguments.custom_linker_flags)
+      install_prefix, parsed_arguments.extra_ldflags)
 
   library_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
                                  parsed_arguments.library)
@@ -345,16 +345,16 @@ def main():
   argument_parser.add_argument(
       '-m', '--intermediate-directory', default='.',
       help='Relative path to the directory for temporary build files')
-  argument_parser.add_argument('--custom-configure-flags', default='')
-  argument_parser.add_argument('--custom-c-compiler-flags', default='')
-  argument_parser.add_argument('--custom-cxx-compiler-flags', default='')
-  argument_parser.add_argument('--custom-linker-flags', default='')
+  argument_parser.add_argument('--extra-configure-flags', default='')
+  argument_parser.add_argument('--extra-cflags', default='')
+  argument_parser.add_argument('--extra-cxxflags', default='')
+  argument_parser.add_argument('--extra-ldflags', default='')
   argument_parser.add_argument('-s', '--sanitizer-type', required=True,
                                choices=SUPPORTED_SANITIZERS.keys())
   argument_parser.add_argument('-v', '--verbose', action='store_true')
   argument_parser.add_argument('--check-build-deps', action='store_true')
-  argument_parser.add_argument('--c-compiler')
-  argument_parser.add_argument('--cxx-compiler')
+  argument_parser.add_argument('--cc')
+  argument_parser.add_argument('--cxx')
   # This should be a shell script to run before building specific libraries
   # e.g. extracting archives with sources, patching makefiles, etc.
   argument_parser.add_argument('--run-before-build', default='')

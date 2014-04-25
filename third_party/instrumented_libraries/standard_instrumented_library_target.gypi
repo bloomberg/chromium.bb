@@ -24,18 +24,24 @@
         '--library=<(_library_name)',
         '--intermediate-directory=<(INTERMEDIATE_DIR)',
         '--sanitizer-type=<(_sanitizer_type)',
-        '--custom-configure-flags=<(_custom_configure_flags)',
-        '--custom-c-compiler-flags=<(_custom_c_compiler_flags)',
-        '--custom-cxx-compiler-flags=<(_custom_cxx_compiler_flags)',
-        '--custom-linker-flags=<(_custom_linker_flags)',
+        '--extra-configure-flags=<(_extra_configure_flags)',
+        '--extra-cflags=<(_extra_cflags)',
+        '--extra-cxxflags=<(_extra_cxxflags)',
+        '--extra-ldflags=<(_extra_ldflags)',
         '--run-before-build=<(_run_before_build)',
-        '<(_verbose_libraries_build_flag)',
-        '--c-compiler=<(_cc)',
-        '--cxx-compiler=<(_cxx)',
+        '--cc=<(_cc)',
+        '--cxx=<(_cxx)',
         '--jobs=<(_jobs)',
         '--build-method=<(_build_method)',
         '--sanitizer-blacklist=<(_sanitizer_blacklist)',
       ],
+      'conditions': [
+        ['verbose_libraries_build==1', {
+          'action+': [
+            '--verbose',
+          ],
+        }],
+      ]
     },
   ],
 }
