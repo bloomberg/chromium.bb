@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -39,6 +40,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
+#include "content/public/test/browser_test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "policy/proto/cloud_policy.pb.h"
@@ -327,12 +329,14 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, SetResetClear) {
 }
 
 IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest,
-                       PRE_PRE_WallpaperOnLoginScreen) {
+                       PRE_PRE_PRE_WallpaperOnLoginScreen) {
   RegisterUser(kTestUsers[0]);
+  RegisterUser(kTestUsers[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest,
+                       PRE_PRE_WallpaperOnLoginScreen) {
   LoginUser(kTestUsers[0]);
 
   // Wait until default wallpaper has been loaded.
@@ -343,10 +347,61 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
 
   // Run until wallpaper has changed.
   RunUntilWallpaperChangeCount(2);
+  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
+  LoginUser(kTestUsers[1]);
+
+  // Wait until default wallpaper has been loaded.
+  RunUntilWallpaperChangeCount(1);
+
+  // Set wallpaper policy to green image.
+  InjectPolicy(1, kGreenImageFileName);
+
+  // Run until wallpaper has changed.
+  RunUntilWallpaperChangeCount(2);
+  ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
 }
 
 IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, WallpaperOnLoginScreen) {
   // Wait for active pod's wallpaper to be loaded.
+  RunUntilWallpaperChangeCount(1);
+  ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
+
+  // Select the second pod (belonging to user 1).
+  ASSERT_TRUE(content::ExecuteScript(
+      static_cast<chromeos::LoginDisplayHostImpl*>(
+          chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->
+              web_ui()->GetWebContents(),
+      "document.getElementsByClassName('pod')[1].focus();"));
+  RunUntilWallpaperChangeCount(2);
+  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
+  RegisterUser(kTestUsers[0]);
+  StartupUtils::MarkOobeCompleted();
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
+  LoginUser(kTestUsers[0]);
+
+  // Wait until default wallpaper has been loaded.
+  RunUntilWallpaperChangeCount(1);
+
+  // Set wallpaper policy to red image.
+  InjectPolicy(0, kRedImageFileName);
+
+  // Run until wallpaper has changed.
+  RunUntilWallpaperChangeCount(2);
+  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+}
+
+IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PersistOverLogout) {
+  LoginUser(kTestUsers[0]);
+
+  // Wait until wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 }
