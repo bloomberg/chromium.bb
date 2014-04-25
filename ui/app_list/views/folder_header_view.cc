@@ -152,7 +152,8 @@ void FolderHeaderView::Layout() {
                             ? folder_name_placeholder_text_
                             : base::UTF8ToUTF16(folder_item_->name());
   int text_width =
-      gfx::Canvas::GetStringWidth(text, folder_name_view_->GetFontList());
+      gfx::Canvas::GetStringWidth(text, folder_name_view_->GetFontList()) +
+      folder_name_view_->GetCaretBounds().width();
   text_width = std::min(text_width, kMaxFolderNameWidth);
   text_bounds.set_x(back_bounds.x() + (rect.width() - text_width) / 2);
   text_bounds.set_width(text_width);
