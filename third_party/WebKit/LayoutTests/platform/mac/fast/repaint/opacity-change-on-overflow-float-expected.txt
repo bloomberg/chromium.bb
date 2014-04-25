@@ -1,7 +1,17 @@
 Repaint test for REGRESSION (r41203): Facebook friend suggestions disappear on update. Make sure when a layer switches from being self-painting to non-self-painting that a layout happens to fix up the floating objects lists. You should see a 100x100 green square below. If you see any red, the test has failed.
 
-(repaint rects
-  (rect 8 78 100 100)
-  (rect 8 78 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 78.00 100.00 100.00)
+        (rect 8.00 78.00 100.00 100.00)
+      )
+    )
+  )
 )
 

@@ -1,5 +1,19 @@
 (repaint rects
   (rect 8 8 769 300)
   (rect 762 8 15 300)
+  (rect 0 0 800 600)
+  (rect 0 0 800 316)
+  (rect 8 8 784 300)
+  (rect 8 8 769 300)
+)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
 )
 

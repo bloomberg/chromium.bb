@@ -1,7 +1,17 @@
 Repaint test for rdar://problem/6048566 Repaint original element's position, not its offset position.
 
 PASS
-(repaint rects
-  (rect 8 150 784 18)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 150.00 784.00 18.00)
+      )
+    )
+  )
 )
 

@@ -1,0 +1,23 @@
+
+(repaint rects
+  (rect 14 335 48 64)
+  (rect 14 339 48 64)
+  (rect 372 371 48 80)
+  (rect 372 375 48 80)
+  (rect 8 572 418 4)
+  (rect 8 152 418 418)
+  (rect 0 0 800 600)
+  (rect 0 0 800 600)
+  (rect 0 0 500 600)
+)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
+

@@ -1,7 +1,17 @@
 This is a repaint test for http://bugs.webkit.org/show_bug.cgi?id=11277 REGRESSION: Incomplete repaint of overflow areas when deleting.
 
 Lorem ipsu
-(repaint rects
-  (rect 8 74 80 19)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 74.00 80.00 19.00)
+      )
+    )
+  )
 )
 

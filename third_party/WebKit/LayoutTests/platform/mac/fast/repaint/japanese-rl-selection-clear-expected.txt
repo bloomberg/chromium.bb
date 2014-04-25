@@ -2,4 +2,7 @@
 (repaint rects
   (rect 387 123 385 392)
 )
+(GraphicsLayer
+  (bounds 800.00 600.00)
+)
 

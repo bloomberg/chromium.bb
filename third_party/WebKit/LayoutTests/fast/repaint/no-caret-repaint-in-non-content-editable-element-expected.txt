@@ -2,4 +2,14 @@ This tests that clicking on a non-content editable element does not cause a repa
 
 This element is not content editable.
 
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
 

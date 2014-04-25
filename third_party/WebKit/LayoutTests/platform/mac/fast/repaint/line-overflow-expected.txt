@@ -1,7 +1,17 @@
 This is a test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9669 Incomplete repaint when changing an inline's border.
 
 Cras faucibus. Nunc adipiscing, enim in scelerisque convallis, augue purus eleifend lacus, at sagittis eros leo pulvinar velit. Integer sollicitudin nisi ut urna blandit convallis.
-(repaint rects
-  (rect 8 84 200 120)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 84.00 200.00 120.00)
+      )
+    )
+  )
 )
 
