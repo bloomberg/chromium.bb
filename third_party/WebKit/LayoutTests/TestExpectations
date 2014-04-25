@@ -278,12 +278,6 @@ crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-block-format
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ Pass ImageOnlyFailure ]
 # Also svg/hixie/text/001.xml and fullscreen/parent-flow-inline-with-block-child.html but they have other lines in this file.
 
-# Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
-crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
-crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
-crbug.com/306929 [ Win7 Debug ] fast/js/JSON-stringify.html [ Failure ]
-crbug.com/364777 [ Linux Debug ] fast/js/JSON-stringify.html [ Failure ]
-
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]

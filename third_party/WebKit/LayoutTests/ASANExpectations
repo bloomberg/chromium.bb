@@ -55,7 +55,6 @@ crbug.com/250520 [ Linux ] fast/speechsynthesis/speech-synthesis-cancel.html [ C
 # These tests consistently fail on slow bots.
 crbug.com/231357 [ Linux ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Linux ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
-crbug.com/14885 [ Linux ] fast/js/JSON-stringify.html [ Failure ]
 
 # These tests flakily timeout on the ASAN bot
 crbug.com/247466 [ Linux ] inspector/debugger/live-edit-breakpoints.html [ Pass Timeout ]
