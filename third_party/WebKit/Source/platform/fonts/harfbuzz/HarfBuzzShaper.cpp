@@ -1111,22 +1111,15 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
     if (!foundToX)
         toX = m_run.rtl() ? 0 : m_totalWidth;
 
-    // Using floorf() and roundf() as the same as mac port.
-    // Use LayoutUnit::epsilon() to ensure that values that cannot be stored as
-    // an integer are floored to n and not n-1 due to floating point imprecision.
     if (fromX < toX) {
-        float pixelAlignedX = floorf(point.x() + fromX + LayoutUnit::epsilon());
-        return FloatRect(floorf(point.x() + fromX),
-            point.y(),
-            roundf(point.x() + toX) - pixelAlignedX,
-            height);
+        return Font::pixelSnappedSelectionRect(
+            point.x() + fromX, point.x() + toX,
+            point.y(), height);
     }
 
-    float pixelAlignedX = floorf(point.x() + toX + LayoutUnit::epsilon());
-    return FloatRect(floorf(point.x() + toX),
-        point.y(),
-        roundf(point.x() + fromX) - pixelAlignedX,
-        height);
+    return Font::pixelSnappedSelectionRect(
+        point.x() + toX, point.x() + fromX,
+        point.y(), height);
 }
 
 } // namespace WebCore

@@ -166,6 +166,7 @@ public:
 
     void willUseFontData() const;
 
+    static FloatRect pixelSnappedSelectionRect(float fromX, float toX, float y, float height);
 private:
     bool loadingCustomFonts() const
     {
