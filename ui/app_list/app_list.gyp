@@ -143,6 +143,7 @@
         ['use_aura==1', {
           'dependencies': [
             '../aura/aura.gyp:aura',
+            '../wm/wm.gyp:wm',
           ],
         }],
         ['toolkit_views==1', {
@@ -151,7 +152,6 @@
             '../events/events.gyp:events',
             '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
-            '../wm/wm.gyp:wm',
           ],
         }, {  # toolkit_views==0
           'sources/': [

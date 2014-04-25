@@ -2106,6 +2106,7 @@
         }],
         ['use_aura==1', {
           'dependencies': [
+            '../ui/wm/wm.gyp:wm',
             '../ui/aura/aura.gyp:aura_test_support',
           ],
           'sources/': [
@@ -2125,7 +2126,6 @@
         ['use_aura==1 or toolkit_views==1', {
           'dependencies': [
             '../ui/events/events.gyp:events_test_support',
-            '../ui/wm/wm.gyp:wm',
           ],
         }],
         ['use_aura==1 and component=="shared_library"', {

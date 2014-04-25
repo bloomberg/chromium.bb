@@ -153,6 +153,7 @@
         'dragdrop/drag_utils.cc',
         'dragdrop/drag_utils.h',
         'dragdrop/drag_utils_aura.cc',
+        'dragdrop/drag_utils_mac.mm',
         'dragdrop/drag_utils_win.cc',
         'dragdrop/drop_target_event.cc',
         'dragdrop/drop_target_event.h',
@@ -166,6 +167,7 @@
         'dragdrop/os_exchange_data_provider_aura.h',
         'dragdrop/os_exchange_data_provider_aurax11.cc',
         'dragdrop/os_exchange_data_provider_aurax11.h',
+        'dragdrop/os_exchange_data_provider_mac.mm',
         'dragdrop/os_exchange_data_provider_win.cc',
         'dragdrop/os_exchange_data_provider_win.h',
         'hit_test.h',
@@ -354,8 +356,6 @@
             'cursor/cursor_mac.mm',
             'cursor/cursor_win.cc',
             'cursor/cursor_x11.cc',
-            'nine_image_painter_factory.cc',
-            'nine_image_painter_factory.h',
             'x/selection_owner.cc',
             'x/selection_owner.h',
             'x/selection_requestor.cc',
@@ -388,14 +388,6 @@
               'sources/': [
                 ['exclude', '^dragdrop/drag_utils.cc'],
                 ['exclude', '^dragdrop/drag_utils.h'],
-                ['exclude', '^dragdrop/os_exchange_data.cc'],
-                ['exclude', '^dragdrop/os_exchange_data.h'],
-              ],
-            }, {
-              # Note: because of gyp predence rules this has to be defined as
-              # 'sources/' rather than 'sources!'.
-              'sources/': [
-                ['include', '^dragdrop/os_exchange_data.cc'],
               ],
             }],
           ],
@@ -469,10 +461,6 @@
               ],
             }],
           ],
-          'sources!': [
-            'dragdrop/drag_drop_types.h',
-            'dragdrop/os_exchange_data.cc',
-          ],
         }],
         ['OS=="mac"', {
           'dependencies': [
@@ -506,8 +494,13 @@
         }],
         ['toolkit_views==0', {
           'sources!': [
+            'dragdrop/drag_drop_types.h',
             'dragdrop/drop_target_event.cc',
             'dragdrop/drop_target_event.h',
+            'dragdrop/os_exchange_data.cc',
+            'dragdrop/os_exchange_data.h',
+            'nine_image_painter_factory.cc',
+            'nine_image_painter_factory.h',
           ],
         }],
         ['OS=="android"', {

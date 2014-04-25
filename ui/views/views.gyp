@@ -5,6 +5,16 @@
   'variables': {
     'chromium_code': 1,
   },
+  'target_defaults': {
+    'conditions': [
+      ['use_aura==1', {
+        'dependencies': [
+          '../aura/aura.gyp:aura',
+          '../wm/wm.gyp:wm',
+        ],
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'views',
@@ -19,7 +29,6 @@
         '../../url/url.gyp:url_lib',
         '../accessibility/accessibility.gyp:accessibility',
         '../accessibility/accessibility.gyp:ax_gen',
-        '../aura/aura.gyp:aura',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
@@ -29,7 +38,6 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '../native_theme/native_theme.gyp:native_theme',
         '../resources/ui_resources.gyp:ui_resources',
-        '../wm/wm.gyp:wm',
       ],
       'export_dependent_settings': [
         '../accessibility/accessibility.gyp:ax_gen',
@@ -508,14 +516,11 @@
         '../../ipc/ipc.gyp:test_support_ipc',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
-        '../aura/aura.gyp:aura',
-        '../aura/aura.gyp:aura_test_support',
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../wm/wm.gyp:wm',
         'views',
       ],
       'include_dirs': [
@@ -552,6 +557,11 @@
             'test/ui_controls_factory_desktop_aurax11.h',
           ],
         }],
+        ['use_aura==1', {
+          'dependencies': [
+            '../aura/aura.gyp:aura_test_support',
+          ],
+        }],
       ],
     },  # target_name: views_test_support
     {
@@ -567,8 +577,6 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../../url/url.gyp:url_lib',
         '../accessibility/accessibility.gyp:accessibility',
-        '../aura/aura.gyp:aura',
-        '../aura/aura.gyp:aura_test_support',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../base/ui_base.gyp:ui_base',
         '../base/ui_base.gyp:ui_base_test_support',
@@ -579,7 +587,6 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_resources',
         '../resources/ui_resources.gyp:ui_test_pak',
-        '../wm/wm.gyp:wm',
         'views',
         'views_test_support',
       ],
@@ -692,6 +699,11 @@
         ['use_ozone==1', {
           'sources!': [
             'corewm/capture_controller_unittest.cc',
+          ],
+        }],
+        ['use_aura==1', {
+          'dependencies': [
+            '../aura/aura.gyp:aura_test_support',
           ],
         }],
       ],

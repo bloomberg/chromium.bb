@@ -2557,20 +2557,6 @@
             'safe_browsing_report_proto',
           ],
         }],
-        ['toolkit_views == 1', {
-          'dependencies': [
-            '../ui/wm/wm.gyp:wm',
-          ],
-          'sources!': [
-            'browser/ui/profile_reset_bubble_stub.cc',
-          ],
-        }, {  # toolkit_views == 0
-          'sources!': [
-            'browser/ui/tabs/tab_strip_layout_type.h',
-            'browser/ui/tabs/tab_strip_layout_type_prefs.cc',
-            'browser/ui/tabs/tab_strip_layout_type_prefs.h',
-          ],
-        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:udev',
@@ -2676,6 +2662,9 @@
           ],
         }],
         ['use_aura==1', {
+          'sources!': [
+            'browser/ui/profile_reset_bubble_stub.cc',
+          ],
           'sources/': [
             ['exclude', '^browser/ui/screen_capture_notification_ui_stub.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
@@ -2691,6 +2680,7 @@
             '../ui/aura/aura.gyp:aura',
             '../ui/keyboard/keyboard.gyp:keyboard',
             '../ui/keyboard/keyboard.gyp:keyboard_resources',
+            '../ui/wm/wm.gyp:wm',
           ],
           'conditions': [
             ['OS=="win"', {
@@ -2714,6 +2704,11 @@
             }],
           ],
         }, { # else: use_aura==0
+          'sources!': [
+            'browser/ui/tabs/tab_strip_layout_type.h',
+            'browser/ui/tabs/tab_strip_layout_type_prefs.cc',
+            'browser/ui/tabs/tab_strip_layout_type_prefs.h',
+          ],
           'sources/': [
             ['exclude', '^browser/ui/views/frame/browser_desktop_window_tree_host.h'],
             ['exclude', '^browser/ui/views/frame/browser_desktop_window_tree_host_win.cc'],
