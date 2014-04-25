@@ -20,11 +20,11 @@
 // The data members directly correspond to parameters of
 // WorkerMessagingProxy::reportConsoleMessage()
 IPC_STRUCT_BEGIN(EmbeddedWorkerHostMsg_ReportConsoleMessage_Params)
-IPC_STRUCT_MEMBER(int, source_identifier)
-IPC_STRUCT_MEMBER(int, message_level)
-IPC_STRUCT_MEMBER(base::string16, message)
-IPC_STRUCT_MEMBER(int, line_number)
-IPC_STRUCT_MEMBER(GURL, source_url)
+  IPC_STRUCT_MEMBER(int, source_identifier)
+  IPC_STRUCT_MEMBER(int, message_level)
+  IPC_STRUCT_MEMBER(base::string16, message)
+  IPC_STRUCT_MEMBER(int, line_number)
+  IPC_STRUCT_MEMBER(GURL, source_url)
 IPC_STRUCT_END()
 
 // Browser -> Renderer message to create a new embedded worker context.
