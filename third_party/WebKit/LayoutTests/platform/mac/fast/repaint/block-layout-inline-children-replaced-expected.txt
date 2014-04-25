@@ -1,9 +1,19 @@
 This is a test for regression against https://bugs.webkit.org/show_bug.cgi?id=40142
 
 
-(repaint rects
-  (rect 0 34 402 152)
-  (rect 201 35 92 100)
-  (rect 0 35 402 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 34.00 402.00 152.00)
+        (rect 201.00 35.00 92.00 100.00)
+        (rect 0.00 35.00 402.00 100.00)
+      )
+    )
+  )
 )
 

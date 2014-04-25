@@ -1,0 +1,20 @@
+Tests that setting an outline or a border of 0 on an element without a border or outline doesn't repaint.
+
+(repaint rects
+  (rect 10 10 200 200)
+  (rect 10 10 100 100)
+  (rect 0 0 800 600)
+  (rect 0 0 800 316)
+  (rect 10 10 100 100)
+)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
+

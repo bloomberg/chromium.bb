@@ -5,8 +5,18 @@ TEST PASS: The blue rectangle will change into a square.
 TEST FAIL: The blue rectangle will change into a shape that is not square.
 
  
-(repaint rects
-  (rect 11 125 50 100)
-  (rect 11 125 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 11.00 125.00 50.00 100.00)
+        (rect 11.00 125.00 100.00 100.00)
+      )
+    )
+  )
 )
 

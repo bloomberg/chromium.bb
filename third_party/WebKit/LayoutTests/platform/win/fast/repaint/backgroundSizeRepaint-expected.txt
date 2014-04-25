@@ -14,5 +14,19 @@ TEST FAIL: The boxes will resize, but the background images will leave artifacts
   (rect 29 157 180 40)
   (rect 29 319 180 40)
   (rect 29 319 180 60)
+  (rect 0 0 800 600)
+  (rect 0 0 800 448)
+  (rect 29 157 180 40)
+  (rect 29 319 180 60)
+)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
 )
 
