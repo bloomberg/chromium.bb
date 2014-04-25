@@ -16,8 +16,7 @@ namespace gcm {
 class GCMProfileService;
 
 // Singleton that owns all GCMProfileService and associates them with
-// Profiles. Listens for the Profile's destruction notification and cleans up
-// the associated GCMProfileService.
+// Profiles.
 class GCMProfileServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static GCMProfileService* GetForProfile(Profile* profile);

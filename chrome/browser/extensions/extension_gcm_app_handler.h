@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_GCM_APP_HANDLER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_GCM_APP_HANDLER_H_
 
+#include <string>
+
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -16,9 +20,11 @@
 #include "google_apis/gcm/gcm_client.h"
 
 class Profile;
+
 namespace content {
 class BrowserContext;
 }
+
 namespace gcm {
 class GCMProfileService;
 }

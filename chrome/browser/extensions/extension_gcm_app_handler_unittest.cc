@@ -2,34 +2,53 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
+
+#include <vector>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/values.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
+#include "chrome/browser/services/gcm/fake_signin_manager.h"
+#include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_test_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/extensions/api/gcm/gcm_api.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#else
-#include "components/signin/core/browser/signin_manager.h"
 #endif
-
-using namespace gcm;
 
 namespace extensions {
 
@@ -40,12 +59,75 @@ const char kTestingUsername[] = "user1@example.com";
 
 }  // namespace
 
+// Helper class for asynchronous waiting.
+class Waiter {
+ public:
+  Waiter() {}
+  ~Waiter() {}
+
+  // Waits until the asynchronous operation finishes.
+  void WaitUntilCompleted() {
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+  }
+
+  // Signals that the asynchronous operation finishes.
+  void SignalCompleted() {
+    if (run_loop_ && run_loop_->running())
+      run_loop_->Quit();
+  }
+
+  // Runs until UI loop becomes idle.
+  void PumpUILoop() {
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  // Runs until IO loop becomes idle.
+  void PumpIOLoop() {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&Waiter::OnIOLoopPump, base::Unretained(this)));
+
+    WaitUntilCompleted();
+  }
+
+ private:
+  void PumpIOLoopCompleted() {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+    SignalCompleted();
+  }
+
+  void OnIOLoopPump() {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&Waiter::OnIOLoopPumpCompleted, base::Unretained(this)));
+  }
+
+  void OnIOLoopPumpCompleted() {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&Waiter::PumpIOLoopCompleted, base::Unretained(this)));
+  }
+
+  scoped_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(Waiter);
+};
+
 class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
  public:
   FakeExtensionGCMAppHandler(Profile* profile, Waiter* waiter)
       : ExtensionGCMAppHandler(profile),
         waiter_(waiter),
-        unregistration_result_(GCMClient::UNKNOWN_ERROR) {
+        unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {
   }
 
   virtual ~FakeExtensionGCMAppHandler() {
@@ -53,7 +135,7 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
 
   virtual void OnMessage(
       const std::string& app_id,
-      const GCMClient::IncomingMessage& message)OVERRIDE {
+      const gcm::GCMClient::IncomingMessage& message) OVERRIDE {
   }
 
   virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE {
@@ -61,22 +143,22 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
 
   virtual void OnSendError(
       const std::string& app_id,
-      const GCMClient::SendErrorDetails& send_error_details) OVERRIDE {
+      const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE {
   }
 
   virtual void OnUnregisterCompleted(const std::string& app_id,
-                                     GCMClient::Result result) OVERRIDE {
+                                     gcm::GCMClient::Result result) OVERRIDE {
     unregistration_result_ = result;
     waiter_->SignalCompleted();
   }
 
-  GCMClient::Result unregistration_result() const {
+  gcm::GCMClient::Result unregistration_result() const {
     return unregistration_result_;
   }
 
  private:
   Waiter* waiter_;
-  GCMClient::Result unregistration_result_;
+  gcm::GCMClient::Result unregistration_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeExtensionGCMAppHandler);
 };
@@ -85,13 +167,13 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
  public:
   static KeyedService* BuildGCMProfileService(
       content::BrowserContext* context) {
-    return new GCMProfileService(static_cast<Profile*>(context));
+    return new gcm::GCMProfileService(static_cast<Profile*>(context));
   }
 
   ExtensionGCMAppHandlerTest()
       : extension_service_(NULL),
-        registration_result_(GCMClient::UNKNOWN_ERROR),
-        unregistration_result_(GCMClient::UNKNOWN_ERROR) {
+        registration_result_(gcm::GCMClient::UNKNOWN_ERROR),
+        unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {
   }
 
   virtual ~ExtensionGCMAppHandlerTest() {
@@ -127,12 +209,14 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
 
     // Create GCMProfileService that talks with fake GCMClient.
-    GCMProfileService* gcm_profile_service = static_cast<GCMProfileService*>(
-        GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(),
-            &ExtensionGCMAppHandlerTest::BuildGCMProfileService));
-    scoped_ptr<GCMClientFactory> gcm_client_factory(
-        new FakeGCMClientFactory(GCMClientMock::NO_DELAY_LOADING));
+    gcm::GCMProfileService* gcm_profile_service =
+        static_cast<gcm::GCMProfileService*>(
+            gcm::GCMProfileServiceFactory::GetInstance()->
+                SetTestingFactoryAndUse(
+                    profile(),
+                    &ExtensionGCMAppHandlerTest::BuildGCMProfileService));
+    scoped_ptr<gcm::GCMClientFactory> gcm_client_factory(
+        new gcm::FakeGCMClientFactory(gcm::GCMClientMock::NO_DELAY_LOADING));
     gcm_profile_service->Initialize(gcm_client_factory.Pass());
 
     // Create a fake version of ExtensionGCMAppHandler.
@@ -212,13 +296,13 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   void RegisterCompleted(const std::string& registration_id,
-                         GCMClient::Result result) {
+                         gcm::GCMClient::Result result) {
     registration_result_ = result;
     waiter_.SignalCompleted();
   }
 
-  GCMProfileService* GetGCMProfileService() const {
-    return GCMProfileServiceFactory::GetForProfile(profile());
+  gcm::GCMProfileService* GetGCMProfileService() const {
+    return gcm::GCMProfileServiceFactory::GetForProfile(profile());
   }
 
   bool HasAppHandlers(const std::string& app_id) const {
@@ -230,8 +314,10 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   FakeExtensionGCMAppHandler* gcm_app_handler() const {
     return gcm_app_handler_.get();
   }
-  GCMClient::Result registration_result() const { return registration_result_; }
-  GCMClient::Result unregistration_result() const {
+  gcm::GCMClient::Result registration_result() const {
+    return registration_result_;
+  }
+  gcm::GCMClient::Result unregistration_result() const {
     return unregistration_result_;
   }
 
@@ -250,8 +336,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   Waiter waiter_;
   scoped_ptr<FakeExtensionGCMAppHandler> gcm_app_handler_;
-  GCMClient::Result registration_result_;
-  GCMClient::Result unregistration_result_;
+  gcm::GCMClient::Result registration_result_;
+  gcm::GCMClient::Result unregistration_result_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionGCMAppHandlerTest);
 };
@@ -292,12 +378,13 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
   sender_ids.push_back("sender1");
   Register(extension->id(), sender_ids);
   waiter()->WaitUntilCompleted();
-  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
+  EXPECT_EQ(gcm::GCMClient::SUCCESS, registration_result());
 
   // Unregistration should be triggered when the extension is uninstalled.
   UninstallExtension(extension);
   waiter()->WaitUntilCompleted();
-  EXPECT_EQ(GCMClient::SUCCESS, gcm_app_handler()->unregistration_result());
+  EXPECT_EQ(gcm::GCMClient::SUCCESS,
+            gcm_app_handler()->unregistration_result());
 }
 
 }  // namespace extensions

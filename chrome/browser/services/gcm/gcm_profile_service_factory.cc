@@ -4,12 +4,18 @@
 
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#endif
 
 namespace gcm {
 
@@ -33,6 +39,10 @@ GCMProfileServiceFactory::GCMProfileServiceFactory()
         "GCMProfileService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+#if !defined(OS_ANDROID)
+  DependsOn(LoginUIServiceFactory::GetInstance());
+#endif
 }
 
 GCMProfileServiceFactory::~GCMProfileServiceFactory() {

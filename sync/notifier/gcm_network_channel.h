@@ -45,7 +45,7 @@ struct GCMNetworkChannelDiagnostic {
 };
 
 // GCMNetworkChannel is an implementation of SyncNetworkChannel that routes
-// messages through GCMProfileService.
+// messages through GCMService.
 class SYNC_EXPORT_PRIVATE GCMNetworkChannel
     : public SyncNetworkChannel,
       public net::URLFetcherDelegate,

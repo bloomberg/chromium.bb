@@ -1997,6 +1997,8 @@
         'browser/services/gcm/gcm_profile_service.h',
         'browser/services/gcm/gcm_profile_service_factory.cc',
         'browser/services/gcm/gcm_profile_service_factory.h',
+        'browser/services/gcm/gcm_service.cc',
+        'browser/services/gcm/gcm_service.h',
         'browser/service_process/service_process_control.cc',
         'browser/service_process/service_process_control_mac.mm',
         'browser/service_process/service_process_control.h',

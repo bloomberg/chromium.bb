@@ -21,7 +21,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace gcm {
-class GCMProfileService;
+class GCMService;
 }  // namespace gcm
 
 namespace invalidation {
@@ -37,7 +37,7 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
  public:
   class Core;
 
-  GCMInvalidationBridge(gcm::GCMProfileService* gcm_profile_service,
+  GCMInvalidationBridge(gcm::GCMService* gcm_service,
                         IdentityProvider* identity_provider);
   virtual ~GCMInvalidationBridge();
 
@@ -80,7 +80,7 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
       gcm::GCMClient::Result result);
 
  private:
-  gcm::GCMProfileService* const gcm_profile_service_;
+  gcm::GCMService* const gcm_service_;
   IdentityProvider* const identity_provider_;
 
   base::WeakPtr<Core> core_;

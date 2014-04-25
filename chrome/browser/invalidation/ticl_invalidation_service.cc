@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/services/gcm/gcm_service.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -394,10 +395,10 @@ void TiclInvalidationService::StartInvalidator(
       break;
     }
     case GCM_NETWORK_CHANNEL: {
-      gcm::GCMProfileService* gcm_profile_service =
+      gcm::GCMService* gcm_service =
           gcm::GCMProfileServiceFactory::GetForProfile(profile_);
       gcm_invalidation_bridge_.reset(new GCMInvalidationBridge(
-          gcm_profile_service, identity_provider_.get()));
+          gcm_service, identity_provider_.get()));
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
               request_context_,

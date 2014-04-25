@@ -143,7 +143,7 @@ void GCMClientMock::DeleteMessages(const std::string& app_id) {
 // static
 std::string GCMClientMock::GetRegistrationIdFromSenderIds(
     const std::vector<std::string>& sender_ids) {
-  // GCMProfileService normalizes the sender IDs by making them sorted.
+  // GCMService normalizes the sender IDs by making them sorted.
   std::vector<std::string> normalized_sender_ids = sender_ids;
   std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
 
