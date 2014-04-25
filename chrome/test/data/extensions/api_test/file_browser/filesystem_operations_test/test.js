@@ -103,10 +103,13 @@ function readFileAndExpectContent(
     reader.onload = function() {
       assertEqAndRunCallback(expectedContent, reader.result, message, callback);
     };
-    reader.onerror = chrome.test.fail.bind(null, 'Reading file.');
-
+    reader.onerror = function(event) {
+      chrome.test.fail('Failed to read: ' + reader.error.name);
+    };
     entry.file(reader.readAsText.bind(reader),
-               chrome.test.fail.bind(null, 'Getting file.'));
+               function(error) {
+                 chrome.test.fail('Failed to get file: ' + error.name);
+               });
   });
 }
 
@@ -149,8 +152,9 @@ function abortWriteFile(volumeId, entry, path, callback) {
       }
 
       writer.write(new Blob(['xxxxx'], {'type': 'text/plain'}));
-    },
-    chrome.test.fail.bind(null, 'Error creating writer.'));
+    }, function(error) {
+      chrome.test.fail('Error creating writer: ' + error.name);
+    });
   });
 }
 
@@ -190,8 +194,9 @@ function abortTruncateFile(volumeId, entry, path, callback) {
       }
 
       writer.truncate(10);
-    },
-    chrome.test.fail.bind(null, 'Error creating writer.'));
+    }, function(error) {
+      chrome.test.fail('Error creating writer: ' + error.name);
+    });
   });
 }
 
