@@ -28,8 +28,7 @@ class Gtk2Border : public views::Border,
                    public views::NativeThemeChangeObserver {
  public:
   Gtk2Border(Gtk2UI* gtk2_ui,
-             views::LabelButton* owning_button,
-             scoped_ptr<views::Border> border);
+             views::LabelButton* owning_button);
   virtual ~Gtk2Border();
 
   // Overridden from views::Border:
@@ -55,11 +54,6 @@ class Gtk2Border : public views::Border,
   // The view to which we are a border. We keep track of this so that we can
   // force invalidate the layout on theme changes.
   views::LabelButton* owning_button_;
-
-  // Since we don't want to expose the concept of whether we're using a GTK
-  // theme down to the cross platform views layer, we keep a normal Border and
-  // delegate to it whenever we aren't in GTK theme mode.
-  scoped_ptr<views::Border> border_;
 
   DISALLOW_COPY_AND_ASSIGN(Gtk2Border);
 };
