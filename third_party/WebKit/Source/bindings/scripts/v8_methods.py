@@ -154,15 +154,12 @@ def generate_argument(interface, method, argument, index):
         'has_event_listener_argument': any(
             argument_so_far for argument_so_far in method.arguments[:index]
             if argument_so_far.idl_type.name == 'EventListener'),
+        'has_legacy_overload_string':  # [LegacyOverloadString]
+            'LegacyOverloadString' in extended_attributes,
         'has_type_checking_interface':
             (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
-             has_extended_attribute_value(method, 'TypeChecking', 'Interface') or
-             has_extended_attribute_value(argument, 'TypeChecking', 'Interface')) and
+             has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
             idl_type.is_wrapper_type,
-        'has_type_checking_string':
-            (has_extended_attribute_value(interface, 'TypeChecking', 'String') or
-             has_extended_attribute_value(method, 'TypeChecking', 'String') or
-             has_extended_attribute_value(argument, 'TypeChecking', 'String')),
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
         'idl_type_object': idl_type,

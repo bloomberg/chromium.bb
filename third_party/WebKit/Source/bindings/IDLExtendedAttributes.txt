@@ -61,6 +61,7 @@ Immutable
 ImplementedAs=*
 InitializedByEventConstructor
 LegacyTreatAsPartialInterface
+LegacyOverloadString
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds
 MeasureAs=*
@@ -92,7 +93,7 @@ SpecialWrapFor=*
 TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString
-TypeChecking=Interface|Nullable|String
+TypeChecking=Interface|Nullable
 URL
 Unforgeable
 WillBeGarbageCollected

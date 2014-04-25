@@ -27,7 +27,7 @@
 [
     ImplementedAs=SVGTransformListTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    TypeChecking=Interface|Nullable|String,
+    TypeChecking=Interface|Nullable,
 ] interface SVGTransformList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

@@ -418,7 +418,7 @@ def overload_check_argument(index, argument):
     cpp_value = 'info[%s]' % index
     idl_type = argument['idl_type_object']
     # FIXME: proper type checking, sharing code with attributes and methods
-    if idl_type.name == 'String' and argument['has_type_checking_string']:
+    if idl_type.name == 'String' and argument['has_legacy_overload_string']:
         return ' || '.join(['isUndefinedOrNull(%s)' % cpp_value,
                             '%s->IsString()' % cpp_value,
                             '%s->IsObject()' % cpp_value])
@@ -500,7 +500,7 @@ def constructor_argument(interface, constructor, argument, index):
         'cpp_value':
             v8_methods.cpp_value(interface, constructor, index),
         'has_default': 'Default' in argument.extended_attributes,
-        'has_type_checking_string': False,  # Required for overload resolution
+        'has_legacy_overload_string': False,  # Required for overload resolution
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
         'idl_type_object': idl_type,

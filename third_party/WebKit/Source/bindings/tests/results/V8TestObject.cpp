@@ -6646,8 +6646,8 @@ static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, strictTypeCheckingStringStringArg, info[0]);
-    impl->overloadedMethodG(strictTypeCheckingStringStringArg);
+    TOSTRING_VOID(V8StringResource<>, legacyOverloadStringStringArg, info[0]);
+    impl->overloadedMethodG(legacyOverloadStringStringArg);
 }
 
 static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& info)

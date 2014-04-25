@@ -32,7 +32,7 @@ interface CanvasRenderingContext2D {
     void save();
     void restore();
 
-    [TypeChecking=Interface|Nullable|String, RuntimeEnabled=ExperimentalCanvasFeatures] attribute SVGMatrix currentTransform;
+    [TypeChecking=Interface|Nullable, RuntimeEnabled=ExperimentalCanvasFeatures] attribute SVGMatrix currentTransform;
     void scale(float sx, float sy);
     void rotate(float angle);
     void translate(float tx, float ty);
@@ -69,27 +69,27 @@ interface CanvasRenderingContext2D {
 
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     void fill();
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] void fill(Path2D path);
-    [TypeChecking=Interface|Nullable|String] void fill(CanvasWindingRule winding);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] void fill(Path2D path, CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] void fill(Path2D path);
+    [TypeChecking=Interface|Nullable] void fill(CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] void fill(Path2D path, CanvasWindingRule winding);
     void stroke();
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] void stroke(Path2D path);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] void stroke(Path2D path);
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     void clip();
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] void clip(Path2D path);
-    [TypeChecking=Interface|Nullable|String] void clip(CanvasWindingRule winding);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] void clip(Path2D path, CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] void clip(Path2D path);
+    [TypeChecking=Interface|Nullable] void clip(CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] void clip(Path2D path, CanvasWindingRule winding);
 
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     boolean isPointInPath(float x, float y);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] boolean isPointInPath(Path2D path, float x, float y);
-    [TypeChecking=Interface|Nullable|String] boolean isPointInPath(float x, float y, CanvasWindingRule winding);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] boolean isPointInPath(Path2D path, float x, float y, CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInPath(Path2D path, float x, float y);
+    [TypeChecking=Interface|Nullable] boolean isPointInPath(float x, float y, CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInPath(Path2D path, float x, float y, CanvasWindingRule winding);
     boolean isPointInStroke(float x, float y);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable|String] boolean isPointInStroke(Path2D path, float x, float y);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInStroke(Path2D path, float x, float y);
 
     [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView();
-    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable|String] void scrollPathIntoView(Path2D path);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable] void scrollPathIntoView(Path2D path);
 
     // text
     attribute DOMString font;
@@ -106,26 +106,26 @@ interface CanvasRenderingContext2D {
 
     void strokeRect(float x, float y, float width, float height);
 
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLImageElement image, float x, float y);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLImageElement image, float x, float y, float width, float height);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLImageElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLCanvasElement canvas, float x, float y);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLCanvasElement canvas, float x, float y, float width, float height);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLCanvasElement canvas, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLVideoElement video, float x, float y);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLVideoElement video, float x, float y, float width, float height);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(HTMLVideoElement video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(ImageBitmap imageBitmap, float x, float y);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(ImageBitmap imageBitmap, float x, float y, float width, float height);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable|String] void drawImage(ImageBitmap imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, float x, float y);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, float x, float y, float width, float height);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, float x, float y);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, float x, float y, float width, float height);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, float x, float y);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, float x, float y, float width, float height);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, float x, float y);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, float x, float y, float width, float height);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 
-    [RaisesException, TypeChecking=Interface|Nullable|String] void putImageData(ImageData imagedata, float dx, float dy);
-    [RaisesException, TypeChecking=Interface|Nullable|String] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
+    [RaisesException, TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy);
+    [RaisesException, TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLCanvasElement canvas, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLImageElement image, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLVideoElement image, [TreatNullAs=NullString] DOMString repetitionType);
-    [TypeChecking=Interface|Nullable|String] ImageData createImageData(ImageData imagedata);
+    [TypeChecking=Interface|Nullable] ImageData createImageData(ImageData imagedata);
     [RaisesException] ImageData createImageData(float sw, float sh);
 
     [Custom] attribute object strokeStyle;
@@ -135,9 +135,9 @@ interface CanvasRenderingContext2D {
     [RaisesException] ImageData getImageData(float sx, float sy, float sw, float sh);
 
     // Focus rings
-    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable|String] void drawFocusIfNeeded(Element element);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable|String] void drawFocusIfNeeded(Path2D path, Element element);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable|String] boolean drawCustomFocusRing(Element element);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable] void drawFocusIfNeeded(Element element);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable] void drawFocusIfNeeded(Path2D path, Element element);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable] boolean drawCustomFocusRing(Element element);
 
     [ImplementedAs=imageSmoothingEnabled, MeasureAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
     [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled;
@@ -152,18 +152,18 @@ interface CanvasRenderingContext2D {
     [MeasureAs=CanvasRenderingContext2DSetLineJoin] void setLineJoin(DOMString join);
     [MeasureAs=CanvasRenderingContext2DSetMiterLimit] void setMiterLimit(float limit);
     [MeasureAs=CanvasRenderingContext2DClearShadow] void clearShadow();
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor([TypeChecking=Interface|Nullable|String] DOMString color, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor([LegacyOverloadString] DOMString color, optional float alpha);
     [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float grayLevel, optional float alpha);
     [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float r, float g, float b, float a);
     [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float c, float m, float y, float k, float a);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor([TypeChecking=Interface|Nullable|String] DOMString color, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor([LegacyOverloadString] DOMString color, optional float alpha);
     [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float grayLevel, optional float alpha);
     [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float r, float g, float b, float a);
     [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float c, float m, float y, float k, float a);
-    [TypeChecking=Interface|Nullable|String, MeasureAs=CanvasRenderingContext2DDrawImageFromRect] void drawImageFromRect(
+    [TypeChecking=Interface|Nullable, MeasureAs=CanvasRenderingContext2DDrawImageFromRect] void drawImageFromRect(
         HTMLImageElement? image, optional float sx, optional float sy, optional float sw, optional float sh,
         optional float dx, optional float dy, optional float dw, optional float dh, optional DOMString compositeOperation);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, [TypeChecking=Interface|Nullable|String] optional DOMString color, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, [LegacyOverloadString] optional DOMString color, optional float alpha);
     [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float grayLevel, optional float alpha);
     [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float r, float g, float b, float a);
     [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float c, float m, float y, float k, float a);

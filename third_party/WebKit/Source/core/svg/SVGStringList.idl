@@ -24,7 +24,7 @@
  */
 
 [
-    TypeChecking=Interface|Nullable|String,
+    TypeChecking=Interface|Nullable,
     SetWrapperReferenceTo(SVGElement contextElement),
     ImplementedAs=SVGStringListTearOff
 ] interface SVGStringList {

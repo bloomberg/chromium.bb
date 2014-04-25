@@ -233,7 +233,7 @@ interface TestObject {
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
-    [TypeChecking=Interface|Nullable|String] attribute float strictTypeCheckingInterfaceNullableStringFloatAttribute; // nop for non-interface types
+    [TypeChecking=Interface|Nullable] attribute float strictTypeCheckingInterfaceNullableStringFloatAttribute; // nop for non-interface types
     [TypeChecking=Interface] attribute TestInterface strictTypeCheckingInterfaceTestInterfaceAttribute;
     [TypeChecking=Nullable] attribute TestInterface? strictTypeCheckingNullableTestInterfaceOrNullAttribute;
     [TypeChecking=Interface|Nullable] attribute TestInterface? strictTypeCheckingInterfaceNullableTestInterfaceOrNullAttribute;
@@ -395,7 +395,7 @@ interface TestObject {
     void overloadedMethodF(long longArg);
     void overloadedMethodF(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     void overloadedMethodG();
-    void overloadedMethodG([TypeChecking=String] DOMString strictTypeCheckingStringStringArg);
+    void overloadedMethodG([LegacyOverloadString] DOMString legacyOverloadStringStringArg);
     void overloadedMethodH();
     void overloadedMethodH(TestCallbackInterface testCallbackInterfaceArg);
     // FIXME: Should be in order double, Dictionary, but Blink implementation of

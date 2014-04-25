@@ -31,7 +31,7 @@
 // http://www.w3.org/TR/SVG2/types.html#InterfaceSVGGraphicsElement
 
 [
-    TypeChecking=Interface|Nullable|String,
+    TypeChecking=Interface|Nullable,
 ] interface SVGGraphicsElement : SVGElement {
     readonly attribute SVGAnimatedTransformList transform;
 

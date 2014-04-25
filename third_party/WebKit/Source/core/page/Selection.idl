@@ -41,7 +41,7 @@
     readonly attribute boolean isCollapsed;
     readonly attribute long rangeCount;
 
-    [RaisesException, TypeChecking=Interface|Nullable|String] void collapse(Node node,
+    [RaisesException, TypeChecking=Interface|Nullable] void collapse(Node node,
                                                         optional long offset);
     [RaisesException] void collapseToEnd();
     [RaisesException] void collapseToStart();
@@ -77,7 +77,7 @@
                           [Default=Undefined] optional long baseOffset,
                           [Default=Undefined] optional Node extentNode,
                           [Default=Undefined] optional long extentOffset);
-    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException, TypeChecking=Interface|Nullable|String] void setPosition(Node node,
+    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException, TypeChecking=Interface|Nullable] void setPosition(Node node,
                                                                                                                    optional long offset);
 
 

@@ -25,7 +25,7 @@
  */
 
 [
-    TypeChecking=Interface|Nullable|String,
+    TypeChecking=Interface|Nullable,
 ] interface SVGPathElement : SVGGeometryElement {
     readonly attribute SVGAnimatedNumber pathLength;
 
