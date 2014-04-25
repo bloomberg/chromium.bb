@@ -540,7 +540,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::
     }
 
     {# The findInstanceInPrototypeChain() call above only returns a non-empty handle if info.This() is an Object. #}
-    V8HiddenValue::setHiddenValue(isolate, v8::Handle<v8::Object>(info.This()), name, v8Value);
+    V8HiddenValue::setHiddenValue(isolate, v8::Handle<v8::Object>::Cast(info.This()), name, v8Value);
 }
 
 static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)

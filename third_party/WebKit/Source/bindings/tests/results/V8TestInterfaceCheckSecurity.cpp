@@ -514,7 +514,7 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::Strin
         return;
     }
 
-    V8HiddenValue::setHiddenValue(isolate, v8::Handle<v8::Object>(info.This()), name, v8Value);
+    V8HiddenValue::setHiddenValue(isolate, v8::Handle<v8::Object>::Cast(info.This()), name, v8Value);
 }
 
 static void TestInterfaceCheckSecurityOriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
