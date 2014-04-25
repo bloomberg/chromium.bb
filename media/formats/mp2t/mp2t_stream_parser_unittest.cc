@@ -58,12 +58,10 @@ class Mp2tStreamParserTest : public testing::Test {
   }
 
   void OnInit(bool init_ok,
-              base::TimeDelta duration,
-              base::Time wallclock_timeline_offset,
-              bool auto_update_timestamp_offset) {
+              const StreamParser::InitParameters& params) {
     DVLOG(1) << "OnInit: ok=" << init_ok
-             << ", dur=" << duration.InMilliseconds()
-             << ", autoTimestampOffset=" << auto_update_timestamp_offset;
+             << ", dur=" << params.duration.InMilliseconds()
+             << ", autoTimestampOffset=" << params.auto_update_timestamp_offset;
   }
 
   bool OnNewConfig(const AudioDecoderConfig& ac,

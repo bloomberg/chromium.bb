@@ -181,12 +181,14 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   bytes_parsed += result;
 
   double timecode_scale_in_us = info_parser.timecode_scale() / 1000.0;
-  base::TimeDelta duration = kInfiniteDuration();
+  InitParameters params(kInfiniteDuration());
 
   if (info_parser.duration() > 0) {
     int64 duration_in_us = info_parser.duration() * timecode_scale_in_us;
-    duration = base::TimeDelta::FromMicroseconds(duration_in_us);
+    params.duration = base::TimeDelta::FromMicroseconds(duration_in_us);
   }
+
+  params.timeline_offset = info_parser.date_utc();
 
   const AudioDecoderConfig& audio_config = tracks_parser.audio_decoder_config();
   if (audio_config.is_encrypted())
@@ -219,8 +221,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   ChangeState(kParsingClusters);
 
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(
-        true, duration, info_parser.date_utc(), false);
+    base::ResetAndReturn(&init_cb_).Run(true, params);
 
   return bytes_parsed;
 }

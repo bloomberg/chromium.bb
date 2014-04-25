@@ -9,6 +9,11 @@
 
 namespace media {
 
+StreamParser::InitParameters::InitParameters(base::TimeDelta duration)
+    : duration(duration),
+      auto_update_timestamp_offset(false) {
+}
+
 StreamParser::StreamParser() {}
 
 StreamParser::~StreamParser() {}

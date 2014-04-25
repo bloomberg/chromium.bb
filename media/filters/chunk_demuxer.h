@@ -287,8 +287,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool CanEndOfStream_Locked() const;
 
   // SourceState callbacks.
-  void OnSourceInitDone(bool success, base::TimeDelta duration,
-                        base::Time timeline_offset);
+  void OnSourceInitDone(bool success,
+                        const StreamParser::InitParameters& params);
 
   // Creates a DemuxerStream for the specified |type|.
   // Returns a new ChunkDemuxerStream instance if a stream of this type

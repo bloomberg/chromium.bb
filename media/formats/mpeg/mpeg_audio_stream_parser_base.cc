@@ -222,9 +222,11 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
     VideoDecoderConfig video_config;
     bool success = config_cb_.Run(config_, video_config, TextTrackConfigMap());
 
-    if (!init_cb_.is_null())
-      base::ResetAndReturn(&init_cb_).Run(
-          success, kInfiniteDuration(), base::Time(), true);
+    if (!init_cb_.is_null()) {
+      InitParameters params(kInfiniteDuration());
+      params.auto_update_timestamp_offset = true;
+      base::ResetAndReturn(&init_cb_).Run(success, params);
+    }
 
     if (!success)
       return -1;

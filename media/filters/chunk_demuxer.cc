@@ -93,17 +93,6 @@ class SourceState {
   typedef base::Callback<void(
       ChunkDemuxerStream*, const TextTrackConfig&)> NewTextTrackCB;
 
-  // First parameter - Indicates initialization success. Set to true if
-  //                   initialization was successful. False if an error
-  //                   occurred.
-  // Second parameter - Indicates the stream duration. Only contains a valid
-  //                    value if the first parameter is true.
-  // Third parameter - Indicates the source Time associated with
-  //                   presentation timestamp 0. A null Time is returned if
-  //                   no mapping to Time exists. Only contains a
-  //                   valid value if the first parameter is true.
-  typedef base::Callback<void(bool, TimeDelta, base::Time)> InitCB;
-
   SourceState(
       scoped_ptr<StreamParser> stream_parser,
       scoped_ptr<FrameProcessorBase> frame_processor, const LogCB& log_cb,
@@ -111,7 +100,7 @@ class SourceState {
 
   ~SourceState();
 
-  void Init(const InitCB& init_cb,
+  void Init(const StreamParser::InitCB& init_cb,
             bool allow_audio,
             bool allow_video,
             const StreamParser::NeedKeyCB& need_key_cb,
@@ -193,9 +182,7 @@ class SourceState {
                     const StreamParser::TextBufferQueueMap& text_map);
 
   void OnSourceInitDone(bool success,
-                        TimeDelta duration,
-                        base::Time timeline_offset,
-                        bool auto_update_timestamp_offset);
+                        const StreamParser::InitParameters& params);
 
   CreateDemuxerStreamCB create_demuxer_stream_cb_;
   NewTextTrackCB new_text_track_cb_;
@@ -236,7 +223,7 @@ class SourceState {
 
   scoped_ptr<FrameProcessorBase> frame_processor_;
   LogCB log_cb_;
-  InitCB init_cb_;
+  StreamParser::InitCB init_cb_;
 
   // Indicates that timestampOffset should be updated automatically during
   // OnNewBuffers() based on the earliest end timestamp of the buffers provided.
@@ -269,7 +256,7 @@ SourceState::~SourceState() {
   STLDeleteValues(&text_stream_map_);
 }
 
-void SourceState::Init(const InitCB& init_cb,
+void SourceState::Init(const StreamParser::InitCB& init_cb,
                        bool allow_audio,
                        bool allow_video,
                        const StreamParser::NeedKeyCB& need_key_cb,
@@ -701,12 +688,9 @@ bool SourceState::OnNewBuffers(
 }
 
 void SourceState::OnSourceInitDone(bool success,
-                                   TimeDelta duration,
-                                   base::Time timeline_offset,
-                                   bool auto_update_timestamp_offset) {
-  auto_update_timestamp_offset_ = auto_update_timestamp_offset;
-  base::ResetAndReturn(&init_cb_).Run(
-      success, duration, timeline_offset);
+                                   const StreamParser::InitParameters& params) {
+  auto_update_timestamp_offset_ = params.auto_update_timestamp_offset;
+  base::ResetAndReturn(&init_cb_).Run(success, params);
 }
 
 ChunkDemuxerStream::ChunkDemuxerStream(Type type, bool splice_frames_enabled)
@@ -1497,10 +1481,11 @@ bool ChunkDemuxer::IsSeekWaitingForData_Locked() const {
   return false;
 }
 
-void ChunkDemuxer::OnSourceInitDone(bool success, TimeDelta duration,
-                                    base::Time timeline_offset) {
+void ChunkDemuxer::OnSourceInitDone(
+    bool success,
+    const StreamParser::InitParameters& params) {
   DVLOG(1) << "OnSourceInitDone(" << success << ", "
-           << duration.InSecondsF() << ")";
+           << params.duration.InSecondsF() << ")";
   lock_.AssertAcquired();
   DCHECK_EQ(state_, INITIALIZING);
   if (!success || (!audio_ && !video_)) {
@@ -1508,25 +1493,26 @@ void ChunkDemuxer::OnSourceInitDone(bool success, TimeDelta duration,
     return;
   }
 
-  if (duration != TimeDelta() && duration_ == kNoTimestamp())
-    UpdateDuration(duration);
+  if (params.duration != TimeDelta() && duration_ == kNoTimestamp())
+    UpdateDuration(params.duration);
 
-  if (!timeline_offset.is_null()) {
+  if (!params.timeline_offset.is_null()) {
     if (!timeline_offset_.is_null() &&
-        timeline_offset != timeline_offset_) {
+        params.timeline_offset != timeline_offset_) {
       MEDIA_LOG(log_cb_)
           << "Timeline offset is not the same across all SourceBuffers.";
       ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
       return;
     }
 
-    timeline_offset_ = timeline_offset;
+    timeline_offset_ = params.timeline_offset;
   }
 
   // Wait until all streams have initialized.
   if ((!source_id_audio_.empty() && !audio_) ||
-      (!source_id_video_.empty() && !video_))
+      (!source_id_video_.empty() && !video_)) {
     return;
+  }
 
   SeekAllSources(GetStartTime());
   StartReturningData();

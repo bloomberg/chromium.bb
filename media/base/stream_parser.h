@@ -46,24 +46,27 @@ class MEDIA_EXPORT StreamParser {
   // Map of text track ID to decode-timestamp-ordered buffers for the track.
   typedef std::map<TrackId, const BufferQueue> TextBufferQueueMap;
 
-  StreamParser();
-  virtual ~StreamParser();
+  // Stream parameters passed in InitCB.
+  struct InitParameters {
+    InitParameters(base::TimeDelta duration);
+
+    // Stream duration.
+    base::TimeDelta duration;
+
+    // Indicates the source time associated with presentation timestamp 0. A
+    // null Time is returned if no mapping to Time exists.
+    base::Time timeline_offset;
+
+    // Indicates that timestampOffset should be updated based on the earliest
+    // end timestamp (audio or video) provided during each NewBuffersCB.
+    bool auto_update_timestamp_offset;
+  };
 
   // Indicates completion of parser initialization.
-  // First parameter - Indicates initialization success. Set to true if
-  //                   initialization was successful. False if an error
-  //                   occurred.
-  // Second parameter - Indicates the stream duration. Only contains a valid
-  //                    value if the first parameter is true.
-  // Third parameter - Indicates the Time associated with
-  //                   presentation timestamp 0 if such a mapping exists in
-  //                   the bytestream. If no mapping exists this parameter
-  //                   contains null Time object. Only contains a valid
-  //                   value if the first parameter is true.
-  // Fourth parameters - Indicates that timestampOffset should be updated based
-  //                    on the earliest end timestamp (audio or video) provided
-  //                    during each NewBuffersCB.
-  typedef base::Callback<void(bool, base::TimeDelta, base::Time, bool)> InitCB;
+  //   success - True if initialization was successful.
+  //   params - Stream parameters, in case of successful initialization.
+  typedef base::Callback<void(bool success,
+                              const InitParameters& params)> InitCB;
 
   // Indicates when new stream configurations have been parsed.
   // First parameter - The new audio configuration. If the config is not valid
@@ -102,6 +105,9 @@ class MEDIA_EXPORT StreamParser {
   // Second parameter - The initialization data associated with the stream.
   typedef base::Callback<void(const std::string&,
                               const std::vector<uint8>&)> NeedKeyCB;
+
+  StreamParser();
+  virtual ~StreamParser();
 
   // Initializes the parser with necessary callbacks. Must be called before any
   // data is passed to Parse(). |init_cb| will be called once enough data has

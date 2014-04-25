@@ -72,14 +72,13 @@ bool StreamParserTestBase::AppendDataInPieces(const uint8* data,
   return true;
 }
 
-void StreamParserTestBase::OnInitDone(bool success,
-                                      base::TimeDelta duration,
-                                      base::Time wallclock_timeline_offset,
-                                      bool auto_update_timestamp_offset) {
-  EXPECT_TRUE(auto_update_timestamp_offset);
+void StreamParserTestBase::OnInitDone(
+    bool success,
+    const StreamParser::InitParameters& params) {
+  EXPECT_TRUE(params.auto_update_timestamp_offset);
   DVLOG(1) << __FUNCTION__ << "(" << success << ", "
-           << duration.InMilliseconds() << ", " << auto_update_timestamp_offset
-           << ")";
+           << params.duration.InMilliseconds() << ", "
+           << params.auto_update_timestamp_offset << ")";
 }
 
 bool StreamParserTestBase::OnNewConfig(

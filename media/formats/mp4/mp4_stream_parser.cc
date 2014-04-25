@@ -288,20 +288,18 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
   RCHECK(config_cb_.Run(audio_config, video_config, TextTrackConfigMap()));
 
-  base::TimeDelta duration;
+  StreamParser::InitParameters params(kInfiniteDuration());
   if (moov_->extends.header.fragment_duration > 0) {
-    duration = TimeDeltaFromRational(moov_->extends.header.fragment_duration,
-                                     moov_->header.timescale);
+    params.duration = TimeDeltaFromRational(
+        moov_->extends.header.fragment_duration, moov_->header.timescale);
   } else if (moov_->header.duration > 0 &&
              moov_->header.duration != kuint64max) {
-    duration = TimeDeltaFromRational(moov_->header.duration,
-                                     moov_->header.timescale);
-  } else {
-    duration = kInfiniteDuration();
+    params.duration =
+        TimeDeltaFromRational(moov_->header.duration, moov_->header.timescale);
   }
 
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(true, duration, base::Time(), false);
+    base::ResetAndReturn(&init_cb_).Run(true, params);
 
   EmitNeedKeyIfNecessary(moov_->pssh);
   return true;
