@@ -10,7 +10,17 @@ PASS image.getAttribute('preserveAspectRatio') is "xMinYMid slice"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 37 157 171)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 37.00 157.00 171.00)
+      )
+    )
+  )
 )
 
