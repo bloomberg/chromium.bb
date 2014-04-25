@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/renderer/history_item_serialization.h"
+#include "content/renderer/history_serialization.h"
 
 #include "content/common/page_state_serialization.h"
 #include "content/public/common/page_state.h"

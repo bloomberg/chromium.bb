@@ -8,15 +8,19 @@
 #include "base/lazy_instance.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "content/public/common/page_state.h"
+#include "content/renderer/history_serialization.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebFrameTestProxy.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/test/test_media_stream_client.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "third_party/WebKit/public/web/WebHistoryItem.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
@@ -159,6 +163,72 @@ void UseMockMediaStreams(RenderView* render_view) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
   render_view_impl->SetMediaStreamClientForTesting(
       new TestMediaStreamClient(render_view_impl));
+}
+
+struct ToLower {
+  base::char16 operator()(base::char16 c) { return tolower(c); }
+};
+
+// Returns True if item1 < item2.
+bool HistoryItemCompareLess(const blink::WebHistoryItem& item1,
+                            const blink::WebHistoryItem& item2) {
+  base::string16 target1 = item1.target();
+  base::string16 target2 = item2.target();
+  std::transform(target1.begin(), target1.end(), target1.begin(), ToLower());
+  std::transform(target2.begin(), target2.end(), target2.begin(), ToLower());
+  return target1 < target2;
+}
+
+std::string DumpHistoryItem(const blink::WebHistoryItem& item,
+                            int indent,
+                            bool is_current_index) {
+  std::string result;
+
+  if (is_current_index) {
+    result.append("curr->");
+    result.append(indent - 6, ' '); // 6 == "curr->".length()
+  } else {
+    result.append(indent, ' ');
+  }
+
+  std::string url =
+      WebTestRunner::normalizeLayoutTestURL(item.urlString().utf8());
+  result.append(url);
+  if (!item.target().isEmpty()) {
+    result.append(" (in frame \"");
+    result.append(item.target().utf8());
+    result.append("\")");
+  }
+  result.append("\n");
+
+  const blink::WebVector<blink::WebHistoryItem>& children = item.children();
+  if (!children.isEmpty()) {
+    // Must sort to eliminate arbitrary result ordering which defeats
+    // reproducible testing.
+    // FIXME: WebVector should probably just be a std::vector!!
+    std::vector<blink::WebHistoryItem> sortedChildren;
+    for (size_t i = 0; i < children.size(); ++i)
+      sortedChildren.push_back(children[i]);
+    std::sort(sortedChildren.begin(),
+              sortedChildren.end(),
+              HistoryItemCompareLess);
+    for (size_t i = 0; i < sortedChildren.size(); ++i)
+      result += DumpHistoryItem(sortedChildren[i], indent + 4, false);
+  }
+
+  return result;
+}
+
+std::string DumpBackForwardList(std::vector<PageState>& page_state,
+                                size_t current_index) {
+  std::string result;
+  result.append("\n============== Back Forward List ==============\n");
+  for (size_t index = 0; index < page_state.size(); ++index) {
+    result.append(DumpHistoryItem(
+        PageStateToHistoryItem(page_state[index]), 8, index == current_index));
+  }
+  result.append("===============================================\n");
+  return result;
 }
 
 }  // namespace content

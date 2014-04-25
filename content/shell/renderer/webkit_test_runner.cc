@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/layouttest_support.h"
@@ -540,10 +539,7 @@ bool WebKitTestRunner::allowExternalPages() {
   return test_config_.allow_external_pages;
 }
 
-void WebKitTestRunner::captureHistoryForWindow(
-    WebTestProxyBase* proxy,
-    WebVector<blink::WebHistoryItem>* history,
-    size_t* currentEntryIndex) {
+std::string WebKitTestRunner::dumpHistoryForWindow(WebTestProxyBase* proxy) {
   size_t pos = 0;
   std::vector<int>::iterator id;
   for (id = routing_ids_.begin(); id != routing_ids_.end(); ++id, ++pos) {
@@ -558,16 +554,10 @@ void WebKitTestRunner::captureHistoryForWindow(
 
   if (id == routing_ids_.end()) {
     NOTREACHED();
-    return;
+    return std::string();
   }
-  size_t num_entries = session_histories_[pos].size();
-  *currentEntryIndex = current_entry_indexes_[pos];
-  WebVector<WebHistoryItem> result(num_entries);
-  for (size_t entry = 0; entry < num_entries; ++entry) {
-    result[entry] =
-        PageStateToHistoryItem(session_histories_[pos][entry]);
-  }
-  history->swap(result);
+  return DumpBackForwardList(session_histories_[pos],
+                             current_entry_indexes_[pos]);
 }
 
 // RenderViewObserver  --------------------------------------------------------

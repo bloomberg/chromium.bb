@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/renderer/history_item_serialization.h"
+#include "content/renderer/history_serialization.h"
 #include "content/renderer/menu_item_builder.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"

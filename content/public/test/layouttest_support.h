@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
 #define CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
@@ -18,6 +21,7 @@ struct WebSize;
 
 namespace content {
 
+class PageState;
 class RenderView;
 class WebTestProxyBase;
 
@@ -92,6 +96,10 @@ void DisableAutoResizeMode(RenderView* render_view,
 
 // Forces the |render_view| to use mock media streams.
 void UseMockMediaStreams(RenderView* render_view);
+
+// Provides a text dump of the contents of the given page state.
+std::string DumpBackForwardList(std::vector<PageState>& page_state,
+                                size_t current_index);
 
 }  // namespace content
 

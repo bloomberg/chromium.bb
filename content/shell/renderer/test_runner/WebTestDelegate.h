@@ -150,9 +150,9 @@ public:
     // Returns true if resource requests to external URLs should be permitted.
     virtual bool allowExternalPages() = 0;
 
-    // Returns the back/forward history for the WebView associated with the
-    // given WebTestProxyBase as well as the index of the current entry.
-    virtual void captureHistoryForWindow(content::WebTestProxyBase*, blink::WebVector<blink::WebHistoryItem>*, size_t* currentEntryIndex) = 0;
+    // Returns a text dump the back/forward history for the WebView associated
+    // with the given WebTestProxyBase.
+    virtual std::string dumpHistoryForWindow(content::WebTestProxyBase*) = 0;
 };
 
 }

@@ -107,10 +107,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void loadURLForFrame(const blink::WebURL& url,
                                const std::string& frame_name) OVERRIDE;
   virtual bool allowExternalPages() OVERRIDE;
-  virtual void captureHistoryForWindow(
-      WebTestProxyBase* proxy,
-      blink::WebVector<blink::WebHistoryItem>* history,
-      size_t* currentEntryIndex) OVERRIDE;
+  virtual std::string dumpHistoryForWindow(WebTestProxyBase* proxy) OVERRIDE;
 
   void Reset();
 
