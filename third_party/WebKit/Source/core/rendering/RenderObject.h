@@ -26,6 +26,7 @@
 #ifndef RenderObject_h
 #define RenderObject_h
 
+#include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
 #include "core/dom/Position.h"
 #include "core/dom/StyleEngine.h"
@@ -1263,7 +1264,7 @@ inline bool operator!=(const RenderObject* a, const RenderObject& b) { return !(
 
 inline bool RenderObject::documentBeingDestroyed() const
 {
-    return !document().renderer();
+    return document().lifecycle().state() >= DocumentLifecycle::Stopping;
 }
 
 inline bool RenderObject::isBeforeContent() const

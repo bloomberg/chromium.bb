@@ -2151,10 +2151,8 @@ void Document::detach(const AttachContext& context)
     if (m_domWindow)
         m_domWindow->clearEventQueue();
 
-    RenderView* renderView = m_renderView;
-
-    if (renderView)
-        renderView->setIsInWindow(false);
+    if (m_renderView)
+        m_renderView->setIsInWindow(false);
 
     if (m_frame) {
         FrameView* view = m_frame->view();
@@ -2162,22 +2160,15 @@ void Document::detach(const AttachContext& context)
             view->detachCustomScrollbars();
     }
 
-    // Indicate destruction mode by setting the renderer to null.
-    // FIXME: Don't do this and use m_lifecycle.state() == Stopping instead.
-    setRenderer(0);
-    m_renderView = 0;
-
     m_hoverNode = nullptr;
     m_focusedElement = nullptr;
     m_activeHoverElement = nullptr;
     m_autofocusElement = nullptr;
 
+    m_renderView = 0;
     ContainerNode::detach(context);
 
     m_styleEngine->didDetach();
-
-    if (renderView)
-        renderView->destroy();
 
     if (Document* parentDoc = parentDocument())
         parentDoc->didClearTouchEventHandlers(this);
