@@ -12,7 +12,8 @@
 // Common media types.
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 #if !defined(OS_ANDROID)
-const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
+// TODO(dalecurtis): Disabled while the test data file is updated.
+// const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
 #endif
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
