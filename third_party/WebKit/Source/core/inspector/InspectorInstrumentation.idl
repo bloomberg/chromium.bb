@@ -136,9 +136,6 @@ interface InspectorInstrumentation {
     [DOMDebugger, Inline=FastReturn]
     void didFireWebGLErrorOrWarning(Element*, const String& message);
 
-    [Timeline, Inline=FastReturn]
-    void didScheduleResourceRequest([Keep] Document*, const String& url);
-
     [DOMDebugger, Debugger, Timeline, Inline=FastReturn]
     void didInstallTimer([Keep] ExecutionContext*, int timerId, int timeout, bool singleShot);
 

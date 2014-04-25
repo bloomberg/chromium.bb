@@ -201,7 +201,6 @@ public:
     void consoleTimeline(ExecutionContext*, const String& title, NewScriptState*);
     void consoleTimelineEnd(ExecutionContext*, const String& title, NewScriptState*);
 
-    void didScheduleResourceRequest(Document*, const String& url);
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);
     void didReceiveResourceResponse(LocalFrame*, unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFinishLoading(unsigned long, DocumentLoader*, double monotonicFinishTime, int64_t);

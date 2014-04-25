@@ -146,13 +146,6 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createTimeStampData(const String& 
     return data.release();
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createScheduleResourceRequestData(const String& url)
-{
-    RefPtr<JSONObject> data = JSONObject::create();
-    data->setString("url", url);
-    return data.release();
-}
-
 PassRefPtr<JSONObject> TimelineRecordFactory::createResourceSendRequestData(const String& requestId, const ResourceRequest& request)
 {
     RefPtr<JSONObject> data = JSONObject::create();

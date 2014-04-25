@@ -62,7 +62,6 @@ public:
     static PassRefPtr<JSONObject> createConsoleTimeData(const String&);
     static PassRefPtr<JSONObject> createTimeStampData(const String&);
     static PassRefPtr<JSONObject> createResourceSendRequestData(const String& requestId, const ResourceRequest&);
-    static PassRefPtr<JSONObject> createScheduleResourceRequestData(const String&);
     static PassRefPtr<JSONObject> createResourceReceiveResponseData(const String& requestId, const ResourceResponse&);
     static PassRefPtr<JSONObject> createReceiveResourceData(const String& requestId, int length);
     static PassRefPtr<JSONObject> createResourceFinishData(const String& requestId, bool didFail, double finishTime);

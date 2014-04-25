@@ -106,7 +106,6 @@ static const char MarkFirstPaint[] = "MarkFirstPaint";
 static const char TimeStamp[] = "TimeStamp";
 static const char ConsoleTime[] = "ConsoleTime";
 
-static const char ScheduleResourceRequest[] = "ScheduleResourceRequest";
 static const char ResourceSendRequest[] = "ResourceSendRequest";
 static const char ResourceReceiveResponse[] = "ResourceReceiveResponse";
 static const char ResourceReceivedData[] = "ResourceReceivedData";
@@ -738,11 +737,6 @@ bool InspectorTimelineAgent::willEvaluateScript(LocalFrame* frame, const String&
 void InspectorTimelineAgent::didEvaluateScript()
 {
     didCompleteCurrentRecord(TimelineRecordType::EvaluateScript);
-}
-
-void InspectorTimelineAgent::didScheduleResourceRequest(Document* document, const String& url)
-{
-    appendRecord(TimelineRecordFactory::createScheduleResourceRequestData(url), TimelineRecordType::ScheduleResourceRequest, true, document->frame());
 }
 
 void InspectorTimelineAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, const ResourceRequest& request, const ResourceResponse&, const FetchInitiatorInfo&)
