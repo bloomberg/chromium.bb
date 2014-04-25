@@ -26,7 +26,7 @@ class ConstrainedWebDialogDelegate {
   virtual const ui::WebDialogDelegate* GetWebDialogDelegate() const = 0;
   virtual ui::WebDialogDelegate* GetWebDialogDelegate() = 0;
 
-  // Called when the dialog is being closed in response to a "DialogClose"
+  // Called when the dialog is being closed in response to a "dialogClose"
   // message from WebUI.
   virtual void OnDialogCloseFromWebUI() = 0;
 

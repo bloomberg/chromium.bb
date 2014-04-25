@@ -716,7 +716,7 @@ function initKeyboardOverlayId(inputMethodId) {
  */
 function learnMoreClicked(e) {
   chrome.send('openLearnMorePage');
-  chrome.send('DialogClose');
+  chrome.send('dialogClose');
   e.preventDefault();
 }
 

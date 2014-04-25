@@ -138,11 +138,11 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   // beforeunload event.
   bool before_unload_fired_;
 
-  // Whether the dialog is closed from WebUI in response to a "DialogClose"
+  // Whether the dialog is closed from WebUI in response to a "dialogClose"
   // message.
   bool closed_via_webui_;
 
-  // A json string returned to WebUI from a "DialogClosed" message.
+  // A json string returned to WebUI from a "dialogClose" message.
   std::string dialog_close_retval_;
 
   // Whether CloseContents() has been called.

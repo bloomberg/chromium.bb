@@ -63,7 +63,7 @@ cr.define('inline.login', function() {
    * Closes the inline login dialog.
    */
   function closeDialog() {
-    chrome.send('DialogClose', ['']);
+    chrome.send('dialogClose', ['']);
   }
 
   /**

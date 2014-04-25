@@ -339,7 +339,7 @@ cr.define('print_preview', function() {
     /** Closes the print preview dialog. */
     startCloseDialog: function() {
       chrome.send('closePrintPreviewDialog');
-      chrome.send('DialogClose');
+      chrome.send('dialogClose');
     },
 
     /** Hide the print preview dialog and allow the native layer to close it. */

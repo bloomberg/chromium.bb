@@ -8,7 +8,7 @@ var FakeBluetoothOverlayParent = options.FakeBluetoothOverlayParent;
 
 /** @override */
 OptionsPage.closeOverlay = function() {
-  chrome.send('DialogClose');
+  chrome.send('dialogClose');
 };
 
 /**

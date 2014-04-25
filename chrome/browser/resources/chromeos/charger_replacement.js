@@ -312,7 +312,7 @@ cr.define('chargerReplacement', function() {
     };
     $('finish-safe-charger').onclick = function() {
       chrome.send('confirmSafeCharger');
-      chrome.send('DialogClose');
+      chrome.send('dialogClose');
     };
     $('not-order-charger-checkbox-strip').style.visibility = 'hidden';
     $('back-to-check-charger-from-charger-update').onclick = function() {
@@ -332,22 +332,22 @@ cr.define('chargerReplacement', function() {
     };
     $('finish-not-order-new-charger').onclick = function() {
       chrome.send('confirmNotOrderNewCharger');
-      chrome.send('DialogClose');
+      chrome.send('dialogClose');
     };
     $('finish-online-order').onclick = function() {
       chrome.send('confirmChargerOrderedOnline');
-      chrome.send('DialogClose');
+      chrome.send('dialogClose');
     };
     $('offline-order-confirm').onclick = function() {
       $('finish-offline-order').disabled = !$('offline-order-confirm').checked;
     };
     $('finish-offline-order').onclick = function() {
       chrome.send('confirmChargerOrderByPhone');
-      chrome.send('DialogClose');
+      chrome.send('dialogClose');
     };
     $('finish-still-bad-charger').onclick = function() {
       chrome.send('confirmStillUseBadCharger');
-      chrome.send('DialogClose');
+      chrome.send('dialogClose');
     };
 
     var links = document.getElementsByClassName('link');
