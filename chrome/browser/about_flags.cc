@@ -1168,6 +1168,14 @@ const Experiment kExperiments[] = {
                               switches::kDisableTouchEditing)
   },
   {
+    "enable-suggestions-service",
+    IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_NAME,
+    IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_DESCRIPTION,
+    kOsAndroid | kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSuggestionsService,
+                              switches::kDisableSuggestionsService)
+  },
+  {
     "enable-sync-synced-notifications",
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION,

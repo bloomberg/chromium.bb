@@ -373,6 +373,9 @@ const char kDisableSearchButtonInOmnibox[]  =
 // Disable SPDY/3.1. This is a temporary testing flag.
 const char kDisableSpdy31[]                 = "disable-spdy31";
 
+// Disables the suggestions service.
+const char kDisableSuggestionsService[]     = "disable-suggestions-service";
+
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -639,6 +642,9 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 
 // Enables an experimental hosted app experience.
 const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
+
+// Enables the suggestions service.
+const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 
 // Enables synced notifications.
 const char kEnableSyncSyncedNotifications[] =
