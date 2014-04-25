@@ -1,10 +1,20 @@
 This tests to see if selection gaps are removed when the selection is deleted. Nothing should be selected below. A caret should be inside the red div.
 
 
-(repaint rects
-  (rect 38 78 152 102)
-  (rect 38 100 152 80)
-  (rect 38 79 152 99)
-  (rect 38 78 3 21)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 38.00 78.00 152.00 102.00)
+        (rect 38.00 100.00 152.00 80.00)
+        (rect 38.00 79.00 152.00 99.00)
+        (rect 38.00 78.00 3.00 21.00)
+      )
+    )
+  )
 )
 

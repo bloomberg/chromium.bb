@@ -1,5 +1,15 @@
-(repaint rects
-  (rect 79 129 142 142)
-  (rect 79 129 142 142)
+(GraphicsLayer
+  (bounds 800.00 2016.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 2016.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 79.00 129.00 142.00 142.00)
+        (rect 79.00 129.00 142.00 142.00)
+      )
+    )
+  )
 )
 

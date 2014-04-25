@@ -8,7 +8,17 @@ Testing both hit testing and painting of selection.
 Testing both hit testing and painting of selection.
 Testing both hit testing and painting of selection.
 Testing both hit testing and painting of selection.
-(repaint rects
-  (rect 773 37 19 84)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 773.00 37.00 19.00 84.00)
+      )
+    )
+  )
 )
 

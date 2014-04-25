@@ -4,7 +4,17 @@ TEST PASS: There should be only a green square below, and no red.
 
 TEST FAIL: The lower-right quarter of the square will be red.
 
-(repaint rects
-  (rect 58 136 50 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 58.00 136.00 50.00 100.00)
+      )
+    )
+  )
 )
 

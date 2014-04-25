@@ -6,7 +6,17 @@
 
 第二段落 paragraph 2
 
-(repaint rects
-  (rect 548 191 23 35)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 548.00 191.00 23.00 35.00)
+      )
+    )
+  )
 )
 

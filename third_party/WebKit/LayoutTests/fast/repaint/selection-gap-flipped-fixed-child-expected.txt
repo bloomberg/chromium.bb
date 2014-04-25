@@ -2,7 +2,17 @@ Bug 111000: Selection gaps don't repaint correctly with transforms
 This tests that fixed elements that get flipped are invalidated correctly. The box will be competely green if the selected area was invalidated correctly.
 
 
-(repaint rects
-  (rect 700 0 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 700.00 0.00 100.00 100.00)
+      )
+    )
+  )
 )
 

@@ -1,8 +1,18 @@
 Test for https://bugs.webkit.org/show_bug.cgi?id=23093. The cancel button in a search field fails to redraw.
 
 
-(repaint rects
-  (rect 13 49 149 16)
-  (rect 14 49 135 16)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 13.00 49.00 149.00 16.00)
+        (rect 14.00 49.00 135.00 16.00)
+      )
+    )
+  )
 )
 
