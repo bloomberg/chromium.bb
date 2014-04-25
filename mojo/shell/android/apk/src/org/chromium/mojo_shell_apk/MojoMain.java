@@ -8,13 +8,24 @@ import android.content.Context;
 
 import org.chromium.base.JNINamespace;
 
+/**
+ * A placeholder class to call native functions.
+ **/
 @JNINamespace("mojo")
 public class MojoMain {
     /**
+     * A guard flag for calling nativeInit() only once.
+     **/
+    private static boolean sInitialized = false;
+
+    /**
      * Initializes the native system.
      **/
-    public static void init(Context context) {
+    public static void ensureInitialized(Context context) {
+        if (sInitialized)
+            return;
         nativeInit(context);
+        sInitialized = true;
     }
 
     /**
@@ -24,6 +35,9 @@ public class MojoMain {
         nativeStart(context, appUrl);
     }
 
+    /**
+     * Initializes the native system. This API should be called only once per process.
+     **/
     private static native void nativeInit(Context context);
     private static native void nativeStart(Context context, String appUrl);
 };

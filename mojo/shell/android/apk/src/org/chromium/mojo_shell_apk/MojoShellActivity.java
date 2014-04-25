@@ -33,7 +33,7 @@ public class MojoShellActivity extends Activity {
             return;
         }
 
-        MojoMain.init(this);
+        MojoMain.ensureInitialized(this);
 
         String appUrl = getUrlFromIntent(getIntent());
         if (appUrl == null) {
