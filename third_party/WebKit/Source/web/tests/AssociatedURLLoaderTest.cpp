@@ -131,6 +131,8 @@ public:
         m_willSendRequest = true;
         EXPECT_EQ(m_expectedLoader, loader);
         EXPECT_EQ(m_expectedNewRequest.url(), newRequest.url());
+        // Check that CORS simple headers are transferred to the new request.
+        EXPECT_EQ(m_expectedNewRequest.httpHeaderField("accept"), newRequest.httpHeaderField("accept"));
         EXPECT_EQ(m_expectedRedirectResponse.url(), redirectResponse.url());
         EXPECT_EQ(m_expectedRedirectResponse.httpStatusCode(), redirectResponse.httpStatusCode());
         EXPECT_EQ(m_expectedRedirectResponse.mimeType(), redirectResponse.mimeType());
@@ -523,6 +525,8 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
+    // Add a CORS simple header.
+    request.setHTTPHeaderField("accept", "application/json");
 
     // Create a redirect response that allows the redirect to pass the access control checks.
     m_expectedRedirectResponse = WebURLResponse();
@@ -536,6 +540,7 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
     m_expectedNewRequest = WebURLRequest();
     m_expectedNewRequest.initialize();
     m_expectedNewRequest.setURL(redirectURL);
+    m_expectedNewRequest.setHTTPHeaderField("accept", "application/json");
 
     m_expectedResponse = WebURLResponse();
     m_expectedResponse.initialize();

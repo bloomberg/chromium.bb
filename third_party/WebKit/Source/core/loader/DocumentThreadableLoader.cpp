@@ -80,6 +80,15 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     // Setting an outgoing referer is only supported in the async code path.
     ASSERT(m_async || request.httpReferrer().isEmpty());
 
+    // Save any CORS simple headers on the request here. If this request redirects cross-origin, we cancel the old request
+    // create a new one, and copy these headers.
+    const HTTPHeaderMap& headerMap = request.httpHeaderFields();
+    HTTPHeaderMap::const_iterator end = headerMap.end();
+    for (HTTPHeaderMap::const_iterator it = headerMap.begin(); it != end; ++it) {
+        if (isOnAccessControlSimpleRequestHeaderWhitelist(it->key, it->value))
+            m_simpleRequestHeaders.add(it->key, it->value);
+    }
+
     if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
         loadRequest(request);
         return;
@@ -214,11 +223,14 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
                 m_options.allowCredentials = DoNotAllowStoredCredentials;
 
             // Remove any headers that may have been added by the network layer that cause access control to fail.
-            request.clearHTTPContentType();
             request.clearHTTPReferrer();
             request.clearHTTPOrigin();
             request.clearHTTPUserAgent();
-            request.clearHTTPAccept();
+            // Add any CORS simple request headers which we previously saved from the original request.
+            HTTPHeaderMap::const_iterator end = m_simpleRequestHeaders.end();
+            for (HTTPHeaderMap::const_iterator it = m_simpleRequestHeaders.begin(); it != end; ++it) {
+                request.setHTTPHeaderField(it->key, it->value);
+            }
             makeCrossOriginAccessRequest(request);
             return;
         }

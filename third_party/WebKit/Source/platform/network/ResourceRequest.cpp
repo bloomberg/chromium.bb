@@ -181,11 +181,6 @@ void ResourceRequest::clearHTTPAuthorization()
     m_httpHeaderFields.remove("Authorization");
 }
 
-void ResourceRequest::clearHTTPContentType()
-{
-    m_httpHeaderFields.remove("Content-Type");
-}
-
 void ResourceRequest::clearHTTPReferrer()
 {
     m_httpHeaderFields.remove("Referer");
@@ -200,11 +195,6 @@ void ResourceRequest::clearHTTPOrigin()
 void ResourceRequest::clearHTTPUserAgent()
 {
     m_httpHeaderFields.remove("User-Agent");
-}
-
-void ResourceRequest::clearHTTPAccept()
-{
-    m_httpHeaderFields.remove("Accept");
 }
 
 FormData* ResourceRequest::httpBody() const

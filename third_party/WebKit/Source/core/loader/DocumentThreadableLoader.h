@@ -36,6 +36,7 @@
 #include "core/fetch/ResourceOwner.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/Timer.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -106,6 +107,7 @@ class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoade
         bool m_simpleRequest;
         bool m_async;
         OwnPtr<ResourceRequest> m_actualRequest; // non-null during Access Control preflight checks
+        HTTPHeaderMap m_simpleRequestHeaders; // stores simple request headers in case of a cross-origin redirect.
         Timer<DocumentThreadableLoader> m_timeoutTimer;
     };
 

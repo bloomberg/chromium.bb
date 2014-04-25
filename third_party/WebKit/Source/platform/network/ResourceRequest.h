@@ -136,7 +136,6 @@ public:
 
     const AtomicString& httpContentType() const { return httpHeaderField("Content-Type");  }
     void setHTTPContentType(const AtomicString& httpContentType) { setHTTPHeaderField("Content-Type", httpContentType); }
-    void clearHTTPContentType();
 
     const AtomicString& httpReferrer() const { return httpHeaderField("Referer"); }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
@@ -153,7 +152,6 @@ public:
 
     const AtomicString& httpAccept() const { return httpHeaderField("Accept"); }
     void setHTTPAccept(const AtomicString& httpAccept) { setHTTPHeaderField("Accept", httpAccept); }
-    void clearHTTPAccept();
 
     FormData* httpBody() const;
     void setHTTPBody(PassRefPtr<FormData> httpBody);
