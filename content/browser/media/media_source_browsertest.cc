@@ -64,9 +64,10 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoOnly_WebM) {
 
 // Opus is not supported in Android as of now.
 #if !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_Opus_WebM) {
-  TestSimplePlayback("bear-opus.webm", kWebMOpusAudioOnly, kEnded);
-}
+// TODO(dalecurtis): Disabled while the test data file is updated.
+// IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_Opus_WebM) {
+//   TestSimplePlayback("bear-opus.webm", kWebMOpusAudioOnly, kEnded);
+// }
 #endif
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_WebM) {

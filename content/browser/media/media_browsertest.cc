@@ -109,9 +109,10 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWebm) {
   PlayVideo("bear.webm", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearOpusWebm) {
-  PlayVideo("bear-opus.webm", GetParam());
-}
+// TODO(dalecurtis): Disabled while the test data file is updated.
+// IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearOpusWebm) {
+//   PlayVideo("bear-opus.webm", GetParam());
+// }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearOpusOgg) {
   PlayVideo("bear-opus.ogg", GetParam());
