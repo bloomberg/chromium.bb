@@ -91,7 +91,9 @@ TEST_F(StatusTrayStateChangerWinTest, Setup) {
   EXPECT_FALSE(notify_item.get() == NULL);
 }
 
-TEST_F(StatusTrayStateChangerWinTest, ComApiTest) {
+// Test is disabled due to multiple COM initialization errors.  See
+// http//crbug.com/367199 for details.
+TEST_F(StatusTrayStateChangerWinTest, DISABLED_ComApiTest) {
 
   // Setup code to read the current preference.
   scoped_ptr<NOTIFYITEM> notify_item = SetupAndGetCurrentNotifyItem();
@@ -117,7 +119,9 @@ TEST_F(StatusTrayStateChangerWinTest, ComApiTest) {
   EXPECT_EQ(notify_item->preference, current_preference);
 };
 
-TEST_F(StatusTrayStateChangerWinTest, TraySizeApiTest) {
+// Test is disabled due to multiple COM initialization errors.  See
+// http//crbug.com/367199 for details.
+TEST_F(StatusTrayStateChangerWinTest, DISABLED_TraySizeApiTest) {
 
   // The tray does not auto-hide icons immediately on Vista so this test does
   // not detect a size change.
