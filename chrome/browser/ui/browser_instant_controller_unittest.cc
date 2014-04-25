@@ -101,7 +101,7 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
     observers.push_back(new FakeWebContentsObserver(contents));
   }
 
-  SetDefaultSearchProvider("https://bar.com/");
+  SetUserSelectedDefaultSearchProvider("https://bar.com/");
 
   for (size_t i = 0; i < num_tests; ++i) {
     FakeWebContentsObserver* observer = observers[i];

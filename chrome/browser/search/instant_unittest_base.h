@@ -35,7 +35,7 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   // TLD.
   // It will always use an instant-enabled configuration using a
   // search_terms_replacement_key.
-  void SetDefaultSearchProvider(const std::string& base_url);
+  void SetUserSelectedDefaultSearchProvider(const std::string& base_url);
 
   // Simulates a Google Base URL change as would happen in event of
   // search-domain-check. Note that the GoogleURLTrackerFactory is disabled for

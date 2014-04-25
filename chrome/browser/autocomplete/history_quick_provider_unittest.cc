@@ -590,7 +590,7 @@ TEST_F(HistoryQuickProviderTest, CullSearchResults) {
       TemplateURLServiceFactory::GetForProfile(profile_.get());
   TemplateURL* template_url = new TemplateURL(profile_.get(), data);
   template_url_service->Add(template_url);
-  template_url_service->SetDefaultSearchProvider(template_url);
+  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   template_url_service->Load();
 
   // A search results page should not be returned when typing a query.

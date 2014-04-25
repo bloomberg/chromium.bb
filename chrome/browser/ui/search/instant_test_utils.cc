@@ -67,7 +67,7 @@ void InstantTestBase::SetupInstant(Browser* browser) {
 
   TemplateURL* template_url = new TemplateURL(browser_->profile(), data);
   service->Add(template_url);  // Takes ownership of |template_url|.
-  service->SetDefaultSearchProvider(template_url);
+  service->SetUserSelectedDefaultSearchProvider(template_url);
 }
 
 void InstantTestBase::SetInstantURL(const std::string& url) {
@@ -82,7 +82,7 @@ void InstantTestBase::SetInstantURL(const std::string& url) {
 
   TemplateURL* template_url = new TemplateURL(browser_->profile(), data);
   service->Add(template_url);  // Takes ownership of |template_url|.
-  service->SetDefaultSearchProvider(template_url);
+  service->SetUserSelectedDefaultSearchProvider(template_url);
 }
 
 void InstantTestBase::Init(const GURL& instant_url,

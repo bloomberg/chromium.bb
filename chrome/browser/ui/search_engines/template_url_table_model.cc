@@ -342,7 +342,7 @@ int TemplateURLTableModel::MakeDefaultTemplateURL(int index) {
     return -1;
 
   template_url_service_->RemoveObserver(this);
-  template_url_service_->SetDefaultSearchProvider(keyword);
+  template_url_service_->SetUserSelectedDefaultSearchProvider(keyword);
   template_url_service_->AddObserver(this);
 
   // The formatting of the default engine is different; notify the table that

@@ -185,7 +185,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     TemplateURL* template_url = new TemplateURL(profile(), data);
     // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
-    template_url_service->SetDefaultSearchProvider(template_url);
+    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
   // Build an Instant URL with or without a valid search terms replacement key
@@ -209,7 +209,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     TemplateURL* template_url = new TemplateURL(profile(), data);
     // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
-    template_url_service->SetDefaultSearchProvider(template_url);
+    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
   bool InInstantProcess(const content::WebContents* contents) {
@@ -627,7 +627,7 @@ TEST_F(SearchTest, CommandLineOverrides) {
   TemplateURL* template_url = new TemplateURL(profile(), data);
   // Takes ownership of |template_url|.
   template_url_service->Add(template_url);
-  template_url_service->SetDefaultSearchProvider(template_url);
+  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
 
   // By default, Instant Extended forces the instant URL to be HTTPS, so even if
   // we set a Google base URL that is HTTP, we should get an HTTPS URL.
@@ -871,7 +871,7 @@ class SearchURLTest : public SearchTest {
     template_url_ = new TemplateURL(profile(), data);
     // |template_url_service| takes ownership of |template_url_|.
     template_url_service->Add(template_url_);
-    template_url_service->SetDefaultSearchProvider(template_url_);
+    template_url_service->SetUserSelectedDefaultSearchProvider(template_url_);
   }
 
   TemplateURL* template_url_;

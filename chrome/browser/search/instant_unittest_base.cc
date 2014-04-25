@@ -49,7 +49,7 @@ void InstantUnitTestBase::SetUpWithoutQueryExtraction() {
 }
 #endif
 
-void InstantUnitTestBase::SetDefaultSearchProvider(
+void InstantUnitTestBase::SetUserSelectedDefaultSearchProvider(
     const std::string& base_url) {
   TemplateURLData data;
   data.SetURL(base_url + "url?bar={searchTerms}");
@@ -63,7 +63,7 @@ void InstantUnitTestBase::SetDefaultSearchProvider(
   TemplateURL* template_url = new TemplateURL(profile(), data);
   // Takes ownership of |template_url|.
   template_url_service_->Add(template_url);
-  template_url_service_->SetDefaultSearchProvider(template_url);
+  template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
 }
 
 void InstantUnitTestBase::NotifyGoogleBaseURLUpdate(
@@ -99,6 +99,6 @@ void InstantUnitTestBase::SetUpHelper() {
   TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
   pref_service->SetUserPref(prefs::kLastPromptedGoogleURL,
                             new base::StringValue("https://www.google.com/"));
-  SetDefaultSearchProvider("{google:baseURL}");
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_ = InstantServiceFactory::GetForProfile(profile());
 }

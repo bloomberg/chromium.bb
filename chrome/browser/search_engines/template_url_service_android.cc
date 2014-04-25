@@ -51,9 +51,10 @@ void TemplateUrlServiceAndroid::Load(JNIEnv* env, jobject obj) {
   template_url_service_->Load();
 }
 
-void TemplateUrlServiceAndroid::SetDefaultSearchProvider(JNIEnv* env,
-                                                         jobject obj,
-                                                         jint selected_index) {
+void TemplateUrlServiceAndroid::SetUserSelectedDefaultSearchProvider(
+    JNIEnv* env,
+    jobject obj,
+    jint selected_index) {
   std::vector<TemplateURL*> template_urls =
       template_url_service_->GetTemplateURLs();
   size_t selected_index_size_t = static_cast<size_t>(selected_index);
@@ -63,7 +64,7 @@ void TemplateUrlServiceAndroid::SetDefaultSearchProvider(JNIEnv* env,
   TemplateURL* template_url = template_urls[selected_index_size_t];
   DCHECK_GT(template_url->prepopulate_id(), 0) <<
       "Tried to select non-prepopulated search engine";
-  template_url_service_->SetDefaultSearchProvider(template_url);
+  template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
 }
 
 jint TemplateUrlServiceAndroid::GetDefaultSearchProvider(JNIEnv* env,

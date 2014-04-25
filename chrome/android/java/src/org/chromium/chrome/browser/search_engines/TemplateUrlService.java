@@ -145,7 +145,7 @@ public class TemplateUrlService {
 
     public void setSearchEngine(int selectedIndex) {
         ThreadUtils.assertOnUiThread();
-        nativeSetDefaultSearchProvider(mNativeTemplateUrlServiceAndroid, selectedIndex);
+        nativeSetUserSelectedDefaultSearchProvider(mNativeTemplateUrlServiceAndroid, selectedIndex);
     }
 
     public boolean isSearchProviderManaged() {
@@ -229,8 +229,8 @@ public class TemplateUrlService {
     private native int nativeGetTemplateUrlCount(long nativeTemplateUrlServiceAndroid);
     private native TemplateUrl nativeGetPrepopulatedTemplateUrlAt(
             long nativeTemplateUrlServiceAndroid, int i);
-    private native void nativeSetDefaultSearchProvider(long nativeTemplateUrlServiceAndroid,
-            int selectedIndex);
+    private native void nativeSetUserSelectedDefaultSearchProvider(
+            long nativeTemplateUrlServiceAndroid, int selectedIndex);
     private native int nativeGetDefaultSearchProvider(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsSearchProviderManaged(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsSearchByImageAvailable(long nativeTemplateUrlServiceAndroid);

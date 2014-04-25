@@ -254,7 +254,7 @@ void SearchProviderTest::SetUp() {
   data.search_terms_replacement_key = "strk";
   default_t_url_ = new TemplateURL(&profile_, data);
   turl_model->Add(default_t_url_);
-  turl_model->SetDefaultSearchProvider(default_t_url_);
+  turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
   TemplateURLID default_provider_id = default_t_url_->id();
   ASSERT_NE(0, default_provider_id);
 
@@ -1021,7 +1021,7 @@ TEST_F(SearchProviderTest, CommandLineOverrides) {
   data.SetURL("{google:baseURL}{searchTerms}");
   default_t_url_ = new TemplateURL(&profile_, data);
   turl_model->Add(default_t_url_);
-  turl_model->SetDefaultSearchProvider(default_t_url_);
+  turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
                                                       "http://www.bar.com/");

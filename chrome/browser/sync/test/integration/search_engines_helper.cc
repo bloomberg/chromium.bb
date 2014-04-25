@@ -256,12 +256,12 @@ void ChangeDefaultSearchProvider(int profile_index, int seed) {
   ASSERT_TRUE(service);
   TemplateURL* turl = service->GetTemplateURLForKeyword(CreateKeyword(seed));
   ASSERT_TRUE(turl);
-  service->SetDefaultSearchProvider(turl);
+  service->SetUserSelectedDefaultSearchProvider(turl);
   if (test()->use_verifier()) {
     TemplateURL* verifier_turl =
         GetVerifierService()->GetTemplateURLForKeyword(CreateKeyword(seed));
     ASSERT_TRUE(verifier_turl);
-    GetVerifierService()->SetDefaultSearchProvider(verifier_turl);
+    GetVerifierService()->SetUserSelectedDefaultSearchProvider(verifier_turl);
   }
 }
 

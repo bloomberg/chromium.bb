@@ -1115,7 +1115,8 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(
       template_url_service_->GetTemplateURLs());
   if (selected_index >= 0 &&
       selected_index < static_cast<int>(model_urls.size()))
-    template_url_service_->SetDefaultSearchProvider(model_urls[selected_index]);
+    template_url_service_->SetUserSelectedDefaultSearchProvider(
+        model_urls[selected_index]);
 
   content::RecordAction(UserMetricsAction("Options_SearchEngineChanged"));
 }

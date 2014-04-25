@@ -284,7 +284,7 @@ class SearchTabHelperWindowTest : public BrowserWithTestWindowTest {
 
     TemplateURL* template_url = new TemplateURL(profile(), data);
     template_url_service->Add(template_url);
-    template_url_service->SetDefaultSearchProvider(template_url);
+    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 };
 

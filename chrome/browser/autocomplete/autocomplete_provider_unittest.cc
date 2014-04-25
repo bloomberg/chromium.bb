@@ -222,7 +222,7 @@ void AutocompleteProviderTest::RegisterTemplateURL(
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
-  turl_model->SetDefaultSearchProvider(default_t_url);
+  turl_model->SetUserSelectedDefaultSearchProvider(default_t_url);
   turl_model->Load();
   TemplateURLID default_provider_id = default_t_url->id();
   ASSERT_NE(0, default_provider_id);
@@ -298,7 +298,7 @@ void AutocompleteProviderTest::
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
-  turl_model->SetDefaultSearchProvider(default_t_url);
+  turl_model->SetUserSelectedDefaultSearchProvider(default_t_url);
   TemplateURLID default_provider_id = default_t_url->id();
   ASSERT_NE(0, default_provider_id);
 

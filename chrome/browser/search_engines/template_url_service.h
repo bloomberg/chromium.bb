@@ -229,7 +229,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Set the default search provider.  |url| may be null.
   // This will assert if the default search is managed; the UI should not be
   // invoking this method in that situation.
-  void SetDefaultSearchProvider(TemplateURL* url);
+  void SetUserSelectedDefaultSearchProvider(TemplateURL* url);
 
   // Returns the default search provider. If the TemplateURLService hasn't been
   // loaded, the default search provider is pulled from preferences.
@@ -529,6 +529,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Update the default search.  Called at initialization or when a managed
   // preference has changed.
   void UpdateDefaultSearch();
+
+  // Set the default search provider.  |url| may be user-selected or
+  // automatically selected and may be null.
+  // This will assert if the default search is managed.
+  void SetDefaultSearchProvider(TemplateURL* url);
 
   // Set the default search provider even if it is managed. |url| may be null.
   // Caller is responsible for notifying observers.  Returns whether |url| was

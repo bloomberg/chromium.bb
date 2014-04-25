@@ -243,7 +243,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(model->loaded());
     // Remove built-in template urls, like google.com, bing.com etc., as they
     // may appear as autocomplete suggests and interfere with our tests.
-    model->SetDefaultSearchProvider(NULL);
+    model->SetUserSelectedDefaultSearchProvider(NULL);
     TemplateURLService::TemplateURLVector builtins = model->GetTemplateURLs();
     for (TemplateURLService::TemplateURLVector::const_iterator
          i = builtins.begin(); i != builtins.end(); ++i)
@@ -255,7 +255,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     data.SetURL(kSearchURL);
     TemplateURL* template_url = new TemplateURL(profile, data);
     model->Add(template_url);
-    model->SetDefaultSearchProvider(template_url);
+    model->SetUserSelectedDefaultSearchProvider(template_url);
 
     data.SetKeyword(ASCIIToUTF16(kSearchKeyword2));
     model->Add(new TemplateURL(profile, data));
@@ -1061,7 +1061,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DeleteItem) {
   // items.
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
-  model->SetDefaultSearchProvider(NULL);
+  model->SetUserSelectedDefaultSearchProvider(NULL);
 
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   chrome::FocusLocationBar(browser());

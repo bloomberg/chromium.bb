@@ -797,7 +797,7 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
       TemplateURLServiceFactory::GetForProfile(profile_.get());
   TemplateURL* template_url = new TemplateURL(profile_.get(), data);
   template_url_service->Add(template_url);
-  template_url_service->SetDefaultSearchProvider(template_url);
+  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   template_url_service->Load();
 
   // URLs we will be using, plus the visit counts they will initially get

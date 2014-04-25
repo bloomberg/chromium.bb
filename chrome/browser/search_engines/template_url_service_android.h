@@ -21,7 +21,9 @@ class TemplateUrlServiceAndroid {
   TemplateUrlServiceAndroid(JNIEnv* env, jobject obj);
 
   void Load(JNIEnv* env, jobject obj);
-  void SetDefaultSearchProvider(JNIEnv* env, jobject obj, jint selected_index);
+  void SetUserSelectedDefaultSearchProvider(JNIEnv* env,
+                                            jobject obj,
+                                            jint selected_index);
   jint GetDefaultSearchProvider(JNIEnv* env, jobject obj);
   jint GetTemplateUrlCount(JNIEnv* env, jobject obj);
   jboolean IsLoaded(JNIEnv* env, jobject obj);

@@ -112,7 +112,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
     TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
     // Takes ownership.
     template_url_service->Add(template_url);
-    template_url_service->SetDefaultSearchProvider(template_url);
+    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
   scoped_ptr<base::FieldTrialList> field_trial_list_;

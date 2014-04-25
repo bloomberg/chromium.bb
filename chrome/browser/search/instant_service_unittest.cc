@@ -63,7 +63,7 @@ TEST_F(InstantServiceTest, DispatchDefaultSearchProviderChanged) {
       .Times(1);
 
   const std::string& new_base_url = "https://bar.com/";
-  SetDefaultSearchProvider(new_base_url);
+  SetUserSelectedDefaultSearchProvider(new_base_url);
 }
 
 TEST_F(InstantServiceTest, DispatchGoogleURLUpdated) {
@@ -115,14 +115,14 @@ TEST_F(InstantServiceTest,
   TemplateURL* template_url = new TemplateURL(profile(), data);
   // Takes ownership of |template_url|.
   template_url_service_->Add(template_url);
-  template_url_service_->SetDefaultSearchProvider(template_url);
+  template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
 
   EXPECT_EQ(static_cast<InstantSearchPrerenderer*>(NULL),
             GetInstantSearchPrerenderer());
 
   // Set a default search provider that supports Instant and make sure
   // InstantSearchPrerenderer is valid.
-  SetDefaultSearchProvider("https://google.com/");
+  SetUserSelectedDefaultSearchProvider("https://google.com/");
   EXPECT_NE(static_cast<InstantSearchPrerenderer*>(NULL),
             GetInstantSearchPrerenderer());
 }
@@ -134,7 +134,7 @@ TEST_F(InstantServiceTest, ResetInstantSearchPrerenderer_GoogleBaseURLUpdated) {
       .Times(1);
   EXPECT_CALL(*instant_service_observer_.get(), GoogleURLUpdated()).Times(1);
 
-  SetDefaultSearchProvider("https://google.com/");
+  SetUserSelectedDefaultSearchProvider("https://google.com/");
   InstantSearchPrerenderer* old_prerenderer = GetInstantSearchPrerenderer();
   EXPECT_NE(static_cast<InstantSearchPrerenderer*>(NULL), old_prerenderer);
 

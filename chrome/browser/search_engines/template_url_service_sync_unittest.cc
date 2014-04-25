@@ -491,7 +491,7 @@ TEST_F(TemplateURLServiceSyncTest, IsLocalTemplateURLBetter) {
         test_cases[i].local_time, true, test_cases[i].local_created_by_policy);
     model()->Add(local_turl);
     if (test_cases[i].local_is_default)
-      model()->SetDefaultSearchProvider(local_turl);
+      model()->SetUserSelectedDefaultSearchProvider(local_turl);
 
     scoped_ptr<TemplateURL> sync_turl(CreateTestTemplateURL(
           ASCIIToUTF16("synckey"), "www.sync.com", "syncguid",
@@ -501,7 +501,7 @@ TEST_F(TemplateURLServiceSyncTest, IsLocalTemplateURLBetter) {
 
     // Undo the changes.
     if (test_cases[i].local_is_default)
-      model()->SetDefaultSearchProvider(NULL);
+      model()->SetUserSelectedDefaultSearchProvider(NULL);
     model()->Remove(local_turl);
   }
 }
@@ -1452,7 +1452,8 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {
   initial_data[1] = TemplateURLService::CreateSyncDataFromTemplateURL(*turl);
   model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
       PassProcessor(), CreateAndPassSyncErrorFactory());
-  model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key2"));
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID("key2"));
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncer::SEARCH_ENGINES).size());
   const TemplateURL* default_search = model()->GetDefaultSearchProvider();
@@ -1515,7 +1516,8 @@ TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedBeforeNewDSPArrives) {
       *turl2));
   model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
       PassProcessor(), CreateAndPassSyncErrorFactory());
-  model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key1"));
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID("key1"));
   ASSERT_EQ("key1", model()->GetDefaultSearchProvider()->sync_guid());
 
   EXPECT_EQ(2U, model()->GetAllSyncData(syncer::SEARCH_ENGINES).size());
@@ -1572,7 +1574,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultArrivesAfterStartup) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"),
                                      "http://thewhat.com/{searchTerms}",
                                      "initdefault"));
-  model()->SetDefaultSearchProvider(
+  model()->SetUserSelectedDefaultSearchProvider(
       model()->GetTemplateURLForGUID("initdefault"));
 
   const TemplateURL* default_search = model()->GetDefaultSearchProvider();
@@ -1610,7 +1612,8 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultAlreadySetOnStartup) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"),
                                      "http://thewhat.com/{searchTerms}",
                                      kGUID));
-  model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID(kGUID));
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID(kGUID));
 
   const TemplateURL* default_search = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
@@ -1652,7 +1655,8 @@ TEST_F(TemplateURLServiceSyncTest, NewDefaultIsAlreadySynced) {
   }
 
   // Set the initial default to something other than the desired default.
-  model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key1"));
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID("key1"));
 
   // Merge in the same data (i.e. already synced entries).
   model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
@@ -1671,7 +1675,8 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   syncer::SyncDataList initial_data = CreateInitialSyncData();
   model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
       PassProcessor(), CreateAndPassSyncErrorFactory());
-  model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key2"));
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID("key2"));
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncer::SEARCH_ENGINES).size());
   ASSERT_FALSE(model()->is_default_search_managed());
@@ -1727,7 +1732,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncMergeDeletesDefault) {
   TemplateURL* default_turl = CreateTestTemplateURL(ASCIIToUTF16("key1"),
       "http://key1.com/{searchTerms}", "whateverguid", 10);
   model()->Add(default_turl);
-  model()->SetDefaultSearchProvider(default_turl);
+  model()->SetUserSelectedDefaultSearchProvider(default_turl);
 
   syncer::SyncDataList initial_data = CreateInitialSyncData();
   // The key1 entry should be a duplicate of the default.
@@ -1753,7 +1758,7 @@ TEST_F(TemplateURLServiceSyncTest, LocalDefaultWinsConflict) {
                                                     "whateverguid",
                                                     10);
   model()->Add(default_turl);
-  model()->SetDefaultSearchProvider(default_turl);
+  model()->SetUserSelectedDefaultSearchProvider(default_turl);
 
   syncer::SyncDataList initial_data = CreateInitialSyncData();
   // The key1 entry should be different from the default but conflict in the
