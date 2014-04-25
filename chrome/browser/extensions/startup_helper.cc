@@ -195,23 +195,6 @@ bool StartupHelper::ValidateCrx(const CommandLine& cmd_line,
   return success;
 }
 
-bool StartupHelper::UninstallExtension(const CommandLine& cmd_line,
-                                       Profile* profile) {
-  DCHECK(profile);
-
-  if (!cmd_line.HasSwitch(switches::kUninstallExtension))
-    return false;
-
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (!extension_service)
-    return false;
-
-  std::string extension_id = cmd_line.GetSwitchValueASCII(
-      switches::kUninstallExtension);
-  return ExtensionService::UninstallExtensionHelper(extension_service,
-                                                    extension_id);
-}
-
 namespace {
 
 class AppInstallHelper {

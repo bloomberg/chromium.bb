@@ -437,27 +437,6 @@ bool ProcessSingletonNotificationCallback(
   g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
       command_line);
 
-  // TODO(erikwright): Consider removing this - AFAIK it is no longer used.
-  // Handle the --uninstall-extension startup action. This needs to done here in
-  // the process that is running with the target profile, otherwise the
-  // uninstall will fail to unload and remove all components.
-  if (command_line.HasSwitch(switches::kUninstallExtension)) {
-    // The uninstall extension switch can't be combined with the profile
-    // directory switch.
-    DCHECK(!command_line.HasSwitch(switches::kProfileDirectory));
-
-    Profile* profile = ProfileManager::GetLastUsedProfile();
-    if (!profile) {
-      // We should never be called before the profile has been created.
-      NOTREACHED();
-      return true;
-    }
-
-    extensions::StartupHelper extension_startup_helper;
-    extension_startup_helper.UninstallExtension(command_line, profile);
-    return true;
-  }
-
   base::FilePath user_data_dir =
       g_browser_process->profile_manager()->user_data_dir();
   base::FilePath startup_profile_dir =
@@ -1443,17 +1422,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   language_usage_metrics::LanguageUsageMetrics::RecordApplicationLanguage(
       browser_process_->GetApplicationLocale());
-
-  // The extension service may be available at this point. If the command line
-  // specifies --uninstall-extension, attempt the uninstall extension startup
-  // action.
-  if (parsed_command_line().HasSwitch(switches::kUninstallExtension)) {
-    extensions::StartupHelper extension_startup_helper;
-    if (extension_startup_helper.UninstallExtension(
-            parsed_command_line(), profile_))
-      return content::RESULT_CODE_NORMAL_EXIT;
-    return chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR;
-  }
 
   // Start watching for hangs during startup. We disarm this hang detector when
   // ThreadWatcher takes over or when browser is shutdown or when

@@ -38,11 +38,6 @@ class StartupHelper : public PackExtensionJob::Client {
   // into |error|.
   bool ValidateCrx(const base::CommandLine& cmd_line, std::string* error);
 
-  // Handle --uninstall-extension flag from the |cmd_line| by uninstalling the
-  // specified extension from |profile|. Returns false if the uninstall job
-  // could not be started.
-  bool UninstallExtension(const base::CommandLine& cmd_line, Profile* profile);
-
   // Handle --install-from-webstore flag from |cmd_line| by downloading
   // metadata from the webstore for the given id, prompting the user to
   // confirm, and then downloading the crx and installing it.
