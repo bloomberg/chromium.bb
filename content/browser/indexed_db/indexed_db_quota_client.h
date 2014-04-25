@@ -36,11 +36,13 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
                                              quota::StorageType type,
                                              const GetUsageCallback& callback)
       OVERRIDE;
-  virtual void GetOriginsForType(quota::StorageType type,
-                                 const GetOriginsCallback& callback) OVERRIDE;
-  virtual void GetOriginsForHost(quota::StorageType type,
-                                 const std::string& host,
-                                 const GetOriginsCallback& callback) OVERRIDE;
+  CONTENT_EXPORT virtual void GetOriginsForType(
+      quota::StorageType type,
+      const GetOriginsCallback& callback) OVERRIDE;
+  CONTENT_EXPORT virtual void GetOriginsForHost(
+      quota::StorageType type,
+      const std::string& host,
+      const GetOriginsCallback& callback) OVERRIDE;
   CONTENT_EXPORT virtual void DeleteOriginData(const GURL& origin,
                                                quota::StorageType type,
                                                const DeletionCallback& callback)
