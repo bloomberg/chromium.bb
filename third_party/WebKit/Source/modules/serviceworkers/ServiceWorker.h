@@ -70,7 +70,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // WebServiceWorkerProxy overrides.
-    virtual void onStateChanged(blink::WebServiceWorkerState) OVERRIDE;
+    virtual bool isReady() OVERRIDE;
     virtual void dispatchStateChangeEvent() OVERRIDE;
 
     // AbstractWorker overrides.
@@ -82,11 +82,9 @@ private:
     ServiceWorker(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
     void onPromiseResolved();
     void waitOnPromise(ScriptPromise);
-    void changeState(blink::WebServiceWorkerState);
 
     OwnPtr<blink::WebServiceWorker> m_outerWorker;
     bool m_isPromisePending;
-    Vector<blink::WebServiceWorkerState> m_queuedStates;
 };
 
 } // namespace WebCore
