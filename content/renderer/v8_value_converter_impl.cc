@@ -19,6 +19,39 @@
 
 namespace content {
 
+// Default implementation of V8ValueConverter::Strategy
+
+bool V8ValueConverter::Strategy::FromV8Object(
+    v8::Handle<v8::Object> value,
+    base::Value** out,
+    v8::Isolate* isolate,
+    const FromV8ValueCallback& callback) const {
+  return false;
+}
+
+bool V8ValueConverter::Strategy::FromV8Array(
+    v8::Handle<v8::Array> value,
+    base::Value** out,
+    v8::Isolate* isolate,
+    const FromV8ValueCallback& callback) const {
+  return false;
+}
+
+bool V8ValueConverter::Strategy::FromV8ArrayBuffer(v8::Handle<v8::Object> value,
+                                                   base::Value** out) const {
+  return false;
+}
+
+bool V8ValueConverter::Strategy::FromV8Number(v8::Handle<v8::Number> value,
+                                              base::Value** out) const {
+  return false;
+}
+
+bool V8ValueConverter::Strategy::FromV8Undefined(base::Value** out) const {
+  return false;
+}
+
+
 namespace {
 
 // For the sake of the storage API, make this quite large.
@@ -250,6 +283,12 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
   if (val->IsBoolean())
     return new base::FundamentalValue(val->ToBoolean()->Value());
 
+  if (val->IsNumber() && strategy_) {
+    base::Value* out = NULL;
+    if (strategy_->FromV8Number(val->ToNumber(), &out))
+      return out;
+  }
+
   if (val->IsInt32())
     return new base::FundamentalValue(val->ToInt32()->Value());
 
@@ -265,9 +304,15 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
     return new base::StringValue(std::string(*utf8, utf8.length()));
   }
 
-  if (val->IsUndefined())
+  if (val->IsUndefined()) {
+    if (strategy_) {
+      base::Value* out = NULL;
+      if (strategy_->FromV8Undefined(&out))
+        return out;
+    }
     // JSON.stringify ignores undefined.
     return NULL;
+  }
 
   if (val->IsDate()) {
     if (!date_allowed_)
@@ -296,14 +341,11 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
     return FromV8Object(val->ToObject(), state, isolate);
   }
 
-  if (val->IsObject()) {
-    base::BinaryValue* binary_value = FromV8Buffer(val);
-    if (binary_value) {
-      return binary_value;
-    } else {
-      return FromV8Object(val->ToObject(), state, isolate);
-    }
-  }
+  if (val->IsArrayBuffer() || val->IsArrayBufferView())
+    return FromV8ArrayBuffer(val->ToObject());
+
+  if (val->IsObject())
+    return FromV8Object(val->ToObject(), state, isolate);
 
   LOG(ERROR) << "Unexpected v8 value type encountered.";
   return NULL;
@@ -362,8 +404,14 @@ base::Value* V8ValueConverterImpl::FromV8Array(
   return result;
 }
 
-base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
-    v8::Handle<v8::Value> val) const {
+base::Value* V8ValueConverterImpl::FromV8ArrayBuffer(
+    v8::Handle<v8::Object> val) const {
+  if (strategy_) {
+    base::Value* out = NULL;
+    if (strategy_->FromV8ArrayBuffer(val, &out))
+      return out;
+  }
+
   char* data = NULL;
   size_t length = 0;
 

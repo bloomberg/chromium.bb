@@ -60,9 +60,8 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
                            v8::Isolate* isolate) const;
 
   // This will convert objects of type ArrayBuffer or any of the
-  // ArrayBufferView subclasses. The return value will be NULL if |value| is
-  // not one of these types.
-  base::BinaryValue* FromV8Buffer(v8::Handle<v8::Value> value) const;
+  // ArrayBufferView subclasses.
+  base::Value* FromV8ArrayBuffer(v8::Handle<v8::Object> val) const;
 
   base::Value* FromV8Object(v8::Handle<v8::Object> object,
                             FromV8ValueState* state,

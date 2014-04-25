@@ -40,7 +40,7 @@ class CONTENT_EXPORT V8ValueConverter {
     virtual bool FromV8Object(v8::Handle<v8::Object> value,
                               base::Value** out,
                               v8::Isolate* isolate,
-                              const FromV8ValueCallback& callback) const = 0;
+                              const FromV8ValueCallback& callback) const;
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
@@ -49,7 +49,23 @@ class CONTENT_EXPORT V8ValueConverter {
     virtual bool FromV8Array(v8::Handle<v8::Array> value,
                              base::Value** out,
                              v8::Isolate* isolate,
-                             const FromV8ValueCallback& callback) const = 0;
+                             const FromV8ValueCallback& callback) const;
+
+    // If false is returned, V8ValueConverter proceeds with the default
+    // behavior. v8::Object is passed as ArrayBuffer and ArrayBufferView
+    // classes are siblings.
+    virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
+                                   base::Value** out) const;
+
+    // If false is returned, V8ValueConverter proceeds with the default
+    // behavior. This allows to intercept "non-finite" values and do something
+    // with them.
+    virtual bool FromV8Number(v8::Handle<v8::Number> value,
+                              base::Value** out) const;
+
+    // If false is returned, V8ValueConverter proceeds with the default
+    // behavior.
+    virtual bool FromV8Undefined(base::Value** out) const;
   };
 
   static V8ValueConverter* create();
