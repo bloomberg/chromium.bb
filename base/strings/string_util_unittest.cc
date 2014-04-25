@@ -1011,13 +1011,8 @@ TEST(StringUtilTest, LcpyTest) {
     EXPECT_EQ(1, dst[0]);
     EXPECT_EQ(2, dst[1]);
     EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", 0));
-#if defined(WCHAR_T_IS_UNSIGNED)
-    EXPECT_EQ(1U, wdst[0]);
-    EXPECT_EQ(2U, wdst[1]);
-#else
-    EXPECT_EQ(1, wdst[0]);
-    EXPECT_EQ(2, wdst[1]);
-#endif
+    EXPECT_EQ(static_cast<wchar_t>(1), wdst[0]);
+    EXPECT_EQ(static_cast<wchar_t>(2), wdst[1]);
   }
 
   // Test the case were we _just_ competely fit including the null.

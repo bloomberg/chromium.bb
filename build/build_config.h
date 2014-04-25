@@ -139,12 +139,6 @@
 #error Please add support for your compiler in build/build_config.h
 #endif
 
-#if defined(__ARMEL__) && !defined(OS_IOS)
-#define WCHAR_T_IS_UNSIGNED 1
-#elif defined(__MIPSEL__)
-#define WCHAR_T_IS_UNSIGNED 0
-#endif
-
 #if defined(OS_ANDROID)
 // The compiler thinks std::string::const_iterator and "const char*" are
 // equivalent types.
