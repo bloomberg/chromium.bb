@@ -323,6 +323,9 @@ bool DOMWindow::canShowModalDialogNow(const LocalFrame* frame)
 DOMWindow::DOMWindow(LocalFrame& frame)
     : FrameDestructionObserver(&frame)
     , m_shouldPrintWhenFinishedLoading(false)
+#if ASSERT_ENABLED
+    , m_hasBeenReset(false)
+#endif
 {
     ScriptWrappable::init(this);
 }
@@ -477,23 +480,7 @@ void DOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
 
 DOMWindow::~DOMWindow()
 {
-    ASSERT(!m_screen);
-    ASSERT(!m_history);
-    ASSERT(!m_locationbar);
-    ASSERT(!m_menubar);
-    ASSERT(!m_personalbar);
-    ASSERT(!m_scrollbars);
-    ASSERT(!m_statusbar);
-    ASSERT(!m_toolbar);
-    ASSERT(!m_console);
-    ASSERT(!m_navigator);
-    ASSERT(!m_performance);
-    ASSERT(!m_location);
-    ASSERT(!m_media);
-    ASSERT(!m_sessionStorage);
-    ASSERT(!m_localStorage);
-    ASSERT(!m_applicationCache);
-
+    ASSERT(m_hasBeenReset);
     reset();
 
     removeAllEventListeners();
@@ -594,6 +581,9 @@ void DOMWindow::resetDOMWindowProperties()
     m_sessionStorage = nullptr;
     m_localStorage = nullptr;
     m_applicationCache = nullptr;
+#if ASSERT_ENABLED
+    m_hasBeenReset = true;
+#endif
 }
 
 bool DOMWindow::isCurrentlyDisplayedInFrame() const

@@ -1,2 +1,10 @@
 main frame - has 1 onunload handler(s)
-This tests opens a new window, sets a timeout to close it, then sets a timeout to navigate it via window.location. We pass if we don't crash when setting the location of the already closed window.
+Updating window.location after the window has been closed, without crashing.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

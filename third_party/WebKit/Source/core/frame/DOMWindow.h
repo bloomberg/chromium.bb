@@ -346,6 +346,9 @@ enum PageshowEventPersistence {
         RefPtr<Document> m_document;
 
         bool m_shouldPrintWhenFinishedLoading;
+#if ASSERT_ENABLED
+        bool m_hasBeenReset;
+#endif
 
         HashSet<DOMWindowProperty*> m_properties;
 
