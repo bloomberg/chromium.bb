@@ -1290,6 +1290,7 @@ _arm_release_boards = frozenset([
 ])
 _arm_full_boards = _arm_release_boards | frozenset([
   'arm-generic',
+  'arm64-generic',
 ])
 
 _x86_release_boards = frozenset([
