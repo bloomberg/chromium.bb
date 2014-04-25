@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
@@ -17,18 +18,21 @@
 // LevelDB database schema
 // =======================
 //
+// NOTE
+// - int64 value is serialized as a string by base::Int64ToString().
+//
 // Version 1 (in sorted order)
 //   key: "DB_VERSION"
-//   value: <int64 serialized as a string>
+//   value: "1"
 //
 //   key: "NEXT_REGISTRATION_ID"
-//   value: <int64 serialized as a string>
+//   value: <int64 'next_available_registration_id'>
 //
 //   key: "NEXT_RESOURCE_ID"
-//   value: <int64 serialized as a string>
+//   value: <int64 'next_available_resource_id'>
 //
 //   key: "NEXT_VERSION_ID"
-//   value: <int64 serialized as a string>
+//   value: <int64 'next_available_version_id'>
 
 namespace content {
 
@@ -80,9 +84,9 @@ bool ServiceWorkerDatabase::GetNextAvailableIds(
   int64 ver_id = -1;
   int64 res_id = -1;
 
-  if (!ReadInt64(kNextRegIdKey, &reg_id) ||
-      !ReadInt64(kNextVerIdKey, &ver_id) ||
-      !ReadInt64(kNextResIdKey, &res_id))
+  if (!ReadNextAvailableId(kNextRegIdKey, &reg_id) ||
+      !ReadNextAvailableId(kNextVerIdKey, &ver_id) ||
+      !ReadNextAvailableId(kNextResIdKey, &res_id))
     return false;
 
   *next_avail_registration_id = reg_id;
@@ -125,15 +129,13 @@ bool ServiceWorkerDatabase::LazyOpen(bool create_if_needed) {
   if (!status.ok()) {
     DCHECK(!db);
     // TODO(nhiroki): Should we retry to open the database?
-    DLOG(ERROR) << "Failed to open LevelDB database: " << status.ToString();
-    is_disabled_ = true;
+    HandleError(FROM_HERE, status);
     return false;
   }
   db_.reset(db);
 
   if (IsEmpty() && !PopulateInitialData()) {
     DLOG(ERROR) << "Failed to populate the database.";
-    is_disabled_ = true;
     db_.reset();
     return false;
   }
@@ -141,56 +143,45 @@ bool ServiceWorkerDatabase::LazyOpen(bool create_if_needed) {
 }
 
 bool ServiceWorkerDatabase::PopulateInitialData() {
-  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
-  batch->Put(kDatabaseVersionKey, base::Int64ToString(kCurrentSchemaVersion));
-  batch->Put(kNextRegIdKey, "0");
-  batch->Put(kNextResIdKey, "0");
-  batch->Put(kNextVerIdKey, "0");
-  return WriteBatch(batch.Pass());
+  leveldb::WriteBatch batch;
+  batch.Put(kDatabaseVersionKey, base::Int64ToString(kCurrentSchemaVersion));
+  batch.Put(kNextRegIdKey, base::Int64ToString(0));
+  batch.Put(kNextResIdKey, base::Int64ToString(0));
+  batch.Put(kNextVerIdKey, base::Int64ToString(0));
+  return WriteBatch(&batch);
 }
 
-bool ServiceWorkerDatabase::ReadInt64(
-    const leveldb::Slice& key,
-    int64* value_out) {
-  DCHECK(value_out);
+bool ServiceWorkerDatabase::ReadNextAvailableId(
+    const char* id_key, int64* next_avail_id) {
+  DCHECK(id_key);
+  DCHECK(next_avail_id);
 
   std::string value;
-  leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+  leveldb::Status status = db_->Get(leveldb::ReadOptions(), id_key, &value);
   if (!status.ok()) {
-    DLOG(ERROR) << "Failed to read data keyed by "
-                << key.ToString() << ": " << status.ToString();
-    is_disabled_ = true;
-    if (status.IsCorruption())
-      was_corruption_detected_ = true;
+    HandleError(FROM_HERE, status);
     return false;
   }
 
-  int64 parsed = -1;
+  int64 parsed;
   if (!base::StringToInt64(value, &parsed)) {
-    DLOG(ERROR) << "Database might be corrupted: "
-                << key.ToString() << ", " << value;
-    is_disabled_ = true;
-    was_corruption_detected_ = true;
+    HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
     return false;
   }
 
-  *value_out = parsed;
+  *next_avail_id = parsed;
   return true;
 }
 
-bool ServiceWorkerDatabase::WriteBatch(scoped_ptr<leveldb::WriteBatch> batch) {
-  if (!batch)
-    return true;
-
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch.get());
-  if (status.ok())
-    return true;
-
-  DLOG(ERROR) << "Failed to write the batch: " << status.ToString();
-  is_disabled_ = true;
-  if (status.IsCorruption())
-    was_corruption_detected_ = true;
-  return false;
+bool ServiceWorkerDatabase::WriteBatch(leveldb::WriteBatch* batch) {
+  DCHECK(batch);
+  DCHECK(!is_disabled_);
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch);
+  if (!status.ok()) {
+    HandleError(FROM_HERE, status);
+    return false;
+  }
+  return true;
 }
 
 bool ServiceWorkerDatabase::IsOpen() {
@@ -200,7 +191,21 @@ bool ServiceWorkerDatabase::IsOpen() {
 bool ServiceWorkerDatabase::IsEmpty() {
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   itr->SeekToFirst();
+  // TODO(nhiroki): Handle an error.
+  DCHECK(itr->status().ok());
   return !itr->Valid();
+}
+
+void ServiceWorkerDatabase::HandleError(
+    const tracked_objects::Location& from_here,
+    const leveldb::Status& status) {
+  // TODO(nhiroki): Add an UMA histogram.
+  DLOG(ERROR) << "Failed at: " << from_here.ToString()
+              << " with error: " << status.ToString();
+  is_disabled_ = true;
+  if (status.IsCorruption())
+    was_corruption_detected_ = true;
+  db_.reset();
 }
 
 }  // namespace content

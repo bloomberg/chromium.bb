@@ -17,17 +17,17 @@
 namespace leveldb {
 class DB;
 class Env;
-class Slice;
+class Status;
 class WriteBatch;
 }
 
 namespace content {
 
-// Class to persist serviceworker regitration data in a database.
+// Class to persist serviceworker registration data in a database.
 // Should NOT be used on the IO thread since this does blocking
 // file io. The ServiceWorkerStorage class owns this class and
 // is responsible for only calling it serially on background
-// nonIO threads (ala SequencedWorkerPool).
+// non-IO threads (ala SequencedWorkerPool).
 class CONTENT_EXPORT ServiceWorkerDatabase {
  public:
   // We do leveldb stuff in |path| or in memory if |path| is empty.
@@ -77,11 +77,15 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // and next available IDs.
   bool PopulateInitialData();
 
-  bool ReadInt64(const leveldb::Slice& key, int64* value_out);
-  bool WriteBatch(scoped_ptr<leveldb::WriteBatch> batch);
+  bool ReadNextAvailableId(const char* id_key,
+                           int64* next_avail_id);
+  bool WriteBatch(leveldb::WriteBatch* batch);
 
   bool IsOpen();
   bool IsEmpty();
+
+  void HandleError(const tracked_objects::Location& from_here,
+                   const leveldb::Status& status);
 
   base::FilePath path_;
   scoped_ptr<leveldb::Env> env_;
