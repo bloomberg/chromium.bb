@@ -51,6 +51,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/HashSet.h"
@@ -356,7 +357,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     m_channel->connect(m_url, protocolString);
 }
 
-void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionState& exceptionState)
+void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionState& exceptionState, WebSocketSendType dataType)
 {
     switch (result) {
     case WebSocketChannel::InvalidMessage:
@@ -366,6 +367,7 @@ void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionS
         logError("WebSocket send() failed.");
         return;
     case WebSocketChannel::SendSuccess:
+        blink::Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", dataType, WebSocketSendTypeMax);
         return;
     }
     ASSERT_NOT_REACHED();
@@ -399,7 +401,7 @@ void WebSocket::send(const String& message, ExceptionState& exceptionState)
         return;
     }
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(message), exceptionState);
+    handleSendResult(m_channel->send(message), exceptionState, WebSocketSendTypeString);
 }
 
 void WebSocket::send(ArrayBuffer* binaryData, ExceptionState& exceptionState)
@@ -415,7 +417,7 @@ void WebSocket::send(ArrayBuffer* binaryData, ExceptionState& exceptionState)
         return;
     }
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(*binaryData, 0, binaryData->byteLength()), exceptionState);
+    handleSendResult(m_channel->send(*binaryData, 0, binaryData->byteLength()), exceptionState, WebSocketSendTypeArrayBuffer);
 }
 
 void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& exceptionState)
@@ -432,7 +434,7 @@ void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& exception
     }
     ASSERT(m_channel);
     RefPtr<ArrayBuffer> arrayBuffer(arrayBufferView->buffer());
-    handleSendResult(m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()), exceptionState);
+    handleSendResult(m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()), exceptionState, WebSocketSendTypeArrayBufferView);
 }
 
 void WebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
@@ -448,7 +450,7 @@ void WebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
         return;
     }
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(binaryData->blobDataHandle()), exceptionState);
+    handleSendResult(m_channel->send(binaryData->blobDataHandle()), exceptionState, WebSocketSendTypeBlob);
 }
 
 void WebSocket::close(unsigned short code, const String& reason, ExceptionState& exceptionState)

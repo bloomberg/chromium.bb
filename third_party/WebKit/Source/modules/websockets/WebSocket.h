@@ -163,6 +163,14 @@ private:
         Timer<EventQueue> m_resumeTimer;
     };
 
+    enum WebSocketSendType {
+        WebSocketSendTypeString,
+        WebSocketSendTypeArrayBuffer,
+        WebSocketSendTypeArrayBufferView,
+        WebSocketSendTypeBlob,
+        WebSocketSendTypeMax,
+    };
+
     explicit WebSocket(ExecutionContext*);
 
     // Adds a console message with JSMessageSource and ErrorMessageLevel.
@@ -175,9 +183,11 @@ private:
 
     size_t getFramingOverhead(size_t payloadSize);
 
-    // Checks the result of WebSocketChannel::send() method, and shows console
-    // message and sets ec appropriately.
-    void handleSendResult(WebSocketChannel::SendResult, ExceptionState&);
+    // Checks the result of WebSocketChannel::send() method, and:
+    // - shows console message
+    // - sets ExceptionState appropriately
+    // - reports data for UMA.
+    void handleSendResult(WebSocketChannel::SendResult, ExceptionState&, WebSocketSendType);
 
     // Updates m_bufferedAmountAfterClose given the amount of data passed to
     // send() method after the state changed to CLOSING or CLOSED.
