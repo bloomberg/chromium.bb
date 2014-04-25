@@ -1020,6 +1020,7 @@
             '../media/media.gyp:media_test_support',
             '../media/media.gyp:shared_memory_support',
             '../mojo/mojo.gyp:mojo_bindings',
+            '../mojo/mojo.gyp:mojo_common_test_support',
             '../mojo/mojo.gyp:mojo_environment_chromium',
             '../mojo/mojo.gyp:mojo_service_manager',
             '../mojo/mojo.gyp:mojo_system_impl',

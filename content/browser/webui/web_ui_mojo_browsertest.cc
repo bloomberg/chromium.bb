@@ -23,6 +23,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "grit/content_resources.h"
+#include "mojo/common/test/test_utils.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/js/bindings/constants.h"
@@ -60,19 +61,6 @@ const float kExpectedFloatNan = std::numeric_limits<float>::quiet_NaN();
 // NaN has the property that it is not equal to itself.
 #define EXPECT_NAN(x) EXPECT_NE(x, x)
 
-// Returns the path to the mojom js bindings file.
-base::FilePath GetFilePathForJSResource(const std::string& path) {
-  std::string binding_path = "gen/" + path + ".js";
-#if defined(OS_WIN)
-  std::string tmp;
-  base::ReplaceChars(binding_path, "//", "\\", &tmp);
-  binding_path.swap(tmp);
-#endif
-  base::FilePath file_path;
-  PathService::Get(CHILD_PROCESS_EXE, &file_path);
-  return file_path.DirName().AppendASCII(binding_path);
-}
-
 // The bindings for the page are generated from a .mojom file. This code looks
 // up the generated file from disk and returns it.
 bool GetResource(const std::string& id,
@@ -85,7 +73,8 @@ bool GetResource(const std::string& id,
     return false;
 
   std::string contents;
-  CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents,
+  CHECK(base::ReadFileToString(mojo::test::GetFilePathForJSResource(id),
+                               &contents,
                                std::string::npos)) << id;
   base::RefCountedString* ref_contents = new base::RefCountedString;
   ref_contents->data() = contents;
@@ -335,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEndPing) {
   // pass.
   // TODO(sky): remove this conditional when isolates support copying from gen.
   const base::FilePath test_file_path(
-      GetFilePathForJSResource(
+      mojo::test::GetFilePathForJSResource(
           "content/test/data/web_ui_test_mojo_bindings.mojom"));
   if (!base::PathExists(test_file_path)) {
     LOG(WARNING) << " mojom binding file doesn't exist, assuming on isolate";
@@ -361,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEndEcho) {
   // pass.
   // TODO(sky): remove this conditional when isolates support copying from gen.
   const base::FilePath test_file_path(
-      GetFilePathForJSResource(
+      mojo::test::GetFilePathForJSResource(
           "content/test/data/web_ui_test_mojo_bindings.mojom"));
   if (!base::PathExists(test_file_path)) {
     LOG(WARNING) << " mojom binding file doesn't exist, assuming on isolate";

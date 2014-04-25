@@ -7,6 +7,10 @@
 
 #include <stddef.h>
 
+#include <string>
+
+#include "base/files/file_path.h"
+
 namespace mojo {
 
 namespace embedder {
@@ -37,6 +41,9 @@ bool NonBlockingRead(const embedder::PlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read);
+
+// Returns the path to the mojom js bindings file.
+base::FilePath GetFilePathForJSResource(const std::string& path);
 
 }  // namespace test
 }  // namespace mojo

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
@@ -11,6 +12,7 @@
 #include "gin/test/gtest.h"
 #include "mojo/bindings/js/core.h"
 #include "mojo/bindings/js/unicode.h"
+#include "mojo/common/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -45,13 +47,17 @@ TEST(JSTest, core) {
   RunTest("core_unittests.js", true);
 }
 
-// http://crbug.com/351214
-#if defined(OS_POSIX)
-#define MAYBE_codec DISABLED_codec
-#else
-#define MAYBE_codec codec
-#endif
-TEST(JSTest, MAYBE_codec) {
+TEST(JSTest, codec) {
+  // TODO(yzshen): Remove this check once isolated tests are supported on the
+  // Chromium waterfall. (http://crbug.com/351214)
+  const base::FilePath test_file_path(
+      test::GetFilePathForJSResource(
+          "mojo/public/interfaces/bindings/tests/sample_service.mojom"));
+  if (!base::PathExists(test_file_path)) {
+    LOG(WARNING) << "Mojom binding files don't exist. Skipping the test.";
+    return;
+  }
+
   RunTest("codec_unittests.js", true);
 }
 

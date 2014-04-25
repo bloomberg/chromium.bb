@@ -41,6 +41,7 @@
       'type': 'executable',
       'dependencies': [
         '../gin/gin.gyp:gin_test',
+        'mojo_common_test_support',
         'mojo_js_lib',
         'mojo_run_all_unittests',
         'mojo_public_test_interfaces',
