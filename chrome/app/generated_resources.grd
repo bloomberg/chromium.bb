@@ -5223,6 +5223,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_BODY" desc="Body of a dialog warning users they have development mode extensions running">
         Extensions running in developer mode can harm your computer. If you're not a developer, you should disable these extensions running in developer mode to stay safe.
       </message>
+      <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION" desc="The warning for the user that an extension may have been tampered with on disk.">
+        This extension may have been corrupted by malware.
+      </message>
 
       <!-- Settings API bubble -->
       <message name="IDS_EXTENSIONS_DISABLE_EXTENSIONS" desc="Text for the Disable Extensions (note: plural) button">
