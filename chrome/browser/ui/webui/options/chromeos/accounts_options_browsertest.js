@@ -9,7 +9,7 @@ AccountsOptionsWebUITest.prototype = {
 
   /**
    * Browse to accounts options.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/accounts',
 };
 

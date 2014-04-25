@@ -6,7 +6,7 @@
  * TestFixture for kiosk app settings WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function KioskAppSettingsWebUITest() {}
 
 KioskAppSettingsWebUITest.prototype = {

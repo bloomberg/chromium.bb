@@ -6,7 +6,7 @@
  * TestFixture for search engine manager WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function SearchEngineManagerWebUITest() {}
 
 SearchEngineManagerWebUITest.prototype = {
@@ -14,7 +14,7 @@ SearchEngineManagerWebUITest.prototype = {
 
   /**
    * Browse to the search engine manager.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/searchEngines',
 };
 

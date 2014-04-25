@@ -6,7 +6,7 @@
  * TestFixture for Invalidations WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function InvalidationsWebUITest() {}
 
 InvalidationsWebUITest.prototype = {
@@ -14,7 +14,7 @@ InvalidationsWebUITest.prototype = {
 
   /**
    * Browse to the Invalidations page.
-   **/
+   */
   browsePreload: 'chrome://invalidations',
   runAccessibilityChecks: false,
   accessibilityIssuesAreErrors: false

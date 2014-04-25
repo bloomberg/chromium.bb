@@ -6,7 +6,7 @@
  * TestFixture for autofill options WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function AutofillOptionsWebUITest() {}
 
 AutofillOptionsWebUITest.prototype = {
@@ -14,7 +14,7 @@ AutofillOptionsWebUITest.prototype = {
 
   /**
    * Browse to autofill options.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/autofill',
 };
 

@@ -6,7 +6,7 @@
  * TestFixture for content options WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function ContentOptionsWebUITest() {}
 
 ContentOptionsWebUITest.prototype = {
@@ -14,7 +14,7 @@ ContentOptionsWebUITest.prototype = {
 
   /**
    * Browse to content options.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/content',
 };
 

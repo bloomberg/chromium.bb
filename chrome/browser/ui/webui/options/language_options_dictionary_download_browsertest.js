@@ -7,7 +7,7 @@
  * options WebUI.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function LanguagesOptionsDictionaryDownloadWebUITest() {}
 
 LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
@@ -15,7 +15,7 @@ LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
 
   /**
    * Browse to languages options.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/languages',
 
   /**

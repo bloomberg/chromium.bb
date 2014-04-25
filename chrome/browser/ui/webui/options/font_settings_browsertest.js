@@ -6,7 +6,7 @@
  * TestFixture for font settings WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function FontSettingsWebUITest() {}
 
 FontSettingsWebUITest.prototype = {
@@ -14,7 +14,7 @@ FontSettingsWebUITest.prototype = {
 
   /**
    * Browse to the font settings page.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/fonts',
 
   /** @inheritDoc */

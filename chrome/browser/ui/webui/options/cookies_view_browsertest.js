@@ -6,7 +6,7 @@
  * TestFixture for cookies view WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function CookiesViewWebUITest() {}
 
 CookiesViewWebUITest.prototype = {
@@ -14,7 +14,7 @@ CookiesViewWebUITest.prototype = {
 
   /**
    * Browse to the cookies view.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/cookies',
 };
 

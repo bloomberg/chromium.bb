@@ -6,7 +6,7 @@
  * TestFixture for password manager WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function PasswordManagerWebUITest() {}
 
 PasswordManagerWebUITest.prototype = {
@@ -14,7 +14,7 @@ PasswordManagerWebUITest.prototype = {
 
   /**
    * Browse to the password manager.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/passwords',
 };
 

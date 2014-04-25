@@ -6,7 +6,7 @@
  * TestFixture for profile settings reset WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function ProfileSettingsResetWebUITest() {}
 
 ProfileSettingsResetWebUITest.prototype = {
@@ -14,7 +14,7 @@ ProfileSettingsResetWebUITest.prototype = {
 
   /**
    * Browse to the reset profile settings page.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/resetProfileSettings',
 };
 

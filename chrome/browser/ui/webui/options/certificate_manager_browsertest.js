@@ -10,7 +10,7 @@ GEN('#if defined(USE_NSS)');
  * TestFixture for certificate manager WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function CertificateManagerWebUIBaseTest() {}
 
 CertificateManagerWebUIBaseTest.prototype = {
@@ -18,7 +18,7 @@ CertificateManagerWebUIBaseTest.prototype = {
 
   /**
    * Browse to the certificate manager.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/certificates',
 
   /** @inheritDoc */
@@ -46,7 +46,7 @@ CertificateManagerWebUIBaseTest.prototype = {
  * TestFixture for certificate manager WebUI testing.
  * @extends {CertificateManagerWebUIBaseTest}
  * @constructor
- **/
+ */
 function CertificateManagerWebUIUnpopulatedTest() {}
 
 CertificateManagerWebUIUnpopulatedTest.prototype = {
@@ -141,7 +141,7 @@ TEST_F('CertificateManagerWebUIUnpopulatedTest',
  * TestFixture for certificate manager WebUI testing.
  * @extends {CertificateManagerWebUIBaseTest}
  * @constructor
- **/
+ */
 function CertificateManagerWebUITest() {}
 
 CertificateManagerWebUITest.prototype = {

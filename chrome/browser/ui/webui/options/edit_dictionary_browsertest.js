@@ -6,7 +6,7 @@
  * TestFixture for EditDictionaryOverlay WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function EditDictionaryWebUITest() {}
 
 EditDictionaryWebUITest.prototype = {

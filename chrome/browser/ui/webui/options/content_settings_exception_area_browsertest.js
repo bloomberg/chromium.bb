@@ -6,7 +6,7 @@
  * TestFixture for content settings exception area WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function ContentSettingsExceptionAreaWebUITest() {}
 
 ContentSettingsExceptionAreaWebUITest.prototype = {
@@ -14,7 +14,7 @@ ContentSettingsExceptionAreaWebUITest.prototype = {
 
   /**
    * Browse to the content settings exception area.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/contentExceptions',
 };
 
