@@ -244,6 +244,9 @@ class VIEWS_EXPORT Label : public View {
                                  gfx::Rect* text_bounds,
                                  int* flags) const;
 
+  // Updates any colors that have not been explicitly set from the theme.
+  void UpdateColorsFromTheme(const ui::NativeTheme* theme);
+
   // Resets |cached_heights_| and |cached_heights_cursor_| and mark
   // |text_size_valid_| as false.
   void ResetCachedSize();

@@ -217,9 +217,8 @@ void View::AddChildViewAt(View* view, int index) {
 
   // If |view| has a parent, remove it from its parent.
   View* parent = view->parent_;
-  ui::NativeTheme* old_theme = NULL;
+  const ui::NativeTheme* old_theme = view->GetNativeTheme();
   if (parent) {
-    old_theme = view->GetNativeTheme();
     if (parent == this) {
       ReorderChildView(view, index);
       return;
@@ -234,13 +233,6 @@ void View::AddChildViewAt(View* view, int index) {
   view->parent_ = this;
   children_.insert(children_.begin() + index, view);
 
-  views::Widget* widget = GetWidget();
-  if (widget) {
-    const ui::NativeTheme* new_theme = view->GetNativeTheme();
-    if (new_theme != old_theme)
-      view->PropagateNativeThemeChanged(new_theme);
-  }
-
   ViewHierarchyChangedDetails details(true, this, view, parent);
 
   for (View* v = this; v; v = v->parent_)
@@ -248,9 +240,12 @@ void View::AddChildViewAt(View* view, int index) {
 
   view->PropagateAddNotifications(details);
   UpdateTooltip();
+  views::Widget* widget = GetWidget();
   if (widget) {
     RegisterChildrenForVisibleBoundsNotification(view);
-
+    const ui::NativeTheme* new_theme = widget->GetNativeTheme();
+    if (new_theme != old_theme)
+      PropagateNativeThemeChanged(new_theme);
     if (view->visible())
       view->SchedulePaint();
   }
