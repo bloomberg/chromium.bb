@@ -738,8 +738,12 @@ class GitWrapper(SCMWrapper):
         'print_func': self.filter,
         'refs': []
     }
-    if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
-      mirror_kwargs['refs'].extend(['refs/tags/lkgr', 'refs/tags/lkcr'])
+    # TODO(hinoka): This currently just fails because lkcr/lkgr are branches
+    #               not tags. This also adds 20 seconds to every bot_update
+    #               run, so I'm commenting this out until lkcr/lkgr become
+    #               tags.  (2014/4/24)
+    # if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
+    #  mirror_kwargs['refs'].extend(['refs/tags/lkgr', 'refs/tags/lkcr'])
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
     mirror = git_cache.Mirror(url, **mirror_kwargs)
