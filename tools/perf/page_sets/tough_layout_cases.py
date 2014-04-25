@@ -32,6 +32,7 @@ class ToughLayoutCasesPageSet(page_set_module.PageSet):
       archive_data_file='data/tough_layout_cases.json')
 
     urls_list = [
+      'http://oilevent.com',
       'http://www.muzoboss.ru',
       'http://natunkantha.com',
       'http://www.mossiella.com',
