@@ -930,6 +930,7 @@
         'frame/custom_frame_view_ash_unittest.cc',
         'frame/default_header_painter_unittest.cc',
         'host/ash_window_tree_host_x11_unittest.cc',
+        'ime/candidate_view_unittest.cc',
         'ime/candidate_window_view_unittest.cc',
         'ime/input_method_menu_item_unittest.cc',
         'ime/input_method_menu_manager_unittest.cc',

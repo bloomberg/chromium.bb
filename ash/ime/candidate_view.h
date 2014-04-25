@@ -33,6 +33,8 @@ class ASH_EXPORT CandidateView : public views::CustomButton {
   // Sets infolist icon.
   void SetInfolistIcon(bool enable);
 
+  void SetHighlighted(bool highlighted);
+
  private:
   friend class CandidateWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
@@ -57,12 +59,12 @@ class ASH_EXPORT CandidateView : public views::CustomButton {
   views::Label* candidate_label_;
   // The annotation label renders annotations.
   views::Label* annotation_label_;
+  // The infolist icon.
+  views::View* infolist_icon_;
 
   int shortcut_width_;
   int candidate_width_;
-
-  // The infolist icon.
-  views::View* infolist_icon_;
+  bool highlighted_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateView);
 };
