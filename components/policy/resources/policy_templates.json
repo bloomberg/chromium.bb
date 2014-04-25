@@ -6375,17 +6375,21 @@
     },
     'doc_intro': {
       'desc': '''Introduction text for the generated policy documentation''',
-      'text': '''This is the list of policies that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> respects.
+      'text': '''(This document may include policies that are targeted for later
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> versions, those are
+      subject to change without notice. The list of supported policies is the
+      same for Chromium and Google Chrome.)
 
       You don't need to change these settings by hand!  You can download easy-to-use templates from
       <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">http://www.chromium.org/administrators/policy-templates<ex>
       http://www.chromium.org/administrators/policy-templates</ex></ph>.
 
-      The list of supported policies is the same for Chromium and Google Chrome.
-
       These policies are strictly intended to be used to configure instances of Chrome internal to your organization. Use of these policies outside of your organization (for example, in a publicly distributed program) is considered malware and will likely be labeled as malware by Google and anti-virus vendors.
 
-      Note: starting with Chrome 28, policies are loaded directly from the Group Policy API on Windows. Policies manually written to the registry will be ignored. See http://crbug.com/259236 for details.'''
+      Note: Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      28, policies are loaded directly from the Group Policy API on
+      Windows. Policies manually written to the registry will be ignored. See
+      http://crbug.com/259236 for details.'''
     },
     'doc_back_to_top': {
       'desc': '''Text of a link in the generated policy documentation, that takes the user to the top of the page''',
