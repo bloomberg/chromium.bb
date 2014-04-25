@@ -211,7 +211,7 @@ void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(
 
 void BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
     EnterpriseInstallAttributes* attributes) {
-  DCHECK((attributes == NULL) != (g_testing_install_attributes == NULL));
+  DCHECK(!g_testing_install_attributes);
   g_testing_install_attributes = attributes;
 }
 

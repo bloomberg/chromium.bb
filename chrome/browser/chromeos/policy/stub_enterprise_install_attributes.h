@@ -29,16 +29,6 @@ class StubEnterpriseInstallAttributes : public EnterpriseInstallAttributes {
   DISALLOW_COPY_AND_ASSIGN(StubEnterpriseInstallAttributes);
 };
 
-// Helper class to set enterprise install attributes in the scope of a test.
-class ScopedStubEnterpriseInstallAttributes {
- public:
-  ScopedStubEnterpriseInstallAttributes(const std::string& domain,
-                                        const std::string& registration_user,
-                                        const std::string& device_id,
-                                        DeviceMode mode);
-  ~ScopedStubEnterpriseInstallAttributes();
-};
-
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_CHROMEOS_POLICY_STUB_ENTERPRISE_INSTALL_ATTRIBUTES_H_

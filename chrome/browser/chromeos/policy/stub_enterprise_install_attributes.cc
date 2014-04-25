@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace policy {
@@ -31,25 +30,6 @@ void StubEnterpriseInstallAttributes::SetDeviceId(const std::string& id) {
 
 void StubEnterpriseInstallAttributes::SetMode(DeviceMode mode) {
   registration_mode_ = mode;
-}
-
-ScopedStubEnterpriseInstallAttributes::ScopedStubEnterpriseInstallAttributes(
-    const std::string& domain,
-    const std::string& registration_user,
-    const std::string& device_id,
-    DeviceMode mode) {
-  StubEnterpriseInstallAttributes* attributes =
-      new StubEnterpriseInstallAttributes();
-  attributes->SetDomain(domain);
-  attributes->SetRegistrationUser(registration_user);
-  attributes->SetDeviceId(device_id);
-  attributes->SetMode(mode);
-  BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(attributes);
-}
-
-ScopedStubEnterpriseInstallAttributes::
-~ScopedStubEnterpriseInstallAttributes() {
-  BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(NULL);
 }
 
 }  // namespace policy
