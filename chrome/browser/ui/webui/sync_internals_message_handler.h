@@ -66,6 +66,10 @@ class SyncInternalsMessageHandler
   ProfileSyncService* GetProfileSyncService();
 
   base::WeakPtr<syncer::JsController> js_controller_;
+
+  // A flag used to prevent double-registration with ProfileSyncService.
+  bool is_registered_;
+
   base::WeakPtrFactory<SyncInternalsMessageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncInternalsMessageHandler);

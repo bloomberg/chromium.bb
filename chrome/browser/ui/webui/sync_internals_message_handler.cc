@@ -22,7 +22,8 @@ using syncer::ModelTypeSet;
 using syncer::WeakHandle;
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
-    : weak_ptr_factory_(this) {}
+    : is_registered_(false),
+      weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
   if (js_controller_)
@@ -63,12 +64,16 @@ void SyncInternalsMessageHandler::HandleRegisterForEvents(
     const base::ListValue* args) {
   DCHECK(args->empty());
 
+  // is_registered_ flag protects us from double-registering.  This could
+  // happen on a page refresh, where the JavaScript gets re-run but the
+  // message handler remains unchanged.
   ProfileSyncService* service = GetProfileSyncService();
-  if (service) {
+  if (service && !is_registered_) {
     service->AddObserver(this);
     service->AddProtocolEventObserver(this);
     js_controller_ = service->GetJsController();
     js_controller_->AddJsEventHandler(this);
+    is_registered_ = true;
   }
 }
 
@@ -113,12 +118,9 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
     int request_id,
     scoped_ptr<base::ListValue> nodes) {
-  base::ListValue response_args;
-  response_args.Append(new base::FundamentalValue(request_id));
-  response_args.Append(nodes.release());
-
+  base::FundamentalValue id(request_id);
   web_ui()->CallJavascriptFunction("chrome.sync.getAllNodesCallback",
-                                   response_args);
+                                   id, *nodes);
 }
 
 void SyncInternalsMessageHandler::OnStateChanged() {
