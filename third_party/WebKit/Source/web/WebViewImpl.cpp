@@ -3805,12 +3805,6 @@ void WebViewImpl::scheduleAnimation()
         m_client->scheduleAnimation();
 }
 
-void WebViewImpl::setCompositorCreationFailed()
-{
-    m_page->settings().setAcceleratedCompositingEnabled(false);
-    m_page->updateAcceleratedCompositingSettings();
-}
-
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 {
     blink::Platform::current()->histogramEnumeration("GPU.setIsAcceleratedCompositingActive", active * 2 + m_isAcceleratedCompositingActive, 4);
@@ -3879,7 +3873,8 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             ASSERT(m_client->allowsBrokenNullLayerTreeView());
             m_isAcceleratedCompositingActive = false;
             m_client->didDeactivateCompositor();
-            setCompositorCreationFailed();
+            m_page->settings().setAcceleratedCompositingEnabled(false);
+            m_page->updateAcceleratedCompositingSettings();
         }
     }
     if (page())
@@ -3934,20 +3929,6 @@ void WebViewImpl::applyScrollAndScale(const WebSize& scrollDelta, float pageScal
         setPageScaleFactor(pageScaleFactor() * pageScaleDelta, scrollPoint);
         m_doubleTapZoomPending = false;
     }
-}
-
-void WebViewImpl::didExitCompositingMode()
-{
-    ASSERT(m_isAcceleratedCompositingActive);
-    setIsAcceleratedCompositingActive(false);
-    setCompositorCreationFailed();
-    m_client->didInvalidateRect(IntRect(0, 0, m_size.width, m_size.height));
-
-    // Force a style recalc to remove all the composited layers.
-    m_page->mainFrame()->document()->setNeedsStyleRecalc(SubtreeStyleChange);
-
-    if (m_pageOverlays)
-        m_pageOverlays->update();
 }
 
 void WebViewImpl::updateLayerTreeViewport()

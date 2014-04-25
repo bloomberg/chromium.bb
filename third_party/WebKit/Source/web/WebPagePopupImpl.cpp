@@ -309,14 +309,6 @@ void WebPagePopupImpl::enterForceCompositingMode(bool enter)
     }
 }
 
-void WebPagePopupImpl::didExitCompositingMode()
-{
-    setIsAcceleratedCompositingActive(false);
-    m_widgetClient->didInvalidateRect(IntRect(0, 0, size().width, size().height));
-    if (m_page)
-        m_page->mainFrame()->document()->setNeedsStyleRecalc(SubtreeStyleChange);
-}
-
 void WebPagePopupImpl::willCloseLayerTreeView()
 {
     setIsAcceleratedCompositingActive(false);

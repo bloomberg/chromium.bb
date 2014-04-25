@@ -73,7 +73,6 @@ private:
     virtual void animate(double) OVERRIDE;
     virtual void layout() OVERRIDE;
     virtual void enterForceCompositingMode(bool enter) OVERRIDE;
-    virtual void didExitCompositingMode() OVERRIDE;
     virtual void willCloseLayerTreeView() OVERRIDE;
     virtual void paint(WebCanvas*, const WebRect&, PaintOptions = ReadbackFromCompositorIfAvailable) OVERRIDE;
     virtual void resize(const WebSize&) OVERRIDE;

@@ -138,7 +138,6 @@ public:
     virtual void didNotAcquirePointerLock() OVERRIDE;
     virtual void didLosePointerLock() OVERRIDE;
     virtual void didChangeWindowResizerRect() OVERRIDE;
-    virtual void didExitCompositingMode() OVERRIDE;
 
     // WebView methods:
     virtual void setMainFrame(WebFrame*) OVERRIDE;
@@ -545,7 +544,6 @@ private:
 
     void configureAutoResizeMode();
 
-    void setCompositorCreationFailed();
     void setIsAcceleratedCompositingActive(bool);
     void doComposite();
     void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);

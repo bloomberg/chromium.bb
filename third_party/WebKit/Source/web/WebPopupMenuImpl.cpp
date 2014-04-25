@@ -235,12 +235,6 @@ void WebPopupMenuImpl::enterForceCompositingMode(bool enter)
     }
 }
 
-void WebPopupMenuImpl::didExitCompositingMode()
-{
-    enterForceCompositingMode(false);
-    m_client->didInvalidateRect(IntRect(0, 0, m_size.width, m_size.height));
-}
-
 void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool, WebFloatRect&)
 {
     if (!m_widget)
