@@ -5,13 +5,22 @@
 #ifndef MEDIA_CAST_LOGGING_LOG_DESERIALIZER_H_
 #define MEDIA_CAST_LOGGING_LOG_DESERIALIZER_H_
 
+#include <map>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
-#include "media/cast/logging/encoding_event_subscriber.h"
+#include "base/memory/linked_ptr.h"
+#include "media/cast/logging/logging_defines.h"
+#include "media/cast/logging/proto/raw_events.pb.h"
 
 namespace media {
 namespace cast {
+
+typedef std::map<RtpTimestamp,
+                 linked_ptr<media::cast::proto::AggregatedFrameEvent> >
+    FrameEventMap;
+typedef std::map<RtpTimestamp,
+                 linked_ptr<media::cast::proto::AggregatedPacketEvent> >
+    PacketEventMap;
 
 // Represents deserialized raw event logs for a particular stream.
 struct DeserializedLog {

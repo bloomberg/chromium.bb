@@ -5,6 +5,7 @@
 // Joint LogSerializer and LogDeserializer testing to make sure they stay in
 // sync.
 
+#include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/log_deserializer.h"
 #include "media/cast/logging/log_serializer.h"
 #include "media/cast/logging/logging_defines.h"
@@ -66,8 +67,7 @@ class SerializeDeserializeTest : public ::testing::Test {
           kEncodedFrameSize[i % arraysize(kEncodedFrameSize)]);
       frame_event->set_delay_millis(kDelayMillis[i % arraysize(kDelayMillis)]);
 
-      frame_event_map_.insert(
-          std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
+      frame_event_list_.push_back(frame_event);
     }
 
     event_time_ms = 0;
@@ -88,8 +88,7 @@ class SerializeDeserializeTest : public ::testing::Test {
           event_time_ms += 256;
         }
       }
-      packet_event_map_.insert(
-          std::make_pair(packet_event->relative_rtp_timestamp(), packet_event));
+      packet_event_list_.push_back(packet_event);
     }
   }
 
@@ -102,39 +101,37 @@ class SerializeDeserializeTest : public ::testing::Test {
               returned_metadata.SerializeAsString());
 
     // Check that the returned map is equal to the original map.
-    EXPECT_EQ(frame_event_map_.size(), returned_frame_events.size());
+    EXPECT_EQ(frame_event_list_.size(), returned_frame_events.size());
     for (FrameEventMap::const_iterator frame_it = returned_frame_events.begin();
          frame_it != returned_frame_events.end();
          ++frame_it) {
-      FrameEventMap::iterator original_it =
-          frame_event_map_.find(frame_it->first);
-      ASSERT_NE(frame_event_map_.end(), original_it);
+      FrameEventList::iterator original_it = frame_event_list_.begin();
+      ASSERT_NE(frame_event_list_.end(), original_it);
       // Compare protos by serializing and checking the bytes.
-      EXPECT_EQ(original_it->second->SerializeAsString(),
+      EXPECT_EQ((*original_it)->SerializeAsString(),
                 frame_it->second->SerializeAsString());
-      frame_event_map_.erase(original_it);
+      frame_event_list_.erase(frame_event_list_.begin());
     }
-    EXPECT_TRUE(frame_event_map_.empty());
+    EXPECT_TRUE(frame_event_list_.empty());
 
-    EXPECT_EQ(packet_event_map_.size(), returned_packet_events.size());
+    EXPECT_EQ(packet_event_list_.size(), returned_packet_events.size());
     for (PacketEventMap::const_iterator packet_it =
              returned_packet_events.begin();
          packet_it != returned_packet_events.end();
          ++packet_it) {
-      PacketEventMap::iterator original_it =
-          packet_event_map_.find(packet_it->first);
-      ASSERT_NE(packet_event_map_.end(), original_it);
+      PacketEventList::iterator original_it = packet_event_list_.begin();
+      ASSERT_NE(packet_event_list_.end(), original_it);
       // Compare protos by serializing and checking the bytes.
-      EXPECT_EQ(original_it->second->SerializeAsString(),
+      EXPECT_EQ((*original_it)->SerializeAsString(),
                 packet_it->second->SerializeAsString());
-      packet_event_map_.erase(original_it);
+      packet_event_list_.erase(packet_event_list_.begin());
     }
-    EXPECT_TRUE(packet_event_map_.empty());
+    EXPECT_TRUE(packet_event_list_.empty());
   }
 
   LogMetadata metadata_;
-  FrameEventMap frame_event_map_;
-  PacketEventMap packet_event_map_;
+  FrameEventList frame_event_list_;
+  PacketEventList packet_event_list_;
   scoped_ptr<char[]> serialized_;
   int output_bytes_;
 };
@@ -144,8 +141,8 @@ TEST_F(SerializeDeserializeTest, Uncompressed) {
   Init();
 
   bool success = SerializeEvents(metadata_,
-                                 frame_event_map_,
-                                 packet_event_map_,
+                                 frame_event_list_,
+                                 packet_event_list_,
                                  compressed,
                                  kMaxSerializedBytes,
                                  serialized_.get(),
@@ -167,8 +164,8 @@ TEST_F(SerializeDeserializeTest, UncompressedInsufficientSpace) {
   Init();
   serialized_.reset(new char[100]);
   bool success = SerializeEvents(metadata_,
-                                 frame_event_map_,
-                                 packet_event_map_,
+                                 frame_event_list_,
+                                 packet_event_list_,
                                  compressed,
                                  100,
                                  serialized_.get(),
@@ -181,8 +178,8 @@ TEST_F(SerializeDeserializeTest, Compressed) {
   bool compressed = true;
   Init();
   bool success = SerializeEvents(metadata_,
-                                 frame_event_map_,
-                                 packet_event_map_,
+                                 frame_event_list_,
+                                 packet_event_list_,
                                  compressed,
                                  kMaxSerializedBytes,
                                  serialized_.get(),
@@ -203,8 +200,8 @@ TEST_F(SerializeDeserializeTest, CompressedInsufficientSpace) {
   Init();
   serialized_.reset(new char[100]);
   bool success = SerializeEvents(metadata_,
-                                 frame_event_map_,
-                                 packet_event_map_,
+                                 frame_event_list_,
+                                 packet_event_list_,
                                  compressed,
                                  100,
                                  serialized_.get(),

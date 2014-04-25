@@ -775,8 +775,8 @@ net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
 }
 
 void DumpLoggingData(const media::cast::proto::LogMetadata& log_metadata,
-                     const media::cast::FrameEventMap& frame_events,
-                     const media::cast::PacketEventMap& packet_events,
+                     const media::cast::FrameEventList& frame_events,
+                     const media::cast::PacketEventList& packet_events,
                      base::ScopedFILE log_file) {
   VLOG(0) << "Frame map size: " << frame_events.size();
   VLOG(0) << "Packet map size: " << packet_events.size();
@@ -814,8 +814,8 @@ void WriteLogsToFileAndStopSubscribing(
 
   VLOG(0) << "Dumping logging data for video stream.";
   media::cast::proto::LogMetadata log_metadata;
-  media::cast::FrameEventMap frame_events;
-  media::cast::PacketEventMap packet_events;
+  media::cast::FrameEventList frame_events;
+  media::cast::PacketEventList packet_events;
   video_event_subscriber->GetEventsAndReset(
       &log_metadata, &frame_events, &packet_events);
 

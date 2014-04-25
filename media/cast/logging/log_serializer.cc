@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 //
 // The serialization format is as follows:
-//   8-bit integer describing |is_audio|.
-//   32-bit integer describing |first_rtp_timestamp|.
+//   16-bit integer describing the following LogMetadata proto size in bytes.
+//   The LogMetadata proto.
 //   32-bit integer describing number of frame events.
 //   (The following repeated for number of frame events):
 //     16-bit integer describing the following AggregatedFrameEvent proto size
@@ -19,6 +19,8 @@
 #include "media/cast/logging/log_serializer.h"
 
 #include "base/big_endian.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/zlib/zlib.h"
 
 namespace media {
@@ -33,15 +35,18 @@ using media::cast::proto::LogMetadata;
 // Use 30MB of temp buffer to hold uncompressed data if |compress| is true.
 const int kMaxUncompressedBytes = 30 * 1000 * 1000;
 
+// The maximum allowed size per serialized proto.
+const int kMaxSerializedProtoBytes = (1 << 16) - 1;
 bool DoSerializeEvents(const LogMetadata& metadata,
-                       const FrameEventMap& frame_events,
-                       const PacketEventMap& packet_events,
+                       const FrameEventList& frame_events,
+                       const PacketEventList& packet_events,
                        const int max_output_bytes,
                        char* output,
                        int* output_bytes) {
   base::BigEndianWriter writer(output, max_output_bytes);
 
   int proto_size = metadata.ByteSize();
+  DCHECK(proto_size <= kMaxSerializedProtoBytes);
   if (!writer.WriteU16(proto_size))
     return false;
   if (!metadata.SerializeToArray(writer.ptr(), writer.remaining()))
@@ -50,19 +55,22 @@ bool DoSerializeEvents(const LogMetadata& metadata,
     return false;
 
   RtpTimestamp prev_rtp_timestamp = 0;
-  for (media::cast::FrameEventMap::const_iterator it = frame_events.begin();
+  for (media::cast::FrameEventList::const_iterator it = frame_events.begin();
        it != frame_events.end();
        ++it) {
-    media::cast::proto::AggregatedFrameEvent frame_event(*(it->second));
+    media::cast::proto::AggregatedFrameEvent frame_event(**it);
 
     // Adjust relative RTP timestamp so that it is relative to previous frame,
     // rather than relative to first RTP timestamp.
     // This is done to improve encoding size.
+    RtpTimestamp old_relative_rtp_timestamp =
+        frame_event.relative_rtp_timestamp();
     frame_event.set_relative_rtp_timestamp(
-        frame_event.relative_rtp_timestamp() - prev_rtp_timestamp);
-    prev_rtp_timestamp = it->first;
+        old_relative_rtp_timestamp - prev_rtp_timestamp);
+    prev_rtp_timestamp = old_relative_rtp_timestamp;
 
     proto_size = frame_event.ByteSize();
+    DCHECK(proto_size <= kMaxSerializedProtoBytes);
 
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
@@ -75,15 +83,18 @@ bool DoSerializeEvents(const LogMetadata& metadata,
 
   // Write packet events.
   prev_rtp_timestamp = 0;
-  for (media::cast::PacketEventMap::const_iterator it = packet_events.begin();
+  for (media::cast::PacketEventList::const_iterator it = packet_events.begin();
        it != packet_events.end();
        ++it) {
-    media::cast::proto::AggregatedPacketEvent packet_event(*(it->second));
+    media::cast::proto::AggregatedPacketEvent packet_event(**it);
+    RtpTimestamp old_relative_rtp_timestamp =
+        packet_event.relative_rtp_timestamp();
     packet_event.set_relative_rtp_timestamp(
-        packet_event.relative_rtp_timestamp() - prev_rtp_timestamp);
-    prev_rtp_timestamp = it->first;
+        old_relative_rtp_timestamp - prev_rtp_timestamp);
+    prev_rtp_timestamp = old_relative_rtp_timestamp;
 
     proto_size = packet_event.ByteSize();
+    DCHECK(proto_size <= kMaxSerializedProtoBytes);
 
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
@@ -138,8 +149,8 @@ bool Compress(char* uncompressed_buffer,
 }  // namespace
 
 bool SerializeEvents(const LogMetadata& log_metadata,
-                     const FrameEventMap& frame_events,
-                     const PacketEventMap& packet_events,
+                     const FrameEventList& frame_events,
+                     const PacketEventList& packet_events,
                      bool compress,
                      int max_output_bytes,
                      char* output,

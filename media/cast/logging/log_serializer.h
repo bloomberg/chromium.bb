@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/encoding_event_subscriber.h"
 
 namespace media {
@@ -25,8 +24,8 @@ namespace cast {
 //
 // See .cc file for format specification.
 bool SerializeEvents(const media::cast::proto::LogMetadata& log_metadata,
-                     const FrameEventMap& frame_events,
-                     const PacketEventMap& packet_events,
+                     const FrameEventList& frame_events,
+                     const PacketEventList& packet_events,
                      bool compress,
                      int max_output_bytes,
                      char* output,

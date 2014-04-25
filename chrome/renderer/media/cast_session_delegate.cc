@@ -213,8 +213,8 @@ void CastSessionDelegate::GetEventLogsAndReset(
   }
 
   media::cast::proto::LogMetadata metadata;
-  media::cast::FrameEventMap frame_events;
-  media::cast::PacketEventMap packet_events;
+  media::cast::FrameEventList frame_events;
+  media::cast::PacketEventList packet_events;
 
   subscriber->GetEventsAndReset(&metadata, &frame_events, &packet_events);
 

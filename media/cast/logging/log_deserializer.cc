@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/zlib/zlib.h"
 
 using media::cast::FrameEventMap;
@@ -15,6 +16,7 @@ using media::cast::PacketEventMap;
 using media::cast::RtpTimestamp;
 using media::cast::proto::AggregatedFrameEvent;
 using media::cast::proto::AggregatedPacketEvent;
+using media::cast::proto::BasePacketEvent;
 using media::cast::proto::LogMetadata;
 
 namespace {
@@ -24,6 +26,38 @@ namespace {
 // since the there are two streams in the blob.
 // Keep in sync with media/cast/logging/log_serializer.cc.
 const int kMaxUncompressedBytes = 60 * 1000 * 1000;
+
+void MergePacketEvent(const AggregatedPacketEvent& from,
+    linked_ptr<AggregatedPacketEvent> to) {
+  for (int i = 0; i < from.base_packet_event_size(); i++) {
+    const BasePacketEvent& from_base_event = from.base_packet_event(i);
+    bool merged = false;
+    for (int j = 0; j < to->base_packet_event_size(); j++) {
+      BasePacketEvent* to_base_event = to->mutable_base_packet_event(i);
+      if (from_base_event.packet_id() == to_base_event->packet_id()) {
+        to_base_event->MergeFrom(from_base_event);
+        merged = true;
+        break;
+      }
+    }
+    if (!merged) {
+      BasePacketEvent* to_base_event = to->add_base_packet_event();
+      to_base_event->CopyFrom(from_base_event);
+    }
+  }
+}
+
+void MergeFrameEvent(const AggregatedFrameEvent& from,
+    linked_ptr<AggregatedFrameEvent> to) {
+  to->mutable_event_type()->MergeFrom(from.event_type());
+  to->mutable_event_timestamp_ms()->MergeFrom(from.event_timestamp_ms());
+  if (!to->has_encoded_frame_size())
+    to->set_encoded_frame_size(from.encoded_frame_size());
+  if (!to->has_delay_millis())
+    to->set_delay_millis(from.delay_millis());
+  if (!to->has_key_frame())
+    to->set_key_frame(from.key_frame());
+}
 
 bool PopulateDeserializedLog(base::BigEndianReader* reader,
                              media::cast::DeserializedLog* log) {
@@ -50,12 +84,15 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
         frame_event->relative_rtp_timestamp() + relative_rtp_timestamp);
     relative_rtp_timestamp = frame_event->relative_rtp_timestamp();
 
-    std::pair<FrameEventMap::iterator, bool> result = frame_event_map.insert(
-        std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
-    if (!result.second) {
-      VLOG(1) << "Duplicate frame event entry detected: "
-              << frame_event->relative_rtp_timestamp();
-      return false;
+    FrameEventMap::iterator it = frame_event_map.find(
+        frame_event->relative_rtp_timestamp());
+    if (it == frame_event_map.end()) {
+      frame_event_map.insert(
+          std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
+    } else {
+      // Events for the same frame might have been split into more than one
+      // proto. Merge them.
+      MergeFrameEvent(*frame_event, it->second);
     }
   }
 
@@ -77,12 +114,15 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
         packet_event->relative_rtp_timestamp() + relative_rtp_timestamp);
     relative_rtp_timestamp = packet_event->relative_rtp_timestamp();
 
-    std::pair<PacketEventMap::iterator, bool> result = packet_event_map.insert(
-        std::make_pair(packet_event->relative_rtp_timestamp(), packet_event));
-    if (!result.second) {
-      VLOG(1) << "Duplicate packet event entry detected: "
-              << packet_event->relative_rtp_timestamp();
-      return false;
+    PacketEventMap::iterator it = packet_event_map.find(
+        packet_event->relative_rtp_timestamp());
+    if (it == packet_event_map.end()) {
+      packet_event_map.insert(
+          std::make_pair(packet_event->relative_rtp_timestamp(), packet_event));
+    } else {
+      // Events for the same frame might have been split into more than one
+      // proto. Merge them.
+      MergePacketEvent(*packet_event, it->second);
     }
   }
 
