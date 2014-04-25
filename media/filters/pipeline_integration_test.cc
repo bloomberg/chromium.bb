@@ -655,7 +655,8 @@ TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
   Stop();
 }
 
-TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
+// Disabled until the fix for http://crbug.com/366750 is landed.
+TEST_P(PipelineIntegrationTest, DISABLED_BasicPlayback_MediaSource_Opus_WebM) {
   MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile, GetParam());
   StartPipelineWithMediaSource(&source);
