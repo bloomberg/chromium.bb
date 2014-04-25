@@ -34,6 +34,7 @@
         '--cxx-compiler=<(_cxx)',
         '--jobs=<(_jobs)',
         '--build-method=<(_build_method)',
+        '--sanitizer-blacklist=<(_sanitizer_blacklist)',
       ],
     },
   ],

@@ -129,7 +129,7 @@ def destdir_configure_make_install(parsed_arguments, environment,
       # errors in dependent libraries.
       'rm %s/lib/*.la -f' % destdir,
       # Now move the contents of the temporary destdir to their final place.
-      'cp %s/* %s/ -rd' % (destdir, install_prefix)],
+      'cp %s/* %s/ -rdf' % (destdir, install_prefix)],
                      parsed_arguments.verbose, environment)
 
 
@@ -265,15 +265,24 @@ def download_build_install(parsed_arguments):
     environment['CC'] = parsed_arguments.c_compiler
   if 'CXX' not in environment and parsed_arguments.cxx_compiler:
     environment['CXX'] = parsed_arguments.cxx_compiler
-  environment['CFLAGS'] = '%s %s' % (sanitizer_params['compiler_flags'],
+
+  product_directory = os.path.normpath('%s/%s' % (
+      get_script_absolute_path(),
+      parsed_arguments.product_directory))
+
+  compiler_flags = sanitizer_params['compiler_flags']
+  if parsed_arguments.sanitizer_blacklist:
+    compiler_flags += ' -fsanitize-blacklist=%s/%s' % (
+        product_directory,
+        parsed_arguments.sanitizer_blacklist)
+  environment['CFLAGS'] = '%s %s' % (compiler_flags,
                                      parsed_arguments.custom_c_compiler_flags)
   environment['CXXFLAGS'] = '%s %s' % (
-      sanitizer_params['compiler_flags'],
+      compiler_flags,
       parsed_arguments.custom_cxx_compiler_flags)
 
-  install_prefix = '%s/%s/instrumented_libraries/%s' % (
-      get_script_absolute_path(),
-      parsed_arguments.product_directory,
+  install_prefix = '%s/instrumented_libraries/%s' % (
+      product_directory,
       parsed_arguments.sanitizer_type)
 
   # Make sure the linker searches the instrumented libraries dir for
@@ -350,6 +359,7 @@ def main():
   # e.g. extracting archives with sources, patching makefiles, etc.
   argument_parser.add_argument('--run-before-build', default='')
   argument_parser.add_argument('--build-method', default='destdir')
+  argument_parser.add_argument('--sanitizer-blacklist', default='')
 
   # Ignore all empty arguments because in several cases gyp passes them to the
   # script, but ArgumentParser treats them as positional arguments instead of

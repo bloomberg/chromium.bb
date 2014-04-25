@@ -21,12 +21,15 @@
   'conditions': [
     ['asan==1', {
       'sanitizer_type': 'asan',
+      'sanitizer_blacklist': '',
     }],
     ['msan==1', {
       'sanitizer_type': 'msan',
+      'sanitizer_blacklist': '<(msan_blacklist)',
     }],
     ['tsan==1', {
       'sanitizer_type': 'tsan',
+      'sanitizer_blacklist': '<(tsan_blacklist)',
     }],
     ['verbose_libraries_build==1', {
       'verbose_libraries_build_flag': '--verbose',
