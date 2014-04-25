@@ -84,6 +84,11 @@ void PageRuntimeAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
     if (!m_enabled)
         return;
     ASSERT(m_frontend);
+
+    if (frame == m_inspectedPage->mainFrame()) {
+        m_scriptStateToId.clear();
+        m_frontend->executionContextsCleared();
+    }
     String frameId = m_pageAgent->frameId(frame);
     addExecutionContextToFrontend(NewScriptState::forMainWorld(frame), true, "", frameId);
 }
