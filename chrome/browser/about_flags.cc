@@ -984,14 +984,14 @@ const Experiment kExperiments[] = {
     kOsLinux | kOsWin | kOsCrOS,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch, switches::kDisablePinch),
   },
+#endif  // defined(USE_ASH)
   {
     "enable-pinch-virtual-viewport",
     IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_NAME,
     IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION,
-    kOsLinux | kOsWin | kOsCrOS,
+    kOsLinux | kOsWin | kOsAndroid,
     SINGLE_VALUE_TYPE(cc::switches::kEnablePinchVirtualViewport),
   },
-#endif  // defined(USE_ASH)
   {
     "enable-viewport-meta",
     IDS_FLAGS_ENABLE_VIEWPORT_META_NAME,
