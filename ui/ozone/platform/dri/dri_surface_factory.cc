@@ -115,7 +115,7 @@ void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
   image->draw(canvas, &real_damage, real_damage, NULL);
 
   last_damage_ = damage;
-  CHECK(dri_->SchedulePageFlip(widget_));
+  dri_->SchedulePageFlip(widget_);
 }
 
 scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
