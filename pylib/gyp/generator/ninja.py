@@ -1890,7 +1890,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                sys.executable))
     master_ninja.rule(
       'asm',
-      description='ASM $in',
+      description='ASM $out',
       command=('%s gyp-win-tool asm-wrapper '
                '$arch $asm $defines $includes $asmflags /c /Fo $out $in' %
                sys.executable))
