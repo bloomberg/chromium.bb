@@ -3,5 +3,19 @@ Repaint test for http://bugs.webkit.org/show_bug.cgi?id=11452 REGRESSION (r16736
 (repaint rects
   (rect 8 64 100 100)
   (rect 8 64 100 100)
+  (rect 0 -20 785 600)
+  (rect 0 -20 785 2016)
+  (rect 8 8 769 40)
+  (rect 8 64 100 100)
+)
+(GraphicsLayer
+  (bounds 785.00 2016.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 2016.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
 )
 

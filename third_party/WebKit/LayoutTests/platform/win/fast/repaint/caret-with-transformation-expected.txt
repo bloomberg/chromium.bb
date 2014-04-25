@@ -1,6 +1,16 @@
 This test verifies caret repaint is correctly transformed.
-(repaint rects
-  (rect 41 35 14 20)
-  (rect 322 197 14 21)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 41.00 35.00 14.00 20.00)
+        (rect 322.00 197.00 14.00 21.00)
+      )
+    )
+  )
 )
 

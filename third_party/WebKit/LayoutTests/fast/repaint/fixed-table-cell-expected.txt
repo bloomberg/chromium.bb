@@ -3,5 +3,19 @@
   (rect 0 -100 100 100)
   (rect 0 -100 350 350)
   (rect 50 100 100 100)
+  (rect 0 -100 800 600)
+  (rect 0 -100 800 2016)
+  (rect 0 -100 350 350)
+  (rect 50 100 100 100)
+)
+(GraphicsLayer
+  (bounds 800.00 2016.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 2016.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
 )
 

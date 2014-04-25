@@ -2,9 +2,19 @@ This is a repaint test for http://bugzilla.opendarwin.org/show_bug.cgi?id=7204 f
 
 There should be a green square below.
 
-(repaint rects
-  (rect 8 110 784 100)
-  (rect 8 110 100 100)
-  (rect 8 210 100 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 110.00 784.00 100.00)
+        (rect 8.00 110.00 100.00 100.00)
+        (rect 8.00 210.00 100.00 100.00)
+      )
+    )
+  )
 )
 
