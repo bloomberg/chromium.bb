@@ -60,6 +60,12 @@ public:
     // WebEmbeddedWorker overrides.
     virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) OVERRIDE;
     virtual void terminateWorkerContext() OVERRIDE;
+    virtual void resumeWorkerContext() OVERRIDE;
+    virtual void attachDevTools() OVERRIDE;
+    virtual void reattachDevTools(const WebString& savedState) OVERRIDE;
+    virtual void detachDevTools() OVERRIDE;
+    virtual void dispatchDevToolsMessage(const WebString&) OVERRIDE;
+
 
 private:
     class Loader;

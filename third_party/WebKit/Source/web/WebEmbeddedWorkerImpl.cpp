@@ -31,10 +31,14 @@
 #include "config.h"
 #include "web/WebEmbeddedWorkerImpl.h"
 
+#include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
+#include "core/inspector/WorkerDebuggerAgent.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/SubstituteData.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
@@ -181,6 +185,65 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
         m_mainScriptLoader->cancel();
     if (m_workerThread)
         m_workerThread->stop();
+}
+
+namespace {
+
+void resumeWorkerContextTask(ExecutionContext* context, bool)
+{
+    toWorkerGlobalScope(context)->workerInspectorController()->resume();
+}
+
+void connectToWorkerContextInspectorTask(ExecutionContext* context, bool)
+{
+    toWorkerGlobalScope(context)->workerInspectorController()->connectFrontend();
+}
+
+void reconnectToWorkerContextInspectorTask(ExecutionContext* context, const String& savedState)
+{
+    WorkerInspectorController* ic = toWorkerGlobalScope(context)->workerInspectorController();
+    ic->restoreInspectorStateFromCookie(savedState);
+    ic->resume();
+}
+
+void disconnectFromWorkerContextInspectorTask(ExecutionContext* context, bool)
+{
+    toWorkerGlobalScope(context)->workerInspectorController()->disconnectFrontend();
+}
+
+void dispatchOnInspectorBackendTask(ExecutionContext* context, const String& message)
+{
+    toWorkerGlobalScope(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
+}
+
+} // namespace
+
+void WebEmbeddedWorkerImpl::resumeWorkerContext()
+{
+    if (m_workerThread)
+        m_workerThread->runLoop().postDebuggerTask(createCallbackTask(resumeWorkerContextTask, true));
+}
+
+void WebEmbeddedWorkerImpl::attachDevTools()
+{
+    if (m_workerThread)
+        m_workerThread->runLoop().postDebuggerTask(createCallbackTask(connectToWorkerContextInspectorTask, true));
+}
+
+void WebEmbeddedWorkerImpl::reattachDevTools(const WebString& savedState)
+{
+    m_workerThread->runLoop().postDebuggerTask(createCallbackTask(reconnectToWorkerContextInspectorTask, String(savedState)));
+}
+
+void WebEmbeddedWorkerImpl::detachDevTools()
+{
+    m_workerThread->runLoop().postDebuggerTask(createCallbackTask(disconnectFromWorkerContextInspectorTask, true));
+}
+
+void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
+{
+    m_workerThread->runLoop().postDebuggerTask(createCallbackTask(dispatchOnInspectorBackendTask, String(message)));
+    WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(m_workerThread.get());
 }
 
 void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()

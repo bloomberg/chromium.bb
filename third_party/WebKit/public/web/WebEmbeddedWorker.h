@@ -36,6 +36,7 @@
 namespace blink {
 
 class WebServiceWorkerContextClient;
+class WebString;
 class WebWorkerPermissionClientProxy;
 struct WebEmbeddedWorkerStartData;
 
@@ -56,6 +57,13 @@ public:
     // Starts and terminates WorkerThread and WorkerGlobalScope.
     virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) = 0;
     virtual void terminateWorkerContext() = 0;
+
+    // Inspector related methods.
+    virtual void resumeWorkerContext() = 0;
+    virtual void attachDevTools() = 0;
+    virtual void reattachDevTools(const WebString& savedState) = 0;
+    virtual void detachDevTools() = 0;
+    virtual void dispatchDevToolsMessage(const WebString&) = 0;
 };
 
 } // namespace blink
