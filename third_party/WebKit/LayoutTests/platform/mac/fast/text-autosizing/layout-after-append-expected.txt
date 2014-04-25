@@ -1,0 +1,48 @@
+layer at (0,0) size 800x736
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x736
+  RenderBlock {HTML} at (0,0) size 800x736
+    RenderBody {BODY} at (8,8) size 784x720
+      RenderBlock {DIV} at (320,0) size 464x702
+        RenderInline {B} at (0,0) size 449x234 [color=#0000FF]
+          RenderText {#text} at (0,0) size 399x26
+            text run at (0,0) width 399: "This test passes if no text is overlapping."
+          RenderBR {BR} at (399,0) size 0x26
+          RenderText {#text} at (0,26) size 449x208
+            text run at (0,26) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,52) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,78) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,104) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,130) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,156) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,182) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,208) width 364: "Autosize Autosize Autosize Autosize "
+        RenderInline {B} at (0,0) size 449x494
+          RenderText {#text} at (364,208) size 449x468
+            text run at (364,208) width 85: "Autosize"
+            text run at (0,234) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,260) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,286) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,312) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,338) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,364) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,390) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,416) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,442) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,468) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,494) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,520) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,546) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,572) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,598) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,624) width 449: "Autosize Autosize Autosize Autosize Autosize"
+            text run at (0,650) width 449: "Autosize Autosize Autosize Autosize Autosize"
+          RenderInline {I} at (0,0) size 43x26
+            RenderText {#text} at (0,676) size 43x26
+              text run at (0,676) width 43: "test2"
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,702) size 784x18
+        RenderInline {B} at (0,0) size 31x18
+          RenderText {#text} at (0,0) size 31x18
+            text run at (0,0) width 31: "test1"
