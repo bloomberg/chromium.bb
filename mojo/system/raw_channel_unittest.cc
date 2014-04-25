@@ -585,13 +585,7 @@ class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ShutdownOnReadMessageRawChannelDelegate);
 };
 
-// TODO(vtl): crbug.com/366768
-#if defined(OS_WIN)
-#define MAYBE_ShutdownOnReadMessage DISABLED_ShutdownOnReadMessage
-#else
-#define MAYBE_ShutdownOnReadMessage ShutdownOnReadMessage
-#endif
-TEST_F(RawChannelTest, MAYBE_ShutdownOnReadMessage) {
+TEST_F(RawChannelTest, ShutdownOnReadMessage) {
   // Write a few messages into the other end.
   for (size_t count = 0; count < 5; count++)
     EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), 10));
@@ -647,13 +641,7 @@ class ShutdownOnFatalErrorRawChannelDelegate : public RawChannel::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ShutdownOnFatalErrorRawChannelDelegate);
 };
 
-// TODO(vtl): crbug.com/366768
-#if defined(OS_WIN)
-#define MAYBE_ShutdownOnFatalErrorRead DISABLED_ShutdownOnFatalErrorRead
-#else
-#define MAYBE_ShutdownOnFatalErrorRead ShutdownOnFatalErrorRead
-#endif
-TEST_F(RawChannelTest, MAYBE_ShutdownOnFatalErrorRead) {
+TEST_F(RawChannelTest, ShutdownOnFatalErrorRead) {
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
   ShutdownOnFatalErrorRawChannelDelegate delegate(
       rc.get(), RawChannel::Delegate::FATAL_ERROR_FAILED_READ);
@@ -668,13 +656,7 @@ TEST_F(RawChannelTest, MAYBE_ShutdownOnFatalErrorRead) {
   delegate.Wait();
 }
 
-// TODO(vtl): crbug.com/366768
-#if defined(OS_WIN)
-#define MAYBE_ShutdownOnFatalErrorWrite DISABLED_ShutdownOnFatalErrorWrite
-#else
-#define MAYBE_ShutdownOnFatalErrorWrite ShutdownOnFatalErrorWrite
-#endif
-TEST_F(RawChannelTest, MAYBE_ShutdownOnFatalErrorWrite) {
+TEST_F(RawChannelTest, ShutdownOnFatalErrorWrite) {
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
   ShutdownOnFatalErrorRawChannelDelegate delegate(
       rc.get(), RawChannel::Delegate::FATAL_ERROR_FAILED_WRITE);
