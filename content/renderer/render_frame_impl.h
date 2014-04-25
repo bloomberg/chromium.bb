@@ -35,6 +35,7 @@ class WebMouseEvent;
 class WebContentDecryptionModule;
 class WebNotificationPresenter;
 class WebSecurityOrigin;
+class WebUserMediaClient;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -342,6 +343,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void willStartUsingPeerConnectionHandler(
       blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler);
+  virtual blink::WebUserMediaClient* userMediaClient();
   virtual bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebFrame* targetFrame,

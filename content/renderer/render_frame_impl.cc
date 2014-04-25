@@ -2560,6 +2560,10 @@ void RenderFrameImpl::willStartUsingPeerConnectionHandler(
 #endif
 }
 
+blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
+  return render_view_->userMediaClient();
+}
+
 bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
     blink::WebLocalFrame* sourceFrame,
     blink::WebFrame* targetFrame,
