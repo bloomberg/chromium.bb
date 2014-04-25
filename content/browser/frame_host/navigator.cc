@@ -8,6 +8,10 @@
 
 namespace content {
 
+NavigationController* Navigator::GetController() {
+  return NULL;
+}
+
 bool Navigator::NavigateToPendingEntry(
     RenderFrameHostImpl* render_frame_host,
     NavigationController::ReloadType reload_type) {

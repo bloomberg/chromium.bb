@@ -22,6 +22,7 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
       InterstitialPageImpl* interstitial,
       NavigationControllerImpl* navigation_controller);
 
+  virtual NavigationController* GetController() OVERRIDE;
   virtual void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params&
@@ -33,6 +34,9 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
   // The InterstitialPage with which this navigator object is associated.
   // Non owned pointer.
   InterstitialPageImpl* interstitial_;
+
+  // The NavigationController associated with this navigator.
+  NavigationControllerImpl* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageNavigatorImpl);
 };

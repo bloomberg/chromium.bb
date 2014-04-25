@@ -34,6 +34,9 @@ class RenderFrameHostImpl;
 // from WebContentsImpl to this interface.
 class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
  public:
+  // Returns the NavigationController associated with this Navigator.
+  virtual NavigationController* GetController();
+
   // The RenderFrameHostImpl started a provisional load.
   virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                        int parent_routing_id,

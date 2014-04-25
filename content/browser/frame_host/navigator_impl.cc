@@ -137,6 +137,10 @@ NavigatorImpl::NavigatorImpl(
       delegate_(delegate) {
 }
 
+NavigationController* NavigatorImpl::GetController() {
+  return controller_;
+}
+
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     int parent_routing_id,

@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/interstitial_page_navigator_impl.h"
 
 #include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
@@ -13,7 +14,12 @@ namespace content {
 InterstitialPageNavigatorImpl::InterstitialPageNavigatorImpl(
     InterstitialPageImpl* interstitial,
     NavigationControllerImpl* navigation_controller)
-    : interstitial_(interstitial) {}
+    : interstitial_(interstitial),
+      controller_(navigation_controller) {}
+
+NavigationController* InterstitialPageNavigatorImpl::GetController() {
+  return controller_;
+}
 
 void InterstitialPageNavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,

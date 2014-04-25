@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_LOADER_CROSS_SITE_RESOURCE_HANDLER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_status.h"
@@ -59,6 +60,13 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
                                 ResourceResponse* response,
                                 bool should_transfer);
 
+  // Defer the navigation to the UI thread to check whether transfer is required
+  // or not. Currently only used in --site-per-process.
+  bool DeferForNavigationPolicyCheck(ResourceRequestInfoImpl* info,
+                                     ResourceResponse* response,
+                                     bool* defer);
+
+  void ResumeOrTransfer(bool is_transfer);
   void ResumeIfDeferred();
 
   // Called when about to defer a request.  Sets |did_defer_| and logs the
@@ -72,6 +80,12 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   net::URLRequestStatus completed_status_;
   std::string completed_security_info_;
   scoped_refptr<ResourceResponse> response_;
+
+  // TODO(nasko): WeakPtr is needed in --site-per-process, since all navigations
+  // are deferred to the UI thread and come back to IO thread via
+  // PostTaskAndReplyWithResult. If a transfer is needed, it goes back to the UI
+  // thread. This can be removed once the code is changed to only do one hop.
+  base::WeakPtrFactory<CrossSiteResourceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteResourceHandler);
 };

@@ -24,6 +24,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                 NavigatorDelegate* delegate);
 
   // Navigator implementation.
+  virtual NavigationController* GetController() OVERRIDE;
   virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                        int parent_routing_id,
                                        const GURL& url) OVERRIDE;

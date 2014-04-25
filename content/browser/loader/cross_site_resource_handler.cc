@@ -84,6 +84,20 @@ void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
   }
 }
 
+bool CheckNavigationPolicyOnUI(GURL url, int process_id, int render_frame_id) {
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(process_id, render_frame_id);
+  if (!rfh)
+    return false;
+
+  // TODO(nasko): This check is very simplistic and is used temporarily only
+  // for --site-per-process. It should be updated to match the check performed
+  // by RenderFrameHostManager::UpdateRendererStateForNavigate.
+  return !SiteInstance::IsSameWebSite(
+      rfh->GetSiteInstance()->GetBrowserContext(),
+      rfh->GetSiteInstance()->GetSiteURL(), url);
+}
+
 }  // namespace
 
 CrossSiteResourceHandler::CrossSiteResourceHandler(
@@ -93,7 +107,8 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       has_started_response_(false),
       in_cross_site_transition_(false),
       completed_during_transition_(false),
-      did_defer_(false) {
+      did_defer_(false),
+      weak_ptr_factory_(this) {
 }
 
 CrossSiteResourceHandler::~CrossSiteResourceHandler() {
@@ -134,24 +149,14 @@ bool CrossSiteResourceHandler::OnResponseStarted(
           info->GetContext(), request()->original_url(), request()->url());
 
   // When the --site-per-process flag is passed, we transfer processes for
-  // cross-site subframe navigations.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    GURL referrer(request()->referrer());
-    // We skip this for WebUI processes for now, since pages like the NTP host
-    // cross-site WebUI iframes but don't have referrers.
-    bool is_webui_process = ChildProcessSecurityPolicyImpl::GetInstance()->
-        HasWebUIBindings(info->GetChildID());
-
-    // TODO(creis): This shouldn't rely on the referrer to determine the parent
-    // frame's URL.  This also doesn't work for hosted apps, due to passing NULL
-    // to IsSameWebSite.  It should be possible to always send the navigation to
-    // the UI thread to make a policy decision, which could let us eliminate the
-    // renderer-side check in RenderViewImpl::decidePolicyForNavigation as well.
-    if (info->GetResourceType() == ResourceType::SUB_FRAME &&
-        !is_webui_process &&
-        !SiteInstance::IsSameWebSite(NULL, request()->url(), referrer)) {
-      should_transfer = true;
-    }
+  // cross-site navigations. This is skipped if a transfer is already required
+  // or for WebUI processes for now, since pages like the NTP host multiple
+  // cross-site WebUI iframes.
+  if (!should_transfer &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+          info->GetChildID())) {
+    return DeferForNavigationPolicyCheck(info, response, defer);
   }
 
   bool swap_needed = should_transfer ||
@@ -188,6 +193,15 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   *defer = true;
   OnDidDefer();
   return true;
+}
+
+void CrossSiteResourceHandler::ResumeOrTransfer(bool is_transfer) {
+  if (is_transfer) {
+    ResourceRequestInfoImpl* info = GetRequestInfo();
+    StartCrossSiteTransition(info->GetRequestID(), response_, is_transfer);
+  } else {
+    ResumeResponse();
+  }
 }
 
 bool CrossSiteResourceHandler::OnReadCompleted(int request_id,
@@ -238,7 +252,6 @@ void CrossSiteResourceHandler::OnResponseCompleted(
 // WebContentsImpl to swap in the new renderer and destroy the old one.
 void CrossSiteResourceHandler::ResumeResponse() {
   DCHECK(request());
-  DCHECK(in_cross_site_transition_);
   in_cross_site_transition_ = false;
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
@@ -324,6 +337,38 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
                                   referrer,
                                   info->GetPageTransition(),
                                   info->should_replace_current_entry())));
+}
+
+bool CrossSiteResourceHandler::DeferForNavigationPolicyCheck(
+    ResourceRequestInfoImpl* info,
+    ResourceResponse* response,
+    bool* defer) {
+  // Store the response_ object internally, since the navigation is deferred
+  // regardless of whether it will be a transfer or not.
+  response_ = response;
+
+  // Always defer the navigation to the UI thread to make a policy decision.
+  // It will send the result back to the IO thread to either resume or
+  // transfer it to a new renderer.
+  // TODO(nasko): If the UI thread result is that transfer is required, the
+  // IO thread will defer to the UI thread again through
+  // StartCrossSiteTransition. This is unnecessary and the policy check on the
+  // UI thread should be refactored to avoid the extra hop.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CheckNavigationPolicyOnUI,
+                 request()->url(),
+                 info->GetChildID(),
+                 info->GetRenderFrameID()),
+      base::Bind(&CrossSiteResourceHandler::ResumeOrTransfer,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  // Defer loading until it is known whether the navigation will transfer
+  // to a new process or continue in the existing one.
+  *defer = true;
+  OnDidDefer();
+  return true;
 }
 
 void CrossSiteResourceHandler::ResumeIfDeferred() {
