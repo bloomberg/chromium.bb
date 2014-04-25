@@ -11,12 +11,35 @@
 namespace WebCore {
 
 class FrameView;
+class LocalFrame;
 class RenderObject;
+class ResourceRequest;
+class ResourceResponse;
 
 class InspectorLayoutEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(FrameView*);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(RenderObject* rootForThisLayout);
+};
+
+class InspectorSendRequestEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
+};
+
+class InspectorReceiveResponseEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
+};
+
+class InspectorReceiveDataEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
+};
+
+class InspectorResourceFinishEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, double finishTime, bool didFail);
 };
 
 } // namespace WebCore

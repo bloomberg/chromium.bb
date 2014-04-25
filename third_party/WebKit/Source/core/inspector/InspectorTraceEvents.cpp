@@ -7,10 +7,13 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
+#include "platform/network/ResourceRequest.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/Vector.h"
 #include <inttypes.h>
 
@@ -64,6 +67,53 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(R
     } else {
         ASSERT_NOT_REACHED();
     }
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSendRequestEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceRequest& request)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("requestId", requestId);
+    data->setString("frame", toHexString(frame));
+    data->setString("url", request.url().string());
+    data->setString("requestMethod", request.httpMethod());
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorReceiveResponseEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceResponse& response)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("requestId", requestId);
+    data->setString("frame", toHexString(frame));
+    data->setNumber("statusCode", response.httpStatusCode());
+    data->setString("mimeType", response.mimeType());
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorReceiveDataEvent::data(unsigned long identifier, LocalFrame* frame, int encodedDataLength)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("requestId", requestId);
+    data->setString("frame", toHexString(frame));
+    data->setNumber("encodedDataLength", encodedDataLength);
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorResourceFinishEvent::data(unsigned long identifier, double finishTime, bool didFail)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("requestId", requestId);
+    data->setBoolean("didFail", didFail);
+    if (finishTime)
+        data->setNumber("networkTime", finishTime);
     return TracedValue::fromJSONValue(data);
 }
 

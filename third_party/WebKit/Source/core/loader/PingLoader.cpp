@@ -37,6 +37,7 @@
 #include "core/fetch/FetchContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
@@ -137,6 +138,8 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
 
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceSendRequest", "data", InspectorSendRequestEvent::data(m_identifier, frame, request));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
 
     // If the server never responds, FrameLoader won't be able to cancel this load and
@@ -152,36 +155,51 @@ PingLoader::~PingLoader()
 
 void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&)
 {
-    if (Page* page = this->page())
+    if (Page* page = this->page()) {
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
+        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    }
     delete this;
 }
 
 void PingLoader::didReceiveData(blink::WebURLLoader*, const char* data, int dataLength, int encodedDataLength)
 {
-    if (Page* page = this->page())
+    if (Page* page = this->page()) {
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
+        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    }
     delete this;
 }
 
 void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
 {
-    if (Page* page = this->page())
+    if (Page* page = this->page()) {
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
+        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    }
     delete this;
 }
 
 void PingLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& resourceError)
 {
-    if (Page* page = this->page())
+    if (Page* page = this->page()) {
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
+        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError(resourceError));
+    }
     delete this;
 }
 
 void PingLoader::timeout(Timer<PingLoader>*)
 {
-    if (Page* page = this->page())
+    if (Page* page = this->page()) {
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
+        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didFailLoading(page->mainFrame(), m_identifier, ResourceError::cancelledError(m_url));
+    }
     delete this;
 }
 

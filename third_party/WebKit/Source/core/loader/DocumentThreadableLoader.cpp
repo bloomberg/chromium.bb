@@ -40,6 +40,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/CrossOriginPreflightResultCache.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
@@ -276,6 +277,8 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
         // In that case, if we don't tell the inspector about the response now, the resource type in the inspector
         // will default to "other" instead of something more descriptive.
         DocumentLoader* loader = m_document.frame()->loader().documentLoader();
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_document.frame(), response));
+        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         InspectorInstrumentation::didReceiveResourceResponse(m_document.frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
 
         if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
