@@ -155,7 +155,9 @@ class SendProcess {
         playback_rate_(1.0),
         video_stream_index_(-1),
         video_frame_rate_numerator_(video_config.max_frame_rate),
-        video_frame_rate_denominator_(1) {
+        video_frame_rate_denominator_(1),
+        video_first_pts_(0),
+        video_first_pts_set_(false) {
     audio_bus_factory_.reset(new TestAudioBusFactory(kAudioChannels,
                                                      kAudioSamplingFrequency,
                                                      kSoundFrequency,
@@ -288,6 +290,18 @@ class SendProcess {
               << video_frame_rate_numerator_ << "/"
               << video_frame_rate_denominator_ << " fps.";
     LOG(INFO) << "Audio playback rate: " << playback_rate_;
+
+    if (!is_transcoding_audio() && !is_transcoding_video()) {
+      // Send fake patterns.
+      test_app_thread_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &SendProcess::SendNextFakeFrame,
+              base::Unretained(this)));
+      return;
+    }
+
+    // Send transcoding streams.
     audio_algo_.Initialize(playback_rate_, audio_params_);
     audio_algo_.FlushBuffers();
     audio_fifo_input_bus_ =
@@ -303,76 +317,28 @@ class SendProcess {
         kAudioSamplingFrequency,
         audio_params_.frames_per_buffer(),
         base::Bind(&SendProcess::ProvideData, base::Unretained(this))));
-    audio_decoded_ts_.reset(
-        new AudioTimestampHelper(audio_params_.sample_rate()));
-    audio_decoded_ts_->SetBaseTimestamp(base::TimeDelta());
-    audio_scaled_ts_.reset(
-        new AudioTimestampHelper(audio_params_.sample_rate()));
-    audio_scaled_ts_->SetBaseTimestamp(base::TimeDelta());
-    audio_resampled_ts_.reset(
-        new AudioTimestampHelper(kAudioSamplingFrequency));
-    audio_resampled_ts_->SetBaseTimestamp(base::TimeDelta());
     test_app_thread_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(&SendProcess::SendNextFrame, base::Unretained(this)));
+        base::Bind(
+            &SendProcess::SendNextFrame,
+            base::Unretained(this)));
   }
 
-  void SendNextFrame() {
+  void SendNextFakeFrame() {
     gfx::Size size(video_config_.width, video_config_.height);
     scoped_refptr<VideoFrame> video_frame =
         VideoFrame::CreateBlackFrame(size);
-    if (is_transcoding_video()) {
-      Decode(false);
-      CHECK(!video_frame_queue_.empty()) << "No video frame.";
-      scoped_refptr<VideoFrame> decoded_frame =
-          video_frame_queue_.front();
-      video_frame->set_timestamp(decoded_frame->timestamp());
-      video_frame_queue_.pop();
-      media::CopyPlane(VideoFrame::kYPlane,
-                       decoded_frame->data(VideoFrame::kYPlane),
-                       decoded_frame->stride(VideoFrame::kYPlane),
-                       decoded_frame->rows(VideoFrame::kYPlane),
-                       video_frame);
-      media::CopyPlane(VideoFrame::kUPlane,
-                       decoded_frame->data(VideoFrame::kUPlane),
-                       decoded_frame->stride(VideoFrame::kUPlane),
-                       decoded_frame->rows(VideoFrame::kUPlane),
-                       video_frame);
-      media::CopyPlane(VideoFrame::kVPlane,
-                       decoded_frame->data(VideoFrame::kVPlane),
-                       decoded_frame->stride(VideoFrame::kVPlane),
-                       decoded_frame->rows(VideoFrame::kVPlane),
-                       video_frame);
-    } else {
-      PopulateVideoFrame(video_frame, synthetic_count_);
-    }
+    PopulateVideoFrame(video_frame, synthetic_count_);
     ++synthetic_count_;
 
     base::TimeTicks now = clock_->NowTicks();
     if (start_time_.is_null())
       start_time_ = now;
 
-    base::TimeDelta video_time;
-    if (is_transcoding_video()) {
-      // Use the timestamp from the file if we're transcoding and
-      // playback rate is 1.0.
-      video_time = ScaleTimestamp(video_frame->timestamp());
-    } else {
-      VideoFrameTime(video_frame_count_);
-    }
-
+    base::TimeDelta video_time = VideoFrameTime(video_frame_count_);
     video_frame->set_timestamp(video_time);
     video_frame_input_->InsertRawVideoFrame(video_frame,
                                             start_time_ + video_time);
-
-    if (is_transcoding_video()) {
-      // Decode next video frame to get the next frame's timestamp.
-      Decode(false);
-      CHECK(!video_frame_queue_.empty()) << "No video frame.";
-      video_time = ScaleTimestamp(video_frame_queue_.front()->timestamp());
-    } else {
-      video_time = VideoFrameTime(++video_frame_count_);
-    }
 
     // Send just enough audio data to match next video frame's time.
     base::TimeDelta audio_time = AudioFrameTime(audio_frame_count_);
@@ -396,7 +362,7 @@ class SendProcess {
     // This is the time since the stream started.
     const base::TimeDelta elapsed_time = now - start_time_;
 
-    // Handle the case when decoding or frame generation cannot keep up.
+    // Handle the case when frame generation cannot keep up.
     // Move the time ahead to match the next frame.
     while (video_time < elapsed_time) {
       LOG(WARNING) << "Skipping one frame.";
@@ -405,9 +371,109 @@ class SendProcess {
 
     test_app_thread_proxy_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&SendProcess::SendNextFrame,
+        base::Bind(&SendProcess::SendNextFakeFrame,
                    weak_factory_.GetWeakPtr()),
         video_time - elapsed_time);
+  }
+
+  // Return true if a frame was sent.
+  bool SendNextTranscodedVideo(base::TimeDelta elapsed_time) {
+    if (!is_transcoding_video())
+      return false;
+
+    Decode(false);
+    if (video_frame_queue_.empty())
+      return false;
+
+    scoped_refptr<VideoFrame> decoded_frame =
+        video_frame_queue_.front();
+    if (elapsed_time < decoded_frame->timestamp())
+      return false;
+
+    gfx::Size size(video_config_.width, video_config_.height);
+    scoped_refptr<VideoFrame> video_frame =
+        VideoFrame::CreateBlackFrame(size);
+    video_frame_queue_.pop();
+    media::CopyPlane(VideoFrame::kYPlane,
+                     decoded_frame->data(VideoFrame::kYPlane),
+                     decoded_frame->stride(VideoFrame::kYPlane),
+                     decoded_frame->rows(VideoFrame::kYPlane),
+                     video_frame);
+    media::CopyPlane(VideoFrame::kUPlane,
+                     decoded_frame->data(VideoFrame::kUPlane),
+                     decoded_frame->stride(VideoFrame::kUPlane),
+                     decoded_frame->rows(VideoFrame::kUPlane),
+                     video_frame);
+    media::CopyPlane(VideoFrame::kVPlane,
+                     decoded_frame->data(VideoFrame::kVPlane),
+                     decoded_frame->stride(VideoFrame::kVPlane),
+                     decoded_frame->rows(VideoFrame::kVPlane),
+                     video_frame);
+
+    base::TimeDelta video_time;
+    // Use the timestamp from the file if we're transcoding.
+    video_time = ScaleTimestamp(decoded_frame->timestamp());
+    video_frame_input_->InsertRawVideoFrame(
+        video_frame, start_time_ + video_time);
+
+    // Make sure queue is not empty.
+    Decode(false);
+    return true;
+  }
+
+  // Return true if a frame was sent.
+  bool SendNextTranscodedAudio(base::TimeDelta elapsed_time) {
+    if (!is_transcoding_audio())
+      return false;
+
+    Decode(true);
+    if (audio_bus_queue_.empty())
+      return false;
+
+    base::TimeDelta audio_time = audio_sent_ts_->GetTimestamp();
+    if (elapsed_time < audio_time)
+      return false;
+    scoped_ptr<AudioBus> bus(audio_bus_queue_.front());
+    audio_bus_queue_.pop();
+    audio_sent_ts_->AddFrames(bus->frames());
+    audio_frame_input_->InsertAudio(
+        bus.Pass(), start_time_ + audio_time);
+
+    // Make sure queue is not empty.
+    Decode(true);
+    return true;
+  }
+
+  void SendNextFrame() {
+    if (start_time_.is_null())
+      start_time_ = clock_->NowTicks();
+    if (start_time_.is_null())
+      start_time_ = clock_->NowTicks();
+
+    // Send as much as possible. Audio is sent according to
+    // system time.
+    while (SendNextTranscodedAudio(clock_->NowTicks() - start_time_));
+
+    // Video is sync'ed to audio.
+    while (SendNextTranscodedVideo(audio_sent_ts_->GetTimestamp()));
+
+    if (audio_bus_queue_.empty() && video_frame_queue_.empty()) {
+      // Both queues are empty can only mean that we have reached
+      // the end of the stream.
+      LOG(INFO) << "Rewind.";
+      Rewind();
+      start_time_ = base::TimeTicks();
+      audio_sent_ts_.reset();
+      video_first_pts_set_ = false;
+    }
+
+    // Send next send.
+    test_app_thread_proxy_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(
+            &SendProcess::SendNextFrame,
+            base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(kAudioFrameMs));
   }
 
   const VideoSenderConfig& get_video_config() const { return video_config_; }
@@ -441,7 +507,7 @@ class SendProcess {
   ScopedAVPacket DemuxOnePacket(bool* audio) {
     ScopedAVPacket packet(new AVPacket());
     if (av_read_frame(av_format_context_, packet.get()) < 0) {
-      LOG(ERROR) << "Failed to read one AVPacket";
+      LOG(ERROR) << "Failed to read one AVPacket.";
       packet.reset();
       return packet.Pass();
     }
@@ -481,6 +547,18 @@ class SendProcess {
       if (frames_read < 0)
         break;
 
+      if (!audio_sent_ts_) {
+        // Initialize the base time to the first packet in the file.
+        // This is set to the frequency we send to the receiver.
+        // Not the frequency of the source file. This is because we
+        // increment the frame count by samples we sent.
+        audio_sent_ts_.reset(
+            new AudioTimestampHelper(kAudioSamplingFrequency));
+        // For some files this is an invalid value.
+        base::TimeDelta base_ts;
+        audio_sent_ts_->SetBaseTimestamp(base_ts);
+      }
+
       scoped_refptr<AudioBuffer> buffer =
           AudioBuffer::CopyFrom(
               AVSampleFormatToSampleFormat(
@@ -492,10 +570,11 @@ class SendProcess {
               av_audio_context()->sample_rate,
               frames_read,
               &avframe->data[0],
-              audio_decoded_ts_->GetTimestamp(),
-              audio_decoded_ts_->GetFrameDuration(frames_read));
+              // Note: Not all files have correct values for pkt_pts.
+              base::TimeDelta::FromMilliseconds(avframe->pkt_pts),
+              // TODO(hclam): Give accurate duration based on samples.
+              base::TimeDelta());
       audio_algo_.EnqueueBuffer(buffer);
-      audio_decoded_ts_->AddFrames(frames_read);
     } while (packet_temp.size > 0);
     avcodec_free_frame(&avframe);
 
@@ -508,7 +587,6 @@ class SendProcess {
         // Nothing can be scaled. Decode some more.
         return;
       }
-      audio_scaled_ts_->AddFrames(audio_fifo_input_bus_->frames());
 
       // Prevent overflow of audio data in the FIFO.
       if (audio_fifo_input_bus_->frames() + audio_fifo_->frames()
@@ -530,7 +608,6 @@ class SendProcess {
               kAudioSamplingFrequency / kAudioPacketsPerSecond));
       audio_resampler_->Resample(resampled_bus->frames(),
                                  resampled_bus.get());
-      audio_resampled_ts_->AddFrames(resampled_bus->frames());
       audio_bus_queue_.push(resampled_bus.release());
     }
   }
@@ -549,6 +626,12 @@ class SendProcess {
     if (!got_picture)
       return;
     gfx::Size size(av_video_context()->width, av_video_context()->height);
+    if (!video_first_pts_set_ ||
+        avframe->reordered_opaque < video_first_pts_) {
+      video_first_pts_set_ = true;
+      video_first_pts_ = avframe->reordered_opaque;
+    }
+    int64 pts = avframe->reordered_opaque - video_first_pts_;
     video_frame_queue_.push(
         VideoFrame::WrapExternalYuvData(
             media::VideoFrame::YV12,
@@ -561,7 +644,7 @@ class SendProcess {
             avframe->data[0],
             avframe->data[1],
             avframe->data[2],
-            base::TimeDelta::FromMilliseconds(avframe->reordered_opaque),
+            base::TimeDelta::FromMilliseconds(pts),
             base::Bind(&AVFreeFrame, avframe)));
   }
 
@@ -576,9 +659,8 @@ class SendProcess {
       bool audio_packet = false;
       ScopedAVPacket packet = DemuxOnePacket(&audio_packet);
       if (!packet) {
-        LOG(INFO) << "End of stream; Rewind.";
-        Rewind();
-        continue;
+        LOG(INFO) << "End of stream.";
+        return;
       }
 
       if (audio_packet)
@@ -612,7 +694,11 @@ class SendProcess {
   scoped_refptr<VideoFrameInput> video_frame_input_;
   uint8 synthetic_count_;
   base::TickClock* const clock_;  // Not owned by this class.
+
+  // Time when the stream starts.
   base::TimeTicks start_time_;
+
+  // The following three members are used only for fake frames.
   int audio_frame_count_;  // Each audio frame is exactly 10ms.
   int video_frame_count_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
@@ -639,16 +725,13 @@ class SendProcess {
   scoped_ptr<media::AudioBus> audio_fifo_input_bus_;
   media::AudioRendererAlgorithm audio_algo_;
 
-  // These helpers are used to track frames generated.
-  // They are:
-  // * Frames decoded from the file.
-  // * Frames scaled according to playback rate.
-  // * Frames resampled to output frequency.
-  scoped_ptr<media::AudioTimestampHelper> audio_decoded_ts_;
-  scoped_ptr<media::AudioTimestampHelper> audio_scaled_ts_;
-  scoped_ptr<media::AudioTimestampHelper> audio_resampled_ts_;
+  // Track the timestamp of audio sent to the receiver.
+  scoped_ptr<media::AudioTimestampHelper> audio_sent_ts_;
 
   std::queue<scoped_refptr<VideoFrame> > video_frame_queue_;
+  int64 video_first_pts_;
+  bool video_first_pts_set_;
+
   std::queue<AudioBus*> audio_bus_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(SendProcess);
