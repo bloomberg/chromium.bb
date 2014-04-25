@@ -104,7 +104,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     IO_PENDING
   };
 
-  class ReadBuffer {
+  class MOJO_SYSTEM_IMPL_EXPORT ReadBuffer {
    public:
     ReadBuffer();
     ~ReadBuffer();
@@ -124,7 +124,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     DISALLOW_COPY_AND_ASSIGN(ReadBuffer);
   };
 
-  class WriteBuffer {
+  class MOJO_SYSTEM_IMPL_EXPORT WriteBuffer {
    public:
     struct Buffer {
       const char* addr;

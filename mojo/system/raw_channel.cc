@@ -126,8 +126,13 @@ bool RawChannel::Init(Delegate* delegate) {
   DCHECK(!write_buffer_);
   write_buffer_.reset(new WriteBuffer);
 
-  if (!OnInit())
+  if (!OnInit()) {
+    delegate_ = NULL;
+    message_loop_for_io_ = NULL;
+    read_buffer_.reset();
+    write_buffer_.reset();
     return false;
+  }
 
   return ScheduleRead() == IO_PENDING;
 }

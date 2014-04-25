@@ -203,6 +203,7 @@
       'sources': [
         'embedder/embedder_unittest.cc',
         'embedder/platform_channel_pair_posix_unittest.cc',
+        'system/channel_unittest.cc',
         'system/core_unittest.cc',
         'system/core_test_base.cc',
         'system/core_test_base.h',
