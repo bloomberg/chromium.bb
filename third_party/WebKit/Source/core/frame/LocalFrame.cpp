@@ -616,4 +616,13 @@ void LocalFrame::disconnectOwnerElement()
     Frame::disconnectOwnerElement();
 }
 
+LocalFrame* LocalFrame::localFrameRoot()
+{
+    LocalFrame* curFrame = this;
+    while (curFrame && curFrame->tree().parent() && curFrame->tree().parent()->isLocalFrame())
+        curFrame = curFrame->tree().parent();
+
+    return curFrame;
+}
+
 } // namespace WebCore

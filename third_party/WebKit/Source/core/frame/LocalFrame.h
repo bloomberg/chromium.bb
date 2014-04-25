@@ -99,6 +99,11 @@ namespace WebCore {
 
         void didChangeVisibilityState();
 
+        // FIXME: This method is only used by EventHandler to get the highest level
+        // LocalFrame in this frame's in-process subtree. When user gesture tokens
+        // are synchronized across processes this method should be removed.
+        LocalFrame* localFrameRoot();
+
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
 
         bool inScope(TreeScope*) const;
