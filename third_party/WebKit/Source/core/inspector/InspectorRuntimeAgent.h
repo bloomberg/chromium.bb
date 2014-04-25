@@ -96,7 +96,7 @@ protected:
     bool m_enabled;
     InspectorFrontend::Runtime* m_frontend;
 
-    typedef HashMap<NewScriptState*, int> ScriptStateToId;
+    typedef HashMap<RefPtr<NewScriptState>, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;
 
 private:

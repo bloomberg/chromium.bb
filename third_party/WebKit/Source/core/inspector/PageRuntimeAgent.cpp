@@ -148,10 +148,10 @@ void PageRuntimeAgent::reportExecutionContextCreation()
 
 void PageRuntimeAgent::frameWindowDiscarded(DOMWindow* window)
 {
-    Vector<NewScriptState*> scriptStatesToRemove;
+    Vector<RefPtr<NewScriptState> > scriptStatesToRemove;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
-        NewScriptState* scriptState = it->key;
-        if (window == scriptState->domWindow()) {
+        RefPtr<NewScriptState> scriptState = it->key;
+        if (scriptState->contextIsEmpty() || window == scriptState->domWindow()) {
             scriptStatesToRemove.append(scriptState);
             m_frontend->executionContextDestroyed(it->value);
         }
