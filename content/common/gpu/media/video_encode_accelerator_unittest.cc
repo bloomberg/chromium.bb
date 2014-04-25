@@ -119,13 +119,13 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
   if (fields.size() >= 6 && !fields[5].empty())
     CHECK(base::StringToUint(fields[5], &test_stream->requested_bitrate));
 
-  if (fields.size() >= 7 && !fields[6].empty()) {
-    CHECK(base::StringToUint(fields[6],
+  if (fields.size() >= 7 && !fields[6].empty())
+    CHECK(base::StringToUint(fields[6], &test_stream->requested_framerate));
+
+  if (fields.size() >= 8 && !fields[7].empty()) {
+    CHECK(base::StringToUint(fields[7],
                              &test_stream->requested_subsequent_bitrate));
   }
-
-  if (fields.size() >= 8 && !fields[7].empty())
-    CHECK(base::StringToUint(fields[7], &test_stream->requested_framerate));
 
   if (fields.size() >= 9 && !fields[8].empty()) {
     CHECK(base::StringToUint(fields[8],
