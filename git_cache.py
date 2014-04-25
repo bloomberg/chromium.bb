@@ -15,6 +15,7 @@ import time
 import subprocess
 import sys
 import urlparse
+import zipfile
 
 from download_from_google_storage import Gsutil
 import gclient_utils
@@ -222,26 +223,16 @@ class Mirror(object):
       self.RunGit(['config', '--add', 'remote.origin.fetch', refspec], cwd=cwd)
 
   def bootstrap_repo(self, directory):
-    """Bootstrap the repo from Google Stroage if possible.
+    """Bootstrap the repo from Google Stroage if possible."""
 
-    Requires 7z on Windows and Unzip on Linux/Mac.
-    """
-    if sys.platform.startswith('win'):
-      if not self.FindExecutable('7z'):
-        self.print('''
-Cannot find 7z in the path.  If you want git cache to be able to bootstrap from
-Google Storage, please install 7z from:
-
-http://www.7-zip.org/download.html
-''')
-        return False
-    else:
-      if not self.FindExecutable('unzip'):
-        self.print('''
-Cannot find unzip in the path.  If you want git cache to be able to bootstrap
-from Google Storage, please ensure unzip is present on your system.
-''')
-        return False
+    python_fallback = False
+    if sys.platform.startswith('win') and not self.FindExecutable('7z'):
+      python_fallback = True
+    elif sys.platform.startswith('darwin'):
+      # The OSX version of unzip doesn't support zip64.
+      python_fallback = True
+    elif not self.FindExecutable('unzip'):
+      python_fallback = True
 
     gs_folder = 'gs://%s/%s' % (self.bootstrap_bucket, self.basedir)
     gsutil = Gsutil(
@@ -264,12 +255,23 @@ from Google Storage, please ensure unzip is present on your system.
         return False
       filename = os.path.join(tempdir, latest_checkout.split('/')[-1])
 
-      # Unpack the file with 7z on Windows, or unzip everywhere else.
-      if sys.platform.startswith('win'):
-        cmd = ['7z', 'x', '-o%s' % directory, '-tzip', filename]
+      # Unpack the file with 7z on Windows, unzip on linux, or fallback.
+      if not python_fallback:
+        if sys.platform.startswith('win'):
+          cmd = ['7z', 'x', '-o%s' % directory, '-tzip', filename]
+        else:
+          cmd = ['unzip', filename, '-d', directory]
+        retcode = subprocess.call(cmd)
       else:
-        cmd = ['unzip', filename, '-d', directory]
-      retcode = subprocess.call(cmd)
+        try:
+          with zipfile.ZipFile(filename, 'r') as f:
+            f.printdir()
+            f.extractall(directory)
+        except Exception as e:
+          self.print('Encountered error: %s' % str(e), file=sys.stderr)
+          retcode = 1
+        else:
+          retcode = 0
     finally:
       # Clean up the downloaded zipfile.
       gclient_utils.rmtree(tempdir)
