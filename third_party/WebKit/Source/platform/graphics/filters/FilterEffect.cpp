@@ -428,8 +428,9 @@ void FilterEffect::copyPremultipliedImage(Uint8ClampedArray* destination, const 
 ImageBuffer* FilterEffect::createImageBufferResult()
 {
     // Only one result type is allowed.
-    if (m_absolutePaintRect.isEmpty())
-        return 0;
+    ASSERT(!hasResult());
+    ASSERT(isFilterSizeValid(m_absolutePaintRect));
+
     OwnPtr<ImageBufferSurface> surface;
     surface = adoptPtr(new UnacceleratedImageBufferSurface(m_absolutePaintRect.size()));
     m_imageBufferResult = ImageBuffer::create(surface.release());
