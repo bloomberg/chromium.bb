@@ -44,9 +44,11 @@ function onload()
 
 function test()
 {
-    function nodeSelected2(node)
+    InspectorTest.selectNodeWithId("inspectedElement1", nodeSelected1);
+
+    function nodeSelected1(node)
     {
-        RuntimeAgent.evaluate("dumpInspectorHighlightRects()", InspectorTest.completeTest);
+        InspectorTest.dumpInspectorHighlight(node, testNode2);
     }
 
     function testNode2()
@@ -54,12 +56,10 @@ function test()
         InspectorTest.selectNodeWithId("inspectedElement2", nodeSelected2);
     }
 
-    function nodeSelected1(node)
+    function nodeSelected2(node)
     {
-        RuntimeAgent.evaluate("dumpInspectorHighlightRects()", testNode2);
+        InspectorTest.dumpInspectorHighlight(node, InspectorTest.completeTest.bind(InspectorTest));
     }
-
-    InspectorTest.selectNodeWithId("inspectedElement1", nodeSelected1);
 }
 
 </script>

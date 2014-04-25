@@ -34,7 +34,7 @@ function test()
 {
     function nodeSelected(node)
     {
-        RuntimeAgent.evaluate("dumpInspectorHighlightRects()", InspectorTest.completeTest);
+        InspectorTest.dumpInspectorHighlight(node, InspectorTest.completeTest.bind(InspectorTest));
     }
 
     InspectorTest.selectNodeWithId("inspectedElement", nodeSelected);

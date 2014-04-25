@@ -735,16 +735,16 @@ InspectorTest.addNewRule = function(selector, callback)
     InspectorTest.addSniffer(WebInspector.BlankStylePropertiesSection.prototype, "makeNormal", callback);
 }
 
-};
-
-function dumpInspectorHighlightRects()
+InspectorTest.dumpInspectorHighlight = function(node, callback)
 {
-    var rectNames = ["margin", "border", "padding", "content"];
-    var rects = window.internals.inspectorHighlightRects(document);
-    for (var i = 0; i < rects.length; i++)
-    {
-        var rectName = (i < rectNames.length ? rectNames[i] : "untitled");
-        var rect = rects.item(i);
-        output(rectName + " rect is " + rect.width + " x " + rect.height + " at (" + rect.left + ", " + rect.top + ")");
-    }
+    node.boxModel(function(boxModel) {
+        var rectNames = ["margin", "border", "padding", "content"];
+        for (var i = 0; i < rectNames.length; i++) {
+            var rect = boxModel[rectNames[i]];
+            InspectorTest.addResult(rectNames[i] + " rect is " + (rect[4] - rect[0]) + " x " + (rect[5] - rect[1]) + " at (" + rect[0] + ", " + rect[1] + ")");
+        }
+        callback();
+    });
 }
+
+};

@@ -30,14 +30,13 @@ function onload()
     
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements");
     InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
 
     function selectedNodeChanged(event)
     {
         var node = event.data;
         if (node.getAttribute("id") == "div")
-            RuntimeAgent.evaluate("dumpInspectorHighlightRects()", InspectorTest.completeTest);
+            InspectorTest.dumpInspectorHighlight(node, InspectorTest.completeTest.bind(InspectorTest));
     }
     InspectorTest.evaluateInConsole("inspect(iframeDivElement)");
 }

@@ -68,8 +68,6 @@ class PlatformMouseEvent;
 class PlatformTouchEvent;
 class Node;
 
-struct Highlight;
-
 class InspectorController {
     WTF_MAKE_NONCOPYABLE(InspectorController);
     WTF_MAKE_FAST_ALLOCATED;
@@ -101,9 +99,6 @@ public:
 
     void inspect(Node*);
     void drawHighlight(GraphicsContext&) const;
-    void getHighlight(Highlight*) const;
-    void hideHighlight();
-    Node* highlightedNode() const;
 
     bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
     bool handleMouseEvent(LocalFrame*, const PlatformMouseEvent&);

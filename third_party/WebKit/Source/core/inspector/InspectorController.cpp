@@ -300,11 +300,6 @@ void InspectorController::drawHighlight(GraphicsContext& context) const
     m_overlay->paint(context);
 }
 
-void InspectorController::getHighlight(Highlight* highlight) const
-{
-    m_overlay->getHighlight(highlight);
-}
-
 void InspectorController::inspect(Node* node)
 {
     if (!node)
@@ -335,16 +330,6 @@ void InspectorController::dispatchMessageFromFrontend(const String& message)
 {
     if (m_inspectorBackendDispatcher)
         m_inspectorBackendDispatcher->dispatch(message);
-}
-
-void InspectorController::hideHighlight()
-{
-    m_overlay->hideHighlight();
-}
-
-Node* InspectorController::highlightedNode() const
-{
-    return m_overlay->highlightedNode();
 }
 
 bool InspectorController::handleGestureEvent(LocalFrame* frame, const PlatformGestureEvent& event)

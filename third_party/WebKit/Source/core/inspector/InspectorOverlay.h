@@ -119,7 +119,6 @@ public:
     void hide();
     void paint(GraphicsContext&);
     void drawOutline(GraphicsContext*, const LayoutRect&, const Color&);
-    void getHighlight(Highlight*) const;
     void resize(const IntSize&);
     bool handleGestureEvent(const PlatformGestureEvent&);
     bool handleMouseEvent(const PlatformMouseEvent&);

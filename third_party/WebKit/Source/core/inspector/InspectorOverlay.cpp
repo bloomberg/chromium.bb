@@ -327,18 +327,6 @@ void InspectorOverlay::drawOutline(GraphicsContext* context, const LayoutRect& r
     drawOutlinedQuad(context, outlineRect, Color(), color);
 }
 
-void InspectorOverlay::getHighlight(Highlight* highlight) const
-{
-    if (!m_highlightNode && !m_highlightQuad)
-        return;
-
-    highlight->type = HighlightTypeRects;
-    if (m_highlightNode)
-        buildNodeHighlight(m_highlightNode.get(), m_nodeHighlightConfig, highlight);
-    else
-        buildQuadHighlight(m_page, *m_highlightQuad, m_quadHighlightConfig, highlight);
-}
-
 void InspectorOverlay::resize(const IntSize& size)
 {
     m_size = size;
@@ -690,6 +678,9 @@ void InspectorOverlay::freePage()
     }
     m_overlayChromeClient.clear();
     m_timer.stop();
+
+    // This will clear internal structures and issue update to the client. Safe to call last.
+    hideHighlight();
 }
 
 void InspectorOverlay::startedRecordingProfile()

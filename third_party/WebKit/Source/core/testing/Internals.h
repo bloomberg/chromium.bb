@@ -144,8 +144,6 @@ public:
 
     PassRefPtrWillBeRawPtr<ClientRect> boundingBox(Element*, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ClientRectList> inspectorHighlightRects(Document*, ExceptionState&);
-
     unsigned markerCountForNode(Node*, const String&, ExceptionState&);
     unsigned activeMarkerCountForNode(Node*, ExceptionState&);
     PassRefPtrWillBeRawPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
