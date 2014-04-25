@@ -93,6 +93,7 @@ std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
                                    const base::string16& title,
                                    const std::string& icon_name,
                                    const base::FilePath& profile_path,
+                                   const std::string& categories,
                                    bool no_display);
 
 // Returns contents for .desktop file that executes command_line. This is a more
@@ -104,6 +105,7 @@ std::string GetDesktopFileContentsForCommand(
     const GURL& url,
     const base::string16& title,
     const std::string& icon_name,
+    const std::string& categories,
     bool no_display);
 
 // Returns contents for .directory file named |title| with icon |icon_name|. If

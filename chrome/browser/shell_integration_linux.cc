@@ -50,6 +50,10 @@ using content::BrowserThread;
 
 namespace {
 
+// The Categories for the App Launcher desktop shortcut. Should be the same as
+// the Chrome desktop shortcut, so they are in the same sub-menu.
+const char kAppListCategories[] = "Network;WebBrowser;";
+
 // Helper to launch xdg scripts. We don't want them to ask any questions on the
 // terminal etc. The function returns true if the utility launches and exits
 // cleanly, in which case |exit_code| returns the utility's exit code.
@@ -757,12 +761,13 @@ std::string GetDesktopFileContents(
     const base::string16& title,
     const std::string& icon_name,
     const base::FilePath& profile_path,
+    const std::string& categories,
     bool no_display) {
   CommandLine cmd_line = ShellIntegration::CommandLineArgsForLauncher(
       url, extension_id, profile_path);
   cmd_line.SetProgram(chrome_exe_path);
   return GetDesktopFileContentsForCommand(cmd_line, app_name, url, title,
-                                          icon_name, no_display);
+                                          icon_name, categories, no_display);
 }
 
 std::string GetDesktopFileContentsForCommand(
@@ -771,6 +776,7 @@ std::string GetDesktopFileContentsForCommand(
     const GURL& url,
     const base::string16& title,
     const std::string& icon_name,
+    const std::string& categories,
     bool no_display) {
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
@@ -806,6 +812,12 @@ std::string GetDesktopFileContentsForCommand(
   } else {
     g_key_file_set_string(key_file, kDesktopEntry, "Icon",
                           GetIconName().c_str());
+  }
+
+  // Set the "Categories" key.
+  if (!categories.empty()) {
+    g_key_file_set_string(
+        key_file, kDesktopEntry, "Categories", categories.c_str());
   }
 
   // Set the "NoDisplay" key.
@@ -917,6 +929,7 @@ bool CreateDesktopShortcut(
         shortcut_info.title,
         icon_name,
         shortcut_info.profile_path,
+        "",
         false);
     success = CreateShortcutOnDesktop(shortcut_filename, contents);
   }
@@ -949,6 +962,7 @@ bool CreateDesktopShortcut(
         shortcut_info.title,
         icon_name,
         shortcut_info.profile_path,
+        "",
         creation_locations.applications_menu_location ==
             web_app::APP_MENU_LOCATION_NONE);
     success = CreateShortcutInApplicationsMenu(
@@ -987,9 +1001,14 @@ bool CreateAppListDesktopShortcut(
 
   CommandLine command_line(chrome_exe_path);
   command_line.AppendSwitch(switches::kShowAppList);
-  std::string contents = GetDesktopFileContentsForCommand(
-      command_line, wm_class, GURL(), base::UTF8ToUTF16(title), icon_name,
-      false);
+  std::string contents =
+      GetDesktopFileContentsForCommand(command_line,
+                                       wm_class,
+                                       GURL(),
+                                       base::UTF8ToUTF16(title),
+                                       icon_name,
+                                       kAppListCategories,
+                                       false);
   return CreateShortcutInApplicationsMenu(
       shortcut_filename, contents, base::FilePath(), "");
 }
