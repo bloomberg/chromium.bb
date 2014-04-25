@@ -318,9 +318,8 @@ class WebUIMojoTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebUIMojoTest);
 };
 
-// Temporarily disabled due to memory leaks. http://crbug.com/360081
 // Temporarily disabled due to flakiness on Windows. http://crbug.com/366644
-#if defined(LEAK_SANITIZER) || defined(OS_WIN)
+#if defined(OS_WIN)
 #define MAYBE_EndToEndPing DISABLED_EndToEndPing
 #define MAYBE_EndToEndEcho DISABLED_EndToEndEcho
 #else
