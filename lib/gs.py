@@ -292,11 +292,9 @@ class GSContext(object):
     self.gsutil_flags += ['-o', 'Boto:num_retries=10']
 
     # Prefer boto_file if specified, else prefer the env then the default.
-    default_boto = False
     if boto_file is None:
       boto_file = os.environ.get('BOTO_CONFIG')
       if boto_file is None:
-        default_boto = True
         boto_file = self.DEFAULT_BOTO_FILE
     self.boto_file = boto_file
 
@@ -308,9 +306,6 @@ class GSContext(object):
 
     if init_boto:
       self._InitBoto()
-
-    if not default_boto:
-      self._CheckFile('Boto credentials not found', boto_file)
 
   @property
   def gsutil_version(self):
