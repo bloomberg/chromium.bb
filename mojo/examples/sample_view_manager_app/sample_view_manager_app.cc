@@ -51,6 +51,11 @@ class SampleApp : public Application,
                                       uint32_t old_parent,
                                       int32_t change_id) OVERRIDE {
   }
+  virtual void OnNodeViewReplaced(uint32_t node,
+                                  uint32_t old_view_id,
+                                  uint32_t new_view_id,
+                                  int32_t change_id) OVERRIDE {
+  }
 
  private:
   void OnCreatedView(bool success) {
