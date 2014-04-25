@@ -96,6 +96,7 @@ void MessageCenterNotificationManager::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kMessageCenterShowedFirstRunBalloon,
                                 false);
   registry->RegisterBooleanPref(prefs::kMessageCenterShowIcon, true);
+  registry->RegisterBooleanPref(prefs::kMessageCenterForcedOnTaskbar, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

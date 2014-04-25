@@ -2134,6 +2134,9 @@ const char kMessageCenterShowedFirstRunBalloon[] =
 // menubar or systray icon.
 const char kMessageCenterShowIcon[] = "message_center.show_icon";
 
+const char kMessageCenterForcedOnTaskbar[] =
+    "message_center.was_forced_on_taskbar";
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 
