@@ -189,6 +189,12 @@ char* my_strncat(char *dest, const char* src, size_t len) {
 }
 #endif
 
+#if !defined(OS_CHROMEOS)
+bool my_isxdigit(char c) {
+  return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
+}
+#endif
+
 size_t LengthWithoutTrailingSpaces(const char* str, size_t len) {
   while (len > 0 && str[len - 1] == ' ') {
     len--;
@@ -297,6 +303,7 @@ class MimeWriter {
 
   const char* const mime_boundary_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MimeWriter);
 };
 
@@ -403,8 +410,7 @@ void MimeWriter::AddItemWithoutTrailingSpaces(const void* base, size_t size) {
 // This subclass is used on Chromium OS to report crashes in a format easy for
 // the central crash reporting facility to understand.
 // Format is <name>:<data length in decimal>:<data>
-class CrashReporterWriter : public MimeWriter
-{
+class CrashReporterWriter : public MimeWriter {
  public:
   explicit CrashReporterWriter(int fd);
 
@@ -530,6 +536,10 @@ size_t WriteLog(const char* buf, size_t nbytes) {
 #else
   return sys_write(2, buf, nbytes);
 #endif
+}
+
+size_t WriteNewline() {
+  return WriteLog("\n", 1);
 }
 
 #if defined(OS_ANDROID)
@@ -706,8 +716,8 @@ bool CrashDoneInProcessNoUpload(
   base::android::BuildInfo* android_build_info =
       base::android::BuildInfo::GetInstance();
   if (android_build_info->sdk_int() >= 18 &&
-      strcmp(android_build_info->build_type(), "eng") != 0 &&
-      strcmp(android_build_info->build_type(), "userdebug") != 0) {
+      my_strcmp(android_build_info->build_type(), "eng") != 0 &&
+      my_strcmp(android_build_info->build_type(), "userdebug") != 0) {
     // On JB MR2 and later, the system crash handler displays a dialog. For
     // renderer crashes, this is a bad user experience and so this is disabled
     // for user builds of Android.
@@ -1020,6 +1030,103 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   sys__exit(1);
 }
 
+// Runs in the helper process to wait for the upload process running
+// ExecUploadProcessOrTerminate() to finish. Returns the number of bytes written
+// to |fd| and save the written contents to |buf|.
+// |buf| needs to be big enough to hold |bytes_to_read| + 1 characters.
+size_t WaitForCrashReportUploadProcess(int fd, size_t bytes_to_read,
+                                       char* buf) {
+  size_t bytes_read = 0;
+
+  // Upload should finish in about 10 seconds. Add a few more 500 ms
+  // internals to account for process startup time.
+  for (size_t wait_count = 0; wait_count < 24; ++wait_count) {
+    struct kernel_pollfd poll_fd;
+    poll_fd.fd = fd;
+    poll_fd.events = POLLIN | POLLPRI | POLLERR;
+    int ret = sys_poll(&poll_fd, 1, 500);
+    if (ret < 0) {
+      // Error
+      break;
+    } else if (ret > 0) {
+      // There is data to read.
+      ssize_t len = HANDLE_EINTR(
+          sys_read(fd, buf + bytes_read, bytes_to_read - bytes_read));
+      if (len < 0)
+        break;
+      bytes_read += len;
+      if (bytes_read == bytes_to_read)
+        break;
+    }
+    // |ret| == 0 -> timed out, continue waiting.
+    // or |bytes_read| < |bytes_to_read| still, keep reading.
+  }
+  buf[bytes_to_read] = 0;  // Always NUL terminate the buffer.
+  return bytes_read;
+}
+
+// |buf| should be |expected_len| + 1 characters in size and NULL terminated.
+bool IsValidCrashReportId(const char* buf, size_t bytes_read,
+                          size_t expected_len) {
+  if (bytes_read != expected_len)
+    return false;
+#if defined(OS_CHROMEOS)
+  return my_strcmp(buf, "_sys_cr_finished") == 0;
+#else
+  for (size_t i = 0; i <= bytes_read; ++i) {
+    if (!my_isxdigit(buf[i]))
+      return false;
+  }
+  return true;
+#endif
+}
+
+// |buf| should be |expected_len| + 1 characters in size and NULL terminated.
+void HandleCrashReportId(const char* buf, size_t bytes_read,
+                         size_t expected_len) {
+  WriteNewline();
+  if (!IsValidCrashReportId(buf, bytes_read, expected_len)) {
+#if defined(OS_CHROMEOS)
+    static const char msg[] = "Crash_reporter failed to process crash report";
+#else
+    static const char msg[] = "Failed to get crash dump id.";
+#endif
+    WriteLog(msg, sizeof(msg) - 1);
+    WriteNewline();
+    return;
+  }
+
+#if defined(OS_CHROMEOS)
+  static const char msg[] = "Crash dump received by crash_reporter\n";
+  WriteLog(msg, sizeof(msg) - 1);
+#else
+  // Write crash dump id to stderr.
+  static const char msg[] = "Crash dump id: ";
+  WriteLog(msg, sizeof(msg) - 1);
+  WriteLog(buf, my_strlen(buf));
+  WriteNewline();
+
+  // Write crash dump id to crash log as: seconds_since_epoch,crash_id
+  struct kernel_timeval tv;
+  if (g_crash_log_path && !sys_gettimeofday(&tv, NULL)) {
+    uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
+    char time_str[kUint64StringSize];
+    const unsigned time_len = my_uint64_len(time);
+    my_uint64tos(time_str, time, time_len);
+
+    const int kLogOpenFlags = O_CREAT | O_WRONLY | O_APPEND | O_CLOEXEC;
+    int log_fd = sys_open(g_crash_log_path, kLogOpenFlags, 0600);
+    if (log_fd > 0) {
+      sys_write(log_fd, time_str, time_len);
+      sys_write(log_fd, ",", 1);
+      sys_write(log_fd, buf, my_strlen(buf));
+      sys_write(log_fd, "\n", 1);
+      IGNORE_RET(sys_close(log_fd));
+    }
+  }
+#endif
+}
+
 #if defined(OS_CHROMEOS)
 const char* GetCrashingProcessName(const BreakpadInfo& info,
                                    google_breakpad::PageAllocator* allocator) {
@@ -1205,6 +1312,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
   MimeWriter writer(temp_file_fd, mime_boundary);
 #endif
   {
+    // TODO(thestig) Do not use this inside a compromised context.
     std::string product_name;
     std::string version;
 
@@ -1410,53 +1518,13 @@ void HandleCrashDump(const BreakpadInfo& info) {
       // Helper process.
       if (upload_child > 0) {
         IGNORE_RET(sys_close(fds[1]));
-        char id_buf[17];  // Crash report IDs are expected to be 16 chars.
-        ssize_t len = -1;
-        // Upload should finish in about 10 seconds. Add a few more 500 ms
-        // internals to account for process startup time.
-        for (size_t wait_count = 0; wait_count < 24; ++wait_count) {
-          struct kernel_pollfd poll_fd;
-          poll_fd.fd = fds[0];
-          poll_fd.events = POLLIN | POLLPRI | POLLERR;
-          int ret = sys_poll(&poll_fd, 1, 500);
-          if (ret < 0) {
-            // Error
-            break;
-          } else if (ret > 0) {
-            // There is data to read.
-            len = HANDLE_EINTR(sys_read(fds[0], id_buf, sizeof(id_buf) - 1));
-            break;
-          }
-          // ret == 0 -> timed out, continue waiting.
-        }
-        if (len > 0) {
-          // Write crash dump id to stderr.
-          id_buf[len] = 0;
-          static const char msg[] = "\nCrash dump id: ";
-          WriteLog(msg, sizeof(msg) - 1);
-          WriteLog(id_buf, my_strlen(id_buf));
-          WriteLog("\n", 1);
 
-          // Write crash dump id to crash log as: seconds_since_epoch,crash_id
-          struct kernel_timeval tv;
-          if (g_crash_log_path && !sys_gettimeofday(&tv, NULL)) {
-            uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
-            char time_str[kUint64StringSize];
-            const unsigned time_len = my_uint64_len(time);
-            my_uint64tos(time_str, time, time_len);
+        const size_t kCrashIdLength = 16;
+        char id_buf[kCrashIdLength + 1];
+        size_t bytes_read =
+            WaitForCrashReportUploadProcess(fds[0], kCrashIdLength, id_buf);
+        HandleCrashReportId(id_buf, bytes_read, kCrashIdLength);
 
-            int log_fd = sys_open(g_crash_log_path,
-                                  O_CREAT | O_WRONLY | O_APPEND,
-                                  0600);
-            if (log_fd > 0) {
-              sys_write(log_fd, time_str, time_len);
-              sys_write(log_fd, ",", 1);
-              sys_write(log_fd, id_buf, my_strlen(id_buf));
-              sys_write(log_fd, "\n", 1);
-              IGNORE_RET(sys_close(log_fd));
-            }
-          }
-        }
         if (sys_waitpid(upload_child, NULL, WNOHANG) == 0) {
           // Upload process is still around, kill it.
           sys_kill(upload_child, SIGKILL);
