@@ -5,7 +5,6 @@
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 
 #include "chrome/common/extensions/ad_injection_constants.h"
-#include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/activity_log_converter_strategy.h"
 #include "content/public/renderer/render_thread.h"
@@ -22,6 +21,22 @@ using blink::WebURL;
 
 namespace extensions {
 
+namespace {
+
+scoped_ptr<base::Value> ConvertV8Value(const std::string& api_name,
+                                       const v8::Handle<v8::Value> v8_value) {
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  ActivityLogConverterStrategy strategy;
+  strategy.set_enable_detailed_parsing(
+      ad_injection_constants::ApiCanInjectAds(api_name));
+  converter->SetFunctionAllowed(true);
+  converter->SetStrategy(&strategy);
+  return scoped_ptr<base::Value>(converter->FromV8Value(
+      v8_value, v8::Isolate::GetCurrent()->GetCurrentContext()));
+}
+
+}  // namespace
+
 DOMActivityLogger::DOMActivityLogger(const std::string& extension_id)
     : extension_id_(extension_id) {
 }
@@ -35,35 +50,19 @@ void DOMActivityLogger::log(
     const WebString& call_type,
     const WebURL& url,
     const WebString& title) {
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  ActivityLogConverterStrategy strategy;
-  strategy.set_enable_detailed_parsing(
-      ad_injection_constants::ApiCanInjectAds(api_name.utf8().c_str()));
-  converter->SetFunctionAllowed(true);
-  converter->SetStrategy(&strategy);
-  scoped_ptr<base::ListValue> argv_list_value(new base::ListValue());
-  for (int i = 0; i < argc; i++) {
-    argv_list_value->Set(
-        i,
-        converter->FromV8Value(argv[i],
-                               v8::Isolate::GetCurrent()->GetCurrentContext()));
-  }
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  std::string api_name_utf8 = api_name.utf8();
+  for (int i = 0; i < argc; ++i)
+    args->Append(ConvertV8Value(api_name_utf8, argv[i]).release());
 
-  ExtensionHostMsg_DOMAction_Params params;
-  params.url = url;
-  params.url_title = title;
-  params.api_call = api_name.utf8();
-  params.arguments.Swap(argv_list_value.get());
-  const std::string type = call_type.utf8();
-  if (type == "Getter")
-    params.call_type = DomActionType::GETTER;
-  else if (type == "Setter")
-    params.call_type = DomActionType::SETTER;
-  else
-    params.call_type = DomActionType::METHOD;
-
-  content::RenderThread::Get()->Send(
-      new ExtensionHostMsg_AddDOMActionToActivityLog(extension_id_, params));
+  DomActionType::Type type = DomActionType::METHOD;
+  if (call_type == "Getter")
+    type = DomActionType::GETTER;
+  else if (call_type == "Setter")
+    type = DomActionType::SETTER;
+  // else DomActionType::METHOD is correct.
+  SendDomActionMessage(
+      api_name_utf8, url, title, type, args.Pass());
 }
 
 void DOMActivityLogger::AttachToWorld(int world_id,
@@ -76,6 +75,65 @@ void DOMActivityLogger::AttachToWorld(int world_id,
     blink::setDOMActivityLogger(world_id, logger);
   }
 #endif
+}
+
+void DOMActivityLogger::logGetter(const WebString& api_name,
+                                  const WebURL& url,
+                                  const WebString& title) {
+  SendDomActionMessage(api_name.utf8(),
+                       url,
+                       title,
+                       DomActionType::GETTER,
+                       scoped_ptr<base::ListValue>(new base::ListValue()));
+}
+
+void DOMActivityLogger::logSetter(const WebString& api_name,
+                                  const v8::Handle<v8::Value>& new_value,
+                                  const WebURL& url,
+                                  const WebString& title) {
+  logSetter(api_name, new_value, v8::Handle<v8::Value>(), url, title);
+}
+
+void DOMActivityLogger::logSetter(const WebString& api_name,
+                                  const v8::Handle<v8::Value>& new_value,
+                                  const v8::Handle<v8::Value>& old_value,
+                                  const WebURL& url,
+                                  const WebString& title) {
+  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::string api_name_utf8 = api_name.utf8();
+  args->Append(ConvertV8Value(api_name_utf8, new_value).release());
+  if (!old_value.IsEmpty())
+    args->Append(ConvertV8Value(api_name_utf8, old_value).release());
+  SendDomActionMessage(
+      api_name_utf8, url, title, DomActionType::SETTER, args.Pass());
+}
+
+void DOMActivityLogger::logMethod(const WebString& api_name,
+                                  int argc,
+                                  const v8::Handle<v8::Value>* argv,
+                                  const WebURL& url,
+                                  const WebString& title) {
+  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::string api_name_utf8 = api_name.utf8();
+  for (int i = 0; i < argc; ++i)
+    args->Append(ConvertV8Value(api_name_utf8, argv[i]).release());
+  SendDomActionMessage(
+      api_name_utf8, url, title, DomActionType::METHOD, args.Pass());
+}
+
+void DOMActivityLogger::SendDomActionMessage(const std::string& api_call,
+                                             const GURL& url,
+                                             const base::string16& url_title,
+                                             DomActionType::Type call_type,
+                                             scoped_ptr<base::ListValue> args) {
+  ExtensionHostMsg_DOMAction_Params params;
+  params.api_call = api_call;
+  params.url = url;
+  params.url_title = url_title;
+  params.call_type = call_type;
+  params.arguments.Swap(args.get());
+  content::RenderThread::Get()->Send(
+      new ExtensionHostMsg_AddDOMActionToActivityLog(extension_id_, params));
 }
 
 }  // namespace extensions

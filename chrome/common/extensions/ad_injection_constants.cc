@@ -29,7 +29,7 @@ extern const size_t kMaximumChildrenToCheck = 10u;
 // The maximum depth to check when we examine a newly-added element.
 extern const size_t kMaximumDepthToCheck = 5u;
 
-bool ApiCanInjectAds(const char* api) {
+bool ApiCanInjectAds(const std::string& api) {
   return api == kHtmlIframeSrcApiName ||
          api == kHtmlEmbedSrcApiName ||
          EndsWith(api, kAppendChildApiSuffix, true /* case sensitive */);
