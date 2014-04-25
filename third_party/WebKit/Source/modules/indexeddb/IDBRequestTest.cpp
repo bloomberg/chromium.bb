@@ -33,10 +33,12 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 
+using blink::WebBlobInfo;
 using namespace WebCore;
 
 namespace {
@@ -97,13 +99,13 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     // Ensure none of the following raise assertions in stopped state:
     request->onError(DOMError::create(AbortError, "Description goes here."));
     request->onSuccess(Vector<String>());
-    request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), nullptr);
+    request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), nullptr, adoptPtr(new Vector<WebBlobInfo>()));
     request->onSuccess(IDBKey::createInvalid());
-    request->onSuccess(PassRefPtr<SharedBuffer>(nullptr));
-    request->onSuccess(PassRefPtr<SharedBuffer>(nullptr), IDBKey::createInvalid(), IDBKeyPath());
+    request->onSuccess(PassRefPtr<SharedBuffer>(nullptr), adoptPtr(new Vector<WebBlobInfo>()));
+    request->onSuccess(PassRefPtr<SharedBuffer>(nullptr), adoptPtr(new Vector<WebBlobInfo>()), IDBKey::createInvalid(), IDBKeyPath());
     request->onSuccess(0LL);
     request->onSuccess();
-    request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(), nullptr);
+    request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(), nullptr, adoptPtr(new Vector<WebBlobInfo>()));
 }
 
 TEST_F(IDBRequestTest, AbortErrorAfterAbort)

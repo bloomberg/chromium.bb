@@ -42,6 +42,7 @@
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebIDBCursor.h"
 
 namespace WebCore {
@@ -102,13 +103,13 @@ public:
 
     virtual void onError(PassRefPtrWillBeRawPtr<DOMError>);
     virtual void onSuccess(const Vector<String>&);
-    virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>);
+    virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
     virtual void onSuccess(PassRefPtr<IDBKey>);
-    virtual void onSuccess(PassRefPtr<SharedBuffer>);
-    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassRefPtr<IDBKey>, const IDBKeyPath&);
+    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >, PassRefPtr<IDBKey>, const IDBKeyPath&);
     virtual void onSuccess(int64_t);
     virtual void onSuccess();
-    virtual void onSuccess(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>);
+    virtual void onSuccess(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
 
     // Only IDBOpenDBRequest instances should receive these:
     virtual void onBlocked(int64_t oldVersion) { ASSERT_NOT_REACHED(); }
@@ -158,7 +159,8 @@ protected:
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
-    void setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
+    void setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    void handleBlobAcks();
 #if !ENABLE(OILPAN)
     void checkForReferenceCycle();
 #endif
@@ -180,6 +182,7 @@ private:
     RefPtr<IDBKey> m_cursorKey;
     RefPtr<IDBKey> m_cursorPrimaryKey;
     RefPtr<SharedBuffer> m_cursorValue;
+    OwnPtr<Vector<blink::WebBlobInfo> > m_blobInfo;
 
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;

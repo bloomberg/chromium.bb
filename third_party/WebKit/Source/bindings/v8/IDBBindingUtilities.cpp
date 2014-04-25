@@ -53,7 +53,7 @@
 
 namespace WebCore {
 
-static v8::Handle<v8::Value> deserializeIDBValueBuffer(v8::Isolate*, SharedBuffer*);
+static v8::Handle<v8::Value> deserializeIDBValueBuffer(v8::Isolate*, SharedBuffer*, const Vector<blink::WebBlobInfo>*);
 
 static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -143,7 +143,7 @@ static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> cre
     case IDBAny::IDBTransactionType:
         return toV8(impl->idbTransaction(), creationContext, isolate);
     case IDBAny::BufferType:
-        return deserializeIDBValueBuffer(isolate, impl->buffer());
+        return deserializeIDBValueBuffer(isolate, impl->buffer(), impl->blobInfo());
     case IDBAny::StringType:
         return v8String(isolate, impl->string());
     case IDBAny::IntegerType:
@@ -153,7 +153,7 @@ static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> cre
     case IDBAny::KeyPathType:
         return toV8(impl->keyPath(), creationContext, isolate);
     case IDBAny::BufferKeyAndKeyPathType: {
-        v8::Handle<v8::Value> value = deserializeIDBValueBuffer(isolate, impl->buffer());
+        v8::Handle<v8::Value> value = deserializeIDBValueBuffer(isolate, impl->buffer(), impl->blobInfo());
         v8::Handle<v8::Value> key = toV8(impl->key(), creationContext, isolate);
         bool injected = injectV8KeyIntoV8Value(isolate, key, value, impl->keyPath());
         ASSERT_UNUSED(injected, injected);
@@ -347,7 +347,7 @@ PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(v8::Isolate* isolate, c
     return createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, keyPath);
 }
 
-static v8::Handle<v8::Value> deserializeIDBValueBuffer(v8::Isolate* isolate, SharedBuffer* buffer)
+static v8::Handle<v8::Value> deserializeIDBValueBuffer(v8::Isolate* isolate, SharedBuffer* buffer, const Vector<blink::WebBlobInfo>* blobInfo)
 {
     ASSERT(isolate->InContext());
     if (!buffer)
@@ -357,7 +357,7 @@ static v8::Handle<v8::Value> deserializeIDBValueBuffer(v8::Isolate* isolate, Sha
     Vector<uint8_t> value;
     value.append(buffer->data(), buffer->size());
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::createFromWireBytes(value);
-    return serializedValue->deserialize(isolate, 0, 0);
+    return serializedValue->deserialize(isolate, 0, blobInfo);
 }
 
 bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Handle<v8::Value> key, v8::Handle<v8::Value> value, const IDBKeyPath& keyPath)
@@ -433,14 +433,14 @@ PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate* isolate, const Scr
 }
 
 #ifndef NDEBUG
-void assertPrimaryKeyValidOrInjectable(NewScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, PassRefPtr<IDBKey> prpKey, const IDBKeyPath& keyPath)
+void assertPrimaryKeyValidOrInjectable(NewScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtr<IDBKey> prpKey, const IDBKeyPath& keyPath)
 {
     RefPtr<IDBKey> key(prpKey);
 
     NewScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
     ScriptValue keyValue = idbKeyToScriptValue(scriptState, key);
-    ScriptValue scriptValue(deserializeIDBValueBuffer(isolate, buffer.get()), isolate);
+    ScriptValue scriptValue(deserializeIDBValueBuffer(isolate, buffer.get(), blobInfo), isolate);
 
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;

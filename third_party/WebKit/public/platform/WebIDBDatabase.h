@@ -89,6 +89,7 @@ public:
     virtual void count(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void deleteRange(long long transactionId, long long objectStoreId, const WebIDBKeyRange&, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void clear(long long transactionId, long long objectStoreId, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void ackReceivedBlobs(const WebVector<WebString>& uuids) { BLINK_ASSERT_NOT_REACHED(); }
 
 protected:
     WebIDBDatabase() { }

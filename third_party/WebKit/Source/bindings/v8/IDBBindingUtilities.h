@@ -31,6 +31,12 @@
 #include <v8.h>
 #include "wtf/Forward.h"
 
+namespace blink {
+
+class WebBlobInfo;
+
+}
+
 namespace WebCore {
 
 class IDBAny;
@@ -52,7 +58,7 @@ PassRefPtr<IDBKey> scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
 PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 
 #ifndef NDEBUG
-void assertPrimaryKeyValidOrInjectable(NewScriptState*, PassRefPtr<SharedBuffer>, PassRefPtr<IDBKey>, const IDBKeyPath&);
+void assertPrimaryKeyValidOrInjectable(NewScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtr<IDBKey>, const IDBKeyPath&);
 #endif
 
 } // namespace WebCore

@@ -39,6 +39,7 @@
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/WebBlobInfo.h"
 
 using blink::WebIDBCursor;
 
@@ -76,6 +77,7 @@ IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBAny>
 IDBRequest::~IDBRequest()
 {
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
+    handleBlobAcks();
 }
 
 void IDBRequest::trace(Visitor* visitor)
@@ -96,7 +98,9 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
     if (m_contextStopped || !executionContext())
         return ScriptValue();
     m_resultDirty = false;
-    return idbAnyToScriptValue(m_scriptState.get(), m_result);
+    ScriptValue value = idbAnyToScriptValue(m_scriptState.get(), m_result);
+    handleBlobAcks();
+    return value;
 }
 
 PassRefPtrWillBeRawPtr<DOMError> IDBRequest::error(ExceptionState& exceptionState) const
@@ -188,12 +192,14 @@ IDBCursor* IDBRequest::getResultCursor() const
     return 0;
 }
 
-void IDBRequest::setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor> cursor, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
+void IDBRequest::setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor> cursor, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     ASSERT(m_readyState == PENDING);
     m_cursorKey = key;
     m_cursorPrimaryKey = primaryKey;
     m_cursorValue = value;
+    ASSERT(!m_blobInfo.get());
+    m_blobInfo = blobInfo;
 
     onSuccessInternal(IDBAny::create(cursor));
 }
@@ -213,6 +219,14 @@ void IDBRequest::checkForReferenceCycle()
     m_result.clear();
 }
 #endif
+
+void IDBRequest::handleBlobAcks()
+{
+    if (m_blobInfo.get() && m_blobInfo->size()) {
+        m_transaction->db()->ackReceivedBlobs(m_blobInfo.get());
+        m_blobInfo.clear();
+    }
+}
 
 bool IDBRequest::shouldEnqueueEvent() const
 {
@@ -249,7 +263,7 @@ void IDBRequest::onSuccess(const Vector<String>& stringList)
     onSuccessInternal(IDBAny::create(domStringList.release()));
 }
 
-void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
+void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     IDB_TRACE("IDBRequest::onSuccess(IDBCursor)");
     if (!shouldEnqueueEvent())
@@ -267,7 +281,7 @@ void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtr<I
     default:
         ASSERT_NOT_REACHED();
     }
-    setResultCursor(cursor, key, primaryKey, value);
+    setResultCursor(cursor, key, primaryKey, value, blobInfo);
 }
 
 void IDBRequest::onSuccess(PassRefPtr<IDBKey> idbKey)
@@ -282,7 +296,7 @@ void IDBRequest::onSuccess(PassRefPtr<IDBKey> idbKey)
         onSuccessInternal(IDBAny::createUndefined());
 }
 
-void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer)
+void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     IDB_TRACE("IDBRequest::onSuccess(SharedBuffer)");
     if (!shouldEnqueueEvent())
@@ -291,11 +305,14 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer)
     if (m_pendingCursor) {
         // Value should be null, signifying the end of the cursor's range.
         ASSERT(!valueBuffer.get());
+        ASSERT(!blobInfo->size());
         m_pendingCursor->close();
         m_pendingCursor.clear();
     }
 
-    onSuccessInternal(IDBAny::create(valueBuffer));
+    ASSERT(!m_blobInfo.get());
+    m_blobInfo = blobInfo;
+    onSuccessInternal(IDBAny::create(valueBuffer, m_blobInfo.get()));
 }
 
 #ifndef NDEBUG
@@ -311,7 +328,7 @@ static PassRefPtr<IDBObjectStore> effectiveObjectStore(PassRefPtrWillBeRawPtr<ID
 }
 #endif
 
-void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassRefPtr<IDBKey> prpPrimaryKey, const IDBKeyPath& keyPath)
+void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo, PassRefPtr<IDBKey> prpPrimaryKey, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("IDBRequest::onSuccess(SharedBuffer, IDBKey, IDBKeyPath)");
     if (!shouldEnqueueEvent())
@@ -323,12 +340,14 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassRefPtr<I
 
     RefPtr<SharedBuffer> valueBuffer = prpValueBuffer;
     RefPtr<IDBKey> primaryKey = prpPrimaryKey;
+    ASSERT(!m_blobInfo.get());
+    m_blobInfo = blobInfo;
 
 #ifndef NDEBUG
-    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), valueBuffer, primaryKey, keyPath);
+    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), valueBuffer, m_blobInfo.get(), primaryKey, keyPath);
 #endif
 
-    onSuccessInternal(IDBAny::create(valueBuffer, primaryKey, keyPath));
+    onSuccessInternal(IDBAny::create(valueBuffer, m_blobInfo.get(), primaryKey, keyPath));
 }
 
 void IDBRequest::onSuccess(int64_t value)
@@ -361,14 +380,14 @@ void IDBRequest::setResult(PassRefPtrWillBeRawPtr<IDBAny> result)
     m_resultDirty = true;
 }
 
-void IDBRequest::onSuccess(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
+void IDBRequest::onSuccess(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     IDB_TRACE("IDBRequest::onSuccess(key, primaryKey, value)");
     if (!shouldEnqueueEvent())
         return;
 
     ASSERT(m_pendingCursor);
-    setResultCursor(m_pendingCursor.release(), key, primaryKey, value);
+    setResultCursor(m_pendingCursor.release(), key, primaryKey, value, blobInfo);
 }
 
 bool IDBRequest::hasPendingActivity() const
@@ -447,7 +466,7 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     if (event->type() == EventTypeNames::success) {
         cursorToNotify = getResultCursor();
         if (cursorToNotify)
-            cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release());
+            cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release(), m_blobInfo.release());
     }
 
     if (event->type() == EventTypeNames::upgradeneeded) {

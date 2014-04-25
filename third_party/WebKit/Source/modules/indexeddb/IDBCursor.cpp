@@ -38,6 +38,7 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
+#include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "public/platform/WebIDBKeyRange.h"
 #include <limits>
@@ -96,6 +97,7 @@ IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Dire
 
 IDBCursor::~IDBCursor()
 {
+    handleBlobAcks();
 }
 
 void IDBCursor::trace(Visitor* visitor)
@@ -301,6 +303,7 @@ void IDBCursor::close()
 {
     // The notifier may be the last reference to this cursor.
     RefPtrWillBeRawPtr<IDBCursor> protect(this);
+    handleBlobAcks();
     m_request.clear();
     m_backend.clear();
 }
@@ -316,6 +319,7 @@ void IDBCursor::checkForReferenceCycle()
     if (!hasOneRef() || !m_request->hasOneRef())
         return;
 
+    handleBlobAcks();
     m_request.clear();
 }
 #endif
@@ -340,16 +344,18 @@ ScriptValue IDBCursor::value(NewScriptState* scriptState)
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     RefPtrWillBeRawPtr<IDBAny> value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
-        value = IDBAny::create(m_value, m_primaryKey, metadata.keyPath);
+        value = IDBAny::create(m_value, m_blobInfo.get(), m_primaryKey, metadata.keyPath);
 #ifndef NDEBUG
-        assertPrimaryKeyValidOrInjectable(scriptState, m_value, m_primaryKey, metadata.keyPath);
+        assertPrimaryKeyValidOrInjectable(scriptState, m_value, m_blobInfo.get(), m_primaryKey, metadata.keyPath);
 #endif
     } else {
-        value = IDBAny::create(m_value);
+        value = IDBAny::create(m_value, m_blobInfo.get());
     }
 
     m_valueDirty = false;
-    return idbAnyToScriptValue(scriptState, value);
+    ScriptValue scriptValue = idbAnyToScriptValue(scriptState, value);
+    handleBlobAcks();
+    return scriptValue;
 }
 
 ScriptValue IDBCursor::source(NewScriptState* scriptState) const
@@ -357,7 +363,7 @@ ScriptValue IDBCursor::source(NewScriptState* scriptState) const
     return idbAnyToScriptValue(scriptState, m_source);
 }
 
-void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
+void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     m_key = key;
     m_keyDirty = true;
@@ -367,6 +373,8 @@ void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primary
 
     if (isCursorWithValue()) {
         m_value = value;
+        handleBlobAcks();
+        m_blobInfo = blobInfo;
         m_valueDirty = true;
     }
 
@@ -386,6 +394,16 @@ bool IDBCursor::isDeleted() const
     if (m_source->type() == IDBAny::IDBObjectStoreType)
         return m_source->idbObjectStore()->isDeleted();
     return m_source->idbIndex()->isDeleted();
+}
+
+void IDBCursor::handleBlobAcks()
+{
+    ASSERT(m_request || !m_blobInfo || !m_blobInfo->size());
+    if (m_blobInfo.get() && m_blobInfo->size()) {
+        ASSERT(m_request);
+        m_transaction->db()->ackReceivedBlobs(m_blobInfo.get());
+        m_blobInfo.clear();
+    }
 }
 
 WebIDBCursor::Direction IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)

@@ -36,6 +36,12 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
+namespace blink {
+
+class WebBlobInfo;
+
+} // namespace blink
+
 namespace WebCore {
 
 class ExceptionState;
@@ -86,7 +92,7 @@ public:
     void postSuccessHandlerCallback();
     bool isDeleted() const;
     void close();
-    void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
+    void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> >);
     PassRefPtr<IDBKey> idbPrimaryKey() const { return m_primaryKey; }
     IDBRequest* request() const { return m_request.get(); }
     virtual bool isKeyCursor() const { return true; }
@@ -107,6 +113,7 @@ protected:
 
 private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore() const;
+    void handleBlobAcks();
 
 #if !ENABLE(OILPAN)
     void checkForReferenceCycle();
@@ -124,6 +131,7 @@ private:
     RefPtr<IDBKey> m_key;
     RefPtr<IDBKey> m_primaryKey;
     RefPtr<SharedBuffer> m_value;
+    OwnPtr<Vector<blink::WebBlobInfo> > m_blobInfo;
 };
 
 } // namespace WebCore

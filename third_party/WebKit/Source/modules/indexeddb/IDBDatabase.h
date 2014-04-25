@@ -114,6 +114,8 @@ public:
 
     static int64_t nextTransactionId();
 
+    void ackReceivedBlobs(const Vector<blink::WebBlobInfo>*);
+
     static const char indexDeletedErrorMessage[];
     static const char isKeyCursorErrorMessage[];
     static const char noKeyOrKeyRangeErrorMessage[];

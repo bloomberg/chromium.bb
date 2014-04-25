@@ -128,6 +128,12 @@ SharedBuffer* IDBAny::buffer() const
     return m_buffer.get();
 }
 
+const Vector<blink::WebBlobInfo>* IDBAny::blobInfo() const
+{
+    ASSERT(m_type == BufferType || m_type == BufferKeyAndKeyPathType);
+    return m_blobInfo;
+}
+
 const String& IDBAny::string() const
 {
     ASSERT(m_type == StringType);
@@ -182,18 +188,20 @@ IDBAny::IDBAny(PassRefPtr<IDBObjectStore> value)
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<SharedBuffer> value)
+IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo)
     : m_type(BufferType)
     , m_buffer(value)
+    , m_blobInfo(blobInfo)
     , m_integer(0)
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
+IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
     : m_type(BufferKeyAndKeyPathType)
     , m_idbKey(key)
     , m_idbKeyPath(keyPath)
     , m_buffer(value)
+    , m_blobInfo(blobInfo)
     , m_integer(0)
 {
 }

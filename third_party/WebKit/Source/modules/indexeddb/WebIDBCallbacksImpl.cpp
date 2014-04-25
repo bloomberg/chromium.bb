@@ -33,12 +33,14 @@
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "public/platform/WebIDBDatabaseError.h"
 #include "public/platform/WebIDBKey.h"
 
+using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
@@ -47,6 +49,7 @@ using blink::WebIDBIndex;
 using blink::WebIDBKey;
 using blink::WebIDBKeyPath;
 using blink::WebIDBMetadata;
+using blink::WebVector;
 
 namespace WebCore {
 
@@ -65,12 +68,20 @@ WebIDBCallbacksImpl::~WebIDBCallbacksImpl()
 {
 }
 
+static PassOwnPtr<Vector<WebBlobInfo> > ConvertBlobInfo(const WebVector<WebBlobInfo>& webBlobInfo)
+{
+    OwnPtr<Vector<WebBlobInfo> > blobInfo = adoptPtr(new Vector<WebBlobInfo>(webBlobInfo.size()));
+    for (size_t i = 0; i < webBlobInfo.size(); ++i)
+        (*blobInfo)[i] = webBlobInfo[i];
+    return blobInfo.release();
+}
+
 void WebIDBCallbacksImpl::onError(const WebIDBDatabaseError& error)
 {
     m_request->onError(error);
 }
 
-void WebIDBCallbacksImpl::onSuccess(const blink::WebVector<blink::WebString>& webStringList)
+void WebIDBCallbacksImpl::onSuccess(const WebVector<blink::WebString>& webStringList)
 {
     Vector<String> stringList;
     for (size_t i = 0; i < webStringList.size(); ++i)
@@ -80,7 +91,13 @@ void WebIDBCallbacksImpl::onSuccess(const blink::WebVector<blink::WebString>& we
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value)
 {
-    m_request->onSuccess(adoptPtr(cursor), key, primaryKey, value);
+    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
+    m_request->onSuccess(adoptPtr(cursor), key, primaryKey, value, blobInfo.release());
+}
+
+void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
+{
+    m_request->onSuccess(adoptPtr(cursor), key, primaryKey, value, ConvertBlobInfo(webBlobInfo));
 }
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBDatabase* backend, const WebIDBMetadata& metadata)
@@ -95,12 +112,24 @@ void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key)
 
 void WebIDBCallbacksImpl::onSuccess(const WebData& value)
 {
-    m_request->onSuccess(value);
+    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
+    m_request->onSuccess(value, blobInfo.release());
+}
+
+void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
+{
+    m_request->onSuccess(value, ConvertBlobInfo(webBlobInfo));
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebIDBKey& key, const WebIDBKeyPath& keyPath)
 {
-    m_request->onSuccess(value, key, keyPath);
+    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
+    m_request->onSuccess(value, blobInfo.release(), key, keyPath);
+}
+
+void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo, const WebIDBKey& key, const WebIDBKeyPath& keyPath)
+{
+    m_request->onSuccess(value, ConvertBlobInfo(webBlobInfo), key, keyPath);
 }
 
 void WebIDBCallbacksImpl::onSuccess(long long value)
@@ -115,7 +144,13 @@ void WebIDBCallbacksImpl::onSuccess()
 
 void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value)
 {
-    m_request->onSuccess(key, primaryKey, value);
+    OwnPtr<Vector<blink::WebBlobInfo> > blobInfo(adoptPtr(new Vector<blink::WebBlobInfo>()));
+    m_request->onSuccess(key, primaryKey, value, blobInfo.release());
+}
+
+void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
+{
+    m_request->onSuccess(key, primaryKey, value, ConvertBlobInfo(webBlobInfo));
 }
 
 void WebIDBCallbacksImpl::onBlocked(long long oldVersion)

@@ -32,6 +32,7 @@
 
 namespace blink {
 
+class WebBlobInfo;
 class WebData;
 class WebIDBCursor;
 class WebIDBDatabase;
@@ -48,14 +49,22 @@ public:
     // Pointers transfer ownership.
     virtual void onError(const WebIDBDatabaseError&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(const WebVector<WebString>&) { BLINK_ASSERT_NOT_REACHED(); }
+    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
     virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(const WebIDBKey&) { BLINK_ASSERT_NOT_REACHED(); }
+    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
     virtual void onSuccess(const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) { BLINK_ASSERT_NOT_REACHED(); }
+    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
     virtual void onSuccess(const WebData&, const WebIDBKey&, const WebIDBKeyPath&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(long long) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onSuccess() { BLINK_ASSERT_NOT_REACHED(); }
+    // TODO(ericu): Remove this version, here only for the 3-side patch dance.
     virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onBlocked(long long oldVersion) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) { BLINK_ASSERT_NOT_REACHED(); }
 };

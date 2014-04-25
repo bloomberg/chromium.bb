@@ -35,6 +35,12 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
+namespace blink {
+
+class WebBlobInfo;
+
+}
+
 namespace WebCore {
 
 class DOMStringList;
@@ -61,6 +67,10 @@ public:
     {
         return adoptRefWillBeNoop(new IDBAny(idbObject));
     }
+    static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo)
+    {
+        return adoptRefWillBeNoop(new IDBAny(value, blobInfo));
+    }
     template<typename T>
     static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<T> idbObject)
     {
@@ -70,9 +80,9 @@ public:
     {
         return adoptRefWillBeNoop(new IDBAny(value));
     }
-    static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<SharedBuffer> value, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
+    static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
     {
-        return adoptRefWillBeNoop(new IDBAny(value, key, keyPath));
+        return adoptRefWillBeNoop(new IDBAny(value, blobInfo, key, keyPath));
     }
     ~IDBAny();
     void trace(Visitor*);
@@ -106,6 +116,7 @@ public:
     IDBObjectStore* idbObjectStore() const;
     IDBTransaction* idbTransaction() const;
     SharedBuffer* buffer() const;
+    const Vector<blink::WebBlobInfo>* blobInfo() const;
     int64_t integer() const;
     const String& string() const;
     const IDBKey* key() const;
@@ -122,13 +133,13 @@ private:
     explicit IDBAny(PassRefPtr<IDBKey>);
     explicit IDBAny(const IDBKeyPath&);
     explicit IDBAny(const String&);
-    explicit IDBAny(PassRefPtr<SharedBuffer>);
-    explicit IDBAny(PassRefPtr<SharedBuffer>, PassRefPtr<IDBKey>, const IDBKeyPath&);
+    IDBAny(PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*);
+    IDBAny(PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtr<IDBKey>, const IDBKeyPath&);
     explicit IDBAny(int64_t);
 
     const Type m_type;
 
-    // Only one of the following should ever be in use at any given time.
+    // Only one of the following should ever be in use at any given time, except that BufferType uses two and BufferKeyAndKeyPathType uses four.
     const RefPtr<DOMStringList> m_domStringList;
     const RefPtrWillBeMember<IDBCursor> m_idbCursor;
     const RefPtr<IDBDatabase> m_idbDatabase;
@@ -138,6 +149,7 @@ private:
     const RefPtr<IDBKey> m_idbKey;
     const IDBKeyPath m_idbKeyPath;
     const RefPtr<SharedBuffer> m_buffer;
+    const Vector<blink::WebBlobInfo>* m_blobInfo;
     const String m_string;
     const int64_t m_integer;
 };

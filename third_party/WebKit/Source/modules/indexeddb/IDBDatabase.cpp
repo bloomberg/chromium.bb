@@ -100,6 +100,19 @@ int64_t IDBDatabase::nextTransactionId()
     return atomicIncrement(&currentTransactionId);
 }
 
+void IDBDatabase::ackReceivedBlobs(const Vector<blink::WebBlobInfo>* blobInfo)
+{
+    ASSERT(blobInfo);
+    if (!blobInfo->size() || !m_backend)
+        return;
+    Vector<blink::WebBlobInfo>::const_iterator iter;
+    Vector<String> uuids;
+    uuids.reserveCapacity(blobInfo->size());
+    for (iter = blobInfo->begin(); iter != blobInfo->end(); ++iter)
+        uuids.append(iter->uuid());
+    m_backend->ackReceivedBlobs(uuids);
+}
+
 void IDBDatabase::indexCreated(int64_t objectStoreId, const IDBIndexMetadata& metadata)
 {
     IDBDatabaseMetadata::ObjectStoreMap::iterator it = m_metadata.objectStores.find(objectStoreId);
