@@ -183,6 +183,8 @@
             'services/view_manager/node_delegate.h',
             'services/view_manager/root_node_manager.cc',
             'services/view_manager/root_node_manager.h',
+            'services/view_manager/view.cc',
+            'services/view_manager/view.h',
             'services/view_manager/view_manager.cc',
             'services/view_manager/view_manager_connection.cc',
             'services/view_manager/view_manager_connection.h',
