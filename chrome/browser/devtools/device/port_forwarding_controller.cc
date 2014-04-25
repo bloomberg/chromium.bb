@@ -535,7 +535,10 @@ PortForwardingController::PortForwardingController(Profile* profile)
   OnPrefsChange();
 }
 
-PortForwardingController::~PortForwardingController() {
+
+PortForwardingController::~PortForwardingController() {}
+
+void PortForwardingController::Shutdown() {
   // Existing connection will not be shut down. This might be confusing for
   // some users, but the opposite is more confusing.
   StopListening();

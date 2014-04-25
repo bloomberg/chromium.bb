@@ -23,6 +23,9 @@ class PortForwardingController
 
   virtual ~PortForwardingController();
 
+  // KeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
     // Returns singleton instance of Factory.
