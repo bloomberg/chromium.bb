@@ -91,14 +91,6 @@ webkit.org/b/85211 ietestcenter/css3/flexbox/flexbox-align-stretch-001.htm [ Won
 webkit.org/b/85212 ietestcenter/css3/flexbox/flexbox-layout-002.htm [ WontFix ]
 webkit.org/b/86142 ietestcenter/css3/namespaces/syntax-021.xml [ WontFix ]
 
-crbug.com/247466 [ Win Debug ] inspector/sources/debugger/live-edit-breakpoints.html [ WontFix ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/dom-breakpoints.html [ WontFix ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/xhr-breakpoints.html [ WontFix ]
-crbug.com/247466 [ Win Debug ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ WontFix ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/set-breakpoint.html [ WontFix ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/script-formatter-console.html [ WontFix ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/script-formatter-search.html [ WontFix ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/linkifier.html [ WontFix ]
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ WontFix ]
 
 # LightTPD doesn't accept unknown HTTP methods
