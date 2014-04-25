@@ -14,4 +14,14 @@ PASS hueRotateElement.getAttribute('values') is "90"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(GraphicsLayer
+  (bounds 808.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 808.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+    )
+  )
+)
 

@@ -16,8 +16,18 @@ PASS luminanceToAlphaElement.getAttribute('type') is "luminanceToAlpha"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 266 800 34)
-  (rect 8 266 800 34)
+(GraphicsLayer
+  (bounds 808.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 808.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 8.00 266.00 800.00 34.00)
+        (rect 8.00 266.00 800.00 34.00)
+      )
+    )
+  )
 )
 
