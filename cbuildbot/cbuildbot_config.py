@@ -1616,7 +1616,7 @@ compile_only_pre_cq = pre_cq.derive(
   unittests=False,
 )
 
-# The Pre-CQ tests 5 platforms. Because we test so many platforms in parallel,
+# The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
 # it is important to delay the launch of some builds in order to conserve RAM.
 # We build rambi and daisy in parallel first. When daisy finishes BuildPackages,
 # the remaining boards start BuildPackages. Because Rambi runs VMTest and this
@@ -1629,8 +1629,8 @@ _config.add_group(constants.PRE_CQ_BUILDER_NAME,
   pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
 
   # daisy w/kernel 3.8. We set build_packages_in_background=False here, so
-  # that subsequent boards (lumpy, parrot) don't get launched until after
-  # daisy finishes BuildPackages.
+  # that subsequent boards (lumpy, parrot, duck) don't get launched until
+  # after daisy finishes BuildPackages.
   pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
                     boards=['daisy_spring'],
                     build_packages_in_background=False),
@@ -1640,6 +1640,9 @@ _config.add_group(constants.PRE_CQ_BUILDER_NAME,
                                  boards=['lumpy']),
   # amd64 w/kernel 3.4.
   compile_only_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
+
+  # brillo config.
+  pre_cq.add_config('duck-pre-cq', brillo, boards=['duck']),
 )
 
 internal_paladin.add_config('pre-cq-launcher',
