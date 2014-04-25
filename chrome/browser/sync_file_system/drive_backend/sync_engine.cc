@@ -221,7 +221,9 @@ void SyncEngine::RegisterOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::RegisterOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, CreateRelayedCallback(callback)));
+                 origin,
+                 RelayCallbackToCurrentThread(
+                     FROM_HERE, callback)));
 }
 
 void SyncEngine::EnableOrigin(
@@ -230,7 +232,9 @@ void SyncEngine::EnableOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::EnableOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, CreateRelayedCallback(callback)));
+                 origin,
+                 RelayCallbackToCurrentThread(
+                     FROM_HERE, callback)));
 }
 
 void SyncEngine::DisableOrigin(
@@ -239,7 +243,9 @@ void SyncEngine::DisableOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::DisableOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, CreateRelayedCallback(callback)));
+                 origin,
+                 RelayCallbackToCurrentThread(
+                     FROM_HERE, callback)));
 }
 
 void SyncEngine::UninstallOrigin(
@@ -250,7 +256,9 @@ void SyncEngine::UninstallOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::UninstallOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, flag, CreateRelayedCallback(callback)));
+                 origin, flag,
+                 RelayCallbackToCurrentThread(
+                     FROM_HERE, callback)));
 }
 
 void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
@@ -258,7 +266,8 @@ void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
       FROM_HERE,
       base::Bind(&SyncWorker::ProcessRemoteChange,
                  base::Unretained(sync_worker_.get()),
-                 CreateRelayedCallback(callback)));
+                 RelayCallbackToCurrentThread(
+                     FROM_HERE, callback)));
 }
 
 void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
@@ -378,7 +387,8 @@ void SyncEngine::ApplyLocalChange(
                  local_path,
                  local_metadata,
                  url,
-                 CreateRelayedCallback(callback)));
+                 RelayCallbackToCurrentThread(
+                     FROM_HERE, callback)));
 }
 
 SyncTaskManager* SyncEngine::GetSyncTaskManagerForTesting() {

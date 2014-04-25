@@ -1,0 +1,93 @@
+$$ This is a pump file for generating file templates.  Pump is a python
+$$ script that is part of the Google Test suite of utilities.  Description
+$$ can be found here:
+$$
+$$ http://code.google.com/p/googletest/wiki/PumpManual
+$$
+$$ See comment for MAX_ARITY in base/bind.h.pump.
+$var MAX_ARITY = 7
+
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_HELPER_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_HELPER_H_
+
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
+
+// TODO(tzik): Merge this file to media/base/bind_to_current_loop.h.
+
+namespace sync_file_system {
+namespace drive_backend {
+
+namespace internal {
+
+template <typename T>
+typename base::enable_if<
+    base::internal::IsMoveOnlyType<T>::value,
+    base::internal::PassedWrapper<T> >::type
+RebindForward(T& t) {
+  return base::Passed(&t);
+}
+
+template <typename T>
+typename base::enable_if<
+    !base::internal::IsMoveOnlyType<T>::value,
+    T&>::type
+RebindForward(T& t) {
+  return t;
+}
+
+template <typename>
+struct RelayToTaskRunnerHelper;
+
+$range ARITY 0..MAX_ARITY
+$for ARITY [[
+$range ARG 1..ARITY
+
+template <$for ARG , [[typename A$(ARG)]]>
+struct RelayToTaskRunnerHelper<void($for ARG , [[A$(ARG)]])> {
+  static void Run(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  const base::Callback<void($for ARG , [[A$(ARG)]])>& callback
+$if ARITY != 0 [[, ]]
+$for ARG , [[A$(ARG) a$(ARG)]]
+) {
+    task_runner->PostTask(from_here, base::Bind(callback
+$if ARITY != 0 [[, ]]
+$for ARG , [[RebindForward(a$(ARG))]]));
+  }
+};
+
+]]  $$ for ARITY
+
+}  // namespace internal
+
+template <typename T>
+base::Callback<T> RelayCallbackToTaskRunner(
+    base::TaskRunner* task_runner,
+    const tracked_objects::Location& from_here,
+    const base::Callback<T>& callback) {
+  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  return base::Bind(&internal::RelayToTaskRunnerHelper<T>::Run,
+                    make_scoped_refptr(task_runner), from_here,
+                    callback);
+}
+
+template <typename T>
+base::Callback<T> RelayCallbackToCurrentThread(
+    const tracked_objects::Location& from_here,
+    const base::Callback<T>& callback) {
+  return RelayCallbackToTaskRunner(
+      base::ThreadTaskRunnerHandle::Get(),
+      from_here, callback);
+}
+
+}  // namespace drive_backend
+}  // namespace sync_file_system
+
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_HELPER_H_

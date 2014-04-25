@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_file_system {
@@ -25,24 +26,66 @@ void CallbackWithPassed(bool* called, scoped_ptr<int>) {
   *called = true;
 }
 
+void VerifyCalledOnTaskRunner(base::TaskRunner* task_runner,
+                              bool* called) {
+  ASSERT_TRUE(called);
+  ASSERT_TRUE(task_runner);
+
+  EXPECT_TRUE(task_runner->RunsTasksOnCurrentThread());
+  EXPECT_FALSE(*called);
+  *called = true;
+}
+
 }  // namespace
 
-TEST(DriveBackendCallbackHelperTest, CreateRelayedCallbackTest) {
+TEST(DriveBackendCallbackHelperTest, BasicTest) {
   base::MessageLoop message_loop;
 
   bool called = false;
-  CreateRelayedCallback(base::Bind(&SimpleCallback, &called)).Run(0);
+  RelayCallbackToCurrentThread(
+      FROM_HERE,
+      base::Bind(&SimpleCallback, &called)).Run(0);
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
   called = false;
-  CreateRelayedCallback(
+  RelayCallbackToCurrentThread(
+      FROM_HERE,
       base::Bind(&CallbackWithPassed, &called))
       .Run(scoped_ptr<int>(new int));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
+}
+
+TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
+  base::MessageLoop message_loop;
+  base::Thread thread("WorkerThread");
+  thread.Start();
+
+  scoped_refptr<base::MessageLoopProxy> ui_task_runner =
+      base::MessageLoopProxy::current();
+  scoped_refptr<base::MessageLoopProxy> worker_task_runner =
+      thread.message_loop_proxy();
+
+  bool called = false;
+  base::RunLoop run_loop;
+  worker_task_runner->PostTask(
+      FROM_HERE,
+      RelayCallbackToTaskRunner(
+          ui_task_runner, FROM_HERE,
+          base::Bind(&VerifyCalledOnTaskRunner,
+                     ui_task_runner, &called)));
+  worker_task_runner->PostTask(
+      FROM_HERE,
+      RelayCallbackToTaskRunner(
+          ui_task_runner, FROM_HERE,
+          run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(called);
+
+  thread.Stop();
 }
 
 }  // namespace drive_backend
