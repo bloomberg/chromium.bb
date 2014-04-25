@@ -27,6 +27,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import signals
 
 
 SymbolHeader = collections.namedtuple('SymbolHeader',
@@ -98,7 +99,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     if ret < 0:
       cros_build_lib.PrintBuildbotStepWarnings()
       cros_build_lib.Warning('dump_syms crashed with %s; %s',
-                             osutils.StrSignal(-ret), msg)
+                             signals.StrSignal(-ret), msg)
 
   osutils.SafeMakedirs(breakpad_dir)
   with tempfile.NamedTemporaryFile(dir=breakpad_dir, bufsize=0) as temp:

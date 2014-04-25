@@ -108,3 +108,26 @@ def DeferSignals(*args):
 
     for signum, frame in received:
       RelaySignal(handlers[signum], signum, frame)
+
+
+def StrSignal(sig_num):
+  """Convert a signal number to the symbolic name
+
+  Note: Some signal number have multiple names, so you might get
+  back a confusing result like "SIGIOT|SIGABRT".  Since they have
+  the same signal number, it's impossible to say which one is right.
+
+  Args:
+    sig_num: The numeric signal you wish to convert
+
+  Returns:
+    A string of the signal name(s)
+  """
+  sig_names = []
+  for name, num in signal.__dict__.iteritems():
+    if name.startswith('SIG') and num == sig_num:
+      sig_names.append(name)
+  if sig_names:
+    return '|'.join(sig_names)
+  else:
+    return 'SIG_%i' % sig_num
