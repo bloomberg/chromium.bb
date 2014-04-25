@@ -88,7 +88,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
 #else
 #define MAYBE_EndToEnd EndToEnd
 #endif
-IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_EndToEnd) {
+// http://crbug.com/367349
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, DISABLED_EndToEnd) {
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
