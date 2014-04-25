@@ -220,7 +220,6 @@ private:
     void cursorUpdateTimerFired(Timer<EventHandler>*);
     void activeIntervalTimerFired(Timer<EventHandler>*);
 
-    bool shouldTurnVerticalTicksIntoHorizontal(const HitTestResult&, const PlatformWheelEvent&) const;
     bool mouseDownMayStartSelect() const { return m_mouseDownMayStartSelect; }
 
     void fakeMouseMoveEventTimerFired(Timer<EventHandler>*);

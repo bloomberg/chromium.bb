@@ -102,18 +102,6 @@ public:
     {
     }
 
-    PlatformWheelEvent copyTurningVerticalTicksIntoHorizontalTicks() const
-    {
-        PlatformWheelEvent copy = *this;
-
-        copy.m_deltaX = copy.m_deltaY;
-        copy.m_deltaY = 0;
-        copy.m_wheelTicksX = copy.m_wheelTicksY;
-        copy.m_wheelTicksY = 0;
-
-        return copy;
-    }
-
     const IntPoint& position() const { return m_position; } // PlatformWindow coordinates.
     const IntPoint& globalPosition() const { return m_globalPosition; } // Screen coordinates.
 

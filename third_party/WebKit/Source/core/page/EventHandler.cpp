@@ -1994,19 +1994,7 @@ bool EventHandler::isInsideScrollbar(const IntPoint& windowPoint) const
     return false;
 }
 
-bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult& result, const PlatformWheelEvent& event) const
-{
-#if OS(ANDROID) || OS(MACOSX) || OS(WIN)
-    return false;
-#else
-    // GTK+ must scroll horizontally if the mouse pointer is on top of the
-    // horizontal scrollbar while scrolling with the wheel.
-    // This code comes from gtk/EventHandlerGtk.cpp.
-    return !event.hasPreciseScrollingDeltas() && result.scrollbar() && result.scrollbar()->orientation() == HorizontalScrollbar;
-#endif
-}
-
-bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
+bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 {
 #define RETURN_WHEEL_EVENT_HANDLED() \
     { \
@@ -2025,7 +2013,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
     if (!view)
         return false;
 
-    LayoutPoint vPoint = view->windowToContents(e.position());
+    LayoutPoint vPoint = view->windowToContents(event.position());
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
     HitTestResult result(vPoint);
@@ -2037,7 +2025,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
         node = NodeRenderingTraversal::parent(node);
 
     bool isOverWidget;
-    if (e.useLatchedEventNode()) {
+    if (event.useLatchedEventNode()) {
         if (!m_latchedWheelEventNode) {
             m_latchedWheelEventNode = node;
             m_widgetIsLatched = result.isOverWidget();
@@ -2054,20 +2042,13 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
         isOverWidget = result.isOverWidget();
     }
 
-    // FIXME: It should not be necessary to do this mutation here.
-    // Instead, the handlers should know convert vertical scrolls
-    // appropriately.
-    PlatformWheelEvent event = e;
-    if (m_baseEventType == PlatformEvent::NoType && shouldTurnVerticalTicksIntoHorizontal(result, e))
-        event = event.copyTurningVerticalTicksIntoHorizontalTicks();
-
     if (node) {
         // Figure out which view to send the event to.
         RenderObject* target = node->renderer();
 
         if (isOverWidget && target && target->isWidget()) {
             Widget* widget = toRenderWidget(target)->widget();
-            if (widget && passWheelEventToWidget(e, widget))
+            if (widget && passWheelEventToWidget(event, widget))
                 RETURN_WHEEL_EVENT_HANDLED();
         }
 
