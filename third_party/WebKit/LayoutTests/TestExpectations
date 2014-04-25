@@ -1256,7 +1256,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/word-space-with-k
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
 crbug.com/361588 inspector/jump-to-previous-editing-location.html [ Pass Failure ]
-crbug.com/361045 [ Win ] inspector-protocol/timeline/timeline-layout.html [ NeedsManualRebaseline ]
 
 crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]

@@ -12,8 +12,14 @@
 #include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
 #include "wtf/Vector.h"
+#include <inttypes.h>
 
 namespace WebCore {
+
+static String toHexString(void* p)
+{
+    return String::format("0x%" PRIx64, static_cast<uint64>(reinterpret_cast<intptr_t>(p)));
+}
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::beginData(FrameView* frameView)
 {
@@ -27,7 +33,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::beginData
     data->setNumber("dirtyObjects", needsLayoutObjects);
     data->setNumber("totalObjects", totalObjects);
     data->setBoolean("partialLayout", isPartial);
-    data->setString("frame", String::format("%p", &frame));
+    data->setString("frame", toHexString(&frame));
     return TracedValue::fromJSONValue(data);
 }
 
