@@ -299,7 +299,7 @@ void NativeDisplayDelegateX11::CreateFrameBuffer(const gfx::Size& size) {
   if (size.width() == current_width && size.height() == current_height)
     return;
 
-  DestroyUnusedCrtcs();
+  DestroyUnusedCrtcs(size);
   int mm_width = size.width() * kPixelsToMmScale;
   int mm_height = size.height() * kPixelsToMmScale;
   XRRSetScreenSize(
@@ -520,7 +520,7 @@ bool NativeDisplayDelegateX11::SetHDCPState(const DisplaySnapshot& output,
   }
 }
 
-void NativeDisplayDelegateX11::DestroyUnusedCrtcs() {
+void NativeDisplayDelegateX11::DestroyUnusedCrtcs(const gfx::Size& new_size) {
   CHECK(screen_) << "Server not grabbed";
   // Setting the screen size will fail if any CRTC doesn't fit afterwards.
   // At the same time, turning CRTCs off and back on uses up a lot of time.
@@ -553,12 +553,15 @@ void NativeDisplayDelegateX11::DestroyUnusedCrtcs() {
 
     if (mode_info) {
       mode = static_cast<const DisplayModeX11*>(mode_info)->mode_id();
-      // In case our CRTC doesn't fit in our current framebuffer, disable it.
+      // In case our CRTC doesn't fit in common area of our current and about
+      // to be resized framebuffer, disable it.
       // It'll get reenabled after we resize the framebuffer.
-      int current_width = DisplayWidth(display_, DefaultScreen(display_));
-      int current_height = DisplayHeight(display_, DefaultScreen(display_));
-      if (mode_info->size().width() > current_width ||
-          mode_info->size().height() > current_height) {
+      int max_width = std::min(DisplayWidth(display_,
+                               DefaultScreen(display_)), new_size.width());
+      int max_height = std::min(DisplayHeight(display_,
+                                DefaultScreen(display_)), new_size.height());
+      if (mode_info->size().width() > max_width ||
+          mode_info->size().height() > max_height) {
         mode = None;
         output = None;
         mode_info = NULL;
