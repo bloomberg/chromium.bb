@@ -36,6 +36,7 @@ class _JsgamebenchMeasurement(page_measurement.PageMeasurement):
     results.Add('Score', 'score (bigger is better)', result)
 
 
+@test.Disabled('linux')  # crbug.com/365237
 class Jsgamebench(test.Test):
   """Counts how many animating sprites can move around on the screen at once."""
   test = _JsgamebenchMeasurement
