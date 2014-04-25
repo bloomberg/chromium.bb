@@ -314,12 +314,12 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     ASSERT(updateType != CompositingUpdateNone);
     // FIXME: Technically we only need to do this when the FrameView's isScrollable method
     // would return a different value.
-    if (updateType == CompositingUpdateAfterLayout)
+    if (updateType == CompositingUpdateAfterLayout) {
         m_rootShouldAlwaysCompositeDirty = true;
-
-    // FIXME: This function should only set dirty bits. We shouldn't
-    // enable compositing mode here.
-    enableCompositingModeIfNeeded();
+        // FIXME: This function should only set dirty bits. We shouldn't
+        // enable compositing mode here.
+        enableCompositingModeIfNeeded();
+    }
 
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
 
