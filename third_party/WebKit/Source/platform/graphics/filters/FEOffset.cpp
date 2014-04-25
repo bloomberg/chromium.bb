@@ -70,9 +70,9 @@ FloatRect FEOffset::mapRect(const FloatRect& rect, bool forward)
 {
     FloatRect result = rect;
     if (forward)
-        result.move(filter()->applyHorizontalScale(m_dx), filter()->applyHorizontalScale(m_dy));
+        result.move(filter()->applyHorizontalScale(m_dx), filter()->applyVerticalScale(m_dy));
     else
-        result.move(-filter()->applyHorizontalScale(m_dx), -filter()->applyHorizontalScale(m_dy));
+        result.move(-filter()->applyHorizontalScale(m_dx), -filter()->applyVerticalScale(m_dy));
     return result;
 }
 
