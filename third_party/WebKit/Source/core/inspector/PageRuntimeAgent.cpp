@@ -156,8 +156,7 @@ void PageRuntimeAgent::frameWindowDiscarded(DOMWindow* window)
             m_frontend->executionContextDestroyed(it->value);
         }
     }
-    for (size_t i = 0; i < scriptStatesToRemove.size(); i++)
-        m_scriptStateToId.remove(scriptStatesToRemove[i]);
+    m_scriptStateToId.removeAll(scriptStatesToRemove);
 }
 
 } // namespace WebCore

@@ -127,9 +127,7 @@ void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
         m_scriptStateToId.remove(scriptState);
         idsToRemove.append(it->key);
     }
-
-    for (size_t i = 0; i < idsToRemove.size(); i++)
-        m_idToInjectedScript.remove(idsToRemove[i]);
+    m_idToInjectedScript.removeAll(idsToRemove);
 
     // Now remove script states that have id but no injected script.
     Vector<NewScriptState*> scriptStatesToRemove;
@@ -138,8 +136,7 @@ void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
         if (window == scriptState->domWindow())
             scriptStatesToRemove.append(scriptState);
     }
-    for (size_t i = 0; i < scriptStatesToRemove.size(); i++)
-        m_scriptStateToId.remove(scriptStatesToRemove[i]);
+    m_scriptStateToId.removeAll(scriptStatesToRemove);
 }
 
 bool InjectedScriptManager::canAccessInspectedWorkerGlobalScope(NewScriptState*)

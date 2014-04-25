@@ -99,6 +99,8 @@ namespace WTF {
         void remove(ValuePeekInType);
         void remove(iterator);
         void clear();
+        template<typename Collection>
+        void removeAll(const Collection& toBeRemoved) { WTF::removeAll(*this, toBeRemoved); }
 
         static bool isValidValue(ValuePeekInType);
 

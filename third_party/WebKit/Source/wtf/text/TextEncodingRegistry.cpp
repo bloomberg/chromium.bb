@@ -192,9 +192,7 @@ static void pruneBlacklistedCodecs()
                 names.append(it->key);
         }
 
-        size_t length = names.size();
-        for (size_t j = 0; j < length; ++j)
-            textEncodingNameMap->remove(names[j]);
+        textEncodingNameMap->removeAll(names);
 
         textCodecMap->remove(atomicName);
     }

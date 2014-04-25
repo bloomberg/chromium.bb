@@ -240,6 +240,8 @@ public:
     void remove(ValuePeekInType);
     void remove(iterator);
     void clear() { m_impl.clear(); }
+    template<typename Collection>
+    void removeAll(const Collection& other) { WTF::removeAll(*this, other); }
 
     void trace(typename Allocator::Visitor* visitor) { m_impl.trace(visitor); }
 

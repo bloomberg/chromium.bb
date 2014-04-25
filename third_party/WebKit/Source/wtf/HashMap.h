@@ -126,6 +126,8 @@ namespace WTF {
         void remove(KeyPeekInType);
         void remove(iterator);
         void clear();
+        template<typename Collection>
+        void removeAll(const Collection& toBeRemoved) { WTF::removeAll(*this, toBeRemoved); }
 
         MappedPassOutType take(KeyPeekInType); // efficient combination of get with remove
 

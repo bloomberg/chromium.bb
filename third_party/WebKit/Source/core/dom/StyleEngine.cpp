@@ -380,9 +380,7 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
             if (!collection->hasStyleSheetCandidateNodes())
                 treeScopesRemoved.add(treeScope);
         }
-        if (!treeScopesRemoved.isEmpty())
-            for (HashSet<TreeScope*>::iterator it = treeScopesRemoved.begin(); it != treeScopesRemoved.end(); ++it)
-                m_activeTreeScopes.remove(*it);
+        m_activeTreeScopes.removeAll(treeScopesRemoved);
     }
 
     InspectorInstrumentation::activeStyleSheetsUpdated(&m_document);

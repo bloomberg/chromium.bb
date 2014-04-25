@@ -350,9 +350,7 @@ void SVGDocumentExtensions::removeAllTargetReferencesForElement(SVGElement* refe
             toBeRemoved.append(referencedElement);
     }
 
-    Vector<SVGElement*>::iterator vectorEnd = toBeRemoved.end();
-    for (Vector<SVGElement*>::iterator it = toBeRemoved.begin(); it != vectorEnd; ++it)
-        m_elementDependencies.remove(*it);
+    m_elementDependencies.removeAll(toBeRemoved);
 }
 
 void SVGDocumentExtensions::rebuildAllElementReferencesForTarget(SVGElement* referencedElement)

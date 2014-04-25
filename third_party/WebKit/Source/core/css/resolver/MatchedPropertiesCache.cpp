@@ -117,8 +117,7 @@ void MatchedPropertiesCache::clearViewportDependent()
         if (cacheItem->renderStyle->hasViewportUnits())
             toRemove.append(it->key);
     }
-    for (size_t i = 0; i < toRemove.size(); ++i)
-        m_cache.remove(toRemove[i]);
+    m_cache.removeAll(toRemove);
 }
 
 void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
@@ -139,9 +138,7 @@ void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
             }
         }
     }
-    for (size_t i = 0; i < toRemove.size(); ++i)
-        m_cache.remove(toRemove[i]);
-
+    m_cache.removeAll(toRemove);
     m_additionsSinceLastSweep = 0;
 }
 

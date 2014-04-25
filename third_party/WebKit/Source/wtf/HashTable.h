@@ -1277,6 +1277,17 @@ namespace WTF {
         return a.m_impl != b.m_impl;
     }
 
+    template<typename Collection1, typename Collection2>
+    inline void removeAll(Collection1& collection, const Collection2& toBeRemoved)
+    {
+        if (collection.isEmpty() || toBeRemoved.isEmpty())
+            return;
+        typedef typename Collection2::const_iterator CollectionIterator;
+        CollectionIterator end(toBeRemoved.end());
+        for (CollectionIterator it(toBeRemoved.begin()); it != end; ++it)
+            collection.remove(*it);
+    }
+
 } // namespace WTF
 
 #include "wtf/HashIterators.h"

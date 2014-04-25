@@ -156,6 +156,8 @@ namespace WTF {
         void remove(ValuePeekInType);
         void remove(iterator);
         void clear();
+        template<typename Collection>
+        void removeAll(const Collection& other) { WTF::removeAll(*this, other); }
 
     private:
         void unlink(Node*);

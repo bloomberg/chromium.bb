@@ -197,10 +197,7 @@ static inline void purgePlatformFontDataCache()
         if (platformData->value && !gFontDataCache->contains(platformData->value.get()))
             keysToRemove.append(platformData->key);
     }
-
-    size_t keysToRemoveCount = keysToRemove.size();
-    for (size_t i = 0; i < keysToRemoveCount; ++i)
-        gFontPlatformDataCache->remove(keysToRemove[i]);
+    gFontPlatformDataCache->removeAll(keysToRemove);
 }
 
 static inline void purgeFontVerticalDataCache()
@@ -223,8 +220,7 @@ static inline void purgeFontVerticalDataCache()
             if (!verticalData->value || !verticalData->value->inFontCache())
                 keysToRemove.append(verticalData->key);
         }
-        for (size_t i = 0, count = keysToRemove.size(); i < count; ++i)
-            fontVerticalDataCache.take(keysToRemove[i]);
+        fontVerticalDataCache.removeAll(keysToRemove);
     }
 #endif
 }

@@ -1111,8 +1111,7 @@ void ResourceFetcher::garbageCollectDocumentResources()
             resourcesToDelete.append(it->key);
     }
 
-    for (StringVector::const_iterator it = resourcesToDelete.begin(); it != resourcesToDelete.end(); ++it)
-        m_documentResources.remove(*it);
+    m_documentResources.removeAll(resourcesToDelete);
 }
 
 void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)

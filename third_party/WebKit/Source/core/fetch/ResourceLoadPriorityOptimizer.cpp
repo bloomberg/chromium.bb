@@ -86,9 +86,7 @@ void ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities()
             objectsToRemove.append(obj);
         }
     }
-
-    for (Vector<RenderObject*>::iterator it = objectsToRemove.begin(); it != objectsToRemove.end(); ++it)
-        m_objects.remove(*it);
+    m_objects.removeAll(objectsToRemove);
 
     updateImageResourcesWithLoadPriority();
 }

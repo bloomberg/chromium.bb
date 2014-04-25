@@ -1854,8 +1854,7 @@ static void performOverlapTests(OverlapTestRequestMap& overlapTestRequests, cons
         it->key->setIsOverlapped(true);
         overlappedRequestClients.append(it->key);
     }
-    for (size_t i = 0; i < overlappedRequestClients.size(); ++i)
-        overlapTestRequests.remove(overlappedRequestClients[i]);
+    overlapTestRequests.removeAll(overlappedRequestClients);
 }
 
 static bool shouldDoSoftwarePaint(const RenderLayer* layer, bool paintingReflection)
