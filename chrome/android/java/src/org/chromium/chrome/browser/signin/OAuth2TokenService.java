@@ -7,7 +7,10 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
+import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
@@ -16,9 +19,12 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -32,6 +38,9 @@ import javax.annotation.Nullable;
 public final class OAuth2TokenService {
 
     private static final String TAG = "OAuth2TokenService";
+
+    @VisibleForTesting
+    public static final String STORED_ACCOUNTS_KEY = "google.services.stored_accounts";
 
     public interface OAuth2TokenServiceObserver {
         void onRefreshTokenAvailable(Account account);
@@ -86,13 +95,25 @@ public final class OAuth2TokenService {
     }
 
     /**
-     * Called by native to list the accounts with OAuth2 refresh tokens.
+     * Called by native to list the activite accounts in the OS.
      */
+    @VisibleForTesting
     @CalledByNative
-    public static String[] getAccounts(Context context) {
+    public static String[] getSystemAccounts(Context context) {
         AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(context);
         java.util.List<String> accountNames = accountManagerHelper.getGoogleAccountNames();
         return accountNames.toArray(new String[accountNames.size()]);
+    }
+
+    /**
+     * Called by native to list the accounts with OAuth2 refresh tokens.
+     * This can differ from getSystemAccounts as the user add/remove accounts
+     * from the OS. validateAccounts should be called to keep these two
+     * in sync.
+     */
+    @CalledByNative
+    public static String[] getAccounts(Context context) {
+        return getStoredAccounts(context);
     }
 
     /**
@@ -202,9 +223,7 @@ public final class OAuth2TokenService {
         ThreadUtils.assertOnUiThread();
         String currentlySignedInAccount =
                 ChromeSigninController.get(context).getSignedInAccountName();
-        String[] accounts = getAccounts(context);
-        nativeValidateAccounts(
-                mNativeProfileOAuth2TokenService, accounts, currentlySignedInAccount);
+        nativeValidateAccounts(mNativeProfileOAuth2TokenService, currentlySignedInAccount);
     }
 
     /**
@@ -262,12 +281,26 @@ public final class OAuth2TokenService {
         }
     }
 
+    private static String[] getStoredAccounts(Context context) {
+        Set<String> accounts =
+                PreferenceManager.getDefaultSharedPreferences(context)
+                        .getStringSet(STORED_ACCOUNTS_KEY, null);
+        return accounts == null ? new String[]{} : accounts.toArray(new String[accounts.size()]);
+    }
+
+    @CalledByNative
+    private static void saveStoredAccounts(Context context, String[] accounts) {
+        Set<String> set = new HashSet<String>(Arrays.asList(accounts));
+        PreferenceManager.getDefaultSharedPreferences(context).edit().
+                putStringSet(STORED_ACCOUNTS_KEY, set).apply();
+    }
+
     private static native Object nativeGetForProfile(Profile profile);
     private static native void nativeOAuth2TokenFetched(
             String authToken, boolean result, long nativeCallback);
     private native void nativeValidateAccounts(
             long nativeAndroidProfileOAuth2TokenService,
-            String[] accounts, String currentlySignedInAccount);
+            String currentlySignedInAccount);
     private native void nativeFireRefreshTokenAvailableFromJava(
             long nativeAndroidProfileOAuth2TokenService, String accountName);
     private native void nativeFireRefreshTokenRevokedFromJava(

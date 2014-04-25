@@ -98,6 +98,18 @@ std::vector<std::string> AndroidProfileOAuth2TokenService::GetAccounts() {
   return accounts;
 }
 
+std::vector<std::string> AndroidProfileOAuth2TokenService::GetSystemAccounts() {
+  std::vector<std::string> accounts;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_accounts =
+      Java_OAuth2TokenService_getSystemAccounts(
+          env, base::android::GetApplicationContext());
+  base::android::AppendJavaStringArrayToStringVector(env,
+                                                     j_accounts.obj(),
+                                                     &accounts);
+  return accounts;
+}
+
 void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
     const std::string& account_id,
@@ -157,43 +169,74 @@ void AndroidProfileOAuth2TokenService::InvalidateOAuth2Token(
       j_access_token.obj());
 }
 
-void AndroidProfileOAuth2TokenService::ValidateAccounts(JNIEnv* env,
-                                                        jobject obj,
-                                                        jobjectArray accounts,
-                                                        jstring j_current_acc) {
-  std::vector<std::string> account_ids;
-  base::android::AppendJavaStringArrayToStringVector(env,
-                                                     accounts,
-                                                     &account_ids);
+void AndroidProfileOAuth2TokenService::ValidateAccounts(
+    JNIEnv* env,
+    jobject obj,
+    jstring j_current_acc) {
   std::string signed_in_account = ConvertJavaStringToUTF8(env, j_current_acc);
-  ValidateAccounts(signed_in_account, account_ids);
+  ValidateAccounts(signed_in_account);
 }
 
 void AndroidProfileOAuth2TokenService::ValidateAccounts(
-    const std::string& signed_in_account,
-    const std::vector<std::string>& account_ids) {
-  if (signed_in_account.empty())
-    return;
+    const std::string& signed_in_account) {
+  std::vector<std::string> prev_ids = GetAccounts();
+  std::vector<std::string> curr_ids = GetSystemAccounts();
 
-  if (std::find(account_ids.begin(),
-                account_ids.end(),
-                signed_in_account) != account_ids.end()) {
-    // Currently signed in account still exists among accounts on system.
-    std::vector<std::string> ids = GetAccounts();
+  if (!ValidateAccounts(signed_in_account, prev_ids, curr_ids)) {
+    curr_ids.clear();
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> java_accounts(
+      base::android::ToJavaArrayOfStrings(env, curr_ids));
+  Java_OAuth2TokenService_saveStoredAccounts(
+      env, base::android::GetApplicationContext(), java_accounts.obj());
+}
+
+bool AndroidProfileOAuth2TokenService::ValidateAccounts(
+    const std::string& signed_in_account,
+    const std::vector<std::string>& prev_account_ids,
+    const std::vector<std::string>& curr_account_ids) {
+  if (std::find(curr_account_ids.begin(),
+                curr_account_ids.end(),
+                signed_in_account) != curr_account_ids.end()) {
+    // Test to see if an account is removed from the Android AccountManager.
+    // If so, invoke FireRefreshTokenRevoked to notify the reconcilor.
+    for (std::vector<std::string>::const_iterator it = prev_account_ids.begin();
+         it != prev_account_ids.end(); it++) {
+      if (*it == signed_in_account)
+        continue;
+
+      if (std::find(curr_account_ids.begin(),
+                    curr_account_ids.end(),
+                    *it) == curr_account_ids.end()) {
+        FireRefreshTokenRevoked(*it);
+      }
+    }
 
     // Always fire the primary signed in account first.
     FireRefreshTokenAvailable(signed_in_account);
 
-    for (std::vector<std::string>::iterator it = ids.begin();
-        it != ids.end(); it++) {
+    for (std::vector<std::string>::const_iterator it = curr_account_ids.begin();
+         it != curr_account_ids.end(); it++) {
       if (*it != signed_in_account) {
         FireRefreshTokenAvailable(*it);
       }
     }
+    return true;
   } else {
     // Currently signed in account does not any longer exist among accounts on
-    // system.
-    FireRefreshTokenRevoked(signed_in_account);
+    // system together with all other accounts.
+    if (!signed_in_account.empty()) {
+      FireRefreshTokenRevoked(signed_in_account);
+    }
+    for (std::vector<std::string>::const_iterator it = prev_account_ids.begin();
+         it != prev_account_ids.end(); it++) {
+      if (*it == signed_in_account)
+        continue;
+      FireRefreshTokenRevoked(*it);
+    }
+    return false;
   }
 }
 
@@ -250,6 +293,14 @@ void AndroidProfileOAuth2TokenService::FireRefreshTokensLoaded() {
   JNIEnv* env = AttachCurrentThread();
   Java_OAuth2TokenService_notifyRefreshTokensLoaded(
       env, java_ref_.obj());
+}
+
+void AndroidProfileOAuth2TokenService::RevokeAllCredentials() {
+  std::vector<std::string> accounts = GetAccounts();
+  for (std::vector<std::string>::iterator it = accounts.begin();
+       it != accounts.end(); it++) {
+    FireRefreshTokenRevoked(*it);
+  }
 }
 
 // Called from Java when fetching of an OAuth2 token is finished. The

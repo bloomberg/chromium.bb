@@ -225,8 +225,7 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
             profile_);
     const std::string& primary_acct =
         signin_manager->GetAuthenticatedAccountId();
-    const std::vector<std::string>& ids = token_service->GetAccounts();
-    token_service->ValidateAccounts(primary_acct, ids);
+    token_service->ValidateAccounts(primary_acct);
 
   } else {
     DVLOG(1) << "SigninManagerAndroid::LogInSignedInUser "

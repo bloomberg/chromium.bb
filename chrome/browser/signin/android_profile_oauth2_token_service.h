@@ -42,15 +42,20 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   // Lists account IDs of all accounts with a refresh token.
   virtual std::vector<std::string> GetAccounts() OVERRIDE;
 
+  // Lists account at the OS level.
+  std::vector<std::string> GetSystemAccounts();
+
   void ValidateAccounts(JNIEnv* env,
                         jobject obj,
-                        jobjectArray accounts,
                         jstring current_account);
 
   // Takes a the signed in sync account as well as all the other
   // android account ids and check the token status of each.
-  void ValidateAccounts(const std::string& signed_in_account,
-                        const std::vector<std::string>& account_ids);
+  void ValidateAccounts(const std::string& signed_in_account);
+
+  bool ValidateAccounts(const std::string& signed_in_account,
+                        const std::vector<std::string>& prev_account_ids,
+                        const std::vector<std::string>& curr_account_ids);
 
   // Triggers a notification to all observers of the OAuth2TokenService that a
   // refresh token is now available. This may cause observers to retry
@@ -66,6 +71,10 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   // Triggers a notification to all observers of the OAuth2TokenService that all
   // refresh tokens have now been loaded.
   virtual void FireRefreshTokensLoadedFromJava(JNIEnv* env, jobject obj);
+
+  // Overridden from OAuth2TokenService to complete signout of all
+  // OA2TService aware accounts.
+  virtual void RevokeAllCredentials() OVERRIDE;
 
  protected:
   friend class ProfileOAuth2TokenServiceFactory;

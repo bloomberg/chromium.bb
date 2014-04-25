@@ -141,6 +141,12 @@ public class MockAccountManager implements AccountManagerDelegate {
         return result;
     }
 
+    public boolean removeAccountHolderExplicitly(AccountHolder accountHolder) {
+        boolean result = mAccounts.remove(accountHolder);
+        postAsyncAccountChangedEvent();
+        return result;
+    }
+
     @Override
     public AccountManagerFuture<Boolean> removeAccount(Account account,
             AccountManagerCallback<Boolean> callback, Handler handler) {

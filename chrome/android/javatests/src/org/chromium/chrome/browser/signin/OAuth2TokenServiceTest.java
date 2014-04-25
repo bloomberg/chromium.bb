@@ -46,9 +46,12 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         AccountHolder accountHolder1 = AccountHolder.create().account(account1).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder1);
 
+        String[] sysAccounts = OAuth2TokenService.getSystemAccounts(mContext);
+        assertEquals("There should be one registered account", 1, sysAccounts.length);
+        assertEquals("The account should be " + account1, account1.name, sysAccounts[0]);
+
         String[] accounts = OAuth2TokenService.getAccounts(mContext);
-        assertEquals("There should be one registered account", 1, accounts.length);
-        assertEquals("The account should be " + account1, account1.name, accounts[0]);
+        assertEquals("There should be zero registered account", 0, accounts.length);
     }
 
     @SmallTest
@@ -61,12 +64,15 @@ public class OAuth2TokenServiceTest extends InstrumentationTestCase {
         AccountHolder accountHolder2 = AccountHolder.create().account(account2).build();
         mAccountManager.addAccountHolderExplicitly(accountHolder2);
 
-        String[] accounts = OAuth2TokenService.getAccounts(mContext);
-        assertEquals("There should be one registered account", 2, accounts.length);
+        String[] sysAccounts = OAuth2TokenService.getSystemAccounts(mContext);
+        assertEquals("There should be one registered account", 2, sysAccounts.length);
         assertTrue("The list should contain " + account1,
-                Arrays.asList(accounts).contains(account1.name));
+                Arrays.asList(sysAccounts).contains(account1.name));
         assertTrue("The list should contain " + account2,
-                Arrays.asList(accounts).contains(account2.name));
+                Arrays.asList(sysAccounts).contains(account2.name));
+
+        String[] accounts = OAuth2TokenService.getAccounts(mContext);
+        assertEquals("There should be zero registered account", 0, accounts.length);
     }
 
     @SmallTest
