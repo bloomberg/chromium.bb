@@ -144,6 +144,32 @@ TEST_F(TaskPerfTest, TaskPingPong) {
   RunPingPongTest("4_Task_Threads", 4);
 }
 
+
+// Same as above, but add observers to test their perf impact.
+class MessageLoopObserver : public base::MessageLoop::TaskObserver {
+ public:
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  }
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  }
+};
+MessageLoopObserver message_loop_observer;
+
+class TaskObserverPerfTest : public TaskPerfTest {
+ public:
+  virtual void Init() OVERRIDE {
+    TaskPerfTest::Init();
+    for (size_t i = 0; i < threads_.size(); i++) {
+      threads_[i]->message_loop()->AddTaskObserver(&message_loop_observer);
+    }
+  }
+};
+
+TEST_F(TaskObserverPerfTest, TaskPingPong) {
+  RunPingPongTest("1_Task_Threads_With_Observer", 1);
+  RunPingPongTest("4_Task_Threads_With_Observer", 4);
+}
+
 // Class to test our WaitableEvent performance by signaling back and fort.
 // WaitableEvent is templated so we can also compare with other versions.
 template <typename WaitableEventType>
