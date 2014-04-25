@@ -88,7 +88,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   SingleThreadProxy(LayerTreeHost* layer_tree_host,
                     LayerTreeHostSingleThreadClient* client);
 
-  void OnOutputSurfaceInitializeAttempted(bool success);
   bool CommitAndComposite(base::TimeTicks frame_begin_time,
                           const gfx::Rect& device_viewport_damage_rect,
                           bool for_readback,

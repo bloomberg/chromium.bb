@@ -288,13 +288,7 @@ void ThreadProxy::DoCreateAndInitializeOutputSurface() {
 
   RendererCapabilities capabilities;
   bool success = !!output_surface;
-  if (!success) {
-    OnOutputSurfaceInitializeAttempted(false, capabilities);
-    return;
-  }
-
-  success = false;
-  {
+  if (success) {
     // Make a blocking call to InitializeOutputSurfaceOnImplThread. The results
     // of that call are pushed into the success and capabilities local
     // variables.
@@ -311,35 +305,20 @@ void ThreadProxy::DoCreateAndInitializeOutputSurface() {
                    &capabilities));
     completion.Wait();
   }
+  main().renderer_capabilities_main_thread_copy = capabilities;
+  layer_tree_host()->OnCreateAndInitializeOutputSurfaceAttempted(success);
 
-  OnOutputSurfaceInitializeAttempted(success, capabilities);
+  if (success) {
+    main().output_surface_creation_callback.Cancel();
+  } else if (!main().output_surface_creation_callback.IsCancelled()) {
+    Proxy::MainThreadTaskRunner()->PostTask(
+        FROM_HERE, main().output_surface_creation_callback.callback());
+  }
 }
 
 void ThreadProxy::SetRendererCapabilitiesMainThreadCopy(
     const RendererCapabilities& capabilities) {
   main().renderer_capabilities_main_thread_copy = capabilities;
-}
-
-void ThreadProxy::OnOutputSurfaceInitializeAttempted(
-    bool success,
-    const RendererCapabilities& capabilities) {
-  DCHECK(IsMainThread());
-  DCHECK(layer_tree_host());
-
-  if (success) {
-    main().renderer_capabilities_main_thread_copy = capabilities;
-  }
-
-  LayerTreeHost::CreateResult result =
-      layer_tree_host()->OnCreateAndInitializeOutputSurfaceAttempted(success);
-  if (result == LayerTreeHost::CreateFailedButTryAgain) {
-    if (!main().output_surface_creation_callback.callback().is_null()) {
-      Proxy::MainThreadTaskRunner()->PostTask(
-          FROM_HERE, main().output_surface_creation_callback.callback());
-    }
-  } else {
-    main().output_surface_creation_callback.Cancel();
-  }
 }
 
 void ThreadProxy::SendCommitRequestToImplThreadIfNeeded() {

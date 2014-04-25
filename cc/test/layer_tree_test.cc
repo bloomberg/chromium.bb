@@ -240,8 +240,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     return test_hooks_->CreateOutputSurface(fallback);
   }
 
-  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
-    test_hooks_->DidInitializeOutputSurface(succeeded);
+  virtual void DidInitializeOutputSurface() OVERRIDE {
+    test_hooks_->DidInitializeOutputSurface();
   }
 
   virtual void DidFailToInitializeOutputSurface() OVERRIDE {

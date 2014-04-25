@@ -69,7 +69,7 @@ class WebLayerTreeViewImplForTesting
                                    float page_scale) OVERRIDE;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE;
-  virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}
+  virtual void DidInitializeOutputSurface() OVERRIDE {}
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE {}
   virtual void DidCommitAndDrawFrame() OVERRIDE {}

@@ -146,10 +146,6 @@ class ThreadProxy : public Proxy,
   void DidCompleteSwapBuffers();
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue);
   void DoCreateAndInitializeOutputSurface();
-  // |capabilities| is set only when |success| is true.
-  void OnOutputSurfaceInitializeAttempted(
-      bool success,
-      const RendererCapabilities& capabilities);
   void SendCommitRequestToImplThreadIfNeeded();
 
   // Called on impl thread.

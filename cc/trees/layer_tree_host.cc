@@ -177,50 +177,38 @@ static void LayerTreeHostOnOutputSurfaceCreatedCallback(Layer* layer) {
   layer->OnOutputSurfaceCreated();
 }
 
-LayerTreeHost::CreateResult
-LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
+void LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
+  DCHECK(output_surface_lost_);
   TRACE_EVENT1("cc",
                "LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted",
                "success",
                success);
 
-  DCHECK(output_surface_lost_);
-  if (success) {
-    output_surface_lost_ = false;
-
-    if (!contents_texture_manager_ && !settings_.impl_side_painting) {
-      contents_texture_manager_ =
-          PrioritizedResourceManager::Create(proxy_.get());
-      surface_memory_placeholder_ =
-          contents_texture_manager_->CreateTexture(gfx::Size(), RGBA_8888);
-    }
-
-    if (root_layer()) {
-      LayerTreeHostCommon::CallFunctionForSubtree(
-          root_layer(),
-          base::Bind(&LayerTreeHostOnOutputSurfaceCreatedCallback));
-    }
-
-    client_->DidInitializeOutputSurface(true);
-    return CreateSucceeded;
+  if (!success) {
+    // Tolerate a certain number of recreation failures to work around races
+    // in the output-surface-lost machinery.
+    ++num_failed_recreate_attempts_;
+    if (num_failed_recreate_attempts_ >= 5)
+      LOG(FATAL) << "Failed to create a fallback OutputSurface.";
+    client_->DidFailToInitializeOutputSurface();
+    return;
   }
 
-  // Failure path.
+  output_surface_lost_ = false;
 
-  client_->DidFailToInitializeOutputSurface();
-
-  // Tolerate a certain number of recreation failures to work around races
-  // in the output-surface-lost machinery.
-  ++num_failed_recreate_attempts_;
-  if (num_failed_recreate_attempts_ >= 5) {
-    // We have tried too many times to recreate the output surface. Tell the
-    // host to fall back to software rendering.
-    output_surface_can_be_initialized_ = false;
-    client_->DidInitializeOutputSurface(false);
-    return CreateFailedAndGaveUp;
+  if (!contents_texture_manager_ && !settings_.impl_side_painting) {
+    contents_texture_manager_ =
+        PrioritizedResourceManager::Create(proxy_.get());
+    surface_memory_placeholder_ =
+        contents_texture_manager_->CreateTexture(gfx::Size(), RGBA_8888);
   }
 
-  return CreateFailedButTryAgain;
+  if (root_layer()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        root_layer(), base::Bind(&LayerTreeHostOnOutputSurfaceCreatedCallback));
+  }
+
+  client_->DidInitializeOutputSurface();
 }
 
 void LayerTreeHost::DeleteContentsTexturesOnImplThread(

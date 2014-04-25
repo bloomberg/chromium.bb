@@ -405,7 +405,7 @@ class LayerTreeHostDelegatedTestInvalidFrameAfterContextLost
     SetFrameData(frame1.Pass());
   }
 
-  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
+  virtual void DidInitializeOutputSurface() OVERRIDE {
     if (!num_output_surfaces_initialized_++)
       return;
 

@@ -116,34 +116,21 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
 
   scoped_ptr<OutputSurface> output_surface =
       layer_tree_host_->CreateOutputSurface();
-  if (!output_surface) {
-    OnOutputSurfaceInitializeAttempted(false);
-    return;
-  }
 
-  {
+  renderer_capabilities_for_main_thread_ = RendererCapabilities();
+
+  bool success = !!output_surface;
+  if (success) {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resource_provider());
+    success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
   }
 
-  bool initialized;
-  {
-    DebugScopedSetImplThread impl(this);
+  layer_tree_host_->OnCreateAndInitializeOutputSurfaceAttempted(success);
 
-    DCHECK(output_surface);
-    initialized = layer_tree_host_impl_->InitializeRenderer(
-        output_surface.Pass());
-  }
-
-  OnOutputSurfaceInitializeAttempted(initialized);
-}
-
-void SingleThreadProxy::OnOutputSurfaceInitializeAttempted(bool success) {
-  LayerTreeHost::CreateResult result =
-      layer_tree_host_->OnCreateAndInitializeOutputSurfaceAttempted(success);
-  if (result == LayerTreeHost::CreateFailedButTryAgain) {
+  if (!success) {
     // Force another recreation attempt to happen by requesting another commit.
     SetNeedsCommit();
   }

@@ -31,7 +31,7 @@ class LayerTreeHostClient {
   // Creates an OutputSurface. If fallback is true, it should attempt to
   // create an OutputSurface that is guaranteed to initialize correctly.
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) = 0;
-  virtual void DidInitializeOutputSurface(bool success) = 0;
+  virtual void DidInitializeOutputSurface() = 0;
   virtual void WillCommit() = 0;
   virtual void DidCommit() = 0;
   virtual void DidCommitAndDrawFrame() = 0;

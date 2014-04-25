@@ -76,7 +76,8 @@ scoped_ptr<cc::OutputSurface> CompositorHost::CreateOutputSurface(
       new cc::OutputSurface(new MojoContextProvider(gl_pipe_.Pass())));
 }
 
-void CompositorHost::DidInitializeOutputSurface(bool success) {}
+void CompositorHost::DidInitializeOutputSurface() {
+}
 
 void CompositorHost::WillCommit() {}
 void CompositorHost::DidCommit() {}

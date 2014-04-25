@@ -64,7 +64,7 @@ class TestHooks : public AnimationDelegate {
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
   virtual void Layout() {}
-  virtual void DidInitializeOutputSurface(bool succeeded) {}
+  virtual void DidInitializeOutputSurface() {}
   virtual void DidFailToInitializeOutputSurface() {}
   virtual void DidAddAnimation() {}
   virtual void WillCommit() {}

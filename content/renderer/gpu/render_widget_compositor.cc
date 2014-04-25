@@ -612,9 +612,7 @@ scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::CreateOutputSurface(
   return widget_->CreateOutputSurface(fallback);
 }
 
-void RenderWidgetCompositor::DidInitializeOutputSurface(bool success) {
-  if (!success)
-    widget_->webwidget()->didExitCompositingMode();
+void RenderWidgetCompositor::DidInitializeOutputSurface() {
 }
 
 void RenderWidgetCompositor::WillCommit() {

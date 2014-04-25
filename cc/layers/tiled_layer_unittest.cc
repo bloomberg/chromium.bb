@@ -68,13 +68,11 @@ class SynchronousOutputSurfaceLayerTreeHost : public LayerTreeHost {
     return output_surface_created_;
   }
 
-  virtual CreateResult OnCreateAndInitializeOutputSurfaceAttempted(
+  virtual void OnCreateAndInitializeOutputSurfaceAttempted(
       bool success) OVERRIDE {
-    CreateResult result =
-        LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(success);
+    LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(success);
     output_surface_created_ = success;
     run_loop_.Quit();
-    return result;
   }
 
  private:

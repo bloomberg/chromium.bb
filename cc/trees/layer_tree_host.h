@@ -114,13 +114,7 @@ class CC_EXPORT LayerTreeHost {
       LayerTreeHostImplClient* client);
   void DidLoseOutputSurface();
   bool output_surface_lost() const { return output_surface_lost_; }
-  enum CreateResult {
-    CreateSucceeded,
-    CreateFailedButTryAgain,
-    CreateFailedAndGaveUp,
-  };
-  virtual CreateResult OnCreateAndInitializeOutputSurfaceAttempted(
-      bool success);
+  virtual void OnCreateAndInitializeOutputSurfaceAttempted(bool success);
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
