@@ -510,9 +510,7 @@ TEST_F(PicasaFileUtilTest, ManyFolders) {
   ScopedVector<TestFolder> test_folders;
   base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
 
-  // TODO(tommycli): Turn number of test folders back up to 50 (or more) once
-  // https://codereview.chromium.org/15479003/ lands.
-  for (unsigned int i = 0; i < 25; ++i) {
+  for (unsigned int i = 0; i < 50; ++i) {
     base::Time date = test_date - base::TimeDelta::FromDays(i);
 
     test_folders.push_back(
