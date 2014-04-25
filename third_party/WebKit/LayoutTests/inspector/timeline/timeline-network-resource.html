@@ -48,8 +48,8 @@ function test()
 
             if (record.parent && record.parent.type === WebInspector.TimelineModel.RecordType.Root && !record.isBackground) {
                 if (lastRecordStartTime)
-                    InspectorTest.assertGreaterOrEqual(record.startTime, lastRecordStartTime, "Top level records order violation");
-                lastRecordStartTime = record.startTime;
+                    InspectorTest.assertGreaterOrEqual(record.startTime(), lastRecordStartTime, "Top level records order violation");
+                lastRecordStartTime = record.startTime();
             }
         }
         model.forAllRecords(format);
