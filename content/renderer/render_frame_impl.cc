@@ -2551,6 +2551,10 @@ void RenderFrameImpl::willOpenSocketStream(
   impl->SetUserData(handle, new SocketStreamHandleData(routing_id_));
 }
 
+blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {
+  return render_view_->geolocationClient();
+}
+
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(
     blink::WebLocalFrame* frame,
     blink::WebRTCPeerConnectionHandler* handler) {

@@ -30,6 +30,7 @@ struct FrameMsg_CompositorFrameSwapped_Params;
 struct FrameMsg_Navigate_Params;
 
 namespace blink {
+class WebGeolocationClient;
 class WebInputEvent;
 class WebMouseEvent;
 class WebContentDecryptionModule;
@@ -341,6 +342,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                    blink::WebStorageQuotaCallbacks callbacks);
   virtual void willOpenSocketStream(
       blink::WebSocketStreamHandle* handle);
+  virtual blink::WebGeolocationClient* geolocationClient();
   virtual void willStartUsingPeerConnectionHandler(
       blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler);
