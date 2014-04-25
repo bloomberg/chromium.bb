@@ -15,8 +15,23 @@ import sys
 # Disable lint check for finding modules:
 # pylint: disable=F0401
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(script_dir, "pylib"))
+def _GetDirAbove(dirname):
+  """Returns the directory "above" this file containing |dirname| (which must
+  also be "above" this file)."""
+  path = os.path.abspath(__file__)
+  while True:
+    path, tail = os.path.split(path)
+    assert tail
+    if tail == dirname:
+      return path
+
+# Manually check for the command-line flag. (This isn't quite right, since it
+# ignores, e.g., "--", but it's close enough.)
+if "--use_chromium_bundled_pylibs" in sys.argv[1:]:
+  sys.path.insert(0, os.path.join(_GetDirAbove("mojo"), "third_party"))
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "pylib"))
 
 from mojom.error import Error
 from mojom.generate.data import OrderedModuleFromData
@@ -28,6 +43,7 @@ def LoadGenerators(generators_string):
   if not generators_string:
     return []  # No generators.
 
+  script_dir = os.path.dirname(os.path.abspath(__file__))
   generators = []
   for generator_name in [s.strip() for s in generators_string.split(",")]:
     # "Built-in" generators:
@@ -119,7 +135,7 @@ def ProcessFile(args, generator_modules, filename, _processed_files={},
 # pylint: enable=W0102
 
 
-def Main():
+def main():
   parser = argparse.ArgumentParser(
       description="Generate bindings from mojom files.")
   parser.add_argument("filename", nargs="+",
@@ -133,6 +149,8 @@ def Main():
                       help="comma-separated list of generators")
   parser.add_argument("--debug_print_intermediate", action="store_true",
                       help="print the intermediate representation")
+  parser.add_argument("--use_chromium_bundled_pylibs", action="store_true",
+                      help="use Python modules bundled in the Chromium source")
   args = parser.parse_args()
 
   generator_modules = LoadGenerators(args.generators_string)
@@ -147,4 +165,4 @@ def Main():
 
 
 if __name__ == "__main__":
-  sys.exit(Main())
+  sys.exit(main())

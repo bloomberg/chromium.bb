@@ -60,6 +60,7 @@
       'action': [
         'python', '<@(mojom_bindings_generator)',
         '<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).mojom',
+        '--use_chromium_bundled_pylibs',
         '-d', '<(DEPTH)',
         '-o', '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)',
       ],
