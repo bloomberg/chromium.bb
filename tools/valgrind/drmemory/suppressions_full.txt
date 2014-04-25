@@ -1095,57 +1095,6 @@ name=http://crbug.com/64887 (GMock printing uninit data)
 ...
 *!testing::*::PrintBytesInObjectTo*
 
-#  crbug.com
-UNINITIALIZED READ
-name=crbug.com/366905 A (the same issue as 64887, but no symbols)
-MSVCR120.dll!_output_s_l
-MSVCR120.dll!_vsnprintf_helper
-MSVCR120.dll!_vsnprintf_s_l
-MSVCR120.dll!_snprintf_s
-*!*
-*!*
-...
-*!*
-*!*
-KERNEL32.dll!BaseThreadInitThunk
-
-UNINITIALIZED READ
-name=crbug.com/366905 B (the same issue as 64887, but no symbols)
-MSVCR120.dll!sprintf_s
-MSVCR120.dll!_uncaught_exception
-MSVCR120.dll!vsnprintf_s_l
-MSVCR120.dll!snprintf_s
-*!*
-*!*
-...
-*!*
-*!*
-KERNEL32.dll!BaseThreadInitThunk
-
-UNINITIALIZED READ
-name=crbug.com/366905 C (the same issue as 64887, but no symbols)
-*!*
-...
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-*!*
-KERNEL32.dll!BaseThreadInitThunk
-
 ###############################################################
 # Proactively borrowed from memcheck/suppressions.txt.
 # We have not yet seen these, but we are expanding the sets of tests
