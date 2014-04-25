@@ -31,8 +31,8 @@
 #include "config.h"
 #include "bindings/v8/ScriptValue.h"
 
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptScope.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "platform/JSONValues.h"
 
@@ -55,66 +55,11 @@ bool ScriptValue::toString(String& result) const
     return true;
 }
 
-static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxDepth, v8::Isolate* isolate)
+PassRefPtr<JSONValue> ScriptValue::toJSONValue(NewScriptState* scriptState) const
 {
-    if (value.IsEmpty()) {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
-    if (!maxDepth)
-        return nullptr;
-    maxDepth--;
-
-    if (value->IsNull() || value->IsUndefined())
-        return JSONValue::null();
-    if (value->IsBoolean())
-        return JSONBasicValue::create(value->BooleanValue());
-    if (value->IsNumber())
-        return JSONBasicValue::create(value->NumberValue());
-    if (value->IsString())
-        return JSONString::create(toCoreString(value.As<v8::String>()));
-    if (value->IsArray()) {
-        v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
-        RefPtr<JSONArray> inspectorArray = JSONArray::create();
-        uint32_t length = array->Length();
-        for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> value = array->Get(v8::Int32::New(isolate, i));
-            RefPtr<JSONValue> element = v8ToJSONValue(value, maxDepth, isolate);
-            if (!element)
-                return nullptr;
-            inspectorArray->pushValue(element);
-        }
-        return inspectorArray;
-    }
-    if (value->IsObject()) {
-        RefPtr<JSONObject> jsonObject = JSONObject::create();
-        v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-        v8::Local<v8::Array> propertyNames = object->GetPropertyNames();
-        uint32_t length = propertyNames->Length();
-        for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> name = propertyNames->Get(v8::Int32::New(isolate, i));
-            // FIXME(yurys): v8::Object should support GetOwnPropertyNames
-            if (name->IsString() && !object->HasRealNamedProperty(v8::Handle<v8::String>::Cast(name)))
-                continue;
-            RefPtr<JSONValue> propertyValue = v8ToJSONValue(object->Get(name), maxDepth, isolate);
-            if (!propertyValue)
-                return nullptr;
-            TOSTRING_DEFAULT(V8StringResource<WithNullCheck>, nameString, name, nullptr);
-            jsonObject->setValue(nameString, propertyValue);
-        }
-        return jsonObject;
-    }
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
-PassRefPtr<JSONValue> ScriptValue::toJSONValue(ScriptState* scriptState) const
-{
-    v8::HandleScope handleScope(scriptState->isolate());
-    // v8::Object::GetPropertyNames() expects current context to be not null.
-    v8::Context::Scope contextScope(scriptState->context());
-    return v8ToJSONValue(v8Value(), JSONValue::maxDepth, scriptState->isolate());
+    ASSERT(!scriptState->contextIsEmpty());
+    NewScriptState::Scope scope(scriptState);
+    return v8ToJSONValue(scriptState->isolate(), v8Value(), JSONValue::maxDepth);
 }
 
 } // namespace WebCore

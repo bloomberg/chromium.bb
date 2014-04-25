@@ -31,6 +31,7 @@
 #ifndef ScriptValue_h
 #define ScriptValue_h
 
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/SharedPersistent.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -40,7 +41,6 @@
 namespace WebCore {
 
 class JSONValue;
-class ScriptState;
 
 class ScriptValue {
 public:
@@ -141,7 +141,7 @@ public:
     }
 
     bool toString(String&) const;
-    PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;
+    PassRefPtr<JSONValue> toJSONValue(NewScriptState*) const;
 
 private:
     mutable v8::Isolate* m_isolate;

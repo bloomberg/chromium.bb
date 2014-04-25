@@ -34,7 +34,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Event.h"
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

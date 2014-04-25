@@ -286,7 +286,7 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
         *error = "Object is not available";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(heapObject.scriptState()->newScriptState());
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(heapObject.scriptState());
     if (injectedScript.isEmpty()) {
         *error = "Object is not available. Inspected context is gone";
         return;

@@ -579,16 +579,6 @@ PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreak
     return location;
 }
 
-static PassRefPtr<JSONObject> scriptToInspectorObject(ScriptObject scriptObject)
-{
-    if (scriptObject.isEmpty())
-        return nullptr;
-    RefPtr<JSONValue> value = scriptObject.toJSONValue(scriptObject.scriptState());
-    if (!value)
-        return nullptr;
-    return value->asObject();
-}
-
 void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& scriptId, const String& query, const bool* const optionalCaseSensitive, const bool* const optionalIsRegex, RefPtr<Array<WebCore::TypeBuilder::Page::SearchMatch> >& results)
 {
     bool isRegex = optionalIsRegex ? *optionalIsRegex : false;
@@ -604,14 +594,10 @@ void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& s
 void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
 {
     bool previewOnly = preview && *preview;
-    ScriptObject resultObject;
-    if (!scriptDebugServer().setScriptSource(scriptId, newContent, previewOnly, error, errorData, &m_currentCallStack, &resultObject))
+    if (!scriptDebugServer().setScriptSource(scriptId, newContent, previewOnly, error, errorData, &m_currentCallStack, &result))
         return;
     newCallFrames = currentCallFrames();
     asyncStackTrace = currentAsyncStackTrace();
-    RefPtr<JSONObject> object = scriptToInspectorObject(resultObject);
-    if (object)
-        result = object;
 }
 
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)

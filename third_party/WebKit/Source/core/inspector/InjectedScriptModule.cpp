@@ -69,7 +69,7 @@ void InjectedScriptModule::ensureInjected(InjectedScriptManager* injectedScriptM
         }
     }
 
-    ScriptObject moduleObject(scriptState->oldScriptState(), resultValue);
+    ScriptObject moduleObject(scriptState, resultValue);
     initialize(moduleObject, injectedScriptManager->inspectedStateAccessCheck());
 }
 

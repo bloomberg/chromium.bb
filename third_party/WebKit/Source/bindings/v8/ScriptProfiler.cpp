@@ -119,7 +119,7 @@ ScriptObject ScriptProfiler::objectByHeapObjectId(unsigned id)
             return ScriptObject();
     }
 
-    ScriptState* scriptState = ScriptState::forContext(object->CreationContext());
+    NewScriptState* scriptState = NewScriptState::from(object->CreationContext());
     return ScriptObject(scriptState, object);
 }
 
@@ -227,7 +227,7 @@ void ScriptProfiler::stopTrackingHeapObjects()
     v8::Isolate::GetCurrent()->GetHeapProfiler()->StopTrackingHeapObjects();
 }
 
-// FIXME: This method should receive a ScriptState, from which we should retrieve an Isolate.
+// FIXME: This method should receive a NewScriptState, from which we should retrieve an Isolate.
 PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(const String& title, HeapSnapshotProgress* control)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -261,8 +261,8 @@ void ScriptProfiler::initialize()
 
 void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
 {
-    // visitNodeWrappers() should receive a ScriptState and retrieve an Isolate
-    // from the ScriptState.
+    // visitNodeWrappers() should receive a NewScriptState and retrieve an Isolate
+    // from the NewScriptState.
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
 

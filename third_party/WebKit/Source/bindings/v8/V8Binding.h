@@ -795,6 +795,8 @@ void addHiddenValueToArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cac
 void removeHiddenValueFromArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
 void moveEventListenerToNewWrapper(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
 
+PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate*, v8::Handle<v8::Value>, int);
+
 // Converts a DOM object to a v8 value.
 // This is a no-inline version of toV8(). If you want to call toV8()
 // without creating #include cycles, you can use this function instead.

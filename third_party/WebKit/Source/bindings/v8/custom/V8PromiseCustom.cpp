@@ -210,7 +210,7 @@ void setStateForPromise(v8::Handle<v8::Object> promise, V8PromiseCustom::Promise
     internal->SetInternalField(V8PromiseCustom::InternalResultIndex, value);
     ExecutionContext* context = currentExecutionContext(isolate);
     if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
-        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(ScriptState::forContext(isolate->GetCurrentContext()), promise), state, ScriptValue(value, isolate));
+        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(NewScriptState::current(isolate), promise), state, ScriptValue(value, isolate));
 }
 
 class TaskPerformScopeForInstrumentation {
@@ -504,7 +504,7 @@ void PromisePropagator::updateDerivedFromPromise(v8::Handle<v8::Object> derivedP
     }
     ExecutionContext* context = currentExecutionContext(isolate);
     if (InspectorInstrumentation::isPromiseTrackerEnabled(context)) {
-        ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
+        NewScriptState* scriptState = NewScriptState::current(isolate);
         InspectorInstrumentation::didUpdatePromiseParent(context, ScriptObject(scriptState, derivedPromise), ScriptObject(scriptState, promise));
     }
 }
@@ -680,7 +680,7 @@ v8::Local<v8::Object> V8PromiseCustom::createPromise(v8::Handle<v8::Object> crea
 
     ExecutionContext* context = currentExecutionContext(isolate);
     if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
-        InspectorInstrumentation::didCreatePromise(context, ScriptObject(ScriptState::forContext(isolate->GetCurrentContext()), promise));
+        InspectorInstrumentation::didCreatePromise(context, ScriptObject(NewScriptState::current(isolate), promise));
 
     setStateForPromise(promise, Pending, v8::Undefined(isolate), isolate);
     return promise;

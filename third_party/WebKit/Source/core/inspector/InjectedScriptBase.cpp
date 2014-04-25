@@ -64,7 +64,7 @@ void InjectedScriptBase::initialize(ScriptObject injectedScriptObject, Inspected
 
 bool InjectedScriptBase::canAccessInspectedWindow() const
 {
-    return m_inspectedStateAccessCheck(m_injectedScriptObject.scriptState()->newScriptState());
+    return m_inspectedStateAccessCheck(m_injectedScriptObject.scriptState());
 }
 
 const ScriptObject& InjectedScriptBase::injectedScriptObject() const
@@ -77,7 +77,7 @@ ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& 
     ExecutionContext* executionContext = m_injectedScriptObject.scriptState()->executionContext();
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(executionContext, 0, name(), 1);
 
-    ScriptState* scriptState = m_injectedScriptObject.scriptState();
+    NewScriptState* scriptState = m_injectedScriptObject.scriptState();
     bool evalIsDisabled = false;
     if (scriptState) {
         evalIsDisabled = !scriptState->evalEnabled();

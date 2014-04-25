@@ -32,7 +32,6 @@
 #include "bindings/v8/ScriptPromiseResolver.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"

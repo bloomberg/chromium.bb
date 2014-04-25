@@ -43,6 +43,18 @@ NewScriptState::~NewScriptState()
     ASSERT(m_context.isEmpty());
 }
 
+bool NewScriptState::evalEnabled() const
+{
+    v8::HandleScope handleScope(m_isolate);
+    return context()->IsCodeGenerationFromStringsAllowed();
+}
+
+void NewScriptState::setEvalEnabled(bool enabled)
+{
+    v8::HandleScope handleScope(m_isolate);
+    return context()->AllowCodeGenerationFromStrings(enabled);
+}
+
 ScriptState* NewScriptState::oldScriptState()
 {
     ASSERT(!m_context.isEmpty());

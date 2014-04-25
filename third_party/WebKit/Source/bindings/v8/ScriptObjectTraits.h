@@ -32,7 +32,6 @@
 #define ScriptObjectTraits_h
 
 #include "bindings/v8/ScriptObject.h"
-#include "bindings/v8/ScriptState.h"
 #include "wtf/HashTraits.h"
 
 namespace WebCore {

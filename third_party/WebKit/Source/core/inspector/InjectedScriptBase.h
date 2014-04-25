@@ -50,7 +50,7 @@ public:
 
     const String& name() const { return m_name; }
     bool isEmpty() const { return m_injectedScriptObject.isEmpty(); }
-    NewScriptState* scriptState() const { return m_injectedScriptObject.scriptState()->newScriptState(); }
+    NewScriptState* scriptState() const { return m_injectedScriptObject.scriptState(); }
 
 protected:
     typedef bool (*InspectedStateAccessCheck)(NewScriptState*);

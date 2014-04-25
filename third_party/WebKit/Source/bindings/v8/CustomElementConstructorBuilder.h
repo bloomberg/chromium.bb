@@ -49,7 +49,6 @@ class Document;
 class Element;
 class ExceptionState;
 class QualifiedName;
-class ScriptState;
 class V8PerContextData;
 struct WrapperTypeInfo;
 

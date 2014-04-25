@@ -21,7 +21,7 @@ namespace WebCore {
 
 // This class wraps ScriptPromiseResolver and provides the following
 // functionalities in addition to ScriptPromiseResolver's.
-//  - A ScriptPromiseResolverWithContext retains a ScriptState. A caller
+//  - A ScriptPromiseResolverWithContext retains a NewScriptState. A caller
 //    can call resolve or reject from outside of a V8 context.
 //  - This class is an ActiveDOMObject and keeps track of the associated
 //    ExecutionContext state. When the ExecutionContext is suspended,

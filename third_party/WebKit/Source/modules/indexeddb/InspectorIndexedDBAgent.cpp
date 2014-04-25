@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
@@ -446,12 +446,10 @@ public:
         Document* document = toDocument(m_scriptState->executionContext());
         if (!document)
             return;
-        ScriptState* scriptState = mainWorldScriptState(document->frame());
-
         RefPtr<DataEntry> dataEntry = DataEntry::create()
-            .setKey(idbCursor->key(m_scriptState.get()).toJSONValue(scriptState)->toJSONString())
-            .setPrimaryKey(idbCursor->primaryKey(m_scriptState.get()).toJSONValue(scriptState)->toJSONString())
-            .setValue(idbCursor->value(m_scriptState.get()).toJSONValue(scriptState)->toJSONString());
+            .setKey(idbCursor->key(m_scriptState.get()).toJSONValue(m_scriptState.get())->toJSONString())
+            .setPrimaryKey(idbCursor->primaryKey(m_scriptState.get()).toJSONValue(m_scriptState.get())->toJSONString())
+            .setValue(idbCursor->value(m_scriptState.get()).toJSONValue(m_scriptState.get())->toJSONString());
         m_result->addItem(dataEntry);
 
     }

@@ -314,7 +314,7 @@ void V8InjectedScriptHost::inspectMethodCustom(const v8::FunctionCallbackInfo<v8
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
     ScriptValue object(info[0], info.GetIsolate());
     ScriptValue hints(info[1], info.GetIsolate());
-    ScriptState* scriptState = ScriptState::current();
+    NewScriptState* scriptState = NewScriptState::current(info.GetIsolate());
     host->inspectImpl(object.toJSONValue(scriptState), hints.toJSONValue(scriptState));
 }
 

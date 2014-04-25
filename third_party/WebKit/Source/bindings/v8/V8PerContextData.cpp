@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8PerContextData.h"
 
-#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "wtf/StringExtras.h"

@@ -195,7 +195,7 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
         return;
 
     ASSERT(m_frontendPage);
-    ScriptState* frontendScriptState = mainWorldScriptState(m_frontendPage->mainFrame());
+    NewScriptState* frontendScriptState = NewScriptState::forMainWorld(m_frontendPage->mainFrame());
     ScriptObject frontendApiObject;
     if (!ScriptGlobalObject::get(frontendScriptState, "InspectorFrontendAPI", frontendApiObject)) {
         ASSERT_NOT_REACHED();

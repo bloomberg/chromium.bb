@@ -208,7 +208,7 @@ ScriptObject InspectorCanvasAgent::wrapWebGLRenderingContextForInstrumentation(c
 ScriptObject InspectorCanvasAgent::notifyRenderingContextWasWrapped(const ScriptObject& wrappedContext)
 {
     ASSERT(m_frontend);
-    ScriptState* scriptState = wrappedContext.scriptState();
+    NewScriptState* scriptState = wrappedContext.scriptState();
     DOMWindow* domWindow = 0;
     if (scriptState)
         domWindow = scriptState->domWindow();
@@ -242,7 +242,7 @@ InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(Erro
         *errorString = "Internal error: original ScriptObject has no value";
         return InjectedScriptCanvasModule();
     }
-    return injectedScriptCanvasModule(errorString, scriptObject.scriptState()->newScriptState());
+    return injectedScriptCanvasModule(errorString, scriptObject.scriptState());
 }
 
 InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(ErrorString* errorString, const String& objectId)

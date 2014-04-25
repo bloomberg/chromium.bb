@@ -32,7 +32,6 @@
 #define ScriptProfiler_h
 
 #include "bindings/v8/ScriptHeapSnapshot.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/inspector/ScriptProfile.h"
 
 #include "wtf/Forward.h"

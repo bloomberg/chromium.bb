@@ -36,7 +36,6 @@
 #include "V8Node.h"
 #include "V8WebGLRenderingContext.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
@@ -101,7 +100,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     if (result->is2d()) {
         v8::Handle<v8::Value> v8Result = toV8(toCanvasRenderingContext2D(result), info.Holder(), info.GetIsolate());
         if (InspectorInstrumentation::canvasAgentEnabled(&impl->document())) {
-            ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
+            NewScriptState* scriptState = NewScriptState::current(isolate);
             ScriptObject context(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(&impl->document(), context);
             if (!wrapped.isEmpty()) {
@@ -115,7 +114,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     if (result->is3d()) {
         v8::Handle<v8::Value> v8Result = toV8(toWebGLRenderingContext(result), info.Holder(), info.GetIsolate());
         if (InspectorInstrumentation::canvasAgentEnabled(&impl->document())) {
-            ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
+            NewScriptState* scriptState = NewScriptState::current(isolate);
             ScriptObject glContext(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(&impl->document(), glContext);
             if (!wrapped.isEmpty()) {

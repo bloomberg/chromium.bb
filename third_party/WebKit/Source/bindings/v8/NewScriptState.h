@@ -79,6 +79,9 @@ public:
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
     void disposePerContextData() { m_perContextData = nullptr; }
 
+    bool evalEnabled() const;
+    void setEvalEnabled(bool);
+
     // FIXME: Once we replace all ScriptStates with NewScriptStates, remove this method.
     ScriptState* oldScriptState();
 

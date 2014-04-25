@@ -241,7 +241,7 @@ PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& 
     bool hadException = false;
     ScriptValue callFramesValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);
-    RefPtr<JSONValue> result = callFramesValue.toJSONValue(scriptState()->oldScriptState());
+    RefPtr<JSONValue> result = callFramesValue.toJSONValue(scriptState());
     if (result->type() == JSONValue::TypeArray)
         return Array<CallFrame>::runtimeCast(result);
     return Array<CallFrame>::create();
@@ -259,7 +259,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const 
     ScriptValue r = callFunctionWithEvalEnabled(wrapFunction, hadException);
     if (hadException)
         return nullptr;
-    RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState()->oldScriptState())->asObject();
+    RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState())->asObject();
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
@@ -277,7 +277,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const S
     ScriptValue r = callFunctionWithEvalEnabled(wrapFunction, hadException);
     if (hadException)
         return nullptr;
-    RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState()->oldScriptState())->asObject();
+    RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState())->asObject();
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 

@@ -39,7 +39,6 @@ namespace WebCore {
 
 class ScriptArguments;
 class ScriptCallStack;
-class ScriptState;
 
 const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v8::StackTrace::StackTraceOptions>(
       v8::StackTrace::kLineNumber

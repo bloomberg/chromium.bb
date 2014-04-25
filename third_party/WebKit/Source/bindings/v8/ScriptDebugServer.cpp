@@ -41,6 +41,7 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
+#include "platform/JSONValues.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
@@ -248,7 +249,7 @@ void ScriptDebugServer::stepOutOfFunction(const ScriptValue& frame)
     stepCommandWithFrame(stepOutV8MethodName, frame);
 }
 
-bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, ScriptValue* newCallFrames, ScriptObject* result)
+bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, ScriptValue* newCallFrames, RefPtr<JSONObject>* result)
 {
     class EnableLiveEditScope {
     public:
@@ -266,7 +267,7 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     if (!isPaused())
         contextScope = adoptPtr(new v8::Context::Scope(debuggerContext));
 
-    v8::Handle<v8::Value> argv[] = { v8String(debuggerContext->GetIsolate(), sourceID), v8String(debuggerContext->GetIsolate(), newContent), v8Boolean(preview, debuggerContext->GetIsolate()) };
+    v8::Handle<v8::Value> argv[] = { v8String(m_isolate, sourceID), v8String(m_isolate, newContent), v8Boolean(preview, m_isolate) };
 
     v8::Local<v8::Value> v8result;
     {
@@ -290,8 +291,9 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     case 0:
         {
             v8::Local<v8::Value> normalResult = resultTuple->Get(1);
-            if (normalResult->IsObject())
-                *result = ScriptObject(ScriptState::current(), normalResult->ToObject());
+            RefPtr<JSONValue> jsonResult = v8ToJSONValue(m_isolate, normalResult, JSONValue::maxDepth);
+            if (jsonResult)
+                *result = jsonResult->asObject();
             // Call stack may have changed after if the edited function was on the stack.
             if (!preview && isPaused())
                 *newCallFrames = currentCallFrames();
