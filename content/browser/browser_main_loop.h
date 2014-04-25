@@ -67,7 +67,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   void Init();
 
   void EarlyInitialization();
-  void InitializeToolkit();
+  // Initializes the toolkit. Returns whether the toolkit initialization was
+  // successful or not.
+  bool InitializeToolkit();
   void MainMessageLoopStart();
 
   // Create and start running the tasks we need to complete startup. Note that

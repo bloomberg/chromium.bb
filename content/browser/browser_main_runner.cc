@@ -84,7 +84,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       main_loop_->EarlyInitialization();
 
       // Must happen before we try to use a message loop or display any UI.
-      main_loop_->InitializeToolkit();
+      if (!main_loop_->InitializeToolkit())
+        return 1;
 
       main_loop_->MainMessageLoopStart();
 

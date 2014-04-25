@@ -118,6 +118,7 @@
 
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_connection.h"
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -1028,7 +1029,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   return result_code_;
 }
 
-void BrowserMainLoop::InitializeToolkit() {
+bool BrowserMainLoop::InitializeToolkit() {
   TRACE_EVENT0("startup", "BrowserMainLoop::InitializeToolkit")
   // TODO(evan): this function is rather subtle, due to the variety
   // of intersecting ifdefs we have.  To keep it easy to follow, there
@@ -1053,13 +1054,21 @@ void BrowserMainLoop::InitializeToolkit() {
 #endif
 
 #if defined(USE_AURA)
+
+#if defined(USE_X11)
+  if (!gfx::GetXDisplay())
+    return false;
+#endif
+
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
   aura::Env::CreateInstance();
-#endif
+#endif  // defined(USE_AURA)
 
   if (parts_)
     parts_->ToolkitInitialized();
+
+  return true;
 }
 
 void BrowserMainLoop::MainMessageLoopRun() {

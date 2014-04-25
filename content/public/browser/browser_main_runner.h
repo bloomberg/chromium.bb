@@ -21,7 +21,8 @@ class CONTENT_EXPORT BrowserMainRunner {
   static BrowserMainRunner* Create();
 
   // Initialize all necessary browser state. The |parameters| values will be
-  // copied.
+  // copied. Returning a non-negative value indicates that initialization
+  // failed, and the returned value is used as the exit code for the process.
   virtual int Initialize(const content::MainFunctionParams& parameters) = 0;
 
   // Perform the default run logic.
