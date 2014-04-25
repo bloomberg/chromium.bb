@@ -55,6 +55,7 @@ class InspectorFrontendClient;
 class InspectorLayerTreeAgent;
 class InspectorPageAgent;
 class InspectorTimelineAgent;
+class InspectorTracingAgent;
 class InspectorOverlay;
 class InspectorState;
 class InstrumentingAgents;
@@ -152,6 +153,7 @@ private:
     InspectorPageAgent* m_pageAgent;
     InspectorTimelineAgent* m_timelineAgent;
     InspectorLayerTreeAgent* m_layerTreeAgent;
+    InspectorTracingAgent* m_tracingAgent;
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontendClient> m_inspectorFrontendClient;

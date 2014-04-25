@@ -58,6 +58,7 @@
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTimelineAgent.h"
+#include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
@@ -98,6 +99,10 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     OwnPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_domAgent, m_page));
     m_layerTreeAgent = layerTreeAgentPtr.get();
     m_agents.append(layerTreeAgentPtr.release());
+
+    OwnPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create();
+    m_tracingAgent = tracingAgentPtr.get();
+    m_agents.append(tracingAgentPtr.release());
 
     OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_domAgent, m_layerTreeAgent,
         overlay, InspectorTimelineAgent::PageInspector, inspectorClient));
@@ -269,6 +274,7 @@ void InspectorController::setProcessId(long processId)
 void InspectorController::setLayerTreeId(int id)
 {
     m_timelineAgent->setLayerTreeId(id);
+    m_tracingAgent->setLayerTreeId(id);
 }
 
 void InspectorController::webViewResized(const IntSize& size)

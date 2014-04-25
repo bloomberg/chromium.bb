@@ -1274,6 +1274,8 @@
             'inspector/InspectorTimelineAgent.h',
             'inspector/InspectorTraceEvents.cpp',
             'inspector/InspectorTraceEvents.h',
+            'inspector/InspectorTracingAgent.cpp',
+            'inspector/InspectorTracingAgent.h',
             'inspector/InspectorWorkerAgent.cpp',
             'inspector/InspectorWorkerAgent.h',
             'inspector/InstrumentingAgents.h',
