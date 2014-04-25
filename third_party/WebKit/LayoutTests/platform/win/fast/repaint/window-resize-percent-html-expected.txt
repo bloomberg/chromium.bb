@@ -1,0 +1,57 @@
+(GraphicsLayer
+  (bounds 200.00 300.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 200.00 300.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 200.00 200.00)
+        (rect 0.00 0.00 200.00 200.00)
+      )
+    )
+  )
+)
+(GraphicsLayer
+  (bounds 312.00 320.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 312.00 320.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 312.00 320.00)
+        (rect 0.00 0.00 300.00 300.00)
+      )
+    )
+  )
+)
+(GraphicsLayer
+  (bounds 312.00 545.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 312.00 545.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 312.00 557.00)
+        (rect 0.00 0.00 300.00 250.00)
+      )
+    )
+  )
+)
+(GraphicsLayer
+  (bounds 312.00 782.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 312.00 782.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 312.00 782.00)
+        (rect 0.00 0.00 250.00 250.00)
+      )
+    )
+  )
+)
+

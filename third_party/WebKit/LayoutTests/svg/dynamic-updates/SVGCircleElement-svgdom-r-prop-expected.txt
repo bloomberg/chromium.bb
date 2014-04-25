@@ -10,8 +10,18 @@ PASS circleElement.r.baseVal.value is 150
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 157 157 2 2)
-  (rect 8 8 300 300)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 157.00 157.00 2.00 2.00)
+        (rect 8.00 8.00 300.00 300.00)
+      )
+    )
+  )
 )
 

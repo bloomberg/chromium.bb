@@ -1,0 +1,63 @@
+AAAA AAAA AAAA AAAA AAAA
+(GraphicsLayer
+  (bounds 200.00 300.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 200.00 300.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 200.00 200.00)
+        (rect 0.00 0.00 200.00 200.00)
+      )
+    )
+  )
+)
+(GraphicsLayer
+  (bounds 300.00 325.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 300.00 325.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 260.00 325.00)
+        (rect 60.00 0.00 200.00 300.00)
+        (rect 0.00 0.00 260.00 325.00)
+      )
+    )
+  )
+)
+(GraphicsLayer
+  (position -220.00 0.00)
+  (bounds 520.00 333.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 520.00 333.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 500.00 333.00)
+        (rect 200.00 0.00 300.00 250.00)
+        (rect 0.00 0.00 500.00 333.00)
+      )
+    )
+  )
+)
+(GraphicsLayer
+  (position -526.00 0.00)
+  (bounds 776.00 341.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 776.00 341.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 776.00 341.00)
+        (rect 476.00 0.00 250.00 250.00)
+        (rect 0.00 0.00 776.00 341.00)
+      )
+    )
+  )
+)
+
