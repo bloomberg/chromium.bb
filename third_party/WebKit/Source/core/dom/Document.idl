@@ -161,10 +161,6 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     readonly attribute DOMString compatMode;
 
-    // NodeSelector - Selector API
-    [RaisesException] Element querySelector(DOMString selectors);
-    [RaisesException] NodeList querySelectorAll(DOMString selectors);
-
     void webkitExitPointerLock();
     readonly attribute Element webkitPointerLockElement;
 
