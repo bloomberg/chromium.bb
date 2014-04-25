@@ -5,10 +5,8 @@
         if (window.testRunner)
             testRunner.dumpAsText();
 
-        // These three all map to PrefixedPerformanceTimeline
-        var x = window.performance.webkitGetEntries();
-        x = window.performance.webkitGetEntriesByName('');
-        x = window.performance.webkitGetEntriesByType('');
+        var x = window.webkitStorageInfo;
+        var y = window.webkitStorageInfo;
     </script>
 </head>
 <body>

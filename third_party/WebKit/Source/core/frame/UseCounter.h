@@ -118,7 +118,6 @@ public:
         DeprecatedFlexboxChrome = 62,
         DeprecatedFlexboxChromeExtension = 63,
         UnprefixedPerformanceTimeline = 65,
-        PrefixedPerformanceTimeline = 66,
         UnprefixedUserTiming = 67,
         WindowEvent = 69,
         ContentSecurityPolicyWithBaseElement = 70,

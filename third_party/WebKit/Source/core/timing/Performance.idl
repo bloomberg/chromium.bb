@@ -40,9 +40,6 @@
     [MeasureAs=UnprefixedPerformanceTimeline] sequence<PerformanceEntry> getEntries();
     [MeasureAs=UnprefixedPerformanceTimeline] sequence<PerformanceEntry> getEntriesByType(DOMString entryType);
     [MeasureAs=UnprefixedPerformanceTimeline] sequence<PerformanceEntry> getEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
-    [DeprecateAs=PrefixedPerformanceTimeline,ImplementedAs=getEntries] sequence<PerformanceEntry> webkitGetEntries();
-    [DeprecateAs=PrefixedPerformanceTimeline,ImplementedAs=getEntriesByType] sequence<PerformanceEntry> webkitGetEntriesByType(DOMString entryType);
-    [DeprecateAs=PrefixedPerformanceTimeline,ImplementedAs=getEntriesByName] sequence<PerformanceEntry> webkitGetEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
 
     [MeasureAs=PrefixedPerformanceClearResourceTimings] void webkitClearResourceTimings();
     [MeasureAs=PrefixedPerformanceSetResourceTimingBufferSize] void webkitSetResourceTimingBufferSize(unsigned long maxSize);

@@ -641,10 +641,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedStorageInfo:
         return "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.";
 
-    // Performance
-    case PrefixedPerformanceTimeline:
-        return "'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.";
-
     // HTML Media Capture
     case CaptureAttributeAsEnum:
         return "Using the 'capture' attribute as an enum is deprecated. Please use it as a boolean and specify the media types that should be accepted in the 'accept' attribute.";
