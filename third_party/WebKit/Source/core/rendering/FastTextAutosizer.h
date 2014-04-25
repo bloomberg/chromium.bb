@@ -102,6 +102,22 @@ private:
         ContinueLayout
     };
 
+    enum BlockFlag {
+        // A block that is evaluated for becoming a cluster root.
+        POTENTIAL_ROOT = 1 << 0,
+        // A cluster root that establishes an independent multiplier.
+        INDEPENDENT = 1 << 1,
+        // A cluster root with an explicit width. These are likely to be independent.
+        EXPLICIT_WIDTH = 1 << 2,
+        // A cluster that is wider or narrower than its parent. These also create an
+        // independent multiplier, but this state cannot be determined until layout.
+        WIDER_OR_NARROWER = 1 << 3,
+        // A cluster that suppresses autosizing.
+        SUPPRESSING = 1 << 4
+    };
+
+    typedef unsigned BlockFlags;
+
     // A supercluster represents autosizing information about a set of two or
     // more blocks that all have the same fingerprint. Clusters whose roots
     // belong to a supercluster will share a common multiplier and
@@ -118,11 +134,11 @@ private:
     };
 
     struct Cluster {
-        explicit Cluster(const RenderBlock* root, bool autosize, Cluster* parent, Supercluster* supercluster = 0)
+        explicit Cluster(const RenderBlock* root, BlockFlags flags, Cluster* parent, Supercluster* supercluster = 0)
             : m_root(root)
+            , m_flags(flags)
             , m_deepestBlockContainingAllText(0)
             , m_parent(parent)
-            , m_autosize(autosize)
             , m_multiplier(0)
             , m_hasEnoughTextToAutosize(UnknownAmountOfText)
             , m_supercluster(supercluster)
@@ -131,11 +147,11 @@ private:
         }
 
         const RenderBlock* const m_root;
+        BlockFlags m_flags;
         // The deepest block containing all text is computed lazily (see:
         // deepestBlockContainingAllText). A value of 0 indicates the value has not been computed yet.
         const RenderBlock* m_deepestBlockContainingAllText;
         Cluster* m_parent;
-        bool m_autosize;
         // The multiplier is computed lazily (see: clusterMultiplier) because it must be calculated
         // after the lowest block containing all text has entered layout (the
         // m_blocksThatHaveBegunLayout assertions cover this). Note: the multiplier is still
@@ -230,17 +246,16 @@ private:
     float multiplierFromBlock(const RenderBlock*);
     void applyMultiplier(RenderObject*, float, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
-
     Cluster* currentCluster() const;
-
     RenderObject* nextChildSkippingChildrenOfBlocks(const RenderObject*, const RenderObject*);
-
     const RenderBlock* deepestBlockContainingAllText(Cluster*);
     const RenderBlock* deepestBlockContainingAllText(const RenderBlock*);
     // Returns the first text leaf that is in the current cluster. We attempt to not include text
     // from descendant clusters but because descendant clusters may not exist, this is only an approximation.
     // The TraversalDirection controls whether we return the first or the last text leaf.
     const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch);
+    bool shouldDescendForTableInflation(RenderObject*);
+    BlockFlags classifyBlock(const RenderObject*, BlockFlags mask = UINT_MAX);
 
     const Document* m_document;
     int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).

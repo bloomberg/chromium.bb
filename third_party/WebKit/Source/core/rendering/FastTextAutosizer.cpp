@@ -237,33 +237,11 @@ static bool blockSuppressesAutosizing(const RenderBlock* block)
     return false;
 }
 
-static bool mightBeWiderOrNarrowerDescendant(const RenderBlock* block)
+static bool hasExplicitWidth(const RenderBlock* block)
 {
     // FIXME: This heuristic may need to be expanded to other ways a block can be wider or narrower
     //        than its parent containing block.
     return block->style() && block->style()->width().isSpecified();
-}
-
-// Before a block enters layout we don't know for sure if it will become a cluster.
-// Note: clusters are also created for blocks that do become autosizing clusters!
-static bool blockMightBecomeIndependentCluster(const RenderBlock* block)
-{
-    ASSERT(isPotentialClusterRoot(block));
-    return isIndependentDescendant(block) || mightBeWiderOrNarrowerDescendant(block) || block->isTable();
-}
-
-// Returns a best-guess for whether a block will become a cluster without querying
-// state based on layout.
-static bool blockMightBecomeCluster(const RenderBlock* block)
-{
-    if (!isPotentialClusterRoot(block))
-        return false;
-
-    if (blockSuppressesAutosizing(block))
-        return true;
-
-    // FIXME: Unify this with blockMightBecomeIndependentCluster(block).
-    return isIndependentDescendant(block) || block->isTable();
 }
 
 FastTextAutosizer::FastTextAutosizer(const Document* document)
@@ -291,10 +269,7 @@ void FastTextAutosizer::record(const RenderBlock* block)
 
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
 
-    if (!isPotentialClusterRoot(block))
-        return;
-
-    if (!blockMightBecomeIndependentCluster(block))
+    if (!classifyBlock(block, INDEPENDENT | EXPLICIT_WIDTH))
         return;
 
     if (Fingerprint fingerprint = computeFingerprint(block))
@@ -382,6 +357,17 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
     applyMultiplier(listItemMarker, multiplier);
 }
 
+bool FastTextAutosizer::shouldDescendForTableInflation(RenderObject* child)
+{
+    if (!child->needsLayout())
+        return false;
+
+    if (!child->isRenderBlock() || child->isTableCell())
+        return true;
+
+    return !classifyBlock(child, INDEPENDENT | SUPPRESSING);
+}
+
 void FastTextAutosizer::inflateTable(RenderTable* table)
 {
     ASSERT(table);
@@ -418,7 +404,7 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
                 if (shouldAutosize) {
                     RenderObject* child = cell;
                     while (child) {
-                        if (child->needsLayout() && (child->isTableCell() || !child->isRenderBlock() || !blockMightBecomeCluster(toRenderBlock(child)))) {
+                        if (shouldDescendForTableInflation(child)) {
                             if (child->isText()) {
                                 applyMultiplier(child, multiplier);
                                 applyMultiplier(child->parent(), multiplier); // Parent handles line spacing.
@@ -467,7 +453,7 @@ void FastTextAutosizer::inflate(RenderBlock* block)
             // We only calculate this multiplier on-demand to ensure the parent block of this text
             // has entered layout.
             if (!multiplier)
-                multiplier = cluster->m_autosize ? clusterMultiplier(cluster) : 1.0f;
+                multiplier = cluster->m_flags & SUPPRESSING ? 1.0f : clusterMultiplier(cluster);
             applyMultiplier(descendant, multiplier);
             applyMultiplier(descendant->parent(), multiplier); // Parent handles line spacing.
             // FIXME: Investigate why MarkOnlyThis is sufficient.
@@ -576,9 +562,33 @@ void FastTextAutosizer::setAllTextNeedsLayout()
     }
 }
 
+FastTextAutosizer::BlockFlags FastTextAutosizer::classifyBlock(const RenderObject* renderer, BlockFlags mask)
+{
+    if (!renderer->isRenderBlock())
+        return 0;
+
+    const RenderBlock* block = toRenderBlock(renderer);
+    BlockFlags flags = 0;
+
+    if (isPotentialClusterRoot(block)) {
+        if (mask & POTENTIAL_ROOT)
+            flags |= POTENTIAL_ROOT;
+
+        if ((mask & INDEPENDENT) && (isIndependentDescendant(block) || block->isTable()))
+            flags |= INDEPENDENT;
+
+        if ((mask & EXPLICIT_WIDTH) && hasExplicitWidth(block))
+            flags |= EXPLICIT_WIDTH;
+
+        if ((mask & SUPPRESSING) && blockSuppressesAutosizing(block))
+            flags |= SUPPRESSING;
+    }
+    return flags;
+}
+
 bool FastTextAutosizer::clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider)
 {
-    Cluster hypotheticalCluster(root, true, 0);
+    Cluster hypotheticalCluster(root, classifyBlock(root), 0);
     return clusterHasEnoughTextToAutosize(&hypotheticalCluster, widthProvider);
 }
 
@@ -597,7 +607,7 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
         return true;
     }
 
-    if (blockSuppressesAutosizing(root)) {
+    if (cluster->m_flags & SUPPRESSING) {
         cluster->m_hasEnoughTextToAutosize = NotEnoughText;
         return false;
     }
@@ -609,7 +619,7 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
     RenderObject* descendant = root->nextInPreOrder(root);
     while (descendant) {
         if (descendant->isRenderBlock()) {
-            if (!descendant->isTableCell() && blockMightBecomeCluster(toRenderBlock(descendant))) {
+            if (!descendant->isTableCell() && classifyBlock(descendant, INDEPENDENT | SUPPRESSING)) {
                 descendant = descendant->nextInPreOrderAfterChildren(root);
                 continue;
             }
@@ -679,21 +689,19 @@ FastTextAutosizer::Fingerprint FastTextAutosizer::computeFingerprint(const Rende
 
 FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBlock* block)
 {
-    if (!isPotentialClusterRoot(block))
+    BlockFlags flags = classifyBlock(block);
+    if (!(flags & POTENTIAL_ROOT))
         return 0;
 
     Cluster* parentCluster = m_clusterStack.isEmpty() ? 0 : currentCluster();
     ASSERT(parentCluster || block->isRenderView());
 
-    bool mightAutosize = blockMightBecomeIndependentCluster(block);
-    bool suppressesAutosizing = blockSuppressesAutosizing(block);
-
-    // If the block would not alter the m_autosize bit, it doesn't need to be a cluster.
-    bool parentSuppressesAutosizing = parentCluster && !parentCluster->m_autosize;
-    if (!mightAutosize && suppressesAutosizing == parentSuppressesAutosizing)
+    // If a non-independent block would not alter the SUPPRESSING flag, it doesn't need to be a cluster.
+    bool parentSuppresses = parentCluster && (parentCluster->m_flags & SUPPRESSING);
+    if (!(flags & INDEPENDENT) && !(flags & EXPLICIT_WIDTH) && !!(flags & SUPPRESSING) == parentSuppresses)
         return 0;
 
-    return new Cluster(block, !suppressesAutosizing, parentCluster, getSupercluster(block));
+    return new Cluster(block, flags, parentCluster, getSupercluster(block));
 }
 
 FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const RenderBlock* block)
@@ -720,10 +728,11 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
     if (cluster->m_multiplier)
         return cluster->m_multiplier;
 
-    if (cluster->m_root->isTable()
-        || isIndependentDescendant(cluster->m_root)
-        || isWiderOrNarrowerDescendant(cluster)) {
+    // FIXME: why does isWiderOrNarrowerDescendant crash on independent clusters?
+    if (!(cluster->m_flags & INDEPENDENT) && isWiderOrNarrowerDescendant(cluster))
+        cluster->m_flags |= WIDER_OR_NARROWER;
 
+    if (cluster->m_flags & (INDEPENDENT | WIDER_OR_NARROWER)) {
         if (cluster->m_supercluster) {
             cluster->m_multiplier = superclusterMultiplier(cluster);
         } else if (clusterHasEnoughTextToAutosize(cluster)) {
@@ -741,9 +750,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
     // FIXME(crbug.com/339213): Reduce redundant logic by storing the explanation category in the Cluster.
     String explanation = "";
-    if (!cluster->m_autosize) {
-        explanation = "[suppressed]";
-    } else if (!(cluster->m_root->isTable() || isIndependentDescendant(cluster->m_root) || isWiderOrNarrowerDescendant(cluster))) {
+    if (!(cluster->m_flags & (INDEPENDENT | WIDER_OR_NARROWER))) {
         explanation = "[inherited]";
     } else if (cluster->m_supercluster) {
         explanation = "[supercluster]";
@@ -912,7 +919,7 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
     while (child) {
         // Note: At this point clusters may not have been created for these blocks so we cannot rely
         //       on m_clusters. Instead, we use a best-guess about whether the block will become a cluster.
-        if (!isPotentialClusterRoot(child) || !isIndependentDescendant(toRenderBlock(child))) {
+        if (!classifyBlock(child, INDEPENDENT)) {
             const RenderObject* leaf = findTextLeaf(child, depth, firstOrLast);
             if (leaf)
                 return leaf;
@@ -958,7 +965,8 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
 
 bool FastTextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)
 {
-    if (!cluster->m_parent || !mightBeWiderOrNarrowerDescendant(cluster->m_root))
+    // FIXME: Why do we return true when hasExplicitWidth returns false??
+    if (!cluster->m_parent || !hasExplicitWidth(cluster->m_root))
         return true;
 
     const RenderBlock* parentDeepestBlockContainingAllText = deepestBlockContainingAllText(cluster->m_parent);
