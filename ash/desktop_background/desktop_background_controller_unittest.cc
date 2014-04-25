@@ -179,7 +179,8 @@ TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
 
 // Test for crbug.com/149043 "Unlock screen, no launcher appears". Ensure we
 // move all desktop views if there are more than one.
-TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
+// Disabled for crbug.com/366993
+TEST_F(DesktopBackgroundControllerTest, DISABLED_BackgroundMovementDuringUnlock) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
