@@ -45,6 +45,15 @@ gfx::Size GetMaximumSizeOfWindow(wm::WindowState* window_state) {
   return size;
 }
 
+// Returns the centered bounds of the given bounds in the work area.
+gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
+                            wm::WindowState* state_object) {
+  gfx::Rect work_area_in_parent =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(state_object->window());
+  work_area_in_parent.ClampToCenteredSize(bounds_in_parent.size());
+  return work_area_in_parent;
+}
+
 // Returns the maximized and centered bounds of a window.
 gfx::Rect GetMaximizedAndCenteredBounds(wm::WindowState* state_object) {
   gfx::Rect bounds_in_parent;
@@ -60,21 +69,7 @@ gfx::Rect GetMaximizedAndCenteredBounds(wm::WindowState* state_object) {
     else
       bounds_in_parent = state_object->window()->bounds();
   }
-  gfx::Rect work_area_in_parent =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(state_object->window());
-
-  wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                  &bounds_in_parent);
-
-  // Center the window over the work area.
-  int x = (work_area_in_parent.width() - bounds_in_parent.width()) / 2 +
-          work_area_in_parent.x();
-  int y = (work_area_in_parent.height() - bounds_in_parent.height()) / 2 +
-          work_area_in_parent.y();
-
-  bounds_in_parent.set_origin(gfx::Point(x, y));
-
-  return bounds_in_parent;
+  return GetCenteredBounds(bounds_in_parent, state_object);
 }
 
 }  // namespace
@@ -148,11 +143,13 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
         // requested bounds and center it to a fully visible area on the screen.
         gfx::Rect bounds_in_parent =
             (static_cast<const wm::SetBoundsEvent*>(event))->requested_bounds();
-        bounds_in_parent.ClampToCenteredSize(
-             ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-                 window_state->window()).size());
-        if (bounds_in_parent != window_state->window()->bounds())
-          window_state->SetBoundsDirectAnimated(bounds_in_parent);
+        bounds_in_parent = GetCenteredBounds(bounds_in_parent, window_state);
+        if (bounds_in_parent != window_state->window()->bounds()) {
+          if (window_state->window()->IsVisible())
+            window_state->SetBoundsDirectAnimated(bounds_in_parent);
+          else
+            window_state->SetBoundsDirect(bounds_in_parent);
+        }
       }
       break;
     case wm::WM_EVENT_ADDED_TO_WORKSPACE:

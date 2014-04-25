@@ -271,7 +271,16 @@ TEST_F(MaximizeModeWindowManagerTest, CreateWindows) {
   EXPECT_TRUE(wm::GetWindowState(w2.get())->IsMaximized());
   EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
   EXPECT_FALSE(wm::GetWindowState(w3.get())->IsMaximized());
-  EXPECT_NE(rect3.ToString(), w3->bounds().ToString());
+
+  // Make sure that the position of the unresizable window is in the middle of
+  // the screen.
+  gfx::Size work_area_size =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(w3.get()).size();
+  gfx::Point center =
+      gfx::Point((work_area_size.width() - rect3.size().width()) / 2,
+                 (work_area_size.height() - rect3.size().height()) / 2);
+  gfx::Rect centered_window_bounds = gfx::Rect(center, rect3.size());
+  EXPECT_EQ(centered_window_bounds.ToString(), w3->bounds().ToString());
 
   // All other windows should not have been touched.
   EXPECT_FALSE(wm::GetWindowState(w4.get())->IsMaximized());
