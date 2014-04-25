@@ -132,6 +132,8 @@ RenderLayerCompositor::~RenderLayerCompositor()
 
 bool RenderLayerCompositor::inCompositingMode() const
 {
+    // FIXME: This should assert that lificycle is >= CompositingClean since
+    // the last step of updateIfNeeded can set this bit to false.
     ASSERT(!m_rootShouldAlwaysCompositeDirty);
     return m_compositing;
 }
@@ -485,7 +487,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
     // The scrolling coordinator may realize that it needs updating while compositing was being updated in this function.
     needsToUpdateScrollingCoordinator |= scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
-    if (needsToUpdateScrollingCoordinator && m_renderView.frame()->isMainFrame() && scrollingCoordinator() && staleInCompositingMode())
+    if (needsToUpdateScrollingCoordinator && m_renderView.frame()->isMainFrame() && scrollingCoordinator() && inCompositingMode())
         scrollingCoordinator()->updateAfterCompositingChange();
 
     // Inform the inspector that the layer tree has changed.

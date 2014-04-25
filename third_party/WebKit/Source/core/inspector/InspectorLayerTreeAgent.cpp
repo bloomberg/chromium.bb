@@ -204,7 +204,7 @@ void InspectorLayerTreeAgent::didPaint(RenderObject*, const GraphicsLayer* graph
 PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree(const String& nodeGroup)
 {
     RenderLayerCompositor* compositor = renderLayerCompositor();
-    if (!compositor || !compositor->staleInCompositingMode())
+    if (!compositor || !compositor->inCompositingMode())
         return nullptr;
 
     LayerIdToNodeIdMap layerIdToNodeIdMap;

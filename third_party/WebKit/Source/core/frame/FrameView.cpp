@@ -674,6 +674,7 @@ GraphicsLayer* FrameView::layerForScrollCorner() const
 
 bool FrameView::hasCompositedContent() const
 {
+    // FIXME: change to inCompositingMode. Fails fast/repaint/iframe-scroll-repaint.html.
     if (RenderView* renderView = this->renderView())
         return renderView->compositor()->staleInCompositingMode();
     return false;

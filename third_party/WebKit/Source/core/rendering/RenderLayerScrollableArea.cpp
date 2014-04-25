@@ -387,7 +387,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     bool requiresRepaint = true;
 
-    if (m_box.view()->compositor()->staleInCompositingMode()) {
+    if (m_box.view()->compositor()->inCompositingMode()) {
         // Hits in virtual/gpu/fast/canvas/canvas-scroll-path-into-view.html.
         DisableCompositingQueryAsserts disabler;
         bool onlyScrolledCompositedLayers = scrollsOverflow()
@@ -1477,7 +1477,7 @@ void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
 void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
 {
     RenderLayerCompositor* compositor = m_box.view()->compositor();
-    if (compositor->staleInCompositingMode()) {
+    if (compositor->inCompositingMode()) {
         // FIXME: Our stacking container is guaranteed to contain all of our descendants that may need
         // repositioning, so we should be able to enqueue a partial update compositing layers from there.
         // this feature was overridden for now by deferred compositing updates.
