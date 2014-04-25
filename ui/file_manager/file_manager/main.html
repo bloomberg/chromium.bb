@@ -158,6 +158,10 @@
                shortcut="U+0045-Ctrl">
       <command id="new-window" i18n-values="label:NEW_WINDOW_BUTTON_LABEL"
                shortcut="U+004E-Ctrl">
+      <command id="drive-sync-settings"
+               i18n-values="label:DRIVE_MOBILE_CONNECTION_OPTION">
+      <command id="drive-hosted-settings"
+               i18n-values="label:DRIVE_SHOW_HOSTED_FILES_OPTION">
 
       <command id="search" shortcut="U+0046-Ctrl U+00BF">
 
@@ -231,10 +235,10 @@
       <menuitem id="gear-menu-newfolder" command="#new-folder"></menuitem>
       <hr id="multi-profile-separator">
       <hr id="drive-separator">
-      <menuitem id="drive-sync-settings"
-                i18n-content="DRIVE_MOBILE_CONNECTION_OPTION"></menuitem>
-      <menuitem id="drive-hosted-settings"
-                i18n-content="DRIVE_SHOW_HOSTED_FILES_OPTION"></menuitem>
+      <menuitem id="gear-menu-drive-sync-settings"
+                command="#drive-sync-settings"></menuitem>
+      <menuitem id="gear-menu-drive-hosted-settings"
+                command="#drive-hosted-settings"></menuitem>
       <hr>
       <div i18n-content="VIEW_TYPE_LABEL"></div>
       <menuitem class="menuitem-button left" id="detail-view"

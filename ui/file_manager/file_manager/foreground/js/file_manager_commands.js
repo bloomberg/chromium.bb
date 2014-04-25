@@ -447,6 +447,34 @@ CommandHandler.COMMANDS_['new-window'] = {
 };
 
 /**
+ * Toggles drive sync settings.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['drive-sync-settings'] = {
+  execute: function(event, fileManager) {
+    fileManager.toggleDriveSyncSettings();
+  },
+  canExecute: function(event, fileManager) {
+    event.canExecute = fileManager.shouldShowDriveSettings();
+    event.command.setHidden(!event.canExecute);
+  }
+};
+
+/**
+ * Toggles drive hosted settings.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['drive-hosted-settings'] = {
+  execute: function(event, fileManager) {
+    fileManager.toggleDriveHostedSettings();
+  },
+  canExecute: function(event, fileManager) {
+    event.canExecute = fileManager.shouldShowDriveSettings();
+    event.command.setHidden(!event.canExecute);
+  }
+};
+
+/**
  * Deletes selected files.
  * @type {Command}
  */

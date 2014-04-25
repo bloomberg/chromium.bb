@@ -33,6 +33,28 @@ function FileManager() {
   this.pressingTab_ = false;
 
   /**
+   * True while a user is pressing <Ctrl>.
+   *
+   * TODO(fukino): This key is used only for controlling gear menu, so it
+   * shoudl be moved to GearMenu class. crbug.com/366032.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.pressingCtrl_ = false;
+
+  /**
+   * True if shown gear menu is in secret mode.
+   *
+   * TODO(fukino): The state of gear menu should be moved to GearMenu class.
+   * crbug.com/366032.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.isSecretGearMenuShown_ = false;
+
+  /**
    * SelectionHandler.
    * @type {SelectionHandler}
    * @private
@@ -438,8 +460,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.gearButton_ = this.dialogDom_.querySelector('#gear-button');
     this.gearButton_.addEventListener('menushow',
-        this.refreshRemainingSpace_.bind(this,
-                                         false /* Without loading caption. */));
+        this.onShowGearMenu_.bind(this));
     chrome.fileBrowserPrivate.onDesktopChanged.addListener(function() {
       this.updateVisitDesktopMenus_();
       this.ui_.updateProfileBadge();
@@ -499,6 +520,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   FileManager.prototype.onClose = function() {
     window.close();
+  };
+
+  FileManager.prototype.onShowGearMenu_ = function() {
+    this.refreshRemainingSpace_(false);  /* Without loading caption. */
+
+    // If the menu is opened while CTRL key pressed, secret menu itemscan be
+    // shown.
+    this.isSecretGearMenuShown_ = this.pressingCtrl_;
+
+    // Update view of drive-related settings.
+    this.commandHandler.updateAvailability();
+    this.document_.getElementById('drive-separator').hidden =
+        !this.shouldShowDriveSettings();
   };
 
   /**
@@ -810,13 +844,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
 
-    this.syncButton = this.dialogDom_.querySelector('#drive-sync-settings');
-    this.syncButton.addEventListener('click', this.onDrivePrefClick_.bind(
-        this, 'cellularDisabled', false /* not inverted */));
-
-    this.hostedButton = this.dialogDom_.querySelector('#drive-hosted-settings');
-    this.hostedButton.addEventListener('click', this.onDrivePrefClick_.bind(
-        this, 'hostedFilesDisabled', true /* inverted */));
+    this.syncButton = this.dialogDom_.querySelector(
+        '#gear-menu-drive-sync-settings');
+    this.hostedButton = this.dialogDom_.querySelector(
+        '#gear-menu-drive-hosted-settings');
 
     this.detailViewButton_ =
         this.dialogDom_.querySelector('#detail-view');
@@ -1703,6 +1734,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
+   * Check if the drive-related setting items should be shown on currently
+   * displayed gear menu.
+   * @return {boolean} True if those setting items should be shown.
+   */
+  FileManager.prototype.shouldShowDriveSettings = function() {
+    return this.isOnDrive() && this.isSecretGearMenuShown_;
+  };
+
+  /**
    * Overrides default handling for clicks on hyperlinks.
    * In a packaged apps links with targer='_blank' open in a new tab by
    * default, other links do not open at all.
@@ -1792,7 +1832,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       else
         self.syncButton.removeAttribute('checked');
 
-      if (self.hostedButton.hasAttribute('checked') !=
+      if (self.hostedButton.hasAttribute('checked') ===
           prefs.hostedFilesDisabled && self.isOnDrive()) {
         self.directoryModel_.rescan();
       }
@@ -2186,11 +2226,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.updateGearMenu_ = function() {
-    var hideItemsForDrive = !this.isOnDrive();
-    this.syncButton.hidden = hideItemsForDrive;
-    this.hostedButton.hidden = hideItemsForDrive;
-    this.document_.getElementById('drive-separator').hidden =
-        hideItemsForDrive;
     this.refreshRemainingSpace_(true);  // Show loading caption.
   };
 
@@ -2860,6 +2895,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onKeyDown_ = function(event) {
     if (event.keyCode === 9)  // Tab
       this.pressingTab_ = true;
+    if (event.keyCode === 17)  // Ctrl
+      this.pressingCtrl_ = true;
 
     if (event.srcElement === this.renameInput_) {
       // Ignore keydown handler in the rename input box.
@@ -2891,6 +2928,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onKeyUp_ = function(event) {
     if (event.keyCode === 9)  // Tab
       this.pressingTab_ = false;
+    if (event.keyCode == 17)  // Ctrl
+      this.pressingCtrl_ = false;
   };
 
   /**
@@ -3369,22 +3408,27 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Handler invoked on preference setting in drive context menu.
-   *
-   * @param {string} pref  The preference to alter.
-   * @param {boolean} inverted Invert the value if true.
-   * @param {Event}  event The click event.
-   * @private
+   * Toggle whether mobile data is used for sync.
    */
-  FileManager.prototype.onDrivePrefClick_ = function(pref, inverted, event) {
-    var newValue = !event.target.hasAttribute('checked');
-    if (newValue)
-      event.target.setAttribute('checked', 'checked');
-    else
-      event.target.removeAttribute('checked');
+  FileManager.prototype.toggleDriveSyncSettings = function() {
+    // If checked, the sync is disabled.
+    var nowCellularDisabled = this.syncButton.hasAttribute('checked');
+    var changeInfo = {cellularDisabled: !nowCellularDisabled};
+    chrome.fileBrowserPrivate.setPreferences(changeInfo);
+  };
 
+  /**
+   * Toggle whether Google Docs files are shown.
+   */
+  FileManager.prototype.toggleDriveHostedSettings = function() {
+    // If checked, showing drive hosted files is enabled.
+    var nowHostedFilesEnabled = this.hostedButton.hasAttribute('checked');
+    var nowHostedFilesDisabled = !nowHostedFilesEnabled;
+    /*
+    var changeInfo = {hostedFilesDisabled: !nowHostedFilesDisabled};
+    */
     var changeInfo = {};
-    changeInfo[pref] = inverted ? !newValue : newValue;
+    changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
     chrome.fileBrowserPrivate.setPreferences(changeInfo);
   };
 
