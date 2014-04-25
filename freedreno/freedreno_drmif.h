@@ -94,6 +94,8 @@ struct fd_bo * fd_bo_new(struct fd_device *dev,
 		uint32_t size, uint32_t flags);
 struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe,
 		int fbfd, uint32_t size);
+struct fd_bo *fd_bo_from_handle(struct fd_device *dev,
+		uint32_t handle, uint32_t size);
 struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name);
 struct fd_bo * fd_bo_ref(struct fd_bo *bo);
 void fd_bo_del(struct fd_bo *bo);
