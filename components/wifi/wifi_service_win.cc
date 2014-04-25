@@ -906,6 +906,8 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     // e.g. after Chromecast device reset. Reset DHCP on wireless network to
     // work around this issue.
     error = ResetDHCP();
+    if (error != ERROR_SUCCESS)
+      LOG(ERROR) << error;
     // There is no need to keep created profile as network is connected.
     created_profiles_.RemoveWithoutPathExpansion(network_guid, NULL);
     // Restore previously suppressed notifications.
@@ -973,14 +975,14 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
   // Use an absolute path to load the DLL to avoid DLL preloading attacks.
   base::FilePath path;
   if (!PathService::Get(base::DIR_SYSTEM, &path)) {
-    DLOG(ERROR) << "Unable to get system path.";
+    LOG(ERROR) << "Unable to get system path.";
     return ERROR_NOT_FOUND;
   }
   wlan_api_library_ = ::LoadLibraryEx(path.Append(kWlanApiDll).value().c_str(),
                                       NULL,
                                       LOAD_WITH_ALTERED_SEARCH_PATH);
   if (!wlan_api_library_) {
-    DLOG(ERROR) << "Unable to load WlanApi.dll.";
+    LOG(ERROR) << "Unable to load WlanApi.dll.";
     return ERROR_NOT_FOUND;
   }
 
@@ -1044,7 +1046,7 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
       !WlanRegisterNotification_function_ ||
       !WlanScan_function_ ||
       !WlanSetProfile_function_) {
-    DLOG(ERROR) << "Unable to find required WlanApi function.";
+    LOG(ERROR) << "Unable to find required WlanApi function.";
     FreeLibrary(wlan_api_library_);
     wlan_api_library_ = NULL;
     return ERROR_NOT_FOUND;
@@ -1100,12 +1102,21 @@ DWORD WiFiServiceImpl::OpenClientHandle() {
 DWORD WiFiServiceImpl::ResetDHCP() {
   IP_ADAPTER_INDEX_MAP adapter_index_map = {0};
   DWORD error = FindAdapterIndexMapByGUID(interface_guid_, &adapter_index_map);
-  if (error == ERROR_SUCCESS) {
-    error = ::IpReleaseAddress(&adapter_index_map);
-    if (error == ERROR_SUCCESS) {
-      error = ::IpRenewAddress(&adapter_index_map);
-    }
+  if (error != ERROR_SUCCESS) {
+    LOG(ERROR) << error;
+    return error;
   }
+  error = ::IpReleaseAddress(&adapter_index_map);
+  if (error != ERROR_SUCCESS) {
+    if (error != ERROR_ADDRESS_NOT_ASSOCIATED) {
+      LOG(ERROR) << error;
+      return error;
+    }
+    DVLOG(1) << "Ignoring IpReleaseAddress Error: " << error;
+  }
+  error = ::IpRenewAddress(&adapter_index_map);
+  if (error != ERROR_SUCCESS)
+    LOG(ERROR) << error;
   return error;
 }
 
