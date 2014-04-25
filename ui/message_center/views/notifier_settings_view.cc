@@ -41,10 +41,6 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#endif
-
 namespace message_center {
 namespace settings {
 

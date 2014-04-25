@@ -10,6 +10,8 @@
 #include "content/public/browser/download_item.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/file_info.h"
@@ -19,13 +21,8 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
-#include "url/gurl.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/wm/public/drag_drop_client.h"
-#endif
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/download_handler.h"
@@ -60,7 +57,6 @@ void DragDownloadItem(const content::DownloadItem* download,
       ui::FileInfo(full_path, download->GetFileNameToReportUser()));
   data.SetFilenames(file_infos);
 
-#if defined(USE_AURA)
   aura::Window* root_window = view->GetRootWindow();
   if (!root_window || !aura::client::GetDragDropClient(root_window))
     return;
@@ -74,15 +70,4 @@ void DragDownloadItem(const content::DownloadItem* download,
       location,
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK,
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-#else  // We are on WIN without AURA
-  // We cannot use Widget::RunShellDrag on WIN since the |view| is backed by a
-  // WebContentsViewWin, not a NativeWidgetWin.
-  scoped_refptr<ui::DragSourceWin> drag_source(new ui::DragSourceWin);
-  // Run the drag and drop loop
-  DWORD effects;
-  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
-             drag_source.get(),
-             DROPEFFECT_COPY | DROPEFFECT_LINK,
-             &effects);
-#endif
 }

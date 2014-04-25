@@ -238,7 +238,7 @@ class ScreenEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
 
 #endif
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 
 // Following classes verify a crash scenario. Specifically on Windows when focus
 // changes it can trigger capture being lost. This was causing a crash in tab

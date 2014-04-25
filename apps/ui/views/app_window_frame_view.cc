@@ -23,11 +23,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#endif
-
 namespace {
 
 const int kDefaultResizeInsideBoundsSize = 5;

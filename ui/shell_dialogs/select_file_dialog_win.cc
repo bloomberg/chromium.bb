@@ -26,16 +26,13 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "grit/ui_strings.h"
+#include "ui/aura/remote_window_tree_host_win.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
 #include "ui/shell_dialogs/shell_dialogs_delegate.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/remote_window_tree_host_win.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
 
 namespace {
 
@@ -546,7 +543,6 @@ void SelectFileDialogImpl::SelectFileImpl(
     void* params) {
   has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
-#if defined(USE_AURA)
   // If the owning_window passed in is in metro then we need to forward the
   // file open/save operations to metro.
   if (GetShellDialogsDelegate() &&
@@ -602,9 +598,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   }
   HWND owner = owning_window && owning_window->GetRootWindow()
       ? owning_window->GetHost()->GetAcceleratedWidget() : NULL;
-#else
-  HWND owner = owning_window;
-#endif
+
   ExecuteSelectParams execute_params(type, base::UTF16ToWide(title),
                                      default_path, file_types, file_type_index,
                                      default_extension, BeginRun(owner),
@@ -620,13 +614,9 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
 }
 
 bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow owning_window) const {
-#if defined(USE_AURA)
   if (!owning_window->GetRootWindow())
     return false;
   HWND owner = owning_window->GetHost()->GetAcceleratedWidget();
-#else
-  HWND owner = owning_window;
-#endif
   return listener_ && IsRunningDialogForOwner(owner);
 }
 

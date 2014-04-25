@@ -7,14 +7,9 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "grit/ui_unscaled_resources.h"
-
-#if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
-#endif
 
 namespace ui {
-
-#if defined(USE_AURA)
 
 namespace {
 
@@ -120,8 +115,6 @@ const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
 
 }  // namespace
 
-#endif
-
 CursorLoader* CursorLoader::Create() {
   return new CursorLoaderWin;
 }
@@ -150,7 +143,6 @@ void CursorLoaderWin::UnloadAll() {
 }
 
 void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
-#if defined(USE_AURA)
   if (cursor->native_type() != kCursorCustom) {
     if (cursor->platform()) {
       cursor->SetPlatformCursor(cursor->platform());
@@ -165,15 +157,12 @@ void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
       cursor->SetPlatformCursor(platform_cursor);
     }
   }
-#endif
 }
 
-#if defined(USE_AURA)
 // static
 void CursorLoaderWin::SetCursorResourceModule(
     const base::string16& module_name) {
   g_cursor_resource_module_name.Get() = module_name;
 }
-#endif
 
 }  // namespace ui

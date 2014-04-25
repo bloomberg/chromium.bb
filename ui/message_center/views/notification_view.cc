@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -37,10 +38,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
 
 namespace {
 
@@ -547,12 +544,7 @@ gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
   if (!clickable_ || !controller_->HasClickedListener(notification_id()))
     return views::View::GetCursor(event);
 
-#if defined(USE_AURA)
   return ui::kCursorHand;
-#elif defined(OS_WIN)
-  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
-  return g_hand_cursor;
-#endif
 }
 
 void NotificationView::ButtonPressed(views::Button* sender,

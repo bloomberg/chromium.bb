@@ -146,27 +146,13 @@ void ScreenWin::RemoveObserver(DisplayObserver* observer) {
 }
 
 HWND ScreenWin::GetHWNDFromNativeView(NativeView window) const {
-#if defined(USE_AURA)
   NOTREACHED();
   return NULL;
-#else
-  return window;
-#endif  // USE_AURA
 }
 
 NativeWindow ScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
-#if defined(USE_AURA)
   NOTREACHED();
   return NULL;
-#else
-  return hwnd;
-#endif  // USE_AURA
 }
-
-#if !defined(USE_AURA)
-Screen* CreateNativeScreen() {
-  return new ScreenWin;
-}
-#endif  // !USE_AURA
 
 }  // namespace gfx

@@ -12,6 +12,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,10 +30,6 @@
 #include "ui/base/win/shell.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/win/hwnd_util.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
 #endif
 
 namespace {
@@ -312,7 +309,6 @@ void PanelFrameView::Init() {
   title_label_->SetAutoColorReadabilityEnabled(false);
   AddChildView(title_label_);
 
-#if defined(USE_AURA)
   // Compute the thickness of the client area that needs to be counted towards
   // mouse resizing.
   // TODO(tdanderson): Remove this if possible (crbug.com/344924).
@@ -322,7 +318,6 @@ void PanelFrameView::Init() {
   window->set_hit_test_bounds_override_inner(
       gfx::Insets(thickness_for_mouse_resizing, thickness_for_mouse_resizing,
                   thickness_for_mouse_resizing, thickness_for_mouse_resizing));
-#endif
 }
 
 void PanelFrameView::UpdateTitle() {

@@ -14,16 +14,13 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "grit/generated_resources.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/test/ui_controls.h"
-
-#if defined(USE_AURA)
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/test/ui_controls.h"
 #include "ui/events/event_processor.h"
-#endif // defined(USE_AURA)
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {
  protected:
@@ -64,7 +61,6 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(button, ui_controls::UP));
   }
 
-#if defined(USE_AURA)
   // Tap the center of the browser window.
   void TapBrowserWindowCenter() {
     gfx::Point center = BrowserView::GetBrowserViewForBrowser(
@@ -90,7 +86,6 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     details = dispatcher->OnEventFromSource(&release);
     ASSERT_FALSE(details.dispatcher_destroyed);
   }
-#endif // defined(USE_AURA)
 
  private:
   // InProcessBrowserTest:
@@ -176,7 +171,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 }
 
-#if defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
@@ -221,7 +215,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 }
-#endif // defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
   OmniboxView* omnibox_view = NULL;

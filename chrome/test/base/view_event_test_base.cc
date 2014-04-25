@@ -12,27 +12,24 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "ui/base/ime/input_method_initializer.h"
-#include "ui/base/test/ui_controls.h"
-#include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/message_center/message_center.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
-
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#include "ash/test/test_session_state_delegate.h"
-#include "ash/test/test_shell_delegate.h"
-#endif
-
-#if defined(USE_AURA)
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/test/ui_controls.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/message_center/message_center.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/wm_state.h"
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/test/test_session_state_delegate.h"
+#include "ash/test/test_shell_delegate.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -102,19 +99,15 @@ void ViewEventTestBase::SetUpTestCase() {
 }
 
 void ViewEventTestBase::SetUp() {
-#if defined(USE_AURA)
   wm_state_.reset(new wm::WMState);
-#endif
 
   views::ViewsDelegate::views_delegate = &views_delegate_;
   ui::InitializeInputMethodForTesting();
   gfx::NativeView context = NULL;
 
-#if defined(USE_AURA)
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
   ui::InitializeContextFactoryForTests(enable_pixel_output);
-#endif
 
 #if defined(USE_ASH)
 #if defined(OS_WIN)
@@ -179,16 +172,12 @@ void ViewEventTestBase::TearDown() {
   aura_test_helper_->TearDown();
 #endif  // !USE_ASH && USE_AURA
 
-#if defined(USE_AURA)
   ui::TerminateContextFactoryForTests();
-#endif
 
   ui::ShutdownInputMethodForTesting();
   views::ViewsDelegate::views_delegate = NULL;
 
-#if defined(USE_AURA)
   wm_state_.reset();
-#endif
 }
 
 bool ViewEventTestBase::CanResize() const {

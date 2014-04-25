@@ -537,7 +537,6 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
   info->downloader = download.downloader;
   data_->contents_.push_back(info);
 }
-#if defined(USE_AURA)
 
 void OSExchangeDataProviderWin::SetDragImage(
     const gfx::ImageSkia& image,
@@ -553,8 +552,6 @@ const gfx::ImageSkia& OSExchangeDataProviderWin::GetDragImage() const {
 const gfx::Vector2d& OSExchangeDataProviderWin::GetDragImageOffset() const {
   return drag_image_offset_;
 }
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // DataObjectImpl, IDataObject implementation:

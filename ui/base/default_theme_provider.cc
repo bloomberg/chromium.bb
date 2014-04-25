@@ -7,10 +7,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/base/win/shell.h"
-#endif
-
 namespace ui {
 
 DefaultThemeProvider::DefaultThemeProvider() {}
@@ -35,11 +31,7 @@ int DefaultThemeProvider::GetDisplayProperty(int id) const {
 }
 
 bool DefaultThemeProvider::ShouldUseNativeFrame() const {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  return ui::win::IsAeroGlassEnabled();
-#else
   return false;
-#endif
 }
 
 bool DefaultThemeProvider::HasCustomImage(int id) const {
@@ -51,11 +43,5 @@ base::RefCountedMemory* DefaultThemeProvider::GetRawData(
     ui::ScaleFactor scale_factor) const {
   return NULL;
 }
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
-GdkPixbuf* DefaultThemeProvider::GetRTLEnabledPixbufNamed(int id) const {
-  return NULL;
-}
-#endif
 
 }  // namespace ui

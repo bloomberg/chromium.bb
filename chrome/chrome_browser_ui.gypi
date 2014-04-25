@@ -1428,7 +1428,6 @@
         'browser/ui/validation_message_bubble.h',
         'browser/ui/view_ids.h',
         'browser/ui/views/accelerator_utils_aura.cc',
-        'browser/ui/views/accelerator_utils_views.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views.h',
         'browser/ui/views/accessibility/invert_bubble_view.cc',

@@ -2753,10 +2753,6 @@ bool TabStrip::GetAdjustLayout() const {
   if (!adjust_layout_)
     return false;
 
-#if defined(USE_AURA)
   return chrome::GetHostDesktopTypeForNativeView(
       GetWidget()->GetNativeView()) == chrome::HOST_DESKTOP_TYPE_ASH;
-#else
-  return ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
-#endif
 }

@@ -19,6 +19,7 @@
 
 #include <X11/extensions/shape.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/Xcursor/Xcursor.h>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
@@ -32,6 +33,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPostConfig.h"
 #include "ui/base/x/x11_menu_list.h"
@@ -47,17 +49,12 @@
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
 #if defined(OS_FREEBSD)
 #include <sys/sysctl.h>
 #include <sys/types.h>
-#endif
-
-#if defined(USE_AURA)
-#include <X11/Xcursor/Xcursor.h>
-#include "skia/ext/image_operations.h"
-#include "ui/gfx/skia_util.h"
 #endif
 
 namespace ui {
@@ -143,7 +140,6 @@ class XCursorCache {
 
 XCursorCache* cursor_cache = NULL;
 
-#if defined(USE_AURA)
 // A process wide singleton cache for custom X cursors.
 class XCustomCursorCache {
  public:
@@ -219,7 +215,6 @@ class XCustomCursorCache {
   std::map< ::Cursor, XCustomCursor*> cache_;
   DISALLOW_COPY_AND_ASSIGN(XCustomCursorCache);
 };
-#endif  // defined(USE_AURA)
 
 bool IsShapeAvailable() {
   int dummy;
@@ -316,7 +311,6 @@ void ResetXCursorCache() {
   cursor_cache = NULL;
 }
 
-#if defined(USE_AURA)
 ::Cursor CreateReffedCustomXCursor(XcursorImage* image) {
   return XCustomCursorCache::GetInstance()->InstallCustomCursor(image);
 }
@@ -442,7 +436,6 @@ int CoalescePendingMotionEvents(const XEvent* xev,
   }
   return num_coalesced;
 }
-#endif
 
 void HideHostCursor() {
   CR_DEFINE_STATIC_LOCAL(XScopedCursor, invisible_cursor,

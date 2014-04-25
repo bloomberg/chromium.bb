@@ -33,14 +33,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(OS_WIN)
-#include "ui/native_theme/native_theme_win.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/native_theme/native_theme_aura.h"
-#endif
-
 using ui::NativeTheme;
 
 namespace {

@@ -16,6 +16,8 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -30,11 +32,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
-#endif
 
 namespace {
 
@@ -282,11 +279,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   // Carve the toast shape into the window.
   HWND toast_window;
-#if defined(USE_AURA)
   toast_window = popup_->GetNativeView()->GetHost()->GetAcceleratedWidget();
-#else
-  toast_window = popup_->GetNativeView();
-#endif
   SetToastRegion(toast_window, preferred.width(), preferred.height());
 
   // Time to show the window in a modal loop.

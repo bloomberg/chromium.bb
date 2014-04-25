@@ -31,6 +31,8 @@
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/aura/client/focus_client.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -39,6 +41,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -55,12 +58,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/browser_process.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/compositor/layer.h"
 #endif
 
 namespace {
@@ -838,7 +835,6 @@ void OmniboxViewViews::OnBlur() {
 
   views::Textfield::OnBlur();
   gfx::NativeView native_view = NULL;
-#if defined(USE_AURA)
   views::Widget* widget = GetWidget();
   if (widget) {
     aura::client::FocusClient* client =
@@ -846,7 +842,6 @@ void OmniboxViewViews::OnBlur() {
     if (client)
       native_view = client->GetFocusedWindow();
   }
-#endif
   model()->OnWillKillFocus(native_view);
   // Close the popup.
   CloseOmniboxPopup();

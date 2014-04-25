@@ -13,26 +13,11 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/scoped_sk_region.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/gfx/scoped_sk_region.h"
-#elif defined(OS_WIN)
-#include "base/win/scoped_gdi_object.h"
-#endif
-
-namespace {
-
-#if defined(USE_AURA)
-typedef gfx::ScopedSkRegion ScopedPlatformRegion;
-#elif defined(OS_WIN)
-typedef base::win::ScopedRegion ScopedPlatformRegion;
-#endif
-
-}  // namespace
 
 using gfx::Path;
 
@@ -66,9 +51,7 @@ void DropdownBarHost::Init(views::View* host_view,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view_->GetWidget()->GetNativeView();
-#if defined(USE_AURA)
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-#endif
   host_->Init(params);
   host_->SetContentsView(view_);
 
@@ -260,7 +243,7 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
   // We then create the polygon and use SetWindowRgn to force the window to draw
   // only within that area. This region may get reduced in size below.
   Path path(polygon, arraysize(polygon));
-  ScopedPlatformRegion region(path.CreateNativeRegion());
+  gfx::ScopedSkRegion region(path.CreateNativeRegion());
   // Are we animating?
   if (animation_offset() > 0) {
     // The animation happens in two steps: First, we clip the window and then in
@@ -278,7 +261,7 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
     SkRect animation_rect = { SkIntToScalar(0), SkIntToScalar(y),
                               SkIntToScalar(max_x), SkIntToScalar(max_y) };
     animation_path.addRect(animation_rect);
-    ScopedPlatformRegion animation_region(
+    gfx::ScopedSkRegion animation_region(
         animation_path.CreateNativeRegion());
     region.Set(Path::IntersectRegions(animation_region.Get(), region.Get()));
 
@@ -294,7 +277,7 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
 
     // Combine the region for the curve on the left with our main region.
     Path left_path(left_curve, arraysize(left_curve));
-    ScopedPlatformRegion r(left_path.CreateNativeRegion());
+    gfx::ScopedSkRegion r(left_path.CreateNativeRegion());
     region.Set(Path::CombineRegions(r.Get(), region.Get()));
 
     // Combine the region for the curve on the right with our main region.
@@ -332,7 +315,7 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
 
     // Subtract this region from the original region.
     gfx::Path exclude_path(exclude, arraysize(exclude));
-    ScopedPlatformRegion exclude_region(exclude_path.CreateNativeRegion());
+    gfx::ScopedSkRegion exclude_region(exclude_path.CreateNativeRegion());
     region.Set(Path::SubtractRegion(region.Get(), exclude_region.Get()));
   }
 

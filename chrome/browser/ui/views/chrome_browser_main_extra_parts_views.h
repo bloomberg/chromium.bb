@@ -10,11 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
-#if defined(USE_AURA)
 namespace wm {
 class WMState;
 }
-#endif
 
 class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
  public:
@@ -25,9 +23,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   virtual void ToolkitInitialized() OVERRIDE;
 
  private:
-#if defined(USE_AURA)
   scoped_ptr<wm::WMState> wm_state_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);
 };

@@ -517,8 +517,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // we get this ID differently.
   content::DesktopMediaID::Id dialog_window_id = 0;
 
-#if defined(USE_AURA)
-
 #if defined(USE_ASH)
   if (chrome::IsNativeWindowInAsh(GetWidget()->GetNativeWindow())) {
     dialog_window_id = content::DesktopMediaID::RegisterAuraWindow(
@@ -530,11 +528,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         GetWidget()->GetNativeWindow()->GetHost()->
             GetAcceleratedWidget());
   }
-
-#else  // defined(USE_AURA)
-  dialog_window_id = 0;
-  NOTIMPLEMENTED();
-#endif  // !defined(USE_AURA)
 
   list_view_->StartUpdating(dialog_window_id);
 

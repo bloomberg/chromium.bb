@@ -417,12 +417,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       kFileManagerHeight,
       kFileManagerMinimumWidth,
       kFileManagerMinimumHeight,
-#if defined(USE_AURA)
       file_manager::util::GetSelectFileDialogTitle(type),
-#else
-      // HTML-based header used.
-      base::string16(),
-#endif
       this /* ExtensionDialog::Observer */);
   if (!dialog) {
     LOG(ERROR) << "Unable to create extension dialog";

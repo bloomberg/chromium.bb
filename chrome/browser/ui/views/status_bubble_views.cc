@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/aura/window.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -33,10 +34,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#endif
 
 #if defined(USE_ASH)
 #include "ash/wm/window_state.h"
@@ -612,9 +609,7 @@ void StatusBubbleViews::Init() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeView();
     popup_->Init(params);
-#if defined(USE_AURA)
     popup_->GetNativeView()->SetName("StatusBubbleViews");
-#endif
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0x00);

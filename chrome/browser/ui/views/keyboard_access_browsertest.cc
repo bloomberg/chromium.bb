@@ -169,12 +169,10 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   void TestSystemMenuWithKeyboard();
 #endif
 
-#if defined(USE_AURA)
   // Uses the keyboard to select the wrench menu i.e. with the F10 key.
   // It verifies that the menu when dismissed by sending the ESC key it does
   // not display twice.
   void TestMenuKeyboardAccessAndDismiss();
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardAccessTest);
 };
@@ -302,7 +300,6 @@ void KeyboardAccessTest::TestSystemMenuWithKeyboard() {
 }
 #endif
 
-#if defined(USE_AURA)
 void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
   ui_test_utils::NavigateToURL(browser(), GURL("about:"));
 
@@ -328,7 +325,6 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
   content::RunMessageLoop();
   ASSERT_EQ(1, menu_listener.menu_open_count());
 }
-#endif
 
 // http://crbug.com/62310.
 #if defined(OS_CHROMEOS)

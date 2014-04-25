@@ -26,11 +26,9 @@ class UI_BASE_EXPORT CursorLoaderWin : public CursorLoader {
   virtual void UnloadAll() OVERRIDE;
   virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
 
-#if defined(USE_AURA)
   // Used to pass the cursor resource module name to the cursor loader. This is
   // typically used to load non system cursors.
   static void SetCursorResourceModule(const base::string16& module_name);
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderWin);
