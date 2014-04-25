@@ -11,6 +11,7 @@ from metrics.rendering_stats import ComputeMouseWheelScrollLatency
 from metrics.rendering_stats import ComputeTouchScrollLatency
 from metrics.rendering_stats import HasRenderingStats
 from metrics.rendering_stats import RenderingStats
+from metrics.rendering_stats import NotEnoughFramesError
 import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline import model
 import telemetry.core.timeline.async_slice as tracing_async_slice
@@ -223,6 +224,46 @@ class RenderingStatsUnitTest(unittest.TestCase):
     AddImplThreadRenderingStats(timer, thread_with_frames, True, None)
     process_with_frames.FinalizeImport()
     self.assertTrue(HasRenderingStats(thread_with_frames))
+
+  def testRangeWithoutFrames(self):
+    timer = MockTimer()
+    timeline = model.TimelineModel()
+
+    # Create a renderer process, with a main thread and impl thread.
+    renderer = timeline.GetOrCreateProcess(pid = 2)
+    renderer_main = renderer.GetOrCreateThread(tid = 21)
+    renderer_compositor = renderer.GetOrCreateThread(tid = 22)
+
+    # Create 10 main and impl rendering stats events for Action A.
+    timer.Advance(2, 4)
+    renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
+    for i in xrange(0, 10):
+      first = (i == 0)
+      AddMainThreadRenderingStats(timer, renderer_main, first, None)
+      AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
+    timer.Advance(2, 4)
+    renderer_main.EndSlice(timer.Get())
+
+    # Create 5 main and impl rendering stats events not within any action.
+    for i in xrange(0, 5):
+      first = (i == 0)
+      AddMainThreadRenderingStats(timer, renderer_main, first, None)
+      AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
+
+    # Create Action B without any frames. This should trigger
+    # NotEnoughFramesError when the RenderingStats object is created.
+    timer.Advance(2, 4)
+    renderer_main.BeginSlice('webkit.console', 'ActionB', timer.Get(), '')
+    timer.Advance(2, 4)
+    renderer_main.EndSlice(timer.Get())
+
+    renderer.FinalizeImport()
+
+    timeline_markers = timeline.FindTimelineMarkers(['ActionA', 'ActionB'])
+    timeline_ranges = [ timeline_bounds.Bounds.CreateFromEvent(marker)
+                        for marker in timeline_markers ]
+    self.assertRaises(NotEnoughFramesError, RenderingStats,
+                      renderer, None, timeline_ranges)
 
   def testFromTimeline(self):
     timeline = model.TimelineModel()

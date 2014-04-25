@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from operator import attrgetter
+from telemetry.page import page_measurement
 
 # These are LatencyInfo component names indicating the various components
 # that the input event has travelled through.
@@ -14,6 +15,19 @@ ORIGINAL_COMP_NAME = 'INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT'
 BEGIN_COMP_NAME = 'INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT'
 # This is when the input event has reached swap buffer.
 END_COMP_NAME = 'INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT'
+
+
+class NotEnoughFramesError(page_measurement.MeasurementFailure):
+  def __init__(self, frame_count):
+    super(NotEnoughFramesError, self).__init__(
+      'Only %i frame timestamps were collected ' % frame_count +
+      '(at least two are required).\n'
+      'Issues that have caused this in the past:\n' +
+      '- Browser bugs that prevents the page from redrawing\n' +
+      '- Bugs in the synthetic gesture code\n' +
+      '- Page and benchmark out of sync (e.g. clicked element was renamed)\n' +
+      '- Pages that render extremely slow\n' +
+      '- Pages that can\'t be scrolled')
 
 
 def GetScrollInputLatencyEvents(scroll_type, browser_process, timeline_range):
@@ -159,6 +173,12 @@ class RenderingStats(object):
       self.initMainThreadStatsFromTimeline(timeline_range)
       self.initImplThreadStatsFromTimeline(timeline_range)
       self.initScrollLatencyStatsFromTimeline(browser_process, timeline_range)
+
+    # Check if we have collected at least 2 frames in every range. Otherwise we
+    # can't compute any meaningful metrics.
+    for segment in self.frame_timestamps:
+      if len(segment) < 2:
+        raise NotEnoughFramesError(len(segment))
 
   def initScrollLatencyStatsFromTimeline(self, browser_process, timeline_range):
     mouse_wheel_events = GetScrollInputLatencyEvents(
