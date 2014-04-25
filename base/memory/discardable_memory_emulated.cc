@@ -8,7 +8,6 @@
 #include "base/memory/discardable_memory_manager.h"
 
 namespace base {
-
 namespace {
 
 base::LazyInstance<internal::DiscardableMemoryManager>::Leaky g_manager =
@@ -52,8 +51,7 @@ DiscardableMemoryLockStatus DiscardableMemoryEmulated::Lock() {
   DCHECK(!is_locked_);
 
   bool purged = false;
-  memory_ = g_manager.Pointer()->Acquire(this, &purged);
-  if (!memory_)
+  if (!g_manager.Pointer()->AcquireLock(this, &purged))
     return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
   is_locked_ = true;
@@ -63,13 +61,26 @@ DiscardableMemoryLockStatus DiscardableMemoryEmulated::Lock() {
 
 void DiscardableMemoryEmulated::Unlock() {
   DCHECK(is_locked_);
-  g_manager.Pointer()->Release(this, memory_.Pass());
+  g_manager.Pointer()->ReleaseLock(this);
   is_locked_ = false;
 }
 
 void* DiscardableMemoryEmulated::Memory() const {
+  DCHECK(is_locked_);
   DCHECK(memory_);
   return memory_.get();
+}
+
+bool DiscardableMemoryEmulated::AllocateAndAcquireLock(size_t bytes) {
+  if (memory_)
+    return true;
+
+  memory_.reset(new uint8[bytes]);
+  return false;
+}
+
+void DiscardableMemoryEmulated::Purge() {
+  memory_.reset();
 }
 
 }  // namespace internal

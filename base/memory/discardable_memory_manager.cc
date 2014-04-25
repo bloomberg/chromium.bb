@@ -9,25 +9,23 @@
 #include "base/containers/mru_cache.h"
 #include "base/debug/trace_event.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_info.h"
 
 namespace base {
 namespace internal {
-
 namespace {
 
 // This is admittedly pretty magical. It's approximately enough memory for four
 // 2560x1600 images.
-static const size_t kDefaultDiscardableMemoryLimit = 64 * 1024 * 1024;
+static const size_t kDefaultMemoryLimit = 64 * 1024 * 1024;
 static const size_t kDefaultBytesToKeepUnderModeratePressure =
-    kDefaultDiscardableMemoryLimit / 4;
+    kDefaultMemoryLimit / 4;
 
 }  // namespace
 
 DiscardableMemoryManager::DiscardableMemoryManager()
     : allocations_(AllocationMap::NO_AUTO_EVICT),
       bytes_allocated_(0),
-      discardable_memory_limit_(kDefaultDiscardableMemoryLimit),
+      memory_limit_(kDefaultMemoryLimit),
       bytes_to_keep_under_moderate_pressure_(
           kDefaultBytesToKeepUnderModeratePressure) {
   BytesAllocatedChanged();
@@ -42,10 +40,8 @@ void DiscardableMemoryManager::RegisterMemoryPressureListener() {
   AutoLock lock(lock_);
   DCHECK(base::MessageLoop::current());
   DCHECK(!memory_pressure_listener_);
-  memory_pressure_listener_.reset(
-      new MemoryPressureListener(
-          base::Bind(&DiscardableMemoryManager::OnMemoryPressure,
-                     Unretained(this))));
+  memory_pressure_listener_.reset(new MemoryPressureListener(base::Bind(
+      &DiscardableMemoryManager::OnMemoryPressure, Unretained(this))));
 }
 
 void DiscardableMemoryManager::UnregisterMemoryPressureListener() {
@@ -54,9 +50,9 @@ void DiscardableMemoryManager::UnregisterMemoryPressureListener() {
   memory_pressure_listener_.reset();
 }
 
-void DiscardableMemoryManager::SetDiscardableMemoryLimit(size_t bytes) {
+void DiscardableMemoryManager::SetMemoryLimit(size_t bytes) {
   AutoLock lock(lock_);
-  discardable_memory_limit_ = bytes;
+  memory_limit_ = bytes;
   EnforcePolicyWithLockAcquired();
 }
 
@@ -66,90 +62,77 @@ void DiscardableMemoryManager::SetBytesToKeepUnderModeratePressure(
   bytes_to_keep_under_moderate_pressure_ = bytes;
 }
 
-void DiscardableMemoryManager::Register(
-    const DiscardableMemory* discardable, size_t bytes) {
+void DiscardableMemoryManager::Register(Allocation* allocation, size_t bytes) {
   AutoLock lock(lock_);
   // A registered memory listener is currently required. This DCHECK can be
   // moved or removed if we decide that it's useful to relax this condition.
   // TODO(reveman): Enable this DCHECK when skia and blink are able to
   // register memory pressure listeners. crbug.com/333907
   // DCHECK(memory_pressure_listener_);
-  DCHECK(allocations_.Peek(discardable) == allocations_.end());
-  allocations_.Put(discardable, Allocation(bytes));
+  DCHECK(allocations_.Peek(allocation) == allocations_.end());
+  allocations_.Put(allocation, AllocationInfo(bytes));
 }
 
-void DiscardableMemoryManager::Unregister(
-    const DiscardableMemory* discardable) {
+void DiscardableMemoryManager::Unregister(Allocation* allocation) {
   AutoLock lock(lock_);
-  AllocationMap::iterator it = allocations_.Peek(discardable);
-  if (it == allocations_.end())
-    return;
+  AllocationMap::iterator it = allocations_.Peek(allocation);
+  DCHECK(it != allocations_.end());
+  const AllocationInfo& info = it->second;
 
-  if (it->second.memory) {
-    size_t bytes = it->second.bytes;
-    DCHECK_LE(bytes, bytes_allocated_);
-    bytes_allocated_ -= bytes;
+  if (info.purgable) {
+    size_t bytes_purgable = info.bytes;
+    DCHECK_LE(bytes_purgable, bytes_allocated_);
+    bytes_allocated_ -= bytes_purgable;
     BytesAllocatedChanged();
-    free(it->second.memory);
   }
   allocations_.Erase(it);
 }
 
-scoped_ptr<uint8, FreeDeleter> DiscardableMemoryManager::Acquire(
-    const DiscardableMemory* discardable,
-    bool* purged) {
+bool DiscardableMemoryManager::AcquireLock(Allocation* allocation,
+                                           bool* purged) {
   AutoLock lock(lock_);
-  // NB: |allocations_| is an MRU cache, and use of |Get| here updates that
+  // Note: |allocations_| is an MRU cache, and use of |Get| here updates that
   // cache.
-  AllocationMap::iterator it = allocations_.Get(discardable);
-  CHECK(it != allocations_.end());
+  AllocationMap::iterator it = allocations_.Get(allocation);
+  DCHECK(it != allocations_.end());
+  AllocationInfo* info = &it->second;
 
-  if (it->second.memory) {
-    scoped_ptr<uint8, FreeDeleter> memory(it->second.memory);
-    it->second.memory = NULL;
-    *purged = false;
-    return memory.Pass();
-  }
+  if (!info->bytes)
+    return false;
 
-  size_t bytes = it->second.bytes;
-  if (!bytes)
-    return scoped_ptr<uint8, FreeDeleter>();
+  size_t bytes_required = info->purgable ? 0u : info->bytes;
 
-  if (discardable_memory_limit_) {
+  if (memory_limit_) {
     size_t limit = 0;
-    if (bytes < discardable_memory_limit_)
-      limit = discardable_memory_limit_ - bytes;
+    if (bytes_required < memory_limit_)
+      limit = memory_limit_ - bytes_required;
 
     PurgeLRUWithLockAcquiredUntilUsageIsWithin(limit);
   }
 
   // Check for overflow.
-  if (std::numeric_limits<size_t>::max() - bytes < bytes_allocated_)
-    return scoped_ptr<uint8, FreeDeleter>();
+  if (std::numeric_limits<size_t>::max() - bytes_required < bytes_allocated_)
+    return false;
 
-  scoped_ptr<uint8, FreeDeleter> memory(static_cast<uint8*>(malloc(bytes)));
-  if (!memory)
-    return scoped_ptr<uint8, FreeDeleter>();
-
-  bytes_allocated_ += bytes;
-  BytesAllocatedChanged();
-
-  *purged = true;
-  return memory.Pass();
+  *purged = !allocation->AllocateAndAcquireLock(info->bytes);
+  info->purgable = false;
+  if (bytes_required) {
+    bytes_allocated_ += bytes_required;
+    BytesAllocatedChanged();
+  }
+  return true;
 }
 
-void DiscardableMemoryManager::Release(
-    const DiscardableMemory* discardable,
-    scoped_ptr<uint8, FreeDeleter> memory) {
+void DiscardableMemoryManager::ReleaseLock(Allocation* allocation) {
   AutoLock lock(lock_);
-  // NB: |allocations_| is an MRU cache, and use of |Get| here updates that
+  // Note: |allocations_| is an MRU cache, and use of |Get| here updates that
   // cache.
-  AllocationMap::iterator it = allocations_.Get(discardable);
-  CHECK(it != allocations_.end());
+  AllocationMap::iterator it = allocations_.Get(allocation);
+  DCHECK(it != allocations_.end());
+  AllocationInfo* info = &it->second;
 
-  DCHECK(!it->second.memory);
-  it->second.memory = memory.release();
-
+  allocation->ReleaseLock();
+  info->purgable = true;
   EnforcePolicyWithLockAcquired();
 }
 
@@ -159,17 +142,17 @@ void DiscardableMemoryManager::PurgeAll() {
 }
 
 bool DiscardableMemoryManager::IsRegisteredForTest(
-    const DiscardableMemory* discardable) const {
+    Allocation* allocation) const {
   AutoLock lock(lock_);
-  AllocationMap::const_iterator it = allocations_.Peek(discardable);
+  AllocationMap::const_iterator it = allocations_.Peek(allocation);
   return it != allocations_.end();
 }
 
 bool DiscardableMemoryManager::CanBePurgedForTest(
-    const DiscardableMemory* discardable) const {
+    Allocation* allocation) const {
   AutoLock lock(lock_);
-  AllocationMap::const_iterator it = allocations_.Peek(discardable);
-  return it != allocations_.end() && it->second.memory;
+  AllocationMap::const_iterator it = allocations_.Peek(allocation);
+  return it != allocations_.end() && it->second.purgable;
 }
 
 size_t DiscardableMemoryManager::GetBytesAllocatedForTest() const {
@@ -203,7 +186,8 @@ void DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
   TRACE_EVENT1(
       "base",
       "DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin",
-      "limit", limit);
+      "limit",
+      limit);
 
   lock_.AssertAcquired();
 
@@ -211,16 +195,19 @@ void DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
   for (AllocationMap::reverse_iterator it = allocations_.rbegin();
        it != allocations_.rend();
        ++it) {
+    Allocation* allocation = it->first;
+    AllocationInfo* info = &it->second;
+
     if (bytes_allocated_ <= limit)
       break;
-    if (!it->second.memory)
+    if (!info->purgable)
       continue;
 
-    size_t bytes = it->second.bytes;
-    DCHECK_LE(bytes, bytes_allocated_);
-    bytes_allocated_ -= bytes;
-    free(it->second.memory);
-    it->second.memory = NULL;
+    size_t bytes_purgable = info->bytes;
+    DCHECK_LE(bytes_purgable, bytes_allocated_);
+    bytes_allocated_ -= bytes_purgable;
+    info->purgable = false;
+    allocation->Purge();
   }
 
   if (bytes_allocated_ != bytes_allocated_before_purging)
@@ -228,14 +215,11 @@ void DiscardableMemoryManager::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
 }
 
 void DiscardableMemoryManager::EnforcePolicyWithLockAcquired() {
-  PurgeLRUWithLockAcquiredUntilUsageIsWithin(discardable_memory_limit_);
+  PurgeLRUWithLockAcquiredUntilUsageIsWithin(memory_limit_);
 }
 
 void DiscardableMemoryManager::BytesAllocatedChanged() const {
-  TRACE_COUNTER_ID1("base",
-                    "DiscardableMemoryUsage",
-                    this,
-                    bytes_allocated_);
+  TRACE_COUNTER_ID1("base", "DiscardableMemoryUsage", this, bytes_allocated_);
 }
 
 }  // namespace internal
