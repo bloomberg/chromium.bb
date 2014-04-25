@@ -104,7 +104,7 @@ ignore-error() {
 readonly SCONS_COMMON="./scons --verbose bitcode=1 -j${PNACL_CONCURRENCY}"
 readonly SCONS_COMMON_SLOW="./scons --verbose bitcode=1 -j2"
 
-build-sbtc-prerequisites() {
+build-run-prerequisites() {
   local platform=$1
   ${SCONS_COMMON} ${SCONS_PICK_TC} platform=${platform} \
     sel_ldr sel_universal irt_core
@@ -113,10 +113,6 @@ build-sbtc-prerequisites() {
 
 scons-tests-translator() {
   local platform=$1
-
-  echo "@@@BUILD_STEP scons-sb-trans [${platform}] [prereq]@@@"
-  build-sbtc-prerequisites ${platform}
-
   local flags="--mode=opt-host,nacl use_sandboxed_translator=1 \
                platform=${platform} -k"
   local targets="small_tests medium_tests large_tests"
@@ -298,9 +294,20 @@ tc-test-bot() {
     --testsuite-sync \
     --install toolchain/linux_x86/pnacl_newlib
 
+  # Linking the tests require additional sdk libraries like libnacl.
+  # Do this once and for all early instead of attempting to do it within
+  # each test step and having some late test steps rely on early test
+  # steps building the prerequisites -- sometimes the early test steps
+  # get skipped.
+  echo "@@@BUILD_STEP install sdk libraries @@@"
+  ${PNACL_BUILD} sdk
+  for arch in ${archset}; do
+    # Similarly, build the run prerequisites (sel_ldr and the irt) early.
+    echo "@@@BUILD_STEP build run prerequisites [${arch}]@@@"
+    build-run-prerequisites ${arch}
+  done
 
-  # run the torture tests. the "trybot" phases take care of prerequisites
-  # for both test sets
+  # Run the torture tests.
   for arch in ${archset}; do
     if [[ "${arch}" == "x86-32" ]]; then
       # Torture tests on x86-32 are covered by tc-tests-all in
@@ -312,11 +319,6 @@ tc-test-bot() {
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
-  # llvm-test-suite below requires the SDK libraries to be installed.
-  # torture_tests above do this as a side effect, but we do it
-  # explicitly here for cases in which torture_tests are not run.
-  echo "@@@BUILD_STEP install sdk libraries @@@"
-  ${PNACL_BUILD} sdk
 
   local optset
   optset[1]="--opt O3f --opt O2b"
@@ -331,7 +333,6 @@ tc-test-bot() {
     fi
     for opt in "${optset[@]}"; do
       echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
-      python ${LLVM_TEST} --testsuite-prereq --arch ${arch}
       python ${LLVM_TEST} --testsuite-clean
       python ${LLVM_TEST} \
         --testsuite-configure --testsuite-run --testsuite-report \

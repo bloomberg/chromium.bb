@@ -25,15 +25,6 @@ def usage():
   print 'Usage:', sys.argv[0], '<compiler> <platform>',
   print '[<args for toolchain_tester.py>]'
 
-def prereqs_scons(context, platform):
-  if not platform in ('x86-32', 'x86-64', 'arm'):
-    raise ValueError('Bad platform,', platform)
-  return buildbot_lib.SCons(context, mode=('opt-host', 'nacl'),
-                            platform=platform, parallel=True,
-                            args=('irt_core', 'run_intrinsics_test'))
-
-def prereqs_pnacl(context):
-  return buildbot_lib.Command(context, ('pnacl/build.sh', 'sdk', 'newlib'))
 
 def standard_tests(context, config, exclude, extra_args):
   # TODO: make toolchain_tester.py runnable as a library?
@@ -79,9 +70,6 @@ def eh_tests(context, config, exclude, extra_args, use_sjlj_eh):
 def run_torture(status, compiler, platform, extra_args):
   if platform not in ('x86-32', 'x86-64', 'arm'):
     print 'Unknown platform:', platform
-  prereqs_scons(status.context, platform)
-  if compiler == 'pnacl':
-    prereqs_pnacl(status.context)
 
   config_map = { 'pnacl': 'llvm_pnacl',
                  'naclgcc': 'nacl_gcc',
