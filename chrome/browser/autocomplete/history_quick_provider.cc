@@ -120,9 +120,7 @@ void HistoryQuickProvider::DoAutocomplete() {
   // provider won't promote the URL-what-you-typed match to first
   // for these inputs.
   const bool can_have_url_what_you_typed_match_first =
-      autocomplete_input_.canonicalized_url().is_valid() &&
       (autocomplete_input_.type() != AutocompleteInput::QUERY) &&
-      (autocomplete_input_.type() != AutocompleteInput::FORCED_QUERY) &&
       (!autocomplete_input_.parts().username.is_nonempty() ||
        autocomplete_input_.parts().password.is_nonempty() ||
        autocomplete_input_.parts().path.is_nonempty());

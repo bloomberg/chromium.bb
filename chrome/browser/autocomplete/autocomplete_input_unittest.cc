@@ -33,6 +33,7 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("foo.-com"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("foo/"), AutocompleteInput::URL },
     { ASCIIToUTF16("foo/bar"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("foo/bar%00"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("foo/bar/"), AutocompleteInput::URL },
     { ASCIIToUTF16("foo/bar baz\\"), AutocompleteInput::URL },
     { ASCIIToUTF16("foo.com/bar"), AutocompleteInput::URL },
@@ -87,6 +88,7 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("http://foo.c"), AutocompleteInput::URL },
     { ASCIIToUTF16("http://foo.com"), AutocompleteInput::URL },
     { ASCIIToUTF16("http://foo_bar.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://foo/bar%00"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("http://foo/bar baz"), AutocompleteInput::URL },
     { ASCIIToUTF16("http://-foo.com"), AutocompleteInput::URL },
     { ASCIIToUTF16("http://foo-.com"), AutocompleteInput::URL },
@@ -121,6 +123,8 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("chrome-search://"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("chrome-devtools:"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("about://f;"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("://w"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16(":w"), AutocompleteInput::QUERY },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {

@@ -150,20 +150,16 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (scheme)
     *scheme = parsed_scheme;
 
-  // Try to fixup and canonicalize the user's typing.  We use this to help
-  // determine if it's safe to return "URL" as the type of anything that has an
-  // explicit, non-HTTP[S] scheme.  (HTTP[S] and "no scheme" inputs get more
-  // sophisticated heuristics below.)  If we can't canonicalize such inputs, we
-  // shouldn't mark them as "URL"s, because the rest of the autocomplete system
-  // isn't going to be able to produce navigable URL matches for them, which can
-  // lead to DCHECK failures later.
+  // If we can't canonicalize the user's input, the rest of the autocomplete
+  // system isn't going to be able to produce a navigable URL match for it.
+  // So we just return QUERY immediately in these cases.
   GURL placeholder_canonicalized_url;
   if (!canonicalized_url)
     canonicalized_url = &placeholder_canonicalized_url;
   *canonicalized_url = URLFixerUpper::FixupURL(base::UTF16ToUTF8(text),
                                                base::UTF16ToUTF8(desired_tld));
-  Type return_value_for_non_http_url =
-      canonicalized_url->is_valid() ? URL : QUERY;
+  if (!canonicalized_url->is_valid())
+    return QUERY;
 
   if (LowerCaseEqualsASCII(parsed_scheme, content::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
@@ -190,7 +186,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kJavaScriptScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kDataScheme))
-      return return_value_for_non_http_url;
+      return URL;
 
     // Not an internal protocol.  Check and see if the user has explicitly
     // opened this scheme as a URL before, or if the "scheme" is actually a
@@ -206,7 +202,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
             base::UTF16ToUTF8(parsed_scheme), true);
     switch (block_state) {
       case ExternalProtocolHandler::DONT_BLOCK:
-        return return_value_for_non_http_url;
+        return URL;
 
       case ExternalProtocolHandler::BLOCK:
         // If we don't want the user to open the URL, don't let it be navigated
@@ -270,9 +266,17 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // between an HTTP URL and a query, or the scheme is HTTP or HTTPS, in which
   // case we should reject invalid formulations.
 
-  // If we have an empty host it can't be a URL.
+  // If we have an empty host it can't be a valid HTTP[S] URL.  (This should
+  // only trigger for input that begins with a colon, which GURL will parse as a
+  // valid, non-standard URL; for standard URLs, an empty host would have
+  // resulted in an invalid |canonicalized_url| above.)
   if (!parts->host.is_nonempty())
     return QUERY;
+
+  // Sanity-check: GURL should have failed to canonicalize this URL if it had an
+  // invalid port.
+  DCHECK_NE(url_parse::PORT_INVALID,
+            url_parse::ParsePort(text.c_str(), parts->port));
 
   // Likewise, the RCDS can reject certain obviously-invalid hosts.  (We also
   // use the registry length later below.)
@@ -334,16 +338,6 @@ AutocompleteInput::Type AutocompleteInput::Parse(
            ((registry_length != 0) &&
             (host.find(' ') == base::string16::npos))) ? UNKNOWN : QUERY;
   }
-
-  // A port number is a good indicator that this is a URL.  However, it might
-  // also be a query like "1.66:1" that looks kind of like an IP address and
-  // port number. So here we only check for "port numbers" that are illegal and
-  // thus mean this can't be navigated to (e.g. "1.2.3.4:garbage"), and we save
-  // handling legal port numbers until after the "IP address" determination
-  // below.
-  if (url_parse::ParsePort(text.c_str(), parts->port) ==
-      url_parse::PORT_INVALID)
-    return QUERY;
 
   // Now that we've ruled out all schemes other than http or https and done a
   // little more sanity checking, the presence of a scheme means this is likely
