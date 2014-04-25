@@ -185,24 +185,24 @@ class CONTENT_EXPORT BrowserThread {
   // Returns the thread pool used for blocking file I/O. Use this object to
   // perform random blocking operations such as file writes or querying the
   // Windows registry.
-  static base::SequencedWorkerPool* GetBlockingPool();
+  static base::SequencedWorkerPool* GetBlockingPool() WARN_UNUSED_RESULT;
 
   // Callable on any thread.  Returns whether the given well-known thread is
   // initialized.
-  static bool IsThreadInitialized(ID identifier);
+  static bool IsThreadInitialized(ID identifier) WARN_UNUSED_RESULT;
 
   // Callable on any thread.  Returns whether you're currently on a particular
   // thread.  To DCHECK this, use the DCHECK_CURRENTLY_ON() macro above.
-  static bool CurrentlyOn(ID identifier);
+  static bool CurrentlyOn(ID identifier) WARN_UNUSED_RESULT;
 
   // Callable on any thread.  Returns whether the threads message loop is valid.
   // If this returns false it means the thread is in the process of shutting
   // down.
-  static bool IsMessageLoopValid(ID identifier);
+  static bool IsMessageLoopValid(ID identifier) WARN_UNUSED_RESULT;
 
   // If the current message loop is one of the known threads, returns true and
   // sets identifier to its ID.  Otherwise returns false.
-  static bool GetCurrentThreadIdentifier(ID* identifier);
+  static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
 
   // Callers can hold on to a refcounted MessageLoopProxy beyond the lifetime
   // of the thread.

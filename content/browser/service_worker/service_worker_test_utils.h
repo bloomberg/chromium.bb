@@ -29,7 +29,8 @@ CreateReceiver(BrowserThread::ID run_quit_thread,
 template <typename Arg> base::Callback<void(Arg)>
 CreateReceiverOnCurrentThread(Arg* out) {
   BrowserThread::ID id;
-  BrowserThread::GetCurrentThreadIdentifier(&id);
+  bool ret = BrowserThread::GetCurrentThreadIdentifier(&id);
+  DCHECK(ret);
   return base::Bind(&ReceiveResult<Arg>, id, base::Closure(), out);
 }
 
