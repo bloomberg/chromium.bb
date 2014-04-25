@@ -224,6 +224,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   customize_comboboxes_.clear();
   set_close_on_esc(false);
   set_close_on_deactivate(false);
+  set_move_with_anchor(true);
 
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, kBubbleOuterMargin, 0, kItemMajorSpacing));
