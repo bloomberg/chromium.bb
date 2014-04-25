@@ -30,6 +30,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "modules/indexeddb/IndexedDBClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -39,19 +40,18 @@
 namespace WebCore {
 
 class ExceptionState;
-class IndexedDBClient;
 class IDBKey;
 class IDBKeyRange;
 class ExecutionContext;
 
 class IDBFactory : public RefCountedWillBeGarbageCollectedFinalized<IDBFactory>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<IDBFactory> create(IndexedDBClient* client)
+    static PassRefPtrWillBeRawPtr<IDBFactory> create(PassRefPtrWillBeRawPtr<IndexedDBClient> client)
     {
         return adoptRefWillBeNoop(new IDBFactory(client));
     }
     ~IDBFactory();
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
     PassRefPtr<IDBRequest> getDatabaseNames(ExecutionContext*, ExceptionState&);
 
@@ -62,11 +62,11 @@ public:
     short cmp(ExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
-    explicit IDBFactory(IndexedDBClient*);
+    explicit IDBFactory(PassRefPtrWillBeRawPtr<IndexedDBClient>);
 
     PassRefPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
 
-    RefPtr<IndexedDBClient> m_permissionClient;
+    RefPtrWillBeMember<IndexedDBClient> m_permissionClient;
 };
 
 } // namespace WebCore

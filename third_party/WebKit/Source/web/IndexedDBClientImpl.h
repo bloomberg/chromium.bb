@@ -39,8 +39,7 @@ namespace blink {
 
 class IndexedDBClientImpl FINAL : public WebCore::IndexedDBClient {
 public:
-    static PassRefPtr<WebCore::IndexedDBClient> create();
-    virtual ~IndexedDBClientImpl() { }
+    static PassRefPtrWillBeRawPtr<WebCore::IndexedDBClient> create();
 
     virtual bool allowIndexedDB(WebCore::ExecutionContext*, const String& name) OVERRIDE;
 

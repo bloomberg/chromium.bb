@@ -50,7 +50,7 @@ namespace WebCore {
 
 static const char permissionDeniedErrorMessage[] = "The user denied permission to access the database.";
 
-IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
+IDBFactory::IDBFactory(PassRefPtrWillBeRawPtr<IndexedDBClient> permissionClient)
     : m_permissionClient(permissionClient)
 {
 #if !ENABLE(OILPAN)
@@ -62,6 +62,11 @@ IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
 
 IDBFactory::~IDBFactory()
 {
+}
+
+void IDBFactory::trace(Visitor* visitor)
+{
+    visitor->trace(m_permissionClient);
 }
 
 static bool isContextValid(ExecutionContext* context)

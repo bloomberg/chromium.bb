@@ -65,10 +65,8 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(WillBeHeapSupplementable
 
 IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
 {
-    if (!m_client)
-        m_client = IndexedDBClient::create();
     if (!m_idbFactory)
-        m_idbFactory = IDBFactory::create(m_client.get());
+        m_idbFactory = IDBFactory::create(IndexedDBClient::create());
     return m_idbFactory.get();
 }
 

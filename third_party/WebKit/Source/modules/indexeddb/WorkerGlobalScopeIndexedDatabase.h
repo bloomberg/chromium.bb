@@ -52,7 +52,6 @@ private:
     IDBFactory* indexedDB();
     static const char* supplementName();
 
-    RefPtr<IndexedDBClient> m_client;
     RefPtrWillBeMember<IDBFactory> m_idbFactory;
 };
 

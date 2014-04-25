@@ -14,12 +14,14 @@ void setIndexedDBClientCreateFunction(CreateIndexedDBClient createFunction)
     idbClientCreateFunction = createFunction;
 }
 
-PassRefPtr<IndexedDBClient> IndexedDBClient::create()
+PassRefPtrWillBeRawPtr<IndexedDBClient> IndexedDBClient::create()
 {
     ASSERT(idbClientCreateFunction);
     // There's no reason why we need to allocate a new proxy each time, but
     // there's also no strong reason not to.
     return idbClientCreateFunction();
 }
+
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(IndexedDBClient)
 
 } // namespace WebCore
