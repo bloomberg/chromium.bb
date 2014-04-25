@@ -654,7 +654,7 @@ void AutofillDialogControllerImpl::Show() {
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
     callback_.Run(
-        AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
+        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Form is missing autocomplete attributes."),
         NULL);
     delete this;
@@ -674,7 +674,7 @@ void AutofillDialogControllerImpl::Show() {
 
   if (!has_credit_card_field) {
     callback_.Run(
-        AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
+        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Form is not a payment form (must contain "
                            "some autocomplete=\"cc-*\" fields). "),
         NULL);

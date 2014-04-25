@@ -49,8 +49,6 @@ class AutofillManagerDelegate {
       AutocompleteResultErrorDisabled,
       AutocompleteResultErrorCancel,
       AutocompleteResultErrorInvalid,
-      // TODO(estade): add this one to WebFormElement::AutocompleteResult.
-      AutocompleteResultErrorUnsupported,
   };
 
   typedef base::Callback<

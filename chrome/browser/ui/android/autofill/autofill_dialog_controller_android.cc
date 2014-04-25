@@ -207,7 +207,7 @@ void AutofillDialogControllerAndroid::Show() {
           env,
           invoked_from_same_origin_)) {
     callback_.Run(
-        AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
+        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Form is missing autocomplete attributes."),
         NULL);
     delete this;

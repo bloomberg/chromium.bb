@@ -29,9 +29,6 @@ blink::WebFormElement::AutocompleteResult ToWebkitAutocompleteResult(
       return blink::WebFormElement::AutocompleteResultErrorCancel;
     case AutofillManagerDelegate::AutocompleteResultErrorInvalid:
       return blink::WebFormElement::AutocompleteResultErrorInvalid;
-    // TODO(estade): update this when Blink has the proper type.
-    case AutofillManagerDelegate::AutocompleteResultErrorUnsupported:
-      return blink::WebFormElement::AutocompleteResultErrorDisabled;
   }
 
   NOTREACHED();
