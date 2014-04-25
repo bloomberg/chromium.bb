@@ -44,7 +44,7 @@ class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorkerError WebType;
-    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw);
+    static PassRefPtr<DOMException> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw);
 
 private:
     WTF_MAKE_NONCOPYABLE(ServiceWorkerError);
