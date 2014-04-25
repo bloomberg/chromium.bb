@@ -204,11 +204,9 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
     }
     IntRect repaintRect = pixelSnappedIntRect(r);
     if (m_renderer.compositingState() == PaintsIntoGroupedBacking) {
-        // FIXME: Add a LayoutTest that hits this code path.
-        // See https://code.google.com/p/chromium/issues/detail?id=365597 for real-world
-        // examples that can execute this code.
         repaintRect.move(-m_renderer.layer()->offsetFromSquashingLayerOrigin());
-        m_renderer.groupedMapping()->squashingLayer()->setNeedsDisplayInRect(repaintRect);
+        if (GraphicsLayer* squashingLayer = m_renderer.groupedMapping()->squashingLayer())
+            squashingLayer->setNeedsDisplayInRect(repaintRect);
     } else {
         m_renderer.compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
     }
