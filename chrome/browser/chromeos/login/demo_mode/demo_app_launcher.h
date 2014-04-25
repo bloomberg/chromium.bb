@@ -30,6 +30,7 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
   static void SetDemoAppPathForTesting(const base::FilePath& path);
 
   static const char kDemoUserName[];
+  static const char kDemoAppId[];
 
  private:
   friend class DemoAppLauncherTest;

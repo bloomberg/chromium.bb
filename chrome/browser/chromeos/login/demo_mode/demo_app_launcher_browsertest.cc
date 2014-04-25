@@ -29,8 +29,6 @@ namespace chromeos {
 
 namespace {
 
-char kDemoAppId[] = "klimoghijjogocdbaikffefjfcfheiel";
-
 base::FilePath GetTestDemoAppPath() {
   base::FilePath test_data_dir;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
@@ -51,7 +49,7 @@ Profile* WaitForProfile() {
 bool VerifyDemoAppLaunch() {
   Profile* profile = WaitForProfile();
   return AppWindowWaiter(apps::AppWindowRegistry::Get(profile),
-                         kDemoAppId).Wait() != NULL;
+                         DemoAppLauncher::kDemoAppId).Wait() != NULL;
 }
 
 bool VerifyNetworksDisabled() {

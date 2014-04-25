@@ -29,6 +29,7 @@
 namespace chromeos {
 
 const char DemoAppLauncher::kDemoUserName[] = "demouser@demo.app.local";
+const char DemoAppLauncher::kDemoAppId[] = "klimoghijjogocdbaikffefjfcfheiel";
 const base::FilePath::CharType kDefaultDemoAppPath[] =
     FILE_PATH_LITERAL("/usr/share/chromeos-assets/demo_app");
 
@@ -84,10 +85,6 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
     chrome::AttemptUserExit();
     return;
   }
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kForceAppMode);
-  command_line->AppendSwitchASCII(switches::kAppId, extension_id);
 
   // Disable network before launching the app.
   LOG(WARNING) << "Disabling network before launching demo app..";

@@ -1517,6 +1517,11 @@ void UserManagerImpl::DemoAccountLoggedIn() {
   active_user_->SetStubImage(User::kInvalidImageIndex, false);
   WallpaperManager::Get()->SetUserWallpaperNow(DemoAppLauncher::kDemoUserName);
 
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kForceAppMode);
+  command_line->AppendSwitchASCII(::switches::kAppId,
+                                  DemoAppLauncher::kDemoAppId);
+
   // Disable window animation since the demo app runs in a single full screen
   // window and window animation causes start-up janks.
   CommandLine::ForCurrentProcess()->AppendSwitch(
