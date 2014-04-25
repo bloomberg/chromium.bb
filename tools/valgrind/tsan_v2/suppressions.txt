@@ -198,9 +198,6 @@ race:CommandLine::GetSwitchValueASCII
 race:blink::s_platform
 race:content::RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl
 
-# http://crbug.com/342662
-race:SetWindowList
-
 # http://crbug.com/345240
 race:WTF::s_shutdown
 
