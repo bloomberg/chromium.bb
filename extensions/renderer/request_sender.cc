@@ -11,18 +11,23 @@
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/WebKit/public/web/WebUserGestureToken.h"
 
 namespace extensions {
 
 // Contains info relevant to a pending API request.
 struct PendingRequest {
  public:
-  PendingRequest(const std::string& name, RequestSender::Source* source)
-      : name(name), source(source) {}
+  PendingRequest(const std::string& name,
+                 RequestSender::Source* source,
+                 blink::WebUserGestureToken token)
+      : name(name), source(source), token(token) {}
 
   std::string name;
   RequestSender::Source* source;
+  blink::WebUserGestureToken token;
 };
 
 RequestSender::ScopedTabID::ScopedTabID(RequestSender* request_sender,
@@ -95,7 +100,8 @@ void RequestSender::StartRequest(Source* source,
   if (blink::WebFrame* webframe = context->web_frame())
     source_url = webframe->document().url();
 
-  InsertRequest(request_id, new PendingRequest(name, source));
+  InsertRequest(request_id, new PendingRequest(name, source,
+      blink::WebUserGestureIndicator::currentUserGestureToken()));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
@@ -127,6 +133,7 @@ void RequestSender::HandleResponse(int request_id,
     return;
   }
 
+  blink::WebScopedUserGesture gesture(request->token);
   request->source->OnResponseReceived(
       request->name, request_id, success, response, error);
 }

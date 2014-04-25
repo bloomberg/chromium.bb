@@ -117,6 +117,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGesture) {
   EXPECT_TRUE(RunExtensionTest("permissions/optional_gesture")) << message_;
 }
 
+// Tests that the user gesture is retained in the permissions.request function
+// callback.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsRetainGesture) {
+  PermissionsRequestFunction::SetAutoConfirmForTests(true);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(false);
+  host_resolver()->AddRule("*.com", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  EXPECT_TRUE(RunExtensionTest("permissions/optional_retain_gesture"))
+      << message_;
+}
+
 // Tests that an extension can't gain access to file: URLs without the checkbox
 // entry in prefs. There shouldn't be a warning either.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsFileAccess) {
