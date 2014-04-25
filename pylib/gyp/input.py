@@ -237,7 +237,7 @@ def LoadOneBuildFile(build_file_path, data, aux_data, includes,
     gyp.common.ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
-  if not isinstance(build_file_data, dict):
+  if type(build_file_data) is not dict:
     raise GypError("%s does not evaluate to a dictionary." % build_file_path)
 
   data[build_file_path] = build_file_data
@@ -291,10 +291,10 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
-    if v.__class__ == dict:
+    if type(v) is dict:
       LoadBuildFileIncludesIntoDict(v, subdict_path, data, aux_data,
                                     None, check)
-    elif v.__class__ == list:
+    elif type(v) is list:
       LoadBuildFileIncludesIntoList(v, subdict_path, data, aux_data,
                                     check)
 
@@ -302,10 +302,10 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
 # This recurses into lists so that it can look for dicts.
 def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, aux_data, check):
   for item in sublist:
-    if item.__class__ == dict:
+    if type(item) is dict:
       LoadBuildFileIncludesIntoDict(item, sublist_path, data, aux_data,
                                     None, check)
-    elif item.__class__ == list:
+    elif type(item) is list:
       LoadBuildFileIncludesIntoList(item, sublist_path, data, aux_data, check)
 
 # Processes toolsets in all the targets. This recurses into condition entries
@@ -338,7 +338,7 @@ def ProcessToolsetsInDict(data):
     data['targets'] = new_target_list
   if 'conditions' in data:
     for condition in data['conditions']:
-      if isinstance(condition, list):
+      if type(condition) is list:
         for condition_dict in condition[1:]:
           ProcessToolsetsInDict(condition_dict)
 
@@ -654,7 +654,7 @@ def IsStrCanonicalInt(string):
 
   The canonical form is such that str(int(string)) == string.
   """
-  return isinstance(string, str) and canonical_int_re.match(string)
+  return type(string) is str and canonical_int_re.match(string)
 
 
 # This matches things like "<(asdf)", "<!(cmd)", "<!@(cmd)", "<|(list)",
@@ -687,7 +687,7 @@ cached_command_results = {}
 
 def FixupPlatformCommand(cmd):
   if sys.platform == 'win32':
-    if type(cmd) == list:
+    if type(cmd) is list:
       cmd = [re.sub('^cat ', 'type ', cmd[0])] + cmd[1:]
     else:
       cmd = re.sub('^cat ', 'type ', cmd)
@@ -814,7 +814,7 @@ def ExpandVariables(input, phase, variables, build_file):
     # This works around actions/rules which have more inputs than will
     # fit on the command line.
     if file_list:
-      if type(contents) == list:
+      if type(contents) is list:
         contents_list = contents
       else:
         contents_list = contents.split(' ')
@@ -935,10 +935,9 @@ def ExpandVariables(input, phase, variables, build_file):
       else:
         replacement = variables[contents]
 
-    if isinstance(replacement, list):
+    if type(replacement) is list:
       for item in replacement:
-        if (not contents[-1] == '/' and
-            not isinstance(item, str) and not isinstance(item, int)):
+        if not contents[-1] == '/' and type(item) not in (str, int):
           raise GypError('Variable ' + contents +
                          ' must expand to a string or list of strings; ' +
                          'list contains a ' +
@@ -948,8 +947,7 @@ def ExpandVariables(input, phase, variables, build_file):
       # with conditions sections.
       ProcessVariablesAndConditionsInList(replacement, phase, variables,
                                           build_file)
-    elif not isinstance(replacement, str) and \
-         not isinstance(replacement, int):
+    elif type(replacement) not in (str, int):
           raise GypError('Variable ' + contents +
                          ' must expand to a string or list of strings; ' +
                          'found a ' + replacement.__class__.__name__)
@@ -958,7 +956,7 @@ def ExpandVariables(input, phase, variables, build_file):
       # Expanding in list context.  It's guaranteed that there's only one
       # replacement to do in |input_str| and that it's this replacement.  See
       # above.
-      if isinstance(replacement, list):
+      if type(replacement) is list:
         # If it's already a list, make a copy.
         output = replacement[:]
       else:
@@ -967,7 +965,7 @@ def ExpandVariables(input, phase, variables, build_file):
     else:
       # Expanding in string context.
       encoded_replacement = ''
-      if isinstance(replacement, list):
+      if type(replacement) is list:
         # When expanding a list into string context, turn the list items
         # into a string in a way that will work with a subprocess call.
         #
@@ -989,8 +987,8 @@ def ExpandVariables(input, phase, variables, build_file):
   # expanding local variables (variables defined in the same
   # variables block as this one).
   gyp.DebugOutput(gyp.DEBUG_VARIABLES, "Found output %r, recursing.", output)
-  if isinstance(output, list):
-    if output and isinstance(output[0], list):
+  if type(output) is list:
+    if output and type(output[0]) is list:
       # Leave output alone if it's a list of lists.
       # We don't want such lists to be stringified.
       pass
@@ -1004,7 +1002,7 @@ def ExpandVariables(input, phase, variables, build_file):
     output = ExpandVariables(output, phase, variables, build_file)
 
   # Convert all strings that are canonically-represented integers into integers.
-  if isinstance(output, list):
+  if type(output) is list:
     for index in xrange(0, len(output)):
       if IsStrCanonicalInt(output[index]):
         output[index] = int(output[index])
@@ -1020,7 +1018,7 @@ cached_conditions_asts = {}
 def EvalCondition(condition, conditions_key, phase, variables, build_file):
   """Returns the dict that should be used or None if the result was
   that nothing should be used."""
-  if not isinstance(condition, list):
+  if type(condition) is not list:
     raise GypError(conditions_key + ' must be a list')
   if len(condition) != 2 and len(condition) != 3:
     # It's possible that condition[0] won't work in which case this
@@ -1039,8 +1037,7 @@ def EvalCondition(condition, conditions_key, phase, variables, build_file):
   # use a command expansion directly inside a condition.
   cond_expr_expanded = ExpandVariables(cond_expr, phase, variables,
                                        build_file)
-  if not isinstance(cond_expr_expanded, str) and \
-     not isinstance(cond_expr_expanded, int):
+  if type(cond_expr_expanded) not in (str, int):
     raise ValueError, \
           'Variable expansion in this context permits str and int ' + \
             'only, found ' + cond_expr_expanded.__class__.__name__
@@ -1116,8 +1113,7 @@ def LoadAutomaticVariablesFromDict(variables, the_dict):
   # Any keys with plain string values in the_dict become automatic variables.
   # The variable name is the key name with a "_" character prepended.
   for key, value in the_dict.iteritems():
-    if isinstance(value, str) or isinstance(value, int) or \
-       isinstance(value, list):
+    if type(value) in (str, int, list):
       variables['_' + key] = value
 
 
@@ -1130,8 +1126,7 @@ def LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key):
   # (it could be a list or it could be parentless because it is a root dict),
   # the_dict_key will be None.
   for key, value in the_dict.get('variables', {}).iteritems():
-    if not isinstance(value, str) and not isinstance(value, int) and \
-       not isinstance(value, list):
+    if type(value) not in (str, int, list):
       continue
 
     if key.endswith('%'):
@@ -1184,9 +1179,9 @@ def ProcessVariablesAndConditionsInDict(the_dict, phase, variables_in,
 
   for key, value in the_dict.iteritems():
     # Skip "variables", which was already processed if present.
-    if key != 'variables' and isinstance(value, str):
+    if key != 'variables' and type(value) is str:
       expanded = ExpandVariables(value, phase, variables, build_file)
-      if not isinstance(expanded, str) and not isinstance(expanded, int):
+      if type(expanded) not in (str, int):
         raise ValueError, \
               'Variable expansion in this context permits str and int ' + \
               'only, found ' + expanded.__class__.__name__ + ' for ' + key
@@ -1243,21 +1238,21 @@ def ProcessVariablesAndConditionsInDict(the_dict, phase, variables_in,
   for key, value in the_dict.iteritems():
     # Skip "variables" and string values, which were already processed if
     # present.
-    if key == 'variables' or isinstance(value, str):
+    if key == 'variables' or type(value) is str:
       continue
-    if isinstance(value, dict):
+    if type(value) is dict:
       # Pass a copy of the variables dict so that subdicts can't influence
       # parents.
       ProcessVariablesAndConditionsInDict(value, phase, variables,
                                           build_file, key)
-    elif isinstance(value, list):
+    elif type(value) is list:
       # The list itself can't influence the variables dict, and
       # ProcessVariablesAndConditionsInList will make copies of the variables
       # dict if it needs to pass it to something that can influence it.  No
       # copy is necessary here.
       ProcessVariablesAndConditionsInList(value, phase, variables,
                                           build_file)
-    elif not isinstance(value, int):
+    elif type(value) is not int:
       raise TypeError, 'Unknown type ' + value.__class__.__name__ + \
                        ' for ' + key
 
@@ -1268,17 +1263,17 @@ def ProcessVariablesAndConditionsInList(the_list, phase, variables,
   index = 0
   while index < len(the_list):
     item = the_list[index]
-    if isinstance(item, dict):
+    if type(item) is dict:
       # Make a copy of the variables dict so that it won't influence anything
       # outside of its own scope.
       ProcessVariablesAndConditionsInDict(item, phase, variables, build_file)
-    elif isinstance(item, list):
+    elif type(item) is list:
       ProcessVariablesAndConditionsInList(item, phase, variables, build_file)
-    elif isinstance(item, str):
+    elif type(item) is str:
       expanded = ExpandVariables(item, phase, variables, build_file)
-      if isinstance(expanded, str) or isinstance(expanded, int):
+      if type(expanded) in (str, int):
         the_list[index] = expanded
-      elif isinstance(expanded, list):
+      elif type(expanded) is list:
         the_list[index:index+1] = expanded
         index += len(expanded)
 
@@ -1290,7 +1285,7 @@ def ProcessVariablesAndConditionsInList(the_list, phase, variables,
               'Variable expansion in this context permits strings and ' + \
               'lists only, found ' + expanded.__class__.__name__ + ' at ' + \
               index
-    elif not isinstance(item, int):
+    elif type(item) is not int:
       raise TypeError, 'Unknown type ' + item.__class__.__name__ + \
                        ' at index ' + index
     index = index + 1
@@ -2016,25 +2011,25 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
   hashable_to_set = set(x for x in to if is_hashable(x))
   for item in fro:
     singleton = False
-    if isinstance(item, str) or isinstance(item, int):
+    if type(item) in (str, int):
       # The cheap and easy case.
       if is_paths:
         to_item = MakePathRelative(to_file, fro_file, item)
       else:
         to_item = item
 
-      if not isinstance(item, str) or not item.startswith('-'):
+      if not (type(item) is str and item.startswith('-')):
         # Any string that doesn't begin with a "-" is a singleton - it can
         # only appear once in a list, to be enforced by the list merge append
         # or prepend.
         singleton = True
-    elif isinstance(item, dict):
+    elif type(item) is dict:
       # Make a copy of the dictionary, continuing to look for paths to fix.
       # The other intelligent aspects of merge processing won't apply because
       # item is being merged into an empty dict.
       to_item = {}
       MergeDicts(to_item, item, to_file, fro_file)
-    elif isinstance(item, list):
+    elif type(item) is list:
       # Recurse, making a copy of the list.  If the list contains any
       # descendant dicts, path fixing will occur.  Note that here, custom
       # values for is_paths and append are dropped; those are only to be
@@ -2080,10 +2075,10 @@ def MergeDicts(to, fro, to_file, fro_file):
     # modified.
     if k in to:
       bad_merge = False
-      if isinstance(v, str) or isinstance(v, int):
-        if not (isinstance(to[k], str) or isinstance(to[k], int)):
+      if type(v) in (str, int):
+        if type(to[k]) not in (str, int):
           bad_merge = True
-      elif v.__class__ != to[k].__class__:
+      elif type(v) is not type(to[k]):
         bad_merge = True
 
       if bad_merge:
@@ -2091,19 +2086,19 @@ def MergeDicts(to, fro, to_file, fro_file):
             'Attempt to merge dict value of type ' + v.__class__.__name__ + \
             ' into incompatible type ' + to[k].__class__.__name__ + \
             ' for key ' + k
-    if isinstance(v, str) or isinstance(v, int):
+    if type(v) in (str, int):
       # Overwrite the existing value, if any.  Cheap and easy.
       is_path = IsPathSection(k)
       if is_path:
         to[k] = MakePathRelative(to_file, fro_file, v)
       else:
         to[k] = v
-    elif isinstance(v, dict):
+    elif type(v) is dict:
       # Recurse, guaranteeing copies will be made of objects that require it.
       if not k in to:
         to[k] = {}
       MergeDicts(to[k], v, to_file, fro_file)
-    elif isinstance(v, list):
+    elif type(v) is list:
       # Lists in dicts can be merged with different policies, depending on
       # how the key in the "from" dict (k, the from-key) is written.
       #
@@ -2146,7 +2141,7 @@ def MergeDicts(to, fro, to_file, fro_file):
           # If the key ends in "?", the list will only be merged if it doesn't
           # already exist.
           continue
-        if not isinstance(to[list_base], list):
+        elif type(to[list_base]) is not list:
           # This may not have been checked above if merging in a list with an
           # extension character.
           raise TypeError, \
@@ -2310,7 +2305,7 @@ def ProcessListFiltersInDict(name, the_dict):
     if operation != '!' and operation != '/':
       continue
 
-    if not isinstance(value, list):
+    if type(value) is not list:
       raise ValueError, name + ' key ' + key + ' must be list, not ' + \
                         value.__class__.__name__
 
@@ -2322,7 +2317,7 @@ def ProcessListFiltersInDict(name, the_dict):
       del_lists.append(key)
       continue
 
-    if not isinstance(the_dict[list_key], list):
+    if type(the_dict[list_key]) is not list:
       value = the_dict[list_key]
       raise ValueError, name + ' key ' + list_key + \
                         ' must be list, not ' + \
@@ -2424,17 +2419,17 @@ def ProcessListFiltersInDict(name, the_dict):
 
   # Now recurse into subdicts and lists that may contain dicts.
   for key, value in the_dict.iteritems():
-    if isinstance(value, dict):
+    if type(value) is dict:
       ProcessListFiltersInDict(key, value)
-    elif isinstance(value, list):
+    elif type(value) is list:
       ProcessListFiltersInList(key, value)
 
 
 def ProcessListFiltersInList(name, the_list):
   for item in the_list:
-    if isinstance(item, dict):
+    if type(item) is dict:
       ProcessListFiltersInDict(name, item)
-    elif isinstance(item, list):
+    elif type(item) is list:
       ProcessListFiltersInList(name, item)
 
 
@@ -2552,7 +2547,7 @@ def ValidateRunAsInTarget(target, target_dict, build_file):
   run_as = target_dict.get('run_as')
   if not run_as:
     return
-  if not isinstance(run_as, dict):
+  if type(run_as) is not dict:
     raise GypError("The 'run_as' in target %s from file %s should be a "
                    "dictionary." %
                    (target_name, build_file))
@@ -2561,17 +2556,17 @@ def ValidateRunAsInTarget(target, target_dict, build_file):
     raise GypError("The 'run_as' in target %s from file %s must have an "
                    "'action' section." %
                    (target_name, build_file))
-  if not isinstance(action, list):
+  if type(action) is not list:
     raise GypError("The 'action' for 'run_as' in target %s from file %s "
                    "must be a list." %
                    (target_name, build_file))
   working_directory = run_as.get('working_directory')
-  if working_directory and not isinstance(working_directory, str):
+  if working_directory and type(working_directory) is not str:
     raise GypError("The 'working_directory' for 'run_as' in target %s "
                    "in file %s should be a string." %
                    (target_name, build_file))
   environment = run_as.get('environment')
-  if environment and not isinstance(environment, dict):
+  if environment and type(environment) is not dict:
     raise GypError("The 'environment' for 'run_as' in target %s "
                    "in file %s should be a dictionary." %
                    (target_name, build_file))
@@ -2601,17 +2596,17 @@ def TurnIntIntoStrInDict(the_dict):
   # Use items instead of iteritems because there's no need to try to look at
   # reinserted keys and their associated values.
   for k, v in the_dict.items():
-    if isinstance(v, int):
+    if type(v) is int:
       v = str(v)
       the_dict[k] = v
-    elif isinstance(v, dict):
+    elif type(v) is dict:
       TurnIntIntoStrInDict(v)
-    elif isinstance(v, list):
+    elif type(v) is list:
       TurnIntIntoStrInList(v)
 
-    if isinstance(k, int):
-      the_dict[str(k)] = v
+    if type(k) is int:
       del the_dict[k]
+      the_dict[str(k)] = v
 
 
 def TurnIntIntoStrInList(the_list):
@@ -2619,11 +2614,11 @@ def TurnIntIntoStrInList(the_list):
   """
   for index in xrange(0, len(the_list)):
     item = the_list[index]
-    if isinstance(item, int):
+    if type(item) is int:
       the_list[index] = str(item)
-    elif isinstance(item, dict):
+    elif type(item) is dict:
       TurnIntIntoStrInDict(item)
-    elif isinstance(item, list):
+    elif type(item) is list:
       TurnIntIntoStrInList(item)
 
 
