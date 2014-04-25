@@ -304,6 +304,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   // Verifies that the client and server connections were both free of packets
   // being discarded, based on connection stats.
+  // Calls server_thread_ Pause() and Resume(), which may only be called once
+  // per test.
   void VerifyCleanConnection(bool had_packet_loss) {
     QuicConnectionStats client_stats =
         client_->client()->session()->connection()->GetStats();
@@ -314,6 +316,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     EXPECT_EQ(0u, client_stats.packets_dropped);
     EXPECT_EQ(client_stats.packets_received, client_stats.packets_processed);
 
+    server_thread_->Pause();
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     ASSERT_EQ(1u, dispatcher->session_map().size());
@@ -326,6 +329,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // TODO(ianswett): Restore the check for packets_dropped equals 0.
     // The expect for packets received is equal to packets processed fails
     // due to version negotiation packets.
+    server_thread_->Resume();
   }
 
   IPEndPoint server_address_;
