@@ -237,11 +237,11 @@ bool RenderLayerCompositor::canRender3DTransforms() const
 
 void RenderLayerCompositor::setCompositingLayersNeedRebuild()
 {
-    // FIXME: crbug,com/332248 ideally this could be merged with setNeedsCompositingUpdate().
+    // FIXME: crbug.com/332248 ideally this could be merged with setNeedsCompositingUpdate().
+    // FIXME: We can remove the staleInCompositingMode check once we get rid of the
+    // forceCompositingMode setting.
     if (staleInCompositingMode())
         m_compositingLayersNeedRebuild = true;
-    if (!lifecycle().isActive())
-        return;
     page()->animator().scheduleVisualUpdate();
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
