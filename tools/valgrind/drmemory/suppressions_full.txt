@@ -2087,3 +2087,12 @@ name=bug_364146
 ...
 v8.dll!*
 net_with_v8.dll!net::ProxyResolverV8::Context::*
+
+UNINITIALIZED READ
+name=bug_334448
+*!CLD2::UTF8GenericReplaceInternal
+*!CLD2::UTF8GenericReplace
+*!CLD2::ScriptScanner::LowerScriptSpan
+*!CLD2::ScriptScanner::GetOneScriptSpanLower
+*!CLD2::DetectLanguageSummaryV2
+*!CLD2::DetectLanguageSummary
