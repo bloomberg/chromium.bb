@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/system/message_pipe_endpoint.h"
 
 namespace mojo {
@@ -290,12 +289,7 @@ void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
 
 void Channel::OnFatalError(FatalError fatal_error) {
   LOG(ERROR) << "RawChannel fatal error (type " << fatal_error << ")";
-  // TODO(vtl): We have some nested-deletion bugs on Windows, so this crashes.
-#if defined(OS_WIN)
-  LOG(ERROR) << "Not shutting down due Windows-only bug";
-#else
   Shutdown();
-#endif
 }
 
 bool Channel::ValidateReadMessage(const MessageInTransit::View& message_view) {
