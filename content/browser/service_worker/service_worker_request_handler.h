@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REQUEST_HANDLER_H_
 
 #include "base/basictypes.h"
-
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
@@ -24,9 +23,8 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
-class ServiceWorkerRegistration;
-class ServiceWorkerURLRequestJob;
 
+// Abstract base class for routing network requests to ServiceWorkers.
 // Created one per URLRequest and attached to each request.
 class CONTENT_EXPORT ServiceWorkerRequestHandler
     : public base::SupportsUserData::Data {
@@ -56,33 +54,19 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   virtual ~ServiceWorkerRequestHandler();
 
   // Called via custom URLRequestJobFactory.
-  net::URLRequestJob* MaybeCreateJob(
+  virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate);
+      net::NetworkDelegate* network_delegate) = 0;
 
- private:
-  typedef ServiceWorkerRequestHandler self;
-
+ protected:
   ServiceWorkerRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ResourceType::Type resource_type);
 
-  // For main resource case.
-  void PrepareForMainResource(const GURL& url);
-  void DidLookupRegistrationForMainResource(
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
-
-  // For sub resource case.
-  void PrepareForSubResource();
-
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   ResourceType::Type resource_type_;
-  scoped_refptr<ServiceWorkerURLRequestJob> job_;
-
-  base::WeakPtrFactory<ServiceWorkerRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);
 };

@@ -20,13 +20,17 @@ namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
+class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 
 // This class is the browser-process representation of a serice worker
 // provider. There is a provider per document and the lifetime of this
 // object is tied to the lifetime of its document in the renderer process.
-// This class holds service worker state this is scoped to an individual
+// This class holds service worker state that is scoped to an individual
 // document.
+//
+// Note this class can also host a running service worker, in which
+// case it will observe resource loads made directly by the service worker.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
@@ -42,6 +46,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return script_client_thread_ids_;
   }
 
+  bool IsHostToRunningServiceWorker() {
+    return running_hosted_version_ != NULL;
+  }
+
   // The service worker version that corresponds with
   // navigator.serviceWorker.active for our document.
   ServiceWorkerVersion* active_version() const {
@@ -54,10 +62,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return pending_version_.get();
   }
 
-  // The version, if any, that this provider is providing resource loads for.
-  // This host observes resource loads made by the serviceworker itself.
-  ServiceWorkerVersion* hosted_version() const {
-    return hosted_version_.get();
+  // The running version, if any, that this provider is providing resource
+  // loads for.
+  ServiceWorkerVersion* running_hosted_version() const {
+    return running_hosted_version_.get();
   }
 
   void set_document_url(const GURL& url) { document_url_ = url; }
@@ -79,9 +87,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // our process state. That would be indicative of a bad IPC message.
   bool SetHostedVersionId(int64 versions_id);
 
-  // Returns true if this provider host should handle requests for
-  // |resource_type|.
-  bool ShouldHandleRequest(ResourceType::Type resource_type) const;
+  // Returns a handler for a request, the handler may return NULL if
+  // the request doesn't require special handling.
+  scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
+      ResourceType::Type resource_type);
 
  private:
   const int process_id_;
@@ -90,7 +99,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   std::set<int> script_client_thread_ids_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> pending_version_;
-  scoped_refptr<ServiceWorkerVersion> hosted_version_;
+  scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
 
