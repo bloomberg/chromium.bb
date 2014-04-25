@@ -60,7 +60,11 @@ EXTRA_ENV = {
                   # Give an error if any TEXTRELs occur.
                   '-z text ' +
                   '--build-id ' +
-                  '${!USE_IRT ? --rosegment-gap=32}',
+                  # Give non-IRT builds 12MB of text before starting rodata
+                  # instead of the larger default gap. The gap cannot be
+                  # too small (e.g., 0) because sel_ldr requires space for
+                  # adding a halt sled.
+                  '${!USE_IRT ? --rosegment-gap=0xc00000}',
 
   'LD_EMUL'        : '${LD_EMUL_%BASE_ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
