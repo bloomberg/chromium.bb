@@ -46,9 +46,24 @@ void ActiveAnimations::dispose()
     m_animations.clear();
 }
 
+void ActiveAnimations::addPlayer(AnimationPlayer* player)
+{
+    ++m_players.add(player, 0).storedValue->value;
+}
+
+void ActiveAnimations::removePlayer(AnimationPlayer* player)
+{
+    AnimationPlayerCountedSet::iterator it = m_players.find(player);
+    ASSERT(it != m_players.end());
+    ASSERT(it->value > 0);
+    --it->value;
+    if (!it->value)
+        m_players.remove(it);
+}
+
 void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
 {
-    for (AnimationPlayerSet::const_iterator it = m_players.begin(); it != players().end(); ++it) {
+    for (AnimationPlayerCountedSet::const_iterator it = m_players.begin(); it != m_players.end(); ++it) {
         const AnimationPlayer& player = *it->key;
         ASSERT(player.source());
         // FIXME: Needs to consider AnimationGroup once added.
@@ -74,7 +89,7 @@ void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
 
 void ActiveAnimations::cancelAnimationOnCompositor()
 {
-    for (AnimationPlayerSet::iterator it = m_players.begin(); it != players().end(); ++it)
+    for (AnimationPlayerCountedSet::iterator it = m_players.begin(); it != m_players.end(); ++it)
         it->key->cancelAnimationOnCompositor();
 }
 

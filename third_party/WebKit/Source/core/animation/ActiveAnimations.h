@@ -64,10 +64,11 @@ public:
     CSSAnimations& cssAnimations() { return m_cssAnimations; }
     const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
 
-    typedef HashCountedSet<AnimationPlayer*> AnimationPlayerSet;
+    typedef HashMap<AnimationPlayer*, int> AnimationPlayerCountedSet;
     // AnimationPlayers which have animations targeting this element.
-    const AnimationPlayerSet& players() const { return m_players; }
-    AnimationPlayerSet& players() { return m_players; }
+    const AnimationPlayerCountedSet& players() const { return m_players; }
+    void addPlayer(AnimationPlayer*);
+    void removePlayer(AnimationPlayer*);
 
     bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty() && m_animations.isEmpty(); }
 
@@ -86,7 +87,7 @@ private:
 
     AnimationStack m_defaultStack;
     CSSAnimations m_cssAnimations;
-    AnimationPlayerSet m_players;
+    AnimationPlayerCountedSet m_players;
     bool m_animationStyleChange;
 
     // This is to avoid a reference cycle that keeps Elements alive and

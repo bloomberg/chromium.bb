@@ -700,9 +700,10 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
     RefPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
     RefPtr<AnimationPlayer> player = timeline->createAnimationPlayer(animation.get());
     timeline->serviceAnimations(AnimationPlayer::UpdateForAnimationFrame);
-    EXPECT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
+    EXPECT_EQ(1, element->activeAnimations()->players().find(player.get())->value);
 
     player.release();
+    EXPECT_EQ(0, element->activeAnimations()->players().find(player.get())->value);
     EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
 }
 
