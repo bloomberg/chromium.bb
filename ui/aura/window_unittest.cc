@@ -2244,7 +2244,8 @@ TEST_F(WindowTest, RootWindowSetWhenReparenting) {
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   ui::ScopedLayerAnimationSettings settings1(child.layer()->GetAnimator());
   settings1.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
-  child.SetBounds(gfx::Rect(35, 35, 100, 100));
+  gfx::Rect new_bounds(gfx::Rect(35, 35, 50, 50));
+  child.SetBounds(new_bounds);
 
   BoundsChangedWindowObserver observer;
   child.AddObserver(&observer);
@@ -2254,7 +2255,11 @@ TEST_F(WindowTest, RootWindowSetWhenReparenting) {
   parent2.AddChild(&child);
   EXPECT_TRUE(observer.root_set());
 
-  // TODO(varkha): Check that the target bounds didn't change after reparenting.
+  // Animations should stop and the bounds should be as set before the |child|
+  // got reparented.
+  EXPECT_EQ(new_bounds.ToString(), child.GetTargetBounds().ToString());
+  EXPECT_EQ(new_bounds.ToString(), child.bounds().ToString());
+  EXPECT_EQ("55,55 50x50", child.GetBoundsInRootWindow().ToString());
 }
 
 TEST_F(WindowTest, OwnedByParentFalse) {

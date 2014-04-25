@@ -30,7 +30,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_target_iterator.h"
-#include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -1008,6 +1007,10 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
 }
 
 void Window::RemoveChildImpl(Window* child, Window* new_parent) {
+  // Stop (and complete) an ongoing animation to make sure bounds are updated
+  // before updating the layers bounds again.
+  if (child->layer() && child->layer()->GetAnimator())
+    child->layer()->GetAnimator()->StopAnimating();
   if (layout_manager_)
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
