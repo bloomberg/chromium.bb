@@ -342,8 +342,8 @@ class GitWrapper(SCMWrapper):
     if revision.startswith('refs/'):
       rev_type = "branch"
     elif revision.startswith(self.remote + '/'):
-      # For compatibility with old naming, translate 'origin' to 'refs/heads'
-      revision = revision.replace(self.remote + '/', 'refs/heads/')
+      # Rewrite remote refs to their local equivalents.
+      revision = 'refs/remotes/' + revision
       rev_type = "branch"
     else:
       # hash is also a tag, only make a distinction at checkout
