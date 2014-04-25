@@ -59,4 +59,22 @@
     });
 }());
 
+(function() {
+    var t = async_test('Registering non-existent script');
+    t.step(function() {
+        navigator.serviceWorker.register(
+            'resources/no-such-worker.js'
+        ).then(
+            t.step_func(function(worker) {
+                assert_unreached('Registration of non-existent script should fail.');
+            }),
+            t.step_func(function(reason) {
+                assert_equals(reason.name, 'AbortError',
+                             'Registration of non-existent script should fail.');
+                t.done();
+            })
+        );
+    });
+}());
+
 </script>

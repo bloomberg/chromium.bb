@@ -1,5 +1,5 @@
 
 PASS Unregistering out of origin 
-FAIL Unregistering with no existing registration assert_unreached: unregistering with no existing registration should not fail: DisabledError Reached unreachable code
+FAIL Unregistering with no existing registration assert_unreached: unregistering with no existing registration should not fail: NotSupportedError Reached unreachable code
 FAIL Register then unregister assert_unreached: registration should succeed. Reached unreachable code
 

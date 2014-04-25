@@ -31,27 +31,34 @@
 #include "config.h"
 #include "ServiceWorkerError.h"
 
+#include "core/dom/ExceptionCode.h"
+
 using blink::WebServiceWorkerError;
 namespace WebCore {
 
-String ServiceWorkerError::errorString(WebServiceWorkerError::ErrorType type)
+// static
+PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw)
 {
-    switch (type) {
+    OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
+    switch (webError->errorType) {
     case WebServiceWorkerError::DisabledError:
-        return "DisabledError";
+        return DOMException::create(NotSupportedError, "Service Worker support is disabled.");
     case WebServiceWorkerError::SecurityError:
-        return "SecurityError";
+        return DOMException::create(SecurityError, "The Service Worker security policy prevented an action.");
     case WebServiceWorkerError::InstallError:
-        return "InstallError";
+        // FIXME: Introduce new InstallError type to ExceptionCodes?
+        return DOMException::create(AbortError, "The Service Worker installation failed.");
     case WebServiceWorkerError::ActivateError:
-        return "ActivateError";
+        // Not currently returned as a promise rejection.
+        // FIXME: Introduce new ActivateError type to ExceptionCodes?
+        return DOMException::create(AbortError, "The Service Worker activation failed.");
     case WebServiceWorkerError::NotFoundError:
-        return "NotFoundError";
+        return DOMException::create(NotFoundError, "The specified Service Worker resource was not found.");
     case WebServiceWorkerError::UnknownError:
-        return "UnknownError";
+        return DOMException::create(UnknownError, "An unknown error occurred within Service Worker.");
     }
     ASSERT_NOT_REACHED();
-    return String();
+    return DOMException::create(UnknownError);
 }
 
-}
+} // namespace WebCore

@@ -31,7 +31,7 @@
 #ifndef ServiceWorkerError_h
 #define ServiceWorkerError_h
 
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerError.h"
 #include "wtf/PassOwnPtr.h"
@@ -44,15 +44,9 @@ class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorkerError WebType;
-    static PassRefPtrWillBeRawPtr<DOMError> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw)
-    {
-        OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
-        RefPtrWillBeRawPtr<DOMError> error = DOMError::create(errorString(webError->errorType), webError->message);
-        return error.release();
-    }
+    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw);
 
 private:
-    static String errorString(blink::WebServiceWorkerError::ErrorType);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerError);
     ServiceWorkerError() WTF_DELETED_FUNCTION;
 };
