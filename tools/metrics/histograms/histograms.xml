@@ -29769,6 +29769,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebCore.WebSocket.SendType" enum="WebSocketSendType">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    Count the number of send() method calls on WebSockets for each argument
+    type.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.XHR.send.ArrayBufferOrView"
     enum="XMLHttpRequestSendArrayBufferOrView">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -42156,6 +42166,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="WebSocketPerMessageDeflateContextTakeOverMode" type="int">
   <int value="0" label="DoNotTakeOverContext"/>
   <int value="1" label="TakeOverContext"/>
+</enum>
+
+<enum name="WebSocketSendType" type="int">
+  <int value="0" label="String"/>
+  <int value="1" label="ArrayBuffer"/>
+  <int value="2" label="ArrayBufferView"/>
+  <int value="3" label="Blob"/>
 </enum>
 
 <enum name="WiFiApMode" type="int">
