@@ -33,6 +33,8 @@
 #endif  // defined(NDEBUG)
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
+namespace content {
+
 using blink::WebString;
 
 // These are the (fake) key systems that are registered for these tests.
@@ -49,16 +51,44 @@ const char kExternalClearKey[] = "org.chromium.externalclearkey";
 
 const char kAudioWebM[] = "audio/webm";
 const char kVideoWebM[] = "video/webm";
-const char kVorbis[] = "vorbis";
-const char kVP8[] = "vp8";
-const char kVP80[] = "vp8.0";
-
 const char kAudioFoo[] = "audio/foo";
 const char kVideoFoo[] = "video/foo";
-const char kFooAudioCodec[] = "fooaudio";
-const char kFooVideoCodec[] = "foovideo";
 
-namespace content {
+// Pick some arbitrary bit fields as long as they are not in conflict with the
+// real ones.
+enum TestCodec {
+  TEST_CODEC_FOO_AUDIO = 1 << 10,  // An audio codec for foo container.
+  TEST_CODEC_FOO_AUDIO_ALL = TEST_CODEC_FOO_AUDIO,
+  TEST_CODEC_FOO_VIDEO = 1 << 11,  // A video codec for foo container.
+  TEST_CODEC_FOO_VIDEO_ALL = TEST_CODEC_FOO_VIDEO,
+  TEST_CODEC_FOO_ALL = TEST_CODEC_FOO_AUDIO_ALL | TEST_CODEC_FOO_VIDEO_ALL
+};
+
+COMPILE_ASSERT((TEST_CODEC_FOO_ALL & EME_CODEC_ALL) == EME_CODEC_NONE,
+                test_codec_masks_should_only_use_invalid_codec_masks);
+
+// Adds test container and codec masks.
+// This function must be called after SetContentClient() is called.
+// More details: AddXxxMask() will create KeySystems if it hasn't been created.
+// During KeySystems's construction GetContentClient() will be used to add key
+// systems. In test code, the content client is set by SetContentClient().
+// Therefore, SetContentClient() must be called before this function to avoid
+// access violation.
+static void AddContainerAndCodecMasksForTest() {
+  // Since KeySystems is a singleton. Make sure we only add test container and
+  // codec masks once per process.
+  static bool is_test_masks_added = false;
+
+  if (is_test_masks_added)
+    return;
+
+  AddContainerMask("audio/foo", TEST_CODEC_FOO_AUDIO_ALL);
+  AddContainerMask("video/foo", TEST_CODEC_FOO_ALL);
+  AddCodecMask("fooaudio", TEST_CODEC_FOO_AUDIO);
+  AddCodecMask("foovideo", TEST_CODEC_FOO_VIDEO);
+
+  is_test_masks_added = true;
+}
 
 class TestContentRendererClient : public ContentRendererClient {
   virtual void AddKeySystems(
@@ -68,35 +98,18 @@ class TestContentRendererClient : public ContentRendererClient {
 void TestContentRendererClient::AddKeySystems(
     std::vector<content::KeySystemInfo>* key_systems) {
   KeySystemInfo aes(kUsesAes);
-
-  aes.supported_types[kAudioWebM].insert(kVorbis);
-  aes.supported_types[kVideoWebM] = aes.supported_types[kAudioWebM];
-  aes.supported_types[kVideoWebM].insert(kVP8);
-  aes.supported_types[kVideoWebM].insert(kVP80);
-  aes.supported_types[kAudioFoo].insert(kFooAudioCodec);
-  aes.supported_types[kVideoFoo] = aes.supported_types[kAudioFoo];
-  aes.supported_types[kVideoFoo].insert(kFooVideoCodec);
-
+  aes.supported_codecs = EME_CODEC_WEBM_ALL;
+  aes.supported_codecs |= TEST_CODEC_FOO_ALL;
   aes.use_aes_decryptor = true;
-
   key_systems->push_back(aes);
 
   KeySystemInfo ext(kExternal);
-
-  ext.supported_types[kAudioWebM].insert(kVorbis);
-  ext.supported_types[kVideoWebM] = ext.supported_types[kAudioWebM];
-  ext.supported_types[kVideoWebM].insert(kVP8);
-  ext.supported_types[kVideoWebM].insert(kVP80);
-  ext.supported_types[kAudioFoo].insert(kFooAudioCodec);
-  ext.supported_types[kVideoFoo] = ext.supported_types[kAudioFoo];
-  ext.supported_types[kVideoFoo].insert(kFooVideoCodec);
-
+  ext.supported_codecs = EME_CODEC_WEBM_ALL;
+  ext.supported_codecs |= TEST_CODEC_FOO_ALL;
   ext.parent_key_system = kExternalParent;
-
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";
 #endif  // defined(ENABLE_PEPPER_CDMS)
-
   key_systems->push_back(ext);
 }
 
@@ -137,6 +150,10 @@ class KeySystemsTest : public testing::Test {
     // does not get created to set the global variable in the new process.
     SetContentClient(&test_content_client_);
     SetRendererClientForTesting(&content_renderer_client_);
+  }
+
+  virtual void SetUp() OVERRIDE {
+    AddContainerAndCodecMasksForTest();
   }
 
   virtual ~KeySystemsTest() {

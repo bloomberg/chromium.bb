@@ -7,49 +7,24 @@
 
 #include <vector>
 
+#include "content/public/common/eme_codec.h"
 #include "ipc/ipc_message_macros.h"
-
-// Singly-included section for enums and custom IPC traits.
-#ifndef CHROME_COMMON_ENCRYPTED_MEDIA_MESSAGES_ANDROID_H
-#define CHROME_COMMON_ENCRYPTED_MEDIA_MESSAGES_ANDROID_H
-
-namespace android {
-
-// Defines bitmask values used to specify supported codecs.
-// Each value represents a codec within a specific container.
-enum SupportedCodecs {
-  NO_CODECS = 0,
-  WEBM_VORBIS = 1 << 0,
-  WEBM_VP8 = 1 << 1,
-  WEBM_CODECS = (WEBM_VORBIS | WEBM_VP8),
-  MP4_AAC = 1 << 2,
-  MP4_AVC1 = 1 << 3,
-  MP4_CODECS = (MP4_AAC | MP4_AVC1),
-  ALL_CODECS = (WEBM_CODECS | MP4_CODECS),
-  INVALID_CODECS = ~ALL_CODECS
-};
-
-}  // namespace android
-
-#endif  // CHROME_COMMON_ENCRYPTED_MEDIA_MESSAGES_ANDROID_H
-
 
 #define IPC_MESSAGE_START EncryptedMediaMsgStart
 
-IPC_ENUM_TRAITS(android::SupportedCodecs)
-
 IPC_STRUCT_BEGIN(SupportedKeySystemRequest)
   IPC_STRUCT_MEMBER(std::string, key_system)
-  IPC_STRUCT_MEMBER(android::SupportedCodecs, codecs,
-                    android::NO_CODECS)
+  IPC_STRUCT_MEMBER(content::SupportedCodecs, codecs, content::EME_CODEC_NONE)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(SupportedKeySystemResponse)
   IPC_STRUCT_MEMBER(std::string, key_system)
-  IPC_STRUCT_MEMBER(android::SupportedCodecs, compositing_codecs,
-                    android::NO_CODECS)
-  IPC_STRUCT_MEMBER(android::SupportedCodecs, non_compositing_codecs,
-                    android::NO_CODECS)
+  IPC_STRUCT_MEMBER(content::SupportedCodecs,
+                    compositing_codecs,
+                    content::EME_CODEC_NONE)
+  IPC_STRUCT_MEMBER(content::SupportedCodecs,
+                    non_compositing_codecs,
+                    content::EME_CODEC_NONE)
 IPC_STRUCT_END()
 
 // Messages sent from the renderer to the browser.

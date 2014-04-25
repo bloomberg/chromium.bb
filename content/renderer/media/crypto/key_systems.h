@@ -51,6 +51,12 @@ CONTENT_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
 #endif
 
+#if defined(UNIT_TEST)
+// Helper functions to add container/codec types for testing purposes.
+CONTENT_EXPORT void AddContainerMask(const std::string& container, uint32 mask);
+CONTENT_EXPORT void AddCodecMask(const std::string& codec, uint32 mask);
+#endif  // defined(UNIT_TEST)
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_H_

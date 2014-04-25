@@ -12,6 +12,7 @@
 #include "media/base/android/media_drm_bridge.h"
 
 using content::BrowserThread;
+using content::SupportedCodecs;
 using media::MediaCodecBridge;
 using media::MediaDrmBridge;
 
@@ -25,26 +26,26 @@ enum CodecType {
 };
 
 struct CodecInfo {
-  android::SupportedCodecs codec;
+  SupportedCodecs codec;
   CodecType codec_type;
   const char* codec_name;
   const char* container_mime_type;
 };
 
 const CodecInfo kCodecsToQuery[] = {
-  {android::WEBM_VORBIS, CODEC_AUDIO, "vorbis", "video/webm"},
-  {android::WEBM_VP8, CODEC_VIDEO, "vp8", "video/webm"},
+  {content::EME_CODEC_WEBM_VORBIS, CODEC_AUDIO, "vorbis", "video/webm"},
+  {content::EME_CODEC_WEBM_VP8, CODEC_VIDEO, "vp8", "video/webm"},
 #if defined(USE_PROPRIETARY_CODECS)
-  {android::MP4_AAC, CODEC_AUDIO, "mp4a", "video/mp4"},
-  {android::MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"}
+  {content::EME_CODEC_MP4_AAC, CODEC_AUDIO, "mp4a", "video/mp4"},
+  {content::EME_CODEC_MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
-static android::SupportedCodecs GetSupportedCodecs(
+static SupportedCodecs GetSupportedCodecs(
     const SupportedKeySystemRequest& request,
     bool video_must_be_compositable) {
   const std::string& key_system = request.key_system;
-  android::SupportedCodecs supported_codecs = android::NO_CODECS;
+  SupportedCodecs supported_codecs = content::EME_CODEC_NONE;
 
   for (size_t i = 0; i < arraysize(kCodecsToQuery); ++i) {
     const CodecInfo& info = kCodecsToQuery[i];
@@ -56,8 +57,7 @@ static android::SupportedCodecs GetSupportedCodecs(
         MediaDrmBridge::IsKeySystemSupportedWithType(
             key_system, info.container_mime_type) &&
         MediaCodecBridge::CanDecode(info.codec_name, is_secure)) {
-      supported_codecs = static_cast<android::SupportedCodecs>(
-          supported_codecs | info.codec);
+      supported_codecs |= info.codec;
     }
   }
 
@@ -104,8 +104,7 @@ void EncryptedMediaMessageFilterAndroid::OnGetSupportedKeySystems(
   if (!MediaDrmBridge::IsKeySystemSupported(request.key_system))
     return;
 
-  DCHECK_EQ(request.codecs & android::INVALID_CODECS, android::NO_CODECS)
-      << "unrecognized codec";
+  DCHECK(request.codecs & content::EME_CODEC_ALL) << "unrecognized codec";
   response->key_system = request.key_system;
   // TODO(qinmin): check composition is supported or not.
   response->compositing_codecs = GetSupportedCodecs(request, true);

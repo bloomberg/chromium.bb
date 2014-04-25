@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "content/common/content_export.h"
+#include "content/public/common/eme_codec.h"
 
 // Definitions:
 // * Key system
@@ -32,22 +33,13 @@ namespace content {
 // Contains information about an EME key system as well as how to instantiate
 // the corresponding CDM.
 struct CONTENT_EXPORT KeySystemInfo {
-  // Represents the set of codecs supported within a container.
-  typedef base::hash_set<std::string> CodecSet;
-
-  // Represents container-codec combinations. The CodecSet may contain zero
-  // or more codecs.
-  typedef std::map<std::string, CodecSet> ContainerCodecsMap;
-
   explicit KeySystemInfo(const std::string& key_system);
   ~KeySystemInfo();
 
   std::string key_system;
 
-  // Specifies container and codec combinations supported by |key_system|.
-  // Multiple codecs may be listed for each container.
-  // In all cases, the container without a codec is also always supported.
-  ContainerCodecsMap supported_types;
+  // Specifies codecs supported by |key_system|.
+  SupportedCodecs supported_codecs;
 
   // A hierarchical parent for |key_system|. This value can be used to check
   // supported types but cannot be used to instantiate a MediaKeys object.

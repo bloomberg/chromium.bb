@@ -28,20 +28,7 @@
 #endif
 
 using content::KeySystemInfo;
-
-const char kAudioWebM[] = "audio/webm";
-const char kVideoWebM[] = "video/webm";
-const char kVorbis[] = "vorbis";
-const char kVP8[] = "vp8";
-const char kVP80[] = "vp8.0";
-
-#if defined(USE_PROPRIETARY_CODECS)
-const char kAudioMp4[] = "audio/mp4";
-const char kVideoMp4[] = "video/mp4";
-const char kMp4a[] = "mp4a";
-const char kAvc1[] = "avc1";
-const char kAvc3[] = "avc3";
-#endif  // defined(USE_PROPRIETARY_CODECS)
+using content::SupportedCodecs;
 
 #if defined(ENABLE_PEPPER_CDMS)
 static bool IsPepperCdmRegistered(
@@ -85,15 +72,9 @@ static void AddExternalClearKey(
 
   KeySystemInfo info(kExternalClearKeyKeySystem);
 
-  info.supported_types[kAudioWebM].insert(kVorbis);
-  info.supported_types[kVideoWebM] = info.supported_types[kAudioWebM];
-  info.supported_types[kVideoWebM].insert(kVP8);
-  info.supported_types[kVideoWebM].insert(kVP80);
+  info.supported_codecs = content::EME_CODEC_WEBM_ALL;
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_types[kAudioMp4].insert(kMp4a);
-  info.supported_types[kVideoMp4] = info.supported_types[kAudioMp4];
-  info.supported_types[kVideoMp4].insert(kAvc1);
-  info.supported_types[kVideoMp4].insert(kAvc3);
+  info.supported_codecs |= content::EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
   info.pepper_type = kExternalClearKeyPepperType;
@@ -130,42 +111,7 @@ enum WidevineCdmType {
 #endif
 };
 
-// Defines bitmask values used to specify supported codecs.
-// Each value represents a codec within a specific container.
-// The mask values are stored in a SupportedCodecs.
-typedef uint32 SupportedCodecs;
-enum SupportedCodecMasks {
-  NO_CODECS = 0,
-  WEBM_VORBIS = 1 << 0,
-  WEBM_VP8 = 1 << 1,
-  WEBM_CODECS = (WEBM_VORBIS | WEBM_VP8),
-#if defined(USE_PROPRIETARY_CODECS)
-  MP4_AAC = 1 << 2,
-  MP4_AVC1 = 1 << 3,
-  MP4_CODECS = (MP4_AAC | MP4_AVC1),
-  ALL_CODECS = (WEBM_CODECS | MP4_CODECS),
-#else
-  ALL_CODECS = WEBM_CODECS,
-#endif  // defined(USE_PROPRIETARY_CODECS)
-  INVALID_CODECS = ~ALL_CODECS
-};
-
-#if defined(OS_ANDROID)
-#define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT(static_cast<int>(name) == \
-                 static_cast<int>(android::name), \
-                 mismatching_enums)
-COMPILE_ASSERT_MATCHING_ENUM(NO_CODECS);
-COMPILE_ASSERT_MATCHING_ENUM(WEBM_VORBIS);
-COMPILE_ASSERT_MATCHING_ENUM(WEBM_VP8);
-COMPILE_ASSERT_MATCHING_ENUM(WEBM_CODECS);
-COMPILE_ASSERT_MATCHING_ENUM(MP4_AAC);
-COMPILE_ASSERT_MATCHING_ENUM(MP4_AVC1);
-COMPILE_ASSERT_MATCHING_ENUM(MP4_CODECS);
-COMPILE_ASSERT_MATCHING_ENUM(ALL_CODECS);
-COMPILE_ASSERT_MATCHING_ENUM(INVALID_CODECS);
-#undef COMPILE_ASSERT_MATCHING_ENUM
-#else
+#if !defined(OS_ANDROID)
 static bool IsWidevineHrSupported() {
   // TODO(jrummell): Need to call CheckPlatformState() but it is
   // asynchronous, and needs to be done in the browser.
@@ -206,29 +152,7 @@ static void AddWidevineWithCodecs(
   // TODO(xhwang): A container or an initDataType may be supported even though
   // there are no codecs supported in that container. Fix this when we support
   // initDataType.
-  if (supported_codecs & WEBM_CODECS) {
-    if (supported_codecs & WEBM_VORBIS)
-      info.supported_types[kAudioWebM].insert(kVorbis);
-
-    if (supported_codecs & WEBM_VP8) {
-      info.supported_types[kVideoWebM] = info.supported_types[kAudioWebM];
-      info.supported_types[kVideoWebM].insert(kVP8);
-      info.supported_types[kVideoWebM].insert(kVP80);
-    }
-  }
-
-#if defined(USE_PROPRIETARY_CODECS)
-  if (supported_codecs & MP4_CODECS) {
-    if (supported_codecs & MP4_AAC)
-      info.supported_types[kAudioMp4].insert(kMp4a);
-
-    if (supported_codecs & MP4_AVC1) {
-      info.supported_types[kVideoMp4] = info.supported_types[kAudioMp4];
-      info.supported_types[kVideoMp4].insert(kAvc1);
-      info.supported_types[kVideoMp4].insert(kAvc3);
-    }
-  }
-#endif  // defined(USE_PROPRIETARY_CODECS)
+  info.supported_codecs = supported_codecs;
 
 #if defined(ENABLE_PEPPER_CDMS)
   info.pepper_type = kWidevineCdmPluginMimeType;
@@ -290,17 +214,17 @@ static void AddPepperBasedWidevine(
   std::vector<std::string> codecs;
   GetSupportedCodecs(additional_param_names, additional_param_values, &codecs);
 
-  SupportedCodecs supported_codecs = NO_CODECS;
+  SupportedCodecs supported_codecs = content::EME_CODEC_NONE;
   for (size_t i = 0; i < codecs.size(); ++i) {
     if (codecs[i] == kCdmSupportedCodecVorbis)
-      supported_codecs |= WEBM_VORBIS;
+      supported_codecs |= content::EME_CODEC_WEBM_VORBIS;
     if (codecs[i] == kCdmSupportedCodecVp8)
-      supported_codecs |= WEBM_VP8;
+      supported_codecs |= content::EME_CODEC_WEBM_VP8;
 #if defined(USE_PROPRIETARY_CODECS)
     if (codecs[i] == kCdmSupportedCodecAac)
-      supported_codecs |= MP4_AAC;
+      supported_codecs |= content::EME_CODEC_MP4_AAC;
     if (codecs[i] == kCdmSupportedCodecAvc1)
-      supported_codecs |= MP4_AVC1;
+      supported_codecs |= content::EME_CODEC_MP4_AVC1;
 #endif  // defined(USE_PROPRIETARY_CODECS)
   }
 
@@ -316,24 +240,21 @@ static void AddAndroidWidevine(
   SupportedKeySystemResponse response;
 
   request.key_system = kWidevineKeySystem;
-  request.codecs = static_cast<android::SupportedCodecs>(android::WEBM_CODECS |
-                                                         android::MP4_CODECS);
+  request.codecs = content::EME_CODEC_WEBM_ALL | content::EME_CODEC_MP4_ALL;
   content::RenderThread::Get()->Send(
       new ChromeViewHostMsg_GetSupportedKeySystems(request, &response));
-  DCHECK_EQ(response.compositing_codecs & android::INVALID_CODECS,
-            android::NO_CODECS)
+  DCHECK(response.compositing_codecs & content::EME_CODEC_ALL)
       << "unrecognized codec";
-  DCHECK_EQ(response.non_compositing_codecs & android::INVALID_CODECS,
-            android::NO_CODECS)
+  DCHECK(response.non_compositing_codecs & content::EME_CODEC_ALL)
       << "unrecognized codec";
-  if (response.compositing_codecs != android::NO_CODECS) {
+  if (response.compositing_codecs != content::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
         WIDEVINE,
         static_cast<SupportedCodecs>(response.compositing_codecs),
         concrete_key_systems);
   }
 
-  if (response.non_compositing_codecs != android::NO_CODECS) {
+  if (response.non_compositing_codecs != content::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
         WIDEVINE_HR_NON_COMPOSITING,
         static_cast<SupportedCodecs>(response.non_compositing_codecs),
