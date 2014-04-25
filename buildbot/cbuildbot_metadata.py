@@ -26,7 +26,10 @@ from chromite.lib import parallel
 MAX_PARALLEL = 40
 
 ARCHIVE_ROOT = 'gs://chromeos-image-archive/%(target)s'
-METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT, 'R%(milestone)s*/metadata.json')
+# NOTE: gsutil 3.42 has a bug where '/' is ignored in this context unless it
+#       is listed twice. So we list it twice here for now.
+METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT,
+                                 'R%(milestone)s**//metadata.json')
 LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
 
