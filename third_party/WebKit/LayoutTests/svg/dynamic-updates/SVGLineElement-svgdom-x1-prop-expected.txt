@@ -10,8 +10,18 @@ PASS lineElement.x1.baseVal.value is 10
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 103 15 110 196)
-  (rect 14 14 198 198)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 103.00 15.00 110.00 196.00)
+        (rect 14.00 14.00 198.00 198.00)
+      )
+    )
+  )
 )
 

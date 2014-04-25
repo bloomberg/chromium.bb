@@ -10,8 +10,18 @@ PASS lineElement.getAttribute('x2') is "200"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 13 15 100 196)
-  (rect 14 14 198 198)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 13.00 15.00 100.00 196.00)
+        (rect 14.00 14.00 198.00 198.00)
+      )
+    )
+  )
 )
 

@@ -10,7 +10,17 @@ PASS linearGradientElement.getAttribute('x1') is "200%"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 58 8 200 300)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 58.00 8.00 200.00 300.00)
+      )
+    )
+  )
 )
 
