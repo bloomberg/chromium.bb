@@ -214,9 +214,15 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_NOT_A_FILE);
   } else if (file_info.size < 0 || file_info.size > kuint32max ||
-             request.offset >= file_info.size) {
+             request.offset > file_info.size) {
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_FAILED);
+  } else if (request.offset == file_info.size) {
+    content::BrowserThread::PostTask(content::BrowserThread::IO,
+                                     FROM_HERE,
+                                     base::Bind(request.success_callback,
+                                                file_info, 0u));
+    return;
   }
 
   uint32 bytes_to_read = std::min(
