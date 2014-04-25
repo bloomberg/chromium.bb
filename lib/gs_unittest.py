@@ -318,8 +318,8 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(gs.GSContext().boto_file, self.gsutil_bin)
     self.assertEqual(gs.GSContext(boto_file=self.acl_file).boto_file,
                      self.acl_file)
-    self.assertRaises(gs.GSContextException, gs.GSContext,
-                      boto_file=self.bad_path)
+    self.assertEqual(gs.GSContext(boto_file=self.bad_path).boto_file,
+                     self.bad_path)
 
   def testInitBotoFileEnvError(self):
     """Boto file through env var error."""
@@ -327,12 +327,12 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
     # Check env usage next; no need to cleanup, teardown handles it,
     # and we want the env var to persist for the next part of this test.
     os.environ['BOTO_CONFIG'] = self.bad_path
-    self.assertRaises(gs.GSContextException, gs.GSContext)
+    self.assertEqual(gs.GSContext().boto_file, self.bad_path)
 
   def testInitBotoFileError(self):
     """Test bad boto file."""
-    self.assertRaises(gs.GSContextException, gs.GSContext,
-                      boto_file=self.bad_path)
+    self.assertEqual(gs.GSContext(boto_file=self.bad_path).boto_file,
+                     self.bad_path)
 
   def testInitAclFile(self):
     """Test ACL selection logic in __init__."""
