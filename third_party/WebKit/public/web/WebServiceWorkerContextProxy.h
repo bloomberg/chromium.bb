@@ -54,12 +54,6 @@ public:
     // Once the ServiceWorker has finished handling the sync event
     // didHandleSyncEvent is called on the context client.
     virtual void dispatchSyncEvent(int syncEventID) = 0;
-
-    virtual void resumeWorkerContext() { }
-    virtual void attachDevTools() { }
-    virtual void reattachDevTools(const WebString& savedState) { }
-    virtual void detachDevTools() { }
-    virtual void dispatchDevToolsMessage(const WebString&) { }
 };
 
 } // namespace blink
