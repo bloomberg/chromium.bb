@@ -4,6 +4,7 @@
 
 """A module to add ninja support to cr."""
 
+import multiprocessing
 import os
 
 import cr
@@ -20,10 +21,11 @@ class NinjaBuilder(cr.Builder):
   """An implementation of Builder that uses ninja to do the actual build."""
 
   # Some basic configuration installed if we are enabled.
+  EXTRA_FOR_IO_BOUND_JOBS = 2
   ENABLED = cr.Config.From(
       NINJA_BINARY=os.path.join('{DEPOT_TOOLS}', 'ninja'),
-      NINJA_JOBS=10,
-      NINJA_PROCESSORS=4,
+      NINJA_JOBS=multiprocessing.cpu_count() + EXTRA_FOR_IO_BOUND_JOBS,
+      NINJA_PROCESSORS=multiprocessing.cpu_count(),
       NINJA_BUILD_FILE=os.path.join('{CR_BUILD_DIR}', 'build.ninja'),
       # Don't rename to GOMA_* or Goma will complain: "unkown GOMA_ parameter".
       NINJA_GOMA_LINE='cc = {CR_GOMA_CC} $',
@@ -35,8 +37,7 @@ class NinjaBuilder(cr.Builder):
       GOMA_DIR='{CR_GOMA_DIR}',
       GYP_DEF_gomadir='{CR_GOMA_DIR}',
       GYP_DEF_use_goma=1,
-      NINJA_JOBS=200,
-      NINJA_PROCESSORS=12,
+      NINJA_JOBS=multiprocessing.cpu_count() * 10,
   )
   # A placeholder for the system detected configuration
   DETECTED = cr.Config('DETECTED')
