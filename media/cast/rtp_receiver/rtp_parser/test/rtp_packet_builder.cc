@@ -20,7 +20,6 @@ RtpPacketBuilder::RtpPacketBuilder()
       packet_id_(0),
       max_packet_id_(0),
       reference_frame_id_(0),
-      is_reference_set_(false),
       timestamp_(0),
       sequence_number_(0),
       marker_(false),
@@ -29,7 +28,10 @@ RtpPacketBuilder::RtpPacketBuilder()
 
 void RtpPacketBuilder::SetKeyFrame(bool is_key) { is_key_ = is_key; }
 
-void RtpPacketBuilder::SetFrameId(uint32 frame_id) { frame_id_ = frame_id; }
+void RtpPacketBuilder::SetFrameIds(uint32 frame_id, uint32 reference_frame_id) {
+  frame_id_ = frame_id;
+  reference_frame_id_ = reference_frame_id;
+}
 
 void RtpPacketBuilder::SetPacketId(uint16 packet_id) { packet_id_ = packet_id; }
 
@@ -37,12 +39,6 @@ void RtpPacketBuilder::SetMaxPacketId(uint16 max_packet_id) {
   max_packet_id_ = max_packet_id;
 }
 
-void RtpPacketBuilder::SetReferenceFrameId(uint32 reference_frame_id,
-                                           bool is_set) {
-  is_reference_set_ = is_set;
-  if (is_set)
-    reference_frame_id_ = reference_frame_id;
-}
 void RtpPacketBuilder::SetTimestamp(uint32 timestamp) {
   timestamp_ = timestamp;
 }
@@ -71,12 +67,15 @@ void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
   // Set the first 7 bytes to 0.
   memset(data, 0, kCastRtpHeaderLength);
   base::BigEndianWriter big_endian_writer(reinterpret_cast<char*>(data), 56);
+  const bool includes_specific_frame_reference =
+      (is_key_ && (reference_frame_id_ != frame_id_)) ||
+      (!is_key_ && (reference_frame_id_ != (frame_id_ - 1)));
   big_endian_writer.WriteU8((is_key_ ? 0x80 : 0) |
-                            (is_reference_set_ ? 0x40 : 0));
+                            (includes_specific_frame_reference ? 0x40 : 0));
   big_endian_writer.WriteU8(frame_id_);
   big_endian_writer.WriteU16(packet_id_);
   big_endian_writer.WriteU16(max_packet_id_);
-  if (is_reference_set_) {
+  if (includes_specific_frame_reference) {
     big_endian_writer.WriteU8(reference_frame_id_);
   }
 }

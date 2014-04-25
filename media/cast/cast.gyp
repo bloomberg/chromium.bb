@@ -79,9 +79,6 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)/',
-# TODO(miu): Remove WebRTC dependency (RtpHeader), and then these two deps: 
-        '<(DEPTH)/third_party/',
-        '<(DEPTH)/third_party/webrtc/',
       ],
       'dependencies': [
         'cast_base',
@@ -114,6 +111,8 @@
         'rtp_receiver/receiver_stats.h',
         'rtp_receiver/rtp_receiver.cc',
         'rtp_receiver/rtp_receiver.h',
+        'rtp_receiver/rtp_receiver_defines.cc',
+        'rtp_receiver/rtp_receiver_defines.h',
         'rtp_receiver/rtp_parser/rtp_parser.cc',
         'rtp_receiver/rtp_parser/rtp_parser.h',
         'video_receiver/video_decoder.h',

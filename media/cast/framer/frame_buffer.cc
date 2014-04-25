@@ -28,13 +28,8 @@ void FrameBuffer::InsertPacket(const uint8* payload_data,
     frame_id_ = rtp_header.frame_id;
     max_packet_id_ = rtp_header.max_packet_id;
     is_key_frame_ = rtp_header.is_key_frame;
-    if (rtp_header.is_reference) {
-      last_referenced_frame_id_ = rtp_header.reference_frame_id;
-    } else {
-      last_referenced_frame_id_ = rtp_header.frame_id - 1;
-    }
-
-    rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
+    last_referenced_frame_id_ = rtp_header.reference_frame_id;
+    rtp_timestamp_ = rtp_header.rtp_timestamp;
   }
   // Is this the correct frame?
   if (rtp_header.frame_id != frame_id_)

@@ -91,11 +91,9 @@ class VideoReceiverTest : public ::testing::Test {
     // Always start with a key frame.
     rtp_header_.is_key_frame = true;
     rtp_header_.frame_id = kFirstFrameId;
+    rtp_header_.reference_frame_id = rtp_header_.frame_id;
     rtp_header_.packet_id = 0;
     rtp_header_.max_packet_id = 0;
-    rtp_header_.is_reference = false;
-    rtp_header_.reference_frame_id = 0;
-    rtp_header_.webrtc.header.timestamp = 0;
   }
 
   void FeedOneFrameIntoReceiver() {
@@ -148,8 +146,7 @@ TEST_F(VideoReceiverTest, GetOnePacketEncodedFrame) {
   ASSERT_TRUE(!frame_events.empty());
   EXPECT_EQ(kVideoAckSent, frame_events.begin()->type);
   EXPECT_EQ(rtp_header_.frame_id, frame_events.begin()->frame_id);
-  EXPECT_EQ(rtp_header_.webrtc.header.timestamp,
-            frame_events.begin()->rtp_timestamp);
+  EXPECT_EQ(rtp_header_.rtp_timestamp, frame_events.begin()->rtp_timestamp);
 
   cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
 }
@@ -187,9 +184,8 @@ TEST_F(VideoReceiverTest, MultiplePendingGetCalls) {
   // and that the RTP timestamp represents a time in the future.
   rtp_header_.is_key_frame = false;
   rtp_header_.frame_id = kFirstFrameId + 2;
-  rtp_header_.is_reference = true;
   rtp_header_.reference_frame_id = 0;
-  rtp_header_.webrtc.header.timestamp +=
+  rtp_header_.rtp_timestamp +=
       config_.rtp_max_delay_ms * kVideoFrequency / 1000;
   fake_video_client_.SetNextExpectedResult(
       kFirstFrameId + 2,
@@ -216,10 +212,8 @@ TEST_F(VideoReceiverTest, MultiplePendingGetCalls) {
 
   // Receive Frame 3 and expect it to fulfill the third request immediately.
   rtp_header_.frame_id = kFirstFrameId + 3;
-  rtp_header_.is_reference = false;
-  rtp_header_.reference_frame_id = 0;
-  rtp_header_.webrtc.header.timestamp +=
-      kVideoFrequency / config_.max_frame_rate;
+  rtp_header_.reference_frame_id = rtp_header_.frame_id - 1;
+  rtp_header_.rtp_timestamp += kVideoFrequency / config_.max_frame_rate;
   fake_video_client_.SetNextExpectedResult(kFirstFrameId + 3,
                                            testing_clock_->NowTicks());
   FeedOneFrameIntoReceiver();

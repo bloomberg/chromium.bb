@@ -11,43 +11,32 @@
 namespace media {
 namespace cast {
 
-struct RtpParserConfig {
-  RtpParserConfig() {
-    ssrc = 0;
-    payload_type = 0;
-    audio_channels = 0;
-  }
-
-  uint32 ssrc;
-  int payload_type;
-  transport::AudioCodec audio_codec;
-  transport::VideoCodec video_codec;
-  int audio_channels;
-};
-
+// TODO(miu): RtpParser and RtpPacketizer should be consolidated into a single
+// module that handles all RTP/Cast packet serialization and deserialization
+// throughout the media/cast library.
 class RtpParser {
  public:
-  RtpParser(const RtpParserConfig parser_config);
+  RtpParser(uint32 expected_sender_ssrc, uint8 expected_payload_type);
 
   virtual ~RtpParser();
 
+  // Parses the |packet|, expecting an RTP header along with a Cast header at
+  // the beginning of the the RTP payload.  This method populates the structure
+  // pointed to by |rtp_header| and sets the |payload_data| pointer and
+  // |payload_size| to the memory region within |packet| containing the Cast
+  // payload data.  Returns false if the data appears to be invalid, is not from
+  // the expected sender (as identified by the SSRC field), or is not the
+  // expected payload type.
   bool ParsePacket(const uint8* packet,
                    size_t length,
-                   RtpCastHeader* rtp_header);
- protected:
-  virtual void OnReceivedPayloadData(const uint8* payload_data,
-                                     size_t payload_size,
-                                     const RtpCastHeader& rtp_header) = 0;
+                   RtpCastHeader* rtp_header,
+                   const uint8** payload_data,
+                   size_t* payload_size);
+
  private:
-  bool ParseCommon(const uint8* packet,
-                   size_t length,
-                   RtpCastHeader* rtp_header);
-
-  bool ParseCast(const uint8* packet, size_t length, RtpCastHeader* rtp_header);
-
-  RtpParserConfig parser_config_;
+  const uint32 expected_sender_ssrc_;
+  const uint8 expected_payload_type_;
   transport::FrameIdWrapHelper frame_id_wrap_helper_;
-  transport::FrameIdWrapHelper reference_frame_id_wrap_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpParser);
 };

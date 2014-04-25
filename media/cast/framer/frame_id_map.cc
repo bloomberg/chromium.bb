@@ -62,11 +62,7 @@ FrameIdMap::~FrameIdMap() {}
 PacketType FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header) {
   uint32 frame_id = rtp_header.frame_id;
   uint32 reference_frame_id;
-  if (rtp_header.is_reference) {
-    reference_frame_id = rtp_header.reference_frame_id;
-  } else {
-    reference_frame_id = static_cast<uint32>(frame_id - 1);
-  }
+  reference_frame_id = rtp_header.reference_frame_id;
 
   if (rtp_header.is_key_frame && waiting_for_key_) {
     last_released_frame_ = static_cast<uint32>(frame_id - 1);

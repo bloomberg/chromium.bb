@@ -13,33 +13,15 @@
 namespace media {
 namespace cast {
 
-namespace {
-
-static RtpParserConfig GetRtpParserConfig(
-    const AudioReceiverConfig* audio_config,
-    const VideoReceiverConfig* video_config) {
-  RtpParserConfig config;
-  DCHECK(audio_config || video_config) << "Invalid argument";
-  if (audio_config) {
-    config.ssrc = audio_config->incoming_ssrc;
-    config.payload_type = audio_config->rtp_payload_type;
-    config.audio_codec = audio_config->codec;
-    config.audio_channels = audio_config->channels;
-  } else {
-    config.ssrc = video_config->incoming_ssrc;
-    config.payload_type = video_config->rtp_payload_type;
-    config.video_codec = video_config->codec;
-  }
-  return config;
-}
-
-}  // namespace
-
 RtpReceiver::RtpReceiver(base::TickClock* clock,
                          const AudioReceiverConfig* audio_config,
                          const VideoReceiverConfig* video_config) :
-    RtpParser(GetRtpParserConfig(audio_config, video_config)),
+    packet_parser_(audio_config ? audio_config->incoming_ssrc :
+                   (video_config ? video_config->incoming_ssrc : 0),
+                   audio_config ? audio_config->rtp_payload_type :
+                   (video_config ? video_config->rtp_payload_type : 0)),
     stats_(clock) {
+  DCHECK(audio_config || video_config);
 }
 
 RtpReceiver::~RtpReceiver() {}
@@ -57,9 +39,14 @@ uint32 RtpReceiver::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
 
 bool RtpReceiver::ReceivedPacket(const uint8* packet, size_t length) {
   RtpCastHeader rtp_header;
-  if (!ParsePacket(packet, length, &rtp_header))
+  const uint8* payload_data;
+  size_t payload_size;
+  if (!packet_parser_.ParsePacket(
+          packet, length, &rtp_header, &payload_data, &payload_size)) {
     return false;
+  }
 
+  OnReceivedPayloadData(payload_data, payload_size, rtp_header);
   stats_.UpdateStatistics(rtp_header);
   return true;
 }

@@ -21,7 +21,6 @@ class ReceiverStatsTest : public ::testing::Test {
  protected:
   ReceiverStatsTest()
       : stats_(&testing_clock_),
-        rtp_header_(),
         fraction_lost_(0),
         cumulative_lost_(0),
         extended_high_sequence_number_(0),
@@ -30,8 +29,6 @@ class ReceiverStatsTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     start_time_ = testing_clock_.NowTicks();
     delta_increments_ = base::TimeDelta::FromMilliseconds(kStdTimeIncrementMs);
-    rtp_header_.webrtc.header.sequenceNumber = 0;
-    rtp_header_.webrtc.header.timestamp = 0;
   }
   virtual ~ReceiverStatsTest() {}
 
@@ -75,9 +72,9 @@ TEST_F(ReceiverStatsTest, LossCount) {
     if (i % 4)
       stats_.UpdateStatistics(rtp_header_);
     if (i % 3) {
-      rtp_header_.webrtc.header.timestamp += 33 * 90;
+      rtp_header_.rtp_timestamp += 33 * 90;
     }
-    ++rtp_header_.webrtc.header.sequenceNumber;
+    ++rtp_header_.sequence_number;
     testing_clock_.Advance(delta_increments_);
   }
   stats_.GetStatistics(&fraction_lost_,
@@ -87,18 +84,18 @@ TEST_F(ReceiverStatsTest, LossCount) {
   EXPECT_EQ(63u, fraction_lost_);
   EXPECT_EQ(74u, cumulative_lost_);
   // Build extended sequence number.
-  uint32 extended_seq_num = rtp_header_.webrtc.header.sequenceNumber - 1;
+  const uint32 extended_seq_num = rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
 }
 
 TEST_F(ReceiverStatsTest, NoLossWrap) {
-  rtp_header_.webrtc.header.sequenceNumber = 65500;
+  rtp_header_.sequence_number = 65500;
   for (int i = 0; i < 300; ++i) {
     stats_.UpdateStatistics(rtp_header_);
     if (i % 3) {
-      rtp_header_.webrtc.header.timestamp += 33 * 90;
+      rtp_header_.rtp_timestamp += 33 * 90;
     }
-    ++rtp_header_.webrtc.header.sequenceNumber;
+    ++rtp_header_.sequence_number;
     testing_clock_.Advance(delta_increments_);
   }
   stats_.GetStatistics(&fraction_lost_,
@@ -108,21 +105,20 @@ TEST_F(ReceiverStatsTest, NoLossWrap) {
   EXPECT_EQ(0u, fraction_lost_);
   EXPECT_EQ(0u, cumulative_lost_);
   // Build extended sequence number (one wrap cycle).
-  uint32 extended_seq_num =
-      (1 << 16) + rtp_header_.webrtc.header.sequenceNumber - 1;
+  const uint32 extended_seq_num = (1 << 16) + rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
 }
 
 TEST_F(ReceiverStatsTest, LossCountWrap) {
-  const uint32 start_sequence_number = 65500;
-  rtp_header_.webrtc.header.sequenceNumber = start_sequence_number;
+  const uint32 kStartSequenceNumber = 65500;
+  rtp_header_.sequence_number = kStartSequenceNumber;
   for (int i = 0; i < 300; ++i) {
     if (i % 4)
       stats_.UpdateStatistics(rtp_header_);
     if (i % 3)
       // Update timestamp.
-      ++rtp_header_.webrtc.header.timestamp;
-    ++rtp_header_.webrtc.header.sequenceNumber;
+      ++rtp_header_.rtp_timestamp;
+    ++rtp_header_.sequence_number;
     testing_clock_.Advance(delta_increments_);
   }
   stats_.GetStatistics(&fraction_lost_,
@@ -132,16 +128,15 @@ TEST_F(ReceiverStatsTest, LossCountWrap) {
   EXPECT_EQ(63u, fraction_lost_);
   EXPECT_EQ(74u, cumulative_lost_);
   // Build extended sequence number (one wrap cycle).
-  uint32 extended_seq_num =
-      (1 << 16) + rtp_header_.webrtc.header.sequenceNumber - 1;
+  const uint32 extended_seq_num = (1 << 16) + rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
 }
 
 TEST_F(ReceiverStatsTest, BasicJitter) {
   for (int i = 0; i < 300; ++i) {
     stats_.UpdateStatistics(rtp_header_);
-    ++rtp_header_.webrtc.header.sequenceNumber;
-    rtp_header_.webrtc.header.timestamp += 33 * 90;
+    ++rtp_header_.sequence_number;
+    rtp_header_.rtp_timestamp += 33 * 90;
     testing_clock_.Advance(delta_increments_);
   }
   stats_.GetStatistics(&fraction_lost_,
@@ -151,7 +146,7 @@ TEST_F(ReceiverStatsTest, BasicJitter) {
   EXPECT_FALSE(fraction_lost_);
   EXPECT_FALSE(cumulative_lost_);
   // Build extended sequence number (one wrap cycle).
-  uint32 extended_seq_num = rtp_header_.webrtc.header.sequenceNumber - 1;
+  const uint32 extended_seq_num = rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
   EXPECT_EQ(ExpectedJitter(kStdTimeIncrementMs, 300), jitter_);
 }
@@ -160,8 +155,8 @@ TEST_F(ReceiverStatsTest, NonTrivialJitter) {
   const int kAdditionalIncrement = 5;
   for (int i = 0; i < 300; ++i) {
     stats_.UpdateStatistics(rtp_header_);
-    ++rtp_header_.webrtc.header.sequenceNumber;
-    rtp_header_.webrtc.header.timestamp += 33 * 90;
+    ++rtp_header_.sequence_number;
+    rtp_header_.rtp_timestamp += 33 * 90;
     base::TimeDelta additional_delta =
         base::TimeDelta::FromMilliseconds(kAdditionalIncrement);
     testing_clock_.Advance(delta_increments_ + additional_delta);
@@ -173,7 +168,7 @@ TEST_F(ReceiverStatsTest, NonTrivialJitter) {
   EXPECT_FALSE(fraction_lost_);
   EXPECT_FALSE(cumulative_lost_);
   // Build extended sequence number (one wrap cycle).
-  uint32 extended_seq_num = rtp_header_.webrtc.header.sequenceNumber - 1;
+  const uint32 extended_seq_num = rtp_header_.sequence_number - 1;
   EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
   EXPECT_EQ(ExpectedJitter(kStdTimeIncrementMs + kAdditionalIncrement, 300),
             jitter_);

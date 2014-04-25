@@ -13,6 +13,7 @@ namespace media {
 namespace cast {
 namespace transport {
 
+// TODO(miu): Kill this and use RtpCastHeader instead.
 struct RtpCastTestHeader {
   RtpCastTestHeader();
   ~RtpCastTestHeader();
@@ -36,6 +37,7 @@ struct RtpCastTestHeader {
   int header_length;
 };
 
+// TODO(miu): Kill this and use RtpParser instead.
 class RtpHeaderParser {
  public:
   RtpHeaderParser(const uint8* rtpData, size_t rtpDataLength);

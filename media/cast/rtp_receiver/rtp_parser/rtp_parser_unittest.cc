@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gtest/gtest.h>
-
 #include "base/memory/scoped_ptr.h"
+#include "base/rand_util.h"
 #include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
 #include "media/cast/rtp_receiver/rtp_parser/test/rtp_packet_builder.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace cast {
@@ -20,175 +20,178 @@ static const uint32 kTestTimestamp = 111111;
 static const uint16 kTestSeqNum = 4321;
 static const uint8 kRefFrameId = 17;
 
-class RtpTestParser : public RtpParser {
- public:
-  RtpTestParser(const RtpParserConfig config) : RtpParser(config) {
-    expected_header_.reset(new RtpCastHeader());
-  }
-
-  virtual ~RtpTestParser() {}
-
-  void SetExpectedHeader(const RtpCastHeader& cast_header) {
-    memcpy(expected_header_.get(), &cast_header, sizeof(RtpCastHeader));
-  }
-
-  virtual void OnReceivedPayloadData(const uint8* payloadData,
-                                     size_t payloadSize,
-                                     const RtpCastHeader& rtpHeader) OVERRIDE {
-    VerifyCommonHeader(rtpHeader);
-    VerifyCastHeader(rtpHeader);
-  }
-
-  void VerifyCommonHeader(const RtpCastHeader& parsed_header) {
-    EXPECT_EQ(expected_header_->packet_id == expected_header_->max_packet_id,
-              parsed_header.webrtc.header.markerBit);
-    EXPECT_EQ(kTestPayloadType, parsed_header.webrtc.header.payloadType);
-    EXPECT_EQ(kTestSsrc, parsed_header.webrtc.header.ssrc);
-    EXPECT_EQ(0, parsed_header.webrtc.header.numCSRCs);
-  }
-
-  void VerifyCastHeader(const RtpCastHeader& parsed_header) {
-    EXPECT_EQ(expected_header_->is_key_frame, parsed_header.is_key_frame);
-    EXPECT_EQ(expected_header_->frame_id, parsed_header.frame_id);
-    EXPECT_EQ(expected_header_->packet_id, parsed_header.packet_id);
-    EXPECT_EQ(expected_header_->max_packet_id, parsed_header.max_packet_id);
-    EXPECT_EQ(expected_header_->is_reference, parsed_header.is_reference);
-  }
-
- private:
-  scoped_ptr<RtpCastHeader> expected_header_;
-
-  DISALLOW_COPY_AND_ASSIGN(RtpTestParser);
-};
-
 class RtpParserTest : public ::testing::Test {
  protected:
-  RtpParserTest() {
-    PopulateConfig();
-    rtp_parser_.reset(new RtpTestParser(config_));
-    cast_header_.is_reference = true;
-    cast_header_.reference_frame_id = kRefFrameId;
+  RtpParserTest() : rtp_parser_(kTestSsrc, kTestPayloadType) {
     packet_builder_.SetSsrc(kTestSsrc);
-    packet_builder_.SetReferenceFrameId(kRefFrameId, true);
     packet_builder_.SetSequenceNumber(kTestSeqNum);
     packet_builder_.SetTimestamp(kTestTimestamp);
     packet_builder_.SetPayloadType(kTestPayloadType);
     packet_builder_.SetMarkerBit(true);  // Only one packet.
+    cast_header_.sender_ssrc = kTestSsrc;
+    cast_header_.sequence_number = kTestSeqNum;
+    cast_header_.rtp_timestamp = kTestTimestamp;
+    cast_header_.payload_type = kTestPayloadType;
+    cast_header_.marker = true;
   }
 
   virtual ~RtpParserTest() {}
 
-  void PopulateConfig() {
-    config_.payload_type = kTestPayloadType;
-    config_.ssrc = kTestSsrc;
+  void ExpectParsesPacket() {
+    RtpCastHeader parsed_header;
+    const uint8* payload = NULL;
+    size_t payload_size = -1;
+    EXPECT_TRUE(rtp_parser_.ParsePacket(
+        packet_, kPacketLength, &parsed_header, &payload, &payload_size));
+
+    EXPECT_EQ(cast_header_.marker, parsed_header.marker);
+    EXPECT_EQ(cast_header_.payload_type, parsed_header.payload_type);
+    EXPECT_EQ(cast_header_.sequence_number, parsed_header.sequence_number);
+    EXPECT_EQ(cast_header_.rtp_timestamp, parsed_header.rtp_timestamp);
+    EXPECT_EQ(cast_header_.sender_ssrc, parsed_header.sender_ssrc);
+
+    EXPECT_EQ(cast_header_.is_key_frame, parsed_header.is_key_frame);
+    EXPECT_EQ(cast_header_.frame_id, parsed_header.frame_id);
+    EXPECT_EQ(cast_header_.packet_id, parsed_header.packet_id);
+    EXPECT_EQ(cast_header_.max_packet_id, parsed_header.max_packet_id);
+    EXPECT_EQ(cast_header_.reference_frame_id,
+              parsed_header.reference_frame_id);
+
+    EXPECT_TRUE(!!payload);
+    EXPECT_NE(static_cast<size_t>(-1), payload_size);
+  }
+
+  void ExpectDoesNotParsePacket() {
+    RtpCastHeader parsed_header;
+    const uint8* payload = NULL;
+    size_t payload_size = -1;
+    EXPECT_FALSE(rtp_parser_.ParsePacket(
+        packet_, kPacketLength, &parsed_header, &payload, &payload_size));
   }
 
   RtpPacketBuilder packet_builder_;
-  scoped_ptr<RtpTestParser> rtp_parser_;
-  RtpParserConfig config_;
+  uint8 packet_[kPacketLength];
+  RtpParser rtp_parser_;
   RtpCastHeader cast_header_;
 };
 
 TEST_F(RtpParserTest, ParseDefaultCastPacket) {
-  // Build generic data packet.
-  uint8 packet[kPacketLength];
-  packet_builder_.BuildHeader(packet, kPacketLength);
-  // Parse packet as is.
-  RtpCastHeader rtp_header;
-  rtp_parser_->SetExpectedHeader(cast_header_);
-  EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
+  packet_builder_.BuildHeader(packet_, kPacketLength);
+  ExpectParsesPacket();
 }
 
 TEST_F(RtpParserTest, ParseNonDefaultCastPacket) {
-  // Build generic data packet.
-  uint8 packet[kPacketLength];
   packet_builder_.SetKeyFrame(true);
-  packet_builder_.SetFrameId(10);
+  packet_builder_.SetFrameIds(10, 10);
   packet_builder_.SetPacketId(5);
   packet_builder_.SetMaxPacketId(15);
   packet_builder_.SetMarkerBit(false);
-  packet_builder_.BuildHeader(packet, kPacketLength);
+  packet_builder_.BuildHeader(packet_, kPacketLength);
   cast_header_.is_key_frame = true;
   cast_header_.frame_id = 10;
+  cast_header_.reference_frame_id = 10;
   cast_header_.packet_id = 5;
   cast_header_.max_packet_id = 15;
-  rtp_parser_->SetExpectedHeader(cast_header_);
-  // Parse packet as is.
-  RtpCastHeader rtp_header;
-  EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
+  cast_header_.marker = false;
+  ExpectParsesPacket();
 }
 
 TEST_F(RtpParserTest, TooBigPacketId) {
-  // Build generic data packet.
-  uint8 packet[kPacketLength];
   packet_builder_.SetKeyFrame(true);
-  packet_builder_.SetFrameId(10);
+  packet_builder_.SetFrameIds(10, 10);
   packet_builder_.SetPacketId(15);
   packet_builder_.SetMaxPacketId(5);
-  packet_builder_.BuildHeader(packet, kPacketLength);
-  // Parse packet as is.
-  RtpCastHeader rtp_header;
-  EXPECT_FALSE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
+  packet_builder_.BuildHeader(packet_, kPacketLength);
+  cast_header_.is_key_frame = true;
+  cast_header_.frame_id = 10;
+  cast_header_.reference_frame_id = 10;
+  cast_header_.packet_id = 15;
+  cast_header_.max_packet_id = 5;
+  ExpectDoesNotParsePacket();
 }
 
 TEST_F(RtpParserTest, MaxPacketId) {
-  // Build generic data packet.
-  uint8 packet[kPacketLength];
   packet_builder_.SetKeyFrame(true);
-  packet_builder_.SetFrameId(10);
+  packet_builder_.SetFrameIds(10, 10);
   packet_builder_.SetPacketId(65535);
   packet_builder_.SetMaxPacketId(65535);
-  packet_builder_.BuildHeader(packet, kPacketLength);
+  packet_builder_.BuildHeader(packet_, kPacketLength);
   cast_header_.is_key_frame = true;
   cast_header_.frame_id = 10;
+  cast_header_.reference_frame_id = 10;
   cast_header_.packet_id = 65535;
   cast_header_.max_packet_id = 65535;
-  rtp_parser_->SetExpectedHeader(cast_header_);
-  // Parse packet as is.
-  RtpCastHeader rtp_header;
-  EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
+  ExpectParsesPacket();
 }
 
 TEST_F(RtpParserTest, InvalidPayloadType) {
-  // Build generic data packet.
-  uint8 packet[kPacketLength];
   packet_builder_.SetKeyFrame(true);
-  packet_builder_.SetFrameId(10);
+  packet_builder_.SetFrameIds(10, 10);
   packet_builder_.SetPacketId(65535);
   packet_builder_.SetMaxPacketId(65535);
   packet_builder_.SetPayloadType(kTestPayloadType - 1);
-  packet_builder_.BuildHeader(packet, kPacketLength);
-  // Parse packet as is.
-  RtpCastHeader rtp_header;
-  EXPECT_FALSE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
+  packet_builder_.BuildHeader(packet_, kPacketLength);
+  cast_header_.is_key_frame = true;
+  cast_header_.frame_id = 10;
+  cast_header_.reference_frame_id = 10;
+  cast_header_.packet_id = 65535;
+  cast_header_.max_packet_id = 65535;
+  cast_header_.payload_type = kTestPayloadType - 1;
+  ExpectDoesNotParsePacket();
 }
 
 TEST_F(RtpParserTest, InvalidSsrc) {
-  // Build generic data packet.
-  uint8 packet[kPacketLength];
   packet_builder_.SetKeyFrame(true);
-  packet_builder_.SetFrameId(10);
+  packet_builder_.SetFrameIds(10, 10);
   packet_builder_.SetPacketId(65535);
   packet_builder_.SetMaxPacketId(65535);
   packet_builder_.SetSsrc(kTestSsrc - 1);
-  packet_builder_.BuildHeader(packet, kPacketLength);
-  // Parse packet as is.
-  RtpCastHeader rtp_header;
-  EXPECT_FALSE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
+  packet_builder_.BuildHeader(packet_, kPacketLength);
+  cast_header_.is_key_frame = true;
+  cast_header_.frame_id = 10;
+  cast_header_.reference_frame_id = 10;
+  cast_header_.packet_id = 65535;
+  cast_header_.max_packet_id = 65535;
+  cast_header_.sender_ssrc = kTestSsrc - 1;
+  ExpectDoesNotParsePacket();
 }
 
-TEST_F(RtpParserTest, ParseCastPacketWithoutReference) {
-  cast_header_.is_reference = false;
-  cast_header_.reference_frame_id = 0;
-  packet_builder_.SetReferenceFrameId(kRefFrameId, false);
+TEST_F(RtpParserTest, ParseCastPacketWithSpecificFrameReference) {
+  packet_builder_.SetFrameIds(kRefFrameId + 3, kRefFrameId);
+  packet_builder_.BuildHeader(packet_, kPacketLength);
+  cast_header_.frame_id = kRefFrameId + 3;
+  cast_header_.reference_frame_id = kRefFrameId;
+  ExpectParsesPacket();
+}
 
-  // Build generic data packet.
-  uint8 packet[kPacketLength];
-  packet_builder_.BuildHeader(packet, kPacketLength);
-  // Parse packet as is.
-  RtpCastHeader rtp_header;
-  rtp_parser_->SetExpectedHeader(cast_header_);
-  EXPECT_TRUE(rtp_parser_->ParsePacket(packet, kPacketLength, &rtp_header));
+TEST_F(RtpParserTest, ParseExpandingFrameIdTo32Bits) {
+  const uint32 kMaxFrameId = 1000;
+  packet_builder_.SetKeyFrame(true);
+  cast_header_.is_key_frame = true;
+  for (uint32 frame_id = 0; frame_id <= kMaxFrameId; ++frame_id) {
+    packet_builder_.SetFrameIds(frame_id, frame_id);
+    packet_builder_.BuildHeader(packet_, kPacketLength);
+    cast_header_.frame_id = frame_id;
+    cast_header_.reference_frame_id = frame_id;
+    ExpectParsesPacket();
+  }
+}
+
+TEST_F(RtpParserTest, ParseExpandingReferenceFrameIdTo32Bits) {
+  const uint32 kMaxFrameId = 1000;
+  const uint32 kMaxBackReferenceOffset = 10;
+  packet_builder_.SetKeyFrame(false);
+  cast_header_.is_key_frame = false;
+  for (uint32 frame_id = kMaxBackReferenceOffset;
+       frame_id <= kMaxFrameId; ++frame_id) {
+    const uint32 reference_frame_id =
+        frame_id - base::RandInt(1, kMaxBackReferenceOffset);
+    packet_builder_.SetFrameIds(frame_id, reference_frame_id);
+    packet_builder_.BuildHeader(packet_, kPacketLength);
+    cast_header_.frame_id = frame_id;
+    cast_header_.reference_frame_id = reference_frame_id;
+    ExpectParsesPacket();
+  }
 }
 
 }  //  namespace cast

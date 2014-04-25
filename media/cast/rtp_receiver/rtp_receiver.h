@@ -17,7 +17,9 @@
 namespace media {
 namespace cast {
 
-class RtpReceiver : public RtpParser {
+// TODO(miu): This is a good candidate to contain common functionality that's
+// identical in both AudioReceiver and VideoReceiver.
+class RtpReceiver {
  public:
   RtpReceiver(base::TickClock* clock,
               const AudioReceiverConfig* audio_config,
@@ -32,7 +34,14 @@ class RtpReceiver : public RtpParser {
     return &stats_;
   }
 
+ protected:
+  // Subclasses implement this to consume and process deserialized packets.
+  virtual void OnReceivedPayloadData(const uint8* payload_data,
+                                     size_t payload_size,
+                                     const RtpCastHeader& rtp_header) = 0;
+
  private:
+  RtpParser packet_parser_;
   ReceiverStats stats_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpReceiver);

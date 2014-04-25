@@ -54,8 +54,6 @@ static const int kVideoHdWidth = 1280;
 static const int kVideoHdHeight = 720;
 static const int kVideoQcifWidth = 176;
 static const int kVideoQcifHeight = 144;
-static const int kCommonRtpHeaderLength = 12;
-static const uint8 kCastReferenceFrameIdBitReset = 0xDF;  // Mask is 0x40.
 
 // Since the video encoded and decoded an error will be introduced; when
 // comparing individual pixels the error can be quite large; we allow a PSNR of
@@ -191,7 +189,6 @@ class LoopBackTransport : public transport::PacketSender {
   explicit LoopBackTransport(scoped_refptr<CastEnvironment> cast_environment)
       : send_packets_(true),
         drop_packets_belonging_to_odd_frames_(false),
-        reset_reference_frame_id_(false),
         cast_environment_(cast_environment) {}
 
   void SetPacketReceiver(
@@ -218,10 +215,6 @@ class LoopBackTransport : public transport::PacketSender {
     }
 
     scoped_ptr<Packet> packet_copy(new Packet(packet->data));
-    if (reset_reference_frame_id_) {
-      // Reset the is_reference bit in the cast header.
-      (*packet_copy)[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;
-    }
     packet_pipe_->Send(packet_copy.Pass());
     return true;
   }
@@ -232,8 +225,6 @@ class LoopBackTransport : public transport::PacketSender {
     drop_packets_belonging_to_odd_frames_ = true;
   }
 
-  void AlwaysResetReferenceFrameId() { reset_reference_frame_id_ = true; }
-
   void SetPacketPipe(scoped_ptr<test::PacketPipe> pipe) {
     // Append the loopback pipe to the end.
     pipe->AppendToPipe(packet_pipe_.Pass());
@@ -243,7 +234,6 @@ class LoopBackTransport : public transport::PacketSender {
  private:
   bool send_packets_;
   bool drop_packets_belonging_to_odd_frames_;
-  bool reset_reference_frame_id_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<test::PacketPipe> packet_pipe_;
 };
@@ -989,38 +979,6 @@ TEST_F(End2EndTest, DISABLED_DropEveryOtherFrame3Buffers) {
   EXPECT_EQ(i / 2, test_receiver_video_callback_->number_times_called());
 }
 
-TEST_F(End2EndTest, ResetReferenceFrameId) {
-  Configure(transport::kVp8, transport::kOpus, kDefaultAudioSamplingRate,
-            false, 3);
-  video_sender_config_.rtp_config.max_delay_ms = 67;
-  video_receiver_config_.rtp_max_delay_ms = 67;
-  Create();
-  sender_to_receiver_.AlwaysResetReferenceFrameId();
-
-  int frames_counter = 0;
-  for (; frames_counter < 10; ++frames_counter) {
-    const base::TimeTicks send_time = testing_clock_sender_->NowTicks();
-    SendVideoFrame(frames_counter, send_time);
-
-    test_receiver_video_callback_->AddExpectedResult(
-        frames_counter,
-        video_sender_config_.width,
-        video_sender_config_.height,
-        send_time,
-        true);
-
-    // GetRawVideoFrame will not return the frame until we are close to the
-    // time in which we should render the frame.
-    frame_receiver_->GetRawVideoFrame(
-        base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-                   test_receiver_video_callback_));
-    RunTasks(kFrameTimerMs);
-  }
-  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
-  EXPECT_EQ(frames_counter,
-            test_receiver_video_callback_->number_times_called());
-}
-
 TEST_F(End2EndTest, CryptoVideo) {
   Configure(transport::kVp8, transport::kPcm16, 32000, false, 1);
 
@@ -1260,46 +1218,39 @@ TEST_F(End2EndTest, AudioLogging) {
   EXPECT_EQ(num_audio_frames_requested, received_count);
   EXPECT_EQ(num_audio_frames_requested, encoded_count);
 
-  std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
-      event_counter_for_frame.begin();
-
   // Verify that each frame have the expected types of events logged.
-  // TODO(imcheng): This only checks the first frame. This doesn't work
-  // properly for all frames because:
-  // 1. kAudioPlayoutDelay and kAudioFrameDecoded RTP timestamps aren't
-  // exactly aligned with those of kAudioFrameReceived and kAudioFrameEncoded.
-  // Note that these RTP timestamps are output from webrtc::AudioCodingModule
-  // which are different from RTP timestamps that the cast library generates
-  // during the encode step (and which are sent to receiver). The first frame
-  // just happen to be aligned.
-  // 2. Currently, kAudioFrameDecoded and kAudioPlayoutDelay are logged per
-  // audio bus.
-  // Both 1 and 2 may change since we are currently refactoring audio_decoder.
-  // 3. There is no guarantee that exactly one kAudioAckSent is sent per frame.
-  int total_event_count_for_frame = 0;
-  for (int j = 0; j < kNumOfLoggingEvents; ++j)
-    total_event_count_for_frame += map_it->second.counter[j];
+  for (std::map<RtpTimestamp, LoggingEventCounts>::const_iterator map_it =
+           event_counter_for_frame.begin();
+       map_it != event_counter_for_frame.end(); ++map_it) {
+    int total_event_count_for_frame = 0;
+    for (int j = 0; j < kNumOfLoggingEvents; ++j)
+      total_event_count_for_frame += map_it->second.counter[j];
 
-  int expected_event_count_for_frame = 0;
+    int expected_event_count_for_frame = 0;
 
-  EXPECT_EQ(1, map_it->second.counter[kAudioFrameReceived]);
-  expected_event_count_for_frame += map_it->second.counter[kAudioFrameReceived];
+    EXPECT_EQ(1, map_it->second.counter[kAudioFrameReceived]);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kAudioFrameReceived];
 
-  EXPECT_EQ(1, map_it->second.counter[kAudioFrameEncoded]);
-  expected_event_count_for_frame += map_it->second.counter[kAudioFrameEncoded];
+    EXPECT_EQ(1, map_it->second.counter[kAudioFrameEncoded]);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kAudioFrameEncoded];
 
-  EXPECT_EQ(1, map_it->second.counter[kAudioPlayoutDelay]);
-  expected_event_count_for_frame += map_it->second.counter[kAudioPlayoutDelay];
+    EXPECT_EQ(1, map_it->second.counter[kAudioPlayoutDelay]);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kAudioPlayoutDelay];
 
-  EXPECT_EQ(1, map_it->second.counter[kAudioFrameDecoded]);
-  expected_event_count_for_frame += map_it->second.counter[kAudioFrameDecoded];
+    EXPECT_EQ(1, map_it->second.counter[kAudioFrameDecoded]);
+    expected_event_count_for_frame +=
+        map_it->second.counter[kAudioFrameDecoded];
 
-  EXPECT_GT(map_it->second.counter[kAudioAckSent], 0);
-  expected_event_count_for_frame += map_it->second.counter[kAudioAckSent];
+    EXPECT_GT(map_it->second.counter[kAudioAckSent], 0);
+    expected_event_count_for_frame += map_it->second.counter[kAudioAckSent];
 
-  // Verify that there were no other events logged with respect to this frame.
-  // (i.e. Total event count = expected event count)
-  EXPECT_EQ(total_event_count_for_frame, expected_event_count_for_frame);
+    // Verify that there were no other events logged with respect to this frame.
+    // (i.e. Total event count = expected event count)
+    EXPECT_EQ(total_event_count_for_frame, expected_event_count_for_frame);
+  }
 }
 
 TEST_F(End2EndTest, BasicFakeSoftwareVideo) {

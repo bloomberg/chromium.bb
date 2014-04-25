@@ -75,7 +75,7 @@ void ReceiverStats::GetStatistics(uint8* fraction_lost,
 }
 
 void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
-  uint16 new_seq_num = header.webrtc.header.sequenceNumber;
+  const uint16 new_seq_num = header.sequence_number;
 
   if (interval_number_packets_ == 0) {
     // First packet in the interval.
@@ -99,7 +99,7 @@ void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
   // Compute Jitter.
   base::TimeTicks now = clock_->NowTicks();
   base::TimeDelta delta_new_timestamp =
-      base::TimeDelta::FromMilliseconds(header.webrtc.header.timestamp);
+      base::TimeDelta::FromMilliseconds(header.rtp_timestamp);
   if (total_number_packets_ > 0) {
     // Update jitter.
     base::TimeDelta delta =

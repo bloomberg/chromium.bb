@@ -56,9 +56,6 @@ third_party/libvpx
 third_party/opus
     Provides audio encoder.
 
-third_party/webrtc
-    Provides audio signal processing.
-
 OWNERS
 
 See OWNERS for ownership.

@@ -77,14 +77,14 @@ void AudioReceiver::OnReceivedPayloadData(const uint8* payload_data,
   // TODO(pwestin): update this as video to refresh over time.
   if (time_first_incoming_packet_.is_null()) {
     InitializeTimers();
-    first_incoming_rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
+    first_incoming_rtp_timestamp_ = rtp_header.rtp_timestamp;
     time_first_incoming_packet_ = now;
   }
 
   frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
-      rtp_header.webrtc.header.timestamp;
+      rtp_header.rtp_timestamp;
   cast_environment_->Logging()->InsertPacketEvent(
-      now, kAudioPacketReceived, rtp_header.webrtc.header.timestamp,
+      now, kAudioPacketReceived, rtp_header.rtp_timestamp,
       rtp_header.frame_id, rtp_header.packet_id, rtp_header.max_packet_id,
       payload_size);
 
@@ -95,7 +95,7 @@ void AudioReceiver::OnReceivedPayloadData(const uint8* payload_data,
     cast_environment_->Logging()->InsertPacketEvent(
         now,
         kDuplicateAudioPacketReceived,
-        rtp_header.webrtc.header.timestamp,
+        rtp_header.rtp_timestamp,
         rtp_header.frame_id,
         rtp_header.packet_id,
         rtp_header.max_packet_id,

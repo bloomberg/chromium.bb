@@ -12,14 +12,15 @@
 namespace media {
 namespace cast {
 
+// TODO(miu): Consolidate with RtpPacketizer as a single Cast packet
+// serialization implementation.
 class RtpPacketBuilder {
  public:
   RtpPacketBuilder();
   void SetKeyFrame(bool is_key);
-  void SetFrameId(uint32 frame_id);
+  void SetFrameIds(uint32 frame_id, uint32 reference_frame_id);
   void SetPacketId(uint16 packet_id);
   void SetMaxPacketId(uint16 max_packet_id);
-  void SetReferenceFrameId(uint32 reference_frame_id, bool is_set);
   void SetTimestamp(uint32 timestamp);
   void SetSequenceNumber(uint16 sequence_number);
   void SetMarkerBit(bool marker);
@@ -33,7 +34,6 @@ class RtpPacketBuilder {
   uint16 packet_id_;
   uint16 max_packet_id_;
   uint32 reference_frame_id_;
-  bool is_reference_set_;
   uint32 timestamp_;
   uint16 sequence_number_;
   bool marker_;

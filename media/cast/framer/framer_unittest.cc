@@ -15,13 +15,6 @@ class FramerTest : public ::testing::Test {
   FramerTest()
       : mock_rtp_payload_feedback_(),
         framer_(&testing_clock_, &mock_rtp_payload_feedback_, 0, true, 0) {
-    // Build a default one packet frame - populate webrtc header.
-    rtp_header_.is_key_frame = false;
-    rtp_header_.frame_id = 0;
-    rtp_header_.packet_id = 0;
-    rtp_header_.max_packet_id = 0;
-    rtp_header_.is_reference = false;
-    rtp_header_.reference_frame_id = 0;
     payload_.assign(kMaxIpPacketSize, 0);
 
     EXPECT_CALL(mock_rtp_payload_feedback_, CastFeedback(testing::_))
@@ -57,6 +50,7 @@ TEST_F(FramerTest, AlwaysStartWithKey) {
   EXPECT_TRUE(complete);
   EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &next_frame));
   rtp_header_.frame_id = 1;
+  rtp_header_.reference_frame_id = 1;
   rtp_header_.is_key_frame = true;
   complete = framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
@@ -87,6 +81,7 @@ TEST_F(FramerTest, CompleteFrame) {
 
   // Incomplete delta.
   ++rtp_header_.frame_id;
+  rtp_header_.reference_frame_id = rtp_header_.frame_id - 1;
   rtp_header_.is_key_frame = false;
   rtp_header_.max_packet_id = 2;
   complete = framer_.InsertPacket(
@@ -96,6 +91,7 @@ TEST_F(FramerTest, CompleteFrame) {
 
   // Complete delta - can't skip, as incomplete sequence.
   ++rtp_header_.frame_id;
+  rtp_header_.reference_frame_id = rtp_header_.frame_id - 1;
   rtp_header_.max_packet_id = 0;
   complete = framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
@@ -149,6 +145,7 @@ TEST_F(FramerTest, DuplicatePackets) {
 
   // Incomplete delta frame.
   ++rtp_header_.frame_id;
+  rtp_header_.reference_frame_id = rtp_header_.frame_id - 1;
   rtp_header_.packet_id = 0;
   rtp_header_.is_key_frame = false;
   duplicate = true;
@@ -205,6 +202,7 @@ TEST_F(FramerTest, ContinuousSequence) {
 
   // Complete - not continuous.
   rtp_header_.frame_id = 2;
+  rtp_header_.reference_frame_id = rtp_header_.frame_id - 1;
   rtp_header_.is_key_frame = false;
   complete = framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
@@ -220,7 +218,8 @@ TEST_F(FramerTest, Wrap) {
 
   // Start with a complete key frame.
   rtp_header_.is_key_frame = true;
-  rtp_header_.frame_id = 255u;
+  rtp_header_.frame_id = 255;
+  rtp_header_.reference_frame_id = 255;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &next_frame));
@@ -263,11 +262,12 @@ TEST_F(FramerTest, RequireKeyAfterReset) {
 
   // Start with a complete key frame.
   rtp_header_.is_key_frame = false;
-  rtp_header_.frame_id = 0u;
+  rtp_header_.frame_id = 0;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &next_frame));
   rtp_header_.frame_id = 1;
+  rtp_header_.reference_frame_id = 1;
   rtp_header_.is_key_frame = true;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
@@ -289,9 +289,8 @@ TEST_F(FramerTest, BasicNonLastReferenceId) {
   framer_.ReleaseFrame(frame.frame_id);
 
   rtp_header_.is_key_frame = false;
-  rtp_header_.is_reference = true;
   rtp_header_.reference_frame_id = 0;
-  rtp_header_.frame_id = 5u;
+  rtp_header_.frame_id = 5;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
@@ -321,7 +320,6 @@ TEST_F(FramerTest, InOrderReferenceFrameSelection) {
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
   rtp_header_.frame_id = 4;
   rtp_header_.max_packet_id = 0;
-  rtp_header_.is_reference = true;
   rtp_header_.reference_frame_id = 0;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
@@ -342,8 +340,8 @@ TEST_F(FramerTest, InOrderReferenceFrameSelection) {
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &next_frame));
-  rtp_header_.is_reference = false;
   rtp_header_.frame_id = 5;
+  rtp_header_.reference_frame_id = rtp_header_.frame_id - 1;
   rtp_header_.packet_id = 0;
   rtp_header_.max_packet_id = 0;
   framer_.InsertPacket(
@@ -361,6 +359,7 @@ TEST_F(FramerTest, AudioWrap) {
 
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 254;
+  rtp_header_.reference_frame_id = 254;
 
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
@@ -370,11 +369,13 @@ TEST_F(FramerTest, AudioWrap) {
   framer_.ReleaseFrame(frame.frame_id);
 
   rtp_header_.frame_id = 255;
+  rtp_header_.reference_frame_id = 255;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
   // Insert wrapped frame - should be continuous.
   rtp_header_.frame_id = 256;
+  rtp_header_.reference_frame_id = 256;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
@@ -398,6 +399,7 @@ TEST_F(FramerTest, AudioWrapWithMissingFrame) {
   // Insert and get first packet.
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 253;
+  rtp_header_.reference_frame_id = 253;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &next_frame));
@@ -407,9 +409,11 @@ TEST_F(FramerTest, AudioWrapWithMissingFrame) {
 
   // Insert third and fourth packets.
   rtp_header_.frame_id = 255;
+  rtp_header_.reference_frame_id = 255;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
   rtp_header_.frame_id = 256;
+  rtp_header_.reference_frame_id = 256;
   framer_.InsertPacket(
       payload_.data(), payload_.size(), rtp_header_, &duplicate);
 

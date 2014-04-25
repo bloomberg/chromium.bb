@@ -46,9 +46,6 @@
       'type': '<(gtest_target_type)',
       'include_dirs': [
         '<(DEPTH)/',
-# TODO(miu): Remove WebRTC dependency (RtpHeader), and then these two deps:
-        '<(DEPTH)/third_party/',
-        '<(DEPTH)/third_party/webrtc/',
       ],
       'dependencies': [
         'cast_base',

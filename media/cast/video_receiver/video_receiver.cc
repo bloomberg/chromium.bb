@@ -315,7 +315,7 @@ void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenOffsetUpdatesMs)) {
     if (time_incoming_packet_.is_null())
       InitializeTimers();
-    incoming_rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
+    incoming_rtp_timestamp_ = rtp_header.rtp_timestamp;
     // The following incoming packet info is used for syncing sender and
     // receiver clock. Use only the first packet of every frame to obtain a
     // minimal value.
@@ -326,11 +326,11 @@ void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
   }
 
   frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
-      rtp_header.webrtc.header.timestamp;
+      rtp_header.rtp_timestamp;
   cast_environment_->Logging()->InsertPacketEvent(
       now,
       kVideoPacketReceived,
-      rtp_header.webrtc.header.timestamp,
+      rtp_header.rtp_timestamp,
       rtp_header.frame_id,
       rtp_header.packet_id,
       rtp_header.max_packet_id,
@@ -343,7 +343,7 @@ void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
     cast_environment_->Logging()->InsertPacketEvent(
         now,
         kDuplicateVideoPacketReceived,
-        rtp_header.webrtc.header.timestamp,
+        rtp_header.rtp_timestamp,
         rtp_header.frame_id,
         rtp_header.packet_id,
         rtp_header.max_packet_id,

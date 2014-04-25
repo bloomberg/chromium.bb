@@ -12,13 +12,6 @@ class FrameBufferTest : public ::testing::Test {
  protected:
   FrameBufferTest() {
     payload_.assign(kMaxIpPacketSize, 0);
-    // Build a default one packet frame - populate webrtc header.
-    rtp_header_.is_key_frame = false;
-    rtp_header_.frame_id = 0;
-    rtp_header_.packet_id = 0;
-    rtp_header_.max_packet_id = 0;
-    rtp_header_.is_reference = false;
-    rtp_header_.reference_frame_id = 0;
   }
 
   virtual ~FrameBufferTest() {}
@@ -31,9 +24,10 @@ class FrameBufferTest : public ::testing::Test {
 };
 
 TEST_F(FrameBufferTest, OnePacketInsertSanity) {
-  rtp_header_.webrtc.header.timestamp = 3000u;
+  rtp_header_.rtp_timestamp = 3000;
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 5;
+  rtp_header_.reference_frame_id = 5;
   buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
   transport::EncodedVideoFrame frame;
   EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame));

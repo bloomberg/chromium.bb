@@ -93,6 +93,8 @@ typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.
 typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
 
+// TODO(miu): UGLY IN-LINE DEFINITION IN HEADER FILE!  Move to appropriate
+// location, separated into .h and .cc files.
 class FrameIdWrapHelper {
  public:
   FrameIdWrapHelper()
