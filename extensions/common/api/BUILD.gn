@@ -1,0 +1,21 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//extensions/generated_extensions_api.gni")
+
+generated_extensions_api("extensions_api") {
+  sources = [
+    "dns.idl",
+    "extensions_manifest_types.json",
+    "socket.idl",
+    "sockets_tcp.idl",
+    "sockets_tcp_server.idl",
+    "sockets_udp.idl",
+    "storage.json",
+    "test.json",
+  ]
+  root_namespace = "extensions::core_api"
+  impl_dir = "//extensions/browser/api"
+  deps = [ "//skia" ]
+}

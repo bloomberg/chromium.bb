@@ -17,6 +17,7 @@ group("root") {
     # This is a temporary test of the not-yet-complete NaCl cross-compilation.
     #"//base(//build/toolchain/nacl:x86_newlib)",
 
+    "//apps/common/api:apps_api",
     #"//chrome",
     "//components/language_usage_metrics",
     "//components/navigation_metrics",
@@ -29,6 +30,7 @@ group("root") {
     "//components/url_matcher",
     "//crypto",
     "//device/usb",
+    #"//extensions/common/api:extensions_api",
     "//ipc",
     "//net",
     #"//sdch",
