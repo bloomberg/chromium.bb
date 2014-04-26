@@ -756,8 +756,6 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
           display_count_ > 1))
     prefs->gl_multisampling_enabled = false;
 
-  prefs->accelerated_compositing_for_video_enabled = true;
-
 #if defined(USE_AURA)
   if (!CanUseGpuBrowserCompositor()) {
     prefs->accelerated_2d_canvas_enabled = false;

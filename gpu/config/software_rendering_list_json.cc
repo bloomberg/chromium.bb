@@ -671,7 +671,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "value": "NVIDIA"
       },
       "features": [
-        "accelerated_video",
         "accelerated_video_decode",
         "flash_3d",
         "flash_stage3d"

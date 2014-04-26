@@ -102,15 +102,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           true
       },
 #endif
-      {
-          "video",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO),
-          command_line.HasSwitch(switches::kDisableAcceleratedVideo),
-          "Accelerated video presentation has been disabled, either via"
-          " about:flags or command line.",
-          true
-      },
 #if defined(OS_CHROMEOS)
       {
           "panel_fitting",

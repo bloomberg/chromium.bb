@@ -94,9 +94,6 @@ const char kDisableAcceleratedOverflowScroll[] =
 const char kDisableLayerSquashing[] =
     "disable-layer-squashing";
 
-// Disables GPU accelerated video display.
-const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
-
 // Disables hardware acceleration of video decode, where available.
 const char kDisableAcceleratedVideoDecode[] =
     "disable-accelerated-video-decode";

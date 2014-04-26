@@ -426,8 +426,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
       command_line.HasSwitch(switches::kEnableDeferredFilters);
   prefs.container_culling_enabled =
       command_line.HasSwitch(switches::kEnableContainerCulling);
-  prefs.accelerated_compositing_for_video_enabled =
-      !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
   prefs.lazy_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   prefs.region_based_columns_enabled =

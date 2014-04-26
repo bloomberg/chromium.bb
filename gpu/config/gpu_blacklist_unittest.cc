@@ -120,10 +120,6 @@ GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideoEncode,
                            "accelerated_video_encode",
                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE)
 
-GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideo,
-                           "accelerated_video",
-                           GPU_FEATURE_TYPE_ACCELERATED_VIDEO)
-
 GPU_BLACKLIST_FEATURE_TEST(PanelFitting,
                            "panel_fitting",
                            GPU_FEATURE_TYPE_PANEL_FITTING)

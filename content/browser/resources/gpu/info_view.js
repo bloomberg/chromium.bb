@@ -91,7 +91,6 @@ cr.define('gpu', function() {
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
         'video_encode': 'Video Encode',
-        'video': 'Video',
         // GPU Switching
         'gpu_switching': 'GPU Switching',
         'panel_fitting': 'Panel Fitting',
