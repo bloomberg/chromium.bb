@@ -141,8 +141,7 @@ but you won't be able to use the cool new stuff.
 <h3 id="inline_scripts">Use inline scripts in sandbox</h3>
 
 <p>
-Here's a sample sandboxed page
-which uses an inline script and <code>eval()</code>:
+Here's a sample sandboxed page which uses an inline script and <code>eval()</code>:
 </p>
 
 <pre data-filename="sandboxed.html">
@@ -150,8 +149,7 @@ which uses an inline script and <code>eval()</code>:
   &lt;body>
     &lt;h1>Woot&lt;/h1>
     &lt;script>
-      document.write('I am an inline script.&lt;br>');
-      eval('document.write(\'I am an eval-ed inline script.\');');
+      eval('console.log(\'I am an eval-ed inline script.\')');
     &lt;/script>
   &lt;/body>
 &lt;/html>
