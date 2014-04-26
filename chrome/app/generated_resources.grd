@@ -4691,66 +4691,6 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_EXTENSIONS_PERMISSIONS_CLOSE" desc="Close button for permissions dialog in apps_devtools">
           Close
         </message>
-        <message name="IDS_APPS_DEVTOOL_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load app/extension' button.">
-          Load unpacked...
-        </message>
-        <message name="IDS_APPS_DEVTOOL_PACK_BUTTON" desc="Text for the 'Pack app/extension' button.">
-          Pack...
-        </message>
-        <message name="IDS_APPS_DEVTOOL_UPDATE_BUTTON" desc="Text for the 'Update app/extensions' button.">
-          Update
-        </message>
-        <message name="IDS_APPS_DEVTOOL_SEARCH" desc="Placeholder text that appears inside the search box until the user inputs data.">
-          search
-        </message>
-        <message name="IDS_APPS_DEVTOOL_APPS_INSTALLED" desc="Text for the word 'Apps'.">
-          Apps
-        </message>
-        <message name="IDS_APPS_DEVTOOL_EXTENSIONS_INSTALLED" desc="Text for the word 'Extensions'.">
-          Extensions
-        </message>
-        <message name="IDS_APPS_DEVTOOL_NO_PACKED_APPS" desc="Text that lets the user know that no packed apps are installed.">
-          No installed applications.
-        </message>
-        <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_APPS" desc="Text that lets the user know that no unpacked apps are installed.">
-          No unpacked applications.
-        </message>
-        <message name="IDS_APPS_DEVTOOL_NO_PACKED_EXTENSIONS" desc="Text that lets the user know that no packed extensions are installed.">
-          No installed extensions.
-        </message>
-        <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_EXTENSIONS" desc="Text that lets the user know that no unpacked extensions are installed.">
-          No unpacked extensions.
-        </message>
-        <message name="IDS_APPS_DEVTOOL_UNPACKED_INSTALLED" desc="Text for the word 'Unpacked' (unpacked app or extension).">
-          Unpacked
-        </message>
-        <message name="IDS_APPS_DEVTOOL_INSTALLED" desc="Text for the word 'Installed' (installed app or extension).">
-          Installed
-        </message>
-        <message name="IDS_APPS_DEVTOOL_UPDATING" desc="Text for the word 'Updating...' when the user clicks on 'Update'.">
-          Updating...
-        </message>
-        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_BUTTON" desc="Text of  the delete button in the apps/extension delete confirmation dialog.">
-          Delete
-        </message>
-        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_TITLE" desc="Text of the title of the apps/extension delete confirmation dialog.">
-          Delete
-        </message>
-        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_APP" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an app.">
-          Do you really want to delete this application?
-        </message>
-        <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_EXTENSION" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an extension.">
-          Do you really want to delete this extension?
-        </message>
-        <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_CLOSE_BUTTON" desc="Title of the button to close the dialog for managed profile.">
-          Close
-        </message>
-        <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_TITLE" desc="Title of the dialog for managed profile.">
-          This user is supervised.
-        </message>
-        <message name="IDS_APPS_DEVTOOL_MANAGED_PROFILE_DIALOG_DESCRIPTION" desc="Content of the dialog for managed profile. It's informing a supervised user that extensions cannot be changed.">
-          Applications and extensions cannot be modified by supervised users. Apps Developer Tools will be closed.
-        </message>
         <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
           Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?
         </message>
@@ -4852,16 +4792,6 @@ Make sure you do not expose any sensitive information.
         <if expr="not is_macosx">
           <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
             Reload (Ctrl+R)
-          </message>
-        </if>
-        <if expr="is_macosx">
-          <message name="IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED" desc="The link for reloading unpacked apps/extensions.">
-            Reload
-          </message>
-        </if>
-        <if expr="not is_macosx">
-          <message name="IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED" desc="The link for reloading unpacked apps/extensions.">
-            Reload
           </message>
         </if>
         <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The link text for the Options link.">
