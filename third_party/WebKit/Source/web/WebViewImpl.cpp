@@ -394,6 +394,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeViewCommitsDeferred(false)
     , m_recreatingGraphicsContext(false)
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
+    , m_userMediaClientImpl(this)
     , m_flingModifier(0)
     , m_flingSourceDevice(false)
     , m_fullscreenController(FullscreenController::create(this))
@@ -418,6 +419,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.storageClient = &m_storageClientImpl;
 
     m_page = adoptPtrWillBeNoop(new Page(pageClients));
+    provideUserMediaTo(*m_page, &m_userMediaClientImpl);
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
     provideMIDITo(*m_page, MIDIClientProxy::create(client ? client->webMIDIClient() : 0));
 #if ENABLE(INPUT_SPEECH)

@@ -37,7 +37,6 @@
 #include "public/web/WebLocalFrame.h"
 #include "web/FrameLoaderClientImpl.h"
 #include "web/NotificationPresenterImpl.h"
-#include "web/UserMediaClientImpl.h"
 #include "wtf/Compiler.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -373,8 +372,6 @@ private:
 
     // The provider of desktop notifications;
     NotificationPresenterImpl m_notificationPresenter;
-
-    UserMediaClientImpl m_userMediaClientImpl;
 };
 
 DEFINE_TYPE_CASTS(WebLocalFrameImpl, WebFrame, frame, frame->isWebLocalFrame(), frame.isWebLocalFrame());

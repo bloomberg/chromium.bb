@@ -1652,7 +1652,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     , m_client(client)
     , m_permissionClient(0)
     , m_inputEventsScaleFactorForEmulation(1)
-    , m_userMediaClientImpl(this)
 {
     blink::Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
@@ -1675,10 +1674,8 @@ void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
     m_frame = frame;
 
     // FIXME: we shouldn't add overhead to every frame by registering these objects when they're not used.
-    if (m_frame) {
+    if (m_frame)
         provideNotification(*m_frame, notificationPresenterImpl());
-        provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
-    }
 }
 
 void WebLocalFrameImpl::initializeAsMainFrame(WebCore::Page* page)

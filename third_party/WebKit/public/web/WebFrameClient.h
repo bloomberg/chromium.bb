@@ -79,7 +79,6 @@ class WebString;
 class WebURL;
 class WebURLLoader;
 class WebURLResponse;
-class WebUserMediaClient;
 class WebWorkerPermissionClientProxy;
 struct WebColorSuggestion;
 struct WebConsoleMessage;
@@ -443,8 +442,6 @@ public:
 
     // A new WebRTCPeerConnectionHandler is created.
     virtual void willStartUsingPeerConnectionHandler(WebLocalFrame*, WebRTCPeerConnectionHandler*) { }
-
-    virtual WebUserMediaClient* userMediaClient() { return 0; }
 
 
     // Messages ------------------------------------------------------

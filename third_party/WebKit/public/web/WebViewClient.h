@@ -73,6 +73,7 @@ class WebSpeechRecognizer;
 class WebStorageNamespace;
 class WebURL;
 class WebURLRequest;
+class WebUserMediaClient;
 class WebView;
 class WebWidget;
 struct WebConsoleMessage;
@@ -302,6 +303,11 @@ public:
     {
         return WebPageVisibilityStateVisible;
     }
+
+
+    // Media Streams -------------------------------------------------------
+
+    virtual WebUserMediaClient* userMediaClient() { return 0; }
 
 
     // Web MIDI -------------------------------------------------------------
