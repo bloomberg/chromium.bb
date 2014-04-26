@@ -100,30 +100,39 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParentNotAtOrigin) {
   widget->CloseNow();
 }
 
-// Used by ShowMaximizedDoesntBounceAround. See it for details.
-class TestLayoutManager : public aura::LayoutManager {
+class TestLayoutManagerBase : public aura::LayoutManager {
  public:
-  TestLayoutManager() {}
+  TestLayoutManagerBase() {}
+  virtual ~TestLayoutManagerBase() {}
 
-  virtual void OnWindowResized() OVERRIDE {
-  }
+  // aura::LayoutManager:
+  virtual void OnWindowResized() OVERRIDE {}
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
+                                              bool visible) OVERRIDE {}
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestLayoutManagerBase);
+};
+
+// Used by ShowMaximizedDoesntBounceAround. See it for details.
+class MaximizeLayoutManager : public TestLayoutManagerBase {
+ public:
+  MaximizeLayoutManager() {}
+  virtual ~MaximizeLayoutManager() {}
+
+ private:
+  // aura::LayoutManager:
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
     // This simulates what happens when adding a maximized window.
     SetChildBoundsDirect(child, gfx::Rect(0, 0, 300, 300));
   }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
-  }
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {
-  }
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE {
-  }
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
-  }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(MaximizeLayoutManager);
 };
 
 // This simulates BrowserView, which creates a custom RootView so that
@@ -160,7 +169,7 @@ class TestWidget : public views::Widget {
 // leads to noticable flashes.
 TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
   root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
-  root_window()->SetLayoutManager(new TestLayoutManager);
+  root_window()->SetLayoutManager(new MaximizeLayoutManager);
   scoped_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -170,6 +179,67 @@ TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
   params.bounds = gfx::Rect(10, 10, 100, 200);
   widget->Init(params);
   EXPECT_FALSE(widget->did_size_change_more_than_once());
+  widget->CloseNow();
+}
+
+class PropertyTestLayoutManager : public TestLayoutManagerBase {
+ public:
+  PropertyTestLayoutManager() : added_(false) {}
+  virtual ~PropertyTestLayoutManager() {}
+
+  bool added() const { return added_; }
+
+ private:
+  // aura::LayoutManager:
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+    EXPECT_TRUE(child->GetProperty(aura::client::kCanMaximizeKey));
+    EXPECT_TRUE(child->GetProperty(aura::client::kCanResizeKey));
+    added_ = true;
+  }
+
+  bool added_;
+
+  DISALLOW_COPY_AND_ASSIGN(PropertyTestLayoutManager);
+};
+
+class PropertyTestWidgetDelegate : public views::WidgetDelegate {
+ public:
+  explicit PropertyTestWidgetDelegate(Widget* widget) : widget_(widget) {}
+  virtual ~PropertyTestWidgetDelegate() {}
+
+ private:
+  // views::WidgetDelegate:
+  virtual bool CanMaximize() const OVERRIDE {
+    return true;
+  }
+  virtual bool CanResize() const OVERRIDE {
+    return true;
+  }
+  virtual Widget* GetWidget() OVERRIDE {
+    return widget_;
+  }
+  virtual const Widget* GetWidget() const OVERRIDE {
+    return widget_;
+  }
+
+  Widget* widget_;
+  DISALLOW_COPY_AND_ASSIGN(PropertyTestWidgetDelegate);
+};
+
+// Verifies that the kCanMaximizeKey/kCanReizeKey have the correct
+// value when added to the layout manager.
+TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
+  root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
+  PropertyTestLayoutManager* layout_manager = new PropertyTestLayoutManager();
+  root_window()->SetLayoutManager(layout_manager);
+  scoped_ptr<TestWidget> widget(new TestWidget());
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.delegate = new PropertyTestWidgetDelegate(widget.get());
+  params.parent = NULL;
+  params.context = root_window();
+  widget->Init(params);
+  EXPECT_TRUE(layout_manager->added());
   widget->CloseNow();
 }
 
@@ -189,8 +259,6 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
   EXPECT_EQ(300, client_bounds.width());
   EXPECT_EQ(400, client_bounds.height());
 }
-
-namespace {
 
 // View subclass that tracks whether it has gotten a gesture event.
 class GestureTrackingView : public views::View {
@@ -226,8 +294,6 @@ class GestureTrackingView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(GestureTrackingView);
 };
-
-}  // namespace
 
 // Verifies a capture isn't set on touch press and that the view that gets
 // the press gets the release.
