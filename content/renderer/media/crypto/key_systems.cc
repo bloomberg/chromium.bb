@@ -281,7 +281,8 @@ bool KeySystems::IsSupportedContainerAndCodecs(
 
   for (size_t i = 0; i < codecs.size(); ++i) {
     const std::string& codec = codecs[i];
-    DCHECK(!codec.empty());
+    if (codec.empty())
+      continue;
     CodecMaskMap::const_iterator codec_iter = codec_masks_.find(codec);
     if (codec_iter == codec_masks_.end())  // Unrecognized codec.
       return false;
