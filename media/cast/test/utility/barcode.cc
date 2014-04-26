@@ -79,19 +79,11 @@ bool EncodeBarcode(const std::vector<bool>& bits,
   return true;
 }
 
-// Note that "output" is assumed to be the right size already. This
-// could be inferred from the data, but the decoding is more robust
-// if we can assume that we know how many bits we want.
-bool DecodeBarcode(const scoped_refptr<VideoFrame>& frame,
-                   std::vector<bool>* output) {
-  DCHECK(frame->format() == VideoFrame::YV12 ||
-         frame->format() == VideoFrame::YV16 ||
-         frame->format() == VideoFrame::I420 ||
-         frame->format() == VideoFrame::YV12J);
-  int min_row = std::max(0, frame->rows(VideoFrame::kYPlane) / 2 - 10);
-  int max_row = std::min(frame->rows(VideoFrame::kYPlane),
-                         frame->rows(VideoFrame::kYPlane) / 2 + 10);
-
+namespace {
+bool DecodeBarCodeRows(const scoped_refptr<VideoFrame>& frame,
+                       std::vector<bool>* output,
+                       int min_row,
+                       int max_row) {
   // Do a basic run-length encoding
   std::deque<int> runs;
   bool is_black = true;
@@ -148,6 +140,34 @@ bool DecodeBarcode(const scoped_refptr<VideoFrame>& frame,
     runs.pop_front();
     runs.pop_front();
   }
+  return false;
+}
+
+}  // namespace
+
+// Note that "output" is assumed to be the right size already. This
+// could be inferred from the data, but the decoding is more robust
+// if we can assume that we know how many bits we want.
+bool DecodeBarcode(const scoped_refptr<VideoFrame>& frame,
+                   std::vector<bool>* output) {
+  DCHECK(frame->format() == VideoFrame::YV12 ||
+         frame->format() == VideoFrame::YV16 ||
+         frame->format() == VideoFrame::I420 ||
+         frame->format() == VideoFrame::YV12J);
+  int rows = frame->rows(VideoFrame::kYPlane);
+  // Middle 10 lines
+  if (DecodeBarCodeRows(frame,
+                        output,
+                        std::max(0, rows / 2 - 5),
+                        std::min(rows, rows / 2 + 5))) {
+    return true;
+  }
+
+  // Top 5 lines
+  if (DecodeBarCodeRows(frame, output, 0, std::min(5, rows))) {
+    return true;
+  }
+
   return false;
 }
 

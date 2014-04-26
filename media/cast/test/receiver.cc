@@ -7,6 +7,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <deque>
+#include <map>
 #include <string>
 #include <utility>
 
@@ -32,6 +33,8 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/barcode.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/in_process_receiver.h"
 #include "media/cast/test/utility/input_builder.h"
@@ -270,6 +273,13 @@ class NaivePlayer : public InProcessReceiver,
         << "Video: Discontinuity in received frames.";
     video_playout_queue_.push_back(std::make_pair(playout_time, video_frame));
     ScheduleVideoPlayout();
+    uint16 frame_no;
+    if (media::cast::test::DecodeBarcode(video_frame, &frame_no)) {
+      video_play_times_.insert(
+          std::pair<uint16, base::TimeTicks>(frame_no, playout_time));
+    } else {
+      VLOG(2) << "Barcode decode failed!";
+    }
   }
 
   virtual void OnAudioFrame(scoped_ptr<AudioBus> audio_frame,
@@ -279,6 +289,23 @@ class NaivePlayer : public InProcessReceiver,
     LOG_IF(WARNING, !is_continuous)
         << "Audio: Discontinuity in received frames.";
     base::AutoLock auto_lock(audio_lock_);
+    uint16 frame_no;
+    if (media::cast::DecodeTimestamp(audio_frame->channel(0),
+                                     audio_frame->frames(),
+                                     &frame_no)) {
+      // Since there are lots of audio packets with the same frame_no,
+      // we really want to make sure that we get the playout_time from
+      // the first one. If is_continous is true, then it's possible
+      // that we already missed the first one.
+      if (is_continuous && frame_no == last_audio_frame_no_ + 1) {
+        audio_play_times_.insert(
+            std::pair<uint16, base::TimeTicks>(frame_no, playout_time));
+      }
+      last_audio_frame_no_ = frame_no;
+    } else {
+      VLOG(2) << "Audio decode failed!";
+      last_audio_frame_no_ = -2;
+    }
     audio_playout_queue_.push_back(
         std::make_pair(playout_time, audio_frame.release()));
   }
@@ -396,6 +423,7 @@ class NaivePlayer : public InProcessReceiver,
 #endif  // OS_LINUX
     }
     ScheduleVideoPlayout();
+    CheckAVSync();
   }
 
   scoped_refptr<VideoFrame> PopOneVideoFrame(bool is_being_skipped) {
@@ -434,6 +462,37 @@ class NaivePlayer : public InProcessReceiver,
     return ret.Pass();
   }
 
+  void CheckAVSync() {
+    if (video_play_times_.size() > 30 &&
+        audio_play_times_.size() > 30) {
+      size_t num_events = 0;
+      base::TimeDelta delta;
+      std::map<uint16, base::TimeTicks>::iterator audio_iter, video_iter;
+      for (video_iter = video_play_times_.begin();
+           video_iter != video_play_times_.end();
+           ++video_iter) {
+        audio_iter = audio_play_times_.find(video_iter->first);
+        if (audio_iter != audio_play_times_.end()) {
+          num_events++;
+          // Positive values means audio is running behind video.
+          delta += audio_iter->second - video_iter->second;
+        }
+      }
+
+      if (num_events > 30) {
+        VLOG(0) << "Audio behind by: "
+                << (delta / num_events).InMilliseconds()
+                << "ms";
+        video_play_times_.clear();
+        audio_play_times_.clear();
+      }
+    } else if (video_play_times_.size() + audio_play_times_.size() > 500) {
+      // We are decoding audio or video timestamps, but not both, clear it out.
+      video_play_times_.clear();
+      audio_play_times_.clear();
+    }
+  }
+
   // Frames in the queue older than this (relative to NowTicks()) will be
   // dropped (i.e., playback is falling behind).
   const base::TimeDelta max_frame_age_;
@@ -461,6 +520,10 @@ class NaivePlayer : public InProcessReceiver,
   // These must only be used on the audio thread calling OnMoreData().
   scoped_ptr<AudioBus> currently_playing_audio_frame_;
   int currently_playing_audio_frame_start_;
+
+  std::map<uint16, base::TimeTicks> audio_play_times_;
+  std::map<uint16, base::TimeTicks> video_play_times_;
+  int32 last_audio_frame_no_;
 };
 
 }  // namespace cast
