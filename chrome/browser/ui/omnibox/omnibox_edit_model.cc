@@ -17,7 +17,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -175,7 +174,8 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
                                bool is_keyword_hint,
                                bool url_replacement_enabled,
                                OmniboxFocusState focus_state,
-                               FocusSource focus_source)
+                               FocusSource focus_source,
+                               const AutocompleteInput& autocomplete_input)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
       gray_text(gray_text),
@@ -183,7 +183,8 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
       is_keyword_hint(is_keyword_hint),
       url_replacement_enabled(url_replacement_enabled),
       focus_state(focus_state),
-      focus_source(focus_source) {
+      focus_source(focus_source),
+      autocomplete_input(autocomplete_input) {
 }
 
 OmniboxEditModel::State::~State() {
@@ -240,7 +241,7 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
       user_input_in_progress_, user_text_, view_->GetGrayTextAutocompletion(),
       keyword_, is_keyword_hint_,
       controller_->GetToolbarModel()->url_replacement_enabled(),
-      focus_state_, focus_source_);
+      focus_state_, focus_source_, input_);
 }
 
 void OmniboxEditModel::RestoreState(const State* state) {
@@ -252,6 +253,9 @@ void OmniboxEditModel::RestoreState(const State* state) {
   // Don't muck with the search term replacement state, as we've just set it
   // correctly.
   view_->RevertWithoutResettingSearchTermReplacement();
+  // Restore the autocomplete controller's input, or clear it if this is a new
+  // tab.
+  input_ = state ? state->autocomplete_input : AutocompleteInput();
   if (!state)
     return;
 
@@ -278,7 +282,7 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
     GetInfoForCurrentText(&match, alternate_nav_url);
   } else if (alternate_nav_url) {
     *alternate_nav_url = AutocompleteResult::ComputeAlternateNavUrl(
-        autocomplete_controller()->input(), match);
+        input_, match);
   }
   return match;
 }
@@ -538,7 +542,7 @@ void OmniboxEditModel::Revert() {
 
 void OmniboxEditModel::StartAutocomplete(
     bool has_selected_text,
-    bool prevent_inline_autocomplete) const {
+    bool prevent_inline_autocomplete) {
   size_t cursor_position;
   if (inline_autocomplete_text_.empty()) {
     // Cursor position is equivalent to the current selection's end.
@@ -568,16 +572,20 @@ void OmniboxEditModel::StartAutocomplete(
       (delegate_->CurrentPageExists() && view_->IsIndicatingQueryRefinement()) ?
       delegate_->GetURL() : GURL();
   bool keyword_is_selected = KeywordIsSelected();
-  omnibox_controller_->StartAutocomplete(
+  input_ = AutocompleteInput(
       user_text_,
       cursor_position,
+      base::string16(),
       current_url,
       ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE),
       keyword_is_selected,
-      keyword_is_selected || allow_exact_keyword_match_);
+      keyword_is_selected || allow_exact_keyword_match_,
+      true);
+
+  omnibox_controller_->StartAutocomplete(input_);
 }
 
 void OmniboxEditModel::StopAutocomplete() {
@@ -631,18 +639,18 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // to "foodnetwork.com", ctrl-enter will navigate to "foo.com", not
     // "foodnetwork.com".  At the time of writing, this behavior matches
     // Internet Explorer, but not Firefox.
-    const AutocompleteInput& old_input = autocomplete_controller()->input();
-    AutocompleteInput input(
+    input_ = AutocompleteInput(
       has_temporary_text_ ?
-          UserTextFromDisplayText(view_->GetText())  : old_input.text(),
-      old_input.cursor_position(), base::ASCIIToUTF16("com"),
-      GURL(), old_input.current_page_classification(),
-      old_input.prevent_inline_autocomplete(), old_input.prefer_keyword(),
-      old_input.allow_exact_keyword_match(),
-      old_input.want_asynchronous_matches());
+          UserTextFromDisplayText(view_->GetText())  : input_.text(),
+      input_.cursor_position(), base::ASCIIToUTF16("com"),
+      GURL(), input_.current_page_classification(),
+      input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
+      input_.allow_exact_keyword_match(),
+      input_.want_asynchronous_matches());
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
-            input.text(), input.canonicalized_url(), false));
+            input_.text(), input_.canonicalized_url(), false));
+
 
     if (url_match.destination_url.is_valid()) {
       // We have a valid URL, we use this newly generated AutocompleteMatch.
@@ -724,7 +732,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     OmniboxLog log(
         input_text,
         just_deleted_text_,
-        autocomplete_controller()->input().type(),
+        input_.type(),
         index,
         -1,  // don't yet know tab ID; set later if appropriate
         ClassifyPage(),

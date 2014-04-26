@@ -16,7 +16,6 @@
 
 struct AutocompleteMatch;
 class AutocompleteResult;
-class GURL;
 class InstantController;
 class OmniboxEditModel;
 class OmniboxPopupModel;
@@ -40,15 +39,8 @@ class OmniboxController : public AutocompleteControllerDelegate {
                     Profile* profile);
   virtual ~OmniboxController();
 
-  // |current_url| is only set for mobile ports.
-  void StartAutocomplete(
-      base::string16 user_text,
-      size_t cursor_position,
-      const GURL& current_url,
-      AutocompleteInput::PageClassification current_page_classification,
-      bool prevent_inline_autocomplete,
-      bool prefer_keyword,
-      bool allow_exact_keyword_match) const;
+  // The |current_url| field of input is only set for mobile ports.
+  void StartAutocomplete(const AutocompleteInput& input) const;
 
   // AutocompleteControllerDelegate:
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;

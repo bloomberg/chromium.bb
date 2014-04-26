@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -84,6 +85,9 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   // Needed because we also pass timing information in the object we
   // hand back to the javascript.
   base::Time time_omnibox_started_;
+
+  // The input used when starting the AutocompleteController.
+  AutocompleteInput input_;
 
   // The Profile* handed to us in our constructor.
   Profile* profile_;

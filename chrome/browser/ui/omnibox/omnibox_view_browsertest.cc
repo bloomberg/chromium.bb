@@ -1460,7 +1460,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   omnibox_view->GetSelectionBounds(&start, &end);
   EXPECT_TRUE(start != end);
   base::string16 old_autocomplete_text =
-      omnibox_view->model()->autocomplete_controller()->input().text();
+      omnibox_view->model()->autocomplete_controller()->input_.text();
 
   // Unfocus the omnibox. This should clear the text field selection and
   // close the popup, but should not run autocomplete.
@@ -1471,7 +1471,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   EXPECT_TRUE(start == end);
 
   EXPECT_EQ(old_autocomplete_text,
-      omnibox_view->model()->autocomplete_controller()->input().text());
+      omnibox_view->model()->autocomplete_controller()->input_.text());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {

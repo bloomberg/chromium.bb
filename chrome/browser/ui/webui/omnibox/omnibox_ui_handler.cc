@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/history/history_service.h"
@@ -80,9 +79,9 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   result_to_output.SetBoolean("done", controller_->done());
   result_to_output.SetInteger("time_since_omnibox_started_ms",
       (base::Time::Now() - time_omnibox_started_).InMilliseconds());
-  const base::string16& host = controller_->input().text().substr(
-      controller_->input().parts().host.begin,
-      controller_->input().parts().host.len);
+  const base::string16& host = input_.text().substr(
+      input_.parts().host.begin,
+      input_.parts().host.len);
   result_to_output.SetString("host", host);
   bool is_typed_host;
   if (LookupIsTypedHost(host, &is_typed_host)) {
@@ -198,7 +197,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
   // actual results to not depend on the state of the previous request.
   ResetController();
   time_omnibox_started_ = base::Time::Now();
-  controller_->Start(AutocompleteInput(
+  input_ = AutocompleteInput(
       input_string,
       cursor_position,
       base::string16(),  // user's desired tld (top-level domain)
@@ -208,7 +207,8 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
       prevent_inline_autocomplete,
       prefer_keyword,
       true,  // allow exact keyword matches
-      true));  // want all matches
+      true);
+  controller_->Start(input_);  // want all matches
 }
 
 void OmniboxUIHandler::ResetController() {
