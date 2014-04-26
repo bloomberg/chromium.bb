@@ -34,6 +34,7 @@
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_sandbox_linux.h"
 #include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
@@ -113,6 +114,17 @@ void InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {
   }
 }
 
+// Replace |file_descriptor| with the reading end of a closed pipe.
+void ReplaceFDWithDummy(int file_descriptor) {
+  // Make sure that file_descriptor is an open descriptor.
+  PCHECK(-1 != fcntl(file_descriptor, F_GETFD, 0));
+  int pipefd[2];
+  PCHECK(0 == pipe(pipefd));
+  PCHECK(-1 != dup2(pipefd[0], file_descriptor));
+  PCHECK(0 == IGNORE_EINTR(close(pipefd[0])));
+  PCHECK(0 == IGNORE_EINTR(close(pipefd[1])));
+}
+
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
@@ -120,9 +132,23 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
                       const NaClLoaderSystemInfo& system_info,
                       bool uses_nonsfi_mode) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
-  // don't need zygote FD any more
-  if (IGNORE_EINTR(close(kNaClZygoteDescriptor)) != 0)
-    LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
+  // Close or shutdown IPC channels that we don't need anymore.
+  PCHECK(0 == IGNORE_EINTR(close(kNaClZygoteDescriptor)));
+  // In Non-SFI mode, it's important to close any non-expected IPC channels.
+  if (uses_nonsfi_mode) {
+    // The low-level kSandboxIPCChannel is used by renderers and NaCl for
+    // various operations. See the LinuxSandbox::METHOD_* methods. NaCl uses
+    // LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT in SFI mode, so this
+    // should only be closed in Non-SFI mode.
+    // This file descriptor is insidiously used by a number of APIs. Closing it
+    // could lead to difficult to debug issues. Instead of closing it, replace
+    // it with a dummy.
+    const int sandbox_ipc_channel =
+        base::GlobalDescriptors::kBaseDescriptor + kSandboxIPCChannel;
+
+    ReplaceFDWithDummy(sandbox_ipc_channel);
+  }
+
   InitializeLayerTwoSandbox(uses_nonsfi_mode);
   base::GlobalDescriptors::GetInstance()->Set(
       kPrimaryIPCChannel,
