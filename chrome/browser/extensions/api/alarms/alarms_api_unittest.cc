@@ -323,9 +323,9 @@ TEST_F(ExtensionAlarmsTest, Get) {
 
   // Get a non-existent one.
   {
-    std::string error = RunFunctionAndReturnError(
-        new AlarmsGetFunction(), "[\"nobody\"]");
-    EXPECT_FALSE(error.empty());
+    scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
+        new AlarmsGetFunction(), "[\"nobody\"]"));
+    ASSERT_FALSE(result.get());
   }
 }
 

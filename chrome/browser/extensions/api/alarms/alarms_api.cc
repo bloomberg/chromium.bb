@@ -19,7 +19,6 @@ namespace extensions {
 namespace {
 
 const char kDefaultAlarmName[] = "";
-const char kAlarmNotFound[] = "No alarm named '*' exists.";
 const char kBothRelativeAndAbsoluteTime[] =
     "Cannot set both when and delayInMinutes.";
 const char kNoScheduledTime[] =
@@ -147,11 +146,8 @@ void AlarmsGetFunction::Callback(
     const std::string& name, extensions::Alarm* alarm) {
   if (alarm) {
     results_ = alarms::Get::Results::Create(*alarm->js_alarm);
-    SendResponse(true);
-  } else {
-    error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
-    SendResponse(false);
   }
+  SendResponse(true);
 }
 
 bool AlarmsGetAllFunction::RunImpl() {
