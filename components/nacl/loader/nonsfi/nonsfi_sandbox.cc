@@ -154,12 +154,11 @@ bool IsGracefullyDenied(int sysno) {
     case __NR_geteuid32:
     case __NR_getgid32:
     case __NR_getuid32:
-#elif defined(__x86_64__)
+#endif
     case __NR_getegid:
     case __NR_geteuid:
     case __NR_getgid:
     case __NR_getuid:
-#endif
     // tcmalloc calls madvise in TCMalloc_SystemRelease.
     case __NR_madvise:
     // EPERM instead of SIGSYS as glibc tries to open files in /proc.

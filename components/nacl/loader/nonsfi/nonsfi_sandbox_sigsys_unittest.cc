@@ -22,7 +22,7 @@ namespace {
       NaClNonSfiSandboxSIGSYSTest, name,                                \
       DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),         \
       nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {  \
-    syscall(sysno, 0, 0, 0, 0, 0);                                      \
+    syscall(sysno, 0, 0, 0, 0, 0, 0);                                   \
   }
 
 #define RESTRICT_SYSCALL_DEATH_TEST(name)               \
