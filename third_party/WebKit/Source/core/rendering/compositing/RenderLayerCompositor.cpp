@@ -680,8 +680,7 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
     m_compositingReasonFinder.requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason, &m_needsToRecomputeCompositingRequirements);
 
     if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
-        ASSERT(layer->renderer()->style()->position() == FixedPosition);
-
+        ASSERT(viewportConstrainedNotCompositedReason == RenderLayer::NoNotCompositedReason || layer->renderer()->style()->position() == FixedPosition);
         layer->setViewportConstrainedNotCompositedReason(viewportConstrainedNotCompositedReason);
         return true;
     }
