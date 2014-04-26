@@ -212,9 +212,6 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 
-Bug(ojan) virtual/softwarecompositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-Bug(ojan) compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
