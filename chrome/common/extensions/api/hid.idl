@@ -6,10 +6,12 @@
 // This API provides access to HID operations from within the context of an app.
 // Using this API, apps can function as drivers for hardware devices.
 namespace hid {
-
-  // HID usage pair.
-  // |usage_page|: HID usage page.
-  // |usage|: HID usage.
+  // HID usage pair. Each enumerated device interface exposes an array of
+  // these objects. Values correspond to those defined by the
+  // <a href="http://www.usb.org/developers/devclass_docs/HID1_11.pdf>
+  // HID device class specification</a>.
+  // |usage_page|: HID usage page identifier.
+  // |usage|: Page-defined usage identifier.
   dictionary HidUsageAndPage {
     long usage_page;
     long usage;
