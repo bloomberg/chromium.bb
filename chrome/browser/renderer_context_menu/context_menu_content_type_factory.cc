@@ -5,8 +5,8 @@
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
 
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/guestview/webview/context_menu_content_type_webview.h"
-#include "chrome/browser/guestview/webview/webview_guest.h"
+#include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_app_mode.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_extension_popup.h"
