@@ -206,6 +206,30 @@ TEST_F(WindowModalityControllerTest, Events) {
   }
 }
 
+// Events on modal parent activate.
+TEST_F(WindowModalityControllerTest, EventsForEclipsedWindows) {
+  aura::test::TestWindowDelegate d;
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(&d, -1,
+      gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(&d, -11,
+      gfx::Rect(20, 20, 50, 50)));
+  ::wm::AddTransientChild(w1.get(), w11.get());
+  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(&d, -2,
+      gfx::Rect(0, 0, 50, 50)));
+
+  w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+
+  // Partially eclipse w1 with w2.
+  wm::ActivateWindow(w2.get());
+  {
+    // Clicking a point on w1 that is not eclipsed by w2.
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         gfx::Point(90, 90));
+    generator.ClickLeftButton();
+    EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
+  }
+}
+
 // Creates windows w1 and non activatiable child w11. Creates transient window
 // w2 and adds it as a transeint child of w1. Ensures that w2 is parented to
 // the parent of w1, and that GetModalTransient(w11) returns w2.

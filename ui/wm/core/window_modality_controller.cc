@@ -184,6 +184,13 @@ bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
   aura::Window* modal_transient_child = GetModalTransient(target);
   if (modal_transient_child && (event->type() == ui::ET_MOUSE_PRESSED ||
                                 event->type() == ui::ET_TOUCH_PRESSED)) {
+    // Activate top window if transient child window is window modal.
+    if (TransientChildIsWindowModal(modal_transient_child)) {
+      aura::Window* toplevel = GetToplevelWindow(target);
+      DCHECK(toplevel);
+      ActivateWindow(toplevel);
+    }
+
     AnimateWindow(modal_transient_child, WINDOW_ANIMATION_TYPE_BOUNCE);
   }
   if (event->type() == ui::ET_TOUCH_CANCELLED)

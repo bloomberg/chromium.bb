@@ -33,6 +33,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
                         MessageBoxType type,
                         const base::string16& yes_text,
                         const base::string16& no_text,
+                        bool is_system_modal,
                         MessageBoxResult* result);
   virtual ~SimpleMessageBoxViews();
 
@@ -61,6 +62,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
   base::string16 yes_text_;
   base::string16 no_text_;
   MessageBoxResult* result_;
+  bool is_system_modal_;
   views::MessageBoxView* message_box_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
@@ -74,12 +76,14 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
                                              MessageBoxType type,
                                              const base::string16& yes_text,
                                              const base::string16& no_text,
+                                             bool is_system_modal,
                                              MessageBoxResult* result)
     : window_title_(title),
       type_(type),
       yes_text_(yes_text),
       no_text_(no_text),
       result_(result),
+      is_system_modal_(is_system_modal),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))) {
   CHECK(result_);
@@ -142,7 +146,7 @@ void SimpleMessageBoxViews::DeleteDelegate() {
 }
 
 ui::ModalType SimpleMessageBoxViews::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return is_system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_WINDOW;
 }
 
 views::View* SimpleMessageBoxViews::GetContentsView() {
@@ -209,7 +213,13 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
 
   MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
   SimpleMessageBoxViews* dialog = new SimpleMessageBoxViews(
-      title, message, type, yes_text, no_text, &result);
+      title,
+      message,
+      type,
+      yes_text,
+      no_text,
+      parent == NULL,  // is_system_modal
+      &result);
   CreateBrowserModalDialogViews(dialog, parent)->Show();
 
   // Use the widget's window itself so that the message loop exists when the

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -17,6 +19,9 @@
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
@@ -238,6 +243,28 @@ void StopAudioStreamMonitoringOnUIThread(
 
 #endif  // defined(AUDIO_STREAM_MONITORING)
 
+#if !defined(OS_ANDROID)
+// Find browser or app window from a given |web_contents|.
+gfx::NativeWindow FindParentWindowForWebContents(
+    content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser && browser->window())
+    return browser->window()->GetNativeWindow();
+
+  const apps::AppWindowRegistry::AppWindowList& window_list =
+      apps::AppWindowRegistry::Get(
+          web_contents->GetBrowserContext())->app_windows();
+  for (apps::AppWindowRegistry::AppWindowList::const_iterator iter =
+           window_list.begin();
+       iter != window_list.end(); ++iter) {
+    if ((*iter)->web_contents() == web_contents)
+      return (*iter)->GetNativeWindow();
+  }
+
+  return NULL;
+}
+#endif
+
 }  // namespace
 
 MediaCaptureDevicesDispatcher::PendingAccessRequest::PendingAccessRequest(
@@ -454,6 +481,12 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     // is closed. See http://crbug.com/326690.
     base::string16 application_title =
         GetApplicationTitle(web_contents, extension);
+#if !defined(OS_ANDROID)
+    gfx::NativeWindow parent_window =
+        FindParentWindowForWebContents(web_contents);
+#else
+    gfx::NativeWindow parent_window = NULL;
+#endif
     web_contents = NULL;
 
     // For component extensions, bypass message box.
@@ -467,7 +500,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
               IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT,
           application_name);
       chrome::MessageBoxResult result = chrome::ShowMessageBox(
-          NULL,
+          parent_window,
           l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE, application_name),
           confirmation_text,
