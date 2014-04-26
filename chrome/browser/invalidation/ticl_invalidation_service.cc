@@ -328,11 +328,6 @@ void TiclInvalidationService::Shutdown() {
 }
 
 bool TiclInvalidationService::IsReadyToStart() {
-  if (profile_->IsManaged()) {
-    DVLOG(2) << "Not starting TiclInvalidationService: User is managed.";
-    return false;
-  }
-
   if (identity_provider_->GetActiveAccountId().empty()) {
     DVLOG(2) << "Not starting TiclInvalidationService: User is not signed in.";
     return false;
