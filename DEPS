@@ -28,7 +28,7 @@ vars = {
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
   "skia_git": "https://skia.googlesource.com",
   "swig_revision": "230490",
-  "nacl_revision": "13078",
+  "nacl_revision": "13018",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "12970",  # native_client/DEPS: tools_rev
@@ -588,7 +588,8 @@ hooks = [
     "pattern": ".",
     "action": [
         "python", "src/build/download_nacl_toolchains.py",
-        "--exclude", "arm_trusted",
+         "--no-arm-trusted",
+         "--keep",
     ],
   },
   {
