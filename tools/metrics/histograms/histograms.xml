@@ -23131,6 +23131,39 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SharedWorker.RendererSurviveForWorkerTime"
+    units="milliseconds">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    A survival time of RenderProcessHostImpl for the In-renderer Shared Worker
+    from when FastShutdownIfPossible() is called.
+  </summary>
+</histogram>
+
+<histogram name="SharedWorker.TimeToDeleted" units="milliseconds">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The lifetime of a SharedWorkerHost. This roughly corresponds to the lifetime
+    of SharedWorker.
+  </summary>
+</histogram>
+
+<histogram name="SharedWorker.TimeToScriptLoaded" units="milliseconds">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time from the creation of SharedWorkerHost until when WorkerScriptLoaded
+    is called.
+  </summary>
+</histogram>
+
+<histogram name="SharedWorker.TimeToScriptLoadFailed" units="milliseconds">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time from the creation of SharedWorkerHost until when
+    WorkerScriptLoadFailed is called.
+  </summary>
+</histogram>
+
 <histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
