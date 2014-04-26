@@ -39,8 +39,7 @@ namespace {
 static const size_t kMaximumTextSizeForAutocomplete = 1000;
 
 // Maps element names to the actual elements to simplify form filling.
-typedef std::map<base::string16, blink::WebInputElement>
-    FormInputElementMap;
+typedef std::map<base::string16, blink::WebInputElement> FormInputElementMap;
 
 // Utility struct for form lookup and autofill. When we parse the DOM to look up
 // a form, in addition to action and origin URL's we have to compare all
@@ -213,12 +212,15 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderView* render_view)
       weak_ptr_factory_(this) {
 }
 
-PasswordAutofillAgent::~PasswordAutofillAgent() {}
+PasswordAutofillAgent::~PasswordAutofillAgent() {
+}
 
 PasswordAutofillAgent::PasswordValueGatekeeper::PasswordValueGatekeeper()
-    : was_user_gesture_seen_(false) {}
+    : was_user_gesture_seen_(false) {
+}
 
-PasswordAutofillAgent::PasswordValueGatekeeper::~PasswordValueGatekeeper() {}
+PasswordAutofillAgent::PasswordValueGatekeeper::~PasswordValueGatekeeper() {
+}
 
 void PasswordAutofillAgent::PasswordValueGatekeeper::RegisterElement(
     blink::WebInputElement* element) {
@@ -258,8 +260,7 @@ bool PasswordAutofillAgent::TextFieldDidEndEditing(
   if (iter == login_to_password_info_.end())
     return false;
 
-  const PasswordFormFillData& fill_data =
-      iter->second.fill_data;
+  const PasswordFormFillData& fill_data = iter->second.fill_data;
 
   // If wait_for_username is false, we should have filled when the text changed.
   if (!fill_data.wait_for_username)
@@ -273,7 +274,9 @@ bool PasswordAutofillAgent::TextFieldDidEndEditing(
 
   // Do not set selection when ending an editing session, otherwise it can
   // mess with focus.
-  FillUserNameAndPassword(&username, &password, fill_data,
+  FillUserNameAndPassword(&username,
+                          &password,
+                          fill_data,
                           true /* exact_username_match */,
                           false /* set_selection */);
   return true;
@@ -462,7 +465,8 @@ bool PasswordAutofillAgent::OnMessageReceived(const IPC::Message& message) {
 void PasswordAutofillAgent::DidStartLoading() {
   if (usernames_usage_ != NOTHING_TO_AUTOFILL) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.OtherPossibleUsernamesUsage",
-                              usernames_usage_, OTHER_POSSIBLE_USERNAMES_MAX);
+                              usernames_usage_,
+                              OTHER_POSSIBLE_USERNAMES_MAX);
     usernames_usage_ = NOTHING_TO_AUTOFILL;
   }
 }
@@ -563,8 +567,7 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
       // If onsubmit has been called, try and save that form.
       if (provisionally_saved_forms_[form_frame].get()) {
         Send(new AutofillHostMsg_PasswordFormSubmitted(
-            routing_id(),
-            *provisionally_saved_forms_[form_frame]));
+            routing_id(), *provisionally_saved_forms_[form_frame]));
         provisionally_saved_forms_.erase(form_frame);
       } else {
         // Loop through the forms on the page looking for one that has been
@@ -573,15 +576,14 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
         frame->document().forms(forms);
 
         for (size_t i = 0; i < forms.size(); ++i) {
-          blink::WebFormElement form_element= forms[i];
+          blink::WebFormElement form_element = forms[i];
           scoped_ptr<PasswordForm> password_form(
               CreatePasswordForm(form_element));
-          if (password_form.get() &&
-              !password_form->username_value.empty() &&
+          if (password_form.get() && !password_form->username_value.empty() &&
               !password_form->password_value.empty() &&
               !PasswordValueIsDefault(*password_form, form_element)) {
-            Send(new AutofillHostMsg_PasswordFormSubmitted(
-                routing_id(), *password_form));
+            Send(new AutofillHostMsg_PasswordFormSubmitted(routing_id(),
+                                                           *password_form));
           }
         }
       }
@@ -642,9 +644,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     FindFormAndFieldForFormControlElement(
         username_element, &form, &field, REQUIRE_NONE);
     Send(new AutofillHostMsg_AddPasswordFormMapping(
-        routing_id(),
-        field,
-        form_data));
+        routing_id(), field, form_data));
   }
 }
 
@@ -663,7 +663,8 @@ void PasswordAutofillAgent::GetSuggestions(
 
   for (PasswordFormFillData::LoginCollection::const_iterator iter =
            fill_data.additional_logins.begin();
-       iter != fill_data.additional_logins.end(); ++iter) {
+       iter != fill_data.additional_logins.end();
+       ++iter) {
     if (StartsWith(iter->first, input, false)) {
       suggestions->push_back(iter->first);
       realms->push_back(base::UTF8ToUTF16(iter->second.realm));
@@ -672,7 +673,8 @@ void PasswordAutofillAgent::GetSuggestions(
 
   for (PasswordFormFillData::UsernamesCollection::const_iterator iter =
            fill_data.other_possible_usernames.begin();
-       iter != fill_data.other_possible_usernames.end(); ++iter) {
+       iter != fill_data.other_possible_usernames.end();
+       ++iter) {
     for (size_t i = 0; i < iter->second.size(); ++i) {
       if (StartsWith(iter->second[i], input, false)) {
         usernames_usage_ = OTHER_POSSIBLE_USERNAME_SHOWN;
@@ -712,11 +714,8 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
                                  bounding_box.y() * scale,
                                  bounding_box.width() * scale,
                                  bounding_box.height() * scale);
-  Send(new AutofillHostMsg_ShowPasswordSuggestions(routing_id(),
-                                                   field,
-                                                   bounding_box_scaled,
-                                                   suggestions,
-                                                   realms));
+  Send(new AutofillHostMsg_ShowPasswordSuggestions(
+      routing_id(), field, bounding_box_scaled, suggestions, realms));
   return !suggestions.empty();
 }
 
@@ -747,7 +746,9 @@ void PasswordAutofillAgent::FillFormOnPasswordRecieved(
 
   // Fill if we have an exact match for the username. Note that this sets
   // username to autofilled.
-  FillUserNameAndPassword(&username_element, &password_element, fill_data,
+  FillUserNameAndPassword(&username_element,
+                          &password_element,
+                          fill_data,
                           true /* exact_username_match */,
                           false /* set_selection */);
 }
@@ -764,7 +765,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   base::string16 password;
 
   // Look for any suitable matches to current field text.
-  if (DoUsernamesMatch(fill_data.basic_data.fields[0].value, current_username,
+  if (DoUsernamesMatch(fill_data.basic_data.fields[0].value,
+                       current_username,
                        exact_username_match)) {
     username = fill_data.basic_data.fields[0].value;
     password = fill_data.basic_data.fields[1].value;
@@ -772,9 +774,10 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     // Scan additional logins for a match.
     PasswordFormFillData::LoginCollection::const_iterator iter;
     for (iter = fill_data.additional_logins.begin();
-         iter != fill_data.additional_logins.end(); ++iter) {
-      if (DoUsernamesMatch(iter->first, current_username,
-                           exact_username_match)) {
+         iter != fill_data.additional_logins.end();
+         ++iter) {
+      if (DoUsernamesMatch(
+              iter->first, current_username, exact_username_match)) {
         username = iter->first;
         password = iter->second.password;
         break;
@@ -785,10 +788,11 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     if (username.empty() && password.empty()) {
       for (PasswordFormFillData::UsernamesCollection::const_iterator iter =
                fill_data.other_possible_usernames.begin();
-           iter != fill_data.other_possible_usernames.end(); ++iter) {
+           iter != fill_data.other_possible_usernames.end();
+           ++iter) {
         for (size_t i = 0; i < iter->second.size(); ++i) {
-          if (DoUsernamesMatch(iter->second[i], current_username,
-                               exact_username_match)) {
+          if (DoUsernamesMatch(
+                  iter->second[i], current_username, exact_username_match)) {
             usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
             username = iter->second[i];
             password = iter->first.password;
@@ -856,11 +860,12 @@ void PasswordAutofillAgent::PerformInlineAutocomplete(
   // Show the popup with the list of available usernames.
   ShowSuggestionPopup(fill_data, username);
 
-
 #if !defined(OS_ANDROID)
   // Fill the user and password field with the most relevant match. Android
   // only fills in the fields after the user clicks on the suggestion popup.
-  FillUserNameAndPassword(&username, &password, fill_data,
+  FillUserNameAndPassword(&username,
+                          &password,
+                          fill_data,
                           false /* exact_username_match */,
                           true /* set_selection */);
 #endif

@@ -85,9 +85,9 @@ PasswordManager::~PasswordManager() {
 void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
-       iter != pending_login_managers_.end(); ++iter) {
-    if ((*iter)->DoesManage(
-        form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
+       iter != pending_login_managers_.end();
+       ++iter) {
+    if ((*iter)->DoesManage(form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
       (*iter)->SetHasGeneratedPassword();
       return;
     }
@@ -97,8 +97,8 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   // ability to detect forms.
   bool ssl_valid = (form.origin.SchemeIsSecure() &&
                     !driver_->DidLastPageLoadEncounterSSLErrors());
-  PasswordFormManager* manager = new PasswordFormManager(
-      this, client_, driver_, form, ssl_valid);
+  PasswordFormManager* manager =
+      new PasswordFormManager(this, client_, driver_, form, ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->SetHasGeneratedPassword();
   // TODO(gcasto): Add UMA stats to track this.
@@ -125,18 +125,18 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
       pending_login_managers_.end();
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
-       iter != pending_login_managers_.end(); ++iter) {
-    // If we find a manager that exactly matches the submitted form including
-    // the action URL, exit the loop.
-    if ((*iter)->DoesManage(
-        form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
+       iter != pending_login_managers_.end();
+       ++iter) {
+    if ((*iter)->DoesManage(form, PasswordFormManager::ACTION_MATCH_REQUIRED)) {
+      // If we find a manager that exactly matches the submitted form including
+      // the action URL, exit the loop.
       matched_manager_it = iter;
       break;
-    // If the current manager matches the submitted form excluding the action
-    // URL, remember it as a candidate and continue searching for an exact
-    // match.
     } else if ((*iter)->DoesManage(
-        form, PasswordFormManager::ACTION_MATCH_NOT_REQUIRED)) {
+                   form, PasswordFormManager::ACTION_MATCH_NOT_REQUIRED)) {
+      // If the current manager matches the submitted form excluding the action
+      // URL, remember it as a candidate and continue searching for an exact
+      // match.
       matched_manager_it = iter;
     }
   }
@@ -179,8 +179,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // Chrome to manage such passwords. For other passwords, respect the
   // autocomplete attribute if autocomplete='off' is not ignored.
   if (!autofill::ShouldIgnoreAutocompleteOffForPasswordFields() &&
-      !manager->HasGeneratedPassword() &&
-      !form.password_autocomplete_set) {
+      !manager->HasGeneratedPassword() && !form.password_autocomplete_set) {
     RecordFailure(AUTOCOMPLETE_OFF, form.origin.host());
     return;
   }
@@ -200,8 +199,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
 void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
                                     const std::string& form_origin) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ProvisionalSaveFailure",
-                            failure, MAX_FAILURE_VALUE);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.ProvisionalSaveFailure", failure, MAX_FAILURE_VALUE);
 
   std::string group_name = metrics_util::GroupIdToString(
       metrics_util::MonitoredDomainGroupId(form_origin, client_->GetPrefs()));
@@ -251,15 +250,16 @@ void PasswordManager::OnPasswordFormsParsed(
   bool had_ssl_error = driver_->DidLastPageLoadEncounterSSLErrors();
 
   for (std::vector<PasswordForm>::const_iterator iter = forms.begin();
-       iter != forms.end(); ++iter) {
+       iter != forms.end();
+       ++iter) {
     // Don't involve the password manager if this form corresponds to
     // SpdyProxy authentication, as indicated by the realm.
     if (EndsWith(iter->signon_realm, kSpdyProxyRealm, true))
       continue;
 
     bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
-    PasswordFormManager* manager = new PasswordFormManager(
-        this, client_, driver_, *iter, ssl_valid);
+    PasswordFormManager* manager =
+        new PasswordFormManager(this, client_, driver_, *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
 
     // Avoid prompting the user for access to a password if they don't have
@@ -320,7 +320,8 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
 
   bool other_possible_usernames_exist = false;
   for (autofill::PasswordFormMap::const_iterator it = best_matches.begin();
-       it != best_matches.end(); ++it) {
+       it != best_matches.end();
+       ++it) {
     if (!it->second->other_possible_usernames.empty()) {
       other_possible_usernames_exist = true;
       break;
@@ -346,14 +347,13 @@ void PasswordManager::PossiblyInitializeUsernamesExperiment(
 
 bool PasswordManager::OtherPossibleUsernamesEnabled() const {
   return base::FieldTrialList::FindFullName(
-      kOtherPossibleUsernamesExperiment) == "Enabled";
+             kOtherPossibleUsernamesExperiment) == "Enabled";
 }
 
-void PasswordManager::Autofill(
-    const PasswordForm& form_for_autofill,
-    const PasswordFormMap& best_matches,
-    const PasswordForm& preferred_match,
-    bool wait_for_username) const {
+void PasswordManager::Autofill(const PasswordForm& form_for_autofill,
+                               const PasswordFormMap& best_matches,
+                               const PasswordForm& preferred_match,
+                               bool wait_for_username) const {
   PossiblyInitializeUsernamesExperiment(best_matches);
 
   // TODO(tedchoc): Switch to only requesting authentication if the user is
@@ -361,7 +361,8 @@ void PasswordManager::Autofill(
   //                of on page load.
   bool authentication_required = preferred_match.use_additional_authentication;
   for (autofill::PasswordFormMap::const_iterator it = best_matches.begin();
-       !authentication_required && it != best_matches.end(); ++it) {
+       !authentication_required && it != best_matches.end();
+       ++it) {
     if (it->second->use_additional_authentication)
       authentication_required = true;
   }
