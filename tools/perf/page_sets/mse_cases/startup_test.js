@@ -375,11 +375,10 @@
         return;
       }
 
+      var testEndTime = getPerfTimestamp();
       for (var i = 0; i < appenders.length; ++i) {
         appenders[i].onPlaybackStarted(mediaSource);
       }
-
-      var testEndTime = getPerfTimestamp();
 
       testDone = true;
       window.clearInterval(listener);
