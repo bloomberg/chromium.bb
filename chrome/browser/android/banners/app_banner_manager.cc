@@ -132,7 +132,7 @@ bool AppBannerManager::FetchIcon(JNIEnv* env,
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   fetcher_.reset(new chrome::BitmapFetcher(GURL(image_url), this));
-  fetcher_.get()->Start(profile);
+  fetcher_.get()->Start(profile->GetRequestContext());
   return true;
 }
 

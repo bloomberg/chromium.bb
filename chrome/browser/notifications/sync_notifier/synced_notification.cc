@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "sync/protocol/sync.pb.h"
@@ -282,7 +283,7 @@ void SyncedNotification::StartBitmapFetch() {
   // Now that we have queued and counted them all, start the fetching.
   ScopedVector<chrome::BitmapFetcher>::iterator iter;
   for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
-    (*iter)->Start(profile_);
+    (*iter)->Start(profile_->GetRequestContext());
   }
 }
 

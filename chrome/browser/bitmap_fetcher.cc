@@ -4,9 +4,9 @@
 
 #include "chrome/browser/bitmap_fetcher.h"
 
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 namespace chrome {
@@ -19,12 +19,12 @@ BitmapFetcher::BitmapFetcher(const GURL& url,
 
 BitmapFetcher::~BitmapFetcher() {}
 
-void BitmapFetcher::Start(Profile* profile) {
+void BitmapFetcher::Start(net::URLRequestContextGetter* request_context) {
   if (url_fetcher_ != NULL)
     return;
 
   url_fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
-  url_fetcher_->SetRequestContext(profile->GetRequestContext());
+  url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->Start();
 }
 

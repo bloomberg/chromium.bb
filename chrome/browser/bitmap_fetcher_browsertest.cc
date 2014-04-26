@@ -5,6 +5,7 @@
 #include "chrome/browser/bitmap_fetcher.h"
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -112,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_StartTest) {
 
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
-  fetcher.Start(browser()->profile());
+  fetcher.Start(browser()->profile()->GetRequestContext());
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();
@@ -161,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
                                         net::HTTP_INTERNAL_SERVER_ERROR,
                                         net::URLRequestStatus::FAILED);
 
-  fetcher.Start(browser()->profile());
+  fetcher.Start(browser()->profile()->GetRequestContext());
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();
@@ -185,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, MAYBE_HandleImageFailedTest) {
                                         net::HTTP_OK,
                                         net::URLRequestStatus::SUCCESS);
 
-  fetcher.Start(browser()->profile());
+  fetcher.Start(browser()->profile()->GetRequestContext());
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();

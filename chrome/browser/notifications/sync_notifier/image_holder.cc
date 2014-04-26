@@ -7,6 +7,8 @@
 
 #include "chrome/browser/notifications/sync_notifier/image_holder.h"
 
+#include "chrome/browser/profiles/profile.h"
+
 namespace notifier {
 
 ImageHolder::ImageHolder(const GURL& low_dpi_url,
@@ -65,7 +67,7 @@ void ImageHolder::StartFetch() {
   // Now that we have queued them all, start the fetching.
   ScopedVector<chrome::BitmapFetcher>::iterator iter;
   for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
-    (*iter)->Start(profile_);
+    (*iter)->Start(profile_->GetRequestContext());
   }
 }
 

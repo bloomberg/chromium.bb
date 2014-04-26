@@ -14,9 +14,8 @@
 
 namespace net {
 class URLFetcher;
+class URLRequestContextGetter;
 }  // namespace net
-
-class Profile;
 
 namespace chrome {
 
@@ -34,7 +33,7 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   // asynchronously when done.  Start may be called more than once in some
   // cases.  If so, subsequent starts will be ignored since the operation is
   // already in progress.
-  void Start(Profile* profile);
+  void Start(net::URLRequestContextGetter* request_context);
 
   // Methods inherited from URLFetcherDelegate
 
