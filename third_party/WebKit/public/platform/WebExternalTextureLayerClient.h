@@ -37,8 +37,6 @@ struct WebExternalTextureMailbox;
 
 class BLINK_PLATFORM_EXPORT WebExternalTextureLayerClient {
 public:
-    virtual WebGraphicsContext3D* context() = 0;
-
     // Returns true and provides a mailbox if a new frame is available. If the WebExternalBitmap
     // isn't 0, then it should also be filled in with the contents of this frame.
     // Returns false if no new data is available and the old mailbox and bitmap are to be reused.

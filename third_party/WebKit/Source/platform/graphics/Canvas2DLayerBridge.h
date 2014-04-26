@@ -59,7 +59,6 @@ public:
     virtual ~Canvas2DLayerBridge();
 
     // blink::WebExternalTextureLayerClient implementation.
-    virtual blink::WebGraphicsContext3D* context() OVERRIDE;
     virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
 
@@ -98,6 +97,7 @@ protected:
     Canvas2DLayerBridge(PassOwnPtr<blink::WebGraphicsContext3DProvider>, PassOwnPtr<SkDeferredCanvas>, int, OpacityMode);
     void setRateLimitingEnabled(bool);
     bool releasedMailboxHasExpired();
+    blink::WebGraphicsContext3D* context();
 
     OwnPtr<SkDeferredCanvas> m_canvas;
     OwnPtr<blink::WebExternalTextureLayer> m_layer;

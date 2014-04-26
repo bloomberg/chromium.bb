@@ -133,8 +133,9 @@ public:
     blink::WebLayer* platformLayer();
     void paintCompositedResultsToCanvas(ImageBuffer*);
 
+    blink::WebGraphicsContext3D* context();
+
     // WebExternalTextureLayerClient implementation.
-    virtual blink::WebGraphicsContext3D* context() OVERRIDE;
     virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
     virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
 
