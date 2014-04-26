@@ -42,7 +42,6 @@ class BidiContext;
 class LayoutStateMaintainer;
 class LineLayoutState;
 class RenderInline;
-class RenderRegion;
 class RenderText;
 
 struct BidiRun;
@@ -498,7 +497,6 @@ protected:
 
 public:
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const OVERRIDE FINAL;
-    RenderRegion* regionAtBlockOffset(LayoutUnit) const;
 
     void invalidateLineHeight() { m_lineHeight = -1; }
 
