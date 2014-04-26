@@ -113,7 +113,7 @@ class ContextLost(test_module.Test):
               'javascript': 'window.domAutomationController._loaded' }
           ],
           'kill_gpu_process': True,
-          'number_of_gpu_process_kills': 30,
+          'number_of_gpu_process_kills': 1,
         },
         {
           'name': 'ContextLost.WebGLContextLostFromLoseContextExtension',
