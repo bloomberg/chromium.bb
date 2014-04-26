@@ -363,6 +363,18 @@ class ChromeTests:
   def TestViews(self):
     return self.SimpleTest("views", "views_unittests")
 
+  def TestCloudPrint(self):
+    return self.SimpleTest("cloud_print", "cloud_print_unittests")
+
+  def TestCacheInvalidation(self):
+    return self.SimpleTest("cacheinvalidation", "cacheinvalidation_unittests")
+
+  def TestAddressInput(self):
+    return self.SimpleTest("addressinput", "libaddressinput_unittests")
+
+  def TestPhoneNumber(self):
+    return self.SimpleTest("phonenumber", "libphonenumber_unittests")
+
   # Valgrind timeouts are in seconds.
   UI_VALGRIND_ARGS = ["--timeout=14400", "--trace_children", "--indirect"]
   # UI test timeouts are in milliseconds.
@@ -585,6 +597,14 @@ class ChromeTests:
     "unit": TestUnit,            "unit_tests": TestUnit,
     "url": TestURL,              "url_unittests": TestURL,
     "views": TestViews,          "views_unittests": TestViews,
+    "cloud_print": TestCloudPrint,
+    "cloud_print_unittests": TestCloudPrint,
+    "cacheinvalidation": TestCacheInvalidation,
+    "cacheinvalidation_unittests": TestCacheInvalidation,
+    "addressinput": TestAddressInput,
+    "libaddressinput_unittests": TestAddressInput,
+    "phonenumber": TestPhoneNumber,
+    "libphonenumber_unittests": TestPhoneNumber,
   }
 
 
