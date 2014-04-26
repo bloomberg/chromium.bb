@@ -185,52 +185,57 @@ void ExtensionToolbarModel::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_service || !extension_service->is_ready())
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(extension_service);
+  if (!extension_service->is_ready())
     return;
 
-  if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
-    InitializeExtensionList(extension_service);
-    return;
-  }
-
-  const Extension* extension = NULL;
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    extension = content::Details<extensions::UnloadedExtensionInfo>(
-        details)->extension;
-  } else if (type ==
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    extension = extension_service->GetExtensionById(
-        *content::Details<const std::string>(details).ptr(), true);
-  } else {
-    extension = content::Details<const Extension>(details).ptr();
-  }
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
-    // We don't want to add the same extension twice. It may have already been
-    // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
-    // hides the browser action and then disables and enables the extension.
-    for (size_t i = 0; i < toolbar_items_.size(); i++) {
-      if (toolbar_items_[i].get() == extension)
-        return;  // Already exists.
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSIONS_READY:
+      InitializeExtensionList(extension_service);
+      break;
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      // We don't want to add the same extension twice. It may have already been
+      // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
+      // hides the browser action and then disables and enables the extension.
+      for (size_t i = 0; i < toolbar_items_.size(); i++) {
+        if (toolbar_items_[i].get() == extension)
+          return;  // Already exists.
+      }
+      if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
+                                                         extension->id())) {
+        AddExtension(extension);
+      }
+      break;
     }
-    if (ExtensionActionAPI::GetBrowserActionVisibility(
-            extension_prefs_, extension->id())) {
-      AddExtension(extension);
-    }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    RemoveExtension(extension);
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED) {
-    UninstalledExtension(extension);
-  } else if (type ==
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    if (ExtensionActionAPI::GetBrowserActionVisibility(
-            extension_prefs_, extension->id())) {
-      AddExtension(extension);
-    } else {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+      const Extension* extension =
+          content::Details<extensions::UnloadedExtensionInfo>(details)
+              ->extension;
       RemoveExtension(extension);
+      break;
     }
-  } else {
-    NOTREACHED() << "Received unexpected notification";
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      UninstalledExtension(extension);
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED: {
+      const Extension* extension = extension_service->GetExtensionById(
+          *content::Details<const std::string>(details).ptr(), true);
+      if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
+                                                         extension->id())) {
+        AddExtension(extension);
+      } else {
+        RemoveExtension(extension);
+      }
+      break;
+    }
+    default:
+      NOTREACHED() << "Received unexpected notification";
   }
 }
 
