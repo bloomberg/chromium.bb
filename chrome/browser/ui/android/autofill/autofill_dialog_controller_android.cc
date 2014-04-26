@@ -190,9 +190,26 @@ void AutofillDialogControllerAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
   dialog_shown_timestamp_ = base::Time::Now();
 
+  // The Autofill dialog is shown in response to a message from the renderer and
+  // as such, it can only be made in the context of the current document. A call
+  // to GetActiveEntry would return a pending entry, if there was one, which
+  // would be a security bug. Therefore, we use the last committed URL for the
+  // access checks.
   const GURL& current_url = contents_->GetLastCommittedURL();
   invoked_from_same_origin_ =
       current_url.GetOrigin() == source_url_.GetOrigin();
+
+  // Fail if the dialog factory (e.g. SDK) doesn't support cross-origin calls.
+  if (!Java_AutofillDialogControllerAndroid_isDialogAllowed(
+          env,
+          invoked_from_same_origin_)) {
+    callback_.Run(
+        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+        base::ASCIIToUTF16("Cross-origin form invocations are not supported."),
+        NULL);
+    delete this;
+    return;
+  }
 
   // Determine what field types should be included in the dialog.
   bool has_types = false;
@@ -202,13 +219,31 @@ void AutofillDialogControllerAndroid::Show() {
 
   // Fail if the author didn't specify autocomplete types, or
   // if the dialog shouldn't be shown in a given circumstances.
-  if (!has_types ||
-      !Java_AutofillDialogControllerAndroid_isDialogAllowed(
-          env,
-          invoked_from_same_origin_)) {
+  if (!has_types) {
     callback_.Run(
         AutofillManagerDelegate::AutocompleteResultErrorDisabled,
         base::ASCIIToUTF16("Form is missing autocomplete attributes."),
+        NULL);
+    delete this;
+    return;
+  }
+
+  // Fail if the author didn't ask for at least some kind of credit card
+  // information.
+  bool has_credit_card_field = false;
+  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
+    AutofillType type = form_structure_.field(i)->Type();
+    if (type.html_type() != HTML_TYPE_UNKNOWN && type.group() == CREDIT_CARD) {
+      has_credit_card_field = true;
+      break;
+    }
+  }
+
+  if (!has_credit_card_field) {
+    callback_.Run(
+        AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+        base::ASCIIToUTF16("Form is not a payment form (must contain "
+                           "some autocomplete=\"cc-*\" fields). "),
         NULL);
     delete this;
     return;
@@ -378,7 +413,7 @@ void AutofillDialogControllerAndroid::DialogContinue(
       if (!last_used_card.empty())
         defaults->SetString(kLastUsedCreditCardGuid, last_used_card);
     } else {
-      LOG(ERROR) << "Failed to save AutofillDialog preferences";
+      DLOG(ERROR) << "Failed to save AutofillDialog preferences";
     }
   }
 

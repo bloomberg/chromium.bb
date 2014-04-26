@@ -50,14 +50,38 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     private static final String TEST_SHIPPING_ZIP = "12346";
     private static final String TEST_SHIPPING_COUNTRY = "SE";
 
+    private static final String HTML_PRELUDE = "<html>"
+            + "<head>"
+            + "  <meta name=\"viewport\""
+            + "      content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" />"
+            + "</head>"
+            + "<body>"
+            + "<form id=\"id-form\">"
+            + "  <button id=\"id-button\">DO INTERACTIVE AUTOCOMPLETE</button>";
+
+    private static final String HTML_POSTLUDE = "</form>"
+            + "<div id=\"was-autocompleted\">no</div>"
+            + ":<div id=\"autocomplete-failure-reason\"></div>"
+            + "<script>"
+            + "var form = document.forms[0];"
+            + "form.onsubmit = function(e) {"
+            + "  e.preventDefault();"
+            + "  form.requestAutocomplete();"
+            + "};"
+            + "form.onautocomplete = function() {"
+            + "  document.getElementById('was-autocompleted').textContent = 'succeeded';"
+            + "};"
+            + "form.onautocompleteerror = function(e) {"
+            + "  document.getElementById('was-autocompleted').textContent = 'failed';"
+            + "  document.getElementById('autocomplete-failure-reason').textContent = e.reason;"
+            + "};"
+            + "</script></body></html>";
+
     private static String generatePage(
             boolean requestFullBilling, boolean requestShipping, boolean requestPhoneNumbers) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<html><head><meta name=\"viewport\""
-                + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
-                + "<body><form id=\"id-form\">"
-                + "<button id=\"id-button\">DO INTERACTIVE AUTOCOMPLETE</button>"
-                + "<fieldset>"
+        sb.append(HTML_PRELUDE);
+        sb.append("<fieldset>"
                 + "<input id=\"id-billing-name\" autocomplete=\"billing name\" value=\"W\">"
                 + "<input id=\"id-cc-name\" autocomplete=\"cc-name\" value=\"W\">"
                 + "<input id=\"id-email\" autocomplete=\"email\" type=\"email\" value=\"W@W.W\">"
@@ -126,22 +150,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
             }
             sb.append("</fieldset>");
         }
-        sb.append("</form>"
-                + "<div id=\"was-autocompleted\">no</div>"
-                + "<script>"
-                + "var form = document.forms[0];"
-                + "form.onsubmit = function(e) {"
-                + "  e.preventDefault();"
-                + "  form.requestAutocomplete();"
-                + "};"
-                + "form.onautocomplete = function() {"
-                + "  document.getElementById('was-autocompleted').textContent = 'succeeded';"
-                + "};"
-                + "form.onautocompleteerror = function(e) {"
-                + "  document.getElementById('was-autocompleted').textContent = "
-                + "'failed: ' + e.reason;"
-                + "};"
-                + "</script></body></html>");
+        sb.append(HTML_POSTLUDE);
         return UrlUtils.encodeHtmlDataUri(sb.toString());
     }
 
@@ -203,7 +212,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeName() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"name\">",
                 TEST_SHIPPING_NAME, "id", false, true, false);
     }
@@ -211,7 +220,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingName() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing name\">",
                 TEST_NAME, "id", false, false, false);
     }
@@ -219,7 +228,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingName() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping name\">",
                 TEST_SHIPPING_NAME, "id", false, true, false);
     }
@@ -229,7 +238,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeTel() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"tel\">",
                 TEST_SHIPPING_PHONE_UNFORMATTED, "id", false, true, true);
     }
@@ -237,7 +246,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingTel() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing tel\">",
                 TEST_PHONE_UNFORMATTED, "id", true, false, true);
     }
@@ -245,7 +254,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingTel() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping tel\">",
                 TEST_SHIPPING_PHONE_UNFORMATTED, "id", false, true, true);
     }
@@ -253,7 +262,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeEmail() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"email\" type=\"email\">",
                 TEST_EMAIL, "id", false, false, false);
     }
@@ -329,7 +338,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingCountry() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<select id=\"id\" autocomplete=\"billing country\">"
                 + "  <option value=\"NL\" selected>Netherlands</option>"
                 + "  <option value=\"US\">United States</option>"
@@ -342,7 +351,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingPostalCode() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing postal-code\">",
                 TEST_BILLING_ZIP, "id", false, false, false);
     }
@@ -350,7 +359,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingAddressLine1() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing address-line1\">",
                 TEST_BILLING1, "id", true, false, false);
     }
@@ -358,7 +367,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingAddressLine2() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing address-line2\">",
                 TEST_BILLING2, "id", true, false, false);
     }
@@ -366,7 +375,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingLocality() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing locality\">",
                 TEST_BILLING_CITY, "id", true, false, false);
     }
@@ -374,7 +383,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeBillingRegion() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"billing region\">",
                 TEST_BILLING_STATE, "id", true, false, false);
     }
@@ -382,7 +391,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingCountry() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<select id=\"id\" autocomplete=\"shipping country\">"
                 + "  <option value=\"NL\" selected>Netherlands</option>"
                 + "  <option value=\"US\">United States</option>"
@@ -395,7 +404,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingPostalCode() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping postal-code\">",
                 TEST_SHIPPING_ZIP, "id", false, true, false);
     }
@@ -403,7 +412,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingAddressLine1() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping address-line1\">",
                 TEST_SHIPPING1, "id", false, true, false);
     }
@@ -411,7 +420,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingAddressLine2() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping address-line2\">",
                 TEST_SHIPPING2, "id", false, true, false);
     }
@@ -419,7 +428,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingLocality() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping locality\">",
                 TEST_SHIPPING_CITY, "id", false, true, false);
     }
@@ -427,9 +436,31 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"autofill"})
     public void testRacTypeShippingRegion() throws InterruptedException, TimeoutException {
-        verifyOneField(
+        verifyOneFieldWithCc(
                 "<input id=\"id\" autocomplete=\"shipping region\">",
                 TEST_SHIPPING_STATE, "id", false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"autofill"})
+    public void testRefuseToShowWithNoCcField() throws InterruptedException, TimeoutException {
+        String requested = "<input id=\"id\" autocomplete=\"shipping locality\">";
+        setUpAndExpectFailedRequestAutocomplete(
+                UrlUtils.encodeHtmlDataUri(HTML_PRELUDE + requested + HTML_POSTLUDE),
+                false, true, false);
+    }
+
+    @SmallTest
+    @Feature({"autofill"})
+    public void testRefuseToShowWithNoAutocompleteAttributes()
+            throws InterruptedException, TimeoutException {
+        String requested = "<input id=\"id-cc-csc\">"
+                + "<input id=\"id-email\" type=\"email\">"
+                + "<input id=\"id-cc-name\">"
+                + "<input id=\"id-shipping-locality\">";
+        setUpAndExpectFailedRequestAutocomplete(
+                UrlUtils.encodeHtmlDataUri(HTML_PRELUDE + requested + HTML_POSTLUDE),
+                false, true, false);
     }
 
     private void verifyOneField(
@@ -438,29 +469,35 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
             final boolean requestFullBilling,
             final boolean requestShipping, final boolean requestPhoneNumbers)
             throws InterruptedException, TimeoutException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><head><meta name=\"viewport\""
-                + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
-                + "<body><form id=\"id-form\">"
-                + "<button id=\"id-button\">DO INTERACTIVE AUTOCOMPLETE</button>"
+        verifyOneFieldWithOptionalCc(htmlFragment, expected, actualId,
+                requestFullBilling, requestShipping, requestPhoneNumbers, false);
+    }
+
+    private void verifyOneFieldWithCc(
+            final String htmlFragment,
+            final String expected, final String actualId,
+            final boolean requestFullBilling,
+            final boolean requestShipping, final boolean requestPhoneNumbers)
+            throws InterruptedException, TimeoutException {
+        verifyOneFieldWithOptionalCc(htmlFragment, expected, actualId,
+                requestFullBilling, requestShipping, requestPhoneNumbers, true);
+    }
+
+    private void verifyOneFieldWithOptionalCc(
+            final String htmlFragment,
+            final String expected, final String actualId,
+            final boolean requestFullBilling,
+            final boolean requestShipping, final boolean requestPhoneNumbers,
+            final boolean requestCcInfo)
+            throws InterruptedException, TimeoutException {
+        final String optionalCcFragment = requestCcInfo
+                ? "<input id=\"id-opt-cc-csc\" autocomplete=\"cc-csc\">"
+                : "";
+        final String url = UrlUtils.encodeHtmlDataUri(
+                HTML_PRELUDE
                 + htmlFragment
-                + "</form>"
-                + "<div id=\"was-autocompleted\">no</div>"
-                + "<script>"
-                + "var form = document.forms[0];"
-                + "form.onsubmit = function(e) {"
-                + "  e.preventDefault();"
-                + "  form.requestAutocomplete();"
-                + "};"
-                + "form.onautocomplete = function() {"
-                + "  document.getElementById('was-autocompleted').textContent = 'succeeded';"
-                + "};"
-                + "form.onautocompleteerror = function(e) {"
-                + "  document.getElementById('was-autocompleted').textContent = "
-                + "'failed: ' + e.reason;"
-                + "};"
-                + "</script></body></html>");
-        final String url = UrlUtils.encodeHtmlDataUri(sb.toString());
+                + optionalCcFragment
+                + HTML_POSTLUDE);
 
         setUpAndRequestAutocomplete(url, requestFullBilling, requestShipping, requestPhoneNumbers);
 
@@ -468,6 +505,10 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
 
         assertEquals(actualId + " did not match",
                 expected, DOMUtils.getNodeValue(view.getContentViewCore(), actualId));
+        if (requestCcInfo) {
+            assertEquals("cc-csc did not match",
+                    TEST_CC_CSC, DOMUtils.getNodeValue(view.getContentViewCore(), "id-opt-cc-csc"));
+        }
     }
 
     private void verifyFieldsAreFilled(final boolean requestFullBilling,
@@ -490,8 +531,6 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
 
         assertEquals("cc-number did not match",
                 TEST_CC_NUMBER, DOMUtils.getNodeValue(viewCore, "id-cc-number"));
-        assertEquals("cc-csc did not match",
-                TEST_CC_CSC, DOMUtils.getNodeValue(viewCore, "id-cc-csc"));
         assertEquals("cc-csc did not match",
                 TEST_CC_CSC, DOMUtils.getNodeValue(viewCore, "id-cc-csc"));
 
@@ -569,7 +608,26 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
     private void setUpAndRequestAutocomplete(final String url,
             final boolean requestFullBilling,
             final boolean requestShipping,
-            final boolean requestPhoneNumbers)
+            final boolean requestPhoneNumbers) throws InterruptedException, TimeoutException {
+        setUpAndRequestAutocompleteImpl(url,
+                requestFullBilling, requestShipping, requestPhoneNumbers,
+                false);
+    }
+
+    private void setUpAndExpectFailedRequestAutocomplete(final String url,
+            final boolean requestFullBilling,
+            final boolean requestShipping,
+            final boolean requestPhoneNumbers) throws InterruptedException, TimeoutException {
+        setUpAndRequestAutocompleteImpl(url,
+                requestFullBilling, requestShipping, requestPhoneNumbers,
+                true);
+    }
+
+    private void setUpAndRequestAutocompleteImpl(final String url,
+            final boolean requestFullBilling,
+            final boolean requestShipping,
+            final boolean requestPhoneNumbers,
+            final boolean expectFailure)
             throws InterruptedException, TimeoutException {
         launchChromeShellWithUrl(url);
         assertTrue(waitForActiveShellToBeDoneLoading());
@@ -598,8 +656,15 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
         DOMUtils.clickNode(this, viewCore, "id-button");
         waitForInputFieldFill(viewCore);
 
-        assertEquals("requestAutocomplete failed",
-                "succeeded", DOMUtils.getNodeContents(viewCore, "was-autocompleted"));
+        if (!expectFailure) {
+            assertEquals("requestAutocomplete failed",
+                    "succeeded",
+                    DOMUtils.getNodeContents(viewCore, "was-autocompleted"));
+        } else {
+            assertEquals("requestAutocomplete succeeded when it should be failing",
+                    "failed",
+                    DOMUtils.getNodeContents(viewCore, "was-autocompleted"));
+        }
     }
 
     private void waitForInputFieldFill(final ContentViewCore viewCore) throws InterruptedException {
