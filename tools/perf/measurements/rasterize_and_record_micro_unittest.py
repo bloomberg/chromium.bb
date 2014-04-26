@@ -5,6 +5,7 @@
 import logging
 
 from measurements import rasterize_and_record_micro
+from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
 from telemetry.page import page_test
@@ -28,6 +29,7 @@ class RasterizeAndRecordMicroUnitTest(
     self._options.start_wait_time = 0.0
     self._options.report_detailed_results = True
 
+  @test.Disabled('win')
   def testRasterizeAndRecordMicro(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record_micro.RasterizeAndRecordMicro()
