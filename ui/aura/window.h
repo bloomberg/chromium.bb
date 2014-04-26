@@ -116,8 +116,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // defined as the Window that has a dispatcher. These functions return NULL if
   // the Window is contained in a hierarchy that does not have a dispatcher at
   // its root.
-  virtual Window* GetRootWindow();
-  virtual const Window* GetRootWindow() const;
+  Window* GetRootWindow();
+  const Window* GetRootWindow() const;
 
   WindowTreeHost* GetHost();
   const WindowTreeHost* GetHost() const;
@@ -215,7 +215,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                                   gfx::Rect* rect);
 
   // Moves the cursor to the specified location relative to the window.
-  virtual void MoveCursorTo(const gfx::Point& point_in_window);
+  void MoveCursorTo(const gfx::Point& point_in_window);
 
   // Returns the cursor for the specified point, in window coordinates.
   gfx::NativeCursor GetCursor(const gfx::Point& point) const;
@@ -266,10 +266,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool HasFocus() const;
 
   // Returns true if the Window can be focused.
-  virtual bool CanFocus() const;
+  bool CanFocus() const;
 
   // Returns true if the Window can receive events.
-  virtual bool CanReceiveEvents() const;
+  bool CanReceiveEvents() const;
 
   // Does a capture on the window. This does nothing if the window isn't showing
   // (VISIBILITY_SHOWN) or isn't contained in a valid window hierarchy.
