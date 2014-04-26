@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
-#include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
 #include "grit/ui_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -46,14 +45,8 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view) {
   OmniboxPopupContentsView* view = NULL;
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
-    view = new TouchOmniboxPopupContentsView(
-        font_list, omnibox_view, edit_model, location_bar_view);
-  } else {
-    view = new OmniboxPopupContentsView(
-        font_list, omnibox_view, edit_model, location_bar_view);
-  }
-
+  view = new OmniboxPopupContentsView(
+      font_list, omnibox_view, edit_model, location_bar_view);
   view->Init();
   return view;
 }

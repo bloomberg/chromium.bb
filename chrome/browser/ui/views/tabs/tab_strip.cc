@@ -34,7 +34,6 @@
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation_container.h"
@@ -108,135 +107,29 @@ const int kTouchResizeLayoutTimeMS = 2000;
 
 // Horizontal offset for the new tab button to bring it closer to the
 // rightmost tab.
-int newtab_button_h_offset() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = -11;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = -13;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
+const int kNewTabButtonHorizontalOffset = -11;
 
 // Vertical offset for the new tab button to bring it closer to the
 // rightmost tab.
-int newtab_button_v_offset() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = 7;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 8;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
+const int kNewTabButtonVerticalOffset = 7;
 
 // Amount the left edge of a tab is offset from the rectangle of the tab's
 // favicon/title/close box.  Related to the width of IDR_TAB_ACTIVE_LEFT.
 // Affects the size of the "V" between adjacent tabs.
-int tab_h_offset() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = -26;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = -34;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
+const int kTabHorizontalOffset = -26;
 
 // The size of the new tab button must be hardcoded because we need to be
 // able to lay it out before we are able to get its image from the
 // ui::ThemeProvider.  It also makes sense to do this, because the size of the
 // new tab button should not need to be calculated dynamically.
-int newtab_button_asset_width() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = 34;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 46;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
-
-int newtab_button_asset_height() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = 18;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 24;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
+const int kNewTabButtonAssetWidth = 34;
+const int kNewTabButtonAssetHeight = 18;
 
 // Amount to adjust the clip by when the tab is stacked before the active index.
-int stacked_tab_left_clip() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = 20;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 26;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
+const int kStackedTabLeftClip = 20;
 
 // Amount to adjust the clip by when the tab is stacked after the active index.
-int stacked_tab_right_clip() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = 20;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 26;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
+const int kStackedTabRightClip = 20;
 
 base::string16 GetClipboardText() {
   if (!ui::Clipboard::IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION))
@@ -377,7 +270,7 @@ void NewTabButton::GetHitTestMask(HitTestSource source, gfx::Path* path) const {
   DCHECK(path);
 
   SkScalar w = SkIntToScalar(width());
-  SkScalar v_offset = SkIntToScalar(newtab_button_v_offset());
+  SkScalar v_offset = SkIntToScalar(kNewTabButtonVerticalOffset);
 
   // These values are defined by the shape of the new tab image. Should that
   // image ever change, these values will need to be updated. They're so
@@ -486,7 +379,7 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
     // flip.
     x += width;
   }
-  canvas.TileImageInt(*background, x, newtab_button_v_offset() + offset_y,
+  canvas.TileImageInt(*background, x, kNewTabButtonVerticalOffset + offset_y,
                       x_scale, 1.0f, 0, 0, width, height);
 
   if (alpha != 255) {
@@ -827,7 +720,7 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
     Tab* last_tab = tab_at(model_count - 1);
     Tab* tab_being_removed = tab_at(model_index);
     available_width_for_tabs_ = last_tab->x() + last_tab->width() -
-        tab_being_removed->width() - tab_h_offset();
+        tab_being_removed->width() - kTabHorizontalOffset;
     if (model_index == 0 && tab_being_removed->data().mini &&
         !tab_at(1)->data().mini) {
       available_width_for_tabs_ -= kMiniToNonMiniGap;
@@ -1201,7 +1094,7 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
       return true;  // Can happen during dragging.
 
     clip->SetRect(0, 0, tab_at(index + 1)->x() - tab_at(index)->x() +
-                      stacked_tab_left_clip(),
+                      kStackedTabLeftClip,
                   tab_at(index)->height());
   } else if (index > active_index && index > 0) {
     const gfx::Rect& tab_bounds(tab_at(index)->bounds());
@@ -1212,9 +1105,9 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
     if (tab_bounds.x() < previous_tab_bounds.x())
       return true;  // Can happen during dragging.
 
-    if (previous_tab_bounds.right() + tab_h_offset() != tab_bounds.x()) {
+    if (previous_tab_bounds.right() + kTabHorizontalOffset != tab_bounds.x()) {
       int x = previous_tab_bounds.right() - tab_bounds.x() -
-          stacked_tab_right_clip();
+          kStackedTabRightClip;
       clip->SetRect(x, 0, tab_bounds.width() - x, tab_bounds.height());
     }
   }
@@ -1650,9 +1543,9 @@ void TabStrip::Init() {
   set_notify_enter_exit_on_child(true);
   newtab_button_bounds_.SetRect(0,
                                 0,
-                                newtab_button_asset_width(),
-                                newtab_button_asset_height() +
-                                    newtab_button_v_offset());
+                                kNewTabButtonAssetWidth,
+                                kNewTabButtonAssetHeight +
+                                    kNewTabButtonVerticalOffset);
   newtab_button_ = new NewTabButton(this, this);
   newtab_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
@@ -1690,7 +1583,7 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
                    ideal_bounds(model_index).height());
   } else {
     Tab* last_tab = tab_at(model_index - 1);
-    tab->SetBounds(last_tab->bounds().right() + tab_h_offset(),
+    tab->SetBounds(last_tab->bounds().right() + kTabHorizontalOffset,
                    ideal_bounds(model_index).y(), 0,
                    ideal_bounds(model_index).height());
   }
@@ -1916,7 +1809,7 @@ void TabStrip::CalculateBoundsForDraggedTabs(const std::vector<Tab*>& tabs,
     gfx::Rect new_bounds = tab->bounds();
     new_bounds.set_origin(gfx::Point(x, 0));
     bounds->push_back(new_bounds);
-    x += tab->width() + tab_h_offset();
+    x += tab->width() + kTabHorizontalOffset;
   }
 }
 
@@ -1929,7 +1822,7 @@ int TabStrip::GetSizeNeededForTabs(const std::vector<Tab*>& tabs) {
       width += kMiniToNonMiniGap;
   }
   if (tabs.size() > 0)
-    width += tab_h_offset() * static_cast<int>(tabs.size() - 1);
+    width += kTabHorizontalOffset * static_cast<int>(tabs.size() - 1);
   return width;
 }
 
@@ -2211,7 +2104,8 @@ void TabStrip::GetDesiredTabWidths(int tab_count,
   }
 
   if (mini_tab_count > 0) {
-    available_width -= mini_tab_count * (Tab::GetMiniWidth() + tab_h_offset());
+    available_width -=
+        mini_tab_count * (Tab::GetMiniWidth() + kTabHorizontalOffset);
     tab_count -= mini_tab_count;
     if (tab_count == 0) {
       *selected_width = *unselected_width = Tab::GetStandardSize().width();
@@ -2224,7 +2118,7 @@ void TabStrip::GetDesiredTabWidths(int tab_count,
   // Calculate the desired tab widths by dividing the available space into equal
   // portions.  Don't let tabs get larger than the "standard width" or smaller
   // than the minimum width for each type, respectively.
-  const int total_offset = tab_h_offset() * (tab_count - 1);
+  const int total_offset = kTabHorizontalOffset * (tab_count - 1);
   const double desired_tab_width = std::min((static_cast<double>(
       available_width - total_offset) / static_cast<double>(tab_count)),
       static_cast<double>(Tab::GetStandardSize().width()));
@@ -2330,12 +2224,12 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   if (drop_index < tab_count()) {
     Tab* tab = tab_at(drop_index);
     if (drop_before)
-      center_x = tab->x() - (tab_h_offset() / 2);
+      center_x = tab->x() - (kTabHorizontalOffset / 2);
     else
       center_x = tab->x() + (tab->width() / 2);
   } else {
     Tab* last_tab = tab_at(drop_index - 1);
-    center_x = last_tab->x() + last_tab->width() + (tab_h_offset() / 2);
+    center_x = last_tab->x() + last_tab->width() + (kTabHorizontalOffset / 2);
   }
 
   // Mirror the center point if necessary.
@@ -2483,7 +2377,7 @@ void TabStrip::GenerateIdealBounds() {
       return;
 
     int new_tab_x = tabs_.ideal_bounds(tabs_.view_size() - 1).right() +
-        newtab_button_h_offset();
+        kNewTabButtonHorizontalOffset;
     newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
     return;
   }
@@ -2508,7 +2402,7 @@ void TabStrip::GenerateIdealBounds() {
         i,
         gfx::Rect(rounded_tab_x, 0, Round(end_of_tab) - rounded_tab_x,
                   tab_height));
-    tab_x = end_of_tab + tab_h_offset();
+    tab_x = end_of_tab + kTabHorizontalOffset;
   }
 
   // Update bounds of new tab button.
@@ -2520,7 +2414,8 @@ void TabStrip::GenerateIdealBounds() {
     // right-most Tab, otherwise it'll bounce when animating.
     new_tab_x = width() - newtab_button_bounds_.width();
   } else {
-    new_tab_x = Round(tab_x - tab_h_offset()) + newtab_button_h_offset();
+    new_tab_x = Round(tab_x - kTabHorizontalOffset) +
+        kNewTabButtonHorizontalOffset;
   }
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
 }
@@ -2533,7 +2428,7 @@ int TabStrip::GenerateIdealBoundsForMiniTabs(int* first_non_mini_index) {
   for (; index < tab_count() && tab_at(index)->data().mini; ++index) {
     set_ideal_bounds(index,
                      gfx::Rect(next_x, 0, mini_width, tab_height));
-    next_x += mini_width + tab_h_offset();
+    next_x += mini_width + kTabHorizontalOffset;
   }
   if (index > 0 && index < tab_count())
     next_x += kMiniToNonMiniGap;
@@ -2544,12 +2439,12 @@ int TabStrip::GenerateIdealBoundsForMiniTabs(int* first_non_mini_index) {
 
 // static
 int TabStrip::new_tab_button_width() {
-  return newtab_button_asset_width() + newtab_button_h_offset();
+  return kNewTabButtonAssetWidth + kNewTabButtonHorizontalOffset;
 }
 
 // static
 int TabStrip::button_v_offset() {
-  return newtab_button_v_offset();
+  return kNewTabButtonVerticalOffset;
 }
 
 int TabStrip::tab_area_width() const {
@@ -2576,7 +2471,7 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // The user initiated the close. We want to persist the bounds of all the
   // existing tabs, so we manually shift ideal_bounds then animate.
   Tab* tab_closing = tab_at(model_index);
-  int delta = tab_closing->width() + tab_h_offset();
+  int delta = tab_closing->width() + kTabHorizontalOffset;
   // If the tab being closed is a mini-tab next to a non-mini-tab, be sure to
   // add the extra padding.
   DCHECK_NE(model_index + 1, tab_count());
@@ -2626,7 +2521,7 @@ int TabStrip::GetStartXForNormalTabs() const {
   int mini_tab_count = GetMiniTabCount();
   if (mini_tab_count == 0)
     return 0;
-  return mini_tab_count * (Tab::GetMiniWidth() + tab_h_offset()) +
+  return mini_tab_count * (Tab::GetMiniWidth() + kTabHorizontalOffset) +
       kMiniToNonMiniGap;
 }
 
@@ -2697,7 +2592,7 @@ void TabStrip::SwapLayoutIfNecessary() {
     tab_size.set_width(Tab::GetTouchWidth());
     touch_layout_.reset(new StackedTabStripLayout(
                             tab_size,
-                            tab_h_offset(),
+                            kTabHorizontalOffset,
                             kStackedPadding,
                             kMaxStackedCount,
                             &tabs_));
@@ -2728,7 +2623,7 @@ bool TabStrip::NeedsTouchLayout() const {
   int x = GetStartXForNormalTabs();
   int available_width = width() - x - new_tab_button_width();
   return (Tab::GetTouchWidth() * normal_count +
-          tab_h_offset() * (normal_count - 1)) > available_width;
+          kTabHorizontalOffset * (normal_count - 1)) > available_width;
 }
 
 void TabStrip::SetResetToShrinkOnExit(bool value) {
@@ -2752,7 +2647,6 @@ void TabStrip::SetResetToShrinkOnExit(bool value) {
 bool TabStrip::GetAdjustLayout() const {
   if (!adjust_layout_)
     return false;
-
   return chrome::GetHostDesktopTypeForNativeView(
       GetWidget()->GetNativeView()) == chrome::HOST_DESKTOP_TYPE_ASH;
 }

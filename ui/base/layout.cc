@@ -34,47 +34,12 @@ bool ScaleFactorComparator(const ScaleFactor& lhs, const ScaleFactor& rhs){
 
 std::vector<ScaleFactor>* g_supported_scale_factors = NULL;
 
-#if defined(OS_WIN)
-// Helper function that determines whether we want to optimize the UI for touch.
-bool UseTouchOptimizedUI() {
-  // If --touch-optimized-ui is specified and not set to "auto", then override
-  // the hardware-determined setting (eg. for testing purposes).
-  static bool has_touch_optimized_ui = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kTouchOptimizedUI);
-  if (has_touch_optimized_ui) {
-    const std::string switch_value = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kTouchOptimizedUI);
-
-    // Note that simply specifying the switch is the same as enabled.
-    if (switch_value.empty() ||
-        switch_value == switches::kTouchOptimizedUIEnabled) {
-      return true;
-    } else if (switch_value == switches::kTouchOptimizedUIDisabled) {
-      return false;
-    } else if (switch_value != switches::kTouchOptimizedUIAuto) {
-      LOG(ERROR) << "Invalid --touch-optimized-ui option: " << switch_value;
-    }
-  }
-
-  // We use the touch layout only when we are running in Metro mode.
-  return base::win::IsMetroProcess() && ui::IsTouchDevicePresent();
-}
-#endif  // defined(OS_WIN)
-
 const float kScaleFactorScales[] = {1.0f, 1.0f, 1.25f, 1.33f, 1.4f, 1.5f, 1.8f,
                                     2.0f, 3.0f};
 COMPILE_ASSERT(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
                kScaleFactorScales_incorrect_size);
 
 }  // namespace
-
-DisplayLayout GetDisplayLayout() {
-#if defined(OS_WIN)
-  if (UseTouchOptimizedUI())
-    return LAYOUT_TOUCH;
-#endif
-  return LAYOUT_DESKTOP;
-}
 
 void SetSupportedScaleFactors(
     const std::vector<ui::ScaleFactor>& scale_factors) {

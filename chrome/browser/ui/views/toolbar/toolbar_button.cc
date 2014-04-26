@@ -50,7 +50,7 @@ gfx::Size ToolbarButton::GetPreferredSize() {
   gfx::Size size(image()->GetPreferredSize());
   gfx::Size label_size = label()->GetPreferredSize();
   if (label_size.width() > 0)
-    size.Enlarge(label_size.width() + LocationBarView::GetItemPadding(), 0);
+    size.Enlarge(label_size.width() + LocationBarView::kItemPadding, 0);
   return size;
 }
 

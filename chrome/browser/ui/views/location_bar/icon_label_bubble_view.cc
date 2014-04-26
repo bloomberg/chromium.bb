@@ -114,7 +114,7 @@ void IconLabelBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 
 // static
 int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) {
-  return LocationBarView::GetItemPadding() - LocationBarView::kBubblePadding +
+  return LocationBarView::kItemPadding - LocationBarView::kBubblePadding +
       (by_icon ? 0 : LocationBarView::kIconInternalPadding);
 }
 
@@ -127,5 +127,5 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
 int IconLabelBubbleView::GetPreLabelWidth() const {
   const int image_width = image_->GetPreferredSize().width();
   return GetBubbleOuterPadding(true) +
-      (image_width ? (image_width + LocationBarView::GetItemPadding()) : 0);
+      (image_width ? (image_width + LocationBarView::kItemPadding) : 0);
 }

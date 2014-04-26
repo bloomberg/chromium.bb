@@ -13,7 +13,6 @@
 LocationIconView::LocationIconView(LocationBarView* location_bar)
     : page_info_helper_(this, location_bar) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
-  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 LocationIconView::~LocationIconView() {

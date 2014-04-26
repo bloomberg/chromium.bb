@@ -76,7 +76,6 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
@@ -189,6 +188,7 @@ class IsPageActionViewRightAligned {
 // static
 const int LocationBarView::kNormalEdgeThickness = 2;
 const int LocationBarView::kPopupEdgeThickness = 1;
+const int LocationBarView::kItemPadding = 3;
 const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kBubblePadding = 1;
 const char LocationBarView::kViewClassName[] = "LocationBarView";
@@ -243,15 +243,6 @@ LocationBarView::~LocationBarView() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public:
-
-// static
-void LocationBarView::InitTouchableLocationBarChildView(views::View* view) {
-  int horizontal_padding = GetBuiltInHorizontalPaddingForChildViews();
-  if (horizontal_padding != 0) {
-    view->SetBorder(views::Border::CreateEmptyBorder(
-        3, horizontal_padding, 3, horizontal_padding));
-  }
-}
 
 void LocationBarView::Init() {
   // We need to be in a Widget, otherwise GetNativeTheme() may change and we're
@@ -364,7 +355,6 @@ void LocationBarView::Init() {
   mic_search_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                       views::ImageButton::ALIGN_MIDDLE);
   mic_search_view_->SetVisible(false);
-  InitTouchableLocationBarChildView(mic_search_view_);
   AddChildView(mic_search_view_);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
@@ -666,16 +656,6 @@ void LocationBarView::GetOmniboxPopupPositioningInfo(
   *right_margin = *popup_width - location_bar_bounds.right();
 }
 
-// static
-int LocationBarView::GetItemPadding() {
-  const int kTouchItemPadding = 8;
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
-    return kTouchItemPadding;
-
-  const int kDesktopItemPadding = 3;
-  return kDesktopItemPadding;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public LocationBar implementation:
 
@@ -749,14 +729,12 @@ void LocationBarView::Layout() {
   ev_bubble_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
 
-  const int item_padding = GetItemPadding();
-
   // The textfield has 1 px of whitespace before the text in the RTL case only.
   const int kEditLeadingInternalSpace = base::i18n::IsRTL() ? 1 : 0;
   LocationBarLayout leading_decorations(
-      LocationBarLayout::LEFT_EDGE, item_padding - kEditLeadingInternalSpace);
+      LocationBarLayout::LEFT_EDGE, kItemPadding - kEditLeadingInternalSpace);
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
-                                         item_padding);
+                                         kItemPadding);
 
   // Show and position the animated host label used in the show and hide URL
   // animations.
@@ -814,7 +792,7 @@ void LocationBarView::Layout() {
   const int bubble_height = std::max(location_height - (kBubblePadding * 2), 0);
   if (!keyword.empty() && !is_keyword_hint) {
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, true, 0,
-                                      kBubblePadding, item_padding, 0,
+                                      kBubblePadding, kItemPadding, 0,
                                       selected_keyword_view_);
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
@@ -841,29 +819,29 @@ void LocationBarView::Layout() {
     const double kMaxBubbleFraction = 0.5;
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, false,
                                       kMaxBubbleFraction, kBubblePadding,
-                                      item_padding, 0, ev_bubble_view_);
+                                      kItemPadding, 0, ev_bubble_view_);
   } else if (!origin_chip_view_->visible()) {
     leading_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
-        GetBuiltInHorizontalPaddingForChildViews(),
+        0,
         location_icon_view_);
   }
 
   if (star_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
-        GetBuiltInHorizontalPaddingForChildViews(), star_view_);
+        0, star_view_);
   }
   if (translate_icon_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
-        GetBuiltInHorizontalPaddingForChildViews(),
+        0,
         translate_icon_view_);
   }
   if (open_pdf_in_reader_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
-        GetBuiltInHorizontalPaddingForChildViews(),
+        0,
         open_pdf_in_reader_view_);
   }
   if (manage_passwords_icon_view_->visible()) {
@@ -876,7 +854,7 @@ void LocationBarView::Layout() {
     if ((*i)->visible()) {
       trailing_decorations.AddDecoration(
           vertical_edge_thickness(), location_height,
-          GetBuiltInHorizontalPaddingForChildViews(), (*i));
+          0, (*i));
     }
   }
   if (zoom_view_->visible()) {
@@ -888,8 +866,8 @@ void LocationBarView::Layout() {
        ++i) {
     if ((*i)->visible()) {
       trailing_decorations.AddDecoration(
-          bubble_location_y, bubble_height, false, 0, item_padding,
-          item_padding, GetBuiltInHorizontalPaddingForChildViews(), (*i));
+          bubble_location_y, bubble_height, false, 0, kItemPadding,
+          kItemPadding, 0, (*i));
     }
   }
   if (generated_credit_card_view_->visible()) {
@@ -905,8 +883,8 @@ void LocationBarView::Layout() {
   // IME composition is in progress.
   if (!keyword.empty() && is_keyword_hint && !omnibox_view_->IsImeComposing()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
-                                       location_height, true, 0, item_padding,
-                                       item_padding, 0, keyword_hint_view_);
+                                       location_height, true, 0, kItemPadding,
+                                       kItemPadding, 0, keyword_hint_view_);
     if (keyword_hint_view_->keyword() != keyword)
       keyword_hint_view_->SetKeyword(keyword);
   }
@@ -1077,12 +1055,6 @@ WebContents* LocationBarView::GetWebContents() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private:
-
-// static
-int LocationBarView::GetBuiltInHorizontalPaddingForChildViews() {
-  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
-      GetItemPadding() / 2 : 0;
-}
 
 int LocationBarView::GetHorizontalEdgeThickness() const {
   // In maximized popup mode, there isn't any edge.

@@ -657,7 +657,6 @@
       <if expr="(is_macosx or is_ios) and not toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="mac/otr_icon.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="common/otr_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_OVERLAY_DROP_SHADOW" file="common/overlay_drop_shadow.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" />

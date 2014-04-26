@@ -164,16 +164,6 @@ const Experiment::Choice kTouchEventsChoices[] = {
     switches::kTouchEventsDisabled }
 };
 
-const Experiment::Choice kTouchOptimizedUIChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    switches::kTouchOptimizedUI,
-    switches::kTouchOptimizedUIEnabled },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kTouchOptimizedUI,
-    switches::kTouchOptimizedUIDisabled }
-};
-
 #if defined(USE_AURA)
 const Experiment::Choice kOverscrollHistoryNavigationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED, "", "" },
@@ -892,13 +882,6 @@ const Experiment kExperiments[] = {
     IDS_TOUCH_EVENTS_DESCRIPTION,
     kOsDesktop,
     MULTI_VALUE_TYPE(kTouchEventsChoices)
-  },
-  {
-    "touch-optimized-ui",
-    IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME,
-    IDS_FLAGS_TOUCH_OPTIMIZED_UI_DESCRIPTION,
-    kOsWin,
-    MULTI_VALUE_TYPE(kTouchOptimizedUIChoices)
   },
   {
     "disable-touch-adjustment",

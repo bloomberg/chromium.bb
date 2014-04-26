@@ -141,7 +141,6 @@ std::string DeriveCommandLine(const GURL& start_url,
 #endif
     ::switches::kTouchDevices,
     ::switches::kTouchEvents,
-    ::switches::kTouchOptimizedUI,
     ::switches::kUIDisableThreadedCompositing,
     ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)

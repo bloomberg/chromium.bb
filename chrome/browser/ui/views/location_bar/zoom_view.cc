@@ -20,7 +20,6 @@ ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate)
     : location_bar_delegate_(location_bar_delegate) {
   SetAccessibilityFocusable(true);
   Update(NULL);
-  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 ZoomView::~ZoomView() {

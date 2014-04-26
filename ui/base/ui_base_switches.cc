@@ -49,18 +49,4 @@ const char kLocalePak[] = "locale_pak";
 // do not have a user interface.
 const char kNoMessageBox[] = "no-message-box";
 
-// Enables UI changes that make it easier to use with a touchscreen.
-// WARNING: Do not check this flag directly when deciding what UI to draw,
-// instead you must call ui::GetDisplayLayout
-const char kTouchOptimizedUI[] = "touch-optimized-ui";
-
-// The values the kTouchOptimizedUI switch may have, as in
-// "--touch-optimized-ui=disabled".
-//   auto: Enabled on monitors which have touchscreen support (default).
-const char kTouchOptimizedUIAuto[] = "auto";
-//   enabled: always optimized for touch (even if no touch support).
-const char kTouchOptimizedUIEnabled[] = "enabled";
-//   disabled: never optimized for touch.
-const char kTouchOptimizedUIDisabled[] = "disabled";
-
 }  // namespace switches

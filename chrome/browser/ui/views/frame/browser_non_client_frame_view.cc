@@ -95,7 +95,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     avatar = rb.
         GetImageNamed(profiles::GetPlaceholderAvatarIconResourceID());
   } else if (browser_view_->IsOffTheRecord()) {
-    avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
+    avatar = rb.GetImageNamed(IDR_OTR_ICON);
     // TODO(nkostylev): Allow this on ChromeOS once the ChromeOS test
     // environment handles profile directories correctly.
 #if !defined(OS_CHROMEOS)

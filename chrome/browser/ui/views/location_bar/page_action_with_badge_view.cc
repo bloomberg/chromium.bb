@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "ui/accessibility/ax_view_state.h"
 
@@ -15,7 +14,6 @@ PageActionWithBadgeView::PageActionWithBadgeView(
     PageActionImageView* image_view) {
   image_view_ = image_view;
   AddChildView(image_view_);
-  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 void PageActionWithBadgeView::GetAccessibleState(

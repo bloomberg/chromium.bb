@@ -16,7 +16,6 @@ ManagePasswordsIconView::ManagePasswordsIconView(
     : location_bar_delegate_(location_bar_delegate) {
   SetAccessibilityFocusable(true);
   Update(NULL);
-  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 ManagePasswordsIconView::~ManagePasswordsIconView() {}

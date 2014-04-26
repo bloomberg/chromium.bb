@@ -47,7 +47,6 @@ TEST_F(BrowserViewTest, BrowserView) {
   // Test initial state.
   EXPECT_TRUE(browser_view()->IsTabStripVisible());
   EXPECT_FALSE(browser_view()->IsOffTheRecord());
-  EXPECT_EQ(IDR_OTR_ICON, browser_view()->GetOTRIconResourceID());
   EXPECT_FALSE(browser_view()->IsGuestSession());
   EXPECT_FALSE(browser_view()->ShouldShowAvatar());
   EXPECT_TRUE(browser_view()->IsBrowserTypeNormal());

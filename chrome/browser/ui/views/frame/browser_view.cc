@@ -551,12 +551,6 @@ bool BrowserView::IsRegularOrGuestSession() const {
   return profiles::IsRegularOrGuestSession(browser_.get());
 }
 
-int BrowserView::GetOTRIconResourceID() const {
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH && IsFullscreen())
-    return IDR_OTR_ICON_FULLSCREEN;
-  return IDR_OTR_ICON;
-}
-
 bool BrowserView::ShouldShowAvatar() const {
 #if defined(OS_CHROMEOS)
   if (!browser_->is_type_tabbed() && !browser_->is_app())
@@ -617,7 +611,7 @@ WebContents* BrowserView::GetActiveWebContents() const {
 }
 
 gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
-  return *GetThemeProvider()->GetImageSkiaNamed(GetOTRIconResourceID());
+  return *GetThemeProvider()->GetImageSkiaNamed(IDR_OTR_ICON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -13,21 +13,6 @@
 
 namespace ui {
 
-enum DisplayLayout {
-  // The typical layout for e.g. Windows, Mac and Linux.
-  LAYOUT_DESKTOP,
-
-  // Layout optimized for touch.  Used e.g. for Windows 8 Metro mode.
-  LAYOUT_TOUCH,
-};
-
-// Returns the display layout that should be used.  This could be used
-// e.g. to tweak hard-coded padding that's layout specific, or choose
-// the .pak file of theme resources to load.
-// WARNING: this is deprecated and will be nuked as soon as aura is the default
-// on windows.
-UI_BASE_EXPORT DisplayLayout GetDisplayLayout();
-
 // Supported UI scale factors for the platform. This is used as an index
 // into the array |kScaleFactorScales| which maps the enum value to a float.
 // SCALE_FACTOR_NONE is used for density independent resources such as

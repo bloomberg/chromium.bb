@@ -60,7 +60,6 @@
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/canvas.h"
@@ -108,11 +107,6 @@ const int kContentShadowHeightAsh = 2;
 
 // Non-ash uses a rounded content area with no shadow in the assets.
 const int kContentShadowHeight = 0;
-
-int GetButtonSpacing() {
-  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
-      ToolbarView::kStandardSpacing : 0;
-}
 
 bool IsStreamlinedHostedAppsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -417,9 +411,6 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
       GetNativeTheme() == ui::NativeThemeAura::instance();
   use_new_menu = supports_new_separators;
 #endif
-#if defined(OS_WIN)
-  use_new_menu = use_new_menu || ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
-#endif
 
   wrench_menu_.reset(new WrenchMenu(browser_, use_new_menu,
                                     supports_new_separators));
@@ -547,13 +538,12 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 gfx::Size ToolbarView::GetPreferredSize() {
   gfx::Size size(location_bar_->GetPreferredSize());
   if (is_display_mode_normal()) {
-    int button_spacing = GetButtonSpacing();
     size.Enlarge(
-        kLeftEdgeSpacing + back_->GetPreferredSize().width() + button_spacing +
-            forward_->GetPreferredSize().width() + button_spacing +
+        kLeftEdgeSpacing + back_->GetPreferredSize().width() +
+            forward_->GetPreferredSize().width() +
             reload_->GetPreferredSize().width() + kStandardSpacing +
             (show_home_button_.GetValue() ?
-                (home_->GetPreferredSize().width() + button_spacing) : 0) +
+                home_->GetPreferredSize().width() : 0) +
             (origin_chip_view_->visible() ?
                 (origin_chip_view_->GetPreferredSize().width() +
                     2 * kStandardSpacing) :
@@ -610,12 +600,11 @@ void ToolbarView::Layout() {
     back_->SetBounds(kLeftEdgeSpacing, child_y, back_width, child_height);
     back_->SetLeadingMargin(0);
   }
-  int button_spacing = GetButtonSpacing();
-  int next_element_x = back_->bounds().right() + button_spacing;
+  int next_element_x = back_->bounds().right();
 
   forward_->SetBounds(next_element_x, child_y,
                       forward_->GetPreferredSize().width(), child_height);
-  next_element_x = forward_->bounds().right() + button_spacing;
+  next_element_x = forward_->bounds().right();
 
   reload_->SetBounds(next_element_x, child_y,
                      reload_->GetPreferredSize().width(), child_height);
@@ -624,7 +613,7 @@ void ToolbarView::Layout() {
   if (show_home_button_.GetValue() ||
       (browser_->is_app() && IsStreamlinedHostedAppsEnabled())) {
     home_->SetVisible(true);
-    home_->SetBounds(next_element_x + button_spacing, child_y,
+    home_->SetBounds(next_element_x, child_y,
                      home_->GetPreferredSize().width(), child_height);
   } else {
     home_->SetVisible(false);

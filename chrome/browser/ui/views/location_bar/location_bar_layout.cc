@@ -103,8 +103,8 @@ void LocationBarLayout::AddDecoration(int y,
                                       int builtin_padding,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
-      y, height, false, 0, LocationBarView::GetItemPadding(),
-      LocationBarView::GetItemPadding(), builtin_padding, view));
+      y, height, false, 0, LocationBarView::kItemPadding,
+      LocationBarView::kItemPadding, builtin_padding, view));
 }
 
 void LocationBarLayout::LayoutPass1(int* entry_width) {

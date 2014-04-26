@@ -145,12 +145,6 @@ class LocationBarView : public LocationBar,
 
   virtual ~LocationBarView();
 
-  // Uses GetBuiltInHorizontalPaddingForChildViews() to optionally add
-  // additional padding (via an empty border) to |view|. This should be called
-  // during creation on all child views which are potentially touchable so that
-  // when touch is enabled they will have sufficient padding.
-  static void InitTouchableLocationBarChildView(views::View* view);
-
   // Initializes the LocationBarView.
   void Init();
 
@@ -259,10 +253,6 @@ class LocationBarView : public LocationBar,
                                       int* left_margin,
                                       int* right_margin);
 
-  // Space between items in the location bar, as well as between items and the
-  // edges.
-  static int GetItemPadding();
-
   // LocationBar:
   virtual void FocusLocation(bool select_all) OVERRIDE;
   virtual void Revert() OVERRIDE;
@@ -284,6 +274,9 @@ class LocationBarView : public LocationBar,
   static const int kNormalEdgeThickness;
   // The same, but for popup mode.
   static const int kPopupEdgeThickness;
+  // Space between items in the location bar, as well as between items and the
+  // edges.
+  static const int kItemPadding;
   // Amount of padding built into the standard omnibox icons.
   static const int kIconInternalPadding;
   // Amount of padding to place between the origin chip and the leading edge of
@@ -301,11 +294,6 @@ class LocationBarView : public LocationBar,
   friend class PageActionWithBadgeView;
   typedef std::vector<ExtensionAction*> PageActions;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
-
-  // Returns the number of pixels of built-in padding to the left and right for
-  // child views. This is nonzero when touch UI is enabled so as to space out
-  // child views for easier targeting. See InitTouchableLocationBarChildView().
-  static int GetBuiltInHorizontalPaddingForChildViews();
 
   // Returns the thickness of any visible left and right edge, in pixels.
   int GetHorizontalEdgeThickness() const;

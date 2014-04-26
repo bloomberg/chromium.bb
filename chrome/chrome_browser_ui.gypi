@@ -1801,8 +1801,6 @@
         'browser/ui/views/omnibox/omnibox_result_view.h',
         'browser/ui/views/omnibox/omnibox_view_views.cc',
         'browser/ui/views/omnibox/omnibox_view_views.h',
-        'browser/ui/views/omnibox/touch_omnibox_popup_contents_view.cc',
-        'browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h',
         'browser/ui/views/open_pdf_in_reader_bubble_view.cc',
         'browser/ui/views/open_pdf_in_reader_bubble_view.h',
         'browser/ui/views/outdated_upgrade_bubble_view.cc',

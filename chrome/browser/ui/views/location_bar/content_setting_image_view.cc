@@ -78,8 +78,6 @@ ContentSettingImageView::ContentSettingImageView(
   text_label_->SetElideBehavior(views::Label::NO_ELIDE);
   AddChildView(text_label_);
 
-  LocationBarView::InitTouchableLocationBarChildView(this);
-
   slide_animator_.SetSlideDuration(kAnimationDurationMS);
   slide_animator_.SetTweenType(gfx::Tween::LINEAR);
 }
@@ -129,7 +127,7 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
 
 // static
 int ContentSettingImageView::GetBubbleOuterPadding(bool by_icon) {
-  return LocationBarView::GetItemPadding() - LocationBarView::kBubblePadding +
+  return LocationBarView::kItemPadding - LocationBarView::kBubblePadding +
       (by_icon ? 0 : LocationBarView::kIconInternalPadding);
 }
 
@@ -184,7 +182,7 @@ void ContentSettingImageView::Layout() {
       std::min((width() - icon_width) / 2, GetBubbleOuterPadding(true)), 0,
       icon_width, height());
   text_label_->SetBounds(
-      icon_->bounds().right() + LocationBarView::GetItemPadding(), 0,
+      icon_->bounds().right() + LocationBarView::kItemPadding, 0,
       std::max(width() - GetTotalSpacingWhileAnimating() - icon_width, 0),
       height());
 }
@@ -226,7 +224,7 @@ void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
 }
 
 int ContentSettingImageView::GetTotalSpacingWhileAnimating() const {
-  return GetBubbleOuterPadding(true) + LocationBarView::GetItemPadding() +
+  return GetBubbleOuterPadding(true) + LocationBarView::kItemPadding +
       GetBubbleOuterPadding(false);
 }
 

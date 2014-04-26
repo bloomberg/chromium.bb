@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 
@@ -14,7 +13,6 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
       command_id_(command_id),
       suppress_mouse_released_action_(false) {
   SetAccessibilityFocusable(true);
-  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 BubbleIconView::~BubbleIconView() {

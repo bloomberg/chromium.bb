@@ -201,10 +201,6 @@ class BrowserView : public BrowserWindow,
   // not off the record or a guest session.
   bool IsRegularOrGuestSession() const;
 
-  // Returns the resource ID to use for the OTR icon, which depends on
-  // which layout is being shown and whether we are full-screen.
-  int GetOTRIconResourceID() const;
-
   // Returns true if the non-client view should render an avatar icon.
   bool ShouldShowAvatar() const;
 

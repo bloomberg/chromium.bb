@@ -107,7 +107,6 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     // Zygote process needs to know what resources to have loaded when it
     // becomes a renderer process.
     switches::kForceDeviceScaleFactor,
-    switches::kTouchOptimizedUI,
 
     switches::kNoSandbox,
   };
