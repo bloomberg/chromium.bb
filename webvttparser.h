@@ -120,8 +120,7 @@ class Parser : private LineReader {
   //
   static int ParseTimingsLine(std::string* line,
                               std::string::size_type arrow_pos,
-                              Time* start_time,
-                              Time* stop_time,
+                              Time* start_time, Time* stop_time,
                               Cue::settings_t* settings);
 
   // Parse a single time specifier (from the timings line), starting
@@ -129,23 +128,20 @@ class Parser : private LineReader {
   // is detected. The function modifies offset |off| by the number of
   // characters consumed.  Returns negative if error, 0 on success.
   //
-  static int ParseTime(const std::string& line,
-                       std::string::size_type* off,
+  static int ParseTime(const std::string& line, std::string::size_type* off,
                        Time* time);
 
   // Parse the cue settings from the timings line, starting at the
   // given offset.  Returns negative if error, 0 on success.
   //
-  static int ParseSettings(const std::string& line,
-                           std::string::size_type off,
+  static int ParseSettings(const std::string& line, std::string::size_type off,
                            Cue::settings_t* settings);
 
   // Parse a non-negative integer from the characters in |line| beginning
   // at offset |off|.  The function increments |off| by the number
   // of characters consumed.  Returns the value, or negative if error.
   //
-  static int ParseNumber(const std::string& line,
-                         std::string::size_type* off);
+  static int ParseNumber(const std::string& line, std::string::size_type* off);
 
   Reader* const reader_;
 
