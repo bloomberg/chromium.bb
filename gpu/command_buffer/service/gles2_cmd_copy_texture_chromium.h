@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
 
+#include "base/containers/hash_tables.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
 
@@ -21,6 +22,7 @@ class GLES2Decoder;
 class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
  public:
   CopyTextureCHROMIUMResourceManager();
+  ~CopyTextureCHROMIUMResourceManager();
 
   void Initialize(const gles2::GLES2Decoder* decoder);
   void Destroy();
@@ -45,14 +47,21 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   static const GLuint kVertexPositionAttrib = 0;
 
  private:
-  bool initialized_;
+  struct ProgramInfo {
+    ProgramInfo() : program(0u), matrix_handle(0u), sampler_locations(0u) {}
 
-  static const int kNumPrograms = 12;
-  GLuint programs_[kNumPrograms];
+    GLuint program;
+    GLuint matrix_handle;
+    GLuint sampler_locations;
+  };
+
+  bool initialized_;
+  typedef std::pair<int, int> ProgramMapKey;
+  typedef base::hash_map<ProgramMapKey, ProgramInfo> ProgramMap;
+  ProgramMap programs_;
   GLuint buffer_id_;
   GLuint framebuffer_;
-  GLuint matrix_handle_[kNumPrograms];
-  GLuint sampler_locations_[kNumPrograms];
+  GLuint vertex_shader_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyTextureCHROMIUMResourceManager);
 };
