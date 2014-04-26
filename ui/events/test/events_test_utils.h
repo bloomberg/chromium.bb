@@ -6,6 +6,7 @@
 #define UI_EVENTS_TEST_EVENTS_TEST_UTILS_H_
 
 #include "ui/events/event.h"
+#include "ui/events/event_source.h"
 #include "ui/events/event_target.h"
 
 namespace ui {
@@ -58,6 +59,20 @@ class EventTargetTestApi {
   EventTarget* target_;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargetTestApi);
+};
+
+class EventSourceTestApi {
+ public:
+  explicit EventSourceTestApi(EventSource* event_source);
+
+  EventDispatchDetails SendEventToProcessor(Event* event) WARN_UNUSED_RESULT;
+
+ private:
+  EventSourceTestApi();
+
+  EventSource* event_source_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventSourceTestApi);
 };
 
 }  // namespace ui

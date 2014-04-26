@@ -17,4 +17,13 @@ LocatedEventTestApi::~LocatedEventTestApi() {}
 EventTargetTestApi::EventTargetTestApi(EventTarget* target)
     : target_(target) {}
 
+EventSourceTestApi::EventSourceTestApi(EventSource* event_source)
+    : event_source_(event_source) {
+  DCHECK(event_source);
+}
+
+EventDispatchDetails EventSourceTestApi::SendEventToProcessor(Event* event) {
+  return event_source_->SendEventToProcessor(event);
+}
+
 }  // namespace ui
