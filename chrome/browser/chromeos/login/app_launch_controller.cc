@@ -240,6 +240,9 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   DVLOG(1) << "Profile loaded... Starting app launch.";
   profile_ = profile;
 
+  // This is needed to trigger input method extensions being loaded.
+  profile_->InitChromeOSPreferences();
+
   kiosk_profile_loader_.reset();
   startup_app_launcher_.reset(
       new StartupAppLauncher(profile_, app_id_, diagnostic_mode_, this));
