@@ -46,20 +46,34 @@ def ConfigureContentSettingsDict(device, desired_settings):
 
 DETERMINISTIC_DEVICE_SETTINGS = {
   'com.google.settings/partner': {
+    'network_location_opt_in': 0,
     'use_location_for_services': 1,
   },
   'settings/global': {
+    'assisted_gps_enabled': 0,
+
     # Disable "auto time" and "auto time zone" to avoid network-provided time
     # to overwrite the device's datetime and timezone synchronized from host
     # when running tests later. See b/6569849.
     'auto_time': 0,
     'auto_time_zone': 0,
 
+    'development_settings_enabled': 1,
+
+    # Flag for allowing ActivityManagerService to send ACTION_APP_ERROR intents
+    # on application crashes and ANRs. If this is disabled, the crash/ANR dialog
+    # will never display the "Report" button.
+    # Type: int ( 0 = disallow, 1 = allow )
+    'send_action_app_error': 0,
+
     'stay_on_while_plugged_in': 3,
 
     'verifier_verify_adb_installs' : 0,
   },
   'settings/secure': {
+    'allowed_geolocation_origins':
+        'http://www.google.co.uk http://www.google.com',
+
     # Ensure that we never get random dialogs like "Unfortunately the process
     # android.process.acore has stopped", which steal the focus, and make our
     # automation fail (because the dialog steals the focus then mistakenly
@@ -92,5 +106,6 @@ DETERMINISTIC_DEVICE_SETTINGS = {
 NETWORK_DISABLED_SETTINGS = {
   'settings/global': {
     'airplane_mode_on': 1,
+    'wifi_on': 0,
   },
 }
