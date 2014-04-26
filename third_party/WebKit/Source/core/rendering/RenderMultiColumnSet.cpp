@@ -45,12 +45,22 @@ RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
 {
 }
 
-RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread* flowThread)
+RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread* flowThread, RenderStyle* parentStyle)
 {
     Document& document = flowThread->document();
     RenderMultiColumnSet* renderer = new RenderMultiColumnSet(flowThread);
     renderer->setDocumentForAnonymous(&document);
+    renderer->setStyle(RenderStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
+}
+
+RenderMultiColumnSet* RenderMultiColumnSet::nextSiblingMultiColumnSet() const
+{
+    for (RenderObject* sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
+        if (sibling->isRenderMultiColumnSet())
+            return toRenderMultiColumnSet(sibling);
+    }
+    return 0;
 }
 
 LayoutUnit RenderMultiColumnSet::heightAdjustedForSetOffset(LayoutUnit height) const

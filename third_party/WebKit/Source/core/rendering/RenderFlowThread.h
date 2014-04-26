@@ -67,7 +67,7 @@ public:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
-    virtual void addRegionToThread(RenderRegion*);
+    virtual void addRegionToThread(RenderRegion*) = 0;
     virtual void removeRegionFromThread(RenderRegion*);
     const RenderRegionList& renderRegionList() const { return m_regionList; }
 
@@ -91,11 +91,7 @@ public:
     virtual void setPageBreak(LayoutUnit /*offset*/, LayoutUnit /*spaceShortage*/) { }
     virtual void updateMinimumPageHeight(LayoutUnit /*offset*/, LayoutUnit /*minHeight*/) { }
 
-    enum RegionAutoGenerationPolicy {
-        AllowRegionAutoGeneration,
-        DisallowRegionAutoGeneration,
-    };
-    RenderRegion* regionAtBlockOffset(LayoutUnit, bool extendLastRegion = false, RegionAutoGenerationPolicy = AllowRegionAutoGeneration);
+    virtual RenderRegion* regionAtBlockOffset(LayoutUnit) const;
 
     bool regionsHaveUniformLogicalHeight() const { return m_regionsHaveUniformLogicalHeight; }
 
@@ -134,8 +130,6 @@ protected:
 
     void updateRegionsFlowThreadPortionRect();
     bool shouldRepaint(const LayoutRect&) const;
-
-    virtual void autoGenerateRegionsToBlockOffset(LayoutUnit) { }
 
     bool cachedOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit&) const;
     void setOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit);

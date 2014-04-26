@@ -31,6 +31,25 @@
 
 namespace WebCore {
 
+class RenderMultiColumnSet;
+
+// Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
+// the actual multicol container (i.e. the RenderBlockFlow whose style computes to non-auto
+// column-count and/or column-width). RenderMultiColumnFlowThread is the heart of the multicol
+// implementation, and there is only one instance per multicol container. Child content of the
+// multicol container is parented into the flow thread at the time of renderer insertion.
+//
+// Apart from this flow thread child, the multicol container will also have RenderMultiColumnSet
+// "region" children, which are used to position the columns visually. The flow thread is in charge
+// of layout, and, after having calculated the column width, it lays out content as if everything
+// were in one tall single column, except that there will typically be some amount of blank space
+// (also known as pagination struts) at the offsets where the actual column boundaries are. This
+// way, content that needs to be preceded by a break will appear at the top of the next
+// column. Content needs to be preceded by a break when there's a forced break or when the content
+// is unbreakable and cannot fully fit in the same column as the preceding piece of
+// content. Although a RenderMultiColumnFlowThread is laid out, it does not take up any space in its
+// container. It's the RenderMultiColumnSet objects that take up the necessary amount of space, and
+// make sure that the columns are painted and hit-tested correctly.
 class RenderMultiColumnFlowThread FINAL : public RenderFlowThread {
 public:
     virtual ~RenderMultiColumnFlowThread();
@@ -38,6 +57,11 @@ public:
     static RenderMultiColumnFlowThread* createAnonymous(Document&, RenderStyle* parentStyle);
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
+
+    RenderMultiColumnSet* firstMultiColumnSet() const;
+    RenderMultiColumnSet* lastMultiColumnSet() const;
+
+    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
 
     // Populate the flow thread with what's currently its siblings. Called when a regular block
     // becomes a multicol container.
@@ -62,11 +86,13 @@ private:
     RenderMultiColumnFlowThread();
 
     virtual const char* renderName() const OVERRIDE;
+    virtual void addRegionToThread(RenderRegion*) OVERRIDE;
+    virtual void willBeRemovedFromTree() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
-    virtual void autoGenerateRegionsToBlockOffset(LayoutUnit) OVERRIDE;
     virtual LayoutUnit initialLogicalWidth() const OVERRIDE;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) OVERRIDE;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) OVERRIDE;
+    virtual RenderRegion* regionAtBlockOffset(LayoutUnit) const OVERRIDE;
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) OVERRIDE;
     virtual bool isPageLogicalHeightKnown() const OVERRIDE;
 
