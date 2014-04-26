@@ -9,7 +9,7 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/events.h"
 #include "content/public/browser/browser_thread.h"

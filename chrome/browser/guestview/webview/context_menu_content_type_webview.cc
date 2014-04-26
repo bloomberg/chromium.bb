@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
+#include "chrome/browser/guestview/webview/context_menu_content_type_webview.h"
 
 ContextMenuContentTypeWebView::ContextMenuContentTypeWebView(
     content::WebContents* web_contents,

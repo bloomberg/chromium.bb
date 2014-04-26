@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
@@ -14,9 +14,9 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/guest_view/guest_view_constants.h"
-#include "chrome/browser/guest_view/web_view/web_view_constants.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
+#include "chrome/browser/guestview/guestview_constants.h"
+#include "chrome/browser/guestview/webview/webview_constants.h"
+#include "chrome/browser/guestview/webview/webview_permission_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
@@ -42,7 +42,7 @@
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #if defined(ENABLE_PLUGINS)
-#include "chrome/browser/guest_view/web_view/plugin_permission_helper.h"
+#include "chrome/browser/guestview/webview/plugin_permission_helper.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -130,7 +130,7 @@ void AttachWebViewHelpers(WebContents* contents) {
 
 WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
                            const std::string& extension_id)
-    : GuestView<WebViewGuest>(guest_web_contents, extension_id),
+    : GuestView(guest_web_contents, extension_id),
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
@@ -162,7 +162,19 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
 }
 
 // static
-const std::string& WebViewGuest::Type = "webview";
+WebViewGuest* WebViewGuest::From(int embedder_process_id,
+                                 int guest_instance_id) {
+  GuestView* guest = GuestView::From(embedder_process_id, guest_instance_id);
+  if (!guest)
+    return NULL;
+  return guest->AsWebView();
+}
+
+// static
+WebViewGuest* WebViewGuest::FromWebContents(WebContents* contents) {
+  GuestView* guest = GuestView::FromWebContents(contents);
+  return guest ? guest->AsWebView() : NULL;
+}
 
 // static.
 int WebViewGuest::GetViewInstanceId(WebContents* contents) {
@@ -273,9 +285,21 @@ void WebViewGuest::Attach(WebContents* embedder_web_contents,
     SetUserAgentOverride("");
   }
 
-  GuestViewBase::Attach(embedder_web_contents, args);
+  GuestView::Attach(embedder_web_contents, args);
 
   AddWebViewToExtensionRendererState();
+}
+
+GuestView::Type WebViewGuest::GetViewType() const {
+  return GuestView::WEBVIEW;
+}
+
+WebViewGuest* WebViewGuest::AsWebView() {
+  return this;
+}
+
+AdViewGuest* WebViewGuest::AsAdView() {
+  return NULL;
 }
 
 void WebViewGuest::AddMessageToConsole(int32 level,
@@ -289,12 +313,12 @@ void WebViewGuest::AddMessageToConsole(int32 level,
   args->SetInteger(webview::kLine, line_no);
   args->SetString(webview::kSourceId, source_id);
   DispatchEvent(
-      new GuestViewBase::Event(webview::kEventConsoleMessage, args.Pass()));
+      new GuestView::Event(webview::kEventConsoleMessage, args.Pass()));
 }
 
 void WebViewGuest::Close() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEvent(new GuestViewBase::Event(webview::kEventClose, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventClose, args.Pass()));
 }
 
 void WebViewGuest::DidAttach() {
@@ -339,7 +363,8 @@ void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
   args->SetInteger(webview::kProcessId,
                    guest_web_contents()->GetRenderProcessHost()->GetID());
   args->SetString(webview::kReason, TerminationStatusToString(status));
-  DispatchEvent(new GuestViewBase::Event(webview::kEventExit, args.Pass()));
+  DispatchEvent(
+      new GuestView::Event(webview::kEventExit, args.Pass()));
 }
 
 bool WebViewGuest::HandleKeyboardEvent(
@@ -386,8 +411,7 @@ void WebViewGuest::LoadProgressed(double progress) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, guest_web_contents()->GetURL().spec());
   args->SetDouble(webview::kProgress, progress);
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventLoadProgress, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventLoadProgress, args.Pass()));
 }
 
 void WebViewGuest::LoadAbort(bool is_top_level,
@@ -397,8 +421,7 @@ void WebViewGuest::LoadAbort(bool is_top_level,
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
   args->SetString(guestview::kUrl, url.possibly_invalid_spec());
   args->SetString(guestview::kReason, error_type);
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventLoadAbort, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventLoadAbort, args.Pass()));
 }
 
 // TODO(fsamuel): Find a reliable way to test the 'responsive' and
@@ -407,16 +430,14 @@ void WebViewGuest::RendererResponsive() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
       guest_web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventResponsive, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventResponsive, args.Pass()));
 }
 
 void WebViewGuest::RendererUnresponsive() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
       guest_web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventUnresponsive, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventUnresponsive, args.Pass()));
 }
 
 void WebViewGuest::RequestPermission(
@@ -466,8 +487,7 @@ void WebViewGuest::SetZoom(double zoom_factor) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
   args->SetDouble(webview::kNewZoomFactor, zoom_factor);
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventZoomChange, args.Pass()));
 
   current_zoom_factor_ = zoom_factor;
 }
@@ -694,8 +714,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
       guest_web_contents()->GetController().GetEntryCount());
   args->SetInteger(webview::kInternalProcessId,
       guest_web_contents()->GetRenderProcessHost()->GetID());
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventLoadCommit, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
 
   // Update the current zoom factor for the new page.
   current_zoom_factor_ = content::ZoomLevelToZoomFactor(
@@ -732,8 +751,7 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, validated_url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventLoadStart, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventLoadStart, args.Pass()));
 }
 
 void WebViewGuest::DocumentLoadedInFrame(
@@ -745,7 +763,7 @@ void WebViewGuest::DocumentLoadedInFrame(
 
 void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEvent(new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventLoadStop, args.Pass()));
 }
 
 void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
@@ -776,8 +794,7 @@ void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
 
 void WebViewGuest::LoadHandlerCalled() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventContentLoad, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventContentLoad, args.Pass()));
 }
 
 void WebViewGuest::LoadRedirect(const GURL& old_url,
@@ -787,8 +804,7 @@ void WebViewGuest::LoadRedirect(const GURL& old_url,
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
   args->SetString(webview::kNewURL, new_url.spec());
   args->SetString(webview::kOldURL, old_url.spec());
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventLoadRedirect, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventLoadRedirect, args.Pass()));
 }
 
 void WebViewGuest::AddWebViewToExtensionRendererState() {
@@ -850,8 +866,7 @@ void WebViewGuest::SizeChanged(const gfx::Size& old_size,
   args->SetInteger(webview::kOldWidth, old_size.width());
   args->SetInteger(webview::kNewHeight, new_size.height());
   args->SetInteger(webview::kNewWidth, new_size.width());
-  DispatchEvent(
-      new GuestViewBase::Event(webview::kEventSizeChanged, args.Pass()));
+  DispatchEvent(new GuestView::Event(webview::kEventSizeChanged, args.Pass()));
 }
 
 void WebViewGuest::RequestMediaAccessPermission(
@@ -985,20 +1000,20 @@ int WebViewGuest::RequestPermissionInternal(
   args->SetInteger(webview::kRequestId, request_id);
   switch (static_cast<int>(permission_type)) {
     case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW: {
-      DispatchEvent(
-          new GuestViewBase::Event(webview::kEventNewWindow, args.Pass()));
+      DispatchEvent(new GuestView::Event(webview::kEventNewWindow,
+                                         args.Pass()));
       break;
     }
     case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
-      DispatchEvent(
-          new GuestViewBase::Event(webview::kEventDialog, args.Pass()));
+      DispatchEvent(new GuestView::Event(webview::kEventDialog,
+                                         args.Pass()));
       break;
     }
     default: {
       args->SetString(webview::kPermission,
                       PermissionTypeToString(permission_type));
-      DispatchEvent(new GuestViewBase::Event(webview::kEventPermissionRequest,
-                                             args.Pass()));
+      DispatchEvent(new GuestView::Event(webview::kEventPermissionRequest,
+                                         args.Pass()));
       break;
     }
   }
