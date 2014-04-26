@@ -78,22 +78,22 @@ class CrxDownloader {
   static CrxDownloader* Create(
       bool is_background_download,
       net::URLRequestContextGetter* context_getter,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const DownloadCallback& download_callback);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~CrxDownloader();
 
   // Starts the download. One instance of the class handles one download only.
   // One instance of CrxDownloader can only be started once, otherwise the
   // behavior is undefined. The callback gets invoked if the download can't
   // be started.
-  void StartDownloadFromUrl(const GURL& url);
-  void StartDownload(const std::vector<GURL>& urls);
+  void StartDownloadFromUrl(const GURL& url,
+                            const DownloadCallback& download_callback);
+  void StartDownload(const std::vector<GURL>& urls,
+                     const DownloadCallback& download_callback);
 
   const std::vector<DownloadMetrics> download_metrics() const;
 
  protected:
-  CrxDownloader(scoped_ptr<CrxDownloader> successor,
-                const DownloadCallback& download_callback);
+  explicit CrxDownloader(scoped_ptr<CrxDownloader> successor);
 
   // Handles the fallback in the case of multiple urls and routing of the
   // download to the following successor in the chain. Derived classes must call

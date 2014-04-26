@@ -28,31 +28,25 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 CrxDownloader* CrxDownloader::Create(
     bool is_background_download,
     net::URLRequestContextGetter* context_getter,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const DownloadCallback& download_callback) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   scoped_ptr<CrxDownloader> url_fetcher_downloader(
       new UrlFetcherDownloader(scoped_ptr<CrxDownloader>().Pass(),
                                context_getter,
-                               task_runner,
-                               download_callback));
+                               task_runner));
 #if defined (OS_WIN)
   if (is_background_download) {
     return new BackgroundDownloader(url_fetcher_downloader.Pass(),
                                     context_getter,
-                                    task_runner,
-                                    download_callback);
+                                    task_runner);
   }
 #endif
 
   return url_fetcher_downloader.release();
 }
 
-CrxDownloader::CrxDownloader(
-    scoped_ptr<CrxDownloader> successor,
-    const DownloadCallback& download_callback)
-    : successor_(successor.Pass()),
-      download_callback_(download_callback) {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+CrxDownloader::CrxDownloader(scoped_ptr<CrxDownloader> successor)
+    : successor_(successor.Pass()) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 CrxDownloader::~CrxDownloader() {
@@ -74,20 +68,23 @@ CrxDownloader::download_metrics() const {
   return retval;
 }
 
-void CrxDownloader::StartDownloadFromUrl(const GURL& url) {
+void CrxDownloader::StartDownloadFromUrl(
+    const GURL& url,
+    const DownloadCallback& download_callback) {
   std::vector<GURL> urls;
   urls.push_back(url);
-  StartDownload(urls);
+  StartDownload(urls, download_callback);
 }
 
-void CrxDownloader::StartDownload(const std::vector<GURL>& urls) {
+void CrxDownloader::StartDownload(const std::vector<GURL>& urls,
+                                  const DownloadCallback& download_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (urls.empty()) {
     // Make a result and complete the download with a generic error for now.
     Result result;
     result.error = -1;
-    download_callback_.Run(result);
+    download_callback.Run(result);
     return;
   }
 
@@ -97,6 +94,7 @@ void CrxDownloader::StartDownload(const std::vector<GURL>& urls) {
   // reset at this point, and the iterator will be valid in all conditions.
   urls_ = urls;
   current_url_ = urls_.begin();
+  download_callback_ = download_callback;
 
   DoStartDownload(*current_url_);
 }
@@ -133,7 +131,7 @@ void CrxDownloader::OnDownloadComplete(
     // of urls. Otherwise, the request ends here since the current downloader
     // has tried all urls and it can't fall back on any other downloader.
     if (successor_ && !urls_.empty()) {
-      successor_->StartDownload(urls_);
+      successor_->StartDownload(urls_, download_callback_);
       return;
     }
   }

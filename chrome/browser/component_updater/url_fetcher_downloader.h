@@ -26,8 +26,7 @@ class UrlFetcherDownloader : public CrxDownloader,
   friend class CrxDownloader;
   UrlFetcherDownloader(scoped_ptr<CrxDownloader> successor,
                        net::URLRequestContextGetter* context_getter,
-                       scoped_refptr<base::SequencedTaskRunner> task_runner,
-                       const DownloadCallback& download_callback);
+                       scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~UrlFetcherDownloader();
 
  private:

@@ -17,9 +17,8 @@ namespace component_updater {
 UrlFetcherDownloader::UrlFetcherDownloader(
     scoped_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const DownloadCallback& download_callback)
-    : CrxDownloader(successor.Pass(), download_callback),
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : CrxDownloader(successor.Pass()),
       context_getter_(context_getter),
       task_runner_(task_runner),
       downloaded_bytes_(-1),

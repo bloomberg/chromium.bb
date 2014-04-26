@@ -680,14 +680,13 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
       !workitem->on_demand && allow_background_download &&
       config_->UseBackgroundDownloader();
 
-  crx_downloader_.reset(CrxDownloader::Create(
-      is_background_download,
-      config_->RequestContext(),
-      blocking_task_runner_,
-      base::Bind(&CrxUpdateService::DownloadComplete,
-                 base::Unretained(this),
-                 base::Passed(&crx_context))));
-  crx_downloader_->StartDownload(*urls);
+  crx_downloader_.reset(CrxDownloader::Create(is_background_download,
+                                              config_->RequestContext(),
+                                              blocking_task_runner_));
+  crx_downloader_->StartDownload(*urls,
+                                 base::Bind(&CrxUpdateService::DownloadComplete,
+                                            base::Unretained(this),
+                                            base::Passed(&crx_context)));
 }
 
 void CrxUpdateService::UpdateCheckComplete(
