@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/base_jni_registrar.h"
+#include "components/cronet/android/org_chromium_net_UrlRequestContext.h"
+
 #include "base/android/jni_android.h"
-#include "base/android/jni_registrar.h"
 #include "base/android/jni_string.h"
-#include "base/at_exit.h"
-#include "base/i18n/icu_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "components/cronet/android/org_chromium_net_UrlRequest.h"
 #include "components/cronet/android/url_request_context_peer.h"
 #include "components/cronet/android/url_request_peer.h"
 #include "jni/UrlRequestContext_jni.h"
-#include "net/android/net_jni_registrar.h"
 
 // Version of this build of Chromium NET.
 #define CHROMIUM_NET_VERSION "1"
@@ -21,15 +18,6 @@
 namespace {
 
 const char kVersion[] = CHROMIUM_VERSION "/" CHROMIUM_NET_VERSION;
-
-const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
-    {"BaseAndroid", base::android::RegisterJni},
-    {"NetAndroid", net::android::RegisterJni},
-    {"UrlRequest", cronet::UrlRequestRegisterJni},
-    {"UrlRequestContext", cronet::RegisterNativesImpl},
-};
-
-base::AtExitManager* g_at_exit_manager = NULL;
 
 // Delegate of URLRequestContextPeer that delivers callbacks to the Java layer.
 class JniURLRequestContextPeerDelegate
@@ -59,35 +47,12 @@ class JniURLRequestContextPeerDelegate
 
 }  // namespace
 
-// Checks the available version of JNI. Also, caches Java reflection artifacts.
-extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  JNIEnv* env;
-  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-    return -1;
-  }
-
-  base::android::InitVM(vm);
-
-  if (!base::android::RegisterNativeMethods(
-          env, kCronetRegisteredMethods, arraysize(kCronetRegisteredMethods))) {
-    return -1;
-  }
-
-  g_at_exit_manager = new base::AtExitManager();
-
-  base::i18n::InitializeICU();
-
-  return JNI_VERSION_1_6;
-}
-
-extern "C" void JNIEXPORT JNICALL JNI_OnUnLoad(JavaVM* jvm, void* reserved) {
-  if (g_at_exit_manager) {
-    delete g_at_exit_manager;
-    g_at_exit_manager = NULL;
-  }
-}
-
 namespace cronet {
+
+// Explicitly register static JNI functions.
+bool UrlRequestContextRegisterJni(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
 
 static jstring GetVersion(JNIEnv* env, jclass unused) {
   return env->NewStringUTF(kVersion);

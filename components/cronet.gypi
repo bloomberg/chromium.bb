@@ -60,11 +60,13 @@
             '../net/net.gyp:net',
           ],
           'sources': [
+            'cronet/android/cronet_jni.cc',
             'cronet/android/org_chromium_net_UrlRequest.cc',
             'cronet/android/org_chromium_net_UrlRequest.h',
             'cronet/android/org_chromium_net_UrlRequest_error_list.h',
             'cronet/android/org_chromium_net_UrlRequest_priority_list.h',
             'cronet/android/org_chromium_net_UrlRequestContext.cc',
+            'cronet/android/org_chromium_net_UrlRequestContext.h',
             'cronet/android/url_request_context_peer.cc',
             'cronet/android/url_request_context_peer.h',
             'cronet/android/url_request_peer.cc',
