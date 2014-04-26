@@ -39,7 +39,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/install_verifier.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -47,7 +46,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -65,9 +63,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/blacklist_state.h"
@@ -170,10 +166,6 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
 }
 
 ExtensionSettingsHandler::~ExtensionSettingsHandler() {
-  // There may be pending file dialogs, we need to tell them that we've gone
-  // away so they don't try and call back to us.
-  if (load_extension_dialog_.get())
-    load_extension_dialog_->ListenerDestroyed();
 }
 
 ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
@@ -583,67 +575,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsAutoupdate",
       base::Bind(&ExtensionSettingsHandler::HandleAutoUpdateMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsLoadUnpackedExtension",
-      base::Bind(&ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsDismissADTPromo",
       base::Bind(&ExtensionSettingsHandler::HandleDismissADTPromoMessage,
                  AsWeakPtr()));
-}
-
-void ExtensionSettingsHandler::LoadUnpackedExtension(
-    const base::FilePath& path) {
-  UnpackedInstaller::Create(extension_service_)->Load(path);
-}
-
-int ExtensionSettingsHandler::IndexOfLoadingPath(const base::FilePath& path) {
-  for (size_t i = 0; i < loading_extension_directories_.size(); ++i) {
-    if (path == loading_extension_directories_[i])
-      return i;
-  }
-  return -1;
-}
-
-void ExtensionSettingsHandler::AddLoadingPath(const base::FilePath& path) {
-  DCHECK(IndexOfLoadingPath(path) == -1);
-
-  if (loading_extension_directories_.empty()) {
-    Profile* profile = Profile::FromWebUI(web_ui());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LOAD_RETRY,
-                   content::Source<Profile>(profile));
-  }
-  loading_extension_directories_.push_back(path);
-}
-
-void ExtensionSettingsHandler::RemoveLoadingPath(const base::FilePath& path) {
-  int index = IndexOfLoadingPath(path);
-  DCHECK(index != -1);
-
-  loading_extension_directories_.erase(loading_extension_directories_.begin() +
-                                       index);
-  if (loading_extension_directories_.empty()) {
-    Profile* profile = Profile::FromWebUI(web_ui());
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_EXTENSION_LOAD_RETRY,
-                      content::Source<Profile>(profile));
-  }
-}
-
-void ExtensionSettingsHandler::FileSelected(const base::FilePath& path,
-                                            int index,
-                                            void* params) {
-  last_unpacked_directory_ = base::FilePath(path);
-  AddLoadingPath(last_unpacked_directory_);
-  LoadUnpackedExtension(path);
-}
-
-void ExtensionSettingsHandler::MultiFilesSelected(
-    const std::vector<base::FilePath>& files, void* params) {
-  NOTREACHED();
-}
-
-void ExtensionSettingsHandler::FileSelectionCanceled(void* params) {
 }
 
 void ExtensionSettingsHandler::OnErrorAdded(const ExtensionError* error) {
@@ -685,20 +619,7 @@ void ExtensionSettingsHandler::Observe(
       MaybeUpdateAfterNotification();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOAD_RETRY: {
-      std::pair<bool, const base::FilePath&>* retry_and_path =
-          content::Details<std::pair<bool, const base::FilePath&> >(details)
-              .ptr();
-      HandleLoadRetryMessage(retry_and_path->first, retry_and_path->second);
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const base::FilePath& path =
-          content::Details<const Extension>(details).ptr()->path();
-      if (IndexOfLoadingPath(path) != -1)
-        RemoveLoadingPath(path);
-      // Fall through.
-    }
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
     case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
@@ -720,8 +641,7 @@ void ExtensionSettingsHandler::Observe(
 }
 
 void ExtensionSettingsHandler::OnExtensionDisableReasonsChanged(
-    const std::string& extension_id,
-    int disable_reasons) {
+    const std::string& extension_id, int disable_reasons) {
   MaybeUpdateAfterNotification();
 }
 
@@ -790,7 +710,6 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 
   for (std::vector<const Extension*>::iterator iter =
        unpacked_extensions.begin(); iter != unpacked_extensions.end(); ++iter) {
-    AddLoadingPath((*iter)->path());
     extension_service_->ReloadExtension((*iter)->id());
   }
 }
@@ -944,10 +863,6 @@ void ExtensionSettingsHandler::HandleReloadMessage(
     const base::ListValue* args) {
   std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
-  const Extension* extension =
-      extension_service_->GetInstalledExtension(extension_id);
-  if (extension)
-    AddLoadingPath(extension->path());
   extension_service_->ReloadExtension(extension_id);
 }
 
@@ -1139,31 +1054,6 @@ void ExtensionSettingsHandler::HandleAutoUpdateMessage(
     params.install_immediately = true;
     updater->CheckNow(params);
   }
-}
-
-void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
-    const base::ListValue* args) {
-  DCHECK(args->empty());
-
-  base::string16 select_title =
-      l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
-
-  const int kFileTypeIndex = 0;  // No file type information to index.
-  const ui::SelectFileDialog::Type kSelectType =
-      ui::SelectFileDialog::SELECT_FOLDER;
-  load_extension_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
-  load_extension_dialog_->SelectFile(
-      kSelectType,
-      select_title,
-      last_unpacked_directory_,
-      NULL,
-      kFileTypeIndex,
-      base::FilePath::StringType(),
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
-      NULL);
-
-  content::RecordComputedAction("Options_LoadUnpackedExtension");
 }
 
 void ExtensionSettingsHandler::HandleDismissADTPromoMessage(
@@ -1386,21 +1276,9 @@ void ExtensionSettingsHandler::OnRequirementsChecked(
   } else {
     ExtensionErrorReporter::GetInstance()->ReportError(
         base::UTF8ToUTF16(JoinString(requirement_errors, ' ')),
-        true,   // Be noisy.
-        NULL);  // Caller expects no response.
+        true);  // Be noisy.
   }
   requirements_checker_.reset();
-}
-
-void ExtensionSettingsHandler::HandleLoadRetryMessage(
-    bool retry,
-    const base::FilePath& path) {
-  if (IndexOfLoadingPath(path) == -1)
-    return;  // Not an extension we're tracking.
-  if (retry)
-    LoadUnpackedExtension(path);
-  else
-    RemoveLoadingPath(path);
 }
 
 }  // namespace extensions

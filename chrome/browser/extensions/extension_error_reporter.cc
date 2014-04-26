@@ -36,8 +36,7 @@ ExtensionErrorReporter::ExtensionErrorReporter(bool enable_noisy_errors)
 ExtensionErrorReporter::~ExtensionErrorReporter() {}
 
 void ExtensionErrorReporter::ReportError(const base::string16& message,
-                                         bool be_noisy,
-                                         bool* user_response) {
+                                         bool be_noisy) {
   // NOTE: There won't be a ui_loop_ in the unit test environment.
   if (ui_loop_) {
     CHECK(base::MessageLoop::current() == ui_loop_)
@@ -51,19 +50,10 @@ void ExtensionErrorReporter::ReportError(const base::string16& message,
   LOG(WARNING) << "Extension error: " << message;
 
   if (enable_noisy_errors_ && be_noisy) {
-    if (user_response) {
-      *user_response =
-          chrome::MESSAGE_BOX_RESULT_YES ==
-          chrome::ShowMessageBox(NULL,
-                                 base::ASCIIToUTF16("Extension error"),
-                                 message,
-                                 chrome::MESSAGE_BOX_TYPE_QUESTION);
-    } else {
-      chrome::ShowMessageBox(NULL,
-                             base::ASCIIToUTF16("Extension error"),
-                             message,
-                             chrome::MESSAGE_BOX_TYPE_WARNING);
-    }
+    chrome::ShowMessageBox(NULL,
+                           base::ASCIIToUTF16("Extension error"),
+                           message,
+                           chrome::MESSAGE_BOX_TYPE_WARNING);
   }
 }
 

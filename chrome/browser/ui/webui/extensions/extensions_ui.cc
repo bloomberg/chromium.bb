@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/command_handler.h"
 #include "chrome/browser/ui/webui/extensions/extension_error_handler.h"
+#include "chrome/browser/ui/webui/extensions/extension_loader_handler.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 #include "chrome/browser/ui/webui/extensions/pack_extension_handler.h"
@@ -63,6 +64,11 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       new ExtensionErrorHandler(profile);
   extension_error_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(extension_error_handler);
+
+  ExtensionLoaderHandler* extension_loader_handler =
+      new ExtensionLoaderHandler(profile);
+  extension_loader_handler->GetLocalizedValues(source);
+  web_ui->AddMessageHandler(extension_loader_handler);
 
   InstallExtensionHandler* install_extension_handler =
       new InstallExtensionHandler();

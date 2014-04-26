@@ -171,8 +171,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   }
 
   if (!extension.get()) {
-    extension_service_->ReportExtensionLoadError(
-        info.extension_path, error, false);
+    extension_service_->ReportExtensionLoadError(info.extension_path, error);
     return;
   }
 
@@ -224,7 +223,7 @@ void InstalledLoader::LoadAllExtensions() {
 
       if (!extension.get()) {
         extension_service_->ReportExtensionLoadError(
-            info->extension_path, error, false);
+            info->extension_path, error);
         continue;
       }
 

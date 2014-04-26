@@ -33,13 +33,7 @@ class ExtensionErrorReporter {
 
   // Report an error. Errors always go to VLOG(1). Optionally, they can also
   // cause a noisy alert box.
-  //
-  // If |user_response| is non-NULL and |be_noisy| is true (and the
-  // ErrorReporter hasn't turned off noisy errors), the user will be asked if
-  // they want to retry and the answer noted in |user_response|.
-  void ReportError(const base::string16& message,
-                   bool be_noisy,
-                   bool* user_response);
+  void ReportError(const base::string16& message, bool be_noisy);
 
   // Get the errors that have been reported so far.
   const std::vector<base::string16>* GetErrors();

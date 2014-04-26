@@ -375,17 +375,11 @@ cr.define('extensions', function() {
       /**
        * The portion of the overlay which shows the code relating to the error
        * and the corresponding line numbers.
-       * @type {HTMLElement}
+       * @type {ExtensionCode}
        * @private
        */
-      this.codeDiv_ = $('extension-error-overlay-code');
-
-      // Also initialize two properties of codeDiv for the section for the pure
-      // file content and the section for the line numbers.
-      this.codeDiv_.sourceDiv =
-          this.codeDiv_.querySelector('#extension-error-overlay-source');
-      this.codeDiv_.linesDiv =
-          this.codeDiv_.querySelector('#extension-error-overlay-line-numbers');
+      this.codeDiv_ =
+          new extensions.ExtensionCode($('extension-error-overlay-code'));
 
       /**
        * The function to show or hide the ExtensionErrorOverlay.
@@ -423,8 +417,7 @@ cr.define('extensions', function() {
         return;
 
       // Remove all previous content.
-      clearElement(this.codeDiv_.sourceDiv);
-      clearElement(this.codeDiv_.linesDiv);
+      this.codeDiv_.clear();
 
       this.openDevtoolsButton_.hidden = true;
 
@@ -491,53 +484,9 @@ cr.define('extensions', function() {
           '#extension-error-overlay .extension-error-overlay-title').
               textContent = code.title;
 
-      // Remove all previous content. This should be done on close, but, just in
-      // case we crashed, do it again.
-      clearElement(this.codeDiv_.sourceDiv);
-      clearElement(this.codeDiv_.linesDiv);
-
-      // If there's no code, then display an appropriate message.
-      if (!code) {
-        var span = document.createElement('span');
-        span.textContent =
-            loadTimeData.getString('extensionErrorOverlayNoCodeToDisplay');
-        this.codeDiv_.sourceDiv.appendChild(span);
-        return;
-      }
-
-      var lineCount = 0;
-      var createSpan = function(source, isHighlighted) {
-        lineCount += source.split('\n').length - 1;
-        var span = document.createElement('span');
-        span.className = isHighlighted ? 'highlighted-source' : 'normal-source';
-        span.textContent = source;
-        return span;
-      };
-
-      if (code.beforeHighlight) {
-        this.codeDiv_.sourceDiv.appendChild(
-            createSpan(code.beforeHighlight, false));
-      }
-
-      if (code.highlight) {
-        var highlightSpan = createSpan(code.highlight, true);
-        highlightSpan.title = code.message;
-        this.codeDiv_.sourceDiv.appendChild(highlightSpan);
-      }
-
-      if (code.afterHighlight) {
-        this.codeDiv_.sourceDiv.appendChild(
-            createSpan(code.afterHighlight, false));
-      }
-
-      // Make the line numbers. This should be the number of line breaks + 1
-      // (the last line doesn't break, but should still be numbered).
-      var content = '';
-      for (var i = 1; i < lineCount + 1; ++i)
-        content += i + '\n';
-      var span = document.createElement('span');
-      span.textContent = content;
-      this.codeDiv_.linesDiv.appendChild(span);
+      this.codeDiv_.populate(
+          code,
+          loadTimeData.getString('extensionErrorOverlayNoCodeToDisplay'));
     },
   };
 

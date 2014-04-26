@@ -755,8 +755,7 @@ void CrxInstaller::ReportFailureFromUIThread(const CrxInstallerError& error) {
   // rid of this line.
   ExtensionErrorReporter::GetInstance()->ReportError(
       error.message(),
-      false,  // Be quiet.
-      NULL);  // Caller expects no response.
+      false);  // Be quiet.
 
   if (client_)
     client_->OnInstallFailure(error);

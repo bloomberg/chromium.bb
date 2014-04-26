@@ -15,35 +15,17 @@
   flex: none;
 }
 
-#extension-error-overlay .highlighted-source {
+#extension-error-overlay .extension-code-highlighted-source {
   background-color: rgba(255, 195, 200, 255);
 }
 
 #extension-error-overlay-code {
- -webkit-margin-after: 10px;
-  border: 1px solid #ccc;
-  display: flex;
-  font-family: monospace;
+  -webkit-margin-after: 10px;
   font-size: 1.2em;
-  overflow: auto;
-  white-space: pre;
 }
 
-#extension-error-overlay-code > * {
-  padding: 5px;
-}
-
-#extension-error-overlay-source {
+#extension-error-overlay .extension-code-source {
   color: #555;
-}
-
-#extension-error-overlay-line-numbers {
-  align-self: flex-start;
-  background-color: rgba(240, 240, 240, 1);
-  border-right: 1px solid #ccc;
-  color: rgba(128, 128, 128, 1);
-  flex-shrink: 0;
-  text-align: right;
 }
 
 .extension-error-overlay-context {

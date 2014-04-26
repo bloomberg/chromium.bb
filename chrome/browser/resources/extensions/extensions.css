@@ -100,6 +100,27 @@ html:not(.focus-outline-visible)
   text-align: end;
 }
 
+.extension-code {
+  border: 1px solid #ccc;
+  display: flex;
+  font-family: monospace;
+  overflow: auto;
+  white-space: pre;
+}
+
+.extension-code > * {
+  padding: 3px;
+}
+
+.extension-code-line-numbers {
+  align-self: flex-start;
+  background-color: rgba(240, 240, 240, 1);
+  border-right: 1px solid #ccc;
+  color: rgba(128, 128, 128, 1);
+  flex-shrink: 0;
+  text-align: right;
+}
+
 #extension-settings:not(.dev-mode) .developer-extras {
   display: none;
 }
