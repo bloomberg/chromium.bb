@@ -414,7 +414,6 @@ void WindowSelector::OnWindowBoundsChanged(aura::Window* window,
   ScopedVector<WindowSelectorItem>::iterator iter =
       std::find_if(windows_.begin(), windows_.end(),
                    WindowSelectorItemTargetComparator(window));
-  DCHECK(window == restore_focus_window_ || iter != windows_.end());
   if (iter == windows_.end())
     return;
 

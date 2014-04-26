@@ -65,7 +65,8 @@ class WindowSelectorItem {
   // Sets the bounds of this window selector item to |target_bounds| in the
   // |root_window| root window.
   void SetBounds(aura::Window* root_window,
-                 const gfx::Rect& target_bounds);
+                 const gfx::Rect& target_bounds,
+                 bool animate);
 
   // Recomputes the positions for the windows in this selection item. This is
   // dispatched when the bounds of a window change.
@@ -84,12 +85,13 @@ class WindowSelectorItem {
   // Sets the bounds used by the selector item's windows.
   void set_bounds(const gfx::Rect& bounds) { bounds_ = bounds; }
 
-  // Creates a label to display under the window selector item.
-  void UpdateWindowLabels(const gfx::Rect& target_bounds,
-                          aura::Window* root_window);
-
  private:
   friend class WindowSelectorTest;
+
+  // Creates a label to display under the window selector item.
+  void UpdateWindowLabels(const gfx::Rect& target_bounds,
+                          aura::Window* root_window,
+                          bool animate);
 
   // The root window this item is being displayed on.
   aura::Window* root_window_;

@@ -107,7 +107,7 @@ void WindowSelectorWindow::SetItemBounds(aura::Window* root_window,
   // TODO move close button management to WindowSelectorItem, so that we can
   // also handle panels.
   // See http://crbug.com/352143
-  UpdateCloseButtonBounds(root_window);
+  UpdateCloseButtonBounds(root_window, animate);
 }
 
 void WindowSelectorWindow::ButtonPressed(views::Button* sender,
@@ -116,7 +116,8 @@ void WindowSelectorWindow::ButtonPressed(views::Button* sender,
       transform_window_.window())->Close();
 }
 
-void WindowSelectorWindow::UpdateCloseButtonBounds(aura::Window* root_window) {
+void WindowSelectorWindow::UpdateCloseButtonBounds(aura::Window* root_window,
+                                                   bool animate) {
   gfx::Rect align_bounds(
       ScreenUtil::ConvertRectFromScreen(root_window, bounds()));
   gfx::Transform close_button_transform;
@@ -157,13 +158,17 @@ void WindowSelectorWindow::UpdateCloseButtonBounds(aura::Window* root_window) {
       layer->SetOpacity(1);
     }
   } else {
-    ui::ScopedLayerAnimationSettings settings(
-        close_button_->GetNativeWindow()->layer()->GetAnimator());
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        ScopedTransformOverviewWindow::kTransitionMilliseconds));
-    close_button_->GetNativeWindow()->SetTransform(close_button_transform);
+    if (animate) {
+      ui::ScopedLayerAnimationSettings settings(
+          close_button_->GetNativeWindow()->layer()->GetAnimator());
+      settings.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+          ScopedTransformOverviewWindow::kTransitionMilliseconds));
+      close_button_->GetNativeWindow()->SetTransform(close_button_transform);
+    } else {
+      close_button_->GetNativeWindow()->SetTransform(close_button_transform);
+    }
   }
 }
 

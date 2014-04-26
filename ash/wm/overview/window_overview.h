@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -36,7 +37,8 @@ class WindowSelectorItem;
 // The WindowOverview shows a grid of all of your windows and allows selecting
 // a window by clicking or tapping on it. It also displays a selection widget
 // used to indicate the current selection when alt-tabbing between windows.
-class WindowOverview : public ui::EventHandler {
+class WindowOverview : public ui::EventHandler,
+                       public gfx::DisplayObserver {
  public:
   typedef ScopedVector<WindowSelectorItem> WindowSelectorItemList;
 
@@ -64,6 +66,11 @@ class WindowOverview : public ui::EventHandler {
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
+  // gfx::DisplayObserver:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
+
  private:
   // Returns the target of |event| or NULL if the event is not targeted at
   // any of the windows in the selector.
@@ -77,12 +84,13 @@ class WindowOverview : public ui::EventHandler {
   void HideAndTrackNonOverviewWindows();
 
   // Position all of the windows based on the current selection mode.
-  void PositionWindows();
+  void PositionWindows(bool animate);
   // Position all of the windows from |root_window| on |root_window|.
-  void PositionWindowsFromRoot(aura::Window* root_window);
+  void PositionWindowsFromRoot(aura::Window* root_window, bool animate);
   // Position all of the |windows| to fit on the |root_window|.
   void PositionWindowsOnRoot(aura::Window* root_window,
-                             const std::vector<WindowSelectorItem*>& windows);
+                             const std::vector<WindowSelectorItem*>& windows,
+                             bool animate);
 
   // Creates the selection widget.
   void InitializeSelectionWidget();

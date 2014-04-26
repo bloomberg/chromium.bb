@@ -81,15 +81,16 @@ WindowSelectorItem::~WindowSelectorItem() {
 }
 
 void WindowSelectorItem::SetBounds(aura::Window* root_window,
-                                   const gfx::Rect& target_bounds) {
+                                   const gfx::Rect& target_bounds,
+                                   bool animate) {
   if (in_bounds_update_)
     return;
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
   root_window_ = root_window;
   target_bounds_ = target_bounds;
-  SetItemBounds(root_window, target_bounds, true);
+  SetItemBounds(root_window, target_bounds, animate);
   // TODO(nsatragno): Handle window title updates.
-  UpdateWindowLabels(target_bounds, root_window);
+  UpdateWindowLabels(target_bounds, root_window, animate);
 }
 
 void WindowSelectorItem::RecomputeWindowTransforms() {
@@ -101,7 +102,8 @@ void WindowSelectorItem::RecomputeWindowTransforms() {
 }
 
 void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
-                                            aura::Window* root_window) {
+                                            aura::Window* root_window,
+                                            bool animate) {
   gfx::Rect converted_bounds = ScreenUtil::ConvertRectFromScreen(root_window,
                                                                  window_bounds);
   gfx::Rect label_bounds(converted_bounds.x(),
@@ -139,15 +141,19 @@ void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
         kFadeInMilliseconds));
     layer->SetOpacity(1);
   } else {
-    ui::ScopedLayerAnimationSettings settings(
-        window_label_->GetNativeWindow()->layer()->GetAnimator());
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        ScopedTransformOverviewWindow::kTransitionMilliseconds));
     label_bounds.set_height(window_label_->
                             GetContentsView()->GetPreferredSize().height());
-    window_label_->GetNativeWindow()->SetBounds(label_bounds);
+    if (animate) {
+      ui::ScopedLayerAnimationSettings settings(
+          window_label_->GetNativeWindow()->layer()->GetAnimator());
+      settings.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+          ScopedTransformOverviewWindow::kTransitionMilliseconds));
+      window_label_->GetNativeWindow()->SetBounds(label_bounds);
+    } else {
+      window_label_->GetNativeWindow()->SetBounds(label_bounds);
+    }
   }
 
 }
