@@ -49,7 +49,8 @@
   // background matches the toolbar background.
   NSPoint phase = NSMakePoint(
       0, NSHeight([self bounds]) + [TabStripController defaultTabHeight]);
-  [[NSGraphicsContext currentContext] cr_setPatternPhase:phase forView:self];
+  [[NSGraphicsContext currentContext]
+      cr_setPatternPhase:phase forView:[self cr_viewBeingDrawnTo]];
   [self drawBackgroundWithOpaque:YES];
 
   // Draw top stroke
