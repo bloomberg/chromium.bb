@@ -298,7 +298,8 @@ void RawChannelWin::RawChannelIOHandler::OnReadCompleted(DWORD bytes_read,
 
   if (error != ERROR_SUCCESS) {
     DCHECK_EQ(bytes_read, 0u);
-    PLOG_IF(ERROR, error != ERROR_BROKEN_PIPE) << "ReadFile";
+    LOG_IF(ERROR, error != ERROR_BROKEN_PIPE)
+        << "ReadFile: " << logging::SystemErrorCodeToString(error);
     owner_->OnReadCompleted(false, 0);
   } else {
     DCHECK_GT(bytes_read, 0u);
@@ -326,7 +327,7 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
   }
 
   if (error != ERROR_SUCCESS) {
-    LOG(ERROR) << "WriteFile failed: " << error;
+    LOG(ERROR) << "WriteFile: " << logging::SystemErrorCodeToString(error);
     owner_->OnWriteCompleted(false, 0);
   } else {
     owner_->OnWriteCompleted(true, bytes_written);
@@ -364,7 +365,8 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
     DCHECK_EQ(bytes_read_dword, 0u);
     DWORD error = GetLastError();
     if (error != ERROR_IO_PENDING) {
-      LOG_IF(ERROR, error != ERROR_BROKEN_PIPE) << "ReadFile failed: " << error;
+      LOG_IF(ERROR, error != ERROR_BROKEN_PIPE)
+          << "ReadFile: " << logging::SystemErrorCodeToString(error);
       return IO_FAILED;
     }
   }
