@@ -235,22 +235,6 @@ void DevToolsAgent::OnGpuTasksChunk(const std::vector<GpuTaskInfo>& tasks) {
 }
 
 void DevToolsAgent::enableDeviceEmulation(
-    const blink::WebRect& device_rect,
-    const blink::WebRect& view_rect,
-    float device_scale_factor,
-    bool fit_to_view) {
-  blink::WebDeviceEmulationParams params;
-  params.screenPosition = device_rect.isEmpty() ?
-      blink::WebDeviceEmulationParams::Desktop :
-      blink::WebDeviceEmulationParams::Mobile;
-  params.deviceScaleFactor = device_scale_factor;
-  params.viewSize = blink::WebSize(view_rect.width, view_rect.height);
-  params.fitToView = fit_to_view;
-  params.viewInsets = blink::WebSize(device_rect.x, device_rect.y);
-  enableDeviceEmulation(params);
-}
-
-void DevToolsAgent::enableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
   impl->webview()->settings()->setForceCompositingMode(true);
