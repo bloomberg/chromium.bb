@@ -35,9 +35,9 @@ class AndroidDeviceManager
                             const CommandCallback& callback) = 0;
     virtual void OpenSocket(const std::string& socket_name,
                             const SocketCallback& callback) = 0;
-    virtual void HttpQuery(const std::string& la_name,
-                           const std::string& request,
-                           const CommandCallback& callback);
+    void HttpQuery(const std::string& la_name,
+                   const std::string& request,
+                   const CommandCallback& callback);
     void HttpUpgrade(const std::string& la_name,
                      const std::string& request,
                      const SocketCallback& callback);
@@ -91,8 +91,6 @@ class AndroidDeviceManager
   static scoped_refptr<DeviceProvider> GetUsbDeviceProvider(Profile* profile);
   // Use only in a test and/or when DEBUG_DEVTOOLS is defined.
   static scoped_refptr<DeviceProvider> GetSelfAsDeviceProvider(int port);
-  // Implemented in browser_tests.
-  static scoped_refptr<DeviceProvider> GetMockDeviceProviderForTest();
 
   static scoped_refptr<AndroidDeviceManager> Create();
 
