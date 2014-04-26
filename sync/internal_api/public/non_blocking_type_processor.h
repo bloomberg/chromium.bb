@@ -24,8 +24,20 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   NonBlockingTypeProcessor(ModelType type);
   virtual ~NonBlockingTypeProcessor();
 
+  // Returns true if this object believes that sync is preferred for this type.
+  //
+  // By "preferred", we mean that a policy decision has been made that this
+  // type should be synced.  Most of the time this is controlled by a user
+  // clicking a checkbox on the settings page.
+  //
+  // The canonical preferred state is based on SyncPrefs on the UI thread.  At
+  // best, this value is stale and may lag behind the one set on the UI thread.
+  // Before this type has registered with the UI thread, it's mostly just an
+  // informed guess.
+  bool IsPreferred() const;
+
   // Returns true if the handshake with sync thread is complete.
-  bool IsEnabled() const;
+  bool IsConnected() const;
 
   // Returns the model type handled by this processor.
   ModelType GetModelType() const;
@@ -33,9 +45,13 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   // Starts the handshake with the sync thread.
   void Enable(SyncCoreProxy* core_proxy);
 
-  // Severs all ties to the sync thread.
+  // Severs all ties to the sync thread and may delete local sync state.
   // Another call to Enable() can be used to re-establish this connection.
   void Disable();
+
+  // Severs all ties to the sync thread.
+  // Another call to Enable() can be used to re-establish this connection.
+  void Disconnect();
 
   // Callback used to process the handshake response.
   void OnConnect(base::WeakPtr<NonBlockingTypeProcessorCore> core,
@@ -46,7 +62,14 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
  private:
   ModelType type_;
   sync_pb::DataTypeProgressMarker progress_marker_;
-  bool enabled_;
+
+  // Whether or not sync is preferred for this type.  This is a cached copy of
+  // the canonical copy information on the UI thread.
+  bool is_preferred_;
+
+  // Whether or not this object has completed its initial handshake with the
+  // SyncCoreProxy.
+  bool is_connected_;
 
   base::WeakPtr<NonBlockingTypeProcessorCore> core_;
   scoped_refptr<base::SequencedTaskRunner> sync_thread_;

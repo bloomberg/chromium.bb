@@ -52,7 +52,7 @@ TEST_F(SyncCoreProxyImplTest, FailToConnect1) {
 
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
-  EXPECT_FALSE(themes_processor.IsEnabled());
+  EXPECT_FALSE(themes_processor.IsConnected());
 }
 
 // Try to connect a type to a SyncCore as it shuts down.
@@ -63,7 +63,7 @@ TEST_F(SyncCoreProxyImplTest, FailToConnect2) {
 
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
-  EXPECT_FALSE(themes_processor.IsEnabled());
+  EXPECT_FALSE(themes_processor.IsConnected());
 }
 
 // Tests the case where the type's processor shuts down first.
@@ -75,7 +75,7 @@ TEST_F(SyncCoreProxyImplTest, TypeDisconnectsFirst) {
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
 
-  EXPECT_TRUE(themes_processor->IsEnabled());
+  EXPECT_TRUE(themes_processor->IsConnected());
   themes_processor.reset();
 }
 
@@ -88,7 +88,7 @@ TEST_F(SyncCoreProxyImplTest, SyncDisconnectsFirst) {
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
 
-  EXPECT_TRUE(themes_processor->IsEnabled());
+  EXPECT_TRUE(themes_processor->IsConnected());
   DisableSync();
 }
 

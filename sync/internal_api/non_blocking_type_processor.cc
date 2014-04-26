@@ -11,14 +11,22 @@
 namespace syncer {
 
 NonBlockingTypeProcessor::NonBlockingTypeProcessor(ModelType type)
-  : type_(type), enabled_(false), weak_ptr_factory_(this) {}
+  : type_(type),
+    is_preferred_(false),
+    is_connected_(false),
+    weak_ptr_factory_(this) {}
 
 NonBlockingTypeProcessor::~NonBlockingTypeProcessor() {
 }
 
-bool NonBlockingTypeProcessor::IsEnabled() const {
+bool NonBlockingTypeProcessor::IsPreferred() const {
   DCHECK(CalledOnValidThread());
-  return enabled_;
+  return is_preferred_;
+}
+
+bool NonBlockingTypeProcessor::IsConnected() const {
+  DCHECK(CalledOnValidThread());
+  return is_connected_;
 }
 
 ModelType NonBlockingTypeProcessor::GetModelType() const {
@@ -28,15 +36,19 @@ ModelType NonBlockingTypeProcessor::GetModelType() const {
 
 void NonBlockingTypeProcessor::Enable(SyncCoreProxy* core_proxy) {
   DCHECK(CalledOnValidThread());
-  core_proxy->ConnectTypeToCore(
-      GetModelType(),
-      AsWeakPtr());
+  is_preferred_ = true;
+  core_proxy->ConnectTypeToCore(GetModelType(), AsWeakPtr());
 }
 
 void NonBlockingTypeProcessor::Disable() {
   DCHECK(CalledOnValidThread());
-  enabled_ = false;
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  is_preferred_ = false;
+  Disconnect();
+}
+
+void NonBlockingTypeProcessor::Disconnect() {
+  DCHECK(CalledOnValidThread());
+  is_connected_ = false;
   core_ = base::WeakPtr<NonBlockingTypeProcessorCore>();
   sync_thread_ = scoped_refptr<base::SequencedTaskRunner>();
 }
@@ -50,7 +62,7 @@ void NonBlockingTypeProcessor::OnConnect(
     base::WeakPtr<NonBlockingTypeProcessorCore> core,
     scoped_refptr<base::SequencedTaskRunner> sync_thread) {
   DCHECK(CalledOnValidThread());
-  enabled_ = true;
+  is_connected_ = true;
   core_ = core;
   sync_thread_ = sync_thread;
 }
