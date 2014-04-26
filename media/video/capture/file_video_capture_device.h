@@ -25,13 +25,14 @@ namespace media {
 // Example videos can be found in http://media.xiph.org/video/derf.
 class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
  public:
-  // VideoCaptureDevice implementation, static methods. Create() returns a
-  // pointer to the object, fully owned by the caller.
-  // TODO(mcasas): Create() should return a scoped_ptr<> http://crbug.com/321613
-  static VideoCaptureDevice* Create(const Name& device_name);
-  static void GetDeviceNames(Names* device_names);
-  static void GetDeviceSupportedFormats(const Name& device,
-                                        VideoCaptureFormats* supported_formats);
+  static int64 ParseFileAndExtractVideoFormat(
+      base::File* file,
+      media::VideoCaptureFormat* video_format);
+  static base::File OpenFileForRead(const base::FilePath& file_path);
+
+  // Constructor of the class, with a fully qualified file path as input, which
+  // represents the Y4M video file to stream repeatedly.
+  explicit FileVideoCaptureDevice(const base::FilePath& file_path);
 
   // VideoCaptureDevice implementation, class methods.
   virtual ~FileVideoCaptureDevice();
@@ -41,9 +42,6 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
-  // Constructor of the class, with a fully qualified file path as input, which
-  // represents the Y4M video file to stream repeatedly.
-  explicit FileVideoCaptureDevice(const base::FilePath& file_path);
   // Returns size in bytes of an I420 frame, not including possible paddings,
   // defined by |capture_format_|.
   int CalculateFrameSize();

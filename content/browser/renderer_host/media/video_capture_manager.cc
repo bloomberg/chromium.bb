@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -20,11 +19,9 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
-#include "media/base/media_switches.h"
 #include "media/base/scoped_histogram_timer.h"
-#include "media/video/capture/fake_video_capture_device.h"
-#include "media/video/capture/file_video_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
+#include "media/video/capture/video_capture_device_factory.h"
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #include "content/browser/media/capture/desktop_capture_device.h"
@@ -95,10 +92,11 @@ VideoCaptureManager::DeviceInfo::DeviceInfo(
 
 VideoCaptureManager::DeviceInfo::~DeviceInfo() {}
 
-VideoCaptureManager::VideoCaptureManager()
+VideoCaptureManager::VideoCaptureManager(
+    scoped_ptr<media::VideoCaptureDeviceFactory> factory)
     : listener_(NULL),
       new_capture_session_id_(1),
-      artificial_device_source_for_testing_(DISABLED) {
+      video_capture_device_factory_(factory.Pass()) {
 }
 
 VideoCaptureManager::~VideoCaptureManager() {
@@ -186,15 +184,6 @@ void VideoCaptureManager::Close(int capture_session_id) {
   sessions_.erase(session_it);
 }
 
-void VideoCaptureManager::UseFakeDevice() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFileForFakeVideoCapture)) {
-    artificial_device_source_for_testing_ = Y4M_FILE;
-  } else {
-    artificial_device_source_for_testing_ = TEST_PATTERN;
-  }
-}
-
 void VideoCaptureManager::DoStartDeviceOnDeviceThread(
     media::VideoCaptureSessionId session_id,
     DeviceEntry* entry,
@@ -211,20 +200,8 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
       // held in the browser-side VideoCaptureDevice::Name structure.
       DeviceInfo* found = FindDeviceInfoById(entry->id, devices_info_cache_);
       if (found) {
-        switch (artificial_device_source_for_testing_) {
-          case DISABLED:
-            video_capture_device.reset(
-                media::VideoCaptureDevice::Create(found->name));
-            break;
-          case TEST_PATTERN:
-            video_capture_device.reset(
-                media::FakeVideoCaptureDevice::Create(found->name));
-            break;
-          case Y4M_FILE:
-            video_capture_device.reset(
-                media::FileVideoCaptureDevice::Create(found->name));
-            break;
-        }
+        video_capture_device =
+            video_capture_device_factory_->Create(found->name);
       }
       break;
     }
@@ -483,23 +460,11 @@ VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
       // Cache the latest enumeration of video capture devices.
       // We'll refer to this list again in OnOpen to avoid having to
       // enumerate the devices again.
-      switch (artificial_device_source_for_testing_) {
-        case DISABLED:
-          media::VideoCaptureDevice::GetDeviceNames(&names_snapshot);
-          break;
-        case TEST_PATTERN:
-          media::FakeVideoCaptureDevice::GetDeviceNames(&names_snapshot);
-          break;
-        case Y4M_FILE:
-          media::FileVideoCaptureDevice::GetDeviceNames(&names_snapshot);
-          break;
-      }
+      video_capture_device_factory_->GetDeviceNames(&names_snapshot);
       break;
-
     case MEDIA_DESKTOP_VIDEO_CAPTURE:
       // Do nothing.
       break;
-
     default:
       NOTREACHED();
       break;
@@ -529,20 +494,8 @@ VideoCaptureManager::GetAvailableDevicesInfoOnDeviceThread(
        it != names_snapshot.end(); ++it) {
     media::VideoCaptureFormats supported_formats;
     DeviceInfo device_info(*it, media::VideoCaptureFormats());
-    switch (artificial_device_source_for_testing_) {
-      case DISABLED:
-        media::VideoCaptureDevice::GetDeviceSupportedFormats(
-            *it, &(device_info.supported_formats));
-        break;
-      case TEST_PATTERN:
-        media::FakeVideoCaptureDevice::GetDeviceSupportedFormats(
-            *it, &(device_info.supported_formats));
-        break;
-      case Y4M_FILE:
-        media::FileVideoCaptureDevice::GetDeviceSupportedFormats(
-            *it, &(device_info.supported_formats));
-        break;
-    }
+    video_capture_device_factory_->GetDeviceSupportedFormats(
+        *it, &(device_info.supported_formats));
     ConsolidateCaptureFormats(&device_info.supported_formats);
     new_devices_info_cache.push_back(device_info);
   }

@@ -7,15 +7,18 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
+#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/media_device_id.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -23,7 +26,7 @@
 #include "content/test/test_content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/mock_audio_manager.h"
-#include "media/video/capture/fake_video_capture_device.h"
+#include "media/video/capture/fake_video_capture_device_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -216,10 +219,16 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         origin_("https://test.com") {
     audio_manager_.reset(
         new media::MockAudioManager(base::MessageLoopProxy::current()));
+    // Make sure we use fake devices to avoid long delays.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeDeviceForMediaStream);
     // Create our own MediaStreamManager.
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
-    // Make sure we use fake devices to avoid long delays.
-    media_stream_manager_->UseFakeDevice();
+    video_capture_device_factory_ =
+        static_cast<media::FakeVideoCaptureDeviceFactory*>(
+            media_stream_manager_->video_capture_manager()
+            ->video_capture_device_factory());
+    DCHECK(video_capture_device_factory_);
 
     host_ = new MockMediaStreamDispatcherHost(
         browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
@@ -236,7 +245,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    media::FakeVideoCaptureDevice::GetDeviceNames(&physical_video_devices_);
+    video_capture_device_factory_->GetDeviceNames(&physical_video_devices_);
     ASSERT_GT(physical_video_devices_.size(), 0u);
 
     audio_manager_->GetAudioInputDeviceNames(&physical_audio_devices_);
@@ -386,6 +395,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   media::AudioDeviceNames physical_audio_devices_;
   media::VideoCaptureDevice::Names physical_video_devices_;
   GURL origin_;
+  media::FakeVideoCaptureDeviceFactory* video_capture_device_factory_;
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithVideoOnly) {
@@ -670,17 +680,14 @@ TEST_F(MediaStreamDispatcherHostTest,
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
-  size_t number_of_fake_devices = physical_video_devices_.size();
-  media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(0);
-  media::FakeVideoCaptureDevice::GetDeviceNames(&physical_video_devices_);
+  physical_video_devices_.clear();
+  video_capture_device_factory_->set_number_of_devices(0);
+  video_capture_device_factory_->GetDeviceNames(&physical_video_devices_);
   StreamOptions options(true, true);
 
   SetupFakeUI(false);
   GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, options,
                                   MEDIA_DEVICE_NO_HARDWARE);
-
-  // Reset the number of fake devices for next test.
-  media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(number_of_fake_devices);
 }
 
 // Test that if a OnStopStreamDevice message is received for a device that has
@@ -824,14 +831,13 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
 // Test that the dispatcher is notified if a video device that is in use is
 // being unplugged.
 TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
-  size_t number_of_fake_devices = physical_video_devices_.size();
   StreamOptions options(true, true);
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
   EXPECT_EQ(host_->audio_devices_.size(), 1u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 
-  media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(0);
+  video_capture_device_factory_->set_number_of_devices(0);
 
   base::RunLoop run_loop;
   EXPECT_CALL(*host_.get(), OnDeviceStopped(kRenderId))
@@ -840,8 +846,6 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
       base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
 
   run_loop.Run();
-
-  media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(number_of_fake_devices);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevices) {

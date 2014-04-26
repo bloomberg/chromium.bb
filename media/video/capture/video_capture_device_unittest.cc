@@ -10,6 +10,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "media/video/capture/fake_video_capture_device.h"
+#include "media/video/capture/fake_video_capture_device_factory.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,7 +29,7 @@
 #if defined(OS_MACOSX)
 // Mac/QTKit will always give you the size you ask for and this case will fail.
 #define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
-// We will always get ARGB from the Mac/QTKit implementation.
+// We will always get YUYV from the Mac QTKit/AVFoundation implementations.
 #define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
 #elif defined(OS_WIN)
 #define MAYBE_AllocateBadSize AllocateBadSize
@@ -102,7 +103,8 @@ class VideoCaptureDeviceTest : public testing::Test {
       : loop_(new base::MessageLoop()),
         client_(
             new MockClient(base::Bind(&VideoCaptureDeviceTest::OnFrameCaptured,
-                                      base::Unretained(this)))) {}
+                                      base::Unretained(this)))),
+        video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
 
   virtual void SetUp() {
 #if defined(OS_ANDROID)
@@ -162,6 +164,7 @@ class VideoCaptureDeviceTest : public testing::Test {
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<MockClient> client_;
   VideoCaptureFormat last_format_;
+  scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
 TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
@@ -332,12 +335,12 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
 TEST_F(VideoCaptureDeviceTest, FakeCapture) {
   VideoCaptureDevice::Names names;
 
-  FakeVideoCaptureDevice::GetDeviceNames(&names);
+  video_capture_device_factory_->GetDeviceNames(&names);
 
   ASSERT_GT(static_cast<int>(names.size()), 0);
 
   scoped_ptr<VideoCaptureDevice> device(
-      FakeVideoCaptureDevice::Create(names.front()));
+      video_capture_device_factory_->Create(names.front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
@@ -397,7 +400,7 @@ TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
 TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
   VideoCaptureDevice::Names names;
 
-  FakeVideoCaptureDevice::GetDeviceNames(&names);
+  video_capture_device_factory_->GetDeviceNames(&names);
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
@@ -407,8 +410,15 @@ TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
   ASSERT_GT(static_cast<int>(names.size()), 0);
 
   scoped_ptr<VideoCaptureDevice> device(
-      FakeVideoCaptureDevice::Create(names.front()));
+      video_capture_device_factory_->Create(names.front()));
   ASSERT_TRUE(device);
+
+  // Configure the FakeVideoCaptureDevice to use all its formats as roster.
+  VideoCaptureFormats formats;
+  video_capture_device_factory_->GetDeviceSupportedFormats(names.front(),
+                                                           &formats);
+  static_cast<FakeVideoCaptureDevice*>(device.get())->
+      PopulateVariableFormatsRoster(formats);
 
   EXPECT_CALL(*client_, OnErr())
       .Times(0);
@@ -426,15 +436,15 @@ TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
 
 TEST_F(VideoCaptureDeviceTest, FakeGetDeviceSupportedFormats) {
   VideoCaptureDevice::Names names;
-  FakeVideoCaptureDevice::GetDeviceNames(&names);
+  video_capture_device_factory_->GetDeviceNames(&names);
 
   VideoCaptureFormats supported_formats;
   VideoCaptureDevice::Names::iterator names_iterator;
 
   for (names_iterator = names.begin(); names_iterator != names.end();
        ++names_iterator) {
-    FakeVideoCaptureDevice::GetDeviceSupportedFormats(*names_iterator,
-                                                      &supported_formats);
+    video_capture_device_factory_->GetDeviceSupportedFormats(
+        *names_iterator, &supported_formats);
     EXPECT_EQ(supported_formats.size(), 3u);
     EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
     EXPECT_EQ(supported_formats[0].frame_size.height(), 240);

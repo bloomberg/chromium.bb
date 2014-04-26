@@ -17,77 +17,8 @@
 
 namespace media {
 
-static const int kFakeCaptureTimeoutMs = 50;
 static const int kFakeCaptureBeepCycle = 10;  // Visual beep every 0.5s.
 static const int kFakeCaptureCapabilityChangePeriod = 30;
-enum { kNumberOfFakeDevices = 2 };
-
-bool FakeVideoCaptureDevice::fail_next_create_ = false;
-base::subtle::Atomic32 FakeVideoCaptureDevice::number_of_devices_ =
-    kNumberOfFakeDevices;
-
-// static
-size_t FakeVideoCaptureDevice::NumberOfFakeDevices(void) {
-  return number_of_devices_;
-}
-
-// static
-void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
-  // Empty the name list.
-  device_names->erase(device_names->begin(), device_names->end());
-
-  int number_of_devices = base::subtle::NoBarrier_Load(&number_of_devices_);
-  for (int32 n = 0; n < number_of_devices; n++) {
-    Name name(base::StringPrintf("fake_device_%d", n),
-              base::StringPrintf("/dev/video%d", n));
-    device_names->push_back(name);
-  }
-}
-
-// static
-void FakeVideoCaptureDevice::GetDeviceSupportedFormats(
-    const Name& device,
-    VideoCaptureFormats* supported_formats) {
-
-  const size_t supported_sizes_length = 3;
-  const gfx::Size supported_sizes[] = {gfx::Size(320, 240),
-                                       gfx::Size(640, 480),
-                                       gfx::Size(1280, 720)};
-  int frame_rate = 1000 / kFakeCaptureTimeoutMs;
-  supported_formats->clear();
-  for (size_t i=0; i < supported_sizes_length; ++i) {
-    supported_formats->push_back(VideoCaptureFormat(supported_sizes[i],
-                                                    frame_rate,
-                                                    media::PIXEL_FORMAT_I420));
-  }
-}
-
-// static
-VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
-  if (fail_next_create_) {
-    fail_next_create_ = false;
-    return NULL;
-  }
-  int number_of_devices = base::subtle::NoBarrier_Load(&number_of_devices_);
-  for (int32 n = 0; n < number_of_devices; ++n) {
-    std::string possible_id = base::StringPrintf("/dev/video%d", n);
-    if (device_name.id().compare(possible_id) == 0) {
-      return new FakeVideoCaptureDevice();
-    }
-  }
-  return NULL;
-}
-
-// static
-void FakeVideoCaptureDevice::SetFailNextCreate() {
-  fail_next_create_ = true;
-}
-
-// static
-void FakeVideoCaptureDevice::SetNumberOfFakeDevices(size_t number_of_devices) {
-  base::subtle::NoBarrier_AtomicExchange(&number_of_devices_,
-                                         number_of_devices);
-}
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice()
     : capture_thread_("CaptureThread"),
@@ -124,6 +55,14 @@ void FakeVideoCaptureDevice::StopAndDeAllocate() {
   capture_thread_.Stop();
 }
 
+void FakeVideoCaptureDevice::PopulateVariableFormatsRoster(
+    const VideoCaptureFormats& formats) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!capture_thread_.IsRunning());
+  format_roster_ = formats;
+  format_roster_index_ = 0;
+}
+
 void FakeVideoCaptureDevice::OnAllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
@@ -142,8 +81,6 @@ void FakeVideoCaptureDevice::OnAllocateAndStart(
     capture_format_.frame_size.SetSize(640, 480);
   else
     capture_format_.frame_size.SetSize(320, 240);
-  if (params.allow_resolution_change)
-    PopulateFormatRoster();
   const size_t fake_frame_size =
       VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
   fake_frame_.reset(new uint8[fake_frame_size]);
@@ -248,12 +185,6 @@ void FakeVideoCaptureDevice::Reallocate() {
   const size_t fake_frame_size =
       VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
   fake_frame_.reset(new uint8[fake_frame_size]);
-}
-
-void FakeVideoCaptureDevice::PopulateFormatRoster() {
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
-  GetDeviceSupportedFormats(Name(), &format_roster_);
-  format_roster_index_ = 0;
 }
 
 }  // namespace media

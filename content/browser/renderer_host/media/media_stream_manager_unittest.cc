@@ -5,12 +5,14 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -75,13 +77,12 @@ class MediaStreamManagerTest : public ::testing::Test {
   MediaStreamManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         message_loop_(base::MessageLoopProxy::current()) {
-    // Create our own MediaStreamManager.
+    // Create our own MediaStreamManager. Use fake devices to run on the bots.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeDeviceForMediaStream);
     audio_manager_.reset(new MockAudioManager());
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
-
-    // Use fake devices in order to run on the bots.
-    media_stream_manager_->UseFakeDevice();
-  }
+}
 
   virtual ~MediaStreamManagerTest() {
   }

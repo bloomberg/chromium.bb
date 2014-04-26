@@ -24,6 +24,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "media/video/capture/video_capture_device.h"
+#include "media/video/capture/video_capture_device_factory.h"
 #include "media/video/capture/video_capture_types.h"
 
 namespace content {
@@ -37,7 +38,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   typedef base::Callback<
       void(const base::WeakPtr<VideoCaptureController>&)> DoneCB;
 
-  VideoCaptureManager();
+  explicit VideoCaptureManager(
+      scoped_ptr<media::VideoCaptureDeviceFactory> factory);
 
   // Implements MediaStreamProvider.
   virtual void Register(MediaStreamProviderListener* listener,
@@ -51,11 +53,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
 
   virtual void Close(int capture_session_id) OVERRIDE;
-
-  // Used by unit test to make sure a fake device is used instead of a real
-  // video capture device. Due to timing requirements, the function must be
-  // called before EnumerateDevices and Open.
-  void UseFakeDevice();
 
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
   // adding the Host as a client of the device's controller if successful. The
@@ -102,6 +99,11 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // UI for the given session.
   void SetDesktopCaptureWindowId(media::VideoCaptureSessionId session_id,
                                  gfx::NativeViewId window_id);
+
+  // Gets a weak reference to the device factory, used for tests.
+  media::VideoCaptureDeviceFactory* video_capture_device_factory() const {
+    return video_capture_device_factory_.get();
+  }
 
  private:
   virtual ~VideoCaptureManager();
@@ -220,6 +222,10 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   typedef std::set<DeviceEntry*> DeviceEntries;
   DeviceEntries devices_;
 
+  // Device creation factory injected on construction from MediaStreamManager or
+  // from the test harness.
+  scoped_ptr<media::VideoCaptureDeviceFactory> video_capture_device_factory_;
+
   // Local cache of the enumerated video capture devices' names and capture
   // supported formats. A snapshot of the current devices and their capabilities
   // is composed in GetAvailableDevicesInfoOnDeviceThread() --coming
@@ -228,16 +234,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // use this list if the device is not started, otherwise it will retrieve the
   // active device capture format from the VideoCaptureController associated.
   DeviceInfos devices_info_cache_;
-
-  // For unit testing and for performance/quality tests, a test device can be
-  // used instead of a real one. The device can be a simple fake device (a
-  // rolling pacman), or a file that is played in a loop continuously. This only
-  // applies to the MEDIA_DEVICE_VIDEO_CAPTURE device type.
-  enum {
-    DISABLED,
-    TEST_PATTERN,
-    Y4M_FILE
-  } artificial_device_source_for_testing_;
 
   // Accessed on the device thread only.
   std::map<media::VideoCaptureSessionId, gfx::NativeViewId>

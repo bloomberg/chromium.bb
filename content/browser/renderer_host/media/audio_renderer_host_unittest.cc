@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
@@ -12,6 +13,7 @@
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_manager.h"
@@ -156,8 +158,9 @@ class AudioRendererHostTest : public testing::Test {
  public:
   AudioRendererHostTest() {
     audio_manager_.reset(media::AudioManager::CreateForTesting());
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeDeviceForMediaStream);
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
-    media_stream_manager_->UseFakeDevice();
     host_ = new MockAudioRendererHost(audio_manager_.get(),
                                       &mirroring_manager_,
                                       MediaInternals::GetInstance(),

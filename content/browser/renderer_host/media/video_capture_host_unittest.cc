@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +21,7 @@
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -283,10 +285,11 @@ class VideoCaptureHostTest : public testing::Test {
     SetBrowserClientForTesting(&browser_client_);
     // Create our own MediaStreamManager.
     audio_manager_.reset(media::AudioManager::CreateForTesting());
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 #ifndef TEST_REAL_CAPTURE_DEVICE
-    media_stream_manager_->UseFakeDevice();
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeDeviceForMediaStream);
 #endif
+    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     media_stream_manager_->UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy>());
 
     // Create a Host and connect it to a simulated IPC channel.

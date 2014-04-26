@@ -7,18 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/sys_string_conversions.h"
-#include "media/base/media_switches.h"
-
 
 namespace media {
-static const char kFileVideoCaptureDeviceName[] =
-    "/dev/placeholder-for-file-backed-fake-capture-device";
-
 static const int kY4MHeaderMaxSize = 200;
 static const char kY4MSimpleFrameDelimiter[] = "FRAME";
 static const int kY4MSimpleFrameDelimiterSize = 6;
@@ -110,7 +103,8 @@ void ParseY4MTags(const std::string& file_header,
 // format in |video_format|. Returns the index of the first byte of the first
 // video frame.
 // Restrictions: Only trivial per-frame headers are supported.
-int64 ParseFileAndExtractVideoFormat(
+// static
+int64 FileVideoCaptureDevice::ParseFileAndExtractVideoFormat(
     base::File* file,
     media::VideoCaptureFormat* video_format) {
   std::string header(kY4MHeaderMaxSize, 0);
@@ -125,50 +119,12 @@ int64 ParseFileAndExtractVideoFormat(
 
 // Opens a given file for reading, and returns the file to the caller, who is
 // responsible for closing it.
-base::File OpenFileForRead(const base::FilePath& file_path) {
+// static
+base::File FileVideoCaptureDevice::OpenFileForRead(
+    const base::FilePath& file_path) {
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   CHECK(file.IsValid()) << file_path.value();
   return file.Pass();
-}
-
-// Inspects the command line and retrieves the file path parameter.
-base::FilePath GetFilePathFromCommandLine() {
-  base::FilePath command_line_file_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kUseFileForFakeVideoCapture);
-  CHECK(!command_line_file_path.empty());
-  return command_line_file_path;
-}
-
-void FileVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
-  DCHECK(device_names->empty());
-  base::FilePath command_line_file_path = GetFilePathFromCommandLine();
-#if defined(OS_WIN)
-  device_names->push_back(
-      Name(base::SysWideToUTF8(command_line_file_path.value()),
-           kFileVideoCaptureDeviceName));
-#else
-  device_names->push_back(Name(command_line_file_path.value(),
-                               kFileVideoCaptureDeviceName));
-#endif  // OS_WIN
-}
-
-void FileVideoCaptureDevice::GetDeviceSupportedFormats(
-    const Name& device,
-    VideoCaptureFormats* supported_formats) {
-  base::File file = OpenFileForRead(GetFilePathFromCommandLine());
-  VideoCaptureFormat capture_format;
-  ParseFileAndExtractVideoFormat(&file, &capture_format);
-  supported_formats->push_back(capture_format);
-}
-
-VideoCaptureDevice* FileVideoCaptureDevice::Create(const Name& device_name) {
-#if defined(OS_WIN)
-  return new FileVideoCaptureDevice(
-      base::FilePath(base::SysUTF8ToWide(device_name.name())));
-#else
-  return new FileVideoCaptureDevice(base::FilePath(device_name.name()));
-#endif  // OS_WIN
 }
 
 FileVideoCaptureDevice::FileVideoCaptureDevice(const base::FilePath& file_path)

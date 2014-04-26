@@ -17,6 +17,9 @@
 // 5. MediaStreamManager will call the proper media device manager to open the
 //    device and let the MediaStreamRequester know it has been done.
 
+// If either user or test harness selects --use-fake-device-for-media-stream,
+// a fake video device or devices are used instead of real ones.
+
 // When enumeration and open are done in separate operations,
 // MediaStreamUIController is not involved as in steps.
 
@@ -160,11 +163,6 @@ class CONTENT_EXPORT MediaStreamManager
   // Implements base::SystemMonitor::DevicesChangedObserver.
   virtual void OnDevicesChanged(
       base::SystemMonitor::DeviceType device_type) OVERRIDE;
-
-  // Used by unit test to make sure fake devices are used instead of a real
-  // devices, which is needed for server based testing or certain tests (which
-  // can pass --use-fake-device-for-media-stream).
-  void UseFakeDevice();
 
   // Called by the tests to specify a fake UI that should be used for next
   // generated stream (or when using --use-fake-ui-for-media-stream).
