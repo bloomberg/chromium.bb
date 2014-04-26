@@ -619,6 +619,10 @@ bool Track::Write(IMkvWriter* writer) const {
   if (!WriteEbmlMasterElement(writer, kMkvTrackEntry, payload_size))
     return false;
 
+  // |type_| has to be specified before the Track can be written.
+  if (!type_)
+    return false;
+
   uint64 size = EbmlElementSize(kMkvTrackNumber, number_);
   size += EbmlElementSize(kMkvTrackUID, uid_);
   size += EbmlElementSize(kMkvTrackType, type_);
