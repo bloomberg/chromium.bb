@@ -97,41 +97,16 @@ TEST_F(CommandsManifestTest, BrowserActionSynthesizesCommand) {
 }
 
 // This test makes sure that the "commands" feature and the "commands.global"
-// property behave as expected on dev and stable (enabled and working on dev,
-// not working on stable).
-TEST_F(CommandsManifestTest, ChannelTests) {
-  // This tests the following combinations.
-  // Ext+Command         Stable : OK.
-  // Ext+Command+Global  Stable : Property is silently ignored (expect success).
-  // App+Command         Stable : NOT OK.
-  // App+Command+Global  Stable : NOT OK.
-  {
-    std::string warning = "'commands' requires Google Chrome dev channel or "
-                          "newer, but this is the stable channel.";
-    ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
-    scoped_refptr<Extension> extension1 =
-        LoadAndExpectSuccess("command_ext.json");
-    scoped_refptr<Extension> extension2 =
-        LoadAndExpectSuccess("command_ext_global.json");
-    LoadAndExpectWarning("command_app.json", warning);
-    LoadAndExpectWarning("command_app_global.json", warning);
-  }
-
-  // Ext+Command         Dev    : OK.
-  // App+Command         Dev    : OK.
-  // Ext+Command+Global  Dev    : OK.
-  // App+Command+Global  Dev    : OK.
-  {
-    ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
-    scoped_refptr<Extension> extension1 =
-        LoadAndExpectSuccess("command_ext.json");
-    scoped_refptr<Extension> extension2 =
-        LoadAndExpectSuccess("command_app.json");
-    scoped_refptr<Extension> extension3 =
-        LoadAndExpectSuccess("command_ext_global.json");
-    scoped_refptr<Extension> extension4 =
-        LoadAndExpectSuccess("command_app_global.json");
-  }
+// property load properly.
+TEST_F(CommandsManifestTest, LoadsOnStable) {
+  scoped_refptr<Extension> extension1 =
+      LoadAndExpectSuccess("command_ext.json");
+  scoped_refptr<Extension> extension2 =
+      LoadAndExpectSuccess("command_app.json");
+  scoped_refptr<Extension> extension3 =
+      LoadAndExpectSuccess("command_ext_global.json");
+  scoped_refptr<Extension> extension4 =
+      LoadAndExpectSuccess("command_app_global.json");
 }
 
 TEST_F(CommandsManifestTest, CommandManifestShouldNotCountMediaKeys) {
