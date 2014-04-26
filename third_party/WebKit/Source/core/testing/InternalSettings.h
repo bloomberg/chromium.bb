@@ -63,9 +63,6 @@ public:
         bool m_originalMockScrollbarsEnabled;
         bool m_langAttributeAwareFormControlUIEnabled;
         bool m_imagesEnabled;
-        bool m_shouldDisplaySubtitles;
-        bool m_shouldDisplayCaptions;
-        bool m_shouldDisplayTextDescriptions;
         String m_defaultVideoPosterURL;
         bool m_originalCompositorDrivenAcceleratedScrollEnabled;
         bool m_originalLayerSquashingEnabled;

@@ -71,9 +71,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->imagesEnabled())
-    , m_shouldDisplaySubtitles(settings->shouldDisplaySubtitles())
-    , m_shouldDisplayCaptions(settings->shouldDisplayCaptions())
-    , m_shouldDisplayTextDescriptions(settings->shouldDisplayTextDescriptions())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalCompositorDrivenAcceleratedScrollEnabled(settings->compositorDrivenAcceleratedScrollingEnabled())
     , m_originalLayerSquashingEnabled(settings->layerSquashingEnabled())
@@ -96,9 +93,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
-    settings->setShouldDisplaySubtitles(m_shouldDisplaySubtitles);
-    settings->setShouldDisplayCaptions(m_shouldDisplayCaptions);
-    settings->setShouldDisplayTextDescriptions(m_shouldDisplayTextDescriptions);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setCompositorDrivenAcceleratedScrollingEnabled(m_originalCompositorDrivenAcceleratedScrollEnabled);
     settings->setLayerSquashingEnabled(m_originalLayerSquashingEnabled);

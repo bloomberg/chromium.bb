@@ -2400,27 +2400,15 @@ static int textTrackLanguageSelectionScore(const TextTrack& track)
     if (languageMatchIndex >= languages.size())
         return 0;
 
-    // Matching a track language is more important than matching track type, so this multiplier must be
-    // greater than the maximum value returned by textTrackSelectionScore.
-    return (languages.size() - languageMatchIndex) * 10;
+    return languages.size() - languageMatchIndex;
 }
 
-static int textTrackSelectionScore(const TextTrack& track, Settings* settings)
+static int textTrackSelectionScore(const TextTrack& track)
 {
-    int trackScore = 0;
-
-    if (!settings)
-        return trackScore;
-
     if (track.kind() != TextTrack::captionsKeyword() && track.kind() != TextTrack::subtitlesKeyword())
-        return trackScore;
+        return 0;
 
-    if (track.kind() == TextTrack::subtitlesKeyword() && settings->shouldDisplaySubtitles())
-        trackScore = 1;
-    else if (track.kind() == TextTrack::captionsKeyword() && settings->shouldDisplayCaptions())
-        trackScore = 1;
-
-    return trackScore + textTrackLanguageSelectionScore(track);
+    return textTrackLanguageSelectionScore(track);
 }
 
 void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
@@ -2428,8 +2416,6 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
     ASSERT(group.tracks.size());
 
     WTF_LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%d)", group.kind);
-
-    Settings* settings = document().settings();
 
     // First, find the track in the group that should be enabled (if any).
     WillBeHeapVector<RefPtrWillBeMember<TextTrack> > currentlyEnabledTracks;
@@ -2443,7 +2429,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
         if (m_processingPreferenceChange && textTrack->mode() == TextTrack::showingKeyword())
             currentlyEnabledTracks.append(textTrack);
 
-        int trackScore = textTrackSelectionScore(*textTrack, settings);
+        int trackScore = textTrackSelectionScore(*textTrack);
         if (trackScore) {
             // * If the text track kind is { [subtitles or captions] [descriptions] } and the user has indicated an interest in having a
             // track with this text track kind, text track language, and text track label enabled, and there is no
