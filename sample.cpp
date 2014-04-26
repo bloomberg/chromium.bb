@@ -16,7 +16,7 @@
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable:4996)
+#pragma warning(disable : 4996)
 #endif
 
 static const wchar_t* utf8towcs(const char* str) {
@@ -166,7 +166,8 @@ int main(int argc, char* argv[]) {
   while (track_num != num_tracks) {
     const Track* const pTrack = pTracks->GetTrackByIndex(track_num++);
 
-    if (pTrack == NULL) continue;
+    if (pTrack == NULL)
+      continue;
 
     const long trackType = pTrack->GetType();
     const long trackNumber = pTrack->GetNumber();
@@ -203,7 +204,7 @@ int main(int argc, char* argv[]) {
 
     if (trackType == mkvparser::Track::kVideo) {
       const VideoTrack* const pVideoTrack =
-          static_cast<const VideoTrack* >(pTrack);
+          static_cast<const VideoTrack*>(pTrack);
 
       const long long width = pVideoTrack->GetWidth();
       printf("\t\tVideo Width\t\t: %lld\n", width);
@@ -217,7 +218,7 @@ int main(int argc, char* argv[]) {
 
     if (trackType == mkvparser::Track::kAudio) {
       const AudioTrack* const pAudioTrack =
-          static_cast<const AudioTrack* >(pTrack);
+          static_cast<const AudioTrack*>(pTrack);
 
       const long long channels = pAudioTrack->GetChannels();
       printf("\t\tAudio Channels\t\t: %lld\n", channels);
@@ -285,7 +286,7 @@ int main(int argc, char* argv[]) {
                pBlock->IsKey() ? "I" : "P", time_ns, discard_padding);
 
         for (int i = 0; i < frameCount; ++i) {
-          const Block::Frame &theFrame = pBlock->GetFrame(i);
+          const Block::Frame& theFrame = pBlock->GetFrame(i);
           const long size = theFrame.len;
           const long long offset = theFrame.pos;
           printf("\t\t\t %15ld,%15llx\n", size, offset);
@@ -321,12 +322,12 @@ int main(int argc, char* argv[]) {
         if (track_pos != NULL) {
           const char track_type =
               (track->GetType() == mkvparser::Track::kVideo) ? 'V' : 'A';
-          printf("\t\t\tCue Point %4d Track %3lu(%c) Time %14lld "
-                 "Block %4lld Pos %8llx\n",
-                 cue_point_num,
-                 track_num, track_type,
-                 cue->GetTime(pSegment.get()),
-                 track_pos->m_block, track_pos->m_pos);
+          printf(
+              "\t\t\tCue Point %4d Track %3lu(%c) Time %14lld "
+              "Block %4lld Pos %8llx\n",
+              cue_point_num, track_num, track_type,
+              cue->GetTime(pSegment.get()), track_pos->m_block,
+              track_pos->m_pos);
         }
       }
 
