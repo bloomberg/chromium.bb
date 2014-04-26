@@ -212,6 +212,12 @@ TEST_F(MP4StreamParserTest, MissingSampleAuxInfo) {
   ParseMP4File("bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4", 512);
 }
 
+// Test a file where all video samples start with an Access Unit
+// Delimiter (AUD) NALU.
+TEST_F(MP4StreamParserTest, VideoSamplesStartWithAUDs) {
+  ParseMP4File("bear-1280x720-av_with-aud-nalus_frag.mp4", 512);
+}
+
 // TODO(strobe): Create and test media which uses CENC auxiliary info stored
 // inside a private box
 

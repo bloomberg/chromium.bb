@@ -363,13 +363,10 @@ bool MP4StreamParser::PrepareAVCBuffer(
     // If this is a keyframe, we (re-)inject SPS and PPS headers at the start of
     // a frame. If subsample info is present, we also update the clear byte
     // count for that first subsample.
-    std::vector<uint8> param_sets;
-    RCHECK(AVC::ConvertConfigToAnnexB(avc_config, &param_sets));
-    frame_buf->insert(frame_buf->begin(),
-                      param_sets.begin(), param_sets.end());
-    if (!subsamples->empty())
-      (*subsamples)[0].clear_bytes += param_sets.size();
+    RCHECK(AVC::InsertParamSetsAnnexB(avc_config, frame_buf, subsamples));
   }
+
+  DCHECK(AVC::IsValidAnnexB(*frame_buf));
   return true;
 }
 

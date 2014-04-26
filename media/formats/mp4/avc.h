@@ -11,6 +11,9 @@
 #include "media/base/media_export.h"
 
 namespace media {
+
+struct SubsampleEntry;
+
 namespace mp4 {
 
 struct AVCDecoderConfigurationRecord;
@@ -19,9 +22,25 @@ class MEDIA_EXPORT AVC {
  public:
   static bool ConvertFrameToAnnexB(int length_size, std::vector<uint8>* buffer);
 
+  // Inserts the SPS & PPS data from |avc_config| into |buffer|.
+  // |buffer| is expected to contain AnnexB conformant data.
+  // |subsamples| contains the SubsampleEntry info if |buffer| contains
+  // encrypted data.
+  // Returns true if the param sets were successfully inserted.
+  static bool InsertParamSetsAnnexB(
+      const AVCDecoderConfigurationRecord& avc_config,
+      std::vector<uint8>* buffer,
+      std::vector<SubsampleEntry>* subsamples);
+
   static bool ConvertConfigToAnnexB(
       const AVCDecoderConfigurationRecord& avc_config,
-      std::vector<uint8>* buffer);
+      std::vector<uint8>* buffer,
+      std::vector<SubsampleEntry>* subsamples);
+
+  // Verifies that the contents of |buffer| conform to
+  // Section 7.4.1.2.3 of ISO/IEC 14496-10.
+  // Returns true if |buffer| contains conformant AnnexB data.
+  static bool IsValidAnnexB(const std::vector<uint8>& buffer);
 };
 
 }  // namespace mp4

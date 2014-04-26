@@ -25,6 +25,9 @@ struct MEDIA_EXPORT H264NALU {
   enum Type {
     kUnspecified = 0,
     kNonIDRSlice = 1,
+    kSliceDataA = 2,
+    kSliceDataB = 3,
+    kSliceDataC = 4,
     kIDRSlice = 5,
     kSEIMessage = 6,
     kSPS = 7,
@@ -32,6 +35,14 @@ struct MEDIA_EXPORT H264NALU {
     kAUD = 9,
     kEOSeq = 10,
     kEOStream = 11,
+    kFiller = 12,
+    kSPSExt = 13,
+    kReserved14 = 14,
+    kReserved15 = 15,
+    kReserved16 = 16,
+    kReserved17 = 17,
+    kReserved18 = 18,
+    kCodedSliceAux = 19,
     kCodedSliceExtension = 20,
   };
 
