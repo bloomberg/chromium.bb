@@ -17,6 +17,7 @@
         '../url/url.gyp:url_lib',
       ],
       'sources': [
+        'bookmarks/core/browser/bookmark_client.h',
         'bookmarks/core/browser/bookmark_match.cc',
         'bookmarks/core/browser/bookmark_match.h',
         'bookmarks/core/browser/bookmark_node.cc',

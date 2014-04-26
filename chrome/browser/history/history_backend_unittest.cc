@@ -24,6 +24,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
@@ -115,10 +116,9 @@ class HistoryBackendTestBase : public testing::Test {
   typedef std::vector<std::pair<int, HistoryDetails*> > NotificationList;
 
   HistoryBackendTestBase()
-      : bookmark_model_(NULL, false),
+      : bookmark_model_(bookmark_client_.CreateModel(false)),
         loaded_(false),
-        ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
+        ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
   virtual ~HistoryBackendTestBase() {
     STLDeleteValues(&broadcasted_notifications_);
@@ -152,9 +152,10 @@ class HistoryBackendTestBase : public testing::Test {
         std::make_pair(type, details.release()));
   }
 
+  test::TestBookmarkClient bookmark_client_;
   scoped_refptr<HistoryBackend> backend_;  // Will be NULL on init failure.
   scoped_ptr<InMemoryHistoryBackend> mem_backend_;
-  BookmarkModel bookmark_model_;
+  scoped_ptr<BookmarkModel> bookmark_model_;
   bool loaded_;
 
  private:
@@ -165,9 +166,8 @@ class HistoryBackendTestBase : public testing::Test {
     if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
                                       &test_dir_))
       return;
-    backend_ = new HistoryBackend(test_dir_,
-                                  new HistoryBackendTestDelegate(this),
-                                  &bookmark_model_);
+    backend_ = new HistoryBackend(
+        test_dir_, new HistoryBackendTestDelegate(this), bookmark_model_.get());
     backend_->Init(std::string(), false);
   }
 
@@ -611,8 +611,8 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   EXPECT_TRUE(mem_backend_->db_->GetRowForURL(row1.url(), NULL));
 
   // Star row1.
-  bookmark_model_.AddURL(
-      bookmark_model_.bookmark_bar_node(), 0, base::string16(), row1.url());
+  bookmark_model_->AddURL(
+      bookmark_model_->bookmark_bar_node(), 0, base::string16(), row1.url());
 
   // Now finally clear all history.
   ClearBroadcastedNotifications();
@@ -676,7 +676,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   EXPECT_EQ(out_favicon1, mappings[0].icon_id);
 
   // The first URL should still be bookmarked.
-  EXPECT_TRUE(bookmark_model_.IsBookmarked(row1.url()));
+  EXPECT_TRUE(bookmark_model_->IsBookmarked(row1.url()));
 
   // Check that we fire the notification about all history having been deleted.
   ASSERT_EQ(1u, broadcasted_notifications().size());
@@ -774,10 +774,10 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
 
   // Star the two URLs.
-  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row1.url(),
-                                     base::string16());
-  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row2.url(),
-                                     base::string16());
+  bookmark_utils::AddIfNotBookmarked(
+      bookmark_model_.get(), row1.url(), base::string16());
+  bookmark_utils::AddIfNotBookmarked(
+      bookmark_model_.get(), row2.url(), base::string16());
 
   // Delete url 2. Because url 2 is starred this won't delete the URL, only
   // the visits.
@@ -795,7 +795,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
                 favicon_url2, favicon_base::FAVICON, NULL));
 
   // Unstar row2.
-  bookmark_utils::RemoveAllBookmarks(&bookmark_model_, row2.url());
+  bookmark_utils::RemoveAllBookmarks(bookmark_model_.get(), row2.url());
 
   // Tell the backend it was unstarred. We have to explicitly do this as
   // BookmarkModel isn't wired up to the backend during testing.
@@ -811,7 +811,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
                 favicon_url2, favicon_base::FAVICON, NULL));
 
   // Unstar row 1.
-  bookmark_utils::RemoveAllBookmarks(&bookmark_model_, row1.url());
+  bookmark_utils::RemoveAllBookmarks(bookmark_model_.get(), row1.url());
   // Tell the backend it was unstarred. We have to explicitly do this as
   // BookmarkModel isn't wired up to the backend during testing.
   unstarred_urls.clear();
@@ -1083,8 +1083,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   EXPECT_TRUE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
 
   // If the URL is bookmarked, it should get added to history with 0 visits.
-  bookmark_model_.AddURL(bookmark_model_.bookmark_bar_node(), 0,
-                         base::string16(), url3);
+  bookmark_model_->AddURL(
+      bookmark_model_->bookmark_bar_node(), 0, base::string16(), url3);
   backend_->SetImportedFavicons(favicons);
   EXPECT_FALSE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
   EXPECT_TRUE(url_row3.visit_count() == 0);
@@ -1486,7 +1486,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
 
   backend_ = new HistoryBackend(new_history_path,
                                 new HistoryBackendTestDelegate(this),
-                                &bookmark_model_);
+                                bookmark_model_.get());
   backend_->Init(std::string(), false);
   backend_->Closing();
   backend_ = NULL;
@@ -2889,7 +2889,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
 
   backend_ = new HistoryBackend(new_history_path,
                                 new HistoryBackendTestDelegate(this),
-                                &bookmark_model_);
+                                bookmark_model_.get());
   backend_->Init(std::string(), false);
   backend_->Closing();
   backend_ = NULL;

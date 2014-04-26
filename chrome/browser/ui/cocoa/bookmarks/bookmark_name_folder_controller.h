@@ -9,9 +9,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 
 class BookmarkModelObserverForCocoa;
+class BookmarkNode;
+class Profile;
 
 // A controller for dialog to let the user create a new folder or
 // rename an existing folder.  Accessible from a context menu on a

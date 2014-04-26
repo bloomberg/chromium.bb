@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_STORAGE_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_STORAGE_H_
 
+#include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -115,14 +116,19 @@ class BookmarkLoadDetails {
 class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
                         public base::RefCountedThreadSafe<BookmarkStorage> {
  public:
-  // Creates a BookmarkStorage for the specified model
-  BookmarkStorage(content::BrowserContext* context,
-                  BookmarkModel* model,
+  // Creates a BookmarkStorage for the specified model. The data will be loaded
+  // from and saved to a location derived from |profile_path|. The IO code will
+  // be executed as a task in |sequenced_task_runner|.
+  BookmarkStorage(BookmarkModel* model,
+                  const base::FilePath& profile_path,
                   base::SequencedTaskRunner* sequenced_task_runner);
 
   // Loads the bookmarks into the model, notifying the model when done. This
-  // takes ownership of |details|. See BookmarkLoadDetails for details.
-  void LoadBookmarks(BookmarkLoadDetails* details);
+  // takes ownership of |details| and send the |OnLoadFinished| callback from
+  // a task in |task_runner|. See BookmarkLoadDetails for details.
+  void LoadBookmarks(
+      scoped_ptr<BookmarkLoadDetails> details,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Schedules saving the bookmark bar model to disk.
   void ScheduleSave();

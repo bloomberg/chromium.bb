@@ -50,6 +50,8 @@
         'browser/android/mock_google_location_settings_helper.h',
         'browser/bookmarks/bookmark_test_helpers.cc',
         'browser/bookmarks/bookmark_test_helpers.h',
+        'browser/bookmarks/test_bookmark_client.cc',
+        'browser/bookmarks/test_bookmark_client.h',
         'browser/browsing_data/mock_browsing_data_appcache_helper.cc',
         'browser/browsing_data/mock_browsing_data_appcache_helper.h',
         'browser/browsing_data/mock_browsing_data_cookie_helper.cc',

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +23,7 @@ namespace bookmark_api_helpers {
 class ExtensionBookmarksTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    model_.reset(new BookmarkModel(NULL, false));
+    model_ = client_.CreateModel(false);
     model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
                      GURL("http://www.reddit.com"));
     model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("News"),
@@ -37,6 +38,7 @@ class ExtensionBookmarksTest : public testing::Test {
         folder_, 0, base::ASCIIToUTF16("CNet"), GURL("http://cnet.com"));
   }
 
+  test::TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
   const BookmarkNode* folder_;
 };

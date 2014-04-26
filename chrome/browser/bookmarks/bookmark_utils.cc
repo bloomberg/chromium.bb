@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,7 +19,6 @@
 #include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/query_parser/query_parser.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
@@ -388,7 +388,7 @@ void AddIfNotBookmarked(BookmarkModel* model,
   if (!bookmarks.empty())
     return;  // Nothing to do, a bookmark with that url already exists.
 
-  content::RecordAction(base::UserMetricsAction("BookmarkAdded"));
+  model->client()->RecordAction(base::UserMetricsAction("BookmarkAdded"));
   const BookmarkNode* parent = model->GetParentForNewNodes();
   model->AddURL(parent, parent->child_count(), title, url);
 }

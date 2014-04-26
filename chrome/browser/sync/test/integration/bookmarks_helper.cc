@@ -35,8 +35,6 @@
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/gfx/image/image_skia.h"
 
-using sync_datatype_helper::test;
-
 namespace {
 
 // History task which runs all pending tasks on the history thread and
@@ -250,10 +248,12 @@ void WaitForHistoryToProcessPendingTasks() {
     return;
 
   std::vector<Profile*> profiles_which_need_to_wait;
-  if (test()->use_verifier())
-    profiles_which_need_to_wait.push_back(test()->verifier());
-  for (int i = 0; i < test()->num_clients(); ++i)
-    profiles_which_need_to_wait.push_back(test()->GetProfile(i));
+  if (sync_datatype_helper::test()->use_verifier())
+    profiles_which_need_to_wait.push_back(
+        sync_datatype_helper::test()->verifier());
+  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i)
+    profiles_which_need_to_wait.push_back(
+        sync_datatype_helper::test()->GetProfile(i));
 
   for (size_t i = 0; i < profiles_which_need_to_wait.size(); ++i) {
     Profile* profile = profiles_which_need_to_wait[i];
@@ -385,7 +385,8 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
 namespace bookmarks_helper {
 
 BookmarkModel* GetBookmarkModel(int index) {
-  return BookmarkModelFactory::GetForProfile(test()->GetProfile(index));
+  return BookmarkModelFactory::GetForProfile(
+      sync_datatype_helper::test()->GetProfile(index));
 }
 
 const BookmarkNode* GetBookmarkBarNode(int index) {
@@ -401,7 +402,8 @@ const BookmarkNode* GetSyncedBookmarksNode(int index) {
 }
 
 BookmarkModel* GetVerifierBookmarkModel() {
-  return BookmarkModelFactory::GetForProfile(test()->verifier());
+  return BookmarkModelFactory::GetForProfile(
+      sync_datatype_helper::test()->verifier());
 }
 
 const BookmarkNode* AddURL(int profile,
@@ -435,7 +437,7 @@ const BookmarkNode* AddURL(int profile,
                << profile;
     return NULL;
   }
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_parent = NULL;
     FindNodeInVerifier(model, parent, &v_parent);
     const BookmarkNode* v_node = GetVerifierBookmarkModel()->AddURL(
@@ -478,7 +480,7 @@ const BookmarkNode* AddFolder(int profile,
                << profile;
     return NULL;
   }
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_parent = NULL;
     FindNodeInVerifier(model, parent, &v_parent);
     const BookmarkNode* v_node = GetVerifierBookmarkModel()->AddFolder(
@@ -499,7 +501,7 @@ void SetTitle(int profile,
   ASSERT_EQ(GetBookmarkNodeByID(model, node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
       << "Profile " << profile;
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, node, &v_node);
     GetVerifierBookmarkModel()->SetTitle(v_node, base::WideToUTF16(new_title));
@@ -521,12 +523,19 @@ void SetFavicon(int profile,
   if (urls_with_favicons_ == NULL)
     urls_with_favicons_ = new std::set<GURL>();
   urls_with_favicons_->insert(node->url());
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, node, &v_node);
-    SetFaviconImpl(test()->verifier(), v_node, icon_url, image, favicon_source);
+    SetFaviconImpl(sync_datatype_helper::test()->verifier(),
+                   v_node,
+                   icon_url,
+                   image,
+                   favicon_source);
   }
-  SetFaviconImpl(test()->GetProfile(profile), node, icon_url, image,
+  SetFaviconImpl(sync_datatype_helper::test()->GetProfile(profile),
+                 node,
+                 icon_url,
+                 image,
                  favicon_source);
 }
 
@@ -539,7 +548,7 @@ const BookmarkNode* SetURL(int profile,
                << "Profile " << profile;
     return NULL;
   }
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, node, &v_node);
     if (v_node->is_url())
@@ -558,7 +567,7 @@ void Move(int profile,
   ASSERT_EQ(GetBookmarkNodeByID(model, node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
       << "Profile " << profile;
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_new_parent = NULL;
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, new_parent, &v_new_parent);
@@ -573,7 +582,7 @@ void Remove(int profile, const BookmarkNode* parent, int index) {
   ASSERT_EQ(GetBookmarkNodeByID(model, parent->id()), parent)
       << "Node " << parent->GetTitle() << " does not belong to "
       << "Profile " << profile;
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_parent = NULL;
     FindNodeInVerifier(model, parent, &v_parent);
     ASSERT_TRUE(NodesMatch(parent->GetChild(index), v_parent->GetChild(index)));
@@ -583,7 +592,7 @@ void Remove(int profile, const BookmarkNode* parent, int index) {
 }
 
 void RemoveAll(int profile) {
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* root_node = GetVerifierBookmarkModel()->root_node();
     for (int i = 0; i < root_node->child_count(); ++i) {
       const BookmarkNode* permanent_node = root_node->GetChild(i);
@@ -600,7 +609,7 @@ void SortChildren(int profile, const BookmarkNode* parent) {
   ASSERT_EQ(GetBookmarkNodeByID(model, parent->id()), parent)
       << "Node " << parent->GetTitle() << " does not belong to "
       << "Profile " << profile;
-  if (test()->use_verifier()) {
+  if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_parent = NULL;
     FindNodeInVerifier(model, parent, &v_parent);
     GetVerifierBookmarkModel()->SortChildren(v_parent);
@@ -622,7 +631,7 @@ void ReverseChildOrder(int profile, const BookmarkNode* parent) {
 }
 
 bool ModelMatchesVerifier(int profile) {
-  if (!test()->use_verifier()) {
+  if (!sync_datatype_helper::test()->use_verifier()) {
     LOG(ERROR) << "Illegal to call ModelMatchesVerifier() after "
                << "DisableVerifier(). Use ModelsMatch() instead.";
     return false;
@@ -637,7 +646,7 @@ bool AllModelsMatchVerifier() {
   // processed before comparing models.
   WaitForHistoryToProcessPendingTasks();
 
-  for (int i = 0; i < test()->num_clients(); ++i) {
+  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
     if (!ModelMatchesVerifier(i)) {
       LOG(ERROR) << "Model " << i << " does not match the verifier.";
       return false;
@@ -657,7 +666,7 @@ bool AllModelsMatch() {
   // processed before comparing models.
   WaitForHistoryToProcessPendingTasks();
 
-  for (int i = 1; i < test()->num_clients(); ++i) {
+  for (int i = 1; i < sync_datatype_helper::test()->num_clients(); ++i) {
     if (!ModelsMatch(0, i)) {
       LOG(ERROR) << "Model " << i << " does not match Model 0.";
       return false;

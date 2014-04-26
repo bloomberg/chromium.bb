@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
+#include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
@@ -27,8 +28,7 @@ using base::ASCIIToUTF16;
 
 class BookmarkIndexTest : public testing::Test {
  public:
-  BookmarkIndexTest() : model_(new BookmarkModel(NULL, false)) {
-  }
+  BookmarkIndexTest() : model_(client_.CreateModel(false)) {}
 
   typedef std::pair<std::string, std::string> TitleAndURL;
 
@@ -105,6 +105,7 @@ class BookmarkIndexTest : public testing::Test {
   }
 
  protected:
+  test::TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
 
  private:
@@ -161,7 +162,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
 
     ExpectMatches(data[i].query, expected);
 
-    model_.reset(new BookmarkModel(NULL, false));
+    model_ = client_.CreateModel(false);
   }
 }
 
@@ -210,7 +211,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatchingWithURLs) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    model_.reset(new BookmarkModel(NULL, true));
+    model_ = client_.CreateModel(true);
     std::vector<TitleAndURL> bookmarks;
     bookmarks.push_back(TitleAndURL(data[i].title, data[i].url));
     AddBookmarks(bookmarks);
@@ -249,7 +250,7 @@ TEST_F(BookmarkIndexTest, Normalization) {
     model_->GetBookmarksMatching(
         base::UTF8ToUTF16(data[i].query), 10, &matches);
     EXPECT_EQ(1u, matches.size());
-    model_.reset(new BookmarkModel(NULL, false));
+    model_ = client_.CreateModel(false);
   }
 }
 
@@ -286,7 +287,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsTitles) {
     ExpectMatchPositions(matches[0].title_match_positions,
                          expected_title_matches);
 
-    model_.reset(new BookmarkModel(NULL, false));
+    model_ = client_.CreateModel(false);
   }
 }
 
@@ -313,7 +314,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    model_.reset(new BookmarkModel(NULL, true));
+    model_ = client_.CreateModel(true);
     std::vector<TitleAndURL> bookmarks;
     TitleAndURL bookmark("123456", data[i].url);
     bookmarks.push_back(bookmark);

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,20 +74,20 @@ class BookmarkCodecTest : public testing::Test {
  protected:
   // Helpers to create bookmark models with different data.
   BookmarkModel* CreateTestModel1() {
-    scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL, false));
+    scoped_ptr<BookmarkModel> model(client_.CreateModel(false));
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
     return model.release();
   }
   BookmarkModel* CreateTestModel2() {
-    scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL, false));
+    scoped_ptr<BookmarkModel> model(client_.CreateModel(false));
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
     model->AddURL(bookmark_bar, 1, ASCIIToUTF16(kUrl2Title), GURL(kUrl2Url));
     return model.release();
   }
   BookmarkModel* CreateTestModel3() {
-    scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL, false));
+    scoped_ptr<BookmarkModel> model(client_.CreateModel(false));
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
     const BookmarkNode* folder1 = model->AddFolder(bookmark_bar, 1,
@@ -173,7 +174,7 @@ class BookmarkCodecTest : public testing::Test {
     EXPECT_EQ("", decoder.computed_checksum());
     EXPECT_EQ("", decoder.stored_checksum());
 
-    scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL, false));
+    scoped_ptr<BookmarkModel> model(client_.CreateModel(false));
     EXPECT_TRUE(Decode(&decoder, model.get(), value));
 
     *computed_checksum = decoder.computed_checksum();
@@ -211,6 +212,8 @@ class BookmarkCodecTest : public testing::Test {
     CheckIDs(model->other_node(), &assigned_ids);
     CheckIDs(model->mobile_node(), &assigned_ids);
   }
+
+  test::TestBookmarkClient client_;
 };
 
 TEST_F(BookmarkCodecTest, ChecksumEncodeDecodeTest) {
@@ -311,30 +314,32 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   BookmarkCodec encoder;
   scoped_ptr<base::Value> model_value(encoder.Encode(model_to_encode.get()));
 
-  BookmarkModel decoded_model(NULL, false);
+  scoped_ptr<BookmarkModel> decoded_model(client_.CreateModel(false));
   BookmarkCodec decoder;
-  ASSERT_TRUE(Decode(&decoder, &decoded_model, *model_value.get()));
+  ASSERT_TRUE(Decode(&decoder, decoded_model.get(), *model_value.get()));
   ASSERT_NO_FATAL_FAILURE(
-      AssertModelsEqual(model_to_encode.get(), &decoded_model));
+      AssertModelsEqual(model_to_encode.get(), decoded_model.get()));
 
   // Add a couple of more items to the decoded bookmark model and make sure
   // ID persistence is working properly.
-  const BookmarkNode* bookmark_bar = decoded_model.bookmark_bar_node();
-  decoded_model.AddURL(
-      bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kUrl3Title),
-      GURL(kUrl3Url));
-  const BookmarkNode* folder2_node = decoded_model.AddFolder(
+  const BookmarkNode* bookmark_bar = decoded_model->bookmark_bar_node();
+  decoded_model->AddURL(bookmark_bar,
+                        bookmark_bar->child_count(),
+                        ASCIIToUTF16(kUrl3Title),
+                        GURL(kUrl3Url));
+  const BookmarkNode* folder2_node = decoded_model->AddFolder(
       bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kFolder2Title));
-  decoded_model.AddURL(folder2_node, 0, ASCIIToUTF16(kUrl4Title),
-                       GURL(kUrl4Url));
+  decoded_model->AddURL(
+      folder2_node, 0, ASCIIToUTF16(kUrl4Title), GURL(kUrl4Url));
 
   BookmarkCodec encoder2;
-  scoped_ptr<base::Value> model_value2(encoder2.Encode(&decoded_model));
+  scoped_ptr<base::Value> model_value2(encoder2.Encode(decoded_model.get()));
 
-  BookmarkModel decoded_model2(NULL, false);
+  scoped_ptr<BookmarkModel> decoded_model2(client_.CreateModel(false));
   BookmarkCodec decoder2;
-  ASSERT_TRUE(Decode(&decoder2, &decoded_model2, *model_value2.get()));
-  ASSERT_NO_FATAL_FAILURE(AssertModelsEqual(&decoded_model, &decoded_model2));
+  ASSERT_TRUE(Decode(&decoder2, decoded_model2.get(), *model_value2.get()));
+  ASSERT_NO_FATAL_FAILURE(
+      AssertModelsEqual(decoded_model.get(), decoded_model2.get()));
 }
 
 TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
@@ -347,12 +352,12 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   JSONFileValueSerializer serializer(test_file);
   scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
 
-  BookmarkModel decoded_model(NULL, false);
+  scoped_ptr<BookmarkModel> decoded_model(client_.CreateModel(false));
   BookmarkCodec decoder;
-  ASSERT_TRUE(Decode(&decoder, &decoded_model, *root.get()));
-  ExpectIDsUnique(&decoded_model);
+  ASSERT_TRUE(Decode(&decoder, decoded_model.get(), *root.get()));
+  ExpectIDsUnique(decoded_model.get());
 
-  const BookmarkNode* bbn = decoded_model.bookmark_bar_node();
+  const BookmarkNode* bbn = decoded_model->bookmark_bar_node();
   ASSERT_EQ(1, bbn->child_count());
 
   const BookmarkNode* child = bbn->GetChild(0);
@@ -364,7 +369,7 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   EXPECT_EQ(BookmarkNode::URL, child->type());
   EXPECT_EQ(ASCIIToUTF16("Bookmark Manager"), child->GetTitle());
 
-  const BookmarkNode* other = decoded_model.other_node();
+  const BookmarkNode* other = decoded_model->other_node();
   ASSERT_EQ(1, other->child_count());
 
   child = other->GetChild(0);
@@ -376,7 +381,7 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   EXPECT_EQ(BookmarkNode::URL, child->type());
   EXPECT_EQ(ASCIIToUTF16("Get started with Google Chrome"), child->GetTitle());
 
-  ASSERT_TRUE(decoded_model.mobile_node() != NULL);
+  ASSERT_TRUE(decoded_model->mobile_node() != NULL);
 }
 
 TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
@@ -435,12 +440,12 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   JSONFileValueSerializer serializer(test_file);
   scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
 
-  BookmarkModel model(NULL, false);
+  scoped_ptr<BookmarkModel> model(client_.CreateModel(false));
   BookmarkCodec decoder;
-  ASSERT_TRUE(Decode(&decoder, &model, *root.get()));
+  ASSERT_TRUE(Decode(&decoder, model.get(), *root.get()));
 
-  EXPECT_EQ(1, model.root_node()->sync_transaction_version());
-  const BookmarkNode* bbn = model.bookmark_bar_node();
+  EXPECT_EQ(1, model->root_node()->sync_transaction_version());
+  const BookmarkNode* bbn = model->bookmark_bar_node();
   EXPECT_EQ(BookmarkNode::kInvalidSyncTransactionVersion,
             bbn->GetChild(0)->sync_transaction_version());
   EXPECT_EQ(42, bbn->GetChild(1)->sync_transaction_version());
@@ -449,8 +454,8 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   const char kNormalKey[] = "key";
   const char kNestedKey[] = "nested.key";
   std::string meta_value;
-  EXPECT_FALSE(model.root_node()->GetMetaInfo(kSyncTransactionVersionKey,
-                                               &meta_value));
+  EXPECT_FALSE(
+      model->root_node()->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
   EXPECT_FALSE(bbn->GetChild(1)->GetMetaInfo(kSyncTransactionVersionKey,
                                              &meta_value));
   EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNormalKey, &meta_value));

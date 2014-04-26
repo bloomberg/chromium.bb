@@ -307,6 +307,8 @@
         'browser/bookmarks/bookmark_storage.h',
         'browser/bookmarks/bookmark_utils.cc',
         'browser/bookmarks/bookmark_utils.h',
+        'browser/bookmarks/chrome_bookmark_client.cc',
+        'browser/bookmarks/chrome_bookmark_client.h',
         'browser/bookmarks/enhanced_bookmarks_features.cc',
         'browser/bookmarks/enhanced_bookmarks_features.h',
         'browser/bookmarks/scoped_group_bookmark_actions.cc',

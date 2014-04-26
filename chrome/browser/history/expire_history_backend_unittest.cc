@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
@@ -56,12 +57,11 @@ class ExpireHistoryTest : public testing::Test,
                           public BroadcastNotificationDelegate {
  public:
   ExpireHistoryTest()
-      : bookmark_model_(NULL, false),
+      : bookmark_model_(bookmark_client_.CreateModel(false)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
-        expirer_(this, &bookmark_model_),
-        now_(Time::Now()) {
-  }
+        expirer_(this, bookmark_model_.get()),
+        now_(Time::Now()) {}
 
  protected:
   // Called by individual tests when they want data populated.
@@ -90,8 +90,8 @@ class ExpireHistoryTest : public testing::Test,
   }
 
   void StarURL(const GURL& url) {
-    bookmark_model_.AddURL(
-        bookmark_model_.bookmark_bar_node(), 0, base::string16(), url);
+    bookmark_model_->AddURL(
+        bookmark_model_->bookmark_bar_node(), 0, base::string16(), url);
   }
 
   static bool IsStringInFile(const base::FilePath& filename, const char* str);
@@ -102,7 +102,8 @@ class ExpireHistoryTest : public testing::Test,
   // This must be destroyed last.
   base::ScopedTempDir tmp_dir_;
 
-  BookmarkModel bookmark_model_;
+  test::TestBookmarkClient bookmark_client_;
+  scoped_ptr<BookmarkModel> bookmark_model_;
 
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -520,7 +521,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   // ASSERT_TRUE(HasThumbnail(url_row.id()));
 
   // Unstar the URL and delete again.
-  bookmark_utils::RemoveAllBookmarks(&bookmark_model_, url);
+  bookmark_utils::RemoveAllBookmarks(bookmark_model_.get(), url);
   ClearLastNotifications();
   expirer_.DeleteURL(url);
 

@@ -17,7 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,6 +72,7 @@ class BookmarkProviderTest : public testing::Test,
  protected:
   virtual void SetUp() OVERRIDE;
 
+  test::TestBookmarkClient client_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;
@@ -81,7 +82,7 @@ class BookmarkProviderTest : public testing::Test,
 };
 
 BookmarkProviderTest::BookmarkProviderTest() {
-  model_.reset(new BookmarkModel(NULL, false));
+  model_ = client_.CreateModel(false);
 }
 
 void BookmarkProviderTest::SetUp() {
@@ -430,7 +431,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
   };
 
   // Reload the bookmarks index with |index_urls| == true.
-  model_.reset(new BookmarkModel(NULL, true));
+  model_ = client_.CreateModel(true);
   SetUp();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {

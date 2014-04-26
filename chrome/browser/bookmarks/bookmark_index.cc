@@ -5,20 +5,23 @@
 #include "chrome/browser/bookmarks/bookmark_index.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <list>
 
 #include "base/i18n/case_conversion.h"
+#include "base/logging.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/url_database.h"
+#include "components/bookmarks/core/browser/bookmark_client.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
+#include "components/bookmarks/core/browser/bookmark_node.h"
 #include "components/query_parser/query_parser.h"
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
+
+typedef BookmarkClient::NodeTypedCountPair NodeTypedCountPair;
+typedef BookmarkClient::NodeTypedCountPairs NodeTypedCountPairs;
 
 namespace {
 
@@ -36,6 +39,24 @@ base::string16 Normalize(const base::string16& text) {
   return base::string16(unicode_normalized_text.getBuffer(),
                         unicode_normalized_text.length());
 }
+
+// Sort functor for NodeTypedCountPairs. We sort in decreasing order of typed
+// count so that the best matches will always be added to the results.
+struct NodeTypedCountPairSortFunctor
+    : std::binary_function<NodeTypedCountPair, NodeTypedCountPair, bool> {
+  bool operator()(const NodeTypedCountPair& a,
+                  const NodeTypedCountPair& b) const {
+    return a.second > b.second;
+  }
+};
+
+// Extract the const Node* stored in a BookmarkClient::NodeTypedCountPair.
+struct NodeTypedCountPairExtractNodeFunctor
+    : std::unary_function<NodeTypedCountPair, const BookmarkNode*> {
+  const BookmarkNode* operator()(const NodeTypedCountPair& pair) const {
+    return pair.first;
+  }
+};
 
 }  // namespace
 
@@ -73,12 +94,13 @@ BookmarkIndex::NodeSet::const_iterator BookmarkIndex::Match::nodes_end() const {
   return nodes.empty() ? terms.front()->second.end() : nodes.end();
 }
 
-BookmarkIndex::BookmarkIndex(content::BrowserContext* browser_context,
+BookmarkIndex::BookmarkIndex(BookmarkClient* client,
                              bool index_urls,
                              const std::string& languages)
-    : index_urls_(index_urls),
-      browser_context_(browser_context),
-      languages_(languages) {
+    : client_(client),
+      languages_(languages),
+      index_urls_(index_urls) {
+  DCHECK(client_);
 }
 
 BookmarkIndex::~BookmarkIndex() {
@@ -129,8 +151,8 @@ void BookmarkIndex::GetBookmarksMatching(const base::string16& input_query,
       return;
   }
 
-  NodeTypedCountPairs node_typed_counts;
-  SortMatches(matches, &node_typed_counts);
+  Nodes sorted_nodes;
+  SortMatches(matches, &sorted_nodes);
 
   // We use a QueryParser to fill in match positions for us. It's not the most
   // efficient way to go about this, but by the time we get here we know what
@@ -144,50 +166,38 @@ void BookmarkIndex::GetBookmarksMatching(const base::string16& input_query,
   // that calculates result relevance in HistoryContentsProvider::ConvertResults
   // will run backwards to assure higher relevance will be attributed to the
   // best matches.
-  for (NodeTypedCountPairs::const_iterator i = node_typed_counts.begin();
-       i != node_typed_counts.end() && results->size() < max_count; ++i)
-    AddMatchToResults(i->first, &parser, query_nodes.get(), results);
+  for (Nodes::const_iterator i = sorted_nodes.begin();
+       i != sorted_nodes.end() && results->size() < max_count;
+       ++i)
+    AddMatchToResults(*i, &parser, query_nodes.get(), results);
 }
 
 void BookmarkIndex::SortMatches(const Matches& matches,
-                                NodeTypedCountPairs* node_typed_counts) const {
-  HistoryService* const history_service = browser_context_ ?
-      HistoryServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context_),
-          Profile::EXPLICIT_ACCESS) : NULL;
-
-  history::URLDatabase* url_db = history_service ?
-      history_service->InMemoryDatabase() : NULL;
-
-  for (Matches::const_iterator i = matches.begin(); i != matches.end(); ++i)
-    ExtractBookmarkNodePairs(url_db, *i, node_typed_counts);
-
-  std::sort(node_typed_counts->begin(), node_typed_counts->end(),
-            &NodeTypedCountPairSortFunc);
-  // Eliminate duplicates.
-  node_typed_counts->erase(std::unique(node_typed_counts->begin(),
-                                       node_typed_counts->end()),
-                           node_typed_counts->end());
-}
-
-void BookmarkIndex::ExtractBookmarkNodePairs(
-    history::URLDatabase* url_db,
-    const Match& match,
-    NodeTypedCountPairs* node_typed_counts) const {
-
-  for (NodeSet::const_iterator i = match.nodes_begin();
-       i != match.nodes_end(); ++i) {
-    int typed_count = 0;
-
-    // If |url_db| is the InMemoryDatabase, it might not cache all URLRows, but
-    // it guarantees to contain those with |typed_count| > 0. Thus, if we cannot
-    // fetch the URLRow, it is safe to assume that its |typed_count| is 0.
-    history::URLRow url;
-    if (url_db && url_db->GetRowForURL((*i)->url(), &url))
-      typed_count = url.typed_count();
-
-    NodeTypedCountPair pair(*i, typed_count);
-    node_typed_counts->push_back(pair);
+                                Nodes* sorted_nodes) const {
+  NodeSet nodes;
+  for (Matches::const_iterator i = matches.begin(); i != matches.end(); ++i) {
+#if !defined(OS_ANDROID)
+    nodes.insert(i->nodes_begin(), i->nodes_end());
+#else
+    // Work around a bug in the implementation of std::set::insert in the STL
+    // used on android (http://crbug.com/367050).
+    for (NodeSet::const_iterator n = i->nodes_begin(); n != i->nodes_end(); ++n)
+      nodes.insert(nodes.end(), *n);
+#endif
+  }
+  sorted_nodes->reserve(sorted_nodes->size() + nodes.size());
+  if (client_->SupportsTypedCountForNodes()) {
+    NodeTypedCountPairs node_typed_counts;
+    client_->GetTypedCountForNodes(nodes, &node_typed_counts);
+    std::sort(node_typed_counts.begin(),
+              node_typed_counts.end(),
+              NodeTypedCountPairSortFunctor());
+    std::transform(node_typed_counts.begin(),
+                   node_typed_counts.end(),
+                   std::back_inserter(*sorted_nodes),
+                   NodeTypedCountPairExtractNodeFunctor());
+  } else {
+    sorted_nodes->insert(sorted_nodes->end(), nodes.begin(), nodes.end());
   }
 }
 

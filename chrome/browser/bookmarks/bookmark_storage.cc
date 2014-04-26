@@ -11,17 +11,15 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "components/bookmarks/core/common/bookmark_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 
 using base::TimeTicks;
-using content::BrowserThread;
 
 namespace {
 
@@ -50,7 +48,8 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
 
 void LoadCallback(const base::FilePath& path,
                   BookmarkStorage* storage,
-                  BookmarkLoadDetails* details) {
+                  BookmarkLoadDetails* details,
+                  base::SequencedTaskRunner* task_runner) {
   startup_metric_utils::ScopedSlowStartupUMA
       scoped_timer("Startup.SlowStartupBookmarksLoad");
   bool bookmark_file_exists = base::PathExists(path);
@@ -85,9 +84,8 @@ void LoadCallback(const base::FilePath& path,
     }
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BookmarkStorage::OnLoadFinished, storage));
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(&BookmarkStorage::OnLoadFinished, storage));
 }
 
 }  // namespace
@@ -116,11 +114,11 @@ BookmarkLoadDetails::~BookmarkLoadDetails() {
 // BookmarkStorage -------------------------------------------------------------
 
 BookmarkStorage::BookmarkStorage(
-    content::BrowserContext* context,
     BookmarkModel* model,
+    const base::FilePath& profile_path,
     base::SequencedTaskRunner* sequenced_task_runner)
     : model_(model),
-      writer_(context->GetPath().Append(bookmarks::kBookmarksFileName),
+      writer_(profile_path.Append(bookmarks::kBookmarksFileName),
               sequenced_task_runner) {
   sequenced_task_runner_ = sequenced_task_runner;
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));
@@ -133,14 +131,18 @@ BookmarkStorage::~BookmarkStorage() {
     writer_.DoScheduledWrite();
 }
 
-void BookmarkStorage::LoadBookmarks(BookmarkLoadDetails* details) {
+void BookmarkStorage::LoadBookmarks(
+    scoped_ptr<BookmarkLoadDetails> details,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   DCHECK(!details_.get());
   DCHECK(details);
-  details_.reset(details);
-  sequenced_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LoadCallback, writer_.path(), make_scoped_refptr(this),
-                 details_.get()));
+  details_ = details.Pass();
+  sequenced_task_runner_->PostTask(FROM_HERE,
+                                   base::Bind(&LoadCallback,
+                                              writer_.path(),
+                                              make_scoped_refptr(this),
+                                              details_.get(),
+                                              task_runner));
 }
 
 void BookmarkStorage::ScheduleSave() {
@@ -167,7 +169,7 @@ void BookmarkStorage::OnLoadFinished() {
   if (!model_)
     return;
 
-  model_->DoneLoading(details_.release());
+  model_->DoneLoading(details_.Pass());
 }
 
 bool BookmarkStorage::SaveNow() {

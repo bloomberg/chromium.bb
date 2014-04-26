@@ -13,16 +13,9 @@
 #include "base/strings/string16.h"
 #include "components/query_parser/query_parser.h"
 
+class BookmarkClient;
 class BookmarkNode;
 struct BookmarkMatch;
-
-namespace content {
-class BrowserContext;
-}
-
-namespace history {
-class URLDatabase;
-}
 
 // BookmarkIndex maintains an index of the titles and URLs of bookmarks for
 // quick look up. BookmarkIndex is owned and maintained by BookmarkModel, you
@@ -36,7 +29,7 @@ class BookmarkIndex {
   // |index_urls| says whether URLs should be stored in the index in addition
   // to bookmark titles.  |languages| used to help parse IDNs in URLs for the
   // bookmark index.
-  BookmarkIndex(content::BrowserContext* browser_context,
+  BookmarkIndex(BookmarkClient* client,
                 bool index_urls,
                 const std::string& languages);
   ~BookmarkIndex();
@@ -55,36 +48,16 @@ class BookmarkIndex {
       std::vector<BookmarkMatch>* results);
 
  private:
+  typedef std::vector<const BookmarkNode*> Nodes;
   typedef std::set<const BookmarkNode*> NodeSet;
   typedef std::map<base::string16, NodeSet> Index;
 
   struct Match;
   typedef std::vector<Match> Matches;
 
-  // Pairs BookmarkNodes and the number of times the nodes' URLs were typed.
-  // Used to sort Matches in decreasing order of typed count.
-  typedef std::pair<const BookmarkNode*, int> NodeTypedCountPair;
-  typedef std::vector<NodeTypedCountPair> NodeTypedCountPairs;
-
-  // Extracts |matches.nodes| into NodeTypedCountPairs, sorts the pairs in
-  // decreasing order of typed count, and then de-dupes the matches.
-  void SortMatches(const Matches& matches,
-                   NodeTypedCountPairs* node_typed_counts) const;
-
-  // Extracts BookmarkNodes from |match| and retrieves typed counts for each
-  // node from the in-memory database. Inserts pairs containing the node and
-  // typed count into the vector |node_typed_counts|. |node_typed_counts| is
-  // sorted in decreasing order of typed count.
-  void ExtractBookmarkNodePairs(history::URLDatabase* url_db,
-                                const Match& match,
-                                NodeTypedCountPairs* node_typed_counts) const;
-
-  // Sort function for NodeTypedCountPairs. We sort in decreasing order of typed
-  // count so that the best matches will always be added to the results.
-  static bool NodeTypedCountPairSortFunc(const NodeTypedCountPair& a,
-                                         const NodeTypedCountPair& b) {
-      return a.second > b.second;
-  }
+  // Extracts |matches.nodes| into Nodes, sorts the pairs in decreasing order of
+  // typed count (if supported by the client), and then de-dupes the matches.
+  void SortMatches(const Matches& matches, Nodes* sorted_nodes) const;
 
   // Add |node| to |results| if the node matches the query.
   void AddMatchToResults(
@@ -132,13 +105,13 @@ class BookmarkIndex {
 
   Index index_;
 
-  // True if URLs are stored in the index as well as bookmark titles.
-  const bool index_urls_;
-
-  content::BrowserContext* browser_context_;
+  BookmarkClient* const client_;
 
   // Languages used to help parse IDNs in URLs for the bookmark index.
   const std::string languages_;
+
+  // True if URLs are stored in the index as well as bookmark titles.
+  const bool index_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkIndex);
 };

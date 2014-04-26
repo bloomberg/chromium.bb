@@ -7,8 +7,10 @@
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/singleton.h"
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,19 +19,23 @@
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/browser_thread.h"
 
 // static
 BookmarkModel* BookmarkModelFactory::GetForProfile(Profile* profile) {
-  return static_cast<BookmarkModel*>(
+  ChromeBookmarkClient* bookmark_client = static_cast<ChromeBookmarkClient*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
+  return bookmark_client ? bookmark_client->model() : NULL;
 }
 
 BookmarkModel* BookmarkModelFactory::GetForProfileIfExists(Profile* profile) {
-  return static_cast<BookmarkModel*>(
+  ChromeBookmarkClient* bookmark_client = static_cast<ChromeBookmarkClient*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
+  return bookmark_client ? bookmark_client->model() : NULL;
 }
 
 // static
@@ -48,18 +54,24 @@ BookmarkModelFactory::~BookmarkModelFactory() {}
 KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  BookmarkModel* bookmark_model =
-      new BookmarkModel(profile, OmniboxFieldTrial::BookmarksIndexURLsValue());
-  bookmark_model->Load(StartupTaskRunnerServiceFactory::GetForProfile(profile)->
-      GetBookmarkTaskRunner());
+  ChromeBookmarkClient* bookmark_client = new ChromeBookmarkClient(
+      profile, OmniboxFieldTrial::BookmarksIndexURLsValue());
+  bookmark_client->model()->Load(
+      profile->GetPrefs(),
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      profile->GetPath(),
+      StartupTaskRunnerServiceFactory::GetForProfile(profile)
+          ->GetBookmarkTaskRunner(),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI));
 #if !defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
      switches::kEnableBookmarkUndo)) {
-    bookmark_model->AddObserver(
+    bookmark_client->model()->AddObserver(
         BookmarkUndoServiceFactory::GetForProfile(profile));
   }
 #endif  // !defined(OS_ANDROID)
-  return bookmark_model;
+  return bookmark_client;
 }
 
 void BookmarkModelFactory::RegisterProfilePrefs(
