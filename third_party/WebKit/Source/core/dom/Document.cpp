@@ -85,6 +85,7 @@
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/SelectorQuery.h"
@@ -1827,6 +1828,7 @@ void Document::updateStyle(StyleRecalcChange change)
 {
     TRACE_EVENT0("webkit", "Document::updateStyle");
 
+    ScriptForbiddenScope forbidScript;
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 

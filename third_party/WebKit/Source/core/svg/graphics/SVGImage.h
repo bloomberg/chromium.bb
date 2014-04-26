@@ -47,7 +47,7 @@ public:
         return adoptRef(new SVGImage(observer));
     }
 
-    static bool isInSVGImage(const Element*);
+    static bool isInSVGImage(const Node*);
 
     RenderBox* embeddedContentBox() const;
 

@@ -56,6 +56,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/SharedBufferReader.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
@@ -110,6 +111,9 @@ static inline bool hasNoStyleInformation(Document* document)
 
     if (document->frame()->tree().parent())
         return false; // This document is not in a top frame
+
+    if (SVGImage::isInSVGImage(document))
+        return false;
 
     return true;
 }

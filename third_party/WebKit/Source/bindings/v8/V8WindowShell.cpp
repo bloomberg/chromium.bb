@@ -43,14 +43,15 @@
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8Initializer.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "core/dom/ScriptForbiddenScope.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -188,6 +189,8 @@ bool V8WindowShell::initialize()
 {
     TRACE_EVENT0("v8", "V8WindowShell::initialize");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "InitializeWindow");
+
+    ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
     v8::HandleScope handleScope(m_isolate);
 

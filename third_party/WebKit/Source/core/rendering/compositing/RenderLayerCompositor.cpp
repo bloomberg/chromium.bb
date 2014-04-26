@@ -34,6 +34,7 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringCompositingUpdate.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -297,6 +298,8 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateIfNeededRecursive");
 
     ASSERT(!m_renderView.needsLayout());
+
+    ScriptForbiddenScope forbidScript;
 
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
 

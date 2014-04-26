@@ -33,6 +33,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/OverflowEvent.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -758,6 +759,8 @@ void FrameView::performPreLayoutTasks()
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
 {
     TRACE_EVENT0("webkit", "FrameView::performLayout");
+
+    ScriptForbiddenScope forbidScript;
 
     ASSERT(!isInPerformLayout());
     lifecycle().advanceTo(DocumentLifecycle::InPerformLayout);

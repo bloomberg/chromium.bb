@@ -72,11 +72,11 @@ SVGImage::~SVGImage()
     ASSERT(!m_chromeClient || !m_chromeClient->image());
 }
 
-bool SVGImage::isInSVGImage(const Element* element)
+bool SVGImage::isInSVGImage(const Node* node)
 {
-    ASSERT(element);
+    ASSERT(node);
 
-    Page* page = element->document().page();
+    Page* page = node->document().page();
     if (!page)
         return false;
 

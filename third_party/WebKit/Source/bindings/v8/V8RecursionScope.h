@@ -33,6 +33,7 @@
 
 #include "bindings/v8/V8PerIsolateData.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
@@ -62,6 +63,7 @@ public:
         , m_isDocumentContext(context && context->isDocument())
     {
         V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
+        ASSERT(!ScriptForbiddenScope::isScriptForbidden());
     }
 
     ~V8RecursionScope()
@@ -89,6 +91,7 @@ public:
             : m_isolate(isolate)
 #endif
         {
+            ASSERT(!ScriptForbiddenScope::isScriptForbidden());
 #ifndef NDEBUG
             V8PerIsolateData::from(m_isolate)->incrementInternalScriptRecursionLevel();
 #endif

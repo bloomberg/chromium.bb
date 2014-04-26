@@ -32,6 +32,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "core/dom/ScriptForbiddenScope.h"
 
 namespace WebCore {
 
@@ -66,6 +67,8 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
     // v8 strings are limited to int.
     if (string.length() > INT_MAX)
         return -1;
+
+    ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
