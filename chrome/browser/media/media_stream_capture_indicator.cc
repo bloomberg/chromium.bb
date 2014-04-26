@@ -17,6 +17,7 @@
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -56,6 +57,25 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
   return extension_service->extensions()->GetExtensionOrAppByURL(
       web_contents->GetURL());
 }
+
+#if !defined(OS_ANDROID)
+
+bool IsWhitelistedExtension(const extensions::Extension* extension) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  static const char* const kExtensionWhitelist[] = {
+    extension_misc::kHotwordExtensionId,
+  };
+
+  for (size_t i = 0; i < arraysize(kExtensionWhitelist); ++i) {
+    if (extension->id() == kExtensionWhitelist[i])
+      return true;
+  }
+
+  return false;
+}
+
+#endif  // !defined(OS_ANDROID)
 
 // Gets the security originator of the tab. It returns a string with no '/'
 // at the end to display in the UI.
@@ -405,30 +425,34 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
        iter != usage_map_.end(); ++iter) {
     // Check if any audio and video devices have been used.
     const WebContentsDeviceUsage& usage = *iter->second;
+    if (!usage.IsCapturingAudio() && !usage.IsCapturingVideo())
+      continue;
+
     WebContents* const web_contents = iter->first;
 
-    // Audio/video icon is shown only for extensions or on Android.
-    // For regular tabs on desktop, we show an indicator in the tab icon.
-    if ((usage.IsCapturingAudio() || usage.IsCapturingVideo())
+    // The audio/video icon is shown only for non-whitelisted extensions or on
+    // Android. For regular tabs on desktop, we show an indicator in the tab
+    // icon.
 #if !defined(OS_ANDROID)
-        && GetExtension(web_contents)
+    const extensions::Extension* extension = GetExtension(web_contents);
+    if (!extension || IsWhitelistedExtension(extension))
+      continue;
 #endif
-        ) {
-      audio = audio || usage.IsCapturingAudio();
-      video = video || usage.IsCapturingVideo();
 
-      command_targets_.push_back(web_contents);
-      menu->AddItem(command_id, GetTitle(web_contents));
+    audio = audio || usage.IsCapturingAudio();
+    video = video || usage.IsCapturingVideo();
 
-      // If the menu item is not a label, enable it.
-      menu->SetCommandIdEnabled(command_id,
-                                command_id != IDC_MinimumLabelValue);
+    command_targets_.push_back(web_contents);
+    menu->AddItem(command_id, GetTitle(web_contents));
 
-      // If reaching the maximum number, no more item will be added to the menu.
-      if (command_id == IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST)
-        break;
-      ++command_id;
-    }
+    // If the menu item is not a label, enable it.
+    menu->SetCommandIdEnabled(command_id,
+                              command_id != IDC_MinimumLabelValue);
+
+    // If reaching the maximum number, no more item will be added to the menu.
+    if (command_id == IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST)
+      break;
+    ++command_id;
   }
 
   if (command_targets_.empty()) {
