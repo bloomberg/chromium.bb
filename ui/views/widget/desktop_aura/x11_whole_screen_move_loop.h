@@ -20,6 +20,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+class ScopedEventDispatcher;
+}
+
 namespace views {
 
 class Widget;
@@ -72,6 +76,7 @@ class X11WholeScreenMoveLoop : public ui::PlatformEventDispatcher {
 
   // Are we running a nested message loop from RunMoveLoop()?
   bool in_move_loop_;
+  scoped_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
 
   bool should_reset_mouse_flags_;
 

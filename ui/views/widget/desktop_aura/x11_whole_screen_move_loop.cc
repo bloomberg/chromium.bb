@@ -18,7 +18,9 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"
@@ -79,10 +81,19 @@ void X11WholeScreenMoveLoop::DispatchMouseMovement() {
 // DesktopWindowTreeHostLinux, ui::PlatformEventDispatcher implementation:
 
 bool X11WholeScreenMoveLoop::CanDispatchEvent(const ui::PlatformEvent& event) {
-  return event->xany.window == grab_input_window_;
+  return in_move_loop_;
 }
 
 uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
+  // This method processes all events for the grab_input_window_ as well as
+  // mouse events for all windows while the move loop is active - even before
+  // the grab is granted by X. This allows mouse notification events that were
+  // sent after the capture was requested but before the capture was granted
+  // to be dispatched. It is especially important to process the mouse release
+  // event that should have stopped the drag even if that mouse release happened
+  // before the grab was granted.
+  if (!in_move_loop_)
+    return ui::POST_DISPATCH_PERFORM_DEFAULT;
   XEvent* xev = event;
 
   // Note: the escape key is handled in the tab drag controller, which has
@@ -106,7 +117,7 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
             base::Bind(&X11WholeScreenMoveLoop::DispatchMouseMovement,
                        weak_factory_.GetWeakPtr()));
       }
-      break;
+      return ui::POST_DISPATCH_NONE;
     }
     case ButtonRelease: {
       if (xev->xbutton.button == Button1) {
@@ -115,18 +126,50 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
         DispatchMouseMovement();
         delegate_->OnMouseReleased();
       }
-      break;
+      return ui::POST_DISPATCH_NONE;
     }
     case KeyPress: {
       if (ui::KeyboardCodeFromXKeyEvent(xev) == ui::VKEY_ESCAPE) {
         canceled_ = true;
         EndMoveLoop();
+        return ui::POST_DISPATCH_NONE;
       }
       break;
     }
+    case GenericEvent: {
+      ui::EventType type = ui::EventTypeFromNative(xev);
+      switch (type) {
+        case ui::ET_MOUSE_MOVED:
+        case ui::ET_MOUSE_DRAGGED:
+        case ui::ET_MOUSE_RELEASED: {
+          XEvent xevent = {0};
+          if (type == ui::ET_MOUSE_RELEASED) {
+            xevent.type = ButtonRelease;
+            xevent.xbutton.button = ui::EventButtonFromNative(xev);
+          } else {
+            xevent.type = MotionNotify;
+          }
+          xevent.xany.display = xev->xgeneric.display;
+          xevent.xany.window = grab_input_window_;
+          // The fields used below are in the same place for all of events
+          // above. Using xmotion from XEvent's unions to avoid repeating
+          // the code.
+          xevent.xmotion.root = DefaultRootWindow(xev->xgeneric.display);
+          xevent.xmotion.time = ui::EventTimeFromNative(xev).InMilliseconds();
+          gfx::Point point(ui::EventSystemLocationFromNative(xev));
+          xevent.xmotion.x_root = point.x();
+          xevent.xmotion.y_root = point.y();
+          DispatchEvent(&xevent);
+          return ui::POST_DISPATCH_NONE;
+        }
+        default:
+          break;
+      }
+    }
   }
 
-  return ui::POST_DISPATCH_STOP_PROPAGATION;
+  return (event->xany.window == grab_input_window_) ?
+      ui::POST_DISPATCH_NONE : ui::POST_DISPATCH_PERFORM_DEFAULT;
 }
 
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
@@ -154,7 +197,10 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     return false;
   }
 
-  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  scoped_ptr<ui::ScopedEventDispatcher> old_dispatcher =
+      nested_dispatcher_.Pass();
+  nested_dispatcher_ =
+         ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
   if (!drag_image_.isNull() && CheckIfIconValid())
     CreateDragImageWindow();
 
@@ -174,6 +220,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
+  nested_dispatcher_ = old_dispatcher.Pass();
   return !canceled_;
 }
 
@@ -209,10 +256,12 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   XUngrabPointer(display, CurrentTime);
   XUngrabKeyboard(display, CurrentTime);
 
-  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  // Restore the previous dispatcher.
+  nested_dispatcher_.reset();
   drag_widget_.reset();
   delegate_->OnMoveLoopEnded();
   XDestroyWindow(display, grab_input_window_);
+  grab_input_window_ = None;
 
   in_move_loop_ = false;
   quit_closure_.Run();
