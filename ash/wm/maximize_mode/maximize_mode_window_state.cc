@@ -13,6 +13,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
+#include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -54,8 +55,11 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
   return work_area_in_parent;
 }
 
-// Returns the maximized and centered bounds of a window.
-gfx::Rect GetMaximizedAndCenteredBounds(wm::WindowState* state_object) {
+// Returns the maximized/full screen and/or centered bounds of a window.
+gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
+  if (state_object->IsFullscreen())
+    return ScreenUtil::GetDisplayBoundsInParent(state_object->window());
+
   gfx::Rect bounds_in_parent;
   // Make the window as big as possible.
   if (state_object->CanMaximize() || state_object->CanResize()) {
@@ -77,7 +81,7 @@ gfx::Rect GetMaximizedAndCenteredBounds(wm::WindowState* state_object) {
 // static
 void MaximizeModeWindowState::UpdateWindowPosition(
     wm::WindowState* window_state, bool animated) {
-  gfx::Rect bounds_in_parent = GetMaximizedAndCenteredBounds(window_state);
+  gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
 
   if (bounds_in_parent == window_state->window()->bounds())
     return;
@@ -111,34 +115,38 @@ void MaximizeModeWindowState::LeaveMaximizeMode(wm::WindowState* window_state) {
 void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
                                         const wm::WMEvent* event) {
   switch (event->type()) {
+    case wm::WM_EVENT_TOGGLE_FULLSCREEN:
+      ToggleFullScreen(window_state, window_state->delegate());
+      break;
+    case wm::WM_EVENT_FULLSCREEN:
+      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_FULLSCREEN, true);
+      break;
     case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
     case wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
-    case wm::WM_EVENT_TOGGLE_FULLSCREEN:
     case wm::WM_EVENT_TOGGLE_MAXIMIZE:
     case wm::WM_EVENT_CENTER:
-    case wm::WM_EVENT_FULLSCREEN:
     case wm::WM_EVENT_SNAP_LEFT:
     case wm::WM_EVENT_SNAP_RIGHT:
     case wm::WM_EVENT_NORMAL:
     case wm::WM_EVENT_MAXIMIZE:
-      MaximizeOrCenterWindow(window_state, true);
+      UpdateWindow(window_state,
+                   GetMaximizedOrCenteredWindowType(window_state),
+                   true);
       return;
     case wm::WM_EVENT_MINIMIZE:
-      if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED) {
-        current_state_type_ = wm::WINDOW_STATE_TYPE_MINIMIZED;
-        Minimize(window_state);
-      }
+      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_MINIMIZED, true);
       return;
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
     case wm::WM_EVENT_SET_BOUNDS:
-      if (current_state_type_ == wm::WINDOW_STATE_TYPE_MAXIMIZED ||
-          window_state->CanResize()) {
+      if (window_state->CanResize()) {
         // In case the window is resizable and / or maximized we ignore the
         // requested bounds change and resize to the biggest possible size.
-        MaximizeOrCenterWindow(window_state, true);
-      } else if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED) {
+        UpdateBounds(window_state, true);
+      } else
+      if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
+          current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
         // In all other cases (except for minimized windows) we respect the
         // requested bounds and center it to a fully visible area on the screen.
         gfx::Rect bounds_in_parent =
@@ -153,12 +161,18 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
       }
       break;
     case wm::WM_EVENT_ADDED_TO_WORKSPACE:
-      MaximizeOrCenterWindow(window_state, true);
+      if (current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED &&
+          current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN &&
+          current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED) {
+        wm::WindowStateType new_state =
+            GetMaximizedOrCenteredWindowType(window_state);
+        UpdateWindow(window_state, new_state, true);
+      }
       break;
     case wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED:
     case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED)
-        MaximizeOrCenterWindow(window_state, false);
+        UpdateBounds(window_state, true);
       break;
   }
 }
@@ -174,8 +188,11 @@ void MaximizeModeWindowState::AttachState(
 
   // Initialize the state to a good preset.
   if (current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED &&
-      current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED) {
-    MaximizeOrCenterWindow(window_state, true);
+      current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
+      current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN) {
+    UpdateWindow(window_state,
+                 GetMaximizedOrCenteredWindowType(window_state),
+                 true);
   }
 
   window_state->set_can_be_dragged(false);
@@ -185,37 +202,40 @@ void MaximizeModeWindowState::DetachState(wm::WindowState* window_state) {
   window_state->set_can_be_dragged(true);
 }
 
-void MaximizeModeWindowState::MaximizeOrCenterWindow(
-    wm::WindowState* window_state,
-    bool animated) {
-  const wm::WindowStateType target_state =
-      window_state->CanMaximize() ? wm::WINDOW_STATE_TYPE_MAXIMIZED :
-                                    wm::WINDOW_STATE_TYPE_NORMAL;
-  const wm::WindowStateType old_state_type = current_state_type_;
-  gfx::Rect bounds_in_parent = GetMaximizedAndCenteredBounds(window_state);
+void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
+                                           wm::WindowStateType target_state,
+                                           bool animated) {
+  DCHECK(target_state == wm::WINDOW_STATE_TYPE_MINIMIZED ||
+         target_state == wm::WINDOW_STATE_TYPE_MAXIMIZED ||
+         (target_state == wm::WINDOW_STATE_TYPE_NORMAL &&
+              !window_state->CanMaximize()) ||
+         target_state == wm::WINDOW_STATE_TYPE_FULLSCREEN);
 
-  if (current_state_type_ != target_state) {
+  if (target_state == wm::WINDOW_STATE_TYPE_MINIMIZED) {
+    if (current_state_type_ == wm::WINDOW_STATE_TYPE_MINIMIZED)
+      return;
+
     current_state_type_ = target_state;
-    window_state->UpdateWindowShowStateFromStateType();
-    window_state->NotifyPreStateTypeChange(old_state_type);
-    // If we have a target bounds rectangle, we center it and set it
-    // accordingly.
-    if (!bounds_in_parent.IsEmpty()) {
-      if (current_state_type_ == wm::WINDOW_STATE_TYPE_MINIMIZED || !animated)
-        window_state->SetBoundsDirect(bounds_in_parent);
-      else
-        window_state->SetBoundsDirectAnimated(bounds_in_parent);
-    }
-    window_state->NotifyPostStateTypeChange(old_state_type);
-  } else if (!bounds_in_parent.IsEmpty() &&
-             bounds_in_parent != window_state->window()->bounds()) {
-    // Coming here, we were most probably called through a display change.
-    // Do not animate.
-    if (animated)
-      window_state->SetBoundsDirectAnimated(bounds_in_parent);
-    else
-      window_state->SetBoundsDirect(bounds_in_parent);
+    ::wm::SetWindowVisibilityAnimationType(
+        window_state->window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+    window_state->window()->Hide();
+    if (window_state->IsActive())
+      window_state->Deactivate();
+    return;
   }
+
+  if (current_state_type_ == target_state) {
+    // If the state type did not change, update it accordingly.
+    UpdateBounds(window_state, animated);
+    return;
+  }
+
+  const wm::WindowStateType old_state_type = current_state_type_;
+  current_state_type_ = target_state;
+  window_state->UpdateWindowShowStateFromStateType();
+  window_state->NotifyPreStateTypeChange(old_state_type);
+  UpdateBounds(window_state, animated);
+  window_state->NotifyPostStateTypeChange(old_state_type);
 
   if ((window_state->window()->TargetVisibility() ||
       old_state_type == wm::WINDOW_STATE_TYPE_MINIMIZED) &&
@@ -226,15 +246,27 @@ void MaximizeModeWindowState::MaximizeOrCenterWindow(
   }
 }
 
-void MaximizeModeWindowState::Minimize(wm::WindowState* window_state) {
-  ::wm::SetWindowVisibilityAnimationType(
-      window_state->window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+wm::WindowStateType MaximizeModeWindowState::GetMaximizedOrCenteredWindowType(
+      wm::WindowState* window_state) {
+  return window_state->CanMaximize() ? wm::WINDOW_STATE_TYPE_MAXIMIZED :
+                                       wm::WINDOW_STATE_TYPE_NORMAL;
+}
 
-  // Hide the window.
-  window_state->window()->Hide();
-  // Activate another window.
-  if (window_state->IsActive())
-    window_state->Deactivate();
+void MaximizeModeWindowState::UpdateBounds(wm::WindowState* window_state,
+                                           bool animated) {
+  gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
+  // If we have a target bounds rectangle, we center it and set it
+  // accordingly.
+  if (!bounds_in_parent.IsEmpty() &&
+      bounds_in_parent != window_state->window()->bounds()) {
+    if (current_state_type_ == wm::WINDOW_STATE_TYPE_MINIMIZED ||
+        !window_state->window()->IsVisible() ||
+        !animated) {
+      window_state->SetBoundsDirect(bounds_in_parent);
+    } else {
+      window_state->SetBoundsDirectAnimated(bounds_in_parent);
+    }
+  }
 }
 
 }  // namespace ash

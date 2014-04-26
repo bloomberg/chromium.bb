@@ -314,7 +314,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     return;
 
   if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked() ||
-      force_shelf_always_visibile_) {
+      IsShelfForcedToBeVisible()) {
     SetState(SHELF_VISIBLE);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
@@ -389,7 +389,7 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 // ShelfLayoutManager, Gesture functions:
 
 void ShelfLayoutManager::OnGestureEdgeSwipe(const ui::GestureEvent& gesture) {
-  if (force_shelf_always_visibile_)
+  if (IsShelfForcedToBeVisible())
     return;
 
   if (visibility_state() == SHELF_AUTO_HIDE) {
@@ -401,7 +401,7 @@ void ShelfLayoutManager::OnGestureEdgeSwipe(const ui::GestureEvent& gesture) {
 }
 
 void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
-  if (force_shelf_always_visibile_)
+  if (IsShelfForcedToBeVisible())
     return;
   gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
   gesture_drag_amount_ = 0.f;
@@ -412,7 +412,7 @@ void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
 
 ShelfLayoutManager::DragState ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture) {
-  if (force_shelf_always_visibile_)
+  if (IsShelfForcedToBeVisible())
     return DRAG_SHELF;
   bool horizontal = IsHorizontalAlignment();
   gesture_drag_amount_ += horizontal ? gesture.details().scroll_y() :
@@ -438,7 +438,7 @@ ShelfLayoutManager::DragState ShelfLayoutManager::UpdateGestureDrag(
 }
 
 void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
-  if (force_shelf_always_visibile_)
+  if (IsShelfForcedToBeVisible())
     return;
   bool horizontal = IsHorizontalAlignment();
   bool should_change = false;
@@ -1008,7 +1008,7 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfVisibilityState visibility_state) const {
-  if (force_shelf_always_visibile_)
+  if (IsShelfForcedToBeVisible())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (visibility_state != SHELF_AUTO_HIDE || !shelf_)
@@ -1121,6 +1121,17 @@ int ShelfLayoutManager::GetWorkAreaSize(const State& state, int size) const {
   if (state.visibility_state == SHELF_AUTO_HIDE)
     return kAutoHideSize;
   return 0;
+}
+
+bool ShelfLayoutManager::IsShelfForcedToBeVisible() const {
+  // Bail out early when there is no |workspace_controller_|, which happens
+  // during shutdown after PrepareForShutdown.
+  if (!workspace_controller_)
+    return force_shelf_always_visibile_;
+
+  return force_shelf_always_visibile_ &&
+      workspace_controller_->GetWindowState() !=
+          WORKSPACE_WINDOW_STATE_FULL_SCREEN;
 }
 
 gfx::Rect ShelfLayoutManager::GetAvailableBounds() const {

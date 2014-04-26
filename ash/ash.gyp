@@ -658,6 +658,8 @@
         'wm/window_state_delegate.cc',
         'wm/window_state_delegate.h',
         'wm/window_state_observer.h',
+        'wm/window_state_util.cc',
+        'wm/window_state_util.h',
         'wm/window_properties.cc',
         'wm/window_properties.h',
         'wm/window_resizer.cc',

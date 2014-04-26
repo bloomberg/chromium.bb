@@ -4,7 +4,9 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/switchable_windows.h"
 #include "ash/test/ash_test_base.h"
@@ -673,29 +675,84 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
   EXPECT_TRUE(window->IsVisible());
 }
 
-// Check that a full screen window is changing to maximized in maximize mode,
-// cannot go to fullscreen and goes back to fullscreen thereafter.
-TEST_F(MaximizeModeWindowManagerTest, FullScreenModeTests) {
+// Check that a full screen window is staying full screen in maximize mode,
+// and that it returns to full screen thereafter (if left).
+TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
   gfx::Rect rect(20, 140, 100, 100);
   scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
+
+  ShelfLayoutManager* shelf =
+      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+
+  // Allow the shelf to hide.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
   window_state->OnWMEvent(&event);
+
+  // With full screen, the shelf should get hidden.
   EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   CreateMaximizeModeWindowManager();
 
-  // Fullscreen mode should now be off and it should not come back while in
-  // maximize mode.
-  EXPECT_FALSE(window_state->IsFullscreen());
-  EXPECT_TRUE(window_state->IsMaximized());
+  // The Full screen mode should continue to be on.
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+
+  // With leaving the fullscreen mode, the maximized mode should return and the
+  // shelf should become visible.
   window_state->OnWMEvent(&event);
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
+  // Ending the maximize mode should return to full screen and the shelf should
+  // be hidden again.
   DestroyMaximizeModeWindowManager();
   EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+}
+
+// Check that full screen mode can be turned on in maximized mode.
+TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
+  gfx::Rect rect(20, 140, 100, 100);
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+
+  ShelfLayoutManager* shelf =
+      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+
+  // Allow the shelf to hide.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  CreateMaximizeModeWindowManager();
+
+  // Fullscreen mode should still be off and the shelf should be visible.
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+
+  // After going into fullscreen mode, the shelf should be hidden.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&event);
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+
+  // With the destruction of the manager we should fall back to the old state.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 }
 
 // Check that snapping operations get ignored.

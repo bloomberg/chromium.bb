@@ -41,12 +41,22 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   virtual void DetachState(wm::WindowState* window_state) OVERRIDE;
 
  private:
-  // Centers the window on top of the workspace or maximizes it. If |animate| is
-  // set to true, a bounds change will be animated - otherwise immediate.
-  void MaximizeOrCenterWindow(wm::WindowState* window_state, bool animate);
+  // Updates the window to |new_state_type| and resulting bounds:
+  // Either full screen, maximized centered or minimized. If the state does not
+  // change, only the bounds will be changed. If |animate| is set, the bound
+  // change get animated.
+  void UpdateWindow(wm::WindowState* window_state,
+                    wm::WindowStateType new_state_type,
+                    bool animate);
 
-  // Minimize the window.
-  void Minimize(wm::WindowState* window_state);
+  // Depending on the capabilities of the window we either return
+  // |WINDOW_STATE_TYPE_MAXIMIZED| or |WINDOW_STATE_TYPE_NORMAL|.
+  wm::WindowStateType GetMaximizedOrCenteredWindowType(
+      wm::WindowState* window_state);
+
+  // Updates the bounds to the maximum possible bounds according to the current
+  // window state. If |animated| is set we animate the change.
+  void UpdateBounds(wm::WindowState* window_state, bool animated);
 
   // The original state object of the window.
   scoped_ptr<wm::WindowState::State> old_state_;

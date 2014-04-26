@@ -12,6 +12,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
+#include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -258,25 +259,9 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       }
       return true;
     }
-    case WM_EVENT_TOGGLE_FULLSCREEN: {
-      // Window which cannot be maximized should not be fullscreened.
-      // It can, however, be restored if it was fullscreened.
-      bool is_fullscreen = window_state->IsFullscreen();
-      if (!is_fullscreen && !window_state->CanMaximize())
-        return true;
-      if (window_state->delegate() &&
-          window_state->delegate()->ToggleFullscreen(window_state)) {
-        return true;
-      }
-      if (is_fullscreen) {
-        window_state->Restore();
-      } else {
-        //
-        window_state->window()->SetProperty(aura::client::kShowStateKey,
-                                            ui::SHOW_STATE_FULLSCREEN);
-      }
+    case WM_EVENT_TOGGLE_FULLSCREEN:
+      ToggleFullScreen(window_state, window_state->delegate());
       return true;
-    }
     case WM_EVENT_CENTER:
       CenterWindow(window_state);
       return true;

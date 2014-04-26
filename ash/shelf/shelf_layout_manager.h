@@ -321,6 +321,9 @@ class ASH_EXPORT ShelfLayoutManager :
 
   int GetWorkAreaSize(const State& state, int size) const;
 
+  // Returns true if the shelf should be forced to be visible.
+  bool IsShelfForcedToBeVisible() const;
+
   // Return the bounds available in the parent, taking into account the bounds
   // of the keyboard if necessary.
   gfx::Rect GetAvailableBounds() const;
