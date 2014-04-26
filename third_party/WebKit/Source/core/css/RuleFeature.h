@@ -22,6 +22,7 @@
 #ifndef RuleFeature_h
 #define RuleFeature_h
 
+#include "core/css/CSSSelector.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -29,7 +30,6 @@
 
 namespace WebCore {
 
-class CSSSelector;
 class CSSSelectorList;
 class DescendantInvalidationSet;
 class Document;
@@ -88,10 +88,9 @@ public:
 
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element&);
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element&);
-
     void scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element&);
-
     void scheduleStyleInvalidationForIdChange(const AtomicString& oldId, const AtomicString& newId, Element&);
+    void scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoType, Element&);
 
     bool hasIdsInSelectors() const
     {
@@ -110,6 +109,7 @@ public:
 
 private:
     typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
+    typedef HashMap<CSSSelector::PseudoType, RefPtr<DescendantInvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > PseudoTypeInvalidationSetMap;
 
     struct FeatureMetadata {
         FeatureMetadata()
@@ -139,6 +139,7 @@ private:
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
     DescendantInvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName);
     DescendantInvalidationSet& ensureIdInvalidationSet(const AtomicString& attributeName);
+    DescendantInvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType);
     DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
     InvalidationSetMode updateInvalidationSets(const CSSSelector&);
@@ -162,6 +163,7 @@ private:
     InvalidationSetMap m_classInvalidationSets;
     InvalidationSetMap m_attributeInvalidationSets;
     InvalidationSetMap m_idInvalidationSets;
+    PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
     bool m_targetedStyleRecalcEnabled;
     StyleInvalidator m_styleInvalidator;
 };

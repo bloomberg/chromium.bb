@@ -250,4 +250,67 @@ TEST_F(AffectedByFocusTest, ChildrenAffectedByFocusUpdate)
     ASSERT_EQ(11U, accessCount);
 }
 
+TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate)
+{
+    // Check that when focussing the outer div in the document below, you get a
+    // style recalc for the outer div and the class=a div only.
+
+    setHtmlInnerHTML("<style>:focus .a { border: 1px solid lime; }</style>"
+        "<div id=d tabIndex=1>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div class='a'></div>"
+        "</div>");
+
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
+
+    unsigned startCount = document().styleEngine()->resolverAccessCount();
+
+    document().getElementById("d")->focus();
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
+
+    unsigned accessCount = document().styleEngine()->resolverAccessCount() - startCount;
+
+    ASSERT_EQ(2U, accessCount);
+}
+
+TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate)
+{
+    // Check that when focussing the outer div in the document below, you get a
+    // style recalc for the outer div only. The invalidation set for :focus will
+    // include 'a', but the id=d div should be affectedByFocus, not childrenAffectedByFocus.
+
+    setHtmlInnerHTML("<style>#nomatch:focus .a { border: 1px solid lime; }</style>"
+        "<div id=d tabIndex=1>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div></div>"
+        "<div class='a'></div>"
+        "</div>");
+
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
+
+    unsigned startCount = document().styleEngine()->resolverAccessCount();
+
+    document().getElementById("d")->focus();
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
+
+    unsigned accessCount = document().styleEngine()->resolverAccessCount() - startCount;
+
+    ASSERT_EQ(1U, accessCount);
+}
+
 } // namespace

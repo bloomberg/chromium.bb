@@ -814,9 +814,10 @@ void ContainerNode::focusStateChanged()
     if (!renderer())
         return;
 
-    if ((isElementNode() && toElement(this)->childrenAffectedByFocus())
-        || (renderStyle()->affectedByFocus() && renderStyle()->hasPseudoStyle(FIRST_LETTER)))
+    if (renderStyle()->affectedByFocus() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
         setNeedsStyleRecalc(SubtreeStyleChange);
+    else if (isElementNode() && toElement(this)->childrenAffectedByFocus())
+        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
     else if (renderStyle()->affectedByFocus())
         setNeedsStyleRecalc(LocalStyleChange);
 
@@ -838,7 +839,7 @@ void ContainerNode::setFocus(bool received)
 
     // If :focus sets display: none, we lose focus but still need to recalc our style.
     if (isElementNode() && toElement(this)->childrenAffectedByFocus())
-        setNeedsStyleRecalc(SubtreeStyleChange);
+        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
     else
         setNeedsStyleRecalc(LocalStyleChange);
 }
@@ -852,9 +853,10 @@ void ContainerNode::setActive(bool down)
 
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (renderer()) {
-        if ((isElementNode() && toElement(this)->childrenAffectedByActive())
-            || (renderStyle()->affectedByActive() && renderStyle()->hasPseudoStyle(FIRST_LETTER)))
+        if (renderStyle()->affectedByActive() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange);
+        else if (isElementNode() && toElement(this)->childrenAffectedByActive())
+            document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
         else if (renderStyle()->affectedByActive())
             setNeedsStyleRecalc(LocalStyleChange);
 
@@ -875,15 +877,16 @@ void ContainerNode::setHovered(bool over)
         if (over)
             return;
         if (isElementNode() && toElement(this)->childrenAffectedByHover())
-            setNeedsStyleRecalc(SubtreeStyleChange);
+            document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
         else
             setNeedsStyleRecalc(LocalStyleChange);
         return;
     }
 
-    if ((isElementNode() && toElement(this)->childrenAffectedByHover())
-        || (renderStyle()->affectedByHover() && renderStyle()->hasPseudoStyle(FIRST_LETTER)))
+    if (renderStyle()->affectedByHover() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
         setNeedsStyleRecalc(SubtreeStyleChange);
+    else if (isElementNode() && toElement(this)->childrenAffectedByHover())
+        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
     else if (renderStyle()->affectedByHover())
         setNeedsStyleRecalc(LocalStyleChange);
 
