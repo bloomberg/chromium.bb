@@ -775,6 +775,9 @@ void RenderViewImpl::Initialize(
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
+  webview()->settings()->setAllowConnectingInsecureWebSocket(
+      command_line.HasSwitch(switches::kAllowInsecureWebSocketFromHttpsOrigin));
+
   main_render_frame_.reset(main_render_frame);
   webview()->setMainFrame(main_render_frame_->GetWebFrame());
   main_render_frame_->Initialize();

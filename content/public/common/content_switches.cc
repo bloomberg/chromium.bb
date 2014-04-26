@@ -16,6 +16,11 @@ const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
+// Allows frames with an https origin to use WebSockets with an insecure URL
+// (ws://).
+const char kAllowInsecureWebSocketFromHttpsOrigin[] =
+    "allow-insecure-websocket-from-https-origin";
+
 // Allows loopback interface to be added in network list for peer connection.
 const char kAllowLoopbackInPeerConnection[] =
     "allow-loopback-in-peer-connection";

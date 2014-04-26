@@ -14619,6 +14619,14 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_DESCRIPTION" desc="Description to enable instant search clicks">
       If enabled, prefetch previews for search results and swap them with original page when is downloaded and rendered.
     </message>
+
+    <!-- Mixed content issue workaround flags -->
+    <message name="IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_NAME" desc="Title for the flag to allow insecure WebSocket from https origin">
+      Allow insecure WebSocket from https origin
+    </message>
+    <message name="IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_DESCRIPTION" desc="Description to allow insecure WebSocket from https origin">
+      This flag makes Chrome unsafe. Use this only if you understand what this does. Note that this flag may be removed without any notice. If enabled, frames with an https origin can use WebSockets with an insecure URL (ws://).
+    </message>
   </messages>
   </release>
 </grit>
