@@ -48,6 +48,7 @@
               'bluetooth.idl',
               'bluetooth_low_energy.idl',
               'bluetooth_private.json',
+              'bluetooth_socket.idl',
               'bookmark_manager_private.json',
               'bookmarks.json',
               'braille_display_private.idl',

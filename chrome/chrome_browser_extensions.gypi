@@ -162,6 +162,8 @@
         'browser/extensions/api/bluetooth/bluetooth_socket_event_dispatcher.cc',
         'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.cc',
         'browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h',
+        'browser/extensions/api/bluetooth_socket/bluetooth_socket_api.cc',
+        'browser/extensions/api/bluetooth_socket/bluetooth_socket_api.h',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.cc',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h',
         'browser/extensions/api/bookmarks/bookmark_api_constants.cc',

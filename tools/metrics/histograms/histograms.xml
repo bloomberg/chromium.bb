@@ -33620,6 +33620,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="733" label="BLUETOOTHLOWENERGY_WRITEDESCRIPTORVALUE"/>
   <int value="734" label="BOOKMARKMANAGERPRIVATE_CREATEWITHMETAINFO"/>
   <int value="735" label="BOOKMARKMANAGERPRIVATE_UPDATEMETAINFO"/>
+  <int value="736" label="BLUETOOTHSOCKET_CREATE"/>
+  <int value="737" label="BLUETOOTHSOCKET_UPDATE"/>
+  <int value="738" label="BLUETOOTHSOCKET_SETPAUSED"/>
+  <int value="739" label="BLUETOOTHSOCKET_LISTENUSINGRFCOMM"/>
+  <int value="740" label="BLUETOOTHSOCKET_LISTENUSINGINSECURERFCOMM"/>
+  <int value="741" label="BLUETOOTHSOCKET_LISTENUSINGL2CAP"/>
+  <int value="742" label="BLUETOOTHSOCKET_CONNECT"/>
+  <int value="743" label="BLUETOOTHSOCKET_DISCONNECT"/>
+  <int value="744" label="BLUETOOTHSOCKET_CLOSE"/>
+  <int value="745" label="BLUETOOTHSOCKET_SEND"/>
+  <int value="746" label="BLUETOOTHSOCKET_GETINFO"/>
+  <int value="747" label="BLUETOOTHSOCKET_GETSOCKETS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
