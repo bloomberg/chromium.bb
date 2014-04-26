@@ -123,6 +123,7 @@ def ProvisionDevices(options):
     devices = android_commands.GetAttachedDevices()
   for device_serial in devices:
     device = device_utils.DeviceUtils(device_serial)
+    device.old_interface.EnableAdbRoot()
     install_output = GetCmdOutput(
       ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT,
        '--apk',
