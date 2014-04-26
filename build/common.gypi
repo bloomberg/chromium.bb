@@ -3712,7 +3712,7 @@
                 'cflags': [
                   '-fsanitize=thread',
                   '-fPIC',
-                  '-mllvm', '-tsan-blacklist=<(tsan_blacklist)',
+                  '-fsanitize-blacklist=<(tsan_blacklist)',
                 ],
                 'ldflags': [
                   '-fsanitize=thread',
