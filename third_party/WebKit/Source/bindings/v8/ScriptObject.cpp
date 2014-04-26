@@ -32,7 +32,6 @@
 #include "bindings/v8/ScriptObject.h"
 
 #include "bindings/v8/NewScriptState.h"
-#include "bindings/v8/ScriptScope.h"
 
 #include "V8InspectorFrontendHost.h"
 

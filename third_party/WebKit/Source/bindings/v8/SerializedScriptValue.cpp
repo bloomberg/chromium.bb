@@ -39,7 +39,6 @@
 #include "V8Key.h"
 #include "V8MessagePort.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
