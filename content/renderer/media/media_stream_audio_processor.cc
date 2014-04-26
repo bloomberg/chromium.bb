@@ -33,6 +33,8 @@ const int kAudioProcessingSampleRate = 16000;
 const int kAudioProcessingSampleRate = 32000;
 #endif
 const int kAudioProcessingNumberOfChannels = 1;
+const AudioProcessing::ChannelLayout kAudioProcessingChannelLayout =
+    AudioProcessing::kMono;
 
 const int kMaxNumberOfBuffersInFifo = 2;
 
@@ -351,11 +353,13 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   // Create and configure the webrtc::AudioProcessing.
-  audio_processing_.reset(webrtc::AudioProcessing::Create(0));
-  // TODO(ajm): Replace with AudioProcessing::Initialize() when this rolls to
-  // Chromium: http://review.webrtc.org/9919004/
-  CHECK_EQ(0,
-           audio_processing_->set_sample_rate_hz(kAudioProcessingSampleRate));
+  audio_processing_.reset(webrtc::AudioProcessing::Create());
+  CHECK_EQ(0, audio_processing_->Initialize(kAudioProcessingSampleRate,
+                                            kAudioProcessingSampleRate,
+                                            kAudioProcessingSampleRate,
+                                            kAudioProcessingChannelLayout,
+                                            kAudioProcessingChannelLayout,
+                                            kAudioProcessingChannelLayout));
 
   // Enable the audio processing components.
   if (enable_aec) {
@@ -459,7 +463,7 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
     return 0;
 
   TRACE_EVENT0("audio", "MediaStreamAudioProcessor::ProcessData");
-  DCHECK_EQ(audio_processing_->sample_rate_hz(),
+  DCHECK_EQ(audio_processing_->input_sample_rate_hz(),
             capture_converter_->sink_parameters().sample_rate());
   DCHECK_EQ(audio_processing_->num_input_channels(),
             capture_converter_->sink_parameters().channels());
