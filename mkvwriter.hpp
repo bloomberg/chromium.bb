@@ -46,6 +46,6 @@ class MkvWriter : public IMkvWriter {
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(MkvWriter);
 };
 
-}  //end namespace mkvmuxer
+}  // end namespace mkvmuxer
 
-#endif // MKVWRITER_HPP
+#endif  // MKVWRITER_HPP
