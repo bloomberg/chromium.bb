@@ -9605,9 +9605,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_HELP_TITLE" desc="Label used for title of the help page.">
           Help
         </message>
-        <message name="IDS_WEBKIT" desc="The name of the WebKit project; should not require translation.">
-          WebKit
-        </message>
         <message name="IDS_SHOW_MORE_INFO" desc="The label of the 'More info' link.">
           More info...
         </message>
@@ -9657,6 +9654,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </if>
         <message name="IDS_ABOUT_PRODUCT_VERSION" desc="The text label describing the version of the browser">
           Version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph>
+        </message>
+      </if> <!-- not is_android -->
+
+      <if expr="chromeos">
+        <message name="IDS_WEBKIT" desc="The name of the WebKit project; should not require translation.">
+          WebKit
         </message>
         <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
           Firmware
@@ -9724,7 +9727,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON" desc="The label for the button for cancelling channel change.">
           Cancel
         </message>
-      </if>
+      </if> <!-- chromeos -->
 
       <message name="IDS_PLATFORM_LABEL" desc="Label for Platform">
         Platform
