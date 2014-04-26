@@ -1966,7 +1966,7 @@ osmesa.dll!LINTERP
 osmesa.dll!INTERP_4F
 osmesa.dll!_tnl_generic_interp
 
-UNADDRESSABLE ACCESS
+UNINITIALIZED READ
 name=bug_340752
 ...
 *!WebCore::ThreadState::visitStack
