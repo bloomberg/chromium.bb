@@ -63,9 +63,6 @@ const int kBottomPadding = 5;
 // Height of the shadow at the top of the tab image assets.
 const int kDropShadowHeight = 4;
 
-// Size of icon used for throbber and favicon next to tab title.
-const int kTabIconSize = gfx::kFaviconSize;
-
 // How long the pulse throb takes.
 const int kPulseDurationMs = 200;
 
@@ -688,6 +685,7 @@ void Tab::Layout() {
 
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
+  const int kTabIconSize = gfx::kFaviconSize;
   int content_height = std::max(kTabIconSize, font_height_);
   close_button_->SetBorder(views::Border::NullBorder());
   gfx::Size close_button_size(close_button_->GetPreferredSize());
@@ -1470,7 +1468,7 @@ int Tab::IconCapacity() const {
     return 0;
   const int available_width =
       std::max(0, width() - kLeftPadding - kRightPadding);
-  const int width_per_icon = kTabIconSize;
+  const int width_per_icon = gfx::kFaviconSize;
   const int kPaddingBetweenIcons = 2;
   if (available_width >= width_per_icon &&
       available_width < (width_per_icon + kPaddingBetweenIcons)) {
