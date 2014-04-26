@@ -20,6 +20,37 @@ class BisectPerfRegressionTest(unittest.TestCase):
     """Cleans up the test environment after each test method."""
     pass
 
+  def testParseDEPSStringManually(self):
+    """Tests DEPS parsing."""
+    bisect_options = bisect_perf_module.BisectOptions()
+    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+        None, bisect_options)
+
+    deps_file_contents = """
+vars = {
+    'ffmpeg_hash':
+         '@ac4a9f31fe2610bd146857bbd55d7a260003a888',
+    'webkit_url':
+         'https://chromium.googlesource.com/chromium/blink.git',
+    'git_url':
+         'https://chromium.googlesource.com',
+    'webkit_rev':
+         '@e01ac0a267d1017288bc67fa3c366b10469d8a24',
+    'angle_revision':
+         '74697cf2064c0a2c0d7e1b1b28db439286766a05'
+}"""
+
+    # Should only expect svn/git revisions to come through, and urls to be
+    # filtered out.
+    expected_vars_dict = {
+        'ffmpeg_hash': '@ac4a9f31fe2610bd146857bbd55d7a260003a888',
+        'webkit_rev': '@e01ac0a267d1017288bc67fa3c366b10469d8a24',
+        'angle_revision': '74697cf2064c0a2c0d7e1b1b28db439286766a05'
+    }
+    vars_dict = bisect_instance._ParseRevisionsFromDEPSFileManually(
+        deps_file_contents)
+    self.assertEqual(vars_dict, expected_vars_dict)
+
   def testCalculateTruncatedMeanRaisesError(self):
     """CalculateTrunctedMean raises an error when passed an empty list."""
     with self.assertRaises(TypeError):

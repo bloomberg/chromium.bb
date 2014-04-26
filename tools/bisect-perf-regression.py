@@ -76,7 +76,7 @@ DEPOT_DEPS_NAME = {
     "depends" : None,
     "from" : ['cros', 'android-chrome'],
     'viewvc': 'http://src.chromium.org/viewvc/chrome?view=revision&revision=',
-    'deps_var': None
+    'deps_var': 'chromium_rev'
   },
   'webkit' : {
     "src" : "src/third_party/WebKit",
@@ -688,13 +688,19 @@ def BuildWithVisualStudio(targets):
 
 
 def WriteStringToFile(text, file_name):
-  with open(file_name, "w") as f:
-    f.write(text)
+  try:
+    with open(file_name, "w") as f:
+      f.write(text)
+  except IOError as e:
+    raise RuntimeError('Error writing to file [%s]' % file_name )
 
 
 def ReadStringFromFile(file_name):
-  with open(file_name) as f:
-    return f.read()
+  try:
+    with open(file_name) as f:
+      return f.read()
+  except IOError as e:
+    raise RuntimeError('Error reading file [%s]' % file_name )
 
 
 def ChangeBackslashToSlashInPatch(diff_text):
@@ -739,8 +745,6 @@ class Builder(object):
 
     if not bisect_utils.SetupPlatformBuildEnvironment(opts):
       raise RuntimeError('Failed to set platform environment.')
-
-    bisect_utils.RunGClient(['runhooks'])
 
   @staticmethod
   def FromOpts(opts):
@@ -1367,6 +1371,98 @@ class BisectPerformanceMetrics(object):
 
     return bleeding_edge_revision
 
+  def _ParseRevisionsFromDEPSFileManually(self, deps_file_contents):
+    """Manually parses the vars section of the DEPS file to determine
+    chromium/blink/etc... revisions.
+
+    Returns:
+      A dict in the format {depot:revision} if successful, otherwise None.
+    """
+    # We'll parse the "vars" section of the DEPS file.
+    rxp = re.compile('vars = {(?P<vars_body>[^}]+)', re.MULTILINE)
+    re_results = rxp.search(deps_file_contents)
+    locals = {}
+
+    if not re_results:
+      return None
+
+    # We should be left with a series of entries in the vars component of
+    # the DEPS file with the following format:
+    # 'depot_name': 'revision',
+    vars_body = re_results.group('vars_body')
+    rxp = re.compile("'(?P<depot_body>[\w_-]+)':[\s]+'(?P<rev_body>[\w@]+)'",
+                     re.MULTILINE)
+    re_results = rxp.findall(vars_body)
+
+    return dict(re_results)
+
+  def _ParseRevisionsFromDEPSFile(self, depot):
+    """Parses the local DEPS file to determine blink/skia/v8 revisions which may
+    be needed if the bisect recurses into those depots later.
+
+    Args:
+      depot: Depot being bisected.
+
+    Returns:
+      A dict in the format {depot:revision} if successful, otherwise None.
+    """
+    try:
+      locals = {'Var': lambda _: locals["vars"][_],
+                'From': lambda *args: None}
+      execfile(bisect_utils.FILE_DEPS_GIT, {}, locals)
+      locals = locals['deps']
+      results = {}
+
+      rxp = re.compile(".git@(?P<revision>[a-fA-F0-9]+)")
+
+      for d in DEPOT_NAMES:
+        if DEPOT_DEPS_NAME[d].has_key('platform'):
+          if DEPOT_DEPS_NAME[d]['platform'] != os.name:
+            continue
+
+        if (DEPOT_DEPS_NAME[d]['recurse'] and
+            depot in DEPOT_DEPS_NAME[d]['from']):
+          if (locals.has_key(DEPOT_DEPS_NAME[d]['src']) or
+              locals.has_key(DEPOT_DEPS_NAME[d]['src_old'])):
+            if locals.has_key(DEPOT_DEPS_NAME[d]['src']):
+              re_results = rxp.search(locals[DEPOT_DEPS_NAME[d]['src']])
+              self.depot_cwd[d] = \
+                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src'][4:])
+            elif (DEPOT_DEPS_NAME[d].has_key('src_old') and
+                locals.has_key(DEPOT_DEPS_NAME[d]['src_old'])):
+              re_results = \
+                  rxp.search(locals[DEPOT_DEPS_NAME[d]['src_old']])
+              self.depot_cwd[d] = \
+                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src_old'][4:])
+
+            if re_results:
+              results[d] = re_results.group('revision')
+            else:
+              warning_text = ('Couldn\'t parse revision for %s while bisecting '
+                  '%s' % (d, depot))
+              if not warningText in self.warnings:
+                self.warnings.append(warningText)
+          else:
+            print 'Couldn\'t find %s while parsing .DEPS.git.' % d
+            print
+            return None
+      return results
+    except ImportError:
+      deps_file_contents = ReadStringFromFile(bisect_utils.FILE_DEPS_GIT)
+      parse_results = self._ParseRevisionsFromDEPSFileManually(
+          deps_file_contents)
+      results = {}
+      for depot_name, depot_revision in parse_results.iteritems():
+        depot_revision = depot_revision.strip('@')
+        print depot_name, depot_revision
+        for current_name, current_data in DEPOT_DEPS_NAME.iteritems():
+          if (current_data.has_key('deps_var') and
+              current_data['deps_var'] == depot_name):
+            src_name = current_name
+            results[src_name] = depot_revision
+            break
+      return results
+
   def Get3rdPartyRevisionsFromCurrentRevision(self, depot, revision):
     """Parses the DEPS file to determine WebKit/v8/etc... versions.
 
@@ -1379,43 +1475,8 @@ class BisectPerformanceMetrics(object):
     results = {}
 
     if depot == 'chromium' or depot == 'android-chrome':
-      locals = {'Var': lambda _: locals["vars"][_],
-                'From': lambda *args: None}
-      execfile(bisect_utils.FILE_DEPS_GIT, {}, locals)
-
+      results = self._ParseRevisionsFromDEPSFile(depot)
       os.chdir(cwd)
-
-      rxp = re.compile(".git@(?P<revision>[a-fA-F0-9]+)")
-
-      for d in DEPOT_NAMES:
-        if DEPOT_DEPS_NAME[d].has_key('platform'):
-          if DEPOT_DEPS_NAME[d]['platform'] != os.name:
-            continue
-
-        if (DEPOT_DEPS_NAME[d]['recurse'] and
-            depot in DEPOT_DEPS_NAME[d]['from']):
-          if (locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']) or
-              locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src_old'])):
-            if locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']):
-              re_results = rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src']])
-              self.depot_cwd[d] = \
-                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src'][4:])
-            elif locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src_old']):
-              re_results = \
-                  rxp.search(locals['deps'][DEPOT_DEPS_NAME[d]['src_old']])
-              self.depot_cwd[d] = \
-                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src_old'][4:])
-
-            if re_results:
-              results[d] = re_results.group('revision')
-            else:
-              print 'Couldn\'t parse revision for %s.' % d
-              print
-              return None
-          else:
-            print 'Couldn\'t find %s while parsing .DEPS.git.' % d
-            print
-            return None
     elif depot == 'cros':
       cmd = [CROS_SDK_PATH, '--', 'portageq-%s' % self.opts.cros_board,
              'best_visible', '/build/%s' % self.opts.cros_board, 'ebuild',
