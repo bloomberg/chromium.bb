@@ -351,12 +351,6 @@ void WebNotificationTray::CreateStatusIcon(const gfx::ImageSkia& image,
 
   status_icon_->AddObserver(this);
   AddQuietModeMenu(status_icon_);
-#if defined(OS_WIN)
-  if (did_force_tray_visible_.get() && !did_force_tray_visible_->GetValue()) {
-    EnforceStatusIconVisible();
-    did_force_tray_visible_->SetValue(true);
-  }
-#endif
 }
 
 void WebNotificationTray::DestroyStatusIcon() {
