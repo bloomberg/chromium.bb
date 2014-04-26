@@ -33,6 +33,9 @@ class CONTENT_EXPORT RendererFrameManager {
     return max_number_of_saved_frames_;
   }
 
+  // For testing only
+  void set_max_handles(float max_handles) { max_handles_ = max_handles; }
+
  private:
   RendererFrameManager();
   ~RendererFrameManager();
@@ -43,6 +46,7 @@ class CONTENT_EXPORT RendererFrameManager {
   std::map<RendererFrameManagerClient*, size_t> locked_frames_;
   std::list<RendererFrameManagerClient*> unlocked_frames_;
   size_t max_number_of_saved_frames_;
+  float max_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererFrameManager);
 };
