@@ -32,12 +32,12 @@
 #define CryptoResult_h
 
 #include "public/platform/WebCrypto.h"
-#include "wtf/RefCounted.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
 
 // Receives notification of completion of the crypto operation.
-class CryptoResult : public RefCounted<CryptoResult> {
+class CryptoResult : public ThreadSafeRefCounted<CryptoResult> {
 public:
     virtual ~CryptoResult() { }
 

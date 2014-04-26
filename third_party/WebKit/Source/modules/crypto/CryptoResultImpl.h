@@ -32,19 +32,24 @@
 #define CryptoResultImpl_h
 
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolverWithContext.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
-#include "wtf/Assertions.h"
 #include "wtf/Forward.h"
-#include "wtf/Threading.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
 // Wrapper around a Promise to notify completion of the crypto operation.
-// Platform cannot know about Promises which are declared in bindings.
-class CryptoResultImpl FINAL : public CryptoResult, public ContextLifecycleObserver {
+//
+// The thread on which CryptoResultImpl was created on is referred to as the
+// "origin thread".
+//
+//  * At creation time there must be an active ExecutionContext.
+//  * The CryptoResult interface must only be called from the origin thread.
+//  * addref() and deref() can be called from any thread.
+//  * One of the completeWith***() functions must be called, or the
+//    PromiseState will be leaked until the ExecutionContext is destroyed.
+class CryptoResultImpl FINAL : public CryptoResult {
 public:
     ~CryptoResultImpl();
 
@@ -57,27 +62,14 @@ public:
     virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;
     virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) OVERRIDE;
 
-    ScriptPromise promise() { return m_promiseResolver->promise(); }
+    // It is only valid to call this before completion.
+    ScriptPromise promise();
 
 private:
-    CryptoResultImpl(ExecutionContext*);
-    void finish();
-    void CheckValidThread() const;
+    explicit CryptoResultImpl(ExecutionContext*);
 
-    // Override from ContextLifecycleObserver
-    virtual void contextDestroyed() OVERRIDE;
-
-    // Returns true if the ExecutionContext is still alive and running.
-    bool canCompletePromise() const;
-
-    void clearPromiseResolver();
-
-    RefPtr<ScriptPromiseResolverWithContext> m_promiseResolver;
-
-#if !ASSERT_DISABLED
-    ThreadIdentifier m_owningThread;
-    bool m_finished;
-#endif
+    class PromiseState;
+    WeakPtr<PromiseState> m_promiseState;
 };
 
 } // namespace WebCore

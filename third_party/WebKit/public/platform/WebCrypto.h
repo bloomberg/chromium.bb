@@ -139,19 +139,21 @@ public:
     // Threading
     // -----------------------
     //
-    // The WebCrypto interface will only be called from the render's main
-    // thread. All communication back to Blink must be on this same thread.
+    // The WebCrypto interface will be called from blink threads (main or
+    // web worker). All communication back to Blink must be on this same thread.
+    //
     // Notably:
     //
-    //   * The WebCryptoResult is NOT threadsafe. It should only be used from
-    //     the Blink main thread.
+    //   * The WebCryptoResult can be copied between threads, however all
+    //     methods other than the destructor must be called from the origin
+    //     Blink thread.
     //
     //   * WebCryptoKey and WebCryptoAlgorithm ARE threadsafe. They can be
     //     safely copied between threads and accessed. Copying is cheap because
     //     they are internally reference counted.
     //
     //   * WebArrayBuffer is NOT threadsafe. It should only be created from the
-    //     Blink main thread. This means threaded implementations may have to
+    //     target Blink thread. This means threaded implementations may have to
     //     make a copy of the output buffer.
     //
     // -----------------------
