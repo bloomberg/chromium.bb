@@ -76,7 +76,7 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
 
     ++num_sent_frames_;
     PostSwapBuffersComplete();
-    DidSwapBuffers();
+    client_->DidSwapBuffers();
   } else {
     OutputSurface::SwapBuffers(frame);
     frame->AssignTo(&last_sent_frame_);
@@ -88,9 +88,7 @@ void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {
   needs_begin_frame_ = enable;
   OutputSurface::SetNeedsBeginFrame(enable);
 
-  // If there is not BeginFrame emulation from the FrameRateController,
-  // then we just post a BeginFrame to emulate it as part of the test.
-  if (enable && !frame_rate_controller_) {
+  if (enable) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&FakeOutputSurface::OnBeginFrame,
@@ -100,7 +98,7 @@ void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {
 }
 
 void FakeOutputSurface::OnBeginFrame() {
-  OutputSurface::BeginFrame(BeginFrameArgs::CreateForTesting());
+  client_->BeginFrame(BeginFrameArgs::CreateForTesting());
 }
 
 

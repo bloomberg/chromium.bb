@@ -83,7 +83,6 @@
       'resources/tile_priority_unittest.cc',
       'resources/video_resource_updater_unittest.cc',
       'scheduler/delay_based_time_source_unittest.cc',
-      'scheduler/frame_rate_controller_unittest.cc',
       'scheduler/scheduler_state_machine_unittest.cc',
       'scheduler/scheduler_unittest.cc',
       'test/layer_tree_json_parser_unittest.cc',

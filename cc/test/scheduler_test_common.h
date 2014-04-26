@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/scheduler/frame_rate_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -45,12 +44,6 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
   virtual ~FakeDelayBasedTimeSource() {}
 
   base::TimeTicks now_;
-};
-
-class FakeFrameRateController : public FrameRateController {
- public:
-  explicit FakeFrameRateController(scoped_refptr<TimeSource> timer)
-      : FrameRateController(timer) {}
 };
 
 }  // namespace cc

@@ -14,6 +14,7 @@ class CC_EXPORT SchedulerSettings {
   SchedulerSettings();
   ~SchedulerSettings();
 
+  bool begin_frame_scheduling_enabled;
   bool main_frame_before_draw_enabled;
   bool main_frame_before_activation_enabled;
   bool impl_side_painting;

@@ -23,20 +23,14 @@ namespace {
 class TestOutputSurface : public OutputSurface {
  public:
   explicit TestOutputSurface(scoped_refptr<ContextProvider> context_provider)
-      : OutputSurface(context_provider),
-        retroactive_begin_frame_deadline_enabled_(false),
-        override_retroactive_period_(false) {}
+      : OutputSurface(context_provider) {}
 
   explicit TestOutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
-      : OutputSurface(software_device.Pass()),
-        retroactive_begin_frame_deadline_enabled_(false),
-        override_retroactive_period_(false) {}
+      : OutputSurface(software_device.Pass()) {}
 
   TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
                     scoped_ptr<SoftwareOutputDevice> software_device)
-      : OutputSurface(context_provider, software_device.Pass()),
-        retroactive_begin_frame_deadline_enabled_(false),
-        override_retroactive_period_(false) {}
+      : OutputSurface(context_provider, software_device.Pass()) {}
 
   bool InitializeNewContext3d(
       scoped_refptr<ContextProvider> new_context_provider) {
@@ -51,46 +45,14 @@ class TestOutputSurface : public OutputSurface {
   }
 
   void BeginFrameForTesting() {
-    OutputSurface::BeginFrame(BeginFrameArgs::CreateExpiredForTesting());
+    client_->BeginFrame(BeginFrameArgs::CreateExpiredForTesting());
   }
 
-  void DidSwapBuffersForTesting() {
-    DidSwapBuffers();
-  }
+  void DidSwapBuffersForTesting() { client_->DidSwapBuffers(); }
 
-  void OnSwapBuffersCompleteForTesting() {
-    OnSwapBuffersComplete();
-  }
-
-  void EnableRetroactiveBeginFrameDeadline(bool enable,
-                                           bool override_retroactive_period,
-                                           base::TimeDelta period_override) {
-    retroactive_begin_frame_deadline_enabled_ = enable;
-    override_retroactive_period_ = override_retroactive_period;
-    retroactive_period_override_ = period_override;
-  }
+  void OnSwapBuffersCompleteForTesting() { client_->DidSwapBuffersComplete(); }
 
  protected:
-  virtual void PostCheckForRetroactiveBeginFrame() OVERRIDE {
-    // For testing purposes, we check immediately rather than posting a task.
-    CheckForRetroactiveBeginFrame();
-  }
-
-  virtual base::TimeTicks RetroactiveBeginFrameDeadline() OVERRIDE {
-    if (retroactive_begin_frame_deadline_enabled_) {
-      if (override_retroactive_period_) {
-        return skipped_begin_frame_args_.frame_time +
-               retroactive_period_override_;
-      } else {
-        return OutputSurface::RetroactiveBeginFrameDeadline();
-      }
-    }
-    return base::TimeTicks();
-  }
-
-  bool retroactive_begin_frame_deadline_enabled_;
-  bool override_retroactive_period_;
-  base::TimeDelta retroactive_period_override_;
 };
 
 class TestSoftwareOutputDevice : public SoftwareOutputDevice {
@@ -207,152 +169,6 @@ TEST_F(OutputSurfaceTestInitializeNewContext3d, Context3dMakeCurrentFails) {
 
   context_provider_->UnboundTestContext3d()->set_context_lost(true);
   InitializeNewContextExpectFail();
-}
-
-TEST(OutputSurfaceTest, BeginFrameEmulation) {
-  TestOutputSurface output_surface(TestContextProvider::Create());
-  EXPECT_FALSE(output_surface.HasClient());
-
-  FakeOutputSurfaceClient client;
-  EXPECT_TRUE(output_surface.BindToClient(&client));
-  EXPECT_TRUE(output_surface.HasClient());
-  EXPECT_FALSE(client.deferred_initialize_called());
-
-  // Initialize BeginFrame emulation
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
-      new base::TestSimpleTaskRunner;
-  const base::TimeDelta display_refresh_interval =
-      BeginFrameArgs::DefaultInterval();
-
-  output_surface.InitializeBeginFrameEmulation(task_runner.get(),
-                                               display_refresh_interval);
-
-  output_surface.EnableRetroactiveBeginFrameDeadline(
-      false, false, base::TimeDelta());
-
-  // We should start off with 0 BeginFrames
-  EXPECT_EQ(client.begin_frame_count(), 0);
-
-  // We should not have a pending task until a BeginFrame has been
-  // requested.
-  EXPECT_FALSE(task_runner->HasPendingTask());
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_TRUE(task_runner->HasPendingTask());
-
-  // BeginFrame should be called on the first tick.
-  task_runner->RunPendingTasks();
-  EXPECT_EQ(client.begin_frame_count(), 1);
-
-  // BeginFrame should not be called when there is a pending BeginFrame.
-  task_runner->RunPendingTasks();
-  EXPECT_EQ(client.begin_frame_count(), 1);
-  // SetNeedsBeginFrame should clear the pending BeginFrame after
-  // a SwapBuffers.
-  output_surface.DidSwapBuffersForTesting();
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_EQ(client.begin_frame_count(), 1);
-  task_runner->RunPendingTasks();
-  EXPECT_EQ(client.begin_frame_count(), 2);
-
-  // Calling SetNeedsBeginFrame again indicates a swap did not occur but
-  // the client still wants another BeginFrame.
-  output_surface.SetNeedsBeginFrame(true);
-  task_runner->RunPendingTasks();
-  EXPECT_EQ(client.begin_frame_count(), 3);
-
-  // Disabling SetNeedsBeginFrame should prevent further BeginFrames.
-  output_surface.SetNeedsBeginFrame(false);
-  task_runner->RunPendingTasks();
-  EXPECT_FALSE(task_runner->HasPendingTask());
-  EXPECT_EQ(client.begin_frame_count(), 3);
-}
-
-TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
-  TestOutputSurface output_surface(TestContextProvider::Create());
-  EXPECT_FALSE(output_surface.HasClient());
-
-  FakeOutputSurfaceClient client;
-  EXPECT_TRUE(output_surface.BindToClient(&client));
-  EXPECT_TRUE(output_surface.HasClient());
-  EXPECT_FALSE(client.deferred_initialize_called());
-
-  output_surface.EnableRetroactiveBeginFrameDeadline(
-      true, false, base::TimeDelta());
-
-  // Optimistically injected BeginFrames should be throttled if
-  // SetNeedsBeginFrame is false...
-  output_surface.SetNeedsBeginFrame(false);
-  output_surface.BeginFrameForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 0);
-  // ...and retroactively triggered by a SetNeedsBeginFrame.
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_EQ(client.begin_frame_count(), 1);
-
-  // Optimistically injected BeginFrames should be throttled by pending
-  // BeginFrames...
-  output_surface.BeginFrameForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 1);
-  // ...and retroactively triggered by a SetNeedsBeginFrame.
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_EQ(client.begin_frame_count(), 2);
-  // ...or retroactively triggered by a Swap.
-  output_surface.BeginFrameForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 2);
-  output_surface.DidSwapBuffersForTesting();
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_EQ(client.begin_frame_count(), 3);
-}
-
-TEST(OutputSurfaceTest, RetroactiveBeginFrameDoesNotDoubleTickWhenEmulating) {
-  scoped_refptr<TestContextProvider> context_provider =
-      TestContextProvider::Create();
-
-  TestOutputSurface output_surface(context_provider);
-  EXPECT_FALSE(output_surface.HasClient());
-
-  FakeOutputSurfaceClient client;
-  EXPECT_TRUE(output_surface.BindToClient(&client));
-  EXPECT_TRUE(output_surface.HasClient());
-  EXPECT_FALSE(client.deferred_initialize_called());
-
-  base::TimeDelta big_interval = base::TimeDelta::FromSeconds(10);
-
-  // Initialize BeginFrame emulation
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
-      new base::TestSimpleTaskRunner;
-  const base::TimeDelta display_refresh_interval = big_interval;
-
-  output_surface.InitializeBeginFrameEmulation(task_runner.get(),
-                                               display_refresh_interval);
-
-  // We need to subtract an epsilon from Now() because some platforms have
-  // a slow clock.
-  output_surface.CommitVSyncParametersForTesting(
-      gfx::FrameTime::Now() - base::TimeDelta::FromSeconds(1), big_interval);
-
-  output_surface.EnableRetroactiveBeginFrameDeadline(true, true, big_interval);
-
-  // We should start off with 0 BeginFrames
-  EXPECT_EQ(client.begin_frame_count(), 0);
-
-  // The first SetNeedsBeginFrame(true) should start a retroactive
-  // BeginFrame.
-  EXPECT_FALSE(task_runner->HasPendingTask());
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_TRUE(task_runner->HasPendingTask());
-  EXPECT_GT(task_runner->NextPendingTaskDelay(), big_interval / 2);
-  EXPECT_EQ(client.begin_frame_count(), 1);
-
-  output_surface.SetNeedsBeginFrame(false);
-  EXPECT_TRUE(task_runner->HasPendingTask());
-  EXPECT_EQ(client.begin_frame_count(), 1);
-
-  // The second SetNeedBeginFrame(true) should not retroactively start a
-  // BeginFrame if the timestamp would be the same as the previous
-  // BeginFrame.
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_TRUE(task_runner->HasPendingTask());
-  EXPECT_EQ(client.begin_frame_count(), 1);
 }
 
 TEST(OutputSurfaceTest, MemoryAllocation) {

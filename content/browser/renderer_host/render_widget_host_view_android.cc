@@ -530,8 +530,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(
   host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
 }
 
-void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame(
-    bool enabled) {
+void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame(bool enabled) {
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame",
                "enabled", enabled);
   // ContentViewCoreImpl handles multiple subscribers to the BeginFrame, so

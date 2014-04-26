@@ -801,10 +801,13 @@ bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
   return false;
 }
 
+// Note: If SupportsProactiveBeginFrame is false, the scheduler should poll
+// for changes in it's draw state so it can request a BeginFrame when it's
+// actually ready.
 bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
-  // Both the synchronous compositor and disabled vsync settings
-  // make it undesirable to proactively request BeginImplFrames.
-  // If this is true, the scheduler should poll.
+  // It is undesirable to proactively request BeginFrames if we are
+  // using a synchronous compositor because we *must* draw for every
+  // BeginFrame, which could cause duplicate draws.
   return !settings_.using_synchronous_renderer_compositor;
 }
 

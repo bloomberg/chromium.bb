@@ -1503,6 +1503,8 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
 void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
   if (output_surface_)
     output_surface_->SetNeedsBeginFrame(enable);
+  else
+    DCHECK(!enable);
 }
 
 void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
@@ -1886,20 +1888,18 @@ bool LayerTreeHostImpl::InitializeRenderer(
         GetRendererCapabilities().allow_rasterize_on_demand);
   }
 
-  if (!settings_.throttle_frame_production) {
-    // Disable VSync
-    output_surface->SetThrottleFrameProduction(false);
-  } else if (!settings_.begin_impl_frame_scheduling_enabled) {
-    // Setup BeginFrameEmulation if it's not supported natively
-    const base::TimeDelta display_refresh_interval =
-      base::TimeDelta::FromMicroseconds(
-          base::Time::kMicrosecondsPerSecond /
-          settings_.refresh_rate);
+  // Initialize vsync parameters to sane values.
+  const base::TimeDelta display_refresh_interval =
+      base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
+                                        settings_.refresh_rate);
+  CommitVSyncParameters(base::TimeTicks(), display_refresh_interval);
 
-    output_surface->InitializeBeginFrameEmulation(
-        proxy_->ImplThreadTaskRunner(),
-        display_refresh_interval);
-  }
+  // TODO(brianderson): Don't use a hard-coded parent draw time.
+  base::TimeDelta parent_draw_time =
+      output_surface->capabilities().adjust_deadline_for_parent
+          ? BeginFrameArgs::DefaultDeadlineAdjustment()
+          : base::TimeDelta();
+  client_->SetEstimatedParentDrawTime(parent_draw_time);
 
   int max_frames_pending =
       output_surface->capabilities().max_frames_pending;
@@ -1913,6 +1913,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
   client_->OnCanDrawStateChanged(CanDraw());
 
   return true;
+}
+
+void LayerTreeHostImpl::CommitVSyncParameters(base::TimeTicks timebase,
+                                              base::TimeDelta interval) {
+  client_->CommitVSyncParameters(timebase, interval);
 }
 
 void LayerTreeHostImpl::DeferredInitialize() {

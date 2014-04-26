@@ -17,11 +17,13 @@
 #include "cc/scheduler/draw_swap_readback_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
+#include "cc/scheduler/time_source.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 
 class Thread;
+class SyntheticBeginFrameSource;
 
 class SchedulerClient {
  public:
@@ -52,12 +54,18 @@ class CC_EXPORT Scheduler {
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
-      const scoped_refptr<base::SequencedTaskRunner>& impl_task_runner) {
+      const scoped_refptr<base::SingleThreadTaskRunner>& impl_task_runner) {
     return make_scoped_ptr(new Scheduler(
         client, scheduler_settings, layer_tree_host_id, impl_task_runner));
   }
 
   virtual ~Scheduler();
+
+  const SchedulerSettings& settings() const { return settings_; }
+
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval);
+  void SetEstimatedParentDrawTime(base::TimeDelta draw_time);
 
   void SetCanStart();
 
@@ -111,9 +119,16 @@ class CC_EXPORT Scheduler {
   void NotifyBeginMainFrameStarted();
 
   base::TimeTicks LastBeginImplFrameTime();
+  base::TimeDelta VSyncInterval() { return vsync_interval_; }
+  base::TimeDelta EstimatedParentDrawTime() {
+    return estimated_parent_draw_time_;
+  }
 
   void BeginFrame(const BeginFrameArgs& args);
+  void PostBeginRetroFrame();
   void BeginRetroFrame();
+  void BeginUnthrottledFrame();
+
   void BeginImplFrame(const BeginFrameArgs& args);
   void OnBeginImplFrameDeadline();
   void PollForAnticipatedDrawTriggers();
@@ -131,10 +146,11 @@ class CC_EXPORT Scheduler {
   }
 
  private:
-  Scheduler(SchedulerClient* client,
-            const SchedulerSettings& scheduler_settings,
-            int layer_tree_host_id,
-            const scoped_refptr<base::SequencedTaskRunner>& impl_task_runner);
+  Scheduler(
+      SchedulerClient* client,
+      const SchedulerSettings& scheduler_settings,
+      int layer_tree_host_id,
+      const scoped_refptr<base::SingleThreadTaskRunner>& impl_task_runner);
 
   base::TimeTicks AdjustedBeginImplFrameDeadline(
       const BeginFrameArgs& args,
@@ -142,6 +158,9 @@ class CC_EXPORT Scheduler {
   void ScheduleBeginImplFrameDeadline(base::TimeTicks deadline);
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
+  void SetupNextBeginFrameWhenVSyncThrottlingEnabled(bool needs_begin_frame);
+  void SetupNextBeginFrameWhenVSyncThrottlingDisabled(bool needs_begin_frame);
+  void SetupPollingMechanisms(bool needs_begin_frame);
   void ActivatePendingTree();
   void DrawAndSwapIfPossible();
   void DrawAndSwapForced();
@@ -156,15 +175,23 @@ class CC_EXPORT Scheduler {
   const SchedulerSettings settings_;
   SchedulerClient* client_;
   int layer_tree_host_id_;
-  scoped_refptr<base::SequencedTaskRunner> impl_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
+
+  base::TimeDelta vsync_interval_;
+  base::TimeDelta estimated_parent_draw_time_;
 
   bool last_set_needs_begin_frame_;
+  bool begin_unthrottled_frame_posted_;
   bool begin_retro_frame_posted_;
-
   std::deque<BeginFrameArgs> begin_retro_frame_args_;
   BeginFrameArgs begin_impl_frame_args_;
 
+  void SetupSyntheticBeginFrames();
+  scoped_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+
   base::Closure begin_retro_frame_closure_;
+  base::Closure begin_unthrottled_frame_closure_;
+
   base::Closure begin_impl_frame_deadline_closure_;
   base::Closure poll_for_draw_triggers_closure_;
   base::Closure advance_commit_state_closure_;

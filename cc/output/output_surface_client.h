@@ -29,6 +29,8 @@ class CC_EXPORT OutputSurfaceClient {
   // committed.
   virtual void DeferredInitialize() = 0;
   virtual void ReleaseGL() = 0;
+  virtual void CommitVSyncParameters(base::TimeTicks timebase,
+                                     base::TimeDelta interval) = 0;
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
   virtual void BeginFrame(const BeginFrameArgs& args) = 0;
   virtual void DidSwapBuffers() = 0;

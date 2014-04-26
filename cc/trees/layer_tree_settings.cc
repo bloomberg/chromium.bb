@@ -16,7 +16,7 @@ LayerTreeSettings::LayerTreeSettings()
     : impl_side_painting(false),
       allow_antialiasing(true),
       throttle_frame_production(true),
-      begin_impl_frame_scheduling_enabled(false),
+      begin_frame_scheduling_enabled(false),
       main_frame_before_draw_enabled(true),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
@@ -60,7 +60,8 @@ LayerTreeSettings::LayerTreeSettings()
       ignore_root_layer_flings(false),
       use_rgba_4444_textures(false),
       touch_hit_testing(true),
-      texture_id_allocation_chunk_size(64) {}
+      texture_id_allocation_chunk_size(64) {
+}
 
 LayerTreeSettings::~LayerTreeSettings() {}
 

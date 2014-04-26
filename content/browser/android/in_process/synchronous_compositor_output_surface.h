@@ -78,9 +78,6 @@ class SynchronousCompositorOutputSurface
   class SoftwareDevice;
   friend class SoftwareDevice;
 
-  // Private OutputSurface overrides.
-  virtual void PostCheckForRetroactiveBeginFrame() OVERRIDE;
-
   void InvokeComposite(const gfx::Transform& transform,
                        gfx::Rect viewport,
                        gfx::Rect clip,
@@ -90,6 +87,7 @@ class SynchronousCompositorOutputSurface
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
 
   int routing_id_;
+  bool needs_begin_frame_;
   bool invoking_composite_;
   bool did_swap_buffer_;
 

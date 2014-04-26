@@ -69,6 +69,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     : cc::OutputSurface(
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
+      needs_begin_frame_(false),
       invoking_composite_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL),
@@ -126,7 +127,6 @@ void SynchronousCompositorOutputSurface::Reshape(
 void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
   DCHECK(CalledOnValidThread());
   needs_begin_frame_ = enable;
-  client_ready_for_begin_frame_ = true;
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate && !invoking_composite_)
     delegate->SetContinuousInvalidate(needs_begin_frame_);
@@ -142,7 +142,7 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
   UpdateFrameMetaData(frame->metadata);
 
   did_swap_buffer_ = true;
-  DidSwapBuffers();
+  client_->DidSwapBuffers();
 }
 
 void SynchronousCompositorOutputSurface::UpdateFrameMetaData(
@@ -236,7 +236,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   SetExternalDrawConstraints(
       adjusted_transform, viewport, clip, valid_for_tile_management);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
-  BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
+  client_->BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
 
   // After software draws (which might move the viewport arbitrarily), restore
   // the previous hardware viewport to allow CC's tile manager to prioritize
@@ -251,16 +251,11 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   }
 
   if (did_swap_buffer_)
-    OnSwapBuffersComplete();
+    client_->DidSwapBuffersComplete();
 
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
     delegate->SetContinuousInvalidate(needs_begin_frame_);
-}
-
-void SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginFrame() {
-  // Synchronous compositor cannot perform retroactive BeginFrames, so
-  // intentionally no-op here.
 }
 
 void SynchronousCompositorOutputSurface::SetMemoryPolicy(

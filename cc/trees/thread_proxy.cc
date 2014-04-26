@@ -21,7 +21,6 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/scheduler/frame_rate_controller.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
@@ -394,6 +393,15 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
   if (!impl().layer_tree_host_impl->IsContextLost())
     return;
   impl().scheduler->DidLoseOutputSurface();
+}
+
+void ThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
+                                        base::TimeDelta interval) {
+  impl().scheduler->CommitVSyncParameters(timebase, interval);
+}
+
+void ThreadProxy::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
+  impl().scheduler->SetEstimatedParentDrawTime(draw_time);
 }
 
 void ThreadProxy::SetMaxSwapsPendingOnImplThread(int max) {
@@ -1372,6 +1380,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
       layer_tree_host()->CreateLayerTreeHostImpl(this);
   const LayerTreeSettings& settings = layer_tree_host()->settings();
   SchedulerSettings scheduler_settings;
+  scheduler_settings.begin_frame_scheduling_enabled =
+      settings.begin_frame_scheduling_enabled;
   scheduler_settings.main_frame_before_draw_enabled =
       settings.main_frame_before_draw_enabled;
   scheduler_settings.main_frame_before_activation_enabled =

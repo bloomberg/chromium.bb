@@ -26,7 +26,6 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_update_queue.h"
-#include "cc/scheduler/frame_rate_controller.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_content_layer_impl.h"
@@ -2604,7 +2603,7 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->begin_impl_frame_scheduling_enabled = true;
+    settings->begin_frame_scheduling_enabled = true;
   }
 
   virtual void BeginTest() OVERRIDE {
@@ -2633,7 +2632,7 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->begin_impl_frame_scheduling_enabled = true;
+    settings->begin_frame_scheduling_enabled = true;
     settings->using_synchronous_renderer_compositor = true;
   }
 
@@ -2660,7 +2659,7 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
       : commit_count_(0), commit_abort_count_(0), commit_complete_count_(0) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->begin_impl_frame_scheduling_enabled = true;
+    settings->begin_frame_scheduling_enabled = true;
   }
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }

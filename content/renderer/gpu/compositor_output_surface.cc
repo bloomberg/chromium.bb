@@ -157,7 +157,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     } else {
       base::MessageLoopProxy::current()->PostTask(FROM_HERE, closure);
     }
-    DidSwapBuffers();
+    client_->DidSwapBuffers();
     return;
   }
 
@@ -165,7 +165,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
                                              output_surface_id_,
                                              *frame));
-    DidSwapBuffers();
+    client_->DidSwapBuffers();
     return;
   }
 
@@ -207,14 +207,12 @@ void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
 #if defined(OS_ANDROID)
 void CompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
   DCHECK(CalledOnValidThread());
-  if (needs_begin_frame_ != enable)
-    Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
-  OutputSurface::SetNeedsBeginFrame(enable);
+  Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
 }
 
 void CompositorOutputSurface::OnBeginFrame(const cc::BeginFrameArgs& args) {
   DCHECK(CalledOnValidThread());
-  BeginFrame(args);
+  client_->BeginFrame(args);
 }
 #endif  // defined(OS_ANDROID)
 
@@ -225,7 +223,7 @@ void CompositorOutputSurface::OnSwapAck(uint32 output_surface_id,
   if (output_surface_id != output_surface_id_)
     return;
   ReclaimResources(&ack);
-  OnSwapBuffersComplete();
+  client_->DidSwapBuffersComplete();
 }
 
 void CompositorOutputSurface::OnReclaimResources(

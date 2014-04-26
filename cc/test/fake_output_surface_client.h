@@ -20,6 +20,8 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
 
   virtual void DeferredInitialize() OVERRIDE;
   virtual void ReleaseGL() OVERRIDE {}
+  virtual void CommitVSyncParameters(base::TimeTicks timebase,
+                                     base::TimeDelta interval) OVERRIDE {}
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE {}

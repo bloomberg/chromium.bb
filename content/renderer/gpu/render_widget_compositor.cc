@@ -90,7 +90,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.throttle_frame_production =
       !cmd->HasSwitch(switches::kDisableGpuVsync);
-  settings.begin_impl_frame_scheduling_enabled =
+  settings.begin_frame_scheduling_enabled =
       cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
