@@ -257,7 +257,7 @@ public:
     virtual void clearTruncation() { }
 
     bool isDirty() const { return m_bitfields.dirty(); }
-    virtual void markDirty(bool dirty = true) { m_bitfields.setDirty(dirty); }
+    virtual void markDirty() { m_bitfields.setDirty(true); }
 
     virtual void dirtyLineBoxes();
 

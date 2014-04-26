@@ -46,7 +46,7 @@ public:
 
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
 
-    virtual void markDirty(bool dirty = true) OVERRIDE;
+    virtual void markDirty() OVERRIDE;
 
     void computePerCharacterLayoutInformation();
 

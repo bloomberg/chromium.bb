@@ -78,13 +78,11 @@ void InlineTextBox::destroy()
     InlineBox::destroy();
 }
 
-void InlineTextBox::markDirty(bool dirty)
+void InlineTextBox::markDirty()
 {
-    if (dirty) {
-        m_len = 0;
-        m_start = 0;
-    }
-    InlineBox::markDirty(dirty);
+    m_len = 0;
+    m_start = 0;
+    InlineBox::markDirty();
 }
 
 LayoutRect InlineTextBox::logicalOverflowRect() const

@@ -72,7 +72,7 @@ public:
 
     unsigned short truncation() { return m_truncation; }
 
-    virtual void markDirty(bool dirty = true) OVERRIDE FINAL;
+    virtual void markDirty() OVERRIDE FINAL;
 
     using InlineBox::hasHyphen;
     using InlineBox::setHasHyphen;

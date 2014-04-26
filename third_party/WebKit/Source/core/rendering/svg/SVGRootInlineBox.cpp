@@ -58,12 +58,11 @@ void SVGRootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     }
 }
 
-void SVGRootInlineBox::markDirty(bool dirty)
+void SVGRootInlineBox::markDirty()
 {
-    if (dirty)
-        for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
-            child->markDirty(true);
-    RootInlineBox::markDirty(dirty);
+    for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
+        child->markDirty();
+    RootInlineBox::markDirty();
 }
 
 void SVGRootInlineBox::computePerCharacterLayoutInformation()
