@@ -105,6 +105,7 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   bool shouldDumpProgressFinishedCallback() const;
   bool shouldDumpSpellCheckCallbacks() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
+  bool shouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* httpHeadersToClear() const;
   void setTopLoadingFrame(blink::WebFrame*, bool);
   blink::WebFrame* topLoadingFrame() const;
@@ -443,6 +444,10 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   // Sets a flag to enable the mock theme.
   void SetUseMockTheme(bool use);
 
+  // Sets a flag that causes the test to be marked as completed when the
+  // WebFrameClient receives a loadURLExternally() call.
+  void WaitUntilExternalURLLoad();
+
   ///////////////////////////////////////////////////////////////////////////
   // Methods interacting with the WebTestProxy
 
@@ -533,6 +538,10 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
 
   // If true, don't dump output until notifyDone is called.
   bool wait_until_done_;
+
+  // If true, ends the test when a URL is loaded externally via
+  // WebFrameClient::loadURLExternally().
+  bool wait_until_external_url_load_;
 
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you

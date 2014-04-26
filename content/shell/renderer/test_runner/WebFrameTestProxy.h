@@ -51,6 +51,11 @@ public:
         const CR_DEFINE_STATIC_LOCAL(WebString, suffix, ("-can-create-without-renderer"));
         return mimeType.utf8().find(suffix.utf8()) != std::string::npos;
     }
+    virtual void loadURLExternally(blink::WebLocalFrame* frame, const blink::WebURLRequest& request, blink::WebNavigationPolicy policy, const blink::WebString& suggested_name)
+    {
+        m_baseProxy->loadURLExternally(frame, request, policy, suggested_name);
+        Base::loadURLExternally(frame, request, policy, suggested_name);
+    }
     virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame)
     {
         m_baseProxy->didStartProvisionalLoad(frame);

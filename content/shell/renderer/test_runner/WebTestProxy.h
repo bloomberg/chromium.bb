@@ -165,6 +165,7 @@ protected:
     void didBlur();
     void setToolTipText(const blink::WebString&, blink::WebTextDirection);
     void didAddMessageToConsole(const blink::WebConsoleMessage&, const blink::WebString& sourceName, unsigned sourceLine);
+    void loadURLExternally(blink::WebLocalFrame* frame, const blink::WebURLRequest& request, blink::WebNavigationPolicy policy, const blink::WebString& suggested_name);
     void didStartProvisionalLoad(blink::WebLocalFrame*);
     void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame*);
     bool didFailProvisionalLoad(blink::WebLocalFrame*, const blink::WebURLError&);

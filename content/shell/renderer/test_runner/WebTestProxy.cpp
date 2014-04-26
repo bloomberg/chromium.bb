@@ -975,6 +975,18 @@ bool WebTestProxyBase::isChooserShown()
     return 0 < m_chooserCount;
 }
 
+void WebTestProxyBase::loadURLExternally(WebLocalFrame* frame, const WebURLRequest& request, WebNavigationPolicy policy, const WebString& suggested_name)
+{
+    if (m_testInterfaces->testRunner()->shouldWaitUntilExternalURLLoad()) {
+        if (policy == WebNavigationPolicyDownload) {
+            m_delegate->printMessage(string("Downloading URL with suggested filename \"") + suggested_name.utf8() + "\"\n");
+        } else {
+            m_delegate->printMessage(string("Loading URL externally - \"") + URLDescription(request.url()) + "\"\n");
+        }
+        m_delegate->testFinished();
+    }
+}
+
 void WebTestProxyBase::didStartProvisionalLoad(WebLocalFrame* frame)
 {
     if (!m_testInterfaces->testRunner()->topLoadingFrame())
