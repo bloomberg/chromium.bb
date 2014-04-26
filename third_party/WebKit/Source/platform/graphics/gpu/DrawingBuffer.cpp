@@ -344,6 +344,8 @@ void DrawingBuffer::deleteMailbox(const blink::WebExternalTextureMailbox& mailbo
 {
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
         if (nameEquals(m_textureMailboxes[i]->mailbox, mailbox)) {
+            if (mailbox.syncPoint)
+                m_context->waitSyncPoint(mailbox.syncPoint);
             m_context->deleteTexture(m_textureMailboxes[i]->textureId);
             m_textureMailboxes.remove(i);
             return;

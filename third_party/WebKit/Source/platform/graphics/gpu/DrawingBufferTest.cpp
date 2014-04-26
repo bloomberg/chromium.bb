@@ -61,7 +61,8 @@ public:
     WebGraphicsContext3DForTests()
         : MockWebGraphicsContext3D()
         , m_boundTexture(0)
-        , m_currentMailboxByte(0) { }
+        , m_currentMailboxByte(0)
+        , m_mostRecentlyWaitedSyncPoint(0) { }
 
     virtual void bindTexture(WGC3Denum target, WebGLId texture)
     {
@@ -95,11 +96,28 @@ public:
         return m_mostRecentlyProducedSize;
     }
 
+    virtual unsigned insertSyncPoint()
+    {
+        static unsigned syncPointGenerator = 0;
+        return ++syncPointGenerator;
+    }
+
+    virtual void waitSyncPoint(unsigned syncPoint)
+    {
+        m_mostRecentlyWaitedSyncPoint = syncPoint;
+    }
+
+    unsigned mostRecentlyWaitedSyncPoint()
+    {
+        return m_mostRecentlyWaitedSyncPoint;
+    }
+
 private:
     WebGLId m_boundTexture;
     HashMap<WebGLId, IntSize> m_textureSizes;
     WGC3Dbyte m_currentMailboxByte;
     IntSize m_mostRecentlyProducedSize;
+    unsigned m_mostRecentlyWaitedSyncPoint;
 };
 
 static const int initialWidth = 100;
@@ -250,7 +268,6 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased)
     EXPECT_EQ(live, false);
 }
 
-
 class TextureMailboxWrapper {
 public:
     explicit TextureMailboxWrapper(const blink::WebExternalTextureMailbox& mailbox)
@@ -271,8 +288,6 @@ TEST_F(DrawingBufferTest, verifyRecyclingMailboxesByFIFO)
     blink::WebExternalTextureMailbox mailbox1;
     blink::WebExternalTextureMailbox mailbox2;
     blink::WebExternalTextureMailbox mailbox3;
-
-    IntSize initialSize(initialWidth, initialHeight);
 
     // Produce mailboxes.
     m_drawingBuffer->markContentsChanged();
@@ -310,6 +325,36 @@ TEST_F(DrawingBufferTest, verifyRecyclingMailboxesByFIFO)
     m_drawingBuffer->mailboxReleased(mailbox2);
     m_drawingBuffer->mailboxReleased(mailbox3);
     m_drawingBuffer->beginDestruction();
+}
+
+TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncPointCorrectly)
+{
+    blink::WebExternalTextureMailbox mailbox;
+
+    // Produce mailboxes.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncPoint());
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+    // prepareMailbox() does not wait for any sync point.
+    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncPoint());
+
+    unsigned waitSyncPoint = webContext()->insertSyncPoint();
+    mailbox.syncPoint = waitSyncPoint;
+    m_drawingBuffer->mailboxReleased(mailbox);
+    // m_drawingBuffer will wait for the sync point when recycling.
+    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncPoint());
+
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+    // m_drawingBuffer waits for the sync point when recycling in prepareMailbox().
+    EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
+
+    m_drawingBuffer->beginDestruction();
+    waitSyncPoint = webContext()->insertSyncPoint();
+    mailbox.syncPoint = waitSyncPoint;
+    m_drawingBuffer->mailboxReleased(mailbox);
+    // m_drawingBuffer waits for the sync point because the destruction is in progress.
+    EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
 }
 
 } // namespace
