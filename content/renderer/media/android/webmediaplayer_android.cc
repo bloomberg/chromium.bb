@@ -219,6 +219,11 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
             cors_mode,
             base::Bind(&WebMediaPlayerAndroid::DidLoadMediaInfo,
                        weak_factory_.GetWeakPtr())));
+    // TODO(qinmin): The url might be redirected when android media player
+    // requests the stream. As a result, we cannot guarantee there is only
+    // a single origin. Remove the following line when b/12573548 is fixed.
+    // Check http://crbug.com/334204.
+    info_loader_->set_single_origin(false);
     info_loader_->Start(frame_);
   }
 
