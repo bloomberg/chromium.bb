@@ -2212,6 +2212,9 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
   // SetBounds() itself.  No matter how we got here, any redundant calls are
   // harmless.
   SetSize(new_bounds.size());
+
+  if (GetInputMethod())
+    GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
