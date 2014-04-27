@@ -39,7 +39,7 @@
 
     // DOM Level 2 Core
 
-    DOMString getAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
+    [TreatReturnedNullStringAs=Null] DOMString getAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
     [RaisesException, CustomElementCallbacks] void setAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName, DOMString value);
     [CustomElementCallbacks] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
     HTMLCollection getElementsByTagNameNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
