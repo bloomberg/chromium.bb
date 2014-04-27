@@ -22,11 +22,11 @@ class MEDIA_EXPORT VideoFrameSchedulerProxy : public VideoFrameScheduler {
  public:
   // |task_runner| is the runner that this object will be called on.
   // |scheduler_runner| is the runner that |scheduler| will be called on.
-  // |scheduler| must out-live the lifetime of this object.
+  // |scheduler| will be deleted on |scheduler_runner|.
   VideoFrameSchedulerProxy(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& scheduler_runner,
-      VideoFrameScheduler* scheduler);
+      scoped_ptr<VideoFrameScheduler> scheduler);
   virtual ~VideoFrameSchedulerProxy();
 
   // VideoFrameScheduler implementation.
@@ -38,7 +38,7 @@ class MEDIA_EXPORT VideoFrameSchedulerProxy : public VideoFrameScheduler {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> scheduler_runner_;
-  VideoFrameScheduler* scheduler_;  // Not owned.
+  scoped_ptr<VideoFrameScheduler> scheduler_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoFrameSchedulerProxy> weak_factory_;

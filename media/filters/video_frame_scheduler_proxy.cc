@@ -13,14 +13,15 @@ namespace media {
 VideoFrameSchedulerProxy::VideoFrameSchedulerProxy(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& scheduler_runner,
-    VideoFrameScheduler* scheduler)
+    scoped_ptr<VideoFrameScheduler> scheduler)
     : task_runner_(task_runner),
       scheduler_runner_(scheduler_runner),
-      scheduler_(scheduler),
+      scheduler_(scheduler.Pass()),
       weak_factory_(this) {
 }
 
 VideoFrameSchedulerProxy::~VideoFrameSchedulerProxy() {
+  scheduler_runner_->DeleteSoon(FROM_HERE, scheduler_.release());
 }
 
 void VideoFrameSchedulerProxy::ScheduleVideoFrame(
@@ -31,7 +32,7 @@ void VideoFrameSchedulerProxy::ScheduleVideoFrame(
   scheduler_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoFrameScheduler::ScheduleVideoFrame,
-                 base::Unretained(scheduler_),
+                 base::Unretained(scheduler_.get()),
                  frame,
                  wall_ticks,
                  BindToCurrentLoop(done_cb)));
@@ -39,9 +40,9 @@ void VideoFrameSchedulerProxy::ScheduleVideoFrame(
 
 void VideoFrameSchedulerProxy::Reset() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  scheduler_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoFrameScheduler::Reset, base::Unretained(scheduler_)));
+  scheduler_runner_->PostTask(FROM_HERE,
+                              base::Bind(&VideoFrameScheduler::Reset,
+                                         base::Unretained(scheduler_.get())));
 }
 
 }  // namespace media
