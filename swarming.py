@@ -477,10 +477,11 @@ def trigger(
       key = os.path.splitext(os.path.basename(file_hash_or_isolated))[0]
     else:
       key = getpass.getuser()
-    task_name = '%s/%s/%s' % (
+    task_name = '%s/%s/%s/%d' % (
         key,
         '_'.join('%s=%s' % (k, v) for k, v in sorted(dimensions.iteritems())),
-        file_hash)
+        file_hash,
+        now() * 1000)
 
   env = googletest_setup(env, shards)
   # TODO(maruel): It should first create a request manifest object, then pass
@@ -584,9 +585,9 @@ def add_trigger_options(parser):
   parser.task_group.add_option(
       '-T', '--task-name',
       help='Display name of the task. It uniquely identifies the task. '
-           'Defaults to <base_name>/<dimensions>/<isolated hash> if an '
-           'isolated file is provided, if a hash is provided, it defaults to '
-           '<user>/<dimensions>/<isolated hash>')
+           'Defaults to <base_name>/<dimensions>/<isolated hash>/<timestamp> '
+           'if an isolated file is provided, if a hash is provided, it '
+           'defaults to <user>/<dimensions>/<isolated hash>/<timestamp>')
   parser.task_group.add_option(
       '--deadline', type='int', default=6*60*60,
       help='Seconds to allow the task to be pending for a bot to run before '

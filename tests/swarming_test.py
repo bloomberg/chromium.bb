@@ -757,8 +757,10 @@ class MainTest(TestCase):
   def test_run_hash(self):
     self.mock(swarming.isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
+    self.mock(swarming, 'now', lambda: 123456)
 
-    task_name = '%s/foo=bar_os=Mac/1111111111111111111111111111111111111111' % (
+    task_name = (
+        '%s/foo=bar_os=Mac/1111111111111111111111111111111111111111/123456000' %
         getpass.getuser())
     j = generate_expected_json(
         shards=1,
@@ -800,6 +802,7 @@ class MainTest(TestCase):
         lambda *_: MockedStorage(warm_cache=False))
     calls = []
     self.mock(swarming.subprocess, 'call', lambda *c: calls.append(c))
+    self.mock(swarming, 'now', lambda: 123456)
 
     isolated = os.path.join(self.tmpdir, 'zaz.isolated')
     content = '{}'
@@ -807,7 +810,7 @@ class MainTest(TestCase):
       f.write(content)
 
     isolated_hash = ALGO(content).hexdigest()
-    task_name = 'zaz/foo=bar_os=Mac/%s' % isolated_hash
+    task_name = 'zaz/foo=bar_os=Mac/%s/123456000' % isolated_hash
     j = generate_expected_json(
         shards=1,
         dimensions={'foo': 'bar', 'os': 'Mac'},
