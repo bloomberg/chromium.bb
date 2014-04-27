@@ -2526,12 +2526,6 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
   return found_layer;
 }
 
-// This may be generalized in the future, but we know at the very least that
-// hits cannot pass through scrolling nor opaque layers.
-static bool OpaqueToHitTesting(const LayerImpl* layer) {
-  return layer->scrollable() || layer->contents_opaque();
-}
-
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
     const gfx::PointF& screen_space_point,
     const LayerImplList& render_surface_layer_list) {
@@ -2553,8 +2547,12 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
                                                           current_layer))
       return current_layer;
 
-    if (OpaqueToHitTesting(current_layer))
-      break;
+    // Note that we could stop searching if we hit a layer we know to be
+    // opaque to hit-testing, but knowing that reliably is tricky (eg. due to
+    // CSS pointer-events: none).  Also blink has an optimization for the
+    // common case of an entire document having handlers where it doesn't
+    // report any rects for child layers (since it knows they can't exceed
+    // the document bounds).
   }
   return NULL;
 }
