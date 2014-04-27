@@ -85,6 +85,7 @@ crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
+crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-n.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-ne.html [ ImageOnlyFailure Pass ]
@@ -211,6 +212,16 @@ crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.h
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
+
+# Tests that have new baselines but are probably still failing on Linux Aura.
+crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
+crbug.com/318980 [ Linux ] editing/selection/linux_selection_color.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/forms/input-disabled-color.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/ruby/select-ruby.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ]
+crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
+
+# Untriaged Linux-specific Aura failures
 
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
