@@ -55,7 +55,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     if (ec == TypeError)
         return V8ThrowException::createTypeError(sanitizedMessage, isolate);
 
-    RefPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
+    RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
     v8::Handle<v8::Value> exception = toV8(domException, creationContext, isolate);
 
     if (exception.IsEmpty())

@@ -30,6 +30,7 @@
 #define DOMException_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -38,9 +39,9 @@ namespace WebCore {
 
 typedef int ExceptionCode;
 
-class DOMException : public RefCounted<DOMException>, public ScriptWrappable {
+class DOMException FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMException>, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMException> create(ExceptionCode, const String& sanitizedMessage = String(), const String& unsanitizedMessage = String());
+    static PassRefPtrWillBeRawPtr<DOMException> create(ExceptionCode, const String& sanitizedMessage = String(), const String& unsanitizedMessage = String());
 
     unsigned short code() const { return m_code; }
     String name() const { return m_name; }
@@ -55,6 +56,8 @@ public:
 
     static String getErrorName(ExceptionCode);
     static String getErrorMessage(ExceptionCode);
+
+    void trace(Visitor*) { }
 
 private:
     DOMException(unsigned short m_code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage);
