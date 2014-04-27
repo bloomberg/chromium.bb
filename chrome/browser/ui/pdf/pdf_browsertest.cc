@@ -95,8 +95,11 @@ class PDFBrowserTest : public InProcessBrowserTest,
     DCHECK(web_contents);
 
     content::RenderWidgetHost* rwh = web_contents->GetRenderViewHost();
-    rwh->GetSnapshotFromRenderer(gfx::Rect(), base::Bind(
-        &PDFBrowserTest::GetSnapshotFromRendererCallback, this));
+    rwh->CopyFromBackingStore(
+        gfx::Rect(),
+        gfx::Size(),
+        base::Bind(&PDFBrowserTest::CopyFromBackingStoreCallback, this),
+        SkBitmap::kARGB_8888_Config);
 
     content::RunMessageLoop();
 
@@ -126,8 +129,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   }
 
  private:
-  void GetSnapshotFromRendererCallback(bool success,
-                                       const SkBitmap& bitmap) {
+  void CopyFromBackingStoreCallback(bool success, const SkBitmap& bitmap) {
     base::MessageLoopForUI::current()->Quit();
     ASSERT_EQ(success, true);
     base::FilePath reference = ui_test_utils::GetTestFilePath(

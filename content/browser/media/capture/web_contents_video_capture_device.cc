@@ -654,15 +654,7 @@ void WebContentsCaptureMachine::Capture(
         view_size.width() * view_size.height() / 1024);
   }
 
-  if (!view->IsSurfaceAvailableForCopy()) {
-    // Fallback to the more expensive renderer-side copy if the surface and
-    // backing store are not accessible.
-    rwh->GetSnapshotFromRenderer(
-        gfx::Rect(),
-        base::Bind(&WebContentsCaptureMachine::DidCopyFromBackingStore,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   start_time, target, deliver_frame_cb));
-  } else if (view->CanCopyToVideoFrame()) {
+  if (view->CanCopyToVideoFrame()) {
     view->CopyFromCompositingSurfaceToVideoFrame(
         gfx::Rect(view_size),
         target,

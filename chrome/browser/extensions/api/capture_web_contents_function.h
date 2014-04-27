@@ -34,7 +34,6 @@ class CaptureWebContentsFunction : public ChromeAsyncExtensionFunction {
 
   enum FailureReason {
     FAILURE_REASON_UNKNOWN,
-    FAILURE_REASON_CONTENT_NOT_FOUND,
     FAILURE_REASON_ENCODING_FAILED,
     FAILURE_REASON_VIEW_INVISIBLE
   };
@@ -44,7 +43,6 @@ class CaptureWebContentsFunction : public ChromeAsyncExtensionFunction {
   typedef api::types::ImageDetails ImageDetails;
 
   void CopyFromBackingStoreComplete(bool succeed, const SkBitmap& bitmap);
-  void GetSnapshotFromRendererComplete(bool succeeded, const SkBitmap& bitmap);
   void OnCaptureSuccess(const SkBitmap& bitmap);
 
   // |context_id_| is the ID used to find the relevant WebContents. In the

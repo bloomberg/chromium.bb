@@ -1011,10 +1011,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ReclaimCompositorResources,
                     uint32 /* output_surface_id */,
                     cc::CompositorFrameAck /* ack */)
 
-// Sent by the browser to ask the renderer for a snapshot of the current view.
-IPC_MESSAGE_ROUTED1(ViewMsg_Snapshot,
-                    gfx::Rect /* src_subrect */)
-
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -1572,12 +1568,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidOverscroll,
 
 // Sent by the compositor when a flinging animation is stopped.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopFlinging)
-
-// Reply to a snapshot request containing whether snapshotting succeeded and the
-// SkBitmap if it succeeded.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_Snapshot,
-                    bool, /* success */
-                    SkBitmap /* bitmap */)
 
 //---------------------------------------------------------------------------
 // Request for cryptographic operation messages:

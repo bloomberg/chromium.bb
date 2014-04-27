@@ -75,13 +75,6 @@ void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,
   algorithm->ProcessBitmap(context, base::Bind(&UpdateThumbnail), bitmap);
 }
 
-void GotSnapshotFromRenderer(base::Callback<void(const SkBitmap&)> callback,
-                             bool success,
-                             const SkBitmap& bitmap) {
-  if (success)
-    callback.Run(bitmap);
-}
-
 void AsyncProcessThumbnail(content::WebContents* web_contents,
                            scoped_refptr<ThumbnailingContext> context,
                            scoped_refptr<ThumbnailingAlgorithm> algorithm) {
@@ -90,18 +83,8 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
   content::RenderWidgetHostView* view = render_widget_host->GetView();
   if (!view)
     return;
-  if (!view->IsSurfaceAvailableForCopy()) {
-    // On Windows XP and possibly due to driver issues, neither the backing
-    // store nor the compositing surface is available in the browser when
-    // accelerated compositing is active, so ask the renderer to send a snapshot
-    // for creating the thumbnail.
-    render_widget_host->GetSnapshotFromRenderer(
-      gfx::Rect(),
-      base::Bind(GotSnapshotFromRenderer, base::Bind(
-          &ThumbnailingAlgorithm::ProcessBitmap,
-          algorithm, context, base::Bind(&UpdateThumbnail))));
+  if (!view->IsSurfaceAvailableForCopy())
     return;
-  }
 
   gfx::Rect copy_rect = gfx::Rect(view->GetViewBounds().size());
   // Clip the pixels that will commonly hold a scrollbar, which looks bad in

@@ -485,7 +485,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowCreated,
                         OnWindowlessPluginDummyWindowCreated)
@@ -1188,24 +1187,6 @@ void RenderWidgetHostImpl::InvalidateScreenInfo() {
   screen_info_.reset();
 }
 
-void RenderWidgetHostImpl::GetSnapshotFromRenderer(
-    const gfx::Rect& src_subrect,
-    const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  TRACE_EVENT0("browser", "RenderWidgetHostImpl::GetSnapshotFromRenderer");
-  if (!view_) {
-    callback.Run(false, SkBitmap());
-    return;
-  }
-
-  pending_snapshots_.push(callback);
-
-  gfx::Rect copy_rect = src_subrect.IsEmpty() ?
-      gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
-
-  gfx::Rect copy_rect_in_pixel = ConvertViewRectToPixel(view_, copy_rect);
-  Send(new ViewMsg_Snapshot(GetRoutingID(), copy_rect_in_pixel));
-}
-
 void RenderWidgetHostImpl::OnSelectionChanged(const base::string16& text,
                                               size_t offset,
                                               const gfx::Range& range) {
@@ -1218,26 +1199,6 @@ void RenderWidgetHostImpl::OnSelectionBoundsChanged(
   if (view_) {
     view_->SelectionBoundsChanged(params);
   }
-}
-
-void RenderWidgetHostImpl::OnSnapshot(bool success,
-                                    const SkBitmap& bitmap) {
-  if (pending_snapshots_.size() == 0) {
-    LOG(ERROR) << "RenderWidgetHostImpl::OnSnapshot: "
-                  "Received a snapshot that was not requested.";
-    return;
-  }
-
-  base::Callback<void(bool, const SkBitmap&)> callback =
-      pending_snapshots_.front();
-  pending_snapshots_.pop();
-
-  if (!success) {
-    callback.Run(success, SkBitmap());
-    return;
-  }
-
-  callback.Run(success, bitmap);
 }
 
 void RenderWidgetHostImpl::UpdateVSyncParameters(base::TimeTicks timebase,

@@ -382,8 +382,6 @@ class CONTENT_EXPORT RenderWidget
   void OnImeEventAck();
 #endif
 
-  void OnSnapshot(const gfx::Rect& src_subrect);
-
   // Notify the compositor about a change in viewport size. This should be
   // used only with auto resize mode WebWidgets, as normal WebWidgets should
   // go through OnResize.
@@ -509,8 +507,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Creates a 3D context associated with this view.
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D();
-
-  bool OnSnapshotHelper(const gfx::Rect& src_subrect, SkBitmap* bitmap);
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.

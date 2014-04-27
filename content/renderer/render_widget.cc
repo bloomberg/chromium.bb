@@ -605,7 +605,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeEventAck, OnImeEventAck)
 #endif
-    IPC_MESSAGE_HANDLER(ViewMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1714,50 +1713,6 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
 #if defined(OS_MACOSX) || defined(USE_AURA)
   UpdateCompositionInfo(true);
 #endif
-}
-
-void RenderWidget::OnSnapshot(const gfx::Rect& src_subrect) {
-  SkBitmap snapshot;
-
-  if (OnSnapshotHelper(src_subrect, &snapshot)) {
-    Send(new ViewHostMsg_Snapshot(routing_id(), true, snapshot));
-  } else {
-    Send(new ViewHostMsg_Snapshot(routing_id(), false, SkBitmap()));
-  }
-}
-
-bool RenderWidget::OnSnapshotHelper(const gfx::Rect& src_subrect,
-                                    SkBitmap* snapshot) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-
-  if (!webwidget_ || src_subrect.IsEmpty())
-    return false;
-
-  gfx::Rect viewport_size = gfx::IntersectRects(
-      src_subrect, gfx::Rect(physical_backing_size_));
-
-  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
-      skia::CreatePlatformCanvas(viewport_size.width(),
-                                 viewport_size.height(),
-                                 true,
-                                 NULL,
-                                 skia::RETURN_NULL_ON_FAILURE));
-  if (!canvas)
-    return false;
-
-  canvas->save();
-  webwidget_->layout();
-
-  PaintRect(viewport_size, viewport_size.origin(), canvas.get());
-  canvas->restore();
-
-  const SkBitmap& bitmap = skia::GetTopDevice(*canvas)->accessBitmap(false);
-  if (!bitmap.copyTo(snapshot, kPMColor_SkColorType))
-    return false;
-
-  UMA_HISTOGRAM_TIMES("Renderer4.Snapshot",
-                      base::TimeTicks::Now() - beginning_time);
-  return true;
 }
 
 void RenderWidget::OnRepaint(gfx::Size size_to_paint) {

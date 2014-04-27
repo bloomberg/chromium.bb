@@ -88,28 +88,7 @@ void CaptureWebContentsFunction::CopyFromBackingStoreComplete(
     OnCaptureSuccess(bitmap);
     return;
   }
-
-  WebContents* contents = GetWebContentsForID(context_id_);
-  if (!contents) {
-    OnCaptureFailure(FAILURE_REASON_CONTENT_NOT_FOUND);
-    return;
-  }
-
-  // Ask the renderer for a snapshot of the page.
-  RenderWidgetHost* render_widget_host = contents->GetRenderViewHost();
-  render_widget_host->GetSnapshotFromRenderer(
-      gfx::Rect(),
-      base::Bind(&CaptureWebContentsFunction::GetSnapshotFromRendererComplete,
-                 this));
-}
-
-void CaptureWebContentsFunction::GetSnapshotFromRendererComplete(
-    bool succeeded,
-    const SkBitmap& bitmap) {
-  if (succeeded)
-    OnCaptureSuccess(bitmap);
-  else
-    OnCaptureFailure(FAILURE_REASON_UNKNOWN);
+  OnCaptureFailure(FAILURE_REASON_UNKNOWN);
 }
 
 void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
