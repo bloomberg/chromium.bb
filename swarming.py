@@ -16,6 +16,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import urllib
 
@@ -174,10 +175,10 @@ def zip_and_upload(manifest):
   master.
   """
   try:
-    start_time = time.time()
+    start_time = now()
     with manifest.storage:
       uploaded = manifest.storage.upload_items([manifest.isolate_item])
-    elapsed = time.time() - start_time
+    elapsed = now() - start_time
   except (IOError, OSError) as exc:
     tools.report_error('Failed to upload the zip file: %s' % exc)
     return False
@@ -219,36 +220,62 @@ def get_task_keys(swarm_base_url, task_name):
 
 
 def retrieve_results(base_url, task_key, timeout, should_stop):
-  """Retrieves results for a single task_key."""
+  """Retrieves results for a single task_key.
+
+  Returns a dict with results on success or None on failure or timeout.
+  """
   assert isinstance(timeout, float), timeout
   params = [('r', task_key)]
   result_url = '%s/get_result?%s' % (base_url, urllib.urlencode(params))
-  start = now()
-  while True:
-    if timeout and (now() - start) >= timeout:
-      logging.error('retrieve_results(%s) timed out', base_url)
-      return {}
-    # Do retries ourselves.
+  started = now()
+  deadline = started + timeout if timeout else None
+  attempt = 0
+
+  while not should_stop.is_set():
+    attempt += 1
+
+    # Waiting for too long -> give up.
+    current_time = now()
+    if deadline and current_time >= deadline:
+      logging.error('retrieve_results(%s) timed out on attempt %d',
+          base_url, attempt)
+      return None
+
+    # Do not spin too fast. Spin faster at the beginning though.
+    # Start with 1 sec delay and for each 30 sec of waiting add another second
+    # of delay, until hitting 15 sec ceiling.
+    if attempt > 1:
+      max_delay = min(15, 1 + (current_time - started) / 30.0)
+      delay = min(max_delay, deadline - current_time) if deadline else max_delay
+      if delay > 0:
+        logging.debug('Waiting %.1f sec before retrying', delay)
+        should_stop.wait(delay)
+        if should_stop.is_set():
+          return None
+
+    # Disable internal retries in net.url_read, since we are doing retries
+    # ourselves. Do not use retry_404 so should_stop is polled more often.
     response = net.url_read(result_url, retry_404=False, retry_50x=False)
+
+    # Request failed. Try again.
     if response is None:
-      # Aggressively poll for results. Do not use retry_404 so
-      # should_stop is polled more often.
-      remaining = min(5, timeout - (now() - start)) if timeout else 5
-      if remaining > 0:
-        if should_stop.get():
-          return {}
-        net.sleep_before_retry(1, remaining)
-    else:
-      try:
-        data = json.loads(response) or {}
-      except (ValueError, TypeError):
-        logging.warning(
-            'Received corrupted data for task_key %s. Retrying.', task_key)
-      else:
-        if data['output']:
-          return data
-    if should_stop.get():
-      return {}
+      continue
+
+    # Got some response, ensure it is JSON dict, retry if not.
+    try:
+      result = json.loads(response) or {}
+      if not isinstance(result, dict):
+        raise ValueError()
+    except (ValueError, TypeError):
+      logging.warning(
+          'Received corrupted or invalid data for task_key %s, retrying: %r',
+          task_key, response)
+      continue
+
+    # Swarming server uses non-empty 'output' value as a flag that task has
+    # finished. How to wait for tasks that produce no output is a mystery.
+    if result.get('output'):
+      return result
 
 
 def yield_results(
@@ -267,18 +294,22 @@ def yield_results(
     (index, result). In particular, 'result' is defined as the
     GetRunnerResults() function in services/swarming/server/test_runner.py.
   """
-  shards_remaining = range(len(task_keys))
   number_threads = (
       min(max_threads, len(task_keys)) if max_threads else len(task_keys))
-  should_stop = threading_utils.Bit()
+  should_stop = threading.Event()
   results_channel = threading_utils.TaskChannel()
-  active_task_count = len(task_keys)
+
   with threading_utils.ThreadPool(number_threads, number_threads, 0) as pool:
     try:
+      # Enqueue 'retrieve_results' calls for each shard key to run in parallel.
       for task_key in task_keys:
         pool.add_task(
             0, results_channel.wrap_task(retrieve_results),
             swarm_base_url, task_key, timeout, should_stop)
+
+      # Wait for all of them to finish.
+      shards_remaining = range(len(task_keys))
+      active_task_count = len(task_keys)
       while active_task_count:
         try:
           result = results_channel.pull(timeout=STATUS_UPDATE_INTERVAL)
@@ -292,17 +323,20 @@ def yield_results(
         except Exception:
           logging.exception('Unexpected exception in retrieve_results')
           result = None
+
+        # A call to 'retrieve_results' finished (successfully or not).
         active_task_count -= 1
         if not result:
-          # Failed to retrieve one key.
           logging.error('Failed to retrieve the results for a swarming key')
           continue
+
         shard_index = result['config_instance_index']
         if shard_index in shards_remaining:
           shards_remaining.remove(shard_index)
           yield shard_index, result
         else:
           logging.warning('Ignoring duplicate shard index %d', shard_index)
+
     finally:
       # Done or aborted with Ctrl+C, kill the remaining threads.
       should_stop.set()

@@ -681,22 +681,6 @@ class DeadlockDetector(object):
     output('===========================================================')
 
 
-class Bit(object):
-  """Thread safe setable bit."""
-
-  def __init__(self):
-    self._lock = threading.Lock()
-    self._value = False
-
-  def get(self):
-    with self._lock:
-      return self._value
-
-  def set(self):
-    with self._lock:
-      self._value = True
-
-
 class TaskChannel(object):
   """Queue of results of async task execution."""
 

@@ -152,6 +152,17 @@ def main(args):
   return dispatcher.execute(swarming.OptionParserSwarming(), args)
 
 
+# Silence pylint 'Access to a protected member _Event of a client class'.
+class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
+  """Just like threading.Event, but a class and ignores timeout in 'wait'.
+
+  Intended to be used as a mock for threading.Event in tests.
+  """
+
+  def wait(self, timeout=None):
+    return super(NonBlockingEvent, self).wait(0)
+
+
 class TestCase(auto_stub.TestCase):
   """Base class that defines the url_open mock."""
   def setUp(self):
@@ -161,6 +172,7 @@ class TestCase(auto_stub.TestCase):
     self.mock(swarming.net.HttpService, 'request', self._url_open)
     self.mock(swarming.time, 'sleep', lambda x: None)
     self.mock(swarming.subprocess, 'call', lambda *_: self.fail())
+    self.mock(swarming.threading, 'Event', NonBlockingEvent)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
 
@@ -294,45 +306,24 @@ class TestGetSwarmResults(TestCase):
     self.assertEqual([], actual)
 
   def test_url_errors(self):
-    self.mock(logging, 'error', lambda *_: None)
-    # NOTE: get_swarm_results() hardcodes timeout=10. range(12) is because of an
-    # additional time.time() call deep in net.url_open().
+    self.mock(logging, 'error', lambda *_, **__: None)
+    # NOTE: get_swarm_results() hardcodes timeout=10.
     now = {}
     lock = threading.Lock()
     def get_now():
       t = threading.current_thread()
       with lock:
-        return now.setdefault(t, range(12)).pop(0)
+        return now.setdefault(t, range(10)).pop(0)
     self.mock(swarming.net, 'sleep_before_retry', lambda _x, _y: None)
     self.mock(swarming, 'now', get_now)
     # The actual number of requests here depends on 'now' progressing to 10
-    # seconds. It's called twice per loop.
-    self.requests = [
+    # seconds. It's called once per loop. Loop makes 9 iterations.
+    self.requests = 9 * [
       (
         '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         None,
-      ),
-      (
-        '/get_result?r=key1',
-        {'retry_404': False, 'retry_50x': False},
-        None,
-      ),
-      (
-        '/get_result?r=key1',
-        {'retry_404': False, 'retry_50x': False},
-        None,
-      ),
-      (
-        '/get_result?r=key1',
-        {'retry_404': False, 'retry_50x': False},
-        None,
-      ),
-      (
-        '/get_result?r=key1',
-        {'retry_404': False, 'retry_50x': False},
-        None,
-      ),
+      )
     ]
     actual = get_swarm_results(['key1'])
     self.assertEqual([], actual)

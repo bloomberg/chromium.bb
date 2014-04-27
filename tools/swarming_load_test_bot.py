@@ -130,7 +130,7 @@ class FakeSwarmBot(object):
     try:
       self._progress.update_item('%d alive' % self._index, bots=1)
       while True:
-        if self._kill_event.get():
+        if self._kill_event.is_set():
           return
         data = {'attributes': json.dumps(self._attributes)}
         request = net.url_open(self._swarming + '/poll_for_test', data=data)
@@ -276,7 +276,7 @@ def main():
   progress = threading_utils.Progress(columns)
   events = Queue.Queue()
   start = time.time()
-  kill_event = threading_utils.Bit()
+  kill_event = threading.Event()
   swarm_bot_hash = calculate_version(options.swarming + '/get_slave_code')
   slaves = [
     FakeSwarmBot(
