@@ -106,8 +106,8 @@ void CopyTabsToJava(
 
     Java_ForeignSessionHelper_pushTab(
         env, j_window.obj(),
-        ConvertUTF8ToJavaString(env, tab_url.spec()).Release(),
-        ConvertUTF16ToJavaString(env, current_navigation.title()).Release(),
+        ConvertUTF8ToJavaString(env, tab_url.spec()).obj(),
+        ConvertUTF16ToJavaString(env, current_navigation.title()).obj(),
         session_tab.timestamp.ToJavaTime(),
         session_tab.tab_id.id());
   }
@@ -236,8 +236,8 @@ jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
         Java_ForeignSessionHelper_pushSession(
             env,
             result,
-            ConvertUTF8ToJavaString(env, session.session_tag).Release(),
-            ConvertUTF8ToJavaString(env, session.session_name).Release(),
+            ConvertUTF8ToJavaString(env, session.session_tag).obj(),
+            ConvertUTF8ToJavaString(env, session.session_name).obj(),
             session.device_type,
             session.modified_time.ToJavaTime()));
 
