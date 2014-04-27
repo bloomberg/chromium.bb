@@ -860,9 +860,12 @@ crbug.com/367201 svg/hixie/perf/002.xml [ NeedsRebaseline ]
 crbug.com/367201 svg/hixie/perf/005.xml [ NeedsRebaseline ]
 crbug.com/367201 svg/zoom/page/relative-sized-document-scrollbars.svg [ NeedsRebaseline ]
 crbug.com/367201 svg/zoom/text/absolute-sized-document-scrollbars.svg [ NeedsRebaseline ]
+crbug.com/367201 svg/custom/text-xy-updates-SVGList.xhtml [ NeedsRebaseline ]
 
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
 crbug.com/349528 [ Debug ] fast/mediastream/RTCPeerConnection-lifetime.html [ Crash Pass ]
+
+crbug.com/361940 [ Lion MountainLion Retina Mavericks ] compositing/update-paint-phases.html [ Failure ]
 
 crbug.com/356777 http/tests/history/frameset-repeated-name.html [ Pass Failure ]
 
