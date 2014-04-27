@@ -260,7 +260,6 @@ void EventHandler::clear()
     m_resizeScrollableArea = 0;
     m_nodeUnderMouse = nullptr;
     m_lastNodeUnderMouse = nullptr;
-    m_instanceUnderMouse = nullptr;
     m_lastInstanceUnderMouse = nullptr;
     m_lastMouseMoveEventSubframe = nullptr;
     m_lastScrollbarUnderMouse = nullptr;
@@ -1834,7 +1833,6 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
             result = NodeRenderingTraversal::parent(result);
     }
     m_nodeUnderMouse = result;
-    m_instanceUnderMouse = instanceAssociatedWithShadowTreeElement(result);
 
     // <use> shadow tree elements may have been recloned, update node under mouse in any case
     if (m_lastInstanceUnderMouse) {
