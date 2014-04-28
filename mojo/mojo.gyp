@@ -75,6 +75,23 @@
       ]
     },
     {
+      'target_name': 'mojo_external_service_bindings',
+      'type': 'static_library',
+      'sources': [
+        'shell/external_service.mojom',
+      ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_bindings',
+      ],
+      'dependencies': [
+        'mojo_bindings',
+      ],
+    },
+    {
       'target_name': 'mojo_run_all_unittests',
       'type': 'static_library',
       'dependencies': [
@@ -423,6 +440,7 @@
         '../base/base.gyp:base_static',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        'mojo_external_service_bindings',
         'mojo_gles2_impl',
         'mojo_service_manager',
         'mojo_shell_bindings',
@@ -446,6 +464,8 @@
         'shell/child_process_host.h',
         'shell/context.cc',
         'shell/context.h',
+        'shell/dbus_service_loader_linux.cc',
+        'shell/dbus_service_loader_linux.h',
         'shell/dynamic_service_loader.cc',
         'shell/dynamic_service_loader.h',
         'shell/dynamic_service_runner.h',
@@ -473,6 +493,14 @@
         'shell/test_child_process.h',
         'shell/url_request_context_getter.cc',
         'shell/url_request_context_getter.h',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus',
+          ],
+        }],
       ],
     },
     {
