@@ -64,9 +64,10 @@ hooks = [
     'action':
          [
     'python',
-    'native_client/build/package_version/package_version.py',
-    'sync',
-    '--extract'
+    'native_client/build/download_toolchains.py',
+    '--keep',
+    '--arm-untrusted',
+    'native_client/TOOL_REVISIONS'
 ],
     'pattern':
          '.'
