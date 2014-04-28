@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 
 namespace chromeos {
 
@@ -87,6 +89,10 @@ void LocallyManagedUserCreationFlow::LaunchExtraSteps(
     Profile* profile) {
   logged_in_ = true;
   manager_profile_ = profile;
+  g_browser_process->platform_part()->profile_helper()->ProfileStartup(
+      profile,
+      true);
+
   if (token_validated_ && logged_in_)
     GetScreen(host())->OnManagerFullyAuthenticated(manager_profile_);
   else
