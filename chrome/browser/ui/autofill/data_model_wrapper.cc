@@ -141,7 +141,10 @@ base::string16 AutofillProfileWrapper::GetInfoForDisplay(
       std::string region = base::UTF16ToASCII(
           GetInfo(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE)));
       i18n::PhoneObject phone(phone_number, region);
-      return phone.GetFormattedNumber();
+      base::string16 formatted_number = phone.GetFormattedNumber();
+      // Formatting may fail.
+      if (!formatted_number.empty())
+        return formatted_number;
     }
 
     return phone_number;
