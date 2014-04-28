@@ -102,8 +102,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_x_hint_(0),
         scroll_y_hint_(0),
         tap_count_(0),
-        wait_until_event_(ui::ET_UNKNOWN),
-        flags_(0) {}
+        wait_until_event_(ui::ET_UNKNOWN) {
+  }
 
   virtual ~GestureEventConsumeDelegate() {}
 
@@ -149,7 +149,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_y_hint_ = 0;
     tap_count_ = 0;
     scale_ = 0;
-    flags_ = 0;
   }
 
   const std::vector<ui::EventType>& events() const { return events_; };
@@ -204,7 +203,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scale() const { return scale_; }
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
-  int flags() const { return flags_; }
 
   void WaitUntilReceivedGesture(ui::EventType type) {
     wait_until_event_ = type;
@@ -215,7 +213,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
     events_.push_back(gesture->type());
     bounding_box_ = gesture->details().bounding_box();
-    flags_ = gesture->flags();
     switch (gesture->type()) {
       case ui::ET_GESTURE_TAP:
         tap_location_ = gesture->location();
@@ -290,9 +287,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         swipe_up_ = gesture->details().swipe_up();
         swipe_down_ = gesture->details().swipe_down();
         break;
-      case ui::ET_SCROLL_FLING_CANCEL:
-        // Only used in unified gesture detection.
-        break;
       default:
         NOTREACHED();
     }
@@ -349,7 +343,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scale_;
   gfx::Rect bounding_box_;
   int tap_count_;
-  int flags_;
 
   ui::EventType wait_until_event_;
 
@@ -563,9 +556,7 @@ class TimedEvents {
   int simulated_now_;
 
  public:
-  // Use a non-zero start time to pass DCHECKs which ensure events have had a
-  // time assigned.
-  TimedEvents() : simulated_now_(1) {
+  TimedEvents() : simulated_now_(0) {
   }
 
   base::TimeDelta Now() {
@@ -703,23 +694,13 @@ class RemoveOnTouchCancelHandler : public TestEventHandler {
 
 }  // namespace
 
-class GestureRecognizerTest : public AuraTestBase,
-                              public ::testing::WithParamInterface<bool> {
+class GestureRecognizerTest : public AuraTestBase {
  public:
   GestureRecognizerTest() {}
 
-  bool UsingUnifiedGR() {
-    return GetParam();
-  }
-
   virtual void SetUp() OVERRIDE {
-    // TODO(tdresser): Once unified GR has landed, only run these tests once.
-    if (UsingUnifiedGR()) {
-      // TODO(tdresser): use unified GR once it's available.
-      // CommandLine::ForCurrentProcess()->AppendSwitch(
-      //    switches::kUseUnifiedGestureDetector);
-    }
-
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableScrollPrediction);
     AuraTestBase::SetUp();
   }
 
@@ -727,7 +708,7 @@ class GestureRecognizerTest : public AuraTestBase,
 };
 
 // Check that appropriate touch events generate tap gesture events.
-TEST_P(GestureRecognizerTest, GestureEventTap) {
+TEST_F(GestureRecognizerTest, GestureEventTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -778,7 +759,7 @@ TEST_P(GestureRecognizerTest, GestureEventTap) {
 
 // Check that appropriate touch events generate tap gesture events
 // when information about the touch radii are provided.
-TEST_P(GestureRecognizerTest, GestureEventTapRegion) {
+TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1018,7 +999,7 @@ TEST_P(GestureRecognizerTest, GestureEventTapRegion) {
 }
 
 // Check that appropriate touch events generate scroll gesture events.
-TEST_P(GestureRecognizerTest, GestureEventScroll) {
+TEST_F(GestureRecognizerTest, GestureEventScroll) {
   // We'll start by moving the touch point by (10.5, 10.5). We want 5 dips of
   // that distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
@@ -1062,15 +1043,14 @@ TEST_P(GestureRecognizerTest, GestureEventScroll) {
   // be empty, since it's a single point and the radius for testing is zero.
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
-  // Move some more to generate a few more scroll updates. Make sure that we get
-  // out of the snap channel for the unified GR.
-  tes.SendScrollEvent(event_processor(), 20, 120, kTouchId, delegate.get());
+  // Move some more to generate a few more scroll updates.
+  tes.SendScrollEvent(event_processor(), 91, 192, kTouchId, delegate.get());
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
-  EXPECT_FLOAT_EQ(-91.5, delegate->scroll_x());
-  EXPECT_FLOAT_EQ(-91.5, delegate->scroll_y());
+  EXPECT_FLOAT_EQ(-20.5, delegate->scroll_x());
+  EXPECT_FLOAT_EQ(-19.5, delegate->scroll_y());
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
-  tes.SendScrollEvent(event_processor(), 50, 124, kTouchId, delegate.get());
+  tes.SendScrollEvent(event_processor(), 121, 196, kTouchId, delegate.get());
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_EQ(30, delegate->scroll_x());
   EXPECT_EQ(4, delegate->scroll_y());
@@ -1089,7 +1069,7 @@ TEST_P(GestureRecognizerTest, GestureEventScroll) {
 }
 
 // Check that predicted scroll update positions are correct.
-TEST_P(GestureRecognizerTest, GestureEventScrollPrediction) {
+TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   const double prediction_interval = 0.03;
   ui::GestureConfiguration::set_scroll_prediction_seconds(prediction_interval);
    // We'll start by moving the touch point by (5, 5). We want all of that
@@ -1121,7 +1101,7 @@ TEST_P(GestureRecognizerTest, GestureEventScrollPrediction) {
   delegate->Reset();
 
   // Get rid of touch slop.
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(111, 211),
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(101, 201),
                       kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_3_EVENTS(delegate->events(),
@@ -1164,7 +1144,7 @@ TEST_P(GestureRecognizerTest, GestureEventScrollPrediction) {
 }
 
 // Check that the bounding box during a scroll event is correct.
-TEST_P(GestureRecognizerTest, GestureEventScrollBoundingBox) {
+TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
   TimedEvents tes;
   for (int radius = 1; radius <= 10; ++radius) {
     ui::GestureConfiguration::set_default_radius(radius);
@@ -1221,7 +1201,7 @@ TEST_P(GestureRecognizerTest, GestureEventScrollBoundingBox) {
 
 // Check Scroll End Events report correct velocities
 // if the user was on a horizontal rail
-TEST_P(GestureRecognizerTest, GestureEventHorizontalRailFling) {
+TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1235,7 +1215,7 @@ TEST_P(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   DispatchEventUsingWindowDispatcher(&press);
 
   // Get rid of touch slop.
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 0),
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(5, 0),
                        kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&move);
   delegate->Reset();
@@ -1243,11 +1223,11 @@ TEST_P(GestureRecognizerTest, GestureEventHorizontalRailFling) {
 
   // Move the touch-point horizontally enough that it is considered a
   // horizontal scroll.
-  tes.SendScrollEvent(event_processor(), 30, 1, kTouchId, delegate.get());
-  EXPECT_FLOAT_EQ(0, delegate->scroll_y());
-  EXPECT_FLOAT_EQ(1, delegate->scroll_y_ordinal());
-  EXPECT_FLOAT_EQ(20, delegate->scroll_x());
-  EXPECT_FLOAT_EQ(20, delegate->scroll_x_ordinal());
+  tes.SendScrollEvent(event_processor(), 25, 1, kTouchId, delegate.get());
+  EXPECT_EQ(0, delegate->scroll_y());
+  EXPECT_EQ(1, delegate->scroll_y_ordinal());
+  EXPECT_EQ(20, delegate->scroll_x());
+  EXPECT_EQ(20, delegate->scroll_x_ordinal());
 
   // Get a high x velocity, while still staying on the rail
   tes.SendScrollEvents(event_processor(), 1, 1,
@@ -1268,7 +1248,7 @@ TEST_P(GestureRecognizerTest, GestureEventHorizontalRailFling) {
 
 // Check Scroll End Events report correct velocities
 // if the user was on a vertical rail
-TEST_P(GestureRecognizerTest, GestureEventVerticalRailFling) {
+TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1282,14 +1262,14 @@ TEST_P(GestureRecognizerTest, GestureEventVerticalRailFling) {
   DispatchEventUsingWindowDispatcher(&press);
 
   // Get rid of touch slop.
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(0, 10),
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(0, 5),
                        kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&move);
   delegate->Reset();
 
   // Move the touch-point vertically enough that it is considered a
   // vertical scroll.
-  tes.SendScrollEvent(event_processor(), 1, 30, kTouchId, delegate.get());
+  tes.SendScrollEvent(event_processor(), 1, 25, kTouchId, delegate.get());
   EXPECT_EQ(20, delegate->scroll_y());
   EXPECT_EQ(20, delegate->scroll_y_ordinal());
   EXPECT_EQ(0, delegate->scroll_x());
@@ -1314,9 +1294,9 @@ TEST_P(GestureRecognizerTest, GestureEventVerticalRailFling) {
   EXPECT_GT(delegate->velocity_y(), 0);
 }
 
-// Check Scroll End Events report non-zero velocities if the user is not on a
-// rail
-TEST_P(GestureRecognizerTest, GestureEventNonRailFling) {
+// Check Scroll End Events reports zero velocities
+// if the user is not on a rail
+TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(0);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
@@ -1330,11 +1310,10 @@ TEST_P(GestureRecognizerTest, GestureEventNonRailFling) {
                        kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&press);
 
-  // Move the touch-point such that a non-rail scroll begins, and we're outside
-  // the snap channel for the unified GR.
-  tes.SendScrollEvent(event_processor(), 50, 50, kTouchId, delegate.get());
-  EXPECT_EQ(50, delegate->scroll_y());
-  EXPECT_EQ(50, delegate->scroll_x());
+  // Move the touch-point such that a non-rail scroll begins
+  tes.SendScrollEvent(event_processor(), 20, 20, kTouchId, delegate.get());
+  EXPECT_EQ(20, delegate->scroll_y());
+  EXPECT_EQ(20, delegate->scroll_x());
 
   tes.SendScrollEvents(event_processor(), 1, 1,
                        10, 100, kTouchId, 1,
@@ -1353,9 +1332,10 @@ TEST_P(GestureRecognizerTest, GestureEventNonRailFling) {
 }
 
 // Check that appropriate touch events generate long press events
-TEST_P(GestureRecognizerTest, GestureEventLongPress) {
+TEST_F(GestureRecognizerTest, GestureEventLongPress) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
+  TimedEvents tes;
   const int kWindowWidth = 123;
   const int kWindowHeight = 45;
   const int kTouchId = 2;
@@ -1370,10 +1350,8 @@ TEST_P(GestureRecognizerTest, GestureEventLongPress) {
 
   ScopedGestureRecognizerSetter gr_setter(gesture_recognizer);
 
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED,
-                        gfx::Point(101, 201),
-                        kTouchId,
-                        ui::EventTimeForNow());
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                        kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&press1);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->begin());
@@ -1388,20 +1366,17 @@ TEST_P(GestureRecognizerTest, GestureEventLongPress) {
   EXPECT_FALSE(delegate->tap_cancel());
 
   delegate->Reset();
-  ui::TouchEvent release1(ui::ET_TOUCH_RELEASED,
-                          gfx::Point(101, 201),
-                          kTouchId,
-                          ui::EventTimeForNow());
+  ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                          kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&release1);
   EXPECT_FALSE(delegate->long_press());
 
-  // Note the tap cancel isn't dispatched until the release
+  // Note the tap down isn't cancelled until the release
   EXPECT_TRUE(delegate->tap_cancel());
-  EXPECT_FALSE(delegate->tap());
 }
 
 // Check that scrolling cancels a long press
-TEST_P(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
+TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1448,9 +1423,10 @@ TEST_P(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
 }
 
 // Check that appropriate touch events generate long tap events
-TEST_P(GestureRecognizerTest, GestureEventLongTap) {
+TEST_F(GestureRecognizerTest, GestureEventLongTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
+  TimedEvents tes;
   const int kWindowWidth = 123;
   const int kWindowHeight = 45;
   const int kTouchId = 2;
@@ -1465,10 +1441,8 @@ TEST_P(GestureRecognizerTest, GestureEventLongTap) {
 
   ScopedGestureRecognizerSetter gr_setter(gesture_recognizer);
 
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED,
-                        gfx::Point(101, 201),
-                        kTouchId,
-                        ui::EventTimeForNow());
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                        kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&press1);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->begin());
@@ -1483,26 +1457,18 @@ TEST_P(GestureRecognizerTest, GestureEventLongTap) {
   EXPECT_FALSE(delegate->tap_cancel());
 
   delegate->Reset();
-  ui::TouchEvent release1(ui::ET_TOUCH_RELEASED,
-                          gfx::Point(101, 201),
-                          kTouchId,
-                          ui::EventTimeForNow());
+  ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                          kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&release1);
   EXPECT_FALSE(delegate->long_press());
   EXPECT_TRUE(delegate->long_tap());
 
-  // Note the tap cancel isn't dispatched until the release
+  // Note the tap down isn't cancelled until the release
   EXPECT_TRUE(delegate->tap_cancel());
-  EXPECT_FALSE(delegate->tap());
 }
 
 // Check that second tap cancels a long press
-TEST_P(GestureRecognizerTest, GestureEventLongPressCancelledBySecondTap) {
-  // TODO(tdresser): enable this test with unified GR once two finger tap is
-  // supported. See crbug.com/354396.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledBySecondTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1559,7 +1525,7 @@ TEST_P(GestureRecognizerTest, GestureEventLongPressCancelledBySecondTap) {
 
 // Check that horizontal scroll gestures cause scrolls on horizontal rails.
 // Also tests that horizontal rails can be broken.
-TEST_P(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
+TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1581,7 +1547,7 @@ TEST_P(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
 
   // Move the touch-point horizontally enough that it is considered a
   // horizontal scroll.
-  tes.SendScrollEvent(event_processor(), 25, 0, kTouchId, delegate.get());
+  tes.SendScrollEvent(event_processor(), 25, 1, kTouchId, delegate.get());
   EXPECT_EQ(0, delegate->scroll_y());
   EXPECT_EQ(20, delegate->scroll_x());
 
@@ -1609,7 +1575,7 @@ TEST_P(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
 
 // Check that vertical scroll gestures cause scrolls on vertical rails.
 // Also tests that vertical rails can be broken.
-TEST_P(GestureRecognizerTest, GestureEventVerticalRailScroll) {
+TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1630,7 +1596,7 @@ TEST_P(GestureRecognizerTest, GestureEventVerticalRailScroll) {
 
   // Move the touch-point vertically enough that it is considered a
   // vertical scroll.
-  tes.SendScrollEvent(event_processor(), 0, 25, kTouchId, delegate.get());
+  tes.SendScrollEvent(event_processor(), 1, 25, kTouchId, delegate.get());
   EXPECT_EQ(0, delegate->scroll_x());
   EXPECT_EQ(20, delegate->scroll_y());
 
@@ -1657,7 +1623,7 @@ TEST_P(GestureRecognizerTest, GestureEventVerticalRailScroll) {
   EXPECT_EQ(5, delegate->scroll_y());
 }
 
-TEST_P(GestureRecognizerTest, GestureTapFollowedByScroll) {
+TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   // We'll start by moving the touch point by (5, 5). We want all of that
   // distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
@@ -1713,14 +1679,14 @@ TEST_P(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_FALSE(delegate->scroll_end());
 
   // Get rid of touch slop.
-  ui::TouchEvent move_remove_slop(ui::ET_TOUCH_MOVED, gfx::Point(116, 216),
+  ui::TouchEvent move_remove_slop(ui::ET_TOUCH_MOVED, gfx::Point(106, 206),
                                   kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&move_remove_slop);
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_TRUE(delegate->scroll_begin());
-  EXPECT_TRUE(delegate->scroll_update());
-  EXPECT_EQ(15, delegate->scroll_x_hint());
-  EXPECT_EQ(15, delegate->scroll_y_hint());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_EQ(5, delegate->scroll_x_hint());
+  EXPECT_EQ(5, delegate->scroll_y_hint());
 
   delegate->Reset();
 
@@ -1738,8 +1704,8 @@ TEST_P(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
-  EXPECT_EQ(19, delegate->scroll_x());
-  EXPECT_EQ(19, delegate->scroll_y());
+  EXPECT_EQ(29, delegate->scroll_x());
+  EXPECT_EQ(29, delegate->scroll_y());
 
   // Move some more to generate a few more scroll updates.
   delegate->Reset();
@@ -1784,11 +1750,7 @@ TEST_P(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_TRUE(delegate->fling());
 }
 
-TEST_P(GestureRecognizerTest, AsynchronousGestureRecognition) {
-  // TODO(tdresser): enable this test with unified GR once two finger tap is
-  // supported. See crbug.com/354396.
-  if (UsingUnifiedGR())
-    return;
+TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   scoped_ptr<QueueTouchEventDelegate> queued_delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   const int kWindowWidth = 123;
@@ -1980,12 +1942,7 @@ TEST_P(GestureRecognizerTest, AsynchronousGestureRecognition) {
 }
 
 // Check that appropriate touch events generate pinch gesture events.
-TEST_P(GestureRecognizerTest, GestureEventPinchFromScroll) {
-  // Disabled for unified GR due to differences in when pinch begin is sent. The
-  // Aura GR sends it earlier than is necessary.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -2070,7 +2027,7 @@ TEST_P(GestureRecognizerTest, GestureEventPinchFromScroll) {
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 }
 
-TEST_P(GestureRecognizerTest, GestureEventPinchFromScrollFromPinch) {
+TEST_F(GestureRecognizerTest, GestureEventPinchFromScrollFromPinch) {
 scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -2118,20 +2075,16 @@ scoped_ptr<GestureEventConsumeDelegate> delegate(
   DispatchEventUsingWindowDispatcher(&press3);
   // Now the touch points are close. So we will go into two finger tap.
   // Move the touch-point enough to break two-finger-tap and enter pinch.
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(101, 50),
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(101, 202),
                        kTouchId1, tes.Now());
   DispatchEventUsingWindowDispatcher(&move2);
   EXPECT_TRUE(delegate->pinch_begin());
 
-  tes.SendScrollEvent(event_processor(), 300, 300, kTouchId1, delegate.get());
+  tes.SendScrollEvent(event_processor(), 130, 230, kTouchId1, delegate.get());
   EXPECT_TRUE(delegate->pinch_update());
 }
 
-TEST_P(GestureRecognizerTest, GestureEventPinchFromTap) {
-  // TODO(tdresser): enable this test with unified GR once two finger tap.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -2205,7 +2158,7 @@ TEST_P(GestureRecognizerTest, GestureEventPinchFromTap) {
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 }
 
-TEST_P(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
+TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -2219,7 +2172,7 @@ TEST_P(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
 
 // Check that a touch is locked to the window of the closest current touch
 // within max_separation_for_gesture_touches_in_pixels
-TEST_P(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
+TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   ui::GestureRecognizer* gesture_recognizer = new ui::GestureRecognizerImpl();
   TimedEvents tes;
   ScopedGestureRecognizerSetter gr_setter(gesture_recognizer);
@@ -2305,7 +2258,7 @@ TEST_P(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
 
 // Check that a touch's target will not be effected by a touch on a different
 // screen.
-TEST_P(GestureRecognizerTest, GestureEventTouchLockIgnoresOtherScreens) {
+TEST_F(GestureRecognizerTest, GestureEventTouchLockIgnoresOtherScreens) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   gfx::Rect bounds(0, 0, 10, 10);
@@ -2335,11 +2288,7 @@ TEST_P(GestureRecognizerTest, GestureEventTouchLockIgnoresOtherScreens) {
 
 // Check that touch events outside the root window are still handled
 // by the root window's gesture sequence.
-TEST_P(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
-  // TODO(tdresser): write a version of this test for the unified GR.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
   TestGestureRecognizer* gesture_recognizer =
       new TestGestureRecognizer();
   TimedEvents tes;
@@ -2368,7 +2317,7 @@ TEST_P(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
   EXPECT_EQ(2, root_window_gesture_sequence->point_count());
 }
 
-TEST_P(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
+TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -2395,12 +2344,7 @@ TEST_P(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
   EXPECT_TRUE(delegate->tap_cancel());
 }
 
-TEST_P(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
-  // Disabled for unified GR due to differences in when pinch begin is sent. The
-  // Aura GR sends it earlier than is necessary.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -2494,7 +2438,7 @@ TEST_P(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
   EXPECT_TRUE(delegate->end());
 }
 
-TEST_P(GestureRecognizerTest, GestureEndLocation) {
+TEST_F(GestureRecognizerTest, GestureEndLocation) {
   GestureEventConsumeDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, -1234, gfx::Rect(10, 10, 300, 300), root_window()));
@@ -2512,7 +2456,7 @@ TEST_P(GestureRecognizerTest, GestureEndLocation) {
             delegate.gesture_end_location().ToString());
 }
 
-TEST_P(GestureRecognizerTest, CaptureSendsGestureEnd) {
+TEST_F(GestureRecognizerTest, CaptureSendsGestureEnd) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TestGestureRecognizer* gesture_recognizer =
@@ -2541,7 +2485,7 @@ TEST_P(GestureRecognizerTest, CaptureSendsGestureEnd) {
 // Check that previous touch actions that are completely finished (either
 // released or cancelled), do not receive extra synthetic cancels upon change of
 // capture.
-TEST_P(GestureRecognizerTest, CaptureDoesNotCancelFinishedTouches) {
+TEST_F(GestureRecognizerTest, CaptureDoesNotCancelFinishedTouches) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   scoped_ptr<TestEventHandler> handler(new TestEventHandler);
@@ -2594,8 +2538,7 @@ TEST_P(GestureRecognizerTest, CaptureDoesNotCancelFinishedTouches) {
   root_window()->RemovePreTargetHandler(handler.get());
 }
 
-// Tests that a press with the same touch id as an existing touch is ignored.
-TEST_P(GestureRecognizerTest, PressDoesNotCrash) {
+TEST_F(GestureRecognizerTest, PressDoesNotCrash) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TestGestureRecognizer* gesture_recognizer =
@@ -2624,12 +2567,7 @@ TEST_P(GestureRecognizerTest, PressDoesNotCrash) {
   EXPECT_FALSE(delegate->scroll_begin());
 }
 
-TEST_P(GestureRecognizerTest, TwoFingerTap) {
-  // TODO(tdresser): enable this test with unified GR once two finger tap is
-  // supported. See crbug.com/354396.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, TwoFingerTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -2717,7 +2655,7 @@ TEST_P(GestureRecognizerTest, TwoFingerTap) {
   EXPECT_FALSE(delegate->two_finger_tap());
 }
 
-TEST_P(GestureRecognizerTest, TwoFingerTapExpired) {
+TEST_F(GestureRecognizerTest, TwoFingerTapExpired) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -2758,12 +2696,7 @@ TEST_P(GestureRecognizerTest, TwoFingerTapExpired) {
   EXPECT_FALSE(delegate->two_finger_tap());
 }
 
-TEST_P(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
-  // TODO(tdresser): enable this test with unified GR once two finger tap is
-  // supported. See crbug.com/354396.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -2835,12 +2768,7 @@ TEST_P(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
   }
 }
 
-TEST_P(GestureRecognizerTest, NoTwoFingerTapWhenFirstFingerHasScrolled) {
-  // Disabled for unified GR due to differences in when pinch begin is sent. The
-  // Aura GR sends it earlier than is necessary.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, NoTwoFingerTapWhenFirstFingerHasScrolled) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -2877,7 +2805,7 @@ TEST_P(GestureRecognizerTest, NoTwoFingerTapWhenFirstFingerHasScrolled) {
   EXPECT_TRUE(delegate->pinch_end());
 }
 
-TEST_P(GestureRecognizerTest, MultiFingerSwipe) {
+TEST_F(GestureRecognizerTest, MultiFingerSwipe) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -2898,33 +2826,30 @@ TEST_P(GestureRecognizerTest, MultiFingerSwipe) {
 
   aura::test::EventGenerator generator(root_window(), window.get());
 
-  // The unified gesture recognizer assumes a finger has stopped if it hasn't
-  // moved for too long. See ui/events/gesture_detection/velocity_tracker.cc's
-  // kAssumePointerStoppedTimeMs.
   for (int count = 2; count <= kTouchPoints; ++count) {
     generator.GestureMultiFingerScroll(
-        count, points, 10, kSteps, 0, -11 * kSteps);
+        count, points, 1000, kSteps, 0, -11 * kSteps);
     EXPECT_TRUE(delegate->swipe_up());
     delegate->Reset();
 
     generator.GestureMultiFingerScroll(
-        count, points, 10, kSteps, 0, 11 * kSteps);
+        count, points, 1000, kSteps, 0, 11 * kSteps);
     EXPECT_TRUE(delegate->swipe_down());
     delegate->Reset();
 
     generator.GestureMultiFingerScroll(
-        count, points, 10, kSteps, -11 * kSteps, 0);
+        count, points, 1000, kSteps, -11 * kSteps, 0);
     EXPECT_TRUE(delegate->swipe_left());
     delegate->Reset();
 
     generator.GestureMultiFingerScroll(
-        count, points, 10, kSteps, 11 * kSteps, 0);
+        count, points, 1000, kSteps, 11 * kSteps, 0);
     EXPECT_TRUE(delegate->swipe_right());
     delegate->Reset();
   }
 }
 
-TEST_P(GestureRecognizerTest, TwoFingerTapCancelled) {
+TEST_F(GestureRecognizerTest, TwoFingerTapCancelled) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -2998,13 +2923,7 @@ TEST_P(GestureRecognizerTest, TwoFingerTapCancelled) {
   }
 }
 
-TEST_P(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
-  // Disabled for unified GR due to differences in when scroll update is
-  // sent. The Aura GR will never send a ScrollUpdate with a ScrollBegin, but
-  // the unified GR will.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 523;
@@ -3061,7 +2980,7 @@ TEST_P(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
 
 // Verifies if a window is the target of multiple touch-ids and we hide the
 // window everything is cleaned up correctly.
-TEST_P(GestureRecognizerTest, FlushAllOnHide) {
+TEST_F(GestureRecognizerTest, FlushAllOnHide) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   gfx::Rect bounds(0, 0, 200, 200);
@@ -3084,11 +3003,7 @@ TEST_P(GestureRecognizerTest, FlushAllOnHide) {
       ui::GestureRecognizer::Get()->GetTouchLockedTarget(press2));
 }
 
-TEST_P(GestureRecognizerTest, LongPressTimerStopsOnPreventDefaultedTouchMoves) {
-  // TODO(tdresser): write a version of this test for the unified GR.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, LongPressTimerStopsOnPreventDefaultedTouchMoves) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   const int kTouchId = 2;
@@ -3148,7 +3063,7 @@ class ConsumesTouchMovesDelegate : public GestureEventConsumeDelegate {
 
 // Same as GestureEventScroll, but tests that the behavior is the same
 // even if all the touch-move events are consumed.
-TEST_P(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
+TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   scoped_ptr<ConsumesTouchMovesDelegate> delegate(
       new ConsumesTouchMovesDelegate());
   const int kWindowWidth = 123;
@@ -3200,12 +3115,7 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
 }
 
 // Tests the behavior of 2F scroll when all the touch-move events are consumed.
-TEST_P(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
-  // TODO(tdresser): enable this test with unified GR once two finger tap is
-  // supported. See crbug.com/354396.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
   scoped_ptr<ConsumesTouchMovesDelegate> delegate(
       new ConsumesTouchMovesDelegate());
   const int kWindowWidth = 123;
@@ -3312,7 +3222,7 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
 // Like as GestureEventTouchMoveConsumed but tests the different behavior
 // depending on whether the events were consumed before or after the scroll
 // started.
-TEST_P(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
+TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   scoped_ptr<ConsumesTouchMovesDelegate> delegate(
       new ConsumesTouchMovesDelegate());
   const int kWindowWidth = 123;
@@ -3406,12 +3316,7 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
 }
 
 // Check that appropriate touch events generate double tap gesture events.
-TEST_P(GestureRecognizerTest, GestureEventDoubleTap) {
-  // TODO(tdresser): enable this test with unified GR once double / triple tap
-  // gestures work. See crbug.com/357270.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventDoubleTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -3452,12 +3357,7 @@ TEST_P(GestureRecognizerTest, GestureEventDoubleTap) {
 }
 
 // Check that appropriate touch events generate triple tap gesture events.
-TEST_P(GestureRecognizerTest, GestureEventTripleTap) {
-  // TODO(tdresser): enable this test with unified GR once double / triple tap
-  // gestures work. See crbug.com/357270.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventTripleTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -3512,7 +3412,7 @@ TEST_P(GestureRecognizerTest, GestureEventTripleTap) {
 }
 
 // Check that we don't get a double tap when the two taps are far apart.
-TEST_P(GestureRecognizerTest, TwoTapsFarApart) {
+TEST_F(GestureRecognizerTest, TwoTapsFarApart) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -3554,7 +3454,7 @@ TEST_P(GestureRecognizerTest, TwoTapsFarApart) {
 
 // Check that we don't get a double tap when the two taps have a long enough
 // delay in between.
-TEST_P(GestureRecognizerTest, TwoTapsWithDelayBetween) {
+TEST_F(GestureRecognizerTest, TwoTapsWithDelayBetween) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -3597,12 +3497,7 @@ TEST_P(GestureRecognizerTest, TwoTapsWithDelayBetween) {
 // Checks that if the bounding-box of a gesture changes because of change in
 // radius of a touch-point, and not because of change in position, then there
 // are not gesture events from that.
-TEST_P(GestureRecognizerTest, BoundingBoxRadiusChange) {
-  // TODO(tdresser): enable this test with unified GR when (if?) bounding box
-  // behavior is unified.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 234;
@@ -3656,7 +3551,7 @@ TEST_P(GestureRecognizerTest, BoundingBoxRadiusChange) {
 
 // Checks that slow scrolls deliver the correct deltas.
 // In particular, fix for http;//crbug.com/150573.
-TEST_P(GestureRecognizerTest, NoDriftInScroll) {
+TEST_F(GestureRecognizerTest, NoDriftInScroll) {
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(3);
   ui::GestureConfiguration::set_min_scroll_delta_squared(9);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
@@ -3714,7 +3609,7 @@ TEST_P(GestureRecognizerTest, NoDriftInScroll) {
 // Ensure that move events which are preventDefaulted will cause a tap
 // cancel gesture event to be fired if the move would normally cause a
 // scroll. See bug http://crbug.com/146397.
-TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
   scoped_ptr<ConsumesTouchMovesDelegate> delegate(
       new ConsumesTouchMovesDelegate());
   const int kTouchId = 5;
@@ -3744,7 +3639,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
   EXPECT_FALSE(delegate->scroll_end());
 }
 
-TEST_P(GestureRecognizerTest,
+TEST_F(GestureRecognizerTest,
        TransferEventDispatchesTouchCancel) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
@@ -3787,7 +3682,7 @@ TEST_P(GestureRecognizerTest,
 }
 
 // Check that appropriate touch events generate show press events
-TEST_P(GestureRecognizerTest, GestureEventShowPress) {
+TEST_F(GestureRecognizerTest, GestureEventShowPress) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -3826,13 +3721,12 @@ TEST_P(GestureRecognizerTest, GestureEventShowPress) {
   DispatchEventUsingWindowDispatcher(&release1);
   EXPECT_FALSE(delegate->long_press());
 
-  // Note the tap isn't dispatched until the release
-  EXPECT_FALSE(delegate->tap_cancel());
-  EXPECT_TRUE(delegate->tap());
+  // Note the tap down isn't cancelled until the release
+  EXPECT_TRUE(delegate->tap_cancel());
 }
 
 // Check that scrolling cancels a show press
-TEST_P(GestureRecognizerTest, GestureEventShowPressCancelledByScroll) {
+TEST_F(GestureRecognizerTest, GestureEventShowPressCancelledByScroll) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -3879,7 +3773,7 @@ TEST_P(GestureRecognizerTest, GestureEventShowPressCancelledByScroll) {
 }
 
 // Test that show press events are sent immediately on tap
-TEST_P(GestureRecognizerTest, GestureEventShowPressSentOnTap) {
+TEST_F(GestureRecognizerTest, GestureEventShowPressSentOnTap) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -3911,7 +3805,7 @@ TEST_P(GestureRecognizerTest, GestureEventShowPressSentOnTap) {
 }
 
 // Test that consuming the first move touch event prevents a scroll.
-TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveScrollTest) {
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveScrollTest) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -3925,10 +3819,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveScrollTest) {
   DispatchEventUsingWindowDispatcher(&press);
   delegate->ReceivedAck();
 
-  // A touch move within the slop region is never consumed in web contents. The
-  // unified GR won't prevent scroll if a touch move within the slop region is
-  // consumed, so make sure this touch move exceeds the slop region.
-  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(10, 10),
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(2, 2),
                        kTouchId, tes.Now());
   DispatchEventUsingWindowDispatcher(&move1);
   delegate->ReceivedAckPreventDefaulted();
@@ -3944,12 +3835,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveScrollTest) {
 
 // Test that consuming the first touch move event of a touch point doesn't
 // prevent pinching once an additional touch has been pressed.
-TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMovePinchTest) {
-  // Consuming moves within the touch slop and the the disposition handling of
-  // pinch events behave differently between the Unified GR and the Aura GR.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMovePinchTest) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -4006,7 +3892,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMovePinchTest) {
 }
 
 // Test that consuming the first move touch doesn't prevent a tap.
-TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveTapTest) {
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveTapTest) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -4034,7 +3920,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveTapTest) {
 }
 
 // Test that consuming the first move touch doesn't prevent a long press.
-TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveLongPressTest) {
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveLongPressTest) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -4068,11 +3954,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveLongPressTest) {
 }
 
 // Tests that the deltas are correct when leaving the slop region very slowly.
-TEST_P(GestureRecognizerTest, TestExceedingSlopSlowly) {
-  // Disabled for unified GR due to subtle differences in touch slop handling.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, TestExceedingSlopSlowly) {
   ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(3);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
@@ -4130,7 +4012,7 @@ TEST_P(GestureRecognizerTest, TestExceedingSlopSlowly) {
   delegate->Reset();
 }
 
-TEST_P(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
+TEST_F(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -4189,13 +4071,7 @@ TEST_P(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
   }
 }
 
-TEST_P(GestureRecognizerTest, PinchAlternatelyConsumedTest) {
-  // Disabled for unified GR due to differences in when scroll update is
-  // sent. The Aura GR will never send a ScrollUpdate with a ScrollBegin, but
-  // the unified GR will.
-  if (UsingUnifiedGR())
-    return;
-
+TEST_F(GestureRecognizerTest, PinchAlternatelyConsumedTest) {
   scoped_ptr<QueueTouchEventDelegate> delegate(
       new QueueTouchEventDelegate(host()->dispatcher()));
   TimedEvents tes;
@@ -4278,39 +4154,6 @@ TEST_P(GestureRecognizerTest, PinchAlternatelyConsumedTest) {
     delegate->Reset();
   }
 }
-
-// Test that touch event flags are passed through to the gesture event.
-TEST_P(GestureRecognizerTest, GestureEventFlagsPassedFromTouchEvent) {
-  scoped_ptr<GestureEventConsumeDelegate> delegate(
-      new GestureEventConsumeDelegate());
-  TimedEvents tes;
-  const int kWindowWidth = 123;
-  const int kWindowHeight = 45;
-  const int kTouchId = 6;
-  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
-  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
-      delegate.get(), -1234, bounds, root_window()));
-
-  delegate->Reset();
-
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
-                        kTouchId, tes.Now());
-  DispatchEventUsingWindowDispatcher(&press1);
-  EXPECT_TRUE(delegate->tap_down());
-
-  int default_flags = delegate->flags();
-
-  ui::TouchEvent move1(
-      ui::ET_TOUCH_MOVED, gfx::Point(397, 149), kTouchId, tes.LeapForward(50));
-  move1.set_flags(992);
-
-  DispatchEventUsingWindowDispatcher(&move1);
-  EXPECT_NE(default_flags, delegate->flags());
-}
-
-INSTANTIATE_TEST_CASE_P(GestureRecognizer,
-                        GestureRecognizerTest,
-                        ::testing::Bool());
 
 }  // namespace test
 }  // namespace aura
