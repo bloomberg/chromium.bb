@@ -10,6 +10,16 @@
 
 namespace chrome {
 
+int IndexOfFirstBlockedTab(const TabStripModel* model) {
+  DCHECK(model);
+  for (int i = 0; i < model->count(); ++i) {
+    if (model->IsTabBlocked(i))
+      return i;
+  }
+  // No blocked tabs.
+  return model->count();
+}
+
 void GetOpenUrls(const TabStripModel& tabs,
                  const history::TopSites& top_sites,
                  std::set<std::string>* urls) {

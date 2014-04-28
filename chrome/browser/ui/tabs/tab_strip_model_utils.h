@@ -16,6 +16,10 @@ class TopSites;
 
 namespace chrome {
 
+// Returns the index of the first tab that is blocked. This returns
+// |model->count()| if no tab is blocked.
+int IndexOfFirstBlockedTab(const TabStripModel* model);
+
 // Creates a set containing the canonical URLs of the currently open tabs.
 void GetOpenUrls(const TabStripModel& tabs,
                  const history::TopSites& top_sites,

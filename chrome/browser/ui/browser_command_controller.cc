@@ -1260,7 +1260,13 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 
   // Disable explicit fullscreen toggling when in metro snap mode.
   bool fullscreen_enabled = window_state != WINDOW_STATE_METRO_SNAP;
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+  // The Mac implementation doesn't support switching to fullscreen while
+  // a tab modal dialog is displayed.
+  int tab_index = chrome::IndexOfFirstBlockedTab(browser_->tab_strip_model());
+  bool has_blocked_tab = tab_index != browser_->tab_strip_model()->count();
+  fullscreen_enabled &= !has_blocked_tab;
+#else
   if (window_state == WINDOW_STATE_NOT_FULLSCREEN &&
       !profile()->GetPrefs()->GetBoolean(prefs::kFullscreenAllowed)) {
     // Disable toggling into fullscreen mode if disallowed by pref.
