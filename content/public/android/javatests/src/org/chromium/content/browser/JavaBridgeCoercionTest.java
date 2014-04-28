@@ -692,4 +692,42 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         executeJavaScript("testObject.setStringValue(new DataView(buffer));");
         assertEquals("undefined", mTestObject.waitForStringValue());
     }
+
+    // Verify that Date objects are not converted into double values, strings or objects.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassDateObject() throws Throwable {
+        executeJavaScript("testObject.setDoubleValue(new Date(2000, 0, 1));");
+        assertEquals(0.0, mTestObject.waitForDoubleValue());
+
+        executeJavaScript("testObject.setStringValue(new Date(2000, 0, 1));");
+        assertEquals("undefined", mTestObject.waitForStringValue());
+
+        executeJavaScript("testObject.setObjectValue(new Date(2000, 0, 1));");
+        assertNull(mTestObject.waitForObjectValue());
+    }
+
+    // Verify that RegExp objects are not converted into strings or objects.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassRegExpObject() throws Throwable {
+        executeJavaScript("testObject.setStringValue(/abc/);");
+        assertEquals("undefined", mTestObject.waitForStringValue());
+
+        executeJavaScript("testObject.setObjectValue(/abc/);");
+        assertNull(mTestObject.waitForObjectValue());
+    }
+
+    // Verify that Function objects are not converted into strings or objects.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassFunctionObject() throws Throwable {
+        executeJavaScript("func = new Function('a', 'b', 'return a + b');");
+
+        executeJavaScript("testObject.setStringValue(func);");
+        assertEquals("undefined", mTestObject.waitForStringValue());
+
+        executeJavaScript("testObject.setObjectValue(func);");
+        assertNull(mTestObject.waitForObjectValue());
+    }
 }
