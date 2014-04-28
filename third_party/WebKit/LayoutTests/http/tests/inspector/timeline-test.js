@@ -220,7 +220,7 @@ InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallb
         suffix = " x " + presentationRecord.presentationChildren().length;
     } else if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
         || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
-        suffix = " : " + record.data.message;
+        suffix = " : " + record.data().message;
     }
     if (detailsCallback)
         suffix += " " + detailsCallback(record);
