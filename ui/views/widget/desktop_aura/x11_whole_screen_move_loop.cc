@@ -310,6 +310,7 @@ bool X11WholeScreenMoveLoop::GrabPointerAndKeyboard(gfx::NativeCursor cursor) {
   }
 
   XUngrabServer(display);
+  XFlush(display);
   return ret == GrabSuccess;
 }
 
