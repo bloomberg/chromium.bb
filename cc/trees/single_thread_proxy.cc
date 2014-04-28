@@ -267,6 +267,10 @@ void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
   client_->ScheduleComposite();
 }
 
+void SingleThreadProxy::SetNeedsAnimateOnImplThread() {
+  SetNeedsRedrawOnImplThread();
+}
+
 void SingleThreadProxy::SetNeedsManageTilesOnImplThread() {
   // Thread-only/Impl-side-painting-only feature.
   NOTREACHED();

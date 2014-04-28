@@ -205,6 +205,7 @@ void LayerAnimationController::UpdateState(bool start_ready_animations,
   if (!HasActiveValueObserver())
     return;
 
+  DCHECK(last_tick_time_);
   if (start_ready_animations)
     PromoteStartedAnimations(last_tick_time_, events);
 

@@ -470,13 +470,9 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
                                   duration.InSecondsF());
   }
 
-  SetNeedsRedraw();
+  SetNeedsAnimate();
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
-}
-
-void LayerTreeHostImpl::ScheduleAnimation() {
-  SetNeedsRedraw();
 }
 
 bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
@@ -1719,6 +1715,11 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   renderer_->SetVisible(visible);
 }
 
+void LayerTreeHostImpl::SetNeedsAnimate() {
+  NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+  client_->SetNeedsAnimateOnImplThread();
+}
+
 void LayerTreeHostImpl::SetNeedsRedraw() {
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   client_->SetNeedsRedrawOnImplThread();
@@ -2714,6 +2715,8 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
     page_scale_animation_.reset();
     client_->SetNeedsCommitOnImplThread();
     client_->RenewTreePriority();
+  } else {
+    SetNeedsAnimate();
   }
 }
 
@@ -2723,14 +2726,12 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
   if (active_tree_->TotalScrollOffset().y() == 0.f)
     return;
-  if (scroll.IsZero()) {
-    // This may happen on the first animation step. Force redraw otherwise
-    // the animation would stop because of no new frames.
-    SetNeedsRedraw();
-  } else {
+  if (!scroll.IsZero()) {
     ScrollViewportBy(gfx::ScaleVector2d(
         scroll, 1.f / active_tree_->total_page_scale_factor()));
+    SetNeedsRedraw();
   }
+  SetNeedsAnimate();
 }
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
@@ -2752,7 +2753,7 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
        ++iter)
     (*iter).second->Animate(monotonic_time_for_cc_animations);
 
-  SetNeedsRedraw();
+  SetNeedsAnimate();
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
@@ -2774,6 +2775,8 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
   if (!events->empty()) {
     client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
   }
+
+  SetNeedsAnimate();
 }
 
 base::TimeDelta LayerTreeHostImpl::LowFrequencyAnimationInterval() const {
@@ -2847,9 +2850,10 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
       layer->scrollbar_animation_controller();
   if (scrollbar_controller && scrollbar_controller->Animate(time)) {
     TRACE_EVENT_INSTANT0(
-        "cc", "LayerTreeHostImpl::SetNeedsRedraw due to AnimateScrollbars",
+        "cc",
+        "LayerTreeHostImpl::SetNeedsAnimate due to AnimateScrollbars",
         TRACE_EVENT_SCOPE_THREAD);
-    SetNeedsRedraw();
+    SetNeedsAnimate();
   }
 
   for (size_t i = 0; i < layer->children().size(); ++i)
@@ -2870,10 +2874,11 @@ void LayerTreeHostImpl::StartScrollbarAnimationRecursive(LayerImpl* layer,
       layer->scrollbar_animation_controller();
   if (scrollbar_controller && scrollbar_controller->IsAnimating()) {
     base::TimeDelta delay = scrollbar_controller->DelayBeforeStart(time);
-    if (delay > base::TimeDelta())
+    if (delay > base::TimeDelta()) {
       client_->RequestScrollbarAnimationOnImplThread(delay);
-    else if (scrollbar_controller->Animate(time))
-      SetNeedsRedraw();
+    } else if (scrollbar_controller->Animate(time)) {
+      SetNeedsAnimate();
+    }
   }
 
   for (size_t i = 0; i < layer->children().size(); ++i)
