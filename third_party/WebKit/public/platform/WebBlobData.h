@@ -71,8 +71,6 @@ public:
 
     BLINK_PLATFORM_EXPORT WebString contentType() const;
 
-    BLINK_PLATFORM_EXPORT WebString contentDisposition() const;
-
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebBlobData(const WTF::PassOwnPtr<WebCore::BlobData>&);
     BLINK_PLATFORM_EXPORT WebBlobData& operator=(const WTF::PassOwnPtr<WebCore::BlobData>&);

@@ -97,12 +97,6 @@ WebString WebBlobData::contentType() const
     return m_private->contentType();
 }
 
-WebString WebBlobData::contentDisposition() const
-{
-    ASSERT(!isNull());
-    return m_private->contentDisposition();
-}
-
 WebBlobData::WebBlobData(const PassOwnPtr<BlobData>& data)
     : m_private(data)
 {

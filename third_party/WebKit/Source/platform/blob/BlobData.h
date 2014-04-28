@@ -169,9 +169,6 @@ public:
     const String& contentType() const { return m_contentType; }
     void setContentType(const String& contentType) { m_contentType = contentType; }
 
-    const String& contentDisposition() const { return m_contentDisposition; }
-    void setContentDisposition(const String& contentDisposition) { m_contentDisposition = contentDisposition; }
-
     const BlobDataItemList& items() const { return m_items; }
     void swapItems(BlobDataItemList&);
 
@@ -198,7 +195,6 @@ private:
     BlobData() { }
 
     String m_contentType;
-    String m_contentDisposition;
     BlobDataItemList m_items;
 };
 
