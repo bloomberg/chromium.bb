@@ -61,6 +61,7 @@ CompositionEvent
 ConvolverNode
 Counter
 CustomEvent
+DOMError
 DOMException
 DOMImplementation
 DOMParser
