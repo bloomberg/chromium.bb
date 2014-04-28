@@ -1,0 +1,168 @@
+Tests inspector ParsedURL class
+
+Parsing url: http://example.com/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /?queryParam1=value1&queryParam2=value2
+  queryParams: queryParam1=value1&queryParam2=value2
+  fragment: fragmentWith/Many//Slashes
+  folderPathComponents: 
+  lastPathComponent: 
+  splittedURL: ["http://example.com","?queryParam1=value1&queryParam2=value2"]
+Parsing url: http://example.com/foo.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo.html?queryParam1=value1&queryParam2=value2
+  queryParams: queryParam1=value1&queryParam2=value2
+  fragment: fragmentWith/Many//Slashes
+  folderPathComponents: 
+  lastPathComponent: foo.html
+  splittedURL: ["http://example.com","foo.html?queryParam1=value1&queryParam2=value2"]
+Parsing url: http://example.com/foo/bar.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo/bar.html?queryParam1=value1&queryParam2=value2
+  queryParams: queryParam1=value1&queryParam2=value2
+  fragment: fragmentWith/Many//Slashes
+  folderPathComponents: /foo
+  lastPathComponent: bar.html
+  splittedURL: ["http://example.com","foo","bar.html?queryParam1=value1&queryParam2=value2"]
+Parsing url: http://example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo/bar/baz.html?queryParam1=value1&queryParam2=value2
+  queryParams: queryParam1=value1&queryParam2=value2
+  fragment: fragmentWith/Many//Slashes
+  folderPathComponents: /foo/bar
+  lastPathComponent: baz.html
+  splittedURL: ["http://example.com","foo","bar","baz.html?queryParam1=value1&queryParam2=value2"]
+Parsing url: http://example.com//?queryParam1=value1
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: //?queryParam1=value1
+  queryParams: queryParam1=value1
+  fragment: undefined
+  folderPathComponents: /
+  lastPathComponent: 
+  splittedURL: ["http://example.com","?queryParam1=value1"]
+Parsing url: http://example.com//foo.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: //foo.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: /
+  lastPathComponent: foo.html
+  splittedURL: ["http://example.com","foo.html"]
+Parsing url: http://example.com//foo/bar.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: //foo/bar.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: //foo
+  lastPathComponent: bar.html
+  splittedURL: ["http://example.com","foo","bar.html"]
+Parsing url: http://example.com/foo//bar.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo//bar.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: /foo/
+  lastPathComponent: bar.html
+  splittedURL: ["http://example.com","foo","bar.html"]
+Parsing url: http://example.com//foo//bar.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: //foo//bar.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: //foo/
+  lastPathComponent: bar.html
+  splittedURL: ["http://example.com","foo","bar.html"]
+Parsing url: http://example.com//foo/bar/baz.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: //foo/bar/baz.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: //foo/bar
+  lastPathComponent: baz.html
+  splittedURL: ["http://example.com","foo","bar","baz.html"]
+Parsing url: http://example.com/foo//bar/baz.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo//bar/baz.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: /foo//bar
+  lastPathComponent: baz.html
+  splittedURL: ["http://example.com","foo","bar","baz.html"]
+Parsing url: http://example.com/foo/bar//baz.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo/bar//baz.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: /foo/bar/
+  lastPathComponent: baz.html
+  splittedURL: ["http://example.com","foo","bar","baz.html"]
+Parsing url: http://example.com///foo/bar/baz.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: ///foo/bar/baz.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: ///foo/bar
+  lastPathComponent: baz.html
+  splittedURL: ["http://example.com","foo","bar","baz.html"]
+Parsing url: http://example.com/foo////bar/baz.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo////bar/baz.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: /foo////bar
+  lastPathComponent: baz.html
+  splittedURL: ["http://example.com","foo","bar","baz.html"]
+Parsing url: http://example.com/foo/bar/////baz.html
+  isValid: true
+  scheme: http
+  host: example.com
+  port: undefined
+  path: /foo/bar/////baz.html
+  queryParams: 
+  fragment: undefined
+  folderPathComponents: /foo/bar////
+  lastPathComponent: baz.html
+  splittedURL: ["http://example.com","foo","bar","baz.html"]
+
