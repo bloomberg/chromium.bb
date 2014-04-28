@@ -1316,6 +1316,7 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   // that new and existing navigations in the tab's current SiteInstances
   // are identified properly.
   delegate_->CopyMaxPageIDsFrom(source->delegate()->GetWebContents());
+  max_restored_page_id_ = source->max_restored_page_id_;
 
   // If there is a last committed entry, be sure to include it in the new
   // max page ID map.

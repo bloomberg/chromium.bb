@@ -3748,6 +3748,61 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntriesReplaceEntry) {
   NavigationControllerImpl::set_max_entry_count_for_testing(original_count);
 }
 
+// Tests that we can navigate to the restored entries
+// imported by CopyStateFromAndPrune.
+TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
+  const GURL kRestoredUrls[] = {
+    GURL("http://site1.com"),
+    GURL("http://site2.com"),
+  };
+  const GURL kInitialUrl("http://site3.com");
+
+  std::vector<NavigationEntry*> entries;
+  for (size_t i = 0; i < arraysize(kRestoredUrls); ++i) {
+    NavigationEntry* entry = NavigationControllerImpl::CreateNavigationEntry(
+        kRestoredUrls[i], Referrer(), PAGE_TRANSITION_RELOAD, false,
+        std::string(), browser_context());
+    entry->SetPageID(static_cast<int>(i));
+    entries.push_back(entry);
+  }
+
+  // Create a WebContents with restored entries.
+  scoped_ptr<TestWebContents> source_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& source_controller =
+      source_contents->GetController();
+  source_controller.Restore(
+      entries.size() - 1,
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
+      &entries);
+  ASSERT_EQ(0u, entries.size());
+  source_controller.LoadIfNecessary();
+  source_contents->CommitPendingNavigation();
+
+  // Load a page, then copy state from |source_contents|.
+  NavigateAndCommit(kInitialUrl);
+  contents()->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(controller_impl().GetEntryAtIndex(0)), 2,
+      controller_impl().GetEntryAtIndex(0)->GetPageID());
+  controller_impl().CopyStateFromAndPrune(&source_controller, false);
+  ASSERT_EQ(3, controller_impl().GetEntryCount());
+
+  // Go back to the first entry one at a time and
+  // verify that it works as expected.
+  EXPECT_EQ(2, controller_impl().GetCurrentEntryIndex());
+  EXPECT_EQ(kInitialUrl, controller_impl().GetActiveEntry()->GetURL());
+
+  controller_impl().GoBack();
+  contents()->CommitPendingNavigation();
+  EXPECT_EQ(1, controller_impl().GetCurrentEntryIndex());
+  EXPECT_EQ(kRestoredUrls[1], controller_impl().GetActiveEntry()->GetURL());
+
+  controller_impl().GoBack();
+  contents()->CommitPendingNavigation();
+  EXPECT_EQ(0, controller_impl().GetCurrentEntryIndex());
+  EXPECT_EQ(kRestoredUrls[0], controller_impl().GetActiveEntry()->GetURL());
+}
+
 // Tests that navigations initiated from the page (with the history object)
 // work as expected, creating pending entries.
 TEST_F(NavigationControllerTest, HistoryNavigate) {

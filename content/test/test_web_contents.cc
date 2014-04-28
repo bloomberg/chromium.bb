@@ -100,6 +100,7 @@ bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,
     CrossProcessFrameConnector* frame_connector) {
+  UpdateMaxPageIDIfNecessary(render_view_host);
   // This will go to a TestRenderViewHost.
   static_cast<RenderViewHostImpl*>(
       render_view_host)->CreateRenderView(base::string16(),
