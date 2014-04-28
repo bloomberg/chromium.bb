@@ -113,36 +113,16 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
   return true;
 }
 
-class FrameLoadWaiter : public content::RenderViewObserver {
- public:
-  FrameLoadWaiter(RenderView* view, base::MessageLoop* msg_loop)
-      : content::RenderViewObserver(view),
-        msg_loop_(msg_loop) {}
-
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE {
-    msg_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
-  }
-
-  void Wait() {
-    // We can't just post a quit message here, blink parses on another
-    // thread and may post additional messages as it parses content.
-    msg_loop_->Run();
-  }
- private:
-  base::MessageLoop* msg_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameLoadWaiter);
-};
-
 void RenderViewTest::LoadHTML(const char* html) {
   std::string url_str = "data:text/html;charset=utf-8,";
   url_str.append(html);
   GURL url(url_str);
-  FrameLoadWaiter waiter(view_, &msg_loop_);
+
   GetMainFrame()->loadRequest(WebURLRequest(url));
+
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
-  waiter.Wait();
+  ProcessPendingMessages();
 }
 
 void RenderViewTest::GoBack(const blink::WebHistoryItem& item) {
