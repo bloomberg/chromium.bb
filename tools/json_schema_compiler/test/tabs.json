@@ -491,7 +491,7 @@
       {
         "name": "captureVisibleTab",
         "type": "function",
-        "description": "Captures the visible area of the currently active tab in the specified window. You must have <a href='manifest.html#permissions'>host permission</a> for the URL displayed by the tab.",
+        "description": "Captures the visible area of the currently active tab in the specified window. You must have <a href='manifest.html#permissions'>&lt;all_urls&gt;</a> permission to use this method.",
         "parameters": [
           {
             "type": "integer",
