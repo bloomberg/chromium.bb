@@ -35,10 +35,11 @@ class FakeDistiller : public Distiller {
   virtual ~FakeDistiller();
   MOCK_METHOD0(Die, void());
 
-  virtual void DistillPage(const GURL& url,
-                           const DistillationFinishedCallback& article_callback,
-                           const DistillationUpdateCallback& page_callback)
-      OVERRIDE;
+  virtual void DistillPage(
+      const GURL& url,
+      scoped_ptr<DistillerPage> distiller_page,
+      const DistillationFinishedCallback& article_callback,
+      const DistillationUpdateCallback& page_callback) OVERRIDE;
 
   void RunDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
 

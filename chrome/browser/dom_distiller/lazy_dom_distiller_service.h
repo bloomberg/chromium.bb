@@ -36,15 +36,20 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
   virtual syncer::SyncableService* GetSyncableService() const OVERRIDE;
   virtual const std::string AddToList(
       const GURL& url,
+      scoped_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) OVERRIDE;
   virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE;
-  virtual scoped_ptr<ArticleEntry> RemoveEntry(const std::string& entry_id)
-      OVERRIDE;
-  virtual scoped_ptr<ViewerHandle> ViewEntry(ViewRequestDelegate* delegate,
-                                             const std::string& entry_id)
-      OVERRIDE;
-  virtual scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate* delegate,
-                                           const GURL& url) OVERRIDE;
+  virtual scoped_ptr<ArticleEntry> RemoveEntry(
+      const std::string& entry_id) OVERRIDE;
+  virtual scoped_ptr<ViewerHandle> ViewEntry(
+      ViewRequestDelegate* delegate,
+      scoped_ptr<DistillerPage> distiller_page,
+      const std::string& entry_id) OVERRIDE;
+  virtual scoped_ptr<ViewerHandle> ViewUrl(
+      ViewRequestDelegate* delegate,
+      scoped_ptr<DistillerPage> distiller_page,
+      const GURL& url) OVERRIDE;
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() OVERRIDE;
   virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE;
 

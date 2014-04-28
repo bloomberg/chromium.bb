@@ -54,7 +54,7 @@ class DistillerPageWebContents : public DistillerPage,
                            RenderViewHost* render_view_host) OVERRIDE;
 
  protected:
-  virtual void DistillPageImpl(const GURL& gurl,
+  virtual void DistillPageImpl(const GURL& url,
                                const std::string& script) OVERRIDE;
 
  private:

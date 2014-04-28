@@ -16,8 +16,12 @@ namespace dom_distiller {
 
 DomDistillerContextKeyedService::DomDistillerContextKeyedService(
     scoped_ptr<DomDistillerStoreInterface> store,
-    scoped_ptr<DistillerFactory> distiller_factory)
-    : DomDistillerService(store.Pass(), distiller_factory.Pass()) {}
+    scoped_ptr<DistillerFactory> distiller_factory,
+    scoped_ptr<DistillerPageFactory> distiller_page_factory)
+    : DomDistillerService(store.Pass(),
+                          distiller_factory.Pass(),
+                          distiller_page_factory.Pass()) {
+}
 
 // static
 DomDistillerServiceFactory* DomDistillerServiceFactory::GetInstance() {
@@ -58,13 +62,14 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
       new DistillerPageWebContentsFactory(profile));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(profile->GetRequestContext()));
-  scoped_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
-      distiller_page_factory.Pass(), distiller_url_fetcher_factory.Pass()));
+  scoped_ptr<DistillerFactory> distiller_factory(
+      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass()));
 
   DomDistillerContextKeyedService* service =
       new DomDistillerContextKeyedService(
           dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
-          distiller_factory.Pass());
+          distiller_factory.Pass(),
+          distiller_page_factory.Pass());
 
   return service;
 }

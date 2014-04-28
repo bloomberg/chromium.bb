@@ -28,6 +28,7 @@ FakeDistiller::~FakeDistiller() {
 
 void FakeDistiller::DistillPage(
     const GURL& url,
+    scoped_ptr<DistillerPage> distiller_page,
     const DistillationFinishedCallback& article_callback,
     const DistillationUpdateCallback& page_callback) {
   url_ = url;

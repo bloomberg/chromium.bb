@@ -29,16 +29,15 @@ const size_t kMaxPagesInArticle = 32;
 namespace dom_distiller {
 
 DistillerFactoryImpl::DistillerFactoryImpl(
-    scoped_ptr<DistillerPageFactory> distiller_page_factory,
     scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory)
-  : distiller_page_factory_(distiller_page_factory.Pass()),
-    distiller_url_fetcher_factory_(distiller_url_fetcher_factory.Pass()) {}
+    : distiller_url_fetcher_factory_(distiller_url_fetcher_factory.Pass()) {
+}
 
 DistillerFactoryImpl::~DistillerFactoryImpl() {}
 
 scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistiller() {
-  scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
-      *distiller_page_factory_, *distiller_url_fetcher_factory_));
+  scoped_ptr<DistillerImpl> distiller(
+      new DistillerImpl(*distiller_url_fetcher_factory_));
   return distiller.PassAs<Distiller>();
 }
 
@@ -47,13 +46,11 @@ DistillerImpl::DistilledPageData::DistilledPageData() {}
 DistillerImpl::DistilledPageData::~DistilledPageData() {}
 
 DistillerImpl::DistillerImpl(
-    const DistillerPageFactory& distiller_page_factory,
     const DistillerURLFetcherFactory& distiller_url_fetcher_factory)
     : distiller_url_fetcher_factory_(distiller_url_fetcher_factory),
       max_pages_in_article_(kMaxPagesInArticle),
       destruction_allowed_(true),
       weak_factory_(this) {
-  distiller_page_ = distiller_page_factory.CreateDistillerPage().Pass();
 }
 
 DistillerImpl::~DistillerImpl() {
@@ -96,9 +93,11 @@ DistillerImpl::DistilledPageData* DistillerImpl::GetPageAtIndex(size_t index)
 }
 
 void DistillerImpl::DistillPage(const GURL& url,
+                                scoped_ptr<DistillerPage> distiller_page,
                                 const DistillationFinishedCallback& finished_cb,
                                 const DistillationUpdateCallback& update_cb) {
   DCHECK(AreAllPagesFinished());
+  distiller_page_ = distiller_page.Pass();
   finished_cb_ = finished_cb;
   update_cb_ = update_cb;
 

@@ -31,6 +31,8 @@ struct DistilledPageInfo {
 // Injects JavaScript into a page, and uses it to extract and return long-form
 // content. The class can be reused to load and distill multiple pages,
 // following the state transitions described along with the class's states.
+// Constructing a DistillerPage should be cheap, as some of the instances can be
+// thrown away without ever being used.
 class DistillerPage {
  public:
   typedef base::Callback<void(scoped_ptr<DistilledPageInfo> distilled_page,
@@ -41,7 +43,9 @@ class DistillerPage {
   virtual ~DistillerPage();
 
   // Loads a URL. |OnDistillationDone| is called when the load completes or
-  // fails. May be called when the distiller is idle.
+  // fails. May be called when the distiller is idle. Callers can assume that,
+  // for a given |url|, any DistillerPage implementation will extract the same
+  // content.
   void DistillPage(const GURL& url, const DistillerPageCallback& callback);
 
   // Called when the JavaScript execution completes. |page_url| is the url of
@@ -51,8 +55,9 @@ class DistillerPage {
 
  protected:
   // Called by |DistillPage| to carry out platform-specific instructions to load
-  // a page.
-  virtual void DistillPageImpl(const GURL& gurl, const std::string& script) = 0;
+  // and distill the |url| using the provided |script|. The extracted content
+  // should be the same regardless of the DistillerPage implementation.
+  virtual void DistillPageImpl(const GURL& url, const std::string& script) = 0;
 
   // Called by |ExecuteJavaScript| to carry out platform-specific instructions
   // to inject and execute JavaScript within the context of the loaded page.
@@ -69,6 +74,9 @@ class DistillerPageFactory {
  public:
   virtual ~DistillerPageFactory();
 
+  // Constructs and returns a new DistillerPage. The implementation of this
+  // should be very cheap, since the pages can be thrown away without being
+  // used.
   virtual scoped_ptr<DistillerPage> CreateDistillerPage() const = 0;
 };
 

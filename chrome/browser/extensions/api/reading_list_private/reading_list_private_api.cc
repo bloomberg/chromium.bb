@@ -37,8 +37,10 @@ bool ReadingListPrivateAddEntryFunction::RunImpl() {
 
   DomDistillerService* service =
       DomDistillerServiceFactory::GetForBrowserContext(GetProfile());
-  const std::string& id = service->AddToList(url_to_add, base::Bind(
-      &ReadingListPrivateAddEntryFunction::SendResponse, this));
+  const std::string& id = service->AddToList(
+      url_to_add,
+      service->CreateDefaultDistillerPage().Pass(),
+      base::Bind(&ReadingListPrivateAddEntryFunction::SendResponse, this));
   Entry new_entry;
   new_entry.id = id;
   results_ = AddEntry::Results::Create(new_entry);
@@ -49,7 +51,7 @@ bool ReadingListPrivateRemoveEntryFunction::RunImpl() {
   scoped_ptr<RemoveEntry::Params> params(RemoveEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   DomDistillerService* service =
-        DomDistillerServiceFactory::GetForBrowserContext(GetProfile());
+      DomDistillerServiceFactory::GetForBrowserContext(GetProfile());
   scoped_ptr<ArticleEntry> entry(service->RemoveEntry(params->id));
   if (entry == NULL) {
     results_ = make_scoped_ptr(new base::ListValue());
@@ -67,8 +69,8 @@ bool ReadingListPrivateGetEntriesFunction::RunImpl() {
   const std::vector<ArticleEntry>& entries = service->GetEntries();
   std::vector<linked_ptr<Entry> > result;
   for (std::vector<ArticleEntry>::const_iterator i = entries.begin();
-      i != entries.end();
-      ++i) {
+       i != entries.end();
+       ++i) {
     linked_ptr<Entry> e(new Entry);
     e->id = i->entry_id();
     result.push_back(e);

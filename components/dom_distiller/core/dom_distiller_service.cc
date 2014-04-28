@@ -38,10 +38,13 @@ void RunArticleAvailableCallback(
 
 DomDistillerService::DomDistillerService(
     scoped_ptr<DomDistillerStoreInterface> store,
-    scoped_ptr<DistillerFactory> distiller_factory)
+    scoped_ptr<DistillerFactory> distiller_factory,
+    scoped_ptr<DistillerPageFactory> distiller_page_factory)
     : store_(store.Pass()),
       content_store_(new InMemoryContentStore()),
-      distiller_factory_(distiller_factory.Pass()) {}
+      distiller_factory_(distiller_factory.Pass()),
+      distiller_page_factory_(distiller_page_factory.Pass()) {
+}
 
 DomDistillerService::~DomDistillerService() {}
 
@@ -49,8 +52,13 @@ syncer::SyncableService* DomDistillerService::GetSyncableService() const {
   return store_->GetSyncableService();
 }
 
+scoped_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage() {
+  return distiller_page_factory_->CreateDistillerPage().Pass();
+}
+
 const std::string DomDistillerService::AddToList(
     const GURL& url,
+    scoped_ptr<DistillerPage> distiller_page,
     const ArticleAvailableCallback& article_cb) {
   ArticleEntry entry;
   const bool is_already_added = store_->GetEntryByUrl(url, &entry);
@@ -81,7 +89,8 @@ const std::string DomDistillerService::AddToList(
   if (!is_already_added) {
     task_tracker->AddSaveCallback(base::Bind(
         &DomDistillerService::AddDistilledPageToList, base::Unretained(this)));
-    task_tracker->StartDistiller(distiller_factory_.get());
+    task_tracker->StartDistiller(distiller_factory_.get(),
+                                 distiller_page.Pass());
     task_tracker->StartBlobFetcher();
   }
 
@@ -113,6 +122,7 @@ scoped_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
 
 scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
     ViewRequestDelegate* delegate,
+    scoped_ptr<DistillerPage> distiller_page,
     const std::string& entry_id) {
   ArticleEntry entry;
   if (!store_->GetEntryById(entry_id, &entry)) {
@@ -121,7 +131,7 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
 
   TaskTracker* task_tracker = GetOrCreateTaskTrackerForEntry(entry);
   scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
-  task_tracker->StartDistiller(distiller_factory_.get());
+  task_tracker->StartDistiller(distiller_factory_.get(), distiller_page.Pass());
   task_tracker->StartBlobFetcher();
 
   return viewer_handle.Pass();
@@ -129,6 +139,7 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
 
 scoped_ptr<ViewerHandle> DomDistillerService::ViewUrl(
     ViewRequestDelegate* delegate,
+    scoped_ptr<DistillerPage> distiller_page,
     const GURL& url) {
   if (!url.is_valid()) {
     return scoped_ptr<ViewerHandle>();
@@ -136,7 +147,7 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewUrl(
 
   TaskTracker* task_tracker = GetOrCreateTaskTrackerForUrl(url);
   scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
-  task_tracker->StartDistiller(distiller_factory_.get());
+  task_tracker->StartDistiller(distiller_factory_.get(), distiller_page.Pass());
   task_tracker->StartBlobFetcher();
 
   return viewer_handle.Pass();

@@ -17,6 +17,7 @@
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/distiller_page.h"
+#include "components/dom_distiller/core/fake_distiller_page.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -181,6 +182,9 @@ void VerifyArticleProtoMatchesMultipageData(
 
 namespace dom_distiller {
 
+using test::MockDistillerPage;
+using test::MockDistillerPageFactory;
+
 class TestDistillerURLFetcher : public DistillerURLFetcher {
  public:
   explicit TestDistillerURLFetcher(bool delay_fetch)
@@ -224,27 +228,10 @@ class TestDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
 
 class MockDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
  public:
-  MockDistillerURLFetcherFactory()
-      : DistillerURLFetcherFactory(NULL) {}
+  MockDistillerURLFetcherFactory() : DistillerURLFetcherFactory(NULL) {}
   virtual ~MockDistillerURLFetcherFactory() {}
 
   MOCK_CONST_METHOD0(CreateDistillerURLFetcher, DistillerURLFetcher*());
-};
-
-class MockDistillerPage : public DistillerPage {
- public:
-  MOCK_METHOD2(DistillPageImpl, void(const GURL& gurl, const string& script));
-
-  MockDistillerPage() {}
-};
-
-class MockDistillerPageFactory : public DistillerPageFactory {
- public:
-  MOCK_CONST_METHOD0(CreateDistillerPageMock, DistillerPage*());
-
-  virtual scoped_ptr<DistillerPage> CreateDistillerPage() const OVERRIDE {
-    return scoped_ptr<DistillerPage>(CreateDistillerPageMock());
-  }
 };
 
 class DistillerTest : public testing::Test {
@@ -258,8 +245,10 @@ class DistillerTest : public testing::Test {
     in_sequence_updates_.push_back(article_update);
   }
 
-  void DistillPage(const std::string& url) {
+  void DistillPage(const std::string& url,
+                   scoped_ptr<DistillerPage> distiller_page) {
     distiller_->DistillPage(GURL(url),
+                            distiller_page.Pass(),
                             base::Bind(&DistillerTest::OnDistillArticleDone,
                                        base::Unretained(this)),
                             base::Bind(&DistillerTest::OnDistillArticleUpdate,
@@ -278,27 +267,27 @@ ACTION_P3(DistillerPageOnDistillationDone, distiller_page, url, list) {
   distiller_page->OnDistillationDone(url, list);
 }
 
-ACTION_P2(CreateMockDistillerPage, list, kurl) {
+scoped_ptr<DistillerPage> CreateMockDistillerPage(const base::Value* list,
+                                                  const GURL& url) {
   MockDistillerPage* distiller_page = new MockDistillerPage();
-  EXPECT_CALL(*distiller_page, DistillPageImpl(kurl, _))
-      .WillOnce(
-          DistillerPageOnDistillationDone(distiller_page, kurl, list));
-  return distiller_page;
+  EXPECT_CALL(*distiller_page, DistillPageImpl(url, _))
+      .WillOnce(DistillerPageOnDistillationDone(distiller_page, url, list));
+  return scoped_ptr<DistillerPage>(distiller_page).Pass();
 }
 
-ACTION_P2(CreateMockDistillerPageWithPendingJSCallback,
-          distiller_page_ptr,
-          kurl) {
+scoped_ptr<DistillerPage> CreateMockDistillerPageWithPendingJSCallback(
+    MockDistillerPage** distiller_page_ptr,
+    const GURL& url) {
   MockDistillerPage* distiller_page = new MockDistillerPage();
   *distiller_page_ptr = distiller_page;
-  EXPECT_CALL(*distiller_page, DistillPageImpl(kurl, _));
-  return distiller_page;
+  EXPECT_CALL(*distiller_page, DistillPageImpl(url, _));
+  return scoped_ptr<DistillerPage>(distiller_page).Pass();
 }
 
-ACTION_P3(CreateMockDistillerPages,
-          distiller_data,
-          pages_size,
-          start_page_num) {
+scoped_ptr<DistillerPage> CreateMockDistillerPages(
+    MultipageDistillerData* distiller_data,
+    size_t pages_size,
+    int start_page_num) {
   MockDistillerPage* distiller_page = new MockDistillerPage();
   {
     testing::InSequence s;
@@ -311,17 +300,15 @@ ACTION_P3(CreateMockDistillerPages,
               distiller_page, url, distiller_data->distilled_values[page]));
     }
   }
-  return distiller_page;
+  return scoped_ptr<DistillerPage>(distiller_page).Pass();
 }
 
 TEST_F(DistillerTest, DistillPage) {
   base::MessageLoopForUI loop;
   scoped_ptr<base::ListValue> list =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), "");
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPage(list.get(), GURL(kURL)));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(kURL);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(kURL, CreateMockDistillerPage(list.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   EXPECT_EQ(article_proto_->pages_size(), 1);
@@ -337,10 +324,8 @@ TEST_F(DistillerTest, DistillPageWithImages) {
   image_indices.push_back(1);
   scoped_ptr<base::ListValue> list =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, image_indices, "");
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPage(list.get(), GURL(kURL)));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(kURL);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(kURL, CreateMockDistillerPage(list.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   EXPECT_EQ(article_proto_->pages_size(), 1);
@@ -373,11 +358,10 @@ TEST_F(DistillerTest, DistillMultiplePages) {
     distiller_data->image_ids.push_back(image_indices);
   }
 
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPages(distiller_data.get(), kNumPages, 0));
-
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(distiller_data->page_urls[0]);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(
+      distiller_data->page_urls[0],
+      CreateMockDistillerPages(distiller_data.get(), kNumPages, 0).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   VerifyArticleProtoMatchesMultipageData(
       article_proto_.get(), distiller_data.get(), kNumPages);
@@ -389,10 +373,8 @@ TEST_F(DistillerTest, DistillLinkLoop) {
   // happen if javascript misparses a next page link.
   scoped_ptr<base::ListValue> list =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), kURL);
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPage(list.get(), GURL(kURL)));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(kURL);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(kURL, CreateMockDistillerPage(list.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   EXPECT_EQ(article_proto_->pages_size(), 1);
@@ -418,13 +400,13 @@ TEST_F(DistillerTest, CheckMaxPageLimitExtraPage) {
   distiller_data->distilled_values.pop_back();
   distiller_data->distilled_values.push_back(last_page_data.release());
 
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock()).WillOnce(
-      CreateMockDistillerPages(distiller_data.get(), kMaxPagesInArticle, 0));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
 
   distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
 
-  DistillPage(distiller_data->page_urls[0]);
+  DistillPage(distiller_data->page_urls[0],
+              CreateMockDistillerPages(
+                  distiller_data.get(), kMaxPagesInArticle, 0).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   EXPECT_EQ(kMaxPagesInArticle,
@@ -437,14 +419,14 @@ TEST_F(DistillerTest, CheckMaxPageLimitExactLimit) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kMaxPagesInArticle);
 
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock()).WillOnce(
-      CreateMockDistillerPages(distiller_data.get(), kMaxPagesInArticle, 0));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
 
   // Check if distilling an article with exactly the page limit works.
   distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
 
-  DistillPage(distiller_data->page_urls[0]);
+  DistillPage(distiller_data->page_urls[0],
+              CreateMockDistillerPages(
+                  distiller_data.get(), kMaxPagesInArticle, 0).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   EXPECT_EQ(kMaxPagesInArticle,
@@ -455,10 +437,9 @@ TEST_F(DistillerTest, SinglePageDistillationFailure) {
   base::MessageLoopForUI loop;
   // To simulate failure return a null value.
   scoped_ptr<base::Value> nullValue(base::Value::CreateNullValue());
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPage(nullValue.get(), GURL(kURL)));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(kURL);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(kURL,
+              CreateMockDistillerPage(nullValue.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ("", article_proto_->title());
   EXPECT_EQ(0, article_proto_->pages_size());
@@ -479,11 +460,10 @@ TEST_F(DistillerTest, MultiplePagesDistillationFailure) {
       distiller_data->distilled_values.begin() + failed_page_num,
       base::Value::CreateNullValue());
   // Expect only calls till the failed page number.
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock()).WillOnce(
-      CreateMockDistillerPages(distiller_data.get(), failed_page_num + 1, 0));
-
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(distiller_data->page_urls[0]);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(distiller_data->page_urls[0],
+              CreateMockDistillerPages(
+                  distiller_data.get(), failed_page_num + 1, 0).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   VerifyArticleProtoMatchesMultipageData(
@@ -499,12 +479,10 @@ TEST_F(DistillerTest, DistillPreviousPage) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kNumPages);
 
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPages(
-          distiller_data.get(), kNumPages, start_page_num));
-
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(distiller_data->page_urls[start_page_num]);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(distiller_data->page_urls[start_page_num],
+              CreateMockDistillerPages(
+                  distiller_data.get(), kNumPages, start_page_num).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   VerifyArticleProtoMatchesMultipageData(
       article_proto_.get(), distiller_data.get(), kNumPages);
@@ -519,12 +497,10 @@ TEST_F(DistillerTest, IncrementalUpdates) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kNumPages);
 
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPages(
-          distiller_data.get(), kNumPages, start_page_num));
-
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(distiller_data->page_urls[start_page_num]);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(distiller_data->page_urls[start_page_num],
+              CreateMockDistillerPages(
+                  distiller_data.get(), kNumPages, start_page_num).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
   EXPECT_EQ(kNumPages, static_cast<size_t>(article_proto_->pages_size()));
@@ -541,12 +517,10 @@ TEST_F(DistillerTest, IncrementalUpdatesDoNotDeleteFinalArticle) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kNumPages);
 
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPages(
-          distiller_data.get(), kNumPages, start_page_num));
-
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(distiller_data->page_urls[start_page_num]);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(distiller_data->page_urls[start_page_num],
+              CreateMockDistillerPages(
+                  distiller_data.get(), kNumPages, start_page_num).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kNumPages, in_sequence_updates_.size());
 
@@ -565,12 +539,10 @@ TEST_F(DistillerTest, DeletingArticleDoesNotInterfereWithUpdates) {
   // The page number of the article on which distillation starts.
   int start_page_num = 3;
 
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPages(
-          distiller_data.get(), kNumPages, start_page_num));
-
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(distiller_data->page_urls[start_page_num]);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(distiller_data->page_urls[start_page_num],
+              CreateMockDistillerPages(
+                  distiller_data.get(), kNumPages, start_page_num).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kNumPages, in_sequence_updates_.size());
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -588,15 +560,13 @@ TEST_F(DistillerTest, CancelWithDelayedImageFetchCallback) {
   image_indices.push_back(0);
   scoped_ptr<base::ListValue> distilled_value =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, image_indices, "");
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPage(distilled_value.get(), GURL(kURL)));
-
   TestDistillerURLFetcher* delayed_fetcher = new TestDistillerURLFetcher(true);
   MockDistillerURLFetcherFactory url_fetcher_factory;
   EXPECT_CALL(url_fetcher_factory, CreateDistillerURLFetcher())
       .WillOnce(Return(delayed_fetcher));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory));
-  DistillPage(kURL);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory));
+  DistillPage(
+      kURL, CreateMockDistillerPage(distilled_value.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Post callback from the url fetcher and then delete the distiller.
@@ -611,11 +581,10 @@ TEST_F(DistillerTest, CancelWithDelayedJSCallback) {
   scoped_ptr<base::ListValue> distilled_value =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), "");
   MockDistillerPage* distiller_page = NULL;
-  EXPECT_CALL(page_factory_, CreateDistillerPageMock())
-      .WillOnce(CreateMockDistillerPageWithPendingJSCallback(&distiller_page,
-                                                             GURL(kURL)));
-  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
-  DistillPage(kURL);
+  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  DistillPage(kURL,
+              CreateMockDistillerPageWithPendingJSCallback(&distiller_page,
+                                                           GURL(kURL)));
   base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_TRUE(distiller_page);

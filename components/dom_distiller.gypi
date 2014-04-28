@@ -113,6 +113,8 @@
             'dom_distiller/core/fake_db.h',
             'dom_distiller/core/fake_distiller.cc',
             'dom_distiller/core/fake_distiller.h',
+            'dom_distiller/core/fake_distiller_page.cc',
+            'dom_distiller/core/fake_distiller_page.h',
           ],
         },
         {

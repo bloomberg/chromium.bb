@@ -38,7 +38,8 @@ TaskTracker::~TaskTracker() {
   DCHECK(viewers_.empty());
 }
 
-void TaskTracker::StartDistiller(DistillerFactory* factory) {
+void TaskTracker::StartDistiller(DistillerFactory* factory,
+                                 scoped_ptr<DistillerPage> distiller_page) {
   if (distiller_) {
     return;
   }
@@ -50,6 +51,7 @@ void TaskTracker::StartDistiller(DistillerFactory* factory) {
 
   distiller_ = factory->CreateDistiller();
   distiller_->DistillPage(url,
+                          distiller_page.Pass(),
                           base::Bind(&TaskTracker::OnDistillerFinished,
                                      weak_ptr_factory_.GetWeakPtr()),
                           base::Bind(&TaskTracker::OnArticleDistillationUpdated,

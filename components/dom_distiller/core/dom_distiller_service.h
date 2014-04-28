@@ -13,6 +13,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_entry.h"
+#include "components/dom_distiller/core/distiller_page.h"
 
 class GURL;
 
@@ -25,6 +26,7 @@ namespace dom_distiller {
 class DistilledArticleProto;
 class DistilledContentStore;
 class DistillerFactory;
+class DistillerPageFactory;
 class DomDistillerObserver;
 class DomDistillerStoreInterface;
 class TaskTracker;
@@ -44,8 +46,12 @@ class DomDistillerServiceInterface {
   // Distill the article at |url| and add the resulting entry to the DOM
   // distiller list. |article_cb| is always invoked, and the bool argument to it
   // represents whether the article is available offline.
+  // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
+  // The provided |distiller_page| is only used if there is not already a
+  // distillation task in progress for the given |url|.
   virtual const std::string AddToList(
       const GURL& url,
+      scoped_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) = 0;
 
   // Gets the full list of entries.
@@ -59,12 +65,25 @@ class DomDistillerServiceInterface {
   // ViewRequestDelegate. The request will be cancelled when the handle is
   // destroyed (or when this service is destroyed), which also ensures that
   // the |delegate| is not called after that.
-  virtual scoped_ptr<ViewerHandle> ViewEntry(ViewRequestDelegate* delegate,
-                                             const std::string& entry_id) = 0;
+  // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
+  // The provided |distiller_page| is only used if there is not already a
+  // distillation task in progress for the given |entry_id|.
+  virtual scoped_ptr<ViewerHandle> ViewEntry(
+      ViewRequestDelegate* delegate,
+      scoped_ptr<DistillerPage> distiller_page,
+      const std::string& entry_id) = 0;
 
   // Request to view an article by url.
-  virtual scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate* delegate,
-                                           const GURL& url) = 0;
+  // Use CreateDefaultDistillerPage() to create a default |distiller_page|.
+  // The provided |distiller_page| is only used if there is not already a
+  // distillation task in progress for the given |url|.
+  virtual scoped_ptr<ViewerHandle> ViewUrl(
+      ViewRequestDelegate* delegate,
+      scoped_ptr<DistillerPage> distiller_page,
+      const GURL& url) = 0;
+
+  // Creates a default DistillerPage.
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() = 0;
 
   virtual void AddObserver(DomDistillerObserver* observer) = 0;
   virtual void RemoveObserver(DomDistillerObserver* observer) = 0;
@@ -80,22 +99,28 @@ class DomDistillerServiceInterface {
 class DomDistillerService : public DomDistillerServiceInterface {
  public:
   DomDistillerService(scoped_ptr<DomDistillerStoreInterface> store,
-                      scoped_ptr<DistillerFactory> distiller_factory);
+                      scoped_ptr<DistillerFactory> distiller_factory,
+                      scoped_ptr<DistillerPageFactory> distiller_page_factory);
   virtual ~DomDistillerService();
 
   // DomDistillerServiceInterface implementation.
   virtual syncer::SyncableService* GetSyncableService() const OVERRIDE;
   virtual const std::string AddToList(
       const GURL& url,
+      scoped_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) OVERRIDE;
   virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE;
-  virtual scoped_ptr<ArticleEntry> RemoveEntry(const std::string& entry_id)
-      OVERRIDE;
-  virtual scoped_ptr<ViewerHandle> ViewEntry(ViewRequestDelegate* delegate,
-                                             const std::string& entry_id)
-      OVERRIDE;
-  virtual scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate* delegate,
-                                           const GURL& url) OVERRIDE;
+  virtual scoped_ptr<ArticleEntry> RemoveEntry(
+      const std::string& entry_id) OVERRIDE;
+  virtual scoped_ptr<ViewerHandle> ViewEntry(
+      ViewRequestDelegate* delegate,
+      scoped_ptr<DistillerPage> distiller_page,
+      const std::string& entry_id) OVERRIDE;
+  virtual scoped_ptr<ViewerHandle> ViewUrl(
+      ViewRequestDelegate* delegate,
+      scoped_ptr<DistillerPage> distiller_page,
+      const GURL& url) OVERRIDE;
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() OVERRIDE;
   virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE;
 
@@ -118,6 +143,7 @@ class DomDistillerService : public DomDistillerServiceInterface {
   scoped_ptr<DomDistillerStoreInterface> store_;
   scoped_ptr<DistilledContentStore> content_store_;
   scoped_ptr<DistillerFactory> distiller_factory_;
+  scoped_ptr<DistillerPageFactory> distiller_page_factory_;
 
   typedef ScopedVector<TaskTracker> TaskList;
   TaskList tasks_;

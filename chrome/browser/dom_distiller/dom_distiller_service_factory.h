@@ -22,7 +22,8 @@ class DomDistillerContextKeyedService : public KeyedService,
  public:
   DomDistillerContextKeyedService(
       scoped_ptr<DomDistillerStoreInterface> store,
-      scoped_ptr<DistillerFactory> distiller_factory);
+      scoped_ptr<DistillerFactory> distiller_factory,
+      scoped_ptr<DistillerPageFactory> distiller_page_factory);
   virtual ~DomDistillerContextKeyedService() {}
 
  private:

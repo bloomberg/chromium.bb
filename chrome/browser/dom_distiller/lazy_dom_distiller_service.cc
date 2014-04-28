@@ -21,7 +21,8 @@ LazyDomDistillerService::LazyDomDistillerService(
                  content::Source<Profile>(profile));
 }
 
-LazyDomDistillerService::~LazyDomDistillerService() {}
+LazyDomDistillerService::~LazyDomDistillerService() {
+}
 
 // This will create an object and schedule work the first time it's called
 // and just return an existing object after that.
@@ -44,8 +45,9 @@ syncer::SyncableService* LazyDomDistillerService::GetSyncableService() const {
 
 const std::string LazyDomDistillerService::AddToList(
     const GURL& url,
+    scoped_ptr<DistillerPage> distiller_page,
     const ArticleAvailableCallback& article_cb) {
-  return instance()->AddToList(url, article_cb);
+  return instance()->AddToList(url, distiller_page.Pass(), article_cb);
 }
 
 std::vector<ArticleEntry> LazyDomDistillerService::GetEntries() const {
@@ -59,14 +61,21 @@ scoped_ptr<ArticleEntry> LazyDomDistillerService::RemoveEntry(
 
 scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewEntry(
     ViewRequestDelegate* delegate,
+    scoped_ptr<DistillerPage> distiller_page,
     const std::string& entry_id) {
-  return instance()->ViewEntry(delegate, entry_id);
+  return instance()->ViewEntry(delegate, distiller_page.Pass(), entry_id);
 }
 
 scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewUrl(
     ViewRequestDelegate* delegate,
+    scoped_ptr<DistillerPage> distiller_page,
     const GURL& url) {
-  return instance()->ViewUrl(delegate, url);
+  return instance()->ViewUrl(delegate, distiller_page.Pass(), url);
+}
+
+scoped_ptr<DistillerPage>
+LazyDomDistillerService::CreateDefaultDistillerPage() {
+  return instance()->CreateDefaultDistillerPage();
 }
 
 void LazyDomDistillerService::AddObserver(DomDistillerObserver* observer) {

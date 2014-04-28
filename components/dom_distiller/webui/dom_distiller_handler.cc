@@ -65,6 +65,7 @@ void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {
   if (gurl.is_valid()) {
     service_->AddToList(
         gurl,
+        service_->CreateDefaultDistillerPage(),
         base::Bind(base::Bind(&DomDistillerHandler::OnArticleAdded,
                               base::Unretained(this))));
   } else {

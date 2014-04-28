@@ -41,6 +41,7 @@ class Distiller {
   // a distilled page is added and |finished_cb| will be invoked once
   // distillation is completed.
   virtual void DistillPage(const GURL& url,
+                           scoped_ptr<DistillerPage> distiller_page,
                            const DistillationFinishedCallback& finished_cb,
                            const DistillationUpdateCallback& update_cb) = 0;
 };
@@ -55,13 +56,11 @@ class DistillerFactory {
 class DistillerFactoryImpl : public DistillerFactory {
  public:
   DistillerFactoryImpl(
-      scoped_ptr<DistillerPageFactory> distiller_page_factory,
       scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory);
   virtual ~DistillerFactoryImpl();
   virtual scoped_ptr<Distiller> CreateDistiller() OVERRIDE;
 
  private:
-  scoped_ptr<DistillerPageFactory> distiller_page_factory_;
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory_;
 };
 
@@ -69,14 +68,14 @@ class DistillerFactoryImpl : public DistillerFactory {
 class DistillerImpl : public Distiller {
  public:
   DistillerImpl(
-      const DistillerPageFactory& distiller_page_factory,
       const DistillerURLFetcherFactory& distiller_url_fetcher_factory);
   virtual ~DistillerImpl();
 
-  virtual void DistillPage(const GURL& url,
-                           const DistillationFinishedCallback& finished_cb,
-                           const DistillationUpdateCallback& update_cb)
-      OVERRIDE;
+  virtual void DistillPage(
+      const GURL& url,
+      scoped_ptr<DistillerPage> distiller_page,
+      const DistillationFinishedCallback& finished_cb,
+      const DistillationUpdateCallback& update_cb) OVERRIDE;
 
   void SetMaxNumPagesInArticle(size_t max_num_pages);
 

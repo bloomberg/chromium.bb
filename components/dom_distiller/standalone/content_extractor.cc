@@ -61,12 +61,13 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
       new DistillerPageWebContentsFactory(context));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(context->GetRequestContext()));
-  scoped_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
-      distiller_page_factory.Pass(), distiller_url_fetcher_factory.Pass()));
+  scoped_ptr<DistillerFactory> distiller_factory(
+      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass()));
 
   return scoped_ptr<DomDistillerService>(new DomDistillerService(
       dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
-      distiller_factory.Pass()));
+      distiller_factory.Pass(),
+      distiller_page_factory.Pass()));
 }
 
 void AddComponentsResources() {
@@ -109,7 +110,8 @@ class ContentExtractionRequest : public ViewRequestDelegate {
  public:
   void Start(DomDistillerService* service, base::Closure finished_callback) {
     finished_callback_ = finished_callback;
-    viewer_handle_ = service->ViewUrl(this, url_);
+    viewer_handle_ =
+        service->ViewUrl(this, service->CreateDefaultDistillerPage(), url_);
   }
 
   DistilledArticleProto GetArticleCopy() {

@@ -82,7 +82,8 @@ class TaskTracker {
   ~TaskTracker();
 
   // |factory| will not be stored after this call.
-  void StartDistiller(DistillerFactory* factory);
+  void StartDistiller(DistillerFactory* factory,
+                      scoped_ptr<DistillerPage> distiller_page);
   void StartBlobFetcher();
 
   void AddSaveCallback(const SaveCallback& callback);

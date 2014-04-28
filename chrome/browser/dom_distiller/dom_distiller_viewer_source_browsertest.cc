@@ -127,7 +127,8 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
         new DomDistillerContextKeyedService(
             scoped_ptr<DomDistillerStoreInterface>(
                 CreateStoreWithFakeDB(fake_db, FakeDB::EntryMap())),
-            scoped_ptr<DistillerFactory>(factory));
+            scoped_ptr<DistillerFactory>(factory),
+            scoped_ptr<DistillerPageFactory>());
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);
     if (expect_distillation_) {

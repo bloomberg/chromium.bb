@@ -28,23 +28,39 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   virtual ~TestDomDistillerService() {}
 
   MOCK_CONST_METHOD0(GetSyncableService, syncer::SyncableService*());
-  MOCK_METHOD2(AddToList,
-               const std::string(const GURL&, const ArticleAvailableCallback&));
+  MOCK_METHOD3(AddToList,
+               const std::string(const GURL&,
+                                 DistillerPage*,
+                                 const ArticleAvailableCallback&));
+  virtual const std::string AddToList(
+      const GURL& url,
+      scoped_ptr<DistillerPage> distiller_page,
+      const ArticleAvailableCallback& article_cb) {
+    return AddToList(url, distiller_page.get(), article_cb);
+  }
   MOCK_CONST_METHOD0(GetEntries, std::vector<ArticleEntry>());
   MOCK_METHOD1(AddObserver, void(DomDistillerObserver*));
   MOCK_METHOD1(RemoveObserver, void(DomDistillerObserver*));
   MOCK_METHOD0(ViewUrlImpl, ViewerHandle*());
-  virtual scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate*, const GURL&) {
+  virtual scoped_ptr<ViewerHandle> ViewUrl(
+      ViewRequestDelegate*,
+      scoped_ptr<DistillerPage> distiller_page,
+      const GURL&) {
     return scoped_ptr<ViewerHandle>(ViewUrlImpl());
   }
   MOCK_METHOD0(ViewEntryImpl, ViewerHandle*());
-  virtual scoped_ptr<ViewerHandle> ViewEntry(ViewRequestDelegate*,
-                                             const std::string&) {
+  virtual scoped_ptr<ViewerHandle> ViewEntry(
+      ViewRequestDelegate*,
+      scoped_ptr<DistillerPage> distiller_page,
+      const std::string&) {
     return scoped_ptr<ViewerHandle>(ViewEntryImpl());
   }
   MOCK_METHOD0(RemoveEntryImpl, ArticleEntry*());
   virtual scoped_ptr<ArticleEntry> RemoveEntry(const std::string&) {
     return scoped_ptr<ArticleEntry>(RemoveEntryImpl());
+  }
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() {
+    return scoped_ptr<DistillerPage>();
   }
 };
 

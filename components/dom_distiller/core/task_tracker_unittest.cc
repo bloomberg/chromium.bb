@@ -152,7 +152,8 @@ TEST_F(DomDistillerTaskTrackerTest, TestViewerNotifiedOnDistillationComplete) {
 
   EXPECT_CALL(viewer_delegate, OnArticleReady(_));
 
-  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartDistiller(&distiller_factory,
+                              scoped_ptr<DistillerPage>().Pass());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(cancel_callback.Cancelled());
@@ -175,7 +176,8 @@ TEST_F(DomDistillerTaskTrackerTest,
 
   EXPECT_CALL(save_callback, Save(_, _, _));
 
-  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartDistiller(&distiller_factory,
+                              scoped_ptr<DistillerPage>().Pass());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(cancel_callback.Cancelled());
@@ -248,7 +250,8 @@ TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcherFinishesFirst) {
   EXPECT_CALL(*distiller, Die())
       .WillOnce(testing::Assign(&distiller_destroyed, true));
 
-  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartDistiller(&distiller_factory,
+                              scoped_ptr<DistillerPage>().Pass());
   task_tracker.StartBlobFetcher();
   base::RunLoop().RunUntilIdle();
 
@@ -281,7 +284,8 @@ TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcherWithoutBlob) {
   base::RunLoop().RunUntilIdle();
 
   task_tracker.StartBlobFetcher();
-  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartDistiller(&distiller_factory,
+                              scoped_ptr<DistillerPage>().Pass());
 
   // OnArticleReady shouldn't be called until distillation finishes (i.e. the
   // blob fetcher shouldn't return distilled content).
@@ -312,10 +316,11 @@ TEST_F(DomDistillerTaskTrackerTest, TestDistillerFailsFirst) {
   scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
 
   DistilledContentStore::LoadCallback content_store_load_callback;
-  EXPECT_CALL(content_store, LoadContent(_, _)).WillOnce(
-      testing::SaveArg<1>(&content_store_load_callback));
+  EXPECT_CALL(content_store, LoadContent(_, _))
+      .WillOnce(testing::SaveArg<1>(&content_store_load_callback));
 
-  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartDistiller(&distiller_factory,
+                              scoped_ptr<DistillerPage>().Pass());
   task_tracker.StartBlobFetcher();
 
   EXPECT_CALL(viewer_delegate, OnArticleReady(_)).Times(0);
@@ -356,7 +361,8 @@ TEST_F(DomDistillerTaskTrackerTest, ContentIsSaved) {
   EXPECT_CALL(content_store, SaveContent(_, _, _))
       .WillOnce(testing::SaveArg<1>(&stored_distilled_article));
 
-  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartDistiller(&distiller_factory,
+                              scoped_ptr<DistillerPage>().Pass());
 
   EXPECT_CALL(viewer_delegate, OnArticleReady(_));
   distiller->RunDistillerCallback(scoped_ptr<DistilledArticleProto>(

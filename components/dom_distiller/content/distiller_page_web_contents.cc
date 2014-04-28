@@ -31,7 +31,7 @@ DistillerPageWebContents::DistillerPageWebContents(
 
 DistillerPageWebContents::~DistillerPageWebContents() {}
 
-void DistillerPageWebContents::DistillPageImpl(const GURL& gurl,
+void DistillerPageWebContents::DistillPageImpl(const GURL& url,
                                                const std::string& script) {
   DCHECK(browser_context_);
   DCHECK(state_ == IDLE);
@@ -46,7 +46,7 @@ void DistillerPageWebContents::DistillPageImpl(const GURL& gurl,
 
   // Start observing WebContents and load the requested URL.
   content::WebContentsObserver::Observe(web_contents_.get());
-  content::NavigationController::LoadURLParams params(gurl);
+  content::NavigationController::LoadURLParams params(url);
   web_contents_->GetController().LoadURLWithParams(params);
 }
 
