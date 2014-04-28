@@ -47,6 +47,10 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   static const int kRecentlyClosedHeaderCommandId;
   static const int kDisabledRecentlyClosedHeaderCommandId;
 
+  // Exposed for tests only: return the Command Id for the first entry in the
+  // recently closed window items list.
+  static int GetFirstRecentTabsCommandId();
+
   // If |open_tabs_delegate| is NULL, the default delegate for |browser|'s
   // profile will be used. Testing may require a specific |open_tabs_delegate|.
   RecentTabsSubMenuModel(ui::AcceleratorProvider* accelerator_provider,

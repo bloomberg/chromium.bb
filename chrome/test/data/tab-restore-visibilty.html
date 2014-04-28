@@ -1,0 +1,31 @@
+<script>
+var count = 0;
+
+function setTitle() {
+  // document.title reports the DOM page visibility and RAF count.
+  document.title = document.visibilityState + ' ' + count++;
+
+  if (!window.ready)
+    setTimeout(setReady, count > 10 ? 0 : 100);
+}
+
+document.addEventListener('visibilitychange', setTitle);
+
+(function changeTitle() {
+  window.requestAnimationFrame(changeTitle);
+  setTitle();
+})();
+
+function setReady() {
+  if (!window.ready)
+    sendReady();
+  window.ready = true;
+}
+
+function sendReady() {
+  if (window.domAutomationController) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("READY");
+  }
+}
+</script>

@@ -313,6 +313,10 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
+int RecentTabsSubMenuModel::GetFirstRecentTabsCommandId() {
+  return WindowVectorIndexToCommandId(0);
+}
+
 const gfx::FontList* RecentTabsSubMenuModel::GetLabelFontListAt(
     int index) const {
   int command_id = GetCommandIdAt(index);
