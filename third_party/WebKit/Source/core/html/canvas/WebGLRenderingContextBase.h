@@ -171,7 +171,7 @@ public:
     void drawElements(GLenum mode, GLsizei count, GLenum type, long long offset);
 
     void drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
-    void drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount);
+    void drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount);
 
     void enable(GLenum cap);
     void enableVertexAttribArray(GLuint index);
@@ -721,6 +721,10 @@ protected:
     // Generates GL error and returns false if level is invalid.
     bool validateTexFuncLevel(const char* functionName, GLenum target, GLint level);
 
+    // Helper function to check if a 64-bit value is non-negative and can fit into a 32-bit integer.
+    // Generates GL error and returns false if not.
+    bool validateValueFitNonNegInt32(const char* functionName, const char* paramName, long long value);
+
     enum TexFuncValidationFunctionType {
         NotTexSubImage2D,
         TexSubImage2D,
@@ -817,9 +821,9 @@ protected:
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GLboolean transpose, Float32Array*, GLsizei mod);
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GLboolean transpose, void*, GLsizei, GLsizei mod);
 
-    // Helper function to validate parameters for bufferData.
-    // Return the current bound buffer to target, or 0 if parameters are invalid.
-    WebGLBuffer* validateBufferDataParameters(const char* functionName, GLenum target, GLenum usage);
+    // Helper function to validate the target for bufferData.
+    // Return the current bound buffer to target, or 0 if the target is invalid.
+    WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target);
 
     // Helper function for tex{Sub}Image2D to make sure image is ready and wouldn't taint Origin.
     bool validateHTMLImageElement(const char* functionName, HTMLImageElement*, ExceptionState&);
@@ -843,6 +847,10 @@ protected:
     void vertexAttribfImpl(const char* functionName, GLuint index, GLsizei expectedSize, GLfloat, GLfloat, GLfloat, GLfloat);
     void vertexAttribfvImpl(const char* functionName, GLuint index, Float32Array*, GLsizei expectedSize);
     void vertexAttribfvImpl(const char* functionName, GLuint index, GLfloat*, GLsizei, GLsizei expectedSize);
+
+    // Helper functions to bufferData() and bufferSubData().
+    void bufferDataImpl(GLenum target, long long size, const void* data, GLenum usage);
+    void bufferSubDataImpl(GLenum target, long long offset, GLsizeiptr size, const void* data);
 
     // Helper function for delete* (deleteBuffer, deleteProgram, etc) functions.
     // Return false if caller should return without further processing.

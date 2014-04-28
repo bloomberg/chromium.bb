@@ -75,7 +75,7 @@ void ANGLEInstancedArrays::drawArraysInstancedANGLE(GLenum mode, GLint first, GL
     m_context->drawArraysInstancedANGLE(mode, first, count, primcount);
 }
 
-void ANGLEInstancedArrays::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount)
+void ANGLEInstancedArrays::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount)
 {
     if (isLost())
         return;

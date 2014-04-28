@@ -1164,86 +1164,90 @@ void WebGLRenderingContextBase::blendFuncSeparate(GLenum srcRGB, GLenum dstRGB, 
     webContext()->blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
+void WebGLRenderingContextBase::bufferDataImpl(GLenum target, long long size, const void* data, GLenum usage)
+{
+    WebGLBuffer* buffer = validateBufferDataTarget("bufferData", target);
+    if (!buffer)
+        return;
+
+    switch (usage) {
+    case GL_STREAM_DRAW:
+    case GL_STATIC_DRAW:
+    case GL_DYNAMIC_DRAW:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "bufferData", "invalid usage");
+        return;
+    }
+
+    if (!validateValueFitNonNegInt32("bufferData", "size", size))
+        return;
+
+    webContext()->bufferData(target, static_cast<GLsizeiptr>(size), data, usage);
+}
+
 void WebGLRenderingContextBase::bufferData(GLenum target, long long size, GLenum usage)
 {
     if (isContextLost())
         return;
-    WebGLBuffer* buffer = validateBufferDataParameters("bufferData", target, usage);
-    if (!buffer)
-        return;
-    if (size < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, "bufferData", "size < 0");
-        return;
-    }
     if (!size) {
         synthesizeGLError(GL_INVALID_VALUE, "bufferData", "size == 0");
         return;
     }
-
-    webContext()->bufferData(target, static_cast<GLsizeiptr>(size), 0, usage);
+    bufferDataImpl(target, size, 0, usage);
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target, ArrayBuffer* data, GLenum usage)
 {
     if (isContextLost())
         return;
-    WebGLBuffer* buffer = validateBufferDataParameters("bufferData", target, usage);
-    if (!buffer)
-        return;
     if (!data) {
         synthesizeGLError(GL_INVALID_VALUE, "bufferData", "no data");
         return;
     }
-    webContext()->bufferData(target, data->byteLength(), data->data(), usage);
+    bufferDataImpl(target, data->byteLength(), data->data(), usage);
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target, ArrayBufferView* data, GLenum usage)
 {
     if (isContextLost())
         return;
-    WebGLBuffer* buffer = validateBufferDataParameters("bufferData", target, usage);
-    if (!buffer)
-        return;
     if (!data) {
         synthesizeGLError(GL_INVALID_VALUE, "bufferData", "no data");
         return;
     }
+    bufferDataImpl(target, data->byteLength(), data->baseAddress(), usage);
+}
 
-    webContext()->bufferData(target, data->byteLength(), data->baseAddress(), usage);
+void WebGLRenderingContextBase::bufferSubDataImpl(GLenum target, long long offset, GLsizeiptr size, const void* data)
+{
+    WebGLBuffer* buffer = validateBufferDataTarget("bufferSubData", target);
+    if (!buffer)
+        return;
+    if (!validateValueFitNonNegInt32("bufferSubData", "offset", offset))
+        return;
+    if (!data)
+        return;
+
+    webContext()->bufferSubData(target, static_cast<GLintptr>(offset), size, data);
 }
 
 void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, ArrayBuffer* data)
 {
     if (isContextLost())
         return;
-    WebGLBuffer* buffer = validateBufferDataParameters("bufferSubData", target, GL_STATIC_DRAW);
-    if (!buffer)
-        return;
-    if (offset < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "offset < 0");
-        return;
-    }
     if (!data)
         return;
-
-    webContext()->bufferSubData(target, static_cast<GLintptr>(offset), data->byteLength(), data->data());
+    bufferSubDataImpl(target, offset, data->byteLength(), data->data());
 }
 
 void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, ArrayBufferView* data)
 {
     if (isContextLost())
         return;
-    WebGLBuffer* buffer = validateBufferDataParameters("bufferSubData", target, GL_STATIC_DRAW);
-    if (!buffer)
-        return;
-    if (offset < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "offset < 0");
-        return;
-    }
     if (!data)
         return;
-
-    webContext()->bufferSubData(target, static_cast<GLintptr>(offset), data->byteLength(), data->baseAddress());
+    bufferSubDataImpl(target, offset, data->byteLength(), data->baseAddress());
 }
 
 GLenum WebGLRenderingContextBase::checkFramebufferStatus(GLenum target)
@@ -1806,7 +1810,7 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
     markContextChanged(CanvasChanged);
 }
 
-void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount)
+void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount)
 {
     if (!validateDrawElements("drawElementsInstancedANGLE", mode, count, type, offset))
         return;
@@ -3376,6 +3380,21 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexFun
     return true;
 }
 
+bool WebGLRenderingContextBase::validateValueFitNonNegInt32(const char* functionName, const char* paramName, long long value)
+{
+    if (value < 0) {
+        String errorMsg = String(paramName) + " < 0";
+        synthesizeGLError(GL_INVALID_VALUE, functionName, errorMsg.ascii().data());
+        return false;
+    }
+    if (value > static_cast<long long>(std::numeric_limits<int>::max())) {
+        String errorMsg = String(paramName) + " more than 32-bit";
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, errorMsg.ascii().data());
+        return false;
+    }
+    return true;
+}
+
 PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(Image* image, int width, int height, const char* functionName)
 {
     IntSize size(width, height);
@@ -4105,10 +4124,12 @@ void WebGLRenderingContextBase::vertexAttribPointer(GLuint index, GLint size, GL
         synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "index out of range");
         return;
     }
-    if (size < 1 || size > 4 || stride < 0 || stride > 255 || offset < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "bad size, stride or offset");
+    if (size < 1 || size > 4 || stride < 0 || stride > 255) {
+        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "bad size or stride");
         return;
     }
+    if (!validateValueFitNonNegInt32("vertexAttribPointer", "offset", offset))
+        return;
     if (!m_boundArrayBuffer) {
         synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer", "no bound ARRAY_BUFFER");
         return;
@@ -5161,7 +5182,7 @@ bool WebGLRenderingContextBase::validateUniformMatrixParameters(const char* func
     return true;
 }
 
-WebGLBuffer* WebGLRenderingContextBase::validateBufferDataParameters(const char* functionName, GLenum target, GLenum usage)
+WebGLBuffer* WebGLRenderingContextBase::validateBufferDataTarget(const char* functionName, GLenum target)
 {
     WebGLBuffer* buffer = 0;
     switch (target) {
@@ -5179,14 +5200,7 @@ WebGLBuffer* WebGLRenderingContextBase::validateBufferDataParameters(const char*
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "no buffer");
         return 0;
     }
-    switch (usage) {
-    case GL_STREAM_DRAW:
-    case GL_STATIC_DRAW:
-    case GL_DYNAMIC_DRAW:
-        return buffer;
-    }
-    synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid usage");
-    return 0;
+    return buffer;
 }
 
 bool WebGLRenderingContextBase::validateHTMLImageElement(const char* functionName, HTMLImageElement* image, ExceptionState& exceptionState)
@@ -5286,10 +5300,12 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
         return false;
     }
 
-    if (count < 0 || offset < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "count or offset < 0");
+    if (count < 0) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "count < 0");
         return false;
     }
+    if (!validateValueFitNonNegInt32(functionName, "offset", offset))
+        return false;
 
     if (!count) {
         markContextChanged(CanvasChanged);
