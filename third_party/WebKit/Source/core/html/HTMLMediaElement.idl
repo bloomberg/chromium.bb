@@ -72,8 +72,8 @@
     void pause();
 
     // media controller
-    [Reflect] attribute DOMString mediaGroup;
-    [TypeChecking=Interface|Nullable] attribute MediaController? controller;
+    [RuntimeEnabled=MediaController, Reflect] attribute DOMString mediaGroup;
+    [RuntimeEnabled=MediaController, TypeChecking=Interface|Nullable] attribute MediaController? controller;
 
     // controls
     attribute boolean controls;

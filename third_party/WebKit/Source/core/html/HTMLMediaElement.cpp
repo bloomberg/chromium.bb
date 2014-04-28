@@ -432,7 +432,7 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (!autoplay() && m_player)
             setPlayerPreload();
 
-    } else if (name == mediagroupAttr) {
+    } else if (name == mediagroupAttr && RuntimeEnabledFeatures::mediaControllerEnabled()) {
         setMediaGroup(value);
     } else {
         HTMLElement::parseAttribute(name, value);

@@ -73,6 +73,7 @@ LayerSquashing status=test
 PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable
+MediaController depends_on=Media, status=experimental
 MediaQueryParser status=test
 MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental

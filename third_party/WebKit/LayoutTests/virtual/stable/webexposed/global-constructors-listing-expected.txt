@@ -192,7 +192,6 @@ Int32Array
 Int8Array
 KeyboardEvent
 Location
-MediaController
 MediaElementAudioSourceNode
 MediaError
 MediaKeyError
