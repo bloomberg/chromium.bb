@@ -27,7 +27,8 @@ class MTPFileStreamReader
   MTPFileStreamReader(fileapi::FileSystemContext* file_system_context,
                       const fileapi::FileSystemURL& url,
                       int64 initial_offset,
-                      const base::Time& expected_modification_time);
+                      const base::Time& expected_modification_time,
+                      bool do_media_header_validation);
 
   virtual ~MTPFileStreamReader();
 

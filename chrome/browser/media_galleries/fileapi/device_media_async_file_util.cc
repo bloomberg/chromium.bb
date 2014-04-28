@@ -64,9 +64,10 @@ DeviceMediaAsyncFileUtil::~DeviceMediaAsyncFileUtil() {
 
 // static
 DeviceMediaAsyncFileUtil* DeviceMediaAsyncFileUtil::Create(
-    const base::FilePath& profile_path) {
+    const base::FilePath& profile_path,
+    MediaFileValidationType validation_type) {
   DCHECK(!profile_path.empty());
-  return new DeviceMediaAsyncFileUtil(profile_path);
+  return new DeviceMediaAsyncFileUtil(profile_path, validation_type);
 }
 
 bool DeviceMediaAsyncFileUtil::SupportsStreaming(
@@ -283,12 +284,15 @@ DeviceMediaAsyncFileUtil::GetFileStreamReader(
   DCHECK(delegate->IsStreaming());
   return scoped_ptr<webkit_blob::FileStreamReader>(
       new ReadaheadFileStreamReader(new MTPFileStreamReader(
-          context, url, offset, expected_modification_time)));
+          context, url, offset, expected_modification_time,
+          validation_type_ == APPLY_MEDIA_FILE_VALIDATION)));
 }
 
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
-    const base::FilePath& profile_path)
+    const base::FilePath& profile_path,
+    MediaFileValidationType validation_type)
     : profile_path_(profile_path),
+      validation_type_(validation_type),
       weak_ptr_factory_(this) {
 }
 
@@ -322,18 +326,25 @@ void DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile(
     base::SequencedTaskRunner* media_task_runner,
     const base::File::Info& file_info,
     const base::FilePath& platform_path) {
-  base::PostTaskAndReplyWithResult(
-      media_task_runner,
-      FROM_HERE,
-      base::Bind(&NativeMediaFileUtil::IsMediaFile, platform_path),
-      base::Bind(&DeviceMediaAsyncFileUtil::OnDidCheckMedia,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 file_info,
-                 ShareableFileReference::GetOrCreate(
-                     platform_path,
-                     ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-                     media_task_runner)));
+  scoped_refptr<webkit_blob::ShareableFileReference> file =
+      ShareableFileReference::GetOrCreate(
+                             platform_path,
+                             ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+                             media_task_runner);
+
+  if (validation_type_ == APPLY_MEDIA_FILE_VALIDATION) {
+    base::PostTaskAndReplyWithResult(
+        media_task_runner,
+        FROM_HERE,
+        base::Bind(&NativeMediaFileUtil::IsMediaFile, platform_path),
+        base::Bind(&DeviceMediaAsyncFileUtil::OnDidCheckMedia,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   file_info,
+                   file));
+  } else {
+    OnDidCheckMedia(callback, file_info, file, base::File::FILE_OK);
+  }
 }
 
 void DeviceMediaAsyncFileUtil::OnDidCheckMedia(

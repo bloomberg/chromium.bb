@@ -67,12 +67,13 @@ MTPFileStreamReader::MTPFileStreamReader(
     fileapi::FileSystemContext* file_system_context,
     const fileapi::FileSystemURL& url,
     int64 initial_offset,
-    const base::Time& expected_modification_time)
+    const base::Time& expected_modification_time,
+    bool do_media_header_validation)
     : file_system_context_(file_system_context),
       url_(url),
       current_offset_(initial_offset),
       expected_modification_time_(expected_modification_time),
-      media_header_validated_(false),
+      media_header_validated_(!do_media_header_validation),
       weak_factory_(this) {
 }
 

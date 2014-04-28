@@ -127,7 +127,8 @@ MediaFileSystemBackend::MediaFileSystemBackend(
       native_media_file_util_(
           new NativeMediaFileUtil(media_path_filter_.get())),
       device_media_async_file_util_(
-          DeviceMediaAsyncFileUtil::Create(profile_path_))
+          DeviceMediaAsyncFileUtil::Create(profile_path_,
+                                           APPLY_MEDIA_FILE_VALIDATION))
 #if defined(OS_WIN) || defined(OS_MACOSX)
       ,
       picasa_file_util_(new picasa::PicasaFileUtil(media_path_filter_.get())),

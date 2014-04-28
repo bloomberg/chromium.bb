@@ -13,7 +13,8 @@ namespace chromeos {
 MTPFileSystemBackendDelegate::MTPFileSystemBackendDelegate(
     const base::FilePath& storage_partition_path)
     : device_media_async_file_util_(
-          DeviceMediaAsyncFileUtil::Create(storage_partition_path)) {
+          DeviceMediaAsyncFileUtil::Create(storage_partition_path,
+                                           NO_MEDIA_FILE_VALIDATION)) {
 }
 
 MTPFileSystemBackendDelegate::~MTPFileSystemBackendDelegate() {
@@ -34,10 +35,6 @@ MTPFileSystemBackendDelegate::CreateFileStreamReader(
     fileapi::FileSystemContext* context) {
   DCHECK_EQ(fileapi::kFileSystemTypeDeviceMediaAsFileStorage, url.type());
 
-  // TODO(kinaba): Returned MediaFileStreamReader verifies file header and
-  // stops reading if the stream does not represent a media file. We might
-  // want to remove the verification here since we want to mount MTP devices
-  // as normal file storage in Chrome OS file manager.
   return device_media_async_file_util_->GetFileStreamReader(
       url, offset, expected_modification_time, context);
 }

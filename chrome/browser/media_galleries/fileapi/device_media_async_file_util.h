@@ -30,6 +30,11 @@ namespace webkit_blob {
 class FileStreamReader;
 }
 
+enum MediaFileValidationType {
+  NO_MEDIA_FILE_VALIDATION,
+  APPLY_MEDIA_FILE_VALIDATION,
+};
+
 class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
  public:
   virtual ~DeviceMediaAsyncFileUtil();
@@ -37,7 +42,9 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // Returns an instance of DeviceMediaAsyncFileUtil. Returns NULL if
   // asynchronous operation is not supported. Callers own the returned
   // object.
-  static DeviceMediaAsyncFileUtil* Create(const base::FilePath& profile_path);
+  static DeviceMediaAsyncFileUtil* Create(
+      const base::FilePath& profile_path,
+      MediaFileValidationType validation_type);
 
   bool SupportsStreaming(const fileapi::FileSystemURL& url);
 
@@ -124,7 +131,8 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
 
  private:
   // Use Create() to get an instance of DeviceMediaAsyncFileUtil.
-  explicit DeviceMediaAsyncFileUtil(const base::FilePath& profile_path);
+  DeviceMediaAsyncFileUtil(const base::FilePath& profile_path,
+                           MediaFileValidationType validation_type);
 
   // Called when GetFileInfo method call succeeds. |file_info| contains the
   // file details of the requested url. |callback| is invoked to complete the
@@ -200,6 +208,8 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
 
   // Profile path.
   const base::FilePath profile_path_;
+
+  const MediaFileValidationType validation_type_;
 
   // For callbacks that may run after destruction.
   base::WeakPtrFactory<DeviceMediaAsyncFileUtil> weak_ptr_factory_;
