@@ -226,7 +226,6 @@ CONTENT_EXPORT extern const char kRendererStartupDialog[];
 extern const char kSandboxIPCProcess[];
 CONTENT_EXPORT extern const char kScrollEndEffect[];
 extern const char kShowPaintRects[];
-CONTENT_EXPORT extern const char kSimulateTouchScreenWithMouse[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];
 CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
