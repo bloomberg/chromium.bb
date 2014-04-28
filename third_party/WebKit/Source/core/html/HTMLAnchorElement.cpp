@@ -394,7 +394,10 @@ void HTMLAnchorElement::handleClick(Event* event)
                 request.setHTTPReferrer(Referrer(referrer, document().referrerPolicy()));
         }
 
-        frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));
+        bool isSameOrigin = document().securityOrigin()->canRequest(completedURL);
+        const AtomicString& suggestedName = (isSameOrigin ? fastGetAttribute(downloadAttr) : nullAtom);
+
+        frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, suggestedName);
     } else {
         FrameLoadRequest frameRequest(&document(), request, target());
         frameRequest.setTriggeringEvent(event);
