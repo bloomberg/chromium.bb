@@ -33,7 +33,7 @@ def _IsTestFile(filename):
 
 
 class DepsChecker(DepsBuilder):
-  """Parses include_rules from DEPS files and erifies files in the
+  """Parses include_rules from DEPS files and verifies files in the
   source tree against them.
   """
 
@@ -83,7 +83,7 @@ class DepsChecker(DepsBuilder):
 
   def _CheckDirectoryImpl(self, checkers, dir_name):
     rules = self.GetDirectoryRules(dir_name)
-    if rules == None:
+    if rules is None:
       return
 
     # Collect a list of all files and directories to check.
@@ -125,18 +125,21 @@ class DepsChecker(DepsBuilder):
     problems = []
     for file_path, include_lines in added_includes:
       if not cpp.IsCppFile(file_path):
-        pass
+        continue
       rules_for_file = self.GetDirectoryRules(os.path.dirname(file_path))
-      if rules_for_file:
-        for line in include_lines:
-          is_include, violation = cpp.CheckLine(
-              rules_for_file, line, file_path, True)
-          if violation:
-            rule_type = violation.violated_rule.allow
-            if rule_type != Rule.ALLOW:
-              violation_text = results.NormalResultsFormatter.FormatViolation(
-                  violation, self.verbose)
-              problems.append((file_path, rule_type, violation_text))
+      if not rules_for_file:
+        continue
+      for line in include_lines:
+        is_include, violation = cpp.CheckLine(
+            rules_for_file, line, file_path, True)
+        if not violation:
+          continue
+        rule_type = violation.violated_rule.allow
+        if rule_type == Rule.ALLOW:
+          continue
+        violation_text = results.NormalResultsFormatter.FormatViolation(
+            violation, self.verbose)
+        problems.append((file_path, rule_type, violation_text))
     return problems
 
 

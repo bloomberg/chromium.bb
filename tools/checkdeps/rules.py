@@ -35,7 +35,7 @@ class Rule(object):
     which is fully self-sufficient to answer the question whether the dependent
     is allowed to depend on the dependee, without knowing the external
     context."""
-    return (self.allow, self._dependent_dir or '.', self._dir or '.')
+    return self.allow, self._dependent_dir or '.', self._dir or '.'
 
   def ParentOrMatch(self, other):
     """Returns true if the input string is an exact match or is a parent
@@ -74,7 +74,7 @@ def ParseRuleString(rule_string, source):
       'The rule string "%s" does not begin with a "+", "-" or "!".' %
       rule_string)
 
-  return (rule_string[0], rule_string[1:])
+  return rule_string[0], rule_string[1:]
 
 
 class Rules(object):
@@ -141,7 +141,7 @@ class Rules(object):
                        matches the expression. None to match all
                        dependee files.
     """
-    (rule_type, rule_dir) = ParseRuleString(rule_string, source)
+    rule_type, rule_dir = ParseRuleString(rule_string, source)
 
     if not dependee_regexp:
       rules_to_update = self._general_rules

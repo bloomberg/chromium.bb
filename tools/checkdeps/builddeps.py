@@ -75,9 +75,10 @@ backslashes. All directories should be relative to the source root and use
 only lowercase.
 """
 
-import os
-import subprocess
 import copy
+import os
+import posixpath
+import subprocess
 
 from rules import Rule, Rules
 
@@ -97,14 +98,12 @@ SKIP_SUBDIRS_VAR_NAME = 'skip_child_includes'
 
 
 def NormalizePath(path):
-  """Returns a path normalized to how we write DEPS rules and compare paths.
-  """
-  return path.lower().replace('\\', '/')
+  """Returns a path normalized to how we write DEPS rules and compare paths."""
+  return os.path.normcase(path).replace(os.path.sep, posixpath.sep)
 
 
 class DepsBuilder(object):
-  """Parses include_rules from DEPS files.
-  """
+  """Parses include_rules from DEPS files."""
 
   def __init__(self,
                base_directory=None,
@@ -115,28 +114,31 @@ class DepsBuilder(object):
     """Creates a new DepsBuilder.
 
     Args:
-      base_directory: OS-compatible path to root of checkout, e.g. C:\chr\src.
-      verbose: Set to true for debug output.
-      being_tested: Set to true to ignore the DEPS file at tools/checkdeps/DEPS.
+      base_directory: local path to root of checkout, e.g. C:\chr\src.
+      verbose: Set to True for debug output.
+      being_tested: Set to True to ignore the DEPS file at tools/checkdeps/DEPS.
       ignore_temp_rules: Ignore rules that start with Rule.TEMP_ALLOW ("!").
     """
     base_directory = (base_directory or
-                      os.path.join(os.path.dirname(__file__), '..', '..'))
-    self.base_directory = os.path.abspath(base_directory)
+                      os.path.join(os.path.dirname(__file__),
+                                   os.pardir, os.pardir))
+    self.base_directory = os.path.abspath(base_directory)  # Local absolute path
     self.verbose = verbose
     self._under_test = being_tested
     self._ignore_temp_rules = ignore_temp_rules
     self._ignore_specific_rules = ignore_specific_rules
 
-    self.git_source_directories = set()
+    self.git_source_directories = set()  # Normalized paths
     self._AddGitSourceDirectories()
 
     # Map of normalized directory paths to rules to use for those
     # directories, or None for directories that should be skipped.
+    # Normalized is: absolute, lowercase, / for separator.
     self.directory_rules = {}
     self._ApplyDirectoryRulesAndSkipSubdirs(Rules(), self.base_directory)
 
-  def _ApplyRules(self, existing_rules, includes, specific_includes, cur_dir):
+  def _ApplyRules(self, existing_rules, includes, specific_includes,
+                  cur_dir_norm):
     """Applies the given include rules, returning the new rules.
 
     Args:
@@ -144,8 +146,8 @@ class DepsBuilder(object):
       include: The list of rules from the "include_rules" section of DEPS.
       specific_includes: E.g. {'.*_unittest\.cc': ['+foo', '-blat']} rules
                          from the "specific_include_rules" section of DEPS.
-      cur_dir: The current directory, normalized path. We will create an
-               implicit rule that allows inclusion from this directory.
+      cur_dir_norm: The current directory, normalized path. We will create an
+                    implicit rule that allows inclusion from this directory.
 
     Returns: A new set of rules combining the existing_rules with the other
              arguments.
@@ -153,22 +155,21 @@ class DepsBuilder(object):
     rules = copy.deepcopy(existing_rules)
 
     # First apply the implicit "allow" rule for the current directory.
-    if cur_dir.startswith(
-          NormalizePath(os.path.normpath(self.base_directory))):
-      relative_dir = cur_dir[len(self.base_directory) + 1:]
+    base_dir_norm = NormalizePath(self.base_directory)
+    if not cur_dir_norm.startswith(base_dir_norm):
+      raise Exception(
+          'Internal error: base directory is not at the beginning for\n'
+          '  %s and base dir\n'
+          '  %s' % (cur_dir_norm, base_dir_norm))
+    relative_dir = posixpath.relpath(cur_dir_norm, base_dir_norm)
 
-      source = relative_dir
-      if len(source) == 0:
-        source = 'top level'  # Make the help string a little more meaningful.
-      rules.AddRule('+' + relative_dir,
-                    relative_dir,
-                    'Default rule for ' + source)
-    else:
-      raise Exception('Internal error: base directory is not at the beginning' +
-                      ' for\n  %s and base dir\n  %s' %
-                      (cur_dir, self.base_directory))
+    # Make the help string a little more meaningful.
+    source = relative_dir or 'top level'
+    rules.AddRule('+' + relative_dir,
+                  relative_dir,
+                  'Default rule for ' + source)
 
-    def ApplyOneRule(rule_str, cur_dir, dependee_regexp=None):
+    def ApplyOneRule(rule_str, dependee_regexp=None):
       """Deduces a sensible description for the rule being added, and
       adds the rule with its description to |rules|.
 
@@ -181,25 +182,27 @@ class DepsBuilder(object):
       rule_block_name = 'include_rules'
       if dependee_regexp:
         rule_block_name = 'specific_include_rules'
-      if not relative_dir:
-        rule_description = 'the top level %s' % rule_block_name
-      else:
+      if relative_dir:
         rule_description = relative_dir + "'s %s" % rule_block_name
+      else:
+        rule_description = 'the top level %s' % rule_block_name
       rules.AddRule(rule_str, relative_dir, rule_description, dependee_regexp)
 
     # Apply the additional explicit rules.
-    for (_, rule_str) in enumerate(includes):
-      ApplyOneRule(rule_str, cur_dir)
+    for rule_str in includes:
+      ApplyOneRule(rule_str)
 
     # Finally, apply the specific rules.
-    if not self._ignore_specific_rules:
-      for regexp, specific_rules in specific_includes.iteritems():
-        for rule_str in specific_rules:
-          ApplyOneRule(rule_str, cur_dir, regexp)
+    if self._ignore_specific_rules:
+      return rules
+
+    for regexp, specific_rules in specific_includes.iteritems():
+      for rule_str in specific_rules:
+        ApplyOneRule(rule_str, regexp)
 
     return rules
 
-  def _ApplyDirectoryRules(self, existing_rules, dir_name):
+  def _ApplyDirectoryRules(self, existing_rules, dir_path_local_abs):
     """Combines rules from the existing rules and the new directory.
 
     Any directory can contain a DEPS file. Toplevel DEPS files can contain
@@ -209,30 +212,31 @@ class DepsBuilder(object):
 
     Args:
       existing_rules: The rules for the parent directory. We'll add-on to these.
-      dir_name: The directory name that the deps file may live in (if
-                it exists).  This will also be used to generate the
-                implicit rules.  This is a non-normalized path.
+      dir_path_local_abs: The directory path that the DEPS file may live in (if
+                          it exists). This will also be used to generate the
+                          implicit rules. This is a local, non-normalized path.
 
     Returns: A tuple containing: (1) the combined set of rules to apply to the
              sub-tree, and (2) a list of all subdirectories that should NOT be
-             checked, as specified in the DEPS file (if any).
+             checked, as specified in the DEPS file (if any). Subdirectories
+             are single words, hence no OS-dependence.
     """
-    norm_dir_name = NormalizePath(dir_name)
+    dir_path_norm = NormalizePath(dir_path_local_abs)
 
     # Check for a .svn directory in this directory or check this directory is
     # contained in git source direcotries. This will tell us if it's a source
     # directory and should be checked.
-    if not (os.path.exists(os.path.join(dir_name, ".svn")) or
-            (norm_dir_name in self.git_source_directories)):
-      return (None, [])
+    if not (os.path.exists(os.path.join(dir_path_local_abs, '.svn')) or
+            dir_path_norm in self.git_source_directories):
+      return None, []
 
     # Check the DEPS file in this directory.
     if self.verbose:
-      print 'Applying rules from', dir_name
-    def FromImpl(_unused, _unused2):
+      print 'Applying rules from', dir_path_local_abs
+    def FromImpl(*_):
       pass  # NOP function so "From" doesn't fail.
 
-    def FileImpl(_unused):
+    def FileImpl(_):
       pass  # NOP function so "File" doesn't fail.
 
     class _VarImpl:
@@ -241,17 +245,18 @@ class DepsBuilder(object):
 
       def Lookup(self, var_name):
         """Implements the Var syntax."""
-        if var_name in self._local_scope.get('vars', {}):
+        try:
           return self._local_scope['vars'][var_name]
-        raise Exception('Var is not defined: %s' % var_name)
+        except KeyError:
+          raise Exception('Var is not defined: %s' % var_name)
 
     local_scope = {}
     global_scope = {
-        'File': FileImpl,
-        'From': FromImpl,
-        'Var': _VarImpl(local_scope).Lookup,
-        }
-    deps_file = os.path.join(dir_name, 'DEPS')
+      'File': FileImpl,
+      'From': FromImpl,
+      'Var': _VarImpl(local_scope).Lookup,
+    }
+    deps_file_path = os.path.join(dir_path_local_abs, 'DEPS')
 
     # The second conditional here is to disregard the
     # tools/checkdeps/DEPS file while running tests.  This DEPS file
@@ -261,11 +266,12 @@ class DepsBuilder(object):
     # running tests, we absolutely need to verify the contents of that
     # directory to trigger those intended violations and see that they
     # are handled correctly.
-    if os.path.isfile(deps_file) and (
-        not self._under_test or not os.path.split(dir_name)[1] == 'checkdeps'):
-      execfile(deps_file, global_scope, local_scope)
+    if os.path.isfile(deps_file_path) and not (
+        self._under_test and
+        os.path.basename(dir_path_local_abs) == 'checkdeps'):
+      execfile(deps_file_path, global_scope, local_scope)
     elif self.verbose:
-      print '  No deps file found in', dir_name
+      print '  No deps file found in', dir_path_local_abs
 
     # Even if a DEPS file does not exist we still invoke ApplyRules
     # to apply the implicit "allow" rule for the current directory
@@ -275,57 +281,64 @@ class DepsBuilder(object):
     skip_subdirs = local_scope.get(SKIP_SUBDIRS_VAR_NAME, [])
 
     return (self._ApplyRules(existing_rules, include_rules,
-                             specific_include_rules, norm_dir_name),
+                             specific_include_rules, dir_path_norm),
             skip_subdirs)
 
-  def _ApplyDirectoryRulesAndSkipSubdirs(self, parent_rules, dir_path):
-    """Given |parent_rules| and a subdirectory |dir_path| from the
-    directory that owns the |parent_rules|, add |dir_path|'s rules to
+  def _ApplyDirectoryRulesAndSkipSubdirs(self, parent_rules,
+                                         dir_path_local_abs):
+    """Given |parent_rules| and a subdirectory |dir_path_local_abs| of the
+    directory that owns the |parent_rules|, add |dir_path_local_abs|'s rules to
     |self.directory_rules|, and add None entries for any of its
     subdirectories that should be skipped.
     """
-    directory_rules, excluded_subdirs = self._ApplyDirectoryRules(parent_rules,
-                                                                  dir_path)
-    self.directory_rules[NormalizePath(dir_path)] = directory_rules
+    directory_rules, excluded_subdirs = self._ApplyDirectoryRules(
+        parent_rules, dir_path_local_abs)
+    dir_path_norm = NormalizePath(dir_path_local_abs)
+    self.directory_rules[dir_path_norm] = directory_rules
     for subdir in excluded_subdirs:
-      self.directory_rules[NormalizePath(
-          os.path.normpath(os.path.join(dir_path, subdir)))] = None
+      subdir_path_norm = posixpath.join(dir_path_norm, subdir)
+      self.directory_rules[subdir_path_norm] = None
 
-  def GetDirectoryRules(self, dir_path):
+  def GetDirectoryRules(self, dir_path_local):
     """Returns a Rules object to use for the given directory, or None
-    if the given directory should be skipped.  This takes care of
-    first building rules for parent directories (up to
-    self.base_directory) if needed.
+    if the given directory should be skipped.
+
+    Also modifies |self.directory_rules| to store the Rules.
+    This takes care of first building rules for parent directories (up to
+    |self.base_directory|) if needed, which may add rules for skipped
+    subdirectories.
 
     Args:
-      dir_path: A real (non-normalized) path to the directory you want
-      rules for.
+      dir_path_local: A local path to the directory you want rules for.
+        Can be relative and unnormalized.
     """
-    norm_dir_path = NormalizePath(dir_path)
+    if os.path.isabs(dir_path_local):
+      dir_path_local_abs = dir_path_local
+    else:
+      dir_path_local_abs = os.path.join(self.base_directory, dir_path_local)
+    dir_path_norm = NormalizePath(dir_path_local_abs)
 
-    if not norm_dir_path.startswith(
-        NormalizePath(os.path.normpath(self.base_directory))):
-      dir_path = os.path.join(self.base_directory, dir_path)
-      norm_dir_path = NormalizePath(dir_path)
+    if dir_path_norm in self.directory_rules:
+      return self.directory_rules[dir_path_norm]
 
-    parent_dir = os.path.dirname(dir_path)
-    parent_rules = None
-    if not norm_dir_path in self.directory_rules:
-      parent_rules = self.GetDirectoryRules(parent_dir)
+    parent_dir_local_abs = os.path.dirname(dir_path_local_abs)
+    parent_rules = self.GetDirectoryRules(parent_dir_local_abs)
+    # We need to check for an entry for our dir_path again, since
+    # GetDirectoryRules can modify entries for subdirectories, namely setting
+    # to None if they should be skipped, via _ApplyDirectoryRulesAndSkipSubdirs.
+    # For example, if dir_path == 'A/B/C' and A/B/DEPS specifies that the C
+    # subdirectory be skipped, GetDirectoryRules('A/B') will fill in the entry
+    # for 'A/B/C' as None.
+    if dir_path_norm in self.directory_rules:
+      return self.directory_rules[dir_path_norm]
 
-    # We need to check for an entry for our dir_path again, in case we
-    # are at a path e.g. A/B/C where A/B/DEPS specifies the C
-    # subdirectory to be skipped; in this case, the invocation to
-    # GetDirectoryRules(parent_dir) has already filled in an entry for
-    # A/B/C.
-    if not norm_dir_path in self.directory_rules:
-      if not parent_rules:
-        # If the parent directory should be skipped, then the current
-        # directory should also be skipped.
-        self.directory_rules[norm_dir_path] = None
-      else:
-        self._ApplyDirectoryRulesAndSkipSubdirs(parent_rules, dir_path)
-    return self.directory_rules[norm_dir_path]
+    if parent_rules:
+      self._ApplyDirectoryRulesAndSkipSubdirs(parent_rules, dir_path_local_abs)
+    else:
+      # If the parent directory should be skipped, then the current
+      # directory should also be skipped.
+      self.directory_rules[dir_path_norm] = None
+    return self.directory_rules[dir_path_norm]
 
   def _AddGitSourceDirectories(self):
     """Adds any directories containing sources managed by git to
@@ -337,10 +350,10 @@ class DepsBuilder(object):
     popen_out = os.popen('cd %s && git ls-files --full-name .' %
                          subprocess.list2cmdline([self.base_directory]))
     for line in popen_out.readlines():
-      dir_name = os.path.join(self.base_directory, os.path.dirname(line))
+      dir_path = os.path.join(self.base_directory, os.path.dirname(line))
       # Add the directory as well as all the parent directories. Use
       # forward slashes and lower case to normalize paths.
-      while dir_name != self.base_directory:
-        self.git_source_directories.add(NormalizePath(dir_name))
-        dir_name = os.path.dirname(dir_name)
+      while dir_path != self.base_directory:
+        self.git_source_directories.add(NormalizePath(dir_path))
+        dir_path = os.path.dirname(dir_path)
     self.git_source_directories.add(NormalizePath(self.base_directory))

@@ -62,7 +62,7 @@ class CppChecker(object):
       # Don't fail when no directory is specified. We may want to be more
       # strict about this in the future.
       if self._verbose:
-        print ' WARNING: directory specified with no path: ' + include_path
+        print ' WARNING: include specified with no directory: ' + include_path
       return True, None
 
     rule = rules.RuleApplyingTo(include_path, dependee_path)
@@ -86,7 +86,7 @@ class CppChecker(object):
 
         line = line.strip()
 
-        # Check to see if we're at / inside a #if 0 block
+        # Check to see if we're at / inside an #if 0 block
         if line.startswith('#if 0'):
           in_if0 += 1
           continue
