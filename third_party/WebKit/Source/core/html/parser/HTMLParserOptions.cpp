@@ -40,11 +40,17 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
     scriptEnabled = frame && frame->script().canExecuteScripts(NotAboutToExecuteScript);
     pluginsEnabled = frame && frame->loader().allowPlugins(NotAboutToInstantiatePlugin);
 
+    // We force the main-thread parser for about:blank and javascript:
+    // (which uses about:blank urls) and data: urls for compatibility
+    // with historical synchronous loading/parsing behavior.
+    // FIXME: Gecko does not load javascript: urls synchronously, why do we?
+    // See LayoutTests/loader/iframe-sync-loads.html
+    // FIXME: threadedHTMLParser() setting should be removed but currently many
+    // webkit_unit_tests depend on parsing being synchronous. crbug.com/366354
+    // FIXME: useThreadedHTMLParserForDataURLs() setting should be removed but
+    // currently many browser_tests depend on data: urls being synchronous! crbug.com/308321
     Settings* settings = document ? document->settings() : 0;
-    // We force the main-thread parser for about:blank, javascript: and data: urls for compatibility
-    // with historical synchronous loading/parsing behavior of those schemes.
-    // FIXME: Use isAboutBlankURL() instead of protocolIsAbout() to not include about:srcdoc.
-    useThreading = settings && settings->threadedHTMLParser() && !document->url().protocolIsAbout()
+    useThreading = settings && settings->threadedHTMLParser() && !document->url().isAboutBlankURL()
         && (settings->useThreadedHTMLParserForDataURLs() || !document->url().protocolIsData());
 }
 
