@@ -8,7 +8,7 @@ namespace password_manager {
 
 namespace switches {
 
-// Enables the chrome://memory-internals/ page.
+// Enables the chrome://password-manager-internals/ page.
 const char kEnablePasswordManagerInternalsUI[] =
     "enable-password-manager-internals-ui";
 
