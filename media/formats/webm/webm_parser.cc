@@ -14,6 +14,7 @@
 #include <iomanip>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/formats/webm/webm_constants.h"
 
 namespace media {
@@ -118,7 +119,7 @@ static const ElementIdInfo kBlockGroupIds[] = {
   {UINT, kWebMIdReferencePriority},
   {BINARY, kWebMIdReferenceBlock},
   {BINARY, kWebMIdCodecState},
-  {UINT, kWebMIdDiscardPadding},
+  {BINARY, kWebMIdDiscardPadding},
   {LIST, kWebMIdSlices},
 };
 
@@ -548,9 +549,14 @@ static int ParseUInt(const uint8* buf, int size, int id,
     return -1;
 
   // Read in the big-endian integer.
-  int64 value = 0;
+  uint64 value = 0;
   for (int i = 0; i < size; ++i)
     value = (value << 8) | buf[i];
+
+  // We use int64 in place of uint64 everywhere for convenience.  See this bug
+  // for more details: http://crbug.com/366750#c3
+  if (!base::IsValueInRangeForNumericType<int64>(value))
+    return -1;
 
   if (!client->OnUInt(id, value))
     return -1;

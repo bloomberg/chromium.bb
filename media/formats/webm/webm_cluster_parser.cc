@@ -191,12 +191,6 @@ bool WebMClusterParser::OnUInt(int id, int64 val) {
     case kWebMIdBlockAddID:
       dst = &block_add_id_;
       break;
-    case kWebMIdDiscardPadding:
-      if (discard_padding_set_)
-        return false;
-      discard_padding_set_ = true;
-      discard_padding_ = val;
-      return true;
     default:
       return true;
   }
@@ -278,7 +272,18 @@ bool WebMClusterParser::OnBinary(int id, const uint8* data, int size) {
       memcpy(block_additional_data_.get() + 8, data, size);
       return true;
     }
+    case kWebMIdDiscardPadding: {
+      if (discard_padding_set_ || size <= 0 || size > 8)
+        return false;
+      discard_padding_set_ = true;
 
+      // Read in the big-endian integer.
+      discard_padding_ = static_cast<int8>(data[0]);
+      for (int i = 1; i < size; ++i)
+        discard_padding_ = (discard_padding_ << 8) | data[i];
+
+      return true;
+    }
     default:
       return true;
   }

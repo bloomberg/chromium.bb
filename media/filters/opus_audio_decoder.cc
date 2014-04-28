@@ -522,22 +522,25 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
       }
       output_buffer->get()->TrimEnd(discard_padding);
       frames_to_output -= discard_padding;
+    } else {
+      DCHECK_EQ(input->discard_padding().InMicroseconds(), 0);
     }
   } else {
     frames_to_discard_ -= frames_to_output;
     frames_to_output = 0;
   }
 
+  // Discard the buffer to indicate we need more data.
+  if (!frames_to_output) {
+    *output_buffer = NULL;
+    return true;
+  }
+
   // Assign timestamp and duration to the buffer.
   output_buffer->get()->set_timestamp(output_timestamp_helper_->GetTimestamp());
   output_buffer->get()->set_duration(
       output_timestamp_helper_->GetFrameDuration(frames_to_output));
-  output_timestamp_helper_->AddFrames(frames_decoded);
-
-  // Discard the buffer to indicate we need more data.
-  if (!frames_to_output)
-    *output_buffer = NULL;
-
+  output_timestamp_helper_->AddFrames(frames_to_output);
   return true;
 }
 

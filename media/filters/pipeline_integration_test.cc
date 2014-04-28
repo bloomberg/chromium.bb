@@ -63,7 +63,7 @@ const int kAppendTimeSec = 1;
 const int kAppendTimeMs = kAppendTimeSec * 1000;
 const int k320WebMFileDurationMs = 2736;
 const int k640WebMFileDurationMs = 2749;
-const int kOpusEndTrimmingWebMFileDurationMs = 2771;
+const int kOpusEndTrimmingWebMFileDurationMs = 2741;
 const int kVP9WebMFileDurationMs = 2736;
 const int kVP8AWebMFileDurationMs = 2733;
 
@@ -655,8 +655,7 @@ TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
   Stop();
 }
 
-// Disabled until the fix for http://crbug.com/366750 is landed.
-TEST_P(PipelineIntegrationTest, DISABLED_BasicPlayback_MediaSource_Opus_WebM) {
+TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
   MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile, GetParam());
   StartPipelineWithMediaSource(&source);
