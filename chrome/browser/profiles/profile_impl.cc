@@ -502,6 +502,10 @@ void ProfileImpl::DoFinalInit() {
       base::Bind(&ProfileImpl::UpdateProfileUserNameCache,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
+      prefs::kManagedUserId,
+      base::Bind(&ProfileImpl::UpdateProfileManagedUserIdCache,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
       prefs::kDefaultZoomLevel,
       base::Bind(&ProfileImpl::OnDefaultZoomLevelChanged,
                  base::Unretained(this)));
@@ -532,6 +536,7 @@ void ProfileImpl::DoFinalInit() {
   // kGoogleServicesUsername, initialize components that depend on it to reflect
   // the current value.
   UpdateProfileUserNameCache();
+  UpdateProfileManagedUserIdCache();
   UpdateProfileIsEphemeralCache();
   GAIAInfoUpdateServiceFactory::GetForProfile(this);
 
@@ -1247,6 +1252,17 @@ void ProfileImpl::UpdateProfileUserNameCache() {
     std::string user_name =
         GetPrefs()->GetString(prefs::kGoogleServicesUsername);
     cache.SetUserNameOfProfileAtIndex(index, base::UTF8ToUTF16(user_name));
+    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
+  }
+}
+
+void ProfileImpl::UpdateProfileManagedUserIdCache() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
+  if (index != std::string::npos) {
+    std::string managed_user_id = GetPrefs()->GetString(prefs::kManagedUserId);
+    cache.SetManagedUserIdOfProfileAtIndex(index, managed_user_id);
     ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
   }
 }

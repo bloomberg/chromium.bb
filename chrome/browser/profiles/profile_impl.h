@@ -195,9 +195,9 @@ class ProfileImpl : public Profile {
     GetRequestContext();
   }
 
-  void UpdateProfileUserNameCache();
-
   // Updates the ProfileInfoCache with data from this profile.
+  void UpdateProfileUserNameCache();
+  void UpdateProfileManagedUserIdCache();
   void UpdateProfileNameCache();
   void UpdateProfileAvatarCache();
   void UpdateProfileIsEphemeralCache();
