@@ -2844,6 +2844,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorIframe) {
 
 // Checks that we cancel correctly when window.print() is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
+  DisableLoadEventCheck();
   PrerenderTestURL("files/prerender/prerender_print.html",
                    FINAL_STATUS_WINDOW_PRINT,
                    0);
