@@ -12,10 +12,6 @@ class Profile;
 
 namespace extensions {
 class Extension;
-class PermissionSet;
-}
-namespace views {
-class ScrollView;
 }
 
 // The Permissions tab of the app info dialog, which provides insight and
@@ -28,30 +24,6 @@ class AppInfoPermissionsTab : public AppInfoTab {
                         const base::Closure& close_callback);
 
   virtual ~AppInfoPermissionsTab();
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(AppInfoPermissionsTabTest,
-                           NoPermissionsObtainedCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(AppInfoPermissionsTabTest,
-                           RequiredPermissionsObtainedCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(AppInfoPermissionsTabTest,
-                           OptionalPermissionsObtainedCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(AppInfoPermissionsTabTest,
-                           RetainedFilePermissionsObtainedCorrectly);
-
-  // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
-
-  const extensions::PermissionSet* GetRequiredPermissions() const;
-  const std::vector<base::string16> GetRequiredPermissionMessages() const;
-
-  const extensions::PermissionSet* GetOptionalPermissions() const;
-  const std::vector<base::string16> GetOptionalPermissionMessages() const;
-
-  const std::vector<base::FilePath> GetRetainedFilePermissions() const;
-  const std::vector<base::string16> GetRetainedFilePermissionMessages() const;
-
-  views::ScrollView* scroll_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInfoPermissionsTab);
 };
