@@ -62,6 +62,12 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* textRenderer, const TextRun&
 
 TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length)
 {
+    ASSERT(text->style());
+    return constructTextRun(text, position, length, text->style()->direction());
+}
+
+TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
+{
     RenderStyle* style = text->style();
     ASSERT(style);
 
@@ -70,7 +76,7 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
                 , 0 // xPos, only relevant with allowTabs=true
                 , 0 // padding, only relevant for justified text, not relevant for SVG
                 , TextRun::AllowTrailingExpansion
-                , style->direction()
+                , textDirection
                 , isOverride(style->unicodeBidi()) /* directionalOverride */);
 
     if (length) {
@@ -92,6 +98,12 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
     run.setCharactersLength(text->textLength() - position);
     ASSERT(run.charactersLength() >= run.length());
     return run;
+}
+
+SVGTextMetrics SVGTextMetrics::measureCharacterRange(RenderSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
+{
+    ASSERT(text);
+    return SVGTextMetrics(text, constructTextRun(text, position, length, textDirection));
 }
 
 SVGTextMetrics SVGTextMetrics::measureCharacterRange(RenderSVGInlineText* text, unsigned position, unsigned length)

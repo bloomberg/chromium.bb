@@ -21,6 +21,7 @@
 #define SVGTextMetrics_h
 
 #include "platform/fonts/Glyph.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -39,8 +40,12 @@ public:
     SVGTextMetrics(MetricsType);
     SVGTextMetrics(RenderSVGInlineText*, unsigned position, unsigned length, float width, Glyph glyphNameGlyphId);
 
+    // FIXME: Migrate away from these to the two below.
     static SVGTextMetrics measureCharacterRange(RenderSVGInlineText*, unsigned position, unsigned length);
     static TextRun constructTextRun(RenderSVGInlineText*, unsigned position, unsigned length);
+
+    static SVGTextMetrics measureCharacterRange(RenderSVGInlineText*, unsigned position, unsigned length, TextDirection);
+    static TextRun constructTextRun(RenderSVGInlineText*, unsigned position, unsigned length, TextDirection);
 
     bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
 

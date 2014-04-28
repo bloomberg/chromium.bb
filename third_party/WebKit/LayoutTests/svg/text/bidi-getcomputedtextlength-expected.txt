@@ -1,0 +1,9 @@
+إعلانات
+إعلانات
+نه با
+نه با
+ This is a testharness.js-based test.
+PASS Direction does not affect computed text length. 
+PASS Direction does not affect computed text length - whitespace. 
+Harness: the test ran to completion.
+

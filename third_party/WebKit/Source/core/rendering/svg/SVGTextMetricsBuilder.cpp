@@ -25,8 +25,12 @@
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
 #include "platform/fonts/WidthIterator.h"
+#include "platform/text/BidiCharacterRun.h"
+#include "platform/text/BidiResolver.h"
+#include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "platform/text/TextRun.h"
+#include "platform/text/TextRunIterator.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -34,6 +38,7 @@ namespace WebCore {
 class SVGTextMetricsCalculator {
 public:
     SVGTextMetricsCalculator(RenderSVGInlineText*);
+    ~SVGTextMetricsCalculator();
 
     SVGTextMetrics computeMetricsForCharacter(unsigned textPosition);
     unsigned textLength() const { return static_cast<unsigned>(m_run.charactersLength()); }
@@ -48,13 +53,17 @@ public:
     }
 
 private:
+    void setupBidiRuns();
     SVGTextMetrics computeMetricsForCharacterSimple(unsigned textPosition);
     SVGTextMetrics computeMetricsForCharacterComplex(unsigned textPosition);
 
     RenderSVGInlineText* m_text;
+    BidiCharacterRun* m_bidiRun;
     TextRun m_run;
+    BidiResolver<TextRunIterator, BidiCharacterRun> m_bidiResolver;
     bool m_isComplexText;
     float m_totalWidth;
+    TextDirection m_textDirection;
 
     // Simple text only.
     OwnPtr<WidthIterator> m_simpleWidthIterator;
@@ -62,6 +71,7 @@ private:
 
 SVGTextMetricsCalculator::SVGTextMetricsCalculator(RenderSVGInlineText* text)
     : m_text(text)
+    , m_bidiRun(0)
     , m_run(SVGTextMetrics::constructTextRun(text, 0, text->textLength()))
     , m_isComplexText(false)
     , m_totalWidth(0)
@@ -73,6 +83,32 @@ SVGTextMetricsCalculator::SVGTextMetricsCalculator(RenderSVGInlineText* text)
 
     if (!m_isComplexText)
         m_simpleWidthIterator = adoptPtr(new WidthIterator(&scaledFont, m_run));
+    else
+        setupBidiRuns();
+}
+
+SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
+{
+    if (m_bidiRun)
+        m_bidiResolver.runs().deleteRuns();
+}
+
+void SVGTextMetricsCalculator::setupBidiRuns()
+{
+    RenderStyle* style = m_text->style();
+    m_textDirection = style->direction();
+    if (isOverride(style->unicodeBidi()))
+        return;
+
+    BidiStatus status(LTR, false);
+    status.last = status.lastStrong = WTF::Unicode::OtherNeutral;
+    m_bidiResolver.setStatus(status);
+    m_bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&m_run, 0));
+    const bool hardLineBreak = false;
+    const bool reorderRuns = false;
+    m_bidiResolver.createBidiRunsForLine(TextRunIterator(&m_run, m_run.length()), NoVisualOverride, hardLineBreak, reorderRuns);
+    BidiRunList<BidiCharacterRun>& bidiRuns = m_bidiResolver.runs();
+    m_bidiRun = bidiRuns.firstRun();
 }
 
 SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterSimple(unsigned textPosition)
@@ -92,10 +128,12 @@ SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterSimple(unsign
 SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterComplex(unsigned textPosition)
 {
     unsigned metricsLength = characterStartsSurrogatePair(textPosition) ? 2 : 1;
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(m_text, textPosition, metricsLength);
+    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(m_text, textPosition, metricsLength, m_textDirection);
     ASSERT(metrics.length() == metricsLength);
 
-    SVGTextMetrics complexStartToCurrentMetrics = SVGTextMetrics::measureCharacterRange(m_text, 0, textPosition + metricsLength);
+    unsigned startPosition = m_bidiRun ? m_bidiRun->start() : 0;
+    ASSERT(startPosition <= textPosition);
+    SVGTextMetrics complexStartToCurrentMetrics = SVGTextMetrics::measureCharacterRange(m_text, startPosition, textPosition - startPosition + metricsLength, m_textDirection);
     // Frequent case for Arabic text: when measuring a single character the arabic isolated form is taken
     // when rendering the glyph "in context" (with it's surrounding characters) it changes due to shaping.
     // So whenever currentWidth != currentMetrics.width(), we are processing a text run whose length is
@@ -110,6 +148,17 @@ SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterComplex(unsig
 
 SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacter(unsigned textPosition)
 {
+    if (m_bidiRun) {
+        if (textPosition >= static_cast<unsigned>(m_bidiRun->stop())) {
+            m_bidiRun = m_bidiRun->next();
+            // New BiDi run means new reference position for measurements, so reset |m_totalWidth|.
+            m_totalWidth = 0;
+        }
+        ASSERT(m_bidiRun);
+        ASSERT(static_cast<int>(textPosition) < m_bidiRun->stop());
+        m_textDirection = m_bidiRun->direction();
+    }
+
     if (m_isComplexText)
         return computeMetricsForCharacterComplex(textPosition);
 
