@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/system_notifier.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -39,11 +40,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/snapshot/snapshot.h"
-
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -471,6 +467,7 @@ bool ScreenshotTaker::CanTakeScreenshot() {
           kScreenshotMinimumIntervalInMS);
 }
 
+#if defined(OS_CHROMEOS)
 Notification* ScreenshotTaker::CreateNotification(
     ScreenshotTakerObserver::Result screenshot_result,
     const base::FilePath& screenshot_path) {
@@ -506,6 +503,7 @@ Notification* ScreenshotTaker::CreateNotification(
       new ScreenshotTakerNotificationDelegate(
           success, GetProfile(), screenshot_path));
 }
+#endif
 
 void ScreenshotTaker::ShowNotification(
     ScreenshotTakerObserver::Result screenshot_result,

@@ -1784,15 +1784,19 @@ need to be translated for each locale.-->
       </message>
 
       <!-- General application strings -->
-      <message name="IDS_APP_UNTITLED_SHORTCUT_FILE_NAME" desc="The name of the Internet Shortcut file created for URLs dragged that have no title">
-        Untitled Webpage
-      </message>
-      <message name="IDS_APP_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
-        All Files
-      </message>
-      <message name="IDS_APP_SAVEAS_EXTENSION_FORMAT" desc="Save As dialog box extension format text">
-        <ph name="SAVEAS_EXTENSION_TYPE">$1<ex>EXE</ex></ph> File (.<ph name="SAVEAS_EXTENSION_NAME">$2<ex>exe</ex></ph>)
-      </message>
+      <if expr="is_win or is_ios">
+        <message name="IDS_APP_UNTITLED_SHORTCUT_FILE_NAME" desc="The name of the Internet Shortcut file created for URLs dragged that have no title">
+          Untitled Webpage
+        </message>
+      </if>
+      <if expr="is_win">
+        <message name="IDS_APP_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
+          All Files
+        </message>
+        <message name="IDS_APP_SAVEAS_EXTENSION_FORMAT" desc="Save As dialog box extension format text">
+          <ph name="SAVEAS_EXTENSION_TYPE">$1<ex>EXE</ex></ph> File (.<ph name="SAVEAS_EXTENSION_NAME">$2<ex>exe</ex></ph>)
+        </message>
+      </if>
       <message name="IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE" desc="The default title for the Select Upload Folder dialog.">
         Select Folder to Upload
       </message>
@@ -2096,21 +2100,25 @@ need to be translated for each locale.-->
       </message>
 
       <!-- Message center -->
-      <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The accessible name for the Notification Center window.">
-        Notification Center
-      </message>
+      <if expr="use_ash">
+        <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The accessible name for the Notification Center window.">
+          Notification Center
+        </message>
+      </if>
       <message name="IDS_MESSAGE_CENTER_NOTIFIER_DISABLE" desc="The menu entry for disabling a notifier from a notification.">
         Disable notifications from <ph name="notifier_name">$1<ex>Notification Galore!</ex></ph>
       </message>
       <message name="IDS_MESSAGE_CENTER_FOOTER_TITLE" desc="The label in the footer of the message center">
-	Notifications
+        Notifications
       </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL" desc="The button label for visiting the appropriate settings page in the footer of the message center.">
         Settings
       </message>
-      <message name="IDS_MESSAGE_CENTER_SETTINGS_GO_BACK_BUTTON_TOOLTIP" desc="The tooltip on back button that returns from settings to the notification list.">
-        Go back to notifications
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_MESSAGE_CENTER_SETTINGS_GO_BACK_BUTTON_TOOLTIP" desc="The tooltip on back button that returns from settings to the notification list.">
+          Go back to notifications
+        </message>
+      </if>
       <message name="IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="The label to describe the settings dialog.">
         Allow notifications from the following:
       </message>
@@ -2146,20 +2154,16 @@ need to be translated for each locale.-->
         Do not disturb for one day
       </message>
       <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the close button in a notification. Usually 'button' is suffixed to this text automatically.">
-	Notification close
+        Notification close
       </message>
-      <message name="IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the expand button in a notification. Usually 'button' is suffixed to this text automatically.">
-	Notification expand
-      </message>
-      <message name="IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME" desc="The name of screenshot notifier that is a system componet">
-        Screenshot
-      </message>
-      <message name="IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD" desc="The button label for the screenshot notification which copies the screenshot image to clipboard on click.">
-        Copy to clipboard
-      </message>
-      <message name="IDS_MESSAGE_CENTER_MORE_FROM" desc="Indicates how many more notifications came from the given source.">
-        <ph name="number_of_notifications">$1<ex>20</ex></ph> more from <ph name="source_of_notifications">$2<ex>GMail</ex></ph>
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME" desc="The name of screenshot notifier that is a system component">
+          Screenshot
+        </message>
+        <message name="IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD" desc="The button label for the screenshot notification which copies the screenshot image to clipboard on click.">
+          Copy to clipboard
+        </message>
+      </if>
 
       <!-- App list -->
       <message name="IDS_APP_LIST_HELP" desc="The menu entry to show the app list help UI.">
@@ -2182,7 +2186,7 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME" desc="The spoken feedback text for closing an app launcher folder">
         Close folder
-      </message>      
+      </message>
       <message name="IDS_APP_LIST_SPEECH_HINT_TEXT" desc="The text label in the speech recognition UI to ask the user to speak the search query">
         Speak now
       </message>

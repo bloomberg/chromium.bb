@@ -92,9 +92,11 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
   void SetScreenshotBasenameForTest(const std::string& basename);
   void SetScreenshotProfileForTest(Profile* profile);
 
+#if defined(OS_CHROMEOS)
   Notification* CreateNotification(
       ScreenshotTakerObserver::Result screenshot_result,
       const base::FilePath& screenshot_path);
+#endif
 
   base::WeakPtrFactory<ScreenshotTaker> factory_;
 
