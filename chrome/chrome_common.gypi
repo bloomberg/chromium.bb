@@ -240,8 +240,6 @@
         'common/instant_types.h',
         'common/localized_error.cc',
         'common/localized_error.h',
-        'common/local_discovery/service_discovery_client.cc',
-        'common/local_discovery/service_discovery_client.h',
         'common/logging_chrome.cc',
         'common/logging_chrome.h',
         'common/mac/app_mode_common.h',
@@ -425,6 +423,18 @@
           'dependencies': [
             '<(DEPTH)/printing/printing.gyp:printing',
           ],
+        }],
+        ['enable_service_discovery==1', {
+          'sources' : [
+            'common/local_discovery/service_discovery_client.cc',
+            'common/local_discovery/service_discovery_client.h',
+           ]
+        }],
+        ['enable_mdns==1', {
+          'sources' : [
+            'common/local_discovery/service_discovery_client_impl.cc',
+            'common/local_discovery/service_discovery_client_impl.h',
+          ]
         }],
         ['OS=="android"', {
           'sources/': [

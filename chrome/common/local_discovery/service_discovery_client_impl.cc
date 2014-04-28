@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
-#include "chrome/utility/local_discovery/service_discovery_client_impl.h"
+#include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/record_rdata.h"
 
