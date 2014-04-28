@@ -648,15 +648,26 @@ def FindEnclosingBracketGroup(input_str):
   return (-1, -1)
 
 
-canonical_int_re = re.compile('(0|-?[1-9][0-9]*)$')
-
-
 def IsStrCanonicalInt(string):
   """Returns True if |string| is in its canonical integer form.
 
   The canonical form is such that str(int(string)) == string.
   """
-  return type(string) is str and canonical_int_re.match(string)
+  if type(string) is str:
+    # This function is called a lot so for maximum performance, avoid
+    # involving regexps which would otherwise make the code much
+    # shorter. Regexps would need twice the time of this function.
+    if string:
+      if string == "0":
+        return True
+      if string[0] == "-":
+        string = string[1:]
+        if not string:
+          return False
+      if '1' <= string[0] <= '9':
+        return string.isdigit()
+
+  return False
 
 
 # This matches things like "<(asdf)", "<!(cmd)", "<!@(cmd)", "<|(list)",
