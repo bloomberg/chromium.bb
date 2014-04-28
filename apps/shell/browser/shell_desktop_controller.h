@@ -31,6 +31,7 @@ class UserActivityPowerManagerNotifier;
 #endif
 
 namespace wm {
+class CursorManager;
 class UserActivityDetector;
 class WMTestHelper;
 }
@@ -89,6 +90,8 @@ class ShellDesktopController
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 
   scoped_ptr<aura::TestScreen> test_screen_;
+
+  scoped_ptr<wm::CursorManager> cursor_manager_;
 
   scoped_ptr<wm::UserActivityDetector> user_activity_detector_;
 #if defined(OS_CHROMEOS)

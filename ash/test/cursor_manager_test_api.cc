@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/ash_native_cursor_manager.h"
-#include "ash/wm/image_cursors.h"
+#include "ui/base/cursor/image_cursors.h"
 #include "ui/gfx/display.h"
 #include "ui/wm/core/cursor_manager.h"
 

@@ -566,8 +566,6 @@
         'wm/gestures/shelf_gesture_handler.h',
         'wm/gestures/tray_gesture_handler.cc',
         'wm/gestures/tray_gesture_handler.h',
-        'wm/image_cursors.cc',
-        'wm/image_cursors.h',
         'wm/immersive_fullscreen_controller.cc',
         'wm/immersive_fullscreen_controller.h',
         'wm/immersive_revealed_lock.cc',

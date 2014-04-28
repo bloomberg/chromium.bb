@@ -7,12 +7,12 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/image_cursors.h"
 #include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/image_cursors.h"
 
 namespace ash {
 namespace  {
@@ -54,7 +54,7 @@ void NotifyMouseEventsEnableStateChange(bool enabled) {
 
 AshNativeCursorManager::AshNativeCursorManager()
     : native_cursor_enabled_(true),
-      image_cursors_(new ImageCursors) {
+      image_cursors_(new ui::ImageCursors) {
 }
 
 AshNativeCursorManager::~AshNativeCursorManager() {
@@ -72,7 +72,12 @@ void AshNativeCursorManager::SetNativeCursorEnabled(bool enabled) {
 void AshNativeCursorManager::SetDisplay(
     const gfx::Display& display,
     ::wm::NativeCursorManagerDelegate* delegate) {
-  if (image_cursors_->SetDisplay(display))
+  DCHECK(display.is_valid());
+  // Use the platform's device scale factor instead of the display's, which
+  // might have been adjusted for the UI scale.
+  const float scale_factor = Shell::GetInstance()->display_manager()->
+      GetDisplayInfo(display.id()).device_scale_factor();
+  if (image_cursors_->SetDisplay(display, scale_factor))
     SetCursor(delegate->GetCursor(), delegate);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->cursor_window_controller()->
@@ -83,24 +88,23 @@ void AshNativeCursorManager::SetDisplay(
 void AshNativeCursorManager::SetCursor(
     gfx::NativeCursor cursor,
     ::wm::NativeCursorManagerDelegate* delegate) {
-  gfx::NativeCursor new_cursor = cursor;
   if (native_cursor_enabled_) {
-    image_cursors_->SetPlatformCursor(&new_cursor);
+    image_cursors_->SetPlatformCursor(&cursor);
   } else {
     gfx::NativeCursor invisible_cursor(ui::kCursorNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
-    if (new_cursor == ui::kCursorCustom) {
-      new_cursor = invisible_cursor;
+    if (cursor == ui::kCursorCustom) {
+      cursor = invisible_cursor;
     } else {
-      new_cursor.SetPlatformCursor(invisible_cursor.platform());
+      cursor.SetPlatformCursor(invisible_cursor.platform());
     }
   }
-  new_cursor.set_device_scale_factor(image_cursors_->GetScale());
+  cursor.set_device_scale_factor(image_cursors_->GetScale());
 
-  delegate->CommitCursor(new_cursor);
+  delegate->CommitCursor(cursor);
 
   if (delegate->IsCursorVisible())
-    SetCursorOnAllRootWindows(new_cursor);
+    SetCursorOnAllRootWindows(cursor);
 }
 
 void AshNativeCursorManager::SetCursorSet(

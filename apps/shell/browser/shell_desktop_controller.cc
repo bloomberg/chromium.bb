@@ -5,14 +5,21 @@
 #include "apps/shell/browser/shell_desktop_controller.h"
 
 #include "apps/shell/browser/shell_app_window.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/image_cursors.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/core/native_cursor_manager.h"
+#include "ui/wm/core/native_cursor_manager_delegate.h"
 #include "ui/wm/core/user_activity_detector.h"
 #include "ui/wm/test/wm_test_helper.h"
 
@@ -59,6 +66,77 @@ class FillLayout : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(FillLayout);
 };
 
+// A class that bridges the gap between CursorManager and Aura. It borrows
+// heavily from AshNativeCursorManager.
+class ShellNativeCursorManager : public wm::NativeCursorManager {
+ public:
+  explicit ShellNativeCursorManager(aura::WindowTreeHost* host)
+      : host_(host),
+        image_cursors_(new ui::ImageCursors) {}
+  virtual ~ShellNativeCursorManager() {}
+
+  // wm::NativeCursorManager overrides.
+  virtual void SetDisplay(
+      const gfx::Display& display,
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+    if (image_cursors_->SetDisplay(display, display.device_scale_factor()))
+      SetCursor(delegate->GetCursor(), delegate);
+  }
+
+  virtual void SetCursor(
+      gfx::NativeCursor cursor,
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+    image_cursors_->SetPlatformCursor(&cursor);
+    cursor.set_device_scale_factor(image_cursors_->GetScale());
+    delegate->CommitCursor(cursor);
+
+    if (delegate->IsCursorVisible())
+      ApplyCursor(cursor);
+  }
+
+  virtual void SetVisibility(
+      bool visible,
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+    delegate->CommitVisibility(visible);
+
+    if (visible) {
+      SetCursor(delegate->GetCursor(), delegate);
+    } else {
+      gfx::NativeCursor invisible_cursor(ui::kCursorNone);
+      image_cursors_->SetPlatformCursor(&invisible_cursor);
+      ApplyCursor(invisible_cursor);
+    }
+  }
+
+  virtual void SetCursorSet(
+      ui::CursorSetType cursor_set,
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+    image_cursors_->SetCursorSet(cursor_set);
+    delegate->CommitCursorSet(cursor_set);
+    if (delegate->IsCursorVisible())
+      SetCursor(delegate->GetCursor(), delegate);
+  }
+
+  virtual void SetMouseEventsEnabled(
+      bool enabled,
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+    delegate->CommitMouseEventsEnabled(enabled);
+    SetVisibility(delegate->IsCursorVisible(), delegate);
+  }
+
+ private:
+  // Sets |cursor| as the active cursor within Aura.
+  void ApplyCursor(gfx::NativeCursor cursor) {
+    host_->SetCursor(cursor);
+  }
+
+  aura::WindowTreeHost* host_;  // Not owned.
+
+  scoped_ptr<ui::ImageCursors> image_cursors_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellNativeCursorManager);
+};
+
 ShellDesktopController* g_instance = NULL;
 
 }  // namespace
@@ -71,6 +149,15 @@ ShellDesktopController::ShellDesktopController() {
   display_configurator_->AddObserver(this);
 #endif
   CreateRootWindow();
+
+  cursor_manager_.reset(
+      new wm::CursorManager(scoped_ptr<wm::NativeCursorManager>(
+          new ShellNativeCursorManager(GetWindowTreeHost()))));
+  cursor_manager_->SetDisplay(
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay());
+  cursor_manager_->SetCursor(ui::kCursorPointer);
+  aura::client::SetCursorClient(
+      GetWindowTreeHost()->window(), cursor_manager_.get());
 
   user_activity_detector_.reset(new wm::UserActivityDetector);
   GetWindowTreeHost()->event_processor()->GetRootTarget()->AddPreTargetHandler(

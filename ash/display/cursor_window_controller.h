@@ -10,7 +10,7 @@
 #include "ui/gfx/display.h"
 
 namespace ash {
-namespace test{
+namespace test {
 class MirrorWindowTestApi;
 }
 
