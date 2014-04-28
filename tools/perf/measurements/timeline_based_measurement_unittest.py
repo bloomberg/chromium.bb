@@ -77,13 +77,9 @@ class TimelineBasedMetricsTests(unittest.TestCase):
     metric = tbm_module._TimelineBasedMetrics( # pylint: disable=W0212
         self.model, self.renderer_thread,
         CreateMetricsForTimelineInteractionRecord)
-    ps = page_set.PageSet.FromDict({
-      "description": "hello",
-      "archive_path": "foo.wpr",
-      "pages": [
-        {"url": "http://www.bar.com/"}
-      ]
-    }, os.path.dirname(__file__))
+    ps = page_set.PageSet(file_path=os.path.dirname(__file__))
+    ps.AddPageWithDefaultRunNavigate('http://www.bar.com/')
+
     results.WillMeasurePage(ps.pages[0])
     metric.AddResults(results)
     results.DidMeasurePage()
