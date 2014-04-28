@@ -524,7 +524,7 @@ public class AwSettings {
      */
     public String getUserAgentString() {
         synchronized (mAwSettingsLock) {
-            return mUserAgent;
+            return getUserAgentLocked();
         }
     }
 
@@ -557,7 +557,7 @@ public class AwSettings {
      */
     public boolean getLoadWithOverviewMode() {
         synchronized (mAwSettingsLock) {
-            return mLoadWithOverviewMode;
+            return getLoadWithOverviewModeLocked();
         }
     }
 
@@ -584,7 +584,7 @@ public class AwSettings {
      */
     public int getTextZoom() {
         synchronized (mAwSettingsLock) {
-            return mTextSizePercent;
+            return getTextSizePercentLocked();
         }
     }
 
@@ -611,7 +611,7 @@ public class AwSettings {
      */
     public String getStandardFontFamily() {
         synchronized (mAwSettingsLock) {
-            return mStandardFontFamily;
+            return getStandardFontFamilyLocked();
         }
     }
 
@@ -638,7 +638,7 @@ public class AwSettings {
      */
     public String getFixedFontFamily() {
         synchronized (mAwSettingsLock) {
-            return mFixedFontFamily;
+            return getFixedFontFamilyLocked();
         }
     }
 
@@ -665,7 +665,7 @@ public class AwSettings {
      */
     public String getSansSerifFontFamily() {
         synchronized (mAwSettingsLock) {
-            return mSansSerifFontFamily;
+            return getSansSerifFontFamilyLocked();
         }
     }
 
@@ -692,7 +692,7 @@ public class AwSettings {
      */
     public String getSerifFontFamily() {
         synchronized (mAwSettingsLock) {
-            return mSerifFontFamily;
+            return getSerifFontFamilyLocked();
         }
     }
 
@@ -719,7 +719,7 @@ public class AwSettings {
      */
     public String getCursiveFontFamily() {
         synchronized (mAwSettingsLock) {
-            return mCursiveFontFamily;
+            return getCursiveFontFamilyLocked();
         }
     }
 
@@ -746,7 +746,7 @@ public class AwSettings {
      */
     public String getFantasyFontFamily() {
         synchronized (mAwSettingsLock) {
-            return mFantasyFontFamily;
+            return getFantasyFontFamilyLocked();
         }
     }
 
@@ -774,7 +774,7 @@ public class AwSettings {
      */
     public int getMinimumFontSize() {
         synchronized (mAwSettingsLock) {
-            return mMinimumFontSize;
+            return getMinimumFontSizeLocked();
         }
     }
 
@@ -802,7 +802,7 @@ public class AwSettings {
      */
     public int getMinimumLogicalFontSize() {
         synchronized (mAwSettingsLock) {
-            return mMinimumLogicalFontSize;
+            return getMinimumLogicalFontSizeLocked();
         }
     }
 
@@ -830,7 +830,7 @@ public class AwSettings {
      */
     public int getDefaultFontSize() {
         synchronized (mAwSettingsLock) {
-            return mDefaultFontSize;
+            return getDefaultFontSizeLocked();
         }
     }
 
@@ -858,7 +858,7 @@ public class AwSettings {
      */
     public int getDefaultFixedFontSize() {
         synchronized (mAwSettingsLock) {
-            return mDefaultFixedFontSize;
+            return getDefaultFixedFontSizeLocked();
         }
     }
 
@@ -921,7 +921,7 @@ public class AwSettings {
      */
     public boolean getLoadsImagesAutomatically() {
         synchronized (mAwSettingsLock) {
-            return mLoadsImagesAutomatically;
+            return getLoadsImagesAutomaticallyLocked();
         }
     }
 
@@ -978,7 +978,7 @@ public class AwSettings {
      */
     public boolean getAllowUniversalAccessFromFileURLs() {
         synchronized (mAwSettingsLock) {
-            return mAllowUniversalAccessFromFileURLs;
+            return getAllowUniversalAccessFromFileURLsLocked();
         }
     }
 
@@ -993,7 +993,7 @@ public class AwSettings {
      */
     public boolean getAllowFileAccessFromFileURLs() {
         synchronized (mAwSettingsLock) {
-            return mAllowFileAccessFromFileURLs;
+            return getAllowFileAccessFromFileURLsLocked();
         }
     }
 
@@ -1068,7 +1068,7 @@ public class AwSettings {
      */
     public boolean getJavaScriptCanOpenWindowsAutomatically() {
         synchronized (mAwSettingsLock) {
-            return mJavaScriptCanOpenWindowsAutomatically;
+            return getJavaScriptCanOpenWindowsAutomaticallyLocked();
         }
     }
 
@@ -1162,7 +1162,7 @@ public class AwSettings {
      */
     public boolean getUseWideViewPort() {
         synchronized (mAwSettingsLock) {
-            return mUseWideViewport;
+            return getUseWideViewportLocked();
         }
     }
 
@@ -1299,7 +1299,7 @@ public class AwSettings {
      */
     public String getDefaultTextEncodingName() {
         synchronized (mAwSettingsLock) {
-            return mDefaultTextEncoding;
+            return getDefaultTextEncodingLocked();
         }
     }
 
@@ -1326,7 +1326,7 @@ public class AwSettings {
      */
     public boolean getMediaPlaybackRequiresUserGesture() {
         synchronized (mAwSettingsLock) {
-            return mMediaPlaybackRequiresUserGesture;
+            return getMediaPlaybackRequiresUserGestureLocked();
         }
     }
 
@@ -1354,7 +1354,7 @@ public class AwSettings {
      */
     public String getDefaultVideoPosterURL() {
         synchronized (mAwSettingsLock) {
-            return mDefaultVideoPosterURL;
+            return getDefaultVideoPosterURLLocked();
         }
     }
 
@@ -1494,7 +1494,7 @@ public class AwSettings {
      */
     public boolean getVideoOverlayForEmbeddedVideoEnabled() {
         synchronized (mAwSettingsLock) {
-            return mVideoOverlayForEmbeddedVideoEnabled;
+            return getVideoOverlayForEmbeddedVideoEnabledLocked();
         }
     }
 
