@@ -165,6 +165,7 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {}
 function WebViewInternal(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
+  this.attached = false;
   this.browserPluginNode = this.createBrowserPluginNode();
   var shadowRoot = this.webviewNode.createShadowRoot();
   shadowRoot.appendChild(this.browserPluginNode);
@@ -569,20 +570,7 @@ WebViewInternal.prototype.setupWebviewNodeEvents = function() {
   this.viewInstanceId = IdGenerator.GetNextId();
   var onInstanceIdAllocated = function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    self.instanceId = detail.windowId;
-    var params = {
-      'api': 'webview',
-      'instanceId': self.viewInstanceId
-    };
-    if (self.userAgentOverride) {
-      params['userAgentOverride'] = self.userAgentOverride;
-    }
-    self.browserPluginNode['-internal-attach'](params);
-
-    var events = self.getEvents();
-    for (var eventName in events) {
-      self.setupEvent(eventName, events[eventName]);
-    }
+    self.attachWindowAndSetUpEvents(detail.windowId);
   };
   this.browserPluginNode.addEventListener('-internal-instanceid-allocated',
                                           onInstanceIdAllocated);
@@ -801,7 +789,7 @@ WebViewInternal.prototype.handleNewWindowEvent =
   var windowObj = {
     attach: function(webview) {
       validateCall();
-      if (!webview)
+      if (!webview || !webview.tagName || webview.tagName != 'WEBVIEW')
         throw new Error(ERROR_MSG_WEBVIEW_EXPECTED);
       // Attach happens asynchronously to give the tagWatcher an opportunity
       // to pick up the new webview before attach operates on it, if it hasn't
@@ -809,9 +797,10 @@ WebViewInternal.prototype.handleNewWindowEvent =
       // Note: Any subsequent errors cannot be exceptions because they happen
       // asynchronously.
       setTimeout(function() {
+        var webViewInternal = privates(webview).internal;
         var attached =
-            browserPluginNode['-internal-attachWindowTo'](webview,
-                                                          event.windowId);
+            webViewInternal.attachWindowAndSetUpEvents(event.windowId);
+
         if (!attached) {
           window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
         }
@@ -1020,6 +1009,25 @@ WebViewInternal.prototype.setUserAgentOverride = function(userAgentOverride) {
     return;
   }
   WebView.overrideUserAgent(this.instanceId, userAgentOverride);
+};
+
+/** @private */
+WebViewInternal.prototype.attachWindowAndSetUpEvents = function(instanceId) {
+  this.instanceId = instanceId;
+  var params = {
+    'api': 'webview',
+    'instanceId': this.viewInstanceId
+  };
+  if (this.userAgentOverride) {
+    params['userAgentOverride'] = this.userAgentOverride;
+  }
+  this.browserPluginNode['-internal-attach'](this.instanceId, params);
+
+  var events = this.getEvents();
+  for (var eventName in events) {
+    this.setupEvent(eventName, events[eventName]);
+  }
+  return true;
 };
 
 // Registers browser plugin <object> custom element.

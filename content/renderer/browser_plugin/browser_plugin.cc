@@ -61,11 +61,6 @@ static std::string GetInternalEventName(const char* event_name) {
   return base::StringPrintf("-internal-%s", event_name);
 }
 
-typedef std::map<blink::WebPluginContainer*,
-                 BrowserPlugin*> PluginContainerMap;
-static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
@@ -106,14 +101,6 @@ BrowserPlugin::~BrowserPlugin() {
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(render_view_routing_id_,
                                                guest_instance_id_));
-}
-
-/*static*/
-BrowserPlugin* BrowserPlugin::FromContainer(
-    blink::WebPluginContainer* container) {
-  PluginContainerMap* browser_plugins = g_plugin_container_map.Pointer();
-  PluginContainerMap::iterator it = browser_plugins->find(container);
-  return it == browser_plugins->end() ? NULL : it->second;
 }
 
 bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
@@ -380,13 +367,10 @@ bool BrowserPlugin::UsesPendingDamageBuffer(
 
 void BrowserPlugin::OnInstanceIDAllocated(int guest_instance_id) {
   CHECK(guest_instance_id != browser_plugin::kInstanceIDNone);
-  before_first_navigation_ = false;
-  guest_instance_id_ = guest_instance_id;
-  browser_plugin_manager()->AddBrowserPlugin(guest_instance_id, this);
 
   if (auto_navigate_) {
     scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-    Attach(params.Pass());
+    Attach(guest_instance_id, params.Pass());
     return;
   }
 
@@ -396,7 +380,20 @@ void BrowserPlugin::OnInstanceIDAllocated(int guest_instance_id) {
   TriggerEvent(browser_plugin::kEventInternalInstanceIDAllocated, &props);
 }
 
-void BrowserPlugin::Attach(scoped_ptr<base::DictionaryValue> extra_params) {
+void BrowserPlugin::Attach(int guest_instance_id,
+                           scoped_ptr<base::DictionaryValue> extra_params) {
+  CHECK(guest_instance_id != browser_plugin::kInstanceIDNone);
+
+  // If this BrowserPlugin is already attached to a guest, then do nothing.
+  if (HasGuestInstanceID())
+    return;
+
+  // This API may be called directly without setting the src attribute.
+  // In that case, we need to make sure we don't allocate another instance ID.
+  before_first_navigation_ = false;
+  guest_instance_id_ = guest_instance_id;
+  browser_plugin_manager()->AddBrowserPlugin(guest_instance_id, this);
+
   BrowserPluginHostMsg_Attach_Params attach_params;
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
@@ -693,57 +690,6 @@ NPObject* BrowserPlugin::GetContentWindow() const {
   return guest_frame->windowObject();
 }
 
-// static
-bool BrowserPlugin::AttachWindowTo(const blink::WebNode& node, int window_id) {
-  if (node.isNull())
-    return false;
-
-  if (!node.isElementNode())
-    return false;
-
-  blink::WebElement shim_element = node.toConst<blink::WebElement>();
-  // The shim containing the BrowserPlugin must be attached to a document.
-  if (shim_element.document().isNull())
-    return false;
-
-  blink::WebNode shadow_root = shim_element.shadowRoot();
-  if (shadow_root.isNull() || !shadow_root.hasChildNodes())
-    return false;
-
-  blink::WebNode plugin_element = shadow_root.firstChild();
-  blink::WebPluginContainer* plugin_container =
-      plugin_element.pluginContainer();
-  if (!plugin_container)
-    return false;
-
-  BrowserPlugin* browser_plugin =
-      BrowserPlugin::FromContainer(plugin_container);
-  if (!browser_plugin)
-    return false;
-
-  // If the BrowserPlugin has already begun to navigate then we shouldn't allow
-  // attaching a different guest.
-  //
-  // Navigation happens in two stages.
-  // 1. BrowserPlugin requests an instance ID from the browser process.
-  // 2. The browser process returns an instance ID and BrowserPlugin is
-  //    "Attach"ed to that instance ID.
-  // If the instance ID is new then a new guest will be created.
-  // If the instance ID corresponds to an unattached guest then BrowserPlugin
-  // is attached to that guest.
-  //
-  // Between step 1, and step 2, BrowserPlugin::AttachWindowTo may be called.
-  // The check below ensures that BrowserPlugin:Attach does not get called with
-  // a different instance ID after step 1 has happened.
-  // TODO(fsamuel): We may wish to support reattaching guests in the future:
-  // http://crbug.com/156219.
-  if (browser_plugin->HasNavigated())
-    return false;
-
-  browser_plugin->OnInstanceIDAllocated(window_id);
-  return true;
-}
-
 bool BrowserPlugin::HasNavigated() const {
   return !before_first_navigation_;
 }
@@ -914,7 +860,6 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   container_ = container;
   container_->setWantsWheelEvents(true);
   ParseAttributes();
-  g_plugin_container_map.Get().insert(std::make_pair(container_, this));
   return true;
 }
 
@@ -961,9 +906,6 @@ void BrowserPlugin::destroy() {
   if (container_)
     container_->clearScriptObjects();
 
-  // The BrowserPlugin's WebPluginContainer is deleted immediately after this
-  // call returns, so let's not keep a reference to it around.
-  g_plugin_container_map.Get().erase(container_);
   if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();
   container_ = NULL;

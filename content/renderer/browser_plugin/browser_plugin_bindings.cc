@@ -231,9 +231,7 @@ class BrowserPluginMethodBinding {
 class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingAttach()
-      : BrowserPluginMethodBinding(
-          browser_plugin::kMethodInternalAttach, 1) {
-  }
+      : BrowserPluginMethodBinding(browser_plugin::kMethodInternalAttach, 2) {}
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
@@ -241,8 +239,12 @@ class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
     if (!bindings->instance()->render_view())
       return false;
 
+    int instance_id = IntFromNPVariant(args[0]);
+    if (!instance_id)
+      return false;
+
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    v8::Handle<v8::Value> obj(blink::WebBindings::toV8Value(&args[0]));
+    v8::Handle<v8::Value> obj(blink::WebBindings::toV8Value(&args[1]));
     scoped_ptr<base::Value> value(
         converter->FromV8Value(obj, bindings->instance()->render_view()->
             GetWebView()->mainFrame()->mainWorldScriptContext()));
@@ -254,34 +256,12 @@ class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
 
     scoped_ptr<base::DictionaryValue> extra_params(
         static_cast<base::DictionaryValue*>(value.release()));
-    bindings->instance()->Attach(extra_params.Pass());
+    bindings->instance()->Attach(instance_id, extra_params.Pass());
     return true;
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAttach);
-};
-
-class BrowserPluginBindingAttachWindowTo : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingAttachWindowTo()
-      : BrowserPluginMethodBinding(
-          browser_plugin::kMethodInternalAttachWindowTo, 2) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    blink::WebNode node;
-    WebBindings::getNode(NPVARIANT_TO_OBJECT(args[0]), &node);
-    int window_id = IntFromNPVariant(args[1]);
-    BOOLEAN_TO_NPVARIANT(BrowserPlugin::AttachWindowTo(node, window_id),
-                         *result);
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAttachWindowTo);
 };
 
 // BrowserPluginPropertyBinding ------------------------------------------------
@@ -671,7 +651,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 
   method_bindings_.push_back(new BrowserPluginBindingAttach);
-  method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
 
   property_bindings_.push_back(
       new BrowserPluginPropertyBindingAllowTransparency);

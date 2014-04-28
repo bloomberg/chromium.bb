@@ -46,8 +46,6 @@ class CONTENT_EXPORT BrowserPlugin :
     return browser_plugin_manager_.get();
   }
 
-  static BrowserPlugin* FromContainer(blink::WebPluginContainer* container);
-
   bool OnMessageReceived(const IPC::Message& msg);
 
   // Update Browser Plugin's DOM Node attribute |attribute_name| with the value
@@ -109,11 +107,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Returns whether this BrowserPlugin has allocated an instance ID.
   bool HasGuestInstanceID() const;
 
-  // Attaches the window identified by |window_id| to the the given node
-  // encapsulating a BrowserPlugin.
-  static bool AttachWindowTo(const blink::WebNode& node,
-                             int window_id);
-
   // Informs the guest of an updated focus state.
   void UpdateGuestFocusState();
   // Indicates whether the guest should be focused.
@@ -131,7 +124,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // Provided that a guest instance ID has been allocated, this method attaches
   // this BrowserPlugin instance to that guest. |extra_params| are parameters
   // passed in by the content embedder to the browser process.
-  void Attach(scoped_ptr<base::DictionaryValue> extra_params);
+  void Attach(int guest_instance_id,
+              scoped_ptr<base::DictionaryValue> extra_params);
 
   // Notify the plugin about a compositor commit so that frame ACKs could be
   // sent, if needed.
