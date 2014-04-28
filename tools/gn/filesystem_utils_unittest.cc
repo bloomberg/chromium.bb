@@ -73,6 +73,23 @@ TEST(FilesystemUtils, FindDir) {
   EXPECT_EQ("foo/bar/", FindDir(&input));
 }
 
+TEST(FilesystemUtils, FindLastDirComponent) {
+  SourceDir empty;
+  EXPECT_EQ("", FindLastDirComponent(empty));
+
+  SourceDir root("/");
+  EXPECT_EQ("", FindLastDirComponent(root));
+
+  SourceDir srcroot("//");
+  EXPECT_EQ("", FindLastDirComponent(srcroot));
+
+  SourceDir regular1("//foo/");
+  EXPECT_EQ("foo", FindLastDirComponent(regular1));
+
+  SourceDir regular2("//foo/bar/");
+  EXPECT_EQ("bar", FindLastDirComponent(regular2));
+}
+
 TEST(FilesystemUtils, IsPathAbsolute) {
   EXPECT_TRUE(IsPathAbsolute("/foo/bar"));
   EXPECT_TRUE(IsPathAbsolute("/"));

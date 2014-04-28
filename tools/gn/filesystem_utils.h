@@ -92,6 +92,10 @@ bool EndsWithSlash(const std::string& s);
 // input pointer must outlive the output.
 base::StringPiece FindDir(const std::string* path);
 
+// Returns the substring identifying the last component of the dir, or the
+// empty substring if none. For example "//foo/bar/" -> "bar".
+base::StringPiece FindLastDirComponent(const SourceDir& dir);
+
 // Verifies that the given string references a file inside of the given
 // directory. This is pretty stupid and doesn't handle "." and "..", etc.,
 // it is designed for a sanity check to keep people from writing output files

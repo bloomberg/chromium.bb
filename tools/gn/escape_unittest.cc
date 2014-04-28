@@ -5,6 +5,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/escape.h"
 
+TEST(Escape, Ninja) {
+  EscapeOptions opts;
+  opts.mode = ESCAPE_NINJA;
+  std::string result = EscapeString("asdf: \"$\\bar", opts, NULL);
+  EXPECT_EQ("asdf$:$ \"$$\\bar", result);
+}
+
+TEST(Escape, Shell) {
+  EscapeOptions opts;
+  opts.mode = ESCAPE_SHELL;
+  std::string result = EscapeString("asdf: \"$\\bar", opts, NULL);
+#if defined(OS_WIN)
+  // Windows shell doesn't escape backslashes.
+  EXPECT_EQ("\"asdf: \"$\\bar\"", result);
+#else
+  EXPECT_EQ("\"asdf: \\\"$\\\\bar\"", result);
+#endif
+}
+
 TEST(Escape, UsedQuotes) {
   EscapeOptions shell_options;
   shell_options.mode = ESCAPE_SHELL;

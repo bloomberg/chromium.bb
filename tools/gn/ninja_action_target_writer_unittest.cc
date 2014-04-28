@@ -148,11 +148,11 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
         "rule __foo_bar___rule\n"
-        "  command = C:/python/python.exe gyp-win-tool action-wrapper environment.x86 __foo_bar___rule.$unique_name.rsp\n"
+        "  command = C$:/python/python.exe gyp-win-tool action-wrapper environment.x86 __foo_bar___rule.$unique_name.rsp\n"
         "  description = ACTION //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = C:/python/python.exe ../../foo/script.py\n"
+        "  rspfile_content = C$:/python/python.exe ../../foo/script.py\n"
         "\n"
         "build foo.out: __foo_bar___rule | ../../foo/included.txt ../../foo/source.txt\n"
         "\n"
@@ -237,12 +237,12 @@ TEST(NinjaActionTargetWriter, ForEach) {
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
         "rule __foo_bar___rule\n"
-        "  command = C:/python/python.exe gyp-win-tool action-wrapper "
+        "  command = C$:/python/python.exe gyp-win-tool action-wrapper "
             "environment.x86 __foo_bar___rule.$unique_name.rsp\n"
         "  description = ACTION //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = C:/python/python.exe ../../foo/script.py -i "
+        "  rspfile_content = C$:/python/python.exe ../../foo/script.py -i "
             "${source} \"--out=foo$ bar${source_name_part}.o\"\n"
         "\n"
         "build input1.out: __foo_bar___rule ../../foo/input1.txt | "
@@ -341,12 +341,12 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
         "rule __foo_bar___rule\n"
-        "  command = C:/python/python.exe gyp-win-tool action-wrapper "
+        "  command = C$:/python/python.exe gyp-win-tool action-wrapper "
             "environment.x86 __foo_bar___rule.$unique_name.rsp\n"
         "  description = ACTION //foo:bar()\n"
         "  restat = 1\n"
         "  rspfile = __foo_bar___rule.$unique_name.rsp\n"
-        "  rspfile_content = C:/python/python.exe ../../foo/script.py -i "
+        "  rspfile_content = C$:/python/python.exe ../../foo/script.py -i "
             "${source} \"--out=foo$ bar${source_name_part}.o\"\n"
         "\n"
         "build gen/input1.d input1.out: __foo_bar___rule ../../foo/input1.txt"

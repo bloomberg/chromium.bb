@@ -58,6 +58,9 @@ void EscapeStringToString(const base::StringPiece& str,
     } else if (str[i] == '\\' && (options.mode & ESCAPE_JSON)) {
       dest->push_back('\\');
       dest->push_back('\\');
+    } else if (str[i] == ':' && (options.mode & ESCAPE_NINJA)) {
+      dest->push_back('$');
+      dest->push_back(':');
     } else {
       dest->push_back(str[i]);
     }

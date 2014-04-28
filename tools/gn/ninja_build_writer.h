@@ -39,6 +39,9 @@ class NinjaBuildWriter {
   void WriteSubninjas();
   void WritePhonyAndAllRules();
 
+  void WritePhonyRule(const Target* target, const OutputFile& target_file,
+                      const std::string& phony_name);
+
   const BuildSettings* build_settings_;
   std::vector<const Settings*> all_settings_;
   std::vector<const Target*> default_toolchain_targets_;
