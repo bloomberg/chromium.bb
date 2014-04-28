@@ -147,6 +147,7 @@ typedef void (*logcallback)(int level, const char *message);
     LOG_OFF = 2147483647
   } logLevels;
   void EXPORT_CALL lou_setLogLevel(int level);
+  void EXPORT_CALL lou_setDefaultLogCallback();
   void EXPORT_CALL lou_log(int level, const char *format, ...);
 /* General log function for callback logging */
 

@@ -5163,7 +5163,12 @@ debugHook ()
   printf ("%s\n", hook);
 }
 
-static logcallback logCallbackFunction;
+static void defaultLogCallback(int level, const char *message)
+{
+  lou_logPrint(message);
+}
+
+static logcallback logCallbackFunction = defaultLogCallback;
 void EXPORT_CALL lou_registerLogCallback(logcallback callback)
 {
   logCallbackFunction = callback;
@@ -5198,4 +5203,31 @@ void EXPORT_CALL lou_log(int level, const char *format, ...)
           free(s);
         }
     }
+}
+
+void EXPORT_CALL lou_setDefaultLogCallback()
+{
+  logCallbackFunction = defaultLogCallback;
+}
+
+void logWidecharBuf(int level, const char *msg, widechar *wbuf, int wlen)
+{
+  int logBufSize = (wlen * ((sizeof(widechar) * 2) + 3)) + 1 + strlen(msg);
+  char *logMessage = malloc(logBufSize);
+  char *p = logMessage;
+  char *formatString;
+  if (sizeof(widechar) == 2)
+    formatString = "0x%04X ";
+  else
+    formatString = "0x%08X ";
+  for (int i = 0; i < strlen(msg); i++)
+    logMessage[i] = msg[i];
+  p += strlen(msg);
+  for (int i = 0; i < wlen; i++)
+    {
+      p += sprintf(p, formatString, wbuf[i]);
+    }
+  p = '\0';
+  lou_log(level, logMessage);
+  free(logMessage);
 }
