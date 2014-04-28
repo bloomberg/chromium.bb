@@ -8,7 +8,6 @@
 #include "device/bluetooth/bluetooth_profile_chromeos.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "device/bluetooth/bluetooth_profile_mac.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/bluetooth_profile_win.h"
 #endif
@@ -35,9 +34,14 @@ BluetoothProfile::BluetoothProfile() {
 }
 
 BluetoothProfile::~BluetoothProfile() {
-
 }
 
+// TODO(isherman): This is defined in BluetoothProfileMac.mm.  Since the
+// BluetoothProfile classes are soon going away, it's not really worth cleaning
+// this up more.
+BluetoothProfile* CreateBluetoothProfileMac(
+    const BluetoothUUID& uuid,
+    const BluetoothProfile::Options& options);
 
 // static
 void BluetoothProfile::Register(const BluetoothUUID& uuid,
@@ -51,7 +55,7 @@ void BluetoothProfile::Register(const BluetoothUUID& uuid,
   BluetoothProfile* profile = NULL;
 
   if (base::mac::IsOSLionOrLater())
-    profile = new BluetoothProfileMac(uuid, options.name);
+    profile = CreateBluetoothProfileMac(uuid, options);
   callback.Run(profile);
 #elif defined(OS_WIN)
   BluetoothProfile* profile = NULL;

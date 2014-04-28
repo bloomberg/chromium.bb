@@ -32,14 +32,23 @@ class BluetoothServiceRecord;
 // Implements the BluetoothSocket class for the Mac OS X platform.
 class BluetoothSocketMac : public BluetoothSocket {
  public:
-  static scoped_refptr<BluetoothSocketMac> CreateBluetoothSocket(
-      IOBluetoothSDPServiceRecord* record);
+  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
+      ConnectSuccessCallback;
 
-  // Connects to the peer device and calls |success_callback| when the
-  // connection has been established successfully. If an error occurs, calls
-  // |error_callback| with a system error message.
-  void Connect(const base::Closure& success_callback,
-               const ErrorCompletionCallback& error_callback);
+  // Creates a client socket and connects it to the Bluetooth service |record|.
+  // Calls |success_callback|, passing in the created socket, on success.
+  // Calls |error_callback| on failure.
+  static void Connect(IOBluetoothSDPServiceRecord* record,
+                      const ConnectSuccessCallback& success_callback,
+                      const ErrorCompletionCallback& error_callback);
+
+  // Creates a server socket to wrap the |rfcomm_channel|, which should be an
+  // incoming channel in the process of being opened.
+  // Calls |success_callback|, passing in the created socket, on success.
+  // Calls |error_callback| on failure.
+  static void AcceptConnection(IOBluetoothRFCOMMChannel* rfcomm_channel,
+                               const ConnectSuccessCallback& success_callback,
+                               const ErrorCompletionCallback& error_callback);
 
   // BluetoothSocket:
   virtual void Close() OVERRIDE;
@@ -64,12 +73,7 @@ class BluetoothSocketMac : public BluetoothSocket {
                               void* refcon,
                               IOReturn status);
 
- protected:
-  virtual ~BluetoothSocketMac();
-
  private:
-  BluetoothSocketMac(IOBluetoothSDPServiceRecord* record);
-
   struct SendRequest {
     SendRequest();
     ~SendRequest();
@@ -95,15 +99,31 @@ class BluetoothSocketMac : public BluetoothSocket {
     ErrorCompletionCallback error_callback;
   };
 
+  BluetoothSocketMac();
+  virtual ~BluetoothSocketMac();
+
   void ReleaseChannel();
+
+  // Connects to the peer device corresponding to |record| and calls
+  // |success_callback| when the connection has been established
+  // successfully. If an error occurs, calls |error_callback| with a system
+  // error message.
+  void ConnectImpl(IOBluetoothSDPServiceRecord* record,
+                   const ConnectSuccessCallback& success_callback,
+                   const ErrorCompletionCallback& error_callback);
+
+  // Accepts a connection from a peer device. The connection is represented as
+  // the |rfcomm_channel|, which should be an incoming channel in the process of
+  // being opened. Calls |success_callback|, passing in |this|, on success.
+  // Calls |error_callback| on failure.
+  void AcceptConnectionImpl(IOBluetoothRFCOMMChannel* rfcomm_channel,
+                            const ConnectSuccessCallback& success_callback,
+                            const ErrorCompletionCallback& error_callback);
 
   bool connecting() const { return connect_callbacks_; }
 
   // Used to verify that all methods are called on the same thread.
   base::ThreadChecker thread_checker_;
-
-  // The Bluetooth Service definition.
-  base::scoped_nsobject<IOBluetoothSDPServiceRecord> record_;
 
   // The RFCOMM channel delegate.
   base::scoped_nsobject<BluetoothRFCOMMChannelDelegate> delegate_;
