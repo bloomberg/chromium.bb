@@ -51,14 +51,14 @@ class FontFaceReadyPromiseResolver;
 class StylePropertySet;
 class StyleRuleFontFace;
 
-class FontFace : public RefCountedWillBeRefCountedGarbageCollected<FontFace> {
+class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace> {
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 
-    static PassRefPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const Dictionary&, ExceptionState&);
-    static PassRefPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBufferView>, const Dictionary&, ExceptionState&);
-    static PassRefPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const Dictionary&, ExceptionState&);
-    static PassRefPtr<FontFace> create(Document*, const StyleRuleFontFace*);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBufferView>, const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(Document*, const StyleRuleFontFace*);
 
     ~FontFace();
 
@@ -125,11 +125,11 @@ private:
     RefPtrWillBeMember<DOMError> m_error;
 
     Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;
-    OwnPtr<CSSFontFace> m_cssFontFace;
+    OwnPtrWillBeMember<CSSFontFace> m_cssFontFace;
     Vector<RefPtr<LoadFontCallback> > m_callbacks;
 };
 
-typedef Vector<RefPtr<FontFace> > FontFaceArray;
+typedef WillBeHeapVector<RefPtrWillBeMember<FontFace> > FontFaceArray;
 
 } // namespace WebCore
 

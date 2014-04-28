@@ -46,8 +46,10 @@ CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* fontSelector, FontTr
 CSSSegmentedFontFace::~CSSSegmentedFontFace()
 {
     pruneTable();
+#if !ENABLE(OILPAN)
     for (FontFaceList::iterator it = m_fontFaces.begin(); it != m_fontFaces.end(); ++it)
         (*it)->cssFontFace()->clearSegmentedFontFace();
+#endif
 }
 
 void CSSSegmentedFontFace::pruneTable()
@@ -80,9 +82,9 @@ void CSSSegmentedFontFace::fontLoadWaitLimitExceeded(CSSFontFace*)
     pruneTable();
 }
 
-void CSSSegmentedFontFace::addFontFace(PassRefPtr<FontFace> prpFontFace, bool cssConnected)
+void CSSSegmentedFontFace::addFontFace(PassRefPtrWillBeRawPtr<FontFace> prpFontFace, bool cssConnected)
 {
-    RefPtr<FontFace> fontFace = prpFontFace;
+    RefPtrWillBeRawPtr<FontFace> fontFace = prpFontFace;
     pruneTable();
     fontFace->cssFontFace()->setSegmentedFontFace(this);
     if (cssConnected) {
@@ -95,9 +97,9 @@ void CSSSegmentedFontFace::addFontFace(PassRefPtr<FontFace> prpFontFace, bool cs
     }
 }
 
-void CSSSegmentedFontFace::removeFontFace(PassRefPtr<FontFace> prpFontFace)
+void CSSSegmentedFontFace::removeFontFace(PassRefPtrWillBeRawPtr<FontFace> prpFontFace)
 {
-    RefPtr<FontFace> fontFace = prpFontFace;
+    RefPtrWillBeRawPtr<FontFace> fontFace = prpFontFace;
     FontFaceList::iterator it = m_fontFaces.find(fontFace);
     if (it == m_fontFaces.end())
         return;
@@ -197,12 +199,18 @@ bool CSSSegmentedFontFace::checkFont(const String& text) const
     return true;
 }
 
-void CSSSegmentedFontFace::match(const String& text, Vector<RefPtr<FontFace> >& faces) const
+void CSSSegmentedFontFace::match(const String& text, WillBeHeapVector<RefPtrWillBeMember<FontFace> >& faces) const
 {
     for (FontFaceList::const_iterator it = m_fontFaces.begin(); it != m_fontFaces.end(); ++it) {
         if ((*it)->cssFontFace()->ranges().intersectsWith(text))
             faces.append(*it);
     }
+}
+
+void CSSSegmentedFontFace::trace(Visitor* visitor)
+{
+    visitor->trace(m_fontSelector);
+    visitor->trace(m_fontFaces);
 }
 
 }

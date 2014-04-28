@@ -36,6 +36,7 @@ enum FontFaceLoadStatus {
 };
 
 [
+    WillBeGarbageCollected,
     RuntimeEnabled=FontLoadEvents,
     Constructor(DOMString family, ArrayBuffer source, Dictionary descriptors),
     Constructor(DOMString family, ArrayBufferView source, Dictionary descriptors),

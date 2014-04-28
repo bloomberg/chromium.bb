@@ -63,6 +63,7 @@ const AtomicString& CSSFontFaceLoadEvent::interfaceName() const
 
 void CSSFontFaceLoadEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_fontfaces);
     Event::trace(visitor);
 }
 

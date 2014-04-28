@@ -395,6 +395,17 @@ v8::Handle<v8::Value> v8ArrayNoInline(const Vector<T, inlineCapacity>& iterator,
     return result;
 }
 
+template<typename T, size_t inlineCapacity>
+v8::Handle<v8::Value> v8ArrayNoInline(const HeapVector<T, inlineCapacity>& iterator, v8::Isolate* isolate)
+{
+    v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
+    int index = 0;
+    typename HeapVector<T, inlineCapacity>::const_iterator end = iterator.end();
+    for (typename HeapVector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
+        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), v8::Handle<v8::Object>(), isolate));
+    return result;
+}
+
 // Conversion flags, used in toIntXX/toUIntXX.
 enum IntegerConversionConfiguration {
     NormalConversion,
@@ -866,6 +877,18 @@ public:
     static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value, Context, v8::Isolate* isolate)
     {
         return v8ArrayNoInline(value, isolate);
+    }
+
+    template<typename T, size_t inlineCapacity>
+    static v8::Handle<v8::Value> toV8Value(const HeapVector<T, inlineCapacity>& value, Context, v8::Isolate* isolate)
+    {
+        return v8ArrayNoInline(value, isolate);
+    }
+
+    template<typename T, size_t inlineCapacity>
+    static v8::Handle<v8::Value> toV8Value(const PersistentHeapVector<T, inlineCapacity>& value, Context, v8::Isolate* isolate)
+    {
+        return v8ArrayNoInline(static_cast<HeapVector<T, inlineCapacity> >(value), isolate);
     }
 };
 

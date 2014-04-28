@@ -46,17 +46,17 @@ FontFaceCache::FontFaceCache()
 {
 }
 
-void FontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, PassRefPtr<FontFace> prpFontFace)
+void FontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, PassRefPtrWillBeRawPtr<FontFace> prpFontFace)
 {
-    RefPtr<FontFace> fontFace = prpFontFace;
+    RefPtrWillBeRawPtr<FontFace> fontFace = prpFontFace;
     if (!m_styleRuleToFontFace.add(fontFaceRule, fontFace).isNewEntry)
         return;
     addFontFace(cssFontSelector, fontFace, true);
 }
 
-void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, PassRefPtr<FontFace> prpFontFace, bool cssConnected)
+void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, PassRefPtrWillBeRawPtr<FontFace> prpFontFace, bool cssConnected)
 {
-    RefPtr<FontFace> fontFace = prpFontFace;
+    RefPtrWillBeRawPtr<FontFace> fontFace = prpFontFace;
 
     FamilyToTraitsMap::AddResult traitsResult = m_fontFaces.add(fontFace->family(), nullptr);
     if (!traitsResult.storedValue->value)
@@ -218,6 +218,8 @@ void FontFaceCache::trace(Visitor* visitor)
 {
     visitor->trace(m_fontFaces);
     visitor->trace(m_fonts);
+    visitor->trace(m_styleRuleToFontFace);
+    visitor->trace(m_cssConnectedFontFaces);
 }
 
 }

@@ -41,23 +41,24 @@ class CSSSegmentedFontFace;
 class FontDescription;
 class StyleRuleFontFace;
 
-class FontFaceCache FINAL : NoBaseWillBeGarbageCollectedFinalized<FontFaceCache> {
+class FontFaceCache FINAL {
+    DISALLOW_ALLOCATION();
 public:
     FontFaceCache();
 
     // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
     // a result of egregious spaghettification in FontFace/FontFaceSet.
-    void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtr<FontFace>);
+    void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtrWillBeRawPtr<FontFace>);
     void remove(const StyleRuleFontFace*);
     void clear();
-    void addFontFace(CSSFontSelector*, PassRefPtr<FontFace>, bool cssConnected);
+    void addFontFace(CSSFontSelector*, PassRefPtrWillBeRawPtr<FontFace>, bool cssConnected);
     void removeFontFace(FontFace*, bool cssConnected);
 
     // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,
     // but this function uses FontDescription/family pair.
     CSSSegmentedFontFace* get(const FontDescription&, const AtomicString& family);
 
-    const ListHashSet<RefPtr<FontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
+    const ListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
 
     unsigned version() const { return m_version; }
 
@@ -66,11 +67,12 @@ public:
 private:
     typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSSegmentedFontFace> > TraitsMap;
     typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
-    typedef HashMap<const StyleRuleFontFace*, RefPtr<FontFace> > StyleRuleToFontFace;
+    typedef WillBeHeapHashMap<const StyleRuleFontFace*, RefPtrWillBeMember<FontFace> > StyleRuleToFontFace;
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;
-    ListHashSet<RefPtr<FontFace> > m_cssConnectedFontFaces;
+    // FIXME: Oilpan: Replace by HeapLinkedHashSet or HeapListHashSet.
+    ListHashSet<RefPtrWillBeMember<FontFace> > m_cssConnectedFontFaces;
 
     // FIXME: See if this could be ditched
     // Used to compare Font instances, and the usage seems suspect.

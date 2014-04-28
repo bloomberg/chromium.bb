@@ -123,7 +123,7 @@ static StylePropertySet* rightToLeftDeclaration()
 
 static void addFontFaceRule(Document* document, CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule)
 {
-    RefPtr<FontFace> fontFace = FontFace::create(document, fontFaceRule);
+    RefPtrWillBeRawPtr<FontFace> fontFace = FontFace::create(document, fontFaceRule);
     if (fontFace)
         cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, fontFace);
 }
