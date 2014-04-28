@@ -24,11 +24,9 @@ function onload()
 
 function test()
 {
-    var messagesElement = WebInspector.ConsolePanel._view()._messagesElement;
-
     function dumpVisibleMessages()
     {
-        var children = WebInspector.ConsolePanel._view()._topGroup._messagesElement.childNodes;
+        var children = WebInspector.ConsolePanel._view()._messagesContainer.childNodes;
 
         for (var i = 0; i < children.length; i++)
             InspectorTest.addResult(">" + children[i].textContent);

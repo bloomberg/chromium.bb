@@ -43,15 +43,15 @@ function onload()
 
 function test()
 {
-    var messagesElement = WebInspector.ConsolePanel._view()._topGroup._messagesElement;
+    var messagesElement = WebInspector.ConsolePanel._view()._messagesContainer;
 
-    function dumpVisibleMessages(root, indent)
+    function dumpVisibleMessages(root)
     {
-        root = root || WebInspector.ConsolePanel._view()._topGroup._messagesElement; // .console-group
+        var root = WebInspector.ConsolePanel._view()._messagesContainer; // .console-group
         var children = root.childNodes;
         for (var i = 0; i < children.length; ++i) {
             var viewMessage = children[i].message;
-            var delimeter = WebInspector.ConsoleGroup.isGroupStartMessage(viewMessage) ? ">" : "";
+            var delimeter = viewMessage.consoleMessage().isGroupStartMessage() ? ">" : "";
             var indent = "";
             for (var j = 0; j < viewMessage.nestingLevel(); ++j)
                 indent += "  ";
