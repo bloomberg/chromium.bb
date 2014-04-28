@@ -480,6 +480,10 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
     // fullscreen video, we just ignore the second one.
     fullscreen_player_id_ = player_id;
     video_view_.reset(new ContentVideoView(this));
+  } else {
+    // Force the second video to exit fullscreen.
+    Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(), player_id));
+    Send(new MediaPlayerMsg_DidExitFullscreen(routing_id(), player_id));
   }
 }
 
