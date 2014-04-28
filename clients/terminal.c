@@ -772,10 +772,10 @@ terminal_resize_cells(struct terminal *terminal,
 	} else {
 		terminal->max_width = width;
 		data_pitch = width * sizeof(union utf8_char);
-		data = zalloc(data_pitch * terminal->buffer_height);
+		data = xzalloc(data_pitch * terminal->buffer_height);
 		attr_pitch = width * sizeof(struct attr);
-		data_attr = malloc(attr_pitch * terminal->buffer_height);
-		tab_ruler = zalloc(width);
+		data_attr = xmalloc(attr_pitch * terminal->buffer_height);
+		tab_ruler = xzalloc(width);
 		attr_init(data_attr, terminal->curr_attr,
 			  width * terminal->buffer_height);
 
