@@ -23,6 +23,7 @@
 #include "base/linux_util.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
@@ -344,19 +345,10 @@ static void ZygotePreSandboxInit() {
       new FontConfigIPC(GetSandboxFD()))->unref();
 }
 
-static void CloseFdAndHandleEintr(int fd) {
-  close(fd);
-}
-
 static bool CreateInitProcessReaper() {
-  // This "magic" socket must only appear in one process, so make sure
-  // it gets closed in the parent after fork().
-  base::Closure zygoteid_fd_closer =
-      base::Bind(CloseFdAndHandleEintr, kZygoteIdFd);
   // The current process becomes init(1), this function returns from a
   // newly created process.
-  const bool init_created =
-      sandbox::CreateInitProcessReaper(&zygoteid_fd_closer);
+  const bool init_created = sandbox::CreateInitProcessReaper(NULL);
   if (!init_created) {
     LOG(ERROR) << "Error creating an init process to reap zombies";
     return false;
@@ -460,6 +452,13 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   const bool must_enable_setuid_sandbox =
       linux_sandbox->setuid_sandbox_client()->IsSuidSandboxChild();
+  if (must_enable_setuid_sandbox) {
+    // When we're launched through the setuid sandbox, ZygoteHostImpl::Init
+    // arranges for kZygoteIdFd to be a dummy file descriptor to satisfy an
+    // ancient setuid sandbox ABI requirement. However, the descriptor is no
+    // longer needed, so we can simply close it right away now.
+    CHECK_EQ(0, IGNORE_EINTR(close(kZygoteIdFd)));
+  }
 
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";

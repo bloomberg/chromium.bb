@@ -4,6 +4,7 @@
 
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -25,6 +26,7 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,6 +47,26 @@
 #endif
 
 namespace content {
+
+// Returns true if |proc| is the same process as or a descendent process of
+// |ancestor|.
+static bool SameOrDescendantOf(base::ProcessId proc, base::ProcessId ancestor) {
+  for (unsigned i = 0; i < 100; i++) {
+    if (proc == ancestor)
+      return true;
+
+    // Walk up process tree.
+    base::ProcessHandle handle;
+    CHECK(base::OpenProcessHandle(proc, &handle));
+    proc = base::GetParentProcessId(handle);
+    base::CloseProcessHandle(handle);
+    if (proc <= 0)
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
 
 // static
 ZygoteHost* ZygoteHost::GetInstance() {
@@ -83,6 +105,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   int fds[2];
   CHECK(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
+  CHECK(UnixDomainSocket::EnableReceiveProcessId(fds[0]));
   base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kZygoteSocketPairFd));
 
@@ -125,58 +148,52 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   const int sfd = RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
   fds_to_map.push_back(std::make_pair(sfd, GetSandboxFD()));
 
-  int dummy_fd = -1;
+  base::ScopedFD dummy_fd;
   if (using_suid_sandbox_) {
     scoped_ptr<sandbox::SetuidSandboxClient>
         sandbox_client(sandbox::SetuidSandboxClient::Create());
     sandbox_client->PrependWrapper(&cmd_line, &options);
     sandbox_client->SetupLaunchEnvironment();
 
+    // We no longer need this dummy socket for discovering the zygote's PID,
+    // but the sandbox is still hard-coded to expect a file descriptor at
+    // kZygoteIdFd. Fixing this requires a sandbox API change. :(
     CHECK_EQ(kZygoteIdFd, sandbox_client->GetUniqueToChildFileDescriptor());
-    dummy_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-    CHECK(dummy_fd >= 0);
-    fds_to_map.push_back(std::make_pair(dummy_fd, kZygoteIdFd));
+    dummy_fd.reset(socket(AF_UNIX, SOCK_DGRAM, 0));
+    CHECK_GE(dummy_fd.get(), 0);
+    fds_to_map.push_back(std::make_pair(dummy_fd.get(), kZygoteIdFd));
   }
 
   base::ProcessHandle process = -1;
   options.fds_to_remap = &fds_to_map;
   base::LaunchProcess(cmd_line.argv(), options, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
+  dummy_fd.reset();
 
   if (using_suid_sandbox_) {
-    // In the SUID sandbox, the real zygote is forked from the sandbox.
-    // We need to look for it.
-    // But first, wait for the zygote to tell us it's running.
+    // In the SUID sandbox, the real zygote is forked from the sandbox
+    // and will be executing in another PID namespace.
+    // Wait for the zygote to tell us it's running, and receive its PID,
+    // which the kernel will translate to our PID namespace.
     // The sending code is in content/browser/zygote_main_linux.cc.
     std::vector<int> fds_vec;
-    const int kExpectedLength = sizeof(kZygoteHelloMessage);
+    const size_t kExpectedLength = sizeof(kZygoteHelloMessage);
     char buf[kExpectedLength];
-    const ssize_t len = UnixDomainSocket::RecvMsg(fds[0], buf, sizeof(buf),
-                                                  &fds_vec);
-    CHECK_EQ(kExpectedLength, len) << "Incorrect zygote magic length";
-    CHECK(0 == strcmp(buf, kZygoteHelloMessage)) << "Incorrect zygote hello";
+    const ssize_t len = UnixDomainSocket::RecvMsgWithPid(
+        fds[0], buf, sizeof(buf), &fds_vec, &pid_);
+    CHECK_EQ(kExpectedLength, static_cast<size_t>(len))
+        << "Incorrect zygote magic length";
+    CHECK_EQ(0, memcmp(buf, kZygoteHelloMessage, kExpectedLength))
+        << "Incorrect zygote hello";
+    CHECK_EQ(0U, fds_vec.size())
+        << "Zygote hello should not include file descriptors";
 
-    std::string inode_output;
-    ino_t inode = 0;
-    // Figure out the inode for |dummy_fd|, close |dummy_fd| on our end,
-    // and find the zygote process holding |dummy_fd|.
-    CHECK(base::FileDescriptorGetInode(&inode, dummy_fd))
-        << "Cannot get inode for dummy_fd " << dummy_fd;
-    close(dummy_fd);
-
-    std::vector<std::string> get_inode_cmdline;
-    get_inode_cmdline.push_back(sandbox_binary_);
-    get_inode_cmdline.push_back(base::kFindInodeSwitch);
-    get_inode_cmdline.push_back(base::Int64ToString(inode));
-    CommandLine get_inode_cmd(get_inode_cmdline);
-    CHECK(base::GetAppOutput(get_inode_cmd, &inode_output))
-        << "Find inode command failed for inode " << inode;
-
-    base::TrimWhitespaceASCII(inode_output, base::TRIM_ALL, &inode_output);
-    CHECK(base::StringToInt(inode_output, &pid_))
-        << "Invalid find inode output: " << inode_output;
-    CHECK(pid_ > 0) << "Did not find zygote process (using sandbox binary "
-        << sandbox_binary_ << ")";
+    if (pid_ <= 0 || !SameOrDescendantOf(pid_, base::GetProcId(process))) {
+      LOG(FATAL)
+          << "Received invalid process ID for zygote; kernel might be too old? "
+             "See crbug.com/357670 or try using --"
+          << switches::kDisableSetuidSandbox << " to workaround.";
+    }
 
     if (process != pid_) {
       // Reap the sandbox.

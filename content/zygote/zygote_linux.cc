@@ -83,10 +83,10 @@ bool Zygote::ProcessRequests() {
   if (UsingSUIDSandbox()) {
     // Let the ZygoteHost know we are ready to go.
     // The receiving code is in content/browser/zygote_host_linux.cc.
-    std::vector<int> empty;
     bool r = UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
                                        kZygoteHelloMessage,
-                                       sizeof(kZygoteHelloMessage), empty);
+                                       sizeof(kZygoteHelloMessage),
+                                       std::vector<int>());
 #if defined(OS_CHROMEOS)
     LOG_IF(WARNING, !r) << "Sending zygote magic failed";
     // Exit normally on chromeos because session manager may send SIGTERM
@@ -489,8 +489,6 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
     // This is the child process.
 
     close(kZygoteSocketPairFd);  // Our socket from the browser.
-    if (UsingSUIDSandbox())
-      close(kZygoteIdFd);  // Another socket from the browser.
     base::GlobalDescriptors::GetInstance()->Reset(mapping);
 
     // Reset the process-wide command line to our new command line.
