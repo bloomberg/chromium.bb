@@ -854,19 +854,21 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   ASSERT_TRUE(LoadFullResourceList());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<ResourceEntry> entry(GetResourceEntrySync(file_in_root));
-  ASSERT_TRUE(entry);
 
-  // Write to cache.
-  ASSERT_EQ(FILE_ERROR_OK, cache_->Store(
-      entry->local_id(),
-      entry->file_specific_info().md5(),
-      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
-      internal::FileCache::FILE_OPERATION_COPY));
-
-  // Test for mounting.
+  // Make the file cached.
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
+  scoped_ptr<ResourceEntry> entry;
+  file_system_->GetFile(
+      file_in_root,
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &entry));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Test for mounting.
+  error = FILE_ERROR_FAILED;
+  file_path.clear();
   file_system_->MarkCacheFileAsMounted(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));

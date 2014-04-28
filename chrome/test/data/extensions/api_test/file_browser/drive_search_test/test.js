@@ -139,8 +139,7 @@ chrome.test.runTests([
   function driveMetadataSearch() {
     // The results should be sorted by (lastAccessed, lastModified) pair. The
     // sort should be decending. The comments above each expected result
-    // represent their (lastAccessed, lastModified) pair. These values are set
-    // in remote_file_system_api_test_root_feed.json.
+    // represent their (lastAccessed, lastModified) pair.
     // The API should return 4 results, even though there are more than five
     // matches in the test file system.
     var expectedResults = [

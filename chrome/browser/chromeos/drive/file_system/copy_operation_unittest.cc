@@ -131,7 +131,7 @@ TEST_F(CopyOperationTest,
       "drive/root/Directory 1/copied.gdoc"));
 
   // Prepare a local file, which is a json file of a hosted document, which
-  // matches "drive/root/Document 1 excludeDir-test" in root_feed.json.
+  // matches "drive/root/Document 1 excludeDir-test".
   ASSERT_TRUE(util::CreateGDocFile(
       local_src_path,
       GURL("https://3_document_self_link/document:5_document_resource_id"),
@@ -165,7 +165,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_OrphanHostedDocument) {
       "drive/root/Directory 1/moved.gdoc"));
 
   // Prepare a local file, which is a json file of a hosted document, which
-  // matches "drive/other/Orphan Document" in root_feed.json.
+  // matches "drive/other/Orphan Document".
   ASSERT_TRUE(util::CreateGDocFile(
       local_src_path,
       GURL("https://3_document_self_link/document:orphan_doc_1"),
