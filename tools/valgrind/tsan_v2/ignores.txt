@@ -10,7 +10,3 @@ fun:*ThreadData*Initialize*
 
 # See http://crbug.com/172104
 fun:*v8*internal*ThreadEntry*
-
-# Avoid deadlocks between race reports on _M_rep() called from
-# base::FilePath::StripTrailingSeparatorsInternal(), see http://crbug.com/356676
-fun:*StripTrailingSeparatorsInternal*
