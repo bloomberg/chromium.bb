@@ -1167,6 +1167,26 @@ PassRefPtr<RadioNodeList> ContainerNode::radioNodeList(const AtomicString& name,
     return ensureRareData().ensureNodeLists().addCache<RadioNodeList>(*this, type, name);
 }
 
+Element* ContainerNode::getElementById(const AtomicString& id) const
+{
+    if (isInTreeScope()) {
+        // Fast path if we are in a tree scope: call getElementById() on tree scope
+        // and check if the matching element is in our subtree.
+        Element* element = treeScope().getElementById(id);
+        if (!element)
+            return 0;
+        if (element->isDescendantOf(this))
+            return element;
+    }
+
+    // Fall back to traversing our subtree. In case of duplicate ids, the first element found will be returned.
+    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element, this)) {
+        if (element->getIdAttribute() == id)
+            return element;
+    }
+    return 0;
+}
+
 #ifndef NDEBUG
 bool childAttachedAllowedWhenAttachingChildren(ContainerNode* node)
 {

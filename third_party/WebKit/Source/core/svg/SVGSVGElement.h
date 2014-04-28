@@ -108,8 +108,6 @@ public:
 
     void setupInitialView(const String& fragmentIdentifier, Element* anchorNode);
 
-    Element* getElementById(const AtomicString&) const;
-
     bool hasIntrinsicWidth() const;
     bool hasIntrinsicHeight() const;
 

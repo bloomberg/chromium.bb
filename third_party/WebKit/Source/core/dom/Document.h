@@ -252,6 +252,7 @@ public:
     using SecurityContext::securityOrigin;
     using SecurityContext::contentSecurityPolicy;
     using ExecutionContextClient::addConsoleMessage;
+    using TreeScope::getElementById;
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return true; }
 

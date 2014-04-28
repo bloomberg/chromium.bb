@@ -64,6 +64,7 @@ public:
 
     // Disambiguate between Node and TreeScope hierarchies; TreeScope's implementation is simpler.
     using TreeScope::document;
+    using TreeScope::getElementById;
 
     Element* host() const { return toElement(parentOrShadowHostNode()); }
     ElementShadow* owner() const { return host() ? host()->shadow() : 0; }

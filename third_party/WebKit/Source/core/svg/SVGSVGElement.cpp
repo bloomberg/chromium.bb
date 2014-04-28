@@ -773,21 +773,4 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
         view->setZoomAndPan(zoomAndPan());
 }
 
-// getElementById on SVGSVGElement is restricted to only the child subtree defined by the <svg> element.
-// See http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGSVGElement
-Element* SVGSVGElement::getElementById(const AtomicString& id) const
-{
-    Element* element = treeScope().getElementById(id);
-    if (element && element->isDescendantOf(this))
-        return element;
-
-    // Fall back to traversing our subtree. Duplicate ids are allowed, the first found will
-    // be returned.
-    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element, this)) {
-        if (element->getIdAttribute() == id)
-            return element;
-    }
-    return 0;
-}
-
 }
