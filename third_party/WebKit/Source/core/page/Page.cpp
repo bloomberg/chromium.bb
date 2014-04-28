@@ -547,9 +547,11 @@ void Page::trace(Visitor* visitor)
 
 void Page::clearWeakMembers(Visitor* visitor)
 {
+#if ENABLE(INPUT_SPEECH)
     SpeechInput* input = SpeechInput::from(this);
     if (input)
         input->clearWeakMembers(visitor);
+#endif
 }
 
 void Page::willBeDestroyed()
