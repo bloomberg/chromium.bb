@@ -17,9 +17,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
  public:
   GestureEventDetails();
   GestureEventDetails(EventType type, float delta_x, float delta_y);
-  GestureEventDetails(EventType type,
-                      float delta_x, float delta_y,
-                      float delta_x_ordinal, float delta_y_ordinal);
 
   EventType type() const { return type_; }
 
@@ -65,27 +62,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   float velocity_y() const {
     DCHECK(type_ == ui::ET_SCROLL_FLING_START);
     return data.fling_velocity.y;
-  }
-
-  // *_ordinal values are unmodified by rail based clamping.
-  float scroll_x_ordinal() const {
-    DCHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
-    return data.scroll_update.x_ordinal;
-  }
-
-  float scroll_y_ordinal() const {
-    DCHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
-    return data.scroll_update.y_ordinal;
-  }
-
-  float velocity_x_ordinal() const {
-    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
-    return data.fling_velocity.x_ordinal;
-  }
-
-  float velocity_y_ordinal() const {
-    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
-    return data.fling_velocity.y_ordinal;
   }
 
   float first_finger_width() const {
@@ -144,8 +120,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     struct {  // SCROLL delta.
       float x;
       float y;
-      float x_ordinal;
-      float y_ordinal;
     } scroll_update;
 
     float scale;  // PINCH scale.
@@ -153,8 +127,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     struct {  // FLING velocity.
       float x;
       float y;
-      float x_ordinal;
-      float y_ordinal;
     } fling_velocity;
 
     // Dimensions of the first finger's enclosing rectangle for

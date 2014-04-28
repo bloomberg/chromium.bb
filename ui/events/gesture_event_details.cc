@@ -22,15 +22,11 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
     case ui::ET_GESTURE_SCROLL_UPDATE:
       data.scroll_update.x = delta_x;
       data.scroll_update.y = delta_y;
-      data.scroll_update.x_ordinal = delta_x;
-      data.scroll_update.y_ordinal = delta_y;
       break;
 
     case ui::ET_SCROLL_FLING_START:
       data.fling_velocity.x = delta_x;
       data.fling_velocity.y = delta_y;
-      data.fling_velocity.x_ordinal = delta_x;
-      data.fling_velocity.y_ordinal = delta_y;
       break;
 
     case ui::ET_GESTURE_TWO_FINGER_TAP:
@@ -62,35 +58,6 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
         DLOG(WARNING) << "A gesture event (" << type << ") had unknown data: ("
                       << delta_x << "," << delta_y;
       }
-      break;
-  }
-}
-
-GestureEventDetails::GestureEventDetails(ui::EventType type,
-                                         float delta_x,
-                                         float delta_y,
-                                         float delta_x_ordinal,
-                                         float delta_y_ordinal)
-    : type_(type),
-      touch_points_(1) {
-  CHECK(type == ui::ET_GESTURE_SCROLL_UPDATE ||
-        type == ui::ET_SCROLL_FLING_START);
-  switch (type_) {
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      data.scroll_update.x = delta_x;
-      data.scroll_update.y = delta_y;
-      data.scroll_update.x_ordinal = delta_x_ordinal;
-      data.scroll_update.y_ordinal = delta_y_ordinal;
-      break;
-
-    case ui::ET_SCROLL_FLING_START:
-      data.fling_velocity.x = delta_x;
-      data.fling_velocity.y = delta_y;
-      data.fling_velocity.x_ordinal = delta_x_ordinal;
-      data.fling_velocity.y_ordinal = delta_y_ordinal;
-      break;
-
-    default:
       break;
   }
 }

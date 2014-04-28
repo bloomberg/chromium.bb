@@ -93,12 +93,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_velocity_y_(0),
         velocity_x_(0),
         velocity_y_(0),
-        scroll_x_ordinal_(0),
-        scroll_y_ordinal_(0),
-        scroll_velocity_x_ordinal_(0),
-        scroll_velocity_y_ordinal_(0),
-        velocity_x_ordinal_(0),
-        velocity_y_ordinal_(0),
         scroll_x_hint_(0),
         scroll_y_hint_(0),
         tap_count_(0),
@@ -139,12 +133,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_velocity_y_ = 0;
     velocity_x_ = 0;
     velocity_y_ = 0;
-    scroll_x_ordinal_ = 0;
-    scroll_y_ordinal_ = 0;
-    scroll_velocity_x_ordinal_ = 0;
-    scroll_velocity_y_ordinal_ = 0;
-    velocity_x_ordinal_ = 0;
-    velocity_y_ordinal_ = 0;
     scroll_x_hint_ = 0;
     scroll_y_hint_ = 0;
     tap_count_ = 0;
@@ -192,12 +180,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_velocity_y() const { return scroll_velocity_y_; }
   float velocity_x() const { return velocity_x_; }
   float velocity_y() const { return velocity_y_; }
-  float scroll_x_ordinal() const { return scroll_x_ordinal_; }
-  float scroll_y_ordinal() const { return scroll_y_ordinal_; }
-  float scroll_velocity_x_ordinal() const { return scroll_velocity_x_ordinal_; }
-  float scroll_velocity_y_ordinal() const { return scroll_velocity_y_ordinal_; }
-  float velocity_x_ordinal() const { return velocity_x_ordinal_; }
-  float velocity_y_ordinal() const { return velocity_y_ordinal_; }
   float scroll_x_hint() const { return scroll_x_hint_; }
   float scroll_y_hint() const { return scroll_y_hint_; }
   float scale() const { return scale_; }
@@ -242,8 +224,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_update_ = true;
         scroll_x_ += gesture->details().scroll_x();
         scroll_y_ += gesture->details().scroll_y();
-        scroll_x_ordinal_ += gesture->details().scroll_x_ordinal();
-        scroll_y_ordinal_ += gesture->details().scroll_y_ordinal();
         break;
       case ui::ET_GESTURE_SCROLL_END:
         EXPECT_TRUE(velocity_x_ == 0 && velocity_y_ == 0);
@@ -272,8 +252,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         fling_ = true;
         velocity_x_ = gesture->details().velocity_x();
         velocity_y_ = gesture->details().velocity_y();
-        velocity_x_ordinal_ = gesture->details().velocity_x_ordinal();
-        velocity_y_ordinal_ = gesture->details().velocity_y_ordinal();
         break;
       case ui::ET_GESTURE_TWO_FINGER_TAP:
         two_finger_tap_ = true;
@@ -332,12 +310,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_velocity_y_;
   float velocity_x_;
   float velocity_y_;
-  float scroll_x_ordinal_;
-  float scroll_y_ordinal_;
-  float scroll_velocity_x_ordinal_;
-  float scroll_velocity_y_ordinal_;
-  float velocity_x_ordinal_;
-  float velocity_y_ordinal_;
   float scroll_x_hint_;
   float scroll_y_hint_;
   float scale_;
@@ -1225,9 +1197,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   // horizontal scroll.
   tes.SendScrollEvent(event_processor(), 25, 1, kTouchId, delegate.get());
   EXPECT_EQ(0, delegate->scroll_y());
-  EXPECT_EQ(1, delegate->scroll_y_ordinal());
   EXPECT_EQ(20, delegate->scroll_x());
-  EXPECT_EQ(20, delegate->scroll_x_ordinal());
 
   // Get a high x velocity, while still staying on the rail
   tes.SendScrollEvents(event_processor(), 1, 1,
@@ -1271,9 +1241,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   // vertical scroll.
   tes.SendScrollEvent(event_processor(), 1, 25, kTouchId, delegate.get());
   EXPECT_EQ(20, delegate->scroll_y());
-  EXPECT_EQ(20, delegate->scroll_y_ordinal());
   EXPECT_EQ(0, delegate->scroll_x());
-  EXPECT_EQ(1, delegate->scroll_x_ordinal());
   EXPECT_EQ(0, delegate->scroll_velocity_x());
 
   // Get a high y velocity, while still staying on the rail
