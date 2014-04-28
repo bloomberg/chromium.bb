@@ -122,10 +122,12 @@ void WebIDBCursorImpl::postSuccessHandlerCallback() {
 void WebIDBCursorImpl::SetPrefetchData(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
-    const std::vector<WebData>& values) {
+    const std::vector<WebData>& values,
+    const std::vector<blink::WebVector<blink::WebBlobInfo> >& blob_info) {
   prefetch_keys_.assign(keys.begin(), keys.end());
   prefetch_primary_keys_.assign(primary_keys.begin(), primary_keys.end());
   prefetch_values_.assign(values.begin(), values.end());
+  prefetch_blob_info_.assign(blob_info.begin(), blob_info.end());
 
   used_prefetches_ = 0;
   pending_onsuccess_callbacks_ = 0;
@@ -136,11 +138,13 @@ void WebIDBCursorImpl::CachedAdvance(unsigned long count,
   DCHECK_GE(prefetch_keys_.size(), count);
   DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());
   DCHECK_EQ(prefetch_values_.size(), prefetch_keys_.size());
+  DCHECK_EQ(prefetch_blob_info_.size(), prefetch_keys_.size());
 
   while (count > 1) {
     prefetch_keys_.pop_front();
     prefetch_primary_keys_.pop_front();
     prefetch_values_.pop_front();
+    prefetch_blob_info_.pop_front();
     ++used_prefetches_;
     --count;
   }
@@ -152,14 +156,17 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   DCHECK_GT(prefetch_keys_.size(), 0ul);
   DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());
   DCHECK_EQ(prefetch_values_.size(), prefetch_keys_.size());
+  DCHECK_EQ(prefetch_blob_info_.size(), prefetch_keys_.size());
 
   IndexedDBKey key = prefetch_keys_.front();
   IndexedDBKey primary_key = prefetch_primary_keys_.front();
   WebData value = prefetch_values_.front();
+  blink::WebVector<blink::WebBlobInfo> blob_info = prefetch_blob_info_.front();
 
   prefetch_keys_.pop_front();
   prefetch_primary_keys_.pop_front();
   prefetch_values_.pop_front();
+  prefetch_blob_info_.pop_front();
   ++used_prefetches_;
 
   ++pending_onsuccess_callbacks_;
@@ -174,7 +181,8 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
 
   callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
                        WebIDBKeyBuilder::Build(primary_key),
-                       value);
+                       value,
+                       blob_info);
 }
 
 void WebIDBCursorImpl::ResetPrefetchCache() {
@@ -193,6 +201,7 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   prefetch_keys_.clear();
   prefetch_primary_keys_.clear();
   prefetch_values_.clear();
+  prefetch_blob_info_.clear();
 
   pending_onsuccess_callbacks_ = 0;
 }

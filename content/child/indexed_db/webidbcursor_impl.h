@@ -38,9 +38,11 @@ class CONTENT_EXPORT WebIDBCursorImpl
                                 blink::WebIDBCallbacks* callback);
   virtual void postSuccessHandlerCallback();
 
-  void SetPrefetchData(const std::vector<IndexedDBKey>& keys,
-                       const std::vector<IndexedDBKey>& primary_keys,
-                       const std::vector<blink::WebData>& values);
+  void SetPrefetchData(
+      const std::vector<IndexedDBKey>& keys,
+      const std::vector<IndexedDBKey>& primary_keys,
+      const std::vector<blink::WebData>& values,
+      const std::vector<blink::WebVector<blink::WebBlobInfo> >& blob_info);
 
   void CachedAdvance(unsigned long count, blink::WebIDBCallbacks* callbacks);
   void CachedContinue(blink::WebIDBCallbacks* callbacks);
@@ -64,6 +66,7 @@ class CONTENT_EXPORT WebIDBCursorImpl
   std::deque<IndexedDBKey> prefetch_keys_;
   std::deque<IndexedDBKey> prefetch_primary_keys_;
   std::deque<blink::WebData> prefetch_values_;
+  std::deque<blink::WebVector<blink::WebBlobInfo> > prefetch_blob_info_;
 
   // Number of continue calls that would qualify for a pre-fetch.
   int continue_count_;

@@ -137,8 +137,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
       blink::WebIDBDatabase::PutMode put_mode,
       blink::WebIDBCallbacks* callbacks,
       const blink::WebVector<long long>& index_ids,
-      const blink::WebVector<blink::WebVector<blink::WebIDBKey> >&
-          index_keys);
+      const blink::WebVector<blink::WebVector<blink::WebIDBKey> >& index_keys);
 
   void RequestIDBDatabaseOpenCursor(int32 ipc_database_id,
                                     int64 transaction_id,
