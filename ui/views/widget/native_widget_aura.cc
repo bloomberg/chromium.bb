@@ -696,6 +696,10 @@ gfx::Size NativeWidgetAura::GetMinimumSize() const {
 }
 
 gfx::Size NativeWidgetAura::GetMaximumSize() const {
+  // If a window have a maximum size, the window should not be
+  // maximizable.
+  DCHECK(delegate_->GetMaximumSize().IsEmpty() ||
+         !window_->GetProperty(aura::client::kCanMaximizeKey));
   return delegate_->GetMaximumSize();
 }
 
