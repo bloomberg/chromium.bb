@@ -6693,13 +6693,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Touch scrolling mode.
       </message>
       <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_DESCRIPTION" desc="Description for the flag to control touch scrolling mode.">
-        Change the touch event behavior while scrolling.  "touchcancel" is what chrome has historically used, and "async-touchmove" is the new preferred mode.
+        Change the touch event behavior while scrolling.  "touchcancel" is what chrome has historically used, and "absorb-touchmove" is the new preferred mode.
       </message>
       <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_TOUCHCANCEL" desc="Name for the touchcancel scrolling mode">
         touchcancel
       </message>
-      <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE" desc="Name for the async-touchmove scrolling mode">
-        async-touchmove
+      <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE" desc="Name for the absorb-touchmove scrolling mode">
+        absorb-touchmove
       </message>
       <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE" desc="Name for the sync-touchmove scrolling mode">
         sync-touchmove

@@ -334,31 +334,28 @@ void WebInputEventTraits::Coalesce(const WebInputEvent& event_to_coalesce,
   Apply(WebInputEventCoalesce(), event->type, event_to_coalesce, event);
 }
 
-bool WebInputEventTraits::IgnoresAckDisposition(const WebInputEvent& event) {
-  switch (event.type) {
+bool WebInputEventTraits::IgnoresAckDisposition(
+    blink::WebInputEvent::Type type) {
+  switch (type) {
+    case WebInputEvent::GestureTapDown:
+    case WebInputEvent::GestureShowPress:
+    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::GestureTap:
+    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::TouchCancel:
     case WebInputEvent::MouseDown:
     case WebInputEvent::MouseUp:
     case WebInputEvent::MouseEnter:
     case WebInputEvent::MouseLeave:
     case WebInputEvent::ContextMenu:
-    case WebInputEvent::GestureScrollBegin:
-    case WebInputEvent::GestureScrollEnd:
-    case WebInputEvent::GestureShowPress:
-    case WebInputEvent::GestureTap:
-    case WebInputEvent::GestureTapUnconfirmed:
-    case WebInputEvent::GestureTapDown:
-    case WebInputEvent::GestureTapCancel:
-    case WebInputEvent::GesturePinchBegin:
-    case WebInputEvent::GesturePinchEnd:
-    case WebInputEvent::TouchCancel:
       return true;
-    case WebInputEvent::TouchStart:
-    case WebInputEvent::TouchMove:
-    case WebInputEvent::TouchEnd:
-      return !static_cast<const WebTouchEvent&>(event).cancelable;
     default:
-      return false;
+      break;
   }
+  return false;
 }
 
 }  // namespace content

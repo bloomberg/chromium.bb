@@ -173,7 +173,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   }
 
-  if (!WebInputEventTraits::IgnoresAckDisposition(*event))
+  if (!WebInputEventTraits::IgnoresAckDisposition(event->type))
     SendACK(event->type, ack, latency_info, routing_id);
 }
 
