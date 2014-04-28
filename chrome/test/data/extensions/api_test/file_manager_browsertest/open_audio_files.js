@@ -84,22 +84,19 @@ function audioOpen(path) {
           element.attributes.currenttrackurl);
       var query1 = 'audio-player /deep/ .track[index="0"][active]';
       var query2 = 'audio-player /deep/ .track[index="1"]:not([active])';
-      var trackText1 = getTrackText(audioAppId, query1);
-      var trackText2 = getTrackText(audioAppId, query2);
-      Promise.all([trackText1, trackText2]).then(function(tracks) {
-        // TODO(hirono): We should wait for a change of track names.
-        // chrome.test.assertEq('Beautiful Song',
-        //                      tracks[0].title,
-        //                      'Displayed data of 1st file is wrong.');
-        // chrome.test.assertEq('Unknown Artist',
-        //                      tracks[0].artist,
-        //                      'Displayed data of 1st file is wrong.');
-        // chrome.test.assertEq('newly added file',
-        //                      tracks[1].title,
-        //                      'Displayed data of 2nd file is wrong.');
-        // chrome.test.assertEq('Unknown Artist',
-        //                      tracks[1].artist,
-        //                      'Displayed data of 2nd file is wrong.');
+      repeatUntil(function() {
+        var trackText1 = getTrackText(audioAppId, query1);
+        var trackText2 = getTrackText(audioAppId, query2);
+        return Promise.all([trackText1, trackText2]).then(function(tracks) {
+          var expected = [
+            {title: 'Beautiful Song', artist: 'Unknown Artist'},
+            {title: 'newly added file', artist: 'Unknown Artist'}
+          ];
+          if (!chrome.test.checkDeepEq(expected, tracks)) {
+            return pending('Tracks are expected as: %j, but is %j.',
+                           expected, tracks);
+          }
+        });
       }).then(this.next, function(e) { chrome.test.fail(e); });
     },
     // Open another file.
@@ -123,22 +120,19 @@ function audioOpen(path) {
           element.attributes.currenttrackurl);
       var query1 = 'audio-player /deep/ .track[index="0"]:not([active])';
       var query2 = 'audio-player /deep/ .track[index="1"][active]';
-      var trackText1 = getTrackText(audioAppId, query1);
-      var trackText2 = getTrackText(audioAppId, query2);
-      Promise.all([trackText1, trackText2]).then(function(tracks) {
-        // TODO(hirono): We should wait for a change of track names.
-        // chrome.test.assertEq('Beautiful Song',
-        //                      tracks[0].title,
-        //                      'Displayed data of 1st file is wrong.');
-        // chrome.test.assertEq('Unknown Artist',
-        //                      tracks[0].artist,
-        //                      'Displayed data of 1st file is wrong.');
-        // chrome.test.assertEq('newly added file',
-        //                      tracks[1].title,
-        //                      'Displayed data of 2nd file is wrong.');
-        // chrome.test.assertEq('Unknown Artist',
-        //                      tracks[1].artist,
-        //                      'Displayed data of 2nd file is wrong.');
+      repeatUntil(function() {
+        var trackText1 = getTrackText(audioAppId, query1);
+        var trackText2 = getTrackText(audioAppId, query2);
+        return Promise.all([trackText1, trackText2]).then(function(tracks) {
+          var expected = [
+            {title: 'Beautiful Song', artist: 'Unknown Artist'},
+            {title: 'newly added file', artist: 'Unknown Artist'}
+          ];
+          if (!chrome.test.checkDeepEq(expected, tracks)) {
+            return pending('Tracks are expected as: %j, but is %j.',
+                           expected, tracks);
+          }
+        });
       }).then(this.next, function(e) { chrome.test.fail(e); });
     },
     // Wait for the changes of the player status.
