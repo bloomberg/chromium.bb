@@ -1082,12 +1082,3 @@ crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
 crbug.com/366185 inspector/split-view.html [ Pass Timeout ]
 
-crbug.com/247466 [ Win Debug ] inspector/sources/debugger/live-edit-breakpoints.html [ Pass Timeout ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/dom-breakpoints.html [ Pass Timeout ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/xhr-breakpoints.html [ Pass Timeout ]
-crbug.com/247466 [ Win Debug ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Pass Timeout ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/set-breakpoint.html [ Pass Timeout ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/script-formatter-console.html [ Pass Timeout ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/script-formatter-search.html [ Pass Timeout ]
-crbug.com/247466 [ Debug ] inspector/sources/debugger/linkifier.html [ Pass Timeout ]
-
