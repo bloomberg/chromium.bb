@@ -65,6 +65,9 @@ for host_os in linux mac; do
   if [ "$PLATFORM" == "${host_platform}-arm" -o "$PLATFORM" == "all" ]; then
     ${GYP} --suffix .${host_platform}-arm ${EFLAGS} -Dtarget_arch=arm
   fi
+  if [ "$PLATFORM" == "${host_platform}-arm64" -o "$PLATFORM" == "all" ]; then
+    ${GYP} --suffix .${host_platform}-arm64 ${EFLAGS} -Dtarget_arch=arm64
+  fi
   if [ "$PLATFORM" == "${host_platform}-x86" -o "$PLATFORM" == "all" ]; then
     ${GYP} --suffix .${host_platform}-x86 ${EFLAGS} -Dtarget_arch=ia32
   fi
