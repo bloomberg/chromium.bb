@@ -101,7 +101,7 @@ class CC_EXPORT RenderSurface {
     contributes_to_drawn_surface_ = contributes_to_drawn_surface;
   }
 
-  RenderSurfaceLayerList& layer_list() { return layer_list_; }
+  LayerList& layer_list() { return layer_list_; }
   // A no-op since DelegatedRendererLayers on the main thread don't have any
   // RenderPasses so they can't contribute to a surface.
   void AddContributingDelegatedRenderPassLayer(Layer* layer) {}
@@ -112,6 +112,8 @@ class CC_EXPORT RenderSurface {
   const RenderSurface* nearest_occlusion_immune_ancestor() const {
     return nearest_occlusion_immune_ancestor_;
   }
+
+  void ClearLayerLists();
 
  private:
   friend class LayerIterator<Layer>;
@@ -136,7 +138,7 @@ class CC_EXPORT RenderSurface {
   // Uses the space of the surface's target surface.
   gfx::Rect clip_rect_;
 
-  RenderSurfaceLayerList layer_list_;
+  LayerList layer_list_;
 
   // The nearest ancestor target surface that will contain the contents of this
   // surface, and that ignores outside occlusion. This can point to itself.

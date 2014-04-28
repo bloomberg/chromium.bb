@@ -1456,7 +1456,6 @@ TEST_F(LayerTreeHostCommonTest,
   // are unexpected at draw time (e.g. we might try to create a content texture
   // of size 0).
   ASSERT_TRUE(parent->render_surface());
-  ASSERT_FALSE(render_surface1->render_surface());
   EXPECT_EQ(1U, render_surface_layer_list.size());
 }
 
@@ -2166,9 +2165,6 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   ASSERT_TRUE(grand_child1->render_surface());
   ASSERT_TRUE(grand_child2->render_surface());
   ASSERT_TRUE(grand_child3->render_surface());
-  // Because grand_child4 is entirely clipped, it is expected to not have a
-  // render surface.
-  EXPECT_FALSE(grand_child4->render_surface());
 
   // Surfaces are clipped by their parent, but un-affected by the owning layer's
   // masksToBounds.

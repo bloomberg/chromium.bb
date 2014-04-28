@@ -275,6 +275,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // so that its list can be recreated.
   void CreateRenderSurface();
   void ClearRenderSurface();
+  void ClearRenderSurfaceLayerList();
 
   DrawProperties<LayerImpl>& draw_properties() {
     return draw_properties_;

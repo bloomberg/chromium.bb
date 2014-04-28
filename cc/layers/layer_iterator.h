@@ -103,16 +103,19 @@ template <typename LayerType> struct LayerIteratorPosition {
 template <typename LayerType>
 class LayerIterator {
   typedef LayerIterator<LayerType> LayerIteratorType;
-  typedef typename LayerType::RenderSurfaceListType LayerList;
+  typedef typename LayerType::LayerListType LayerList;
+  typedef typename LayerType::RenderSurfaceListType RenderSurfaceLayerList;
   typedef typename LayerType::RenderSurfaceType RenderSurfaceType;
 
  public:
   LayerIterator() : render_surface_layer_list_(NULL) {}
 
-  static LayerIteratorType Begin(const LayerList* render_surface_layer_list) {
+  static LayerIteratorType Begin(
+      const RenderSurfaceLayerList* render_surface_layer_list) {
     return LayerIteratorType(render_surface_layer_list, true);
   }
-  static LayerIteratorType End(const LayerList* render_surface_layer_list) {
+  static LayerIteratorType End(
+      const RenderSurfaceLayerList* render_surface_layer_list) {
     return LayerIteratorType(render_surface_layer_list, false);
   }
 
@@ -161,7 +164,8 @@ class LayerIterator {
   }
 
  private:
-  LayerIterator(const LayerList* render_surface_layer_list, bool start)
+  LayerIterator(const RenderSurfaceLayerList* render_surface_layer_list,
+                bool start)
       : render_surface_layer_list_(render_surface_layer_list),
         target_render_surface_layer_index_(0) {
     for (size_t i = 0; i < render_surface_layer_list->size(); ++i) {
@@ -246,8 +250,9 @@ class LayerIterator {
 
   inline LayerType* current_layer() const {
     return current_layer_represents_target_render_surface()
-           ? target_render_surface_layer()
-           : target_render_surface_children().at(current_layer_index_);
+               ? target_render_surface_layer()
+               : LayerTreeHostCommon::get_child_as_raw_ptr(
+                     target_render_surface_children(), current_layer_index_);
   }
 
   inline bool current_layer_represents_contributing_render_surface() const {
@@ -266,7 +271,7 @@ class LayerIterator {
     return target_render_surface()->layer_list();
   }
 
-  const LayerList* render_surface_layer_list_;
+  const RenderSurfaceLayerList* render_surface_layer_list_;
 
   // The iterator's current position.
 

@@ -1112,16 +1112,9 @@ static inline void CalculateAnimationContentsScale(
       std::max(ancestor_transform_scales.x(), ancestor_transform_scales.y());
 }
 
-static inline RenderSurface* CreateOrReuseRenderSurface(Layer* layer) {
-  // The render surface should always be new on the main thread, as the
-  // RenderSurfaceLayerList should be a new empty list when given to
-  // CalculateDrawProperties.
-  DCHECK(!layer->render_surface());
-  layer->CreateRenderSurface();
-  return layer->render_surface();
-}
-
-static inline RenderSurfaceImpl* CreateOrReuseRenderSurface(LayerImpl* layer) {
+template <typename LayerType>
+static inline typename LayerType::RenderSurfaceType* CreateOrReuseRenderSurface(
+    LayerType* layer) {
   if (!layer->render_surface()) {
     layer->CreateRenderSurface();
     return layer->render_surface();
@@ -1143,12 +1136,12 @@ static inline void RemoveSurfaceForEarlyExit(
   // things to crash. So here we proactively remove any additional
   // layers from the end of the list.
   while (render_surface_layer_list->back() != layer_to_remove) {
-    render_surface_layer_list->back()->ClearRenderSurface();
+    render_surface_layer_list->back()->ClearRenderSurfaceLayerList();
     render_surface_layer_list->pop_back();
   }
   DCHECK_EQ(render_surface_layer_list->back(), layer_to_remove);
   render_surface_layer_list->pop_back();
-  layer_to_remove->ClearRenderSurface();
+  layer_to_remove->ClearRenderSurfaceLayerList();
 }
 
 struct PreCalculateMetaInformationRecursiveData {
@@ -1381,14 +1374,22 @@ static void GetNewRenderSurfacesStartIndexAndCount(LayerType* layer,
   *count = layer->draw_properties().num_render_surfaces_added;
 }
 
-template <typename LayerType,
-          typename GetIndexAndCountType>
+// We need to extract a list from the the two flavors of RenderSurfaceListType
+// for use in the sorting function below.
+static LayerList* GetLayerListForSorting(RenderSurfaceLayerList* rsll) {
+  return &rsll->AsLayerList();
+}
+
+static LayerImplList* GetLayerListForSorting(LayerImplList* layer_list) {
+  return layer_list;
+}
+
+template <typename LayerType, typename GetIndexAndCountType>
 static void SortLayerListContributions(
     const LayerType& parent,
-    typename LayerType::RenderSurfaceListType* unsorted,
+    typename LayerType::LayerListType* unsorted,
     size_t start_index_for_all_contributions,
     GetIndexAndCountType get_index_and_count) {
-
   typename LayerType::LayerListType buffer;
   for (size_t i = 0; i < parent.children().size(); ++i) {
     LayerType* child =
@@ -1416,7 +1417,7 @@ static void CalculateDrawPropertiesInternal(
     const SubtreeGlobals<LayerType>& globals,
     const DataForRecursion<LayerType>& data_from_ancestor,
     typename LayerType::RenderSurfaceListType* render_surface_layer_list,
-    typename LayerType::RenderSurfaceListType* layer_list,
+    typename LayerType::LayerListType* layer_list,
     std::vector<AccumulatedSurfaceState<LayerType> >*
         accumulated_surface_state) {
   // This function computes the new matrix transformations recursively for this
@@ -1560,7 +1561,7 @@ static void CalculateDrawPropertiesInternal(
   // The root layer cannot skip CalcDrawProperties.
   if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
     if (layer->render_surface())
-      layer->ClearRenderSurface();
+      layer->ClearRenderSurfaceLayerList();
     return;
   }
 
@@ -1764,7 +1765,7 @@ static void CalculateDrawPropertiesInternal(
     // subtree
     if (!layer->double_sided() && TransformToParentIsKnown(layer) &&
         IsSurfaceBackFaceVisible(layer, combined_transform)) {
-      layer->ClearRenderSurface();
+      layer->ClearRenderSurfaceLayerList();
       return;
     }
 
@@ -1997,7 +1998,7 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.clip_rect = rect_in_target_space;
   }
 
-  typename LayerType::RenderSurfaceListType& descendants =
+  typename LayerType::LayerListType& descendants =
       (layer->render_surface() ? layer->render_surface()->layer_list()
                                : *layer_list);
 
@@ -2073,6 +2074,7 @@ static void CalculateDrawPropertiesInternal(
                                                &descendants,
                                                accumulated_surface_state);
     if (child->render_surface() &&
+        !child->render_surface()->layer_list().empty() &&
         !child->render_surface()->content_rect().IsEmpty()) {
       descendants.push_back(child);
     }
@@ -2090,7 +2092,7 @@ static void CalculateDrawPropertiesInternal(
   if (child_order_changed) {
     SortLayerListContributions(
         *layer,
-        render_surface_layer_list,
+        GetLayerListForSorting(render_surface_layer_list),
         render_surface_layer_list_child_sorting_start_index,
         &GetNewRenderSurfacesStartIndexAndCount<LayerType>);
 
@@ -2313,7 +2315,7 @@ static void ProcessCalcDrawPropsInputs(
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
-  RenderSurfaceLayerList dummy_layer_list;
+  LayerList dummy_layer_list;
   SubtreeGlobals<Layer> globals;
   DataForRecursion<Layer> data_for_recursion;
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);

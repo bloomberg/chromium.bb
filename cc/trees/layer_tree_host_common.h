@@ -139,6 +139,11 @@ class CC_EXPORT LayerTreeHostCommon {
     return children[index];
   }
 
+  static LayerImpl* get_child_as_raw_ptr(const LayerImplList& children,
+                                         size_t index) {
+    return children[index];
+  }
+
   struct ScrollUpdateInfo {
     int layer_id;
     gfx::Vector2d scroll_delta;

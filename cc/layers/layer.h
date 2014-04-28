@@ -372,6 +372,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void CreateRenderSurface();
   void ClearRenderSurface();
+  void ClearRenderSurfaceLayerList();
 
   // The contents scale converts from logical, non-page-scaled pixels to target
   // pixels. The contents scale is 1 for the root layer as it is already in

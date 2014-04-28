@@ -40,4 +40,8 @@ gfx::RectF RenderSurface::DrawableContentRect() const {
   return drawable_content_rect;
 }
 
+void RenderSurface::ClearLayerLists() {
+  layer_list_.clear();
+}
+
 }  // namespace cc

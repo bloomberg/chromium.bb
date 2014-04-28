@@ -38,6 +38,8 @@ class CC_EXPORT RenderSurfaceLayerList {
   LayerList::const_iterator begin() const;
   LayerList::const_iterator end() const;
   void clear();
+  LayerList& AsLayerList() { return list_; }
+  const LayerList& AsLayerList() const { return list_; }
 
  private:
   LayerList list_;

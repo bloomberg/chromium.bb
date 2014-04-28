@@ -240,6 +240,11 @@ void LayerImpl::ClearRenderSurface() {
   draw_properties_.render_surface.reset();
 }
 
+void LayerImpl::ClearRenderSurfaceLayerList() {
+  if (draw_properties_.render_surface)
+    draw_properties_.render_surface->layer_list().clear();
+}
+
 scoped_ptr<SharedQuadState> LayerImpl::CreateSharedQuadState() const {
   scoped_ptr<SharedQuadState> state = SharedQuadState::Create();
   state->SetAll(draw_properties_.target_space_transform,

@@ -68,7 +68,7 @@ void ResetCounts(RenderSurfaceLayerList* render_surface_layer_list) {
          layer_index < render_surface->layer_list().size();
          ++layer_index) {
       TestLayer* layer = static_cast<TestLayer*>(
-          render_surface->layer_list().at(layer_index));
+          render_surface->layer_list().at(layer_index).get());
 
       layer->count_representing_target_surface_ = -1;
       layer->count_representing_contributing_surface_ = -1;

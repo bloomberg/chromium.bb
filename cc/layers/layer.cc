@@ -1060,6 +1060,11 @@ void Layer::ClearRenderSurface() {
   draw_properties_.render_surface.reset();
 }
 
+void Layer::ClearRenderSurfaceLayerList() {
+  if (draw_properties_.render_surface)
+    draw_properties_.render_surface->layer_list().clear();
+}
+
 gfx::Vector2dF Layer::ScrollOffsetForAnimation() const {
   return TotalScrollOffset();
 }
