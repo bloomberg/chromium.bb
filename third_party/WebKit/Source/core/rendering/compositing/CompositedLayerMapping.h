@@ -200,6 +200,11 @@ public:
 
     LayoutSize contentOffsetInCompositingLayer() const;
 
+    LayoutPoint squashingOffsetFromTransformedAncestor()
+    {
+        return m_squashingLayerOffsetFromTransformedAncestor;
+    }
+
 private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
@@ -360,6 +365,7 @@ private:
     OwnPtr<GraphicsLayer> m_squashingContainmentLayer; // Only used if any squashed layers exist and m_squashingContainmentLayer is not present, to contain the squashed layers as siblings to the rest of the GraphicsLayer tree chunk.
     OwnPtr<GraphicsLayer> m_squashingLayer; // Only used if any squashed layers exist, this is the backing that squashed layers paint into.
     Vector<GraphicsLayerPaintInfo> m_squashedLayers;
+    LayoutPoint m_squashingLayerOffsetFromTransformedAncestor;
 
     LayoutRect m_compositedBounds;
 

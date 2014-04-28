@@ -616,6 +616,9 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
         totalSquashBounds.unite(squashedBounds);
     }
 
+    m_squashingLayerOffsetFromTransformedAncestor = m_owningLayer.computeOffsetFromTransformedAncestor();
+    m_squashingLayerOffsetFromTransformedAncestor.moveBy(totalSquashBounds.location());
+
     // The totalSquashBounds is positioned with respect to m_owningLayer of this CompositedLayerMapping.
     // But the squashingLayer needs to be positioned with respect to the ancestor CompositedLayerMapping.
     // The conversion between m_owningLayer and the ancestor CLM is already computed in the caller as

@@ -171,14 +171,10 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
 
 void RenderLayerRepainter::setBackingNeedsRepaint()
 {
-    ASSERT(m_renderer.compositingState() != NotComposited);
+    // There is only one call site, and that call site ensures that the compositing state is PaintsIntoOwnBacking.
+    ASSERT(m_renderer.compositingState() == PaintsIntoOwnBacking);
 
-    if (m_renderer.compositingState() == PaintsIntoGroupedBacking) {
-        // FIXME: should probably setNeedsDisplayInRect for this layer's bounds only.
-        m_renderer.groupedMapping()->squashingLayer()->setNeedsDisplay();
-    } else {
-        m_renderer.compositedLayerMapping()->setContentsNeedDisplay();
-    }
+    m_renderer.compositedLayerMapping()->setContentsNeedDisplay();
 }
 
 void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
@@ -202,12 +198,21 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
             view->repaintViewRectangle(absRect);
         return;
     }
-    IntRect repaintRect = pixelSnappedIntRect(r);
     if (m_renderer.compositingState() == PaintsIntoGroupedBacking) {
-        repaintRect.move(-m_renderer.layer()->offsetFromSquashingLayerOrigin());
+        LayoutRect updatedRect(r);
+
+        // This code adjusts the repaint rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
+        // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
+        // an ancestor of all of them, in order to properly take into account any local transforms etc.
+        // FIXME: remove this special-case code that works around the repainting code structure.
+        m_renderer.computeRectForRepaint(m_renderer.layer()->enclosingTransformedAncestor()->renderer(), updatedRect);
+        updatedRect.moveBy(-m_renderer.layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
+
+        IntRect repaintRect = pixelSnappedIntRect(updatedRect);
         if (GraphicsLayer* squashingLayer = m_renderer.groupedMapping()->squashingLayer())
             squashingLayer->setNeedsDisplayInRect(repaintRect);
     } else {
+        IntRect repaintRect = pixelSnappedIntRect(r);
         m_renderer.compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
     }
 }

@@ -81,6 +81,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/filters/ReferenceFilter.h"
 #include "platform/graphics/filters/SourceGraphic.h"
@@ -1075,6 +1076,17 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
         curr = curr->parent();
 
     return curr;
+}
+
+LayoutPoint RenderLayer::computeOffsetFromTransformedAncestor() const
+{
+    const AncestorDependentProperties& properties = ancestorDependentProperties();
+
+    TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
+    // FIXME: add a test that checks flipped writing mode and ApplyContainerFlip are correct.
+    renderer()->mapLocalToContainer(properties.transformAncestor ? properties.transformAncestor->renderer() : 0, transformState, ApplyContainerFlip);
+    transformState.flatten();
+    return LayoutPoint(transformState.lastPlanarPoint());
 }
 
 const RenderLayer* RenderLayer::compositingContainer() const

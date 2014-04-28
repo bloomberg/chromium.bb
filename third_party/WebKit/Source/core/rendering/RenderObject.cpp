@@ -1401,25 +1401,6 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         // then it's ok to just exit here, since the squashing layer will get repainted when it is newly created.
         if (!repaintContainer->groupedMapping()->squashingLayer())
             return;
-
-
-        IntRect offsetRect(r);
-
-        // First, convert the repaint rect into the space of the repaintContainer
-        TransformState transformState(TransformState::ApplyTransformDirection, FloatQuad(FloatRect(r)));
-        mapLocalToContainer(repaintContainer, transformState, ApplyContainerFlip);
-        transformState.flatten();
-        offsetRect = transformState.lastPlanarQuad().enclosingBoundingBox();
-
-        // FIXME: the repaint rect computed below could be tighter in uncommon nested transform cases, if we passed the quad
-        // directly to the next chunk of code.
-
-        // Then, convert the repaint rect from repaintConainer space into the squashing GraphicsLayer's coordinates.
-        if (repaintContainer->hasTransform() && repaintContainer->layer()->transform())
-            offsetRect = repaintContainer->layer()->transform()->mapRect(r);
-        offsetRect.move(-repaintContainer->layer()->offsetFromSquashingLayerOrigin());
-        repaintContainer->groupedMapping()->squashingLayer()->setNeedsDisplayInRect(offsetRect);
-        return;
     }
 
     if (repaintContainer->isRenderFlowThread()) {
@@ -1443,7 +1424,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     }
 
     if (v->usesCompositing()) {
-        ASSERT(repaintContainer->hasLayer() && repaintContainer->layer()->compositingState() == PaintsIntoOwnBacking);
+        ASSERT(repaintContainer->hasLayer() && (repaintContainer->layer()->compositingState() == PaintsIntoOwnBacking || repaintContainer->layer()->compositingState() == PaintsIntoGroupedBacking));
         repaintContainer->layer()->repainter().setBackingNeedsRepaintInRect(r);
     }
 }

@@ -610,16 +610,6 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     return compositedLayerMappingChanged || nonCompositedReasonChanged;
 }
 
-static LayoutPoint computeOffsetFromTransformedAncestor(RenderLayer* layer)
-{
-    const RenderLayer::AncestorDependentProperties& ancestorDependentProperties = layer->ancestorDependentProperties();
-
-    TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
-    layer->renderer()->mapLocalToContainer(ancestorDependentProperties.transformAncestor ? ancestorDependentProperties.transformAncestor->renderer() : 0, transformState, ApplyContainerFlip);
-    transformState.flatten();
-    return LayoutPoint(transformState.lastPlanarPoint());
-}
-
 bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState, const CompositingStateTransitionType compositedLayerUpdate)
 {
     // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
@@ -631,7 +621,7 @@ bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, Squash
         ASSERT(!layer->hasCompositedLayerMapping());
         ASSERT(squashingState.hasMostRecentMapping);
 
-        LayoutPoint offsetFromTransformedAncestorForSquashedLayer = computeOffsetFromTransformedAncestor(layer);
+        LayoutPoint offsetFromTransformedAncestorForSquashedLayer = layer->computeOffsetFromTransformedAncestor();
 
         // Compute the offset of this layer from the squashing owner. This computation is correct only because layers are allowed to squash only if they
         // share a transformed ancestor (see canSquashIntoCurrentSquashingOwner).
@@ -904,7 +894,7 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
         // At this point, if the layer is to be "separately" composited, then its backing becomes the most recent in paint-order.
         if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor) {
             ASSERT(!requiresSquashing(layer->compositingReasons()));
-            LayoutPoint offsetFromTransformedAncestorForSquashingCLM = computeOffsetFromTransformedAncestor(layer);
+            LayoutPoint offsetFromTransformedAncestorForSquashingCLM = layer->computeOffsetFromTransformedAncestor();
             squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping(), offsetFromTransformedAncestorForSquashingCLM);
         }
     }

@@ -509,6 +509,7 @@ public:
     void paintLayerContents(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     RenderLayer* enclosingTransformedAncestor() const;
+    LayoutPoint computeOffsetFromTransformedAncestor() const;
 
     void didUpdateNeedsCompositedScrolling();
 
