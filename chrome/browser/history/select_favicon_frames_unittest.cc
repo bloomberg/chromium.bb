@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/select_favicon_frames.h"
+#include "components/favicon_base/select_favicon_frames.h"
 
-#include "ui/base/layout.h"
-#include "ui/gfx/image/image_skia.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/layout.h"
+#include "ui/gfx/image/image_skia.h"
 
 using std::vector;
 

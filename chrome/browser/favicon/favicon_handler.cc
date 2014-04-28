@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_util.h"
-#include "chrome/browser/history/select_favicon_frames.h"
+#include "components/favicon_base/select_favicon_frames.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "skia/ext/image_operations.h"

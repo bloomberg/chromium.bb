@@ -9,12 +9,15 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
       ],
       'sources': [
         'favicon_base/favicon_types.cc',
         'favicon_base/favicon_types.h',
+        'favicon_base/select_favicon_frames.cc',
+        'favicon_base/select_favicon_frames.h',
       ],
       'include_dirs': [
         '..',

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_SELECT_FAVICON_FRAMES_H_
-#define CHROME_BROWSER_HISTORY_SELECT_FAVICON_FRAMES_H_
+#ifndef COMPONENTS_FAVICON_BASE_SELECT_FAVICON_FRAMES_H_
+#define COMPONENTS_FAVICON_BASE_SELECT_FAVICON_FRAMES_H_
 
 #include <vector>
 
@@ -59,4 +59,4 @@ void SelectFaviconFrameIndices(
     std::vector<size_t>* best_indices,
     float* score);
 
-#endif  // CHROME_BROWSER_HISTORY_SELECT_FAVICON_FRAMES_H_
+#endif  // COMPONENTS_FAVICON_BASE_SELECT_FAVICON_FRAMES_H_

@@ -828,8 +828,6 @@
         'browser/history/page_usage_data.h',
         'browser/history/scored_history_match.cc',
         'browser/history/scored_history_match.h',
-        'browser/history/select_favicon_frames.cc',
-        'browser/history/select_favicon_frames.h',
         'browser/history/shortcuts_database.cc',
         'browser/history/shortcuts_database.h',
         'browser/history/thumbnail_database.cc',

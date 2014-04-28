@@ -4,8 +4,8 @@
 
 #include "chrome/browser/favicon/favicon_util.h"
 
-#include "chrome/browser/history/select_favicon_frames.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/favicon_base/select_favicon_frames.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"

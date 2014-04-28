@@ -1,9 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/select_favicon_frames.h"
+#include "components/favicon_base/select_favicon_frames.h"
 
+#include <limits>
 #include <set>
 
 #include "skia/ext/image_operations.h"
@@ -29,8 +30,7 @@ size_t BiggestCandidate(const std::vector<gfx::Size>& candidate_sizes) {
 
 SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
   SkBitmap bitmap;
-  bitmap.setConfig(
-      SkBitmap::kARGB_8888_Config, desired_size, desired_size);
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, desired_size, desired_size);
   bitmap.allocPixels();
   if (!contents.isOpaque())
     bitmap.eraseARGB(0, 0, 0, 0);
@@ -44,11 +44,7 @@ SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
   return bitmap;
 }
 
-enum ResizeMethod {
-NONE,
-SAMPLE_NEAREST_NEIGHBOUR,
-LANCZOS
-};
+enum ResizeMethod { NONE, SAMPLE_NEAREST_NEIGHBOUR, LANCZOS };
 
 size_t GetCandidateIndexWithBestScore(
     const std::vector<gfx::Size>& candidate_sizes_in_pixel,
@@ -81,26 +77,29 @@ size_t GetCandidateIndexWithBestScore(
   // 1) Bitmaps with width and height smaller than |kHugeEdgeSizeInPixel|.
   // 2) Bitmaps which need to be scaled down instead of up.
   // 3) Bitmaps which do not need to be scaled as much.
-  int candidate_index = -1;
+  size_t candidate_index = std::numeric_limits<size_t>::max();
   float candidate_score = 0;
   for (size_t i = 0; i < candidate_sizes_in_pixel.size(); ++i) {
     float average_edge_in_pixel = (candidate_sizes_in_pixel[i].width() +
-        candidate_sizes_in_pixel[i].height()) / 2.0f;
+                                   candidate_sizes_in_pixel[i].height()) /
+                                  2.0f;
 
     float score = 0;
     if (candidate_sizes_in_pixel[i].width() >= kHugeEdgeSizeInPixel ||
         candidate_sizes_in_pixel[i].height() >= kHugeEdgeSizeInPixel) {
-      score = std::min(1.0f, desired_size_in_pixel / average_edge_in_pixel) *
-          0.01f;
+      score =
+          std::min(1.0f, desired_size_in_pixel / average_edge_in_pixel) * 0.01f;
     } else if (candidate_sizes_in_pixel[i].width() >= desired_size_in_pixel &&
                candidate_sizes_in_pixel[i].height() >= desired_size_in_pixel) {
       score = desired_size_in_pixel / average_edge_in_pixel * 0.01f + 0.15f;
     } else {
       score = std::min(1.0f, average_edge_in_pixel / desired_size_in_pixel) *
-          0.01f + 0.1f;
+                  0.01f +
+              0.1f;
     }
 
-    if (candidate_index == -1 || score > candidate_score) {
+    if (candidate_index == std::numeric_limits<size_t>::max() ||
+        score > candidate_score) {
       candidate_index = i;
       candidate_score = score;
     }
@@ -166,7 +165,10 @@ void GetCandidateIndicesWithBestScores(
     SelectionResult result;
     result.scale_factor = scale_factors[i];
     result.index = GetCandidateIndexWithBestScore(candidate_sizes,
-        result.scale_factor, desired_size, &score, &result.resize_method);
+                                                  result.scale_factor,
+                                                  desired_size,
+                                                  &score,
+                                                  &result.resize_method);
     results->push_back(result);
     total_score += score;
   }
@@ -181,8 +183,8 @@ SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
                           ui::ScaleFactor scale_factor,
                           ResizeMethod resize_method) {
   float scale = ui::GetImageScale(scale_factor);
-  int desired_size_in_pixel = static_cast<int>(
-      desired_size_in_dip * scale + 0.5f);
+  int desired_size_in_pixel =
+      static_cast<int>(desired_size_in_dip * scale + 0.5f);
 
   switch (resize_method) {
     case NONE:
@@ -191,8 +193,10 @@ SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
       return SampleNearestNeighbor(source_bitmap, desired_size_in_pixel);
     case LANCZOS:
       return skia::ImageOperations::Resize(
-          source_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
-          desired_size_in_pixel, desired_size_in_pixel);
+          source_bitmap,
+          skia::ImageOperations::RESIZE_LANCZOS3,
+          desired_size_in_pixel,
+          desired_size_in_pixel);
   }
   return source_bitmap;
 }
@@ -208,17 +212,18 @@ gfx::ImageSkia SelectFaviconFrames(
     int desired_size,
     float* match_score) {
   std::vector<SelectionResult> results;
-  GetCandidateIndicesWithBestScores(original_sizes, scale_factors,
-      desired_size, match_score, &results);
+  GetCandidateIndicesWithBestScores(
+      original_sizes, scale_factors, desired_size, match_score, &results);
 
   gfx::ImageSkia multi_image;
   for (size_t i = 0; i < results.size(); ++i) {
     const SelectionResult& result = results[i];
     SkBitmap resized_bitmap = GetResizedBitmap(bitmaps[result.index],
-        desired_size, result.scale_factor, result.resize_method);
-    multi_image.AddRepresentation(
-        gfx::ImageSkiaRep(resized_bitmap,
-                          ui::GetImageScale(result.scale_factor)));
+                                               desired_size,
+                                               result.scale_factor,
+                                               result.resize_method);
+    multi_image.AddRepresentation(gfx::ImageSkiaRep(
+        resized_bitmap, ui::GetImageScale(result.scale_factor)));
   }
   return multi_image;
 }
@@ -230,8 +235,8 @@ void SelectFaviconFrameIndices(
     std::vector<size_t>* best_indices,
     float* match_score) {
   std::vector<SelectionResult> results;
-  GetCandidateIndicesWithBestScores(frame_pixel_sizes, scale_factors,
-      desired_size, match_score, &results);
+  GetCandidateIndicesWithBestScores(
+      frame_pixel_sizes, scale_factors, desired_size, match_score, &results);
 
   std::set<size_t> already_added;
   for (size_t i = 0; i < results.size(); ++i) {
