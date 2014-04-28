@@ -152,4 +152,12 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerFireEvent::data(E
     return TracedValue::fromJSONValue(genericTimerData(context, timerId));
 }
 
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::data(Document* document, int callbackId)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("id", callbackId);
+    data->setString("frame", toHexString(document->frame()));
+    return TracedValue::fromJSONValue(data);
+}
+
 }

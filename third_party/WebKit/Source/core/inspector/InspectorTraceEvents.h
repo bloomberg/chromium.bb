@@ -10,6 +10,7 @@
 
 namespace WebCore {
 
+class Document;
 class ExecutionContext;
 class FrameView;
 class LocalFrame;
@@ -56,6 +57,11 @@ public:
 class InspectorTimerFireEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
+};
+
+class InspectorAnimationFrameEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, int callbackId);
 };
 
 } // namespace WebCore
