@@ -8,6 +8,5 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/views",
-  "+ui/wm",
   "+webkit/common/gpu",
 ]
