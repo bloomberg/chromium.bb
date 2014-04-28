@@ -1071,6 +1071,17 @@ def GetParser():
   parser.add_argument('--email', action='store', type=str, default=None,
                       help='Specify email for Google Sheets account to use.')
 
+  mode = parser.add_argument_group('Advanced (use at own risk)')
+  mode.add_argument('--no-upload', action='store_false', default=True,
+                    dest='upload',
+                    help='Skip uploading results to spreadsheet')
+  mode.add_argument('--no-carbon', action='store_false', default=True,
+                    dest='carbon',
+                    help='Skip sending results to carbon/graphite')
+  mode.add_argument('--no-mark-gathered', action='store_false', default=True,
+                    dest='mark_gathered',
+                    help='Skip marking results as gathered.')
+
   return parser
 
 
@@ -1128,13 +1139,16 @@ def main(argv):
 
     if options.save:
       # Send data to spreadsheet, if applicable.
-      stats_mgr.UploadToSheet(creds)
+      if options.upload:
+        stats_mgr.UploadToSheet(creds)
 
       # Send data to Carbon/Graphite, if applicable.
-      stats_mgr.SendToCarbon()
+      if options.carbon:
+        stats_mgr.SendToCarbon()
 
       # Mark these metadata.json files as processed.
-      stats_mgr.MarkGathered()
+      if options.mark_gathered:
+        stats_mgr.MarkGathered()
 
     cros_build_lib.Info('Finished with %s.\n\n', stats_mgr.config_target)
 
