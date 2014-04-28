@@ -305,15 +305,30 @@ BPF_DEATH_TEST(NaClNonSfiSandboxTest, mmap_unallowed_prot,
        MAP_ANONYMOUS, -1, 0);
 }
 
-// TODO(hamaji): Disallow RWX mmap.
-#if 0
-BPF_DEATH_TEST(NaClNonSfiSandboxTest, mmap_rwx,
+BPF_DEATH_TEST(NaClNonSfiSandboxTest, mmap_exec,
+               DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+               nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
+  mmap(NULL, getpagesize(), PROT_EXEC, MAP_ANONYMOUS, -1, 0);
+}
+
+BPF_DEATH_TEST(NaClNonSfiSandboxTest, mmap_read_exec,
+               DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+               nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
+  mmap(NULL, getpagesize(), PROT_READ | PROT_EXEC, MAP_ANONYMOUS, -1, 0);
+}
+
+BPF_DEATH_TEST(NaClNonSfiSandboxTest, mmap_write_exec,
+               DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+               nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
+  mmap(NULL, getpagesize(), PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS, -1, 0);
+}
+
+BPF_DEATH_TEST(NaClNonSfiSandboxTest, mmap_read_write_exec,
                DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {
   mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE | PROT_EXEC,
        MAP_ANONYMOUS, -1, 0);
 }
-#endif
 
 BPF_TEST(NaClNonSfiSandboxTest, mprotect_allowed,
          nacl::nonsfi::NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl) {

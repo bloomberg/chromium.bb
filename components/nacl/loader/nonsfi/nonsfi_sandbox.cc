@@ -110,11 +110,11 @@ ErrorCode RestrictSocketcall(SandboxBPF* sb) {
 }
 #endif
 
-ErrorCode RestrictMemoryProtection(SandboxBPF* sb, int argno) {
-  // TODO(jln, keescook, drewry): Limit the use of mmap/mprotect by
-  // adding some features to linux kernel.
+ErrorCode RestrictMprotect(SandboxBPF* sb) {
+  // TODO(jln, keescook, drewry): Limit the use of mprotect by adding
+  // some features to linux kernel.
   const uint32_t denied_mask = ~(PROT_READ | PROT_WRITE | PROT_EXEC);
-  return sb->Cond(argno, ErrorCode::TP_32BIT,
+  return sb->Cond(2, ErrorCode::TP_32BIT,
                   ErrorCode::OP_HAS_ANY_BITS,
                   denied_mask,
          sb->Trap(sandbox::CrashSIGSYS_Handler, NULL),
@@ -124,12 +124,19 @@ ErrorCode RestrictMemoryProtection(SandboxBPF* sb, int argno) {
 ErrorCode RestrictMmap(SandboxBPF* sb) {
   const uint32_t denied_flag_mask = ~(MAP_SHARED | MAP_PRIVATE |
                                       MAP_ANONYMOUS | MAP_STACK | MAP_FIXED);
-  // TODO(hamaji): Disallow RWX mmap.
+  // When PROT_EXEC is specified, IRT mmap of Non-SFI NaCl helper
+  // calls mmap without PROT_EXEC and then adds PROT_EXEC by mprotect,
+  // so we do not need to allow PROT_EXEC in mmap.
+  const uint32_t denied_prot_mask = ~(PROT_READ | PROT_WRITE);
   return sb->Cond(3, ErrorCode::TP_32BIT,
                   ErrorCode::OP_HAS_ANY_BITS,
                   denied_flag_mask,
-         sb->Trap(sandbox::CrashSIGSYS_Handler, NULL),
-                  RestrictMemoryProtection(sb, 2));
+                  sb->Trap(sandbox::CrashSIGSYS_Handler, NULL),
+         sb->Cond(2, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_HAS_ANY_BITS,
+                  denied_prot_mask,
+                  sb->Trap(sandbox::CrashSIGSYS_Handler, NULL),
+                  ErrorCode(ErrorCode::ERR_ALLOWED)));
 }
 
 ErrorCode RestrictSocketpair(SandboxBPF* sb) {
@@ -267,7 +274,7 @@ ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscallImpl(
 #endif
       return RestrictMmap(sb);
     case __NR_mprotect:
-      return RestrictMemoryProtection(sb, 2);
+      return RestrictMprotect(sb);
 
     case __NR_prctl:
       return RestrictPrctl(sb);
