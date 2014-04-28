@@ -726,7 +726,9 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     }
 
     if (compositingContainer && m_ancestorClippingLayer) {
-        ClipRectsContext clipRectsContext(compositingContainer, CompositingClipRects, IgnoreOverlayScrollbarSize, IgnoreOverflowClip);
+        // FIXME: this should use cached clip rects, but this sometimes give
+        // inaccurate results (and trips the ASSERTS in RenderLayerClipper).
+        ClipRectsContext clipRectsContext(compositingContainer, TemporaryClipRects, IgnoreOverlayScrollbarSize, IgnoreOverflowClip);
         IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
         ASSERT(parentClipRect != PaintInfo::infiniteRect());
         m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
