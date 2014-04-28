@@ -47,9 +47,8 @@ function verifyDirectory(entry, successCallback) {
                           'Entry has no createReader method.');
   var reader = entry.createReader();
 
-  reader.readEntries(successCallback, function (error) {
-    chrome.test.fail('Error reading directory: ' + error.name);
-  });
+  reader.readEntries(successCallback,
+                     chrome.test.fail.bind(null, 'Error reading directory.'));
 }
 
 /**

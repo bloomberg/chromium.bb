@@ -202,7 +202,7 @@ function verifyDirectoryEntry(directoryEntry, verifyFunction) {
 function verifyJPEG(parentDirectoryEntry, filename, expectedFileLength,
                     doneCallback) {
   function verifyFileEntry(fileEntry) {
-    fileEntry.file(verifyFile, chrome.test.fail);
+    fileEntry.file(verifyFile, chrome.test.fail)
   }
 
   function verifyFile(file) {
@@ -212,11 +212,10 @@ function verifyJPEG(parentDirectoryEntry, filename, expectedFileLength,
       var arraybuffer = e.target.result;
       chrome.test.assertEq(expectedFileLength, arraybuffer.byteLength);
       doneCallback();
-    };
+    }
 
-    reader.onerror = function(e) {
-      chrome.test.fail("Unable to read test image: " + filename);
-    };
+    reader.onerror =
+      chrome.test.fail.bind(null, "Unable to read test image: " + filename);
 
     reader.readAsArrayBuffer(file);
   }

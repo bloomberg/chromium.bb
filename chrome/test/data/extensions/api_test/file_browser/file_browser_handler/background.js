@@ -109,9 +109,10 @@ function readTest(entry, expectSuccess) {
 function getSiblingTest(entry) {
   var error = 'Got file (\'' + entry.fullPath.concat('.foo') + '\') for which' +
               'file access was not granted.';
-  entry.filesystem.root.getFile(entry.fullPath.concat('.foo'), {},
-                                function(entry) { chrome.test.fail(error); },
-                                chrome.test.succeed);
+  entry.filesystem.root.getFile(
+      entry.fullPath.concat('.foo'), {},
+      chrome.test.fail.bind(null, error),
+      chrome.test.succeed);
 }
 
 /**
