@@ -1235,10 +1235,6 @@ TEST_P(ChunkDemuxerTest, SeekWhileParsingCluster) {
   ExpectRead(DemuxerStream::AUDIO, 0);
   ExpectRead(DemuxerStream::VIDEO, 0);
   ExpectRead(DemuxerStream::AUDIO, kAudioBlockDuration);
-  // Note: We skip trying to read a video buffer here because computing
-  // the duration for this block relies on successfully parsing the last block
-  // in the cluster the cluster.
-  ExpectRead(DemuxerStream::AUDIO, 2 * kAudioBlockDuration);
 
   Seek(base::TimeDelta::FromSeconds(5));
 
@@ -1765,25 +1761,15 @@ TEST_P(ChunkDemuxerTest, IncrementalClusterParsing) {
   EXPECT_FALSE(audio_read_done);
   EXPECT_FALSE(video_read_done);
 
-  // Append data one byte at a time until the audio read completes.
+  // Append data one byte at a time until one or both reads complete.
   int i = 0;
-  for (; i < cluster->size() && !audio_read_done; ++i) {
+  for (; i < cluster->size() && !(audio_read_done || video_read_done); ++i) {
     AppendData(cluster->data() + i, 1);
     message_loop_.RunUntilIdle();
   }
 
-  EXPECT_TRUE(audio_read_done);
-  EXPECT_FALSE(video_read_done);
+  EXPECT_TRUE(audio_read_done || video_read_done);
   EXPECT_GT(i, 0);
-  EXPECT_LT(i, cluster->size());
-
-  // Append data one byte at a time until the video read completes.
-  for (; i < cluster->size() && !video_read_done; ++i) {
-    AppendData(cluster->data() + i, 1);
-    message_loop_.RunUntilIdle();
-  }
-
-  EXPECT_TRUE(video_read_done);
   EXPECT_LT(i, cluster->size());
 
   audio_read_done = false;

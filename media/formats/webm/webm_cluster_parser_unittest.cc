@@ -117,6 +117,14 @@ static bool VerifyBuffers(const WebMClusterParser::BufferQueue& audio_buffers,
                           const WebMClusterParser::BufferQueue& text_buffers,
                           const BlockInfo* block_info,
                           int block_count) {
+  int buffer_count = audio_buffers.size() + video_buffers.size() +
+      text_buffers.size();
+  if (block_count != buffer_count) {
+    DVLOG(1) << __FUNCTION__ << " : block_count (" << block_count
+             << ") mismatches buffer_count (" << buffer_count << ")";
+    return false;
+  }
+
   size_t audio_offset = 0;
   size_t video_offset = 0;
   size_t text_offset = 0;
@@ -142,8 +150,12 @@ static bool VerifyBuffers(const WebMClusterParser::BufferQueue& audio_buffers,
       return false;
     }
 
-    if (*offset >= buffers->size())
+    if (*offset >= buffers->size()) {
+      DVLOG(1) << __FUNCTION__ << " : Too few buffers (" << buffers->size()
+               << ") for track_num (" << block_info[i].track_num
+               << "), expected at least " << *offset + 1 << " buffers";
       return false;
+    }
 
     scoped_refptr<StreamParserBuffer> buffer = (*buffers)[(*offset)++];
 
@@ -266,6 +278,96 @@ class WebMClusterParserTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebMClusterParserTest);
 };
+
+TEST_F(WebMClusterParserTest, HeldBackBufferHoldsBackAllTracks) {
+  // If a buffer is missing duration and is being held back, then all other
+  // tracks' buffers that have same or higher (decode) timestamp should be held
+  // back too to keep the timestamps emitted for a cluster monotonically
+  // non-decreasing and in same order as parsed.
+  InSequence s;
+
+  // Reset the parser to have 3 tracks: text, video (no default frame duration),
+  // and audio (with a default frame duration).
+  TextTracks text_tracks;
+  text_tracks.insert(std::make_pair(TextTracks::key_type(kTextTrackNum),
+                                    TextTrackConfig(kTextSubtitles, "", "",
+                                                    "")));
+  base::TimeDelta default_audio_duration =
+      base::TimeDelta::FromMilliseconds(kTestAudioFrameDefaultDurationInMs);
+  ASSERT_GE(default_audio_duration, base::TimeDelta());
+  ASSERT_NE(kNoTimestamp(), default_audio_duration);
+  parser_.reset(new WebMClusterParser(kTimecodeScale,
+                                      kAudioTrackNum,
+                                      default_audio_duration,
+                                      kVideoTrackNum,
+                                      kNoTimestamp(),
+                                      text_tracks,
+                                      std::set<int64>(),
+                                      std::string(),
+                                      std::string(),
+                                      LogCB()));
+
+  const BlockInfo kBlockInfo[] = {
+    { kVideoTrackNum, 0, 33, true },
+    { kAudioTrackNum, 0, 23, false },
+    { kTextTrackNum, 10, 42, false },
+    { kAudioTrackNum, 23, kTestAudioFrameDefaultDurationInMs, true },
+    { kVideoTrackNum, 33, 33, true },
+    { kAudioTrackNum, 36, kTestAudioFrameDefaultDurationInMs, true },
+    { kVideoTrackNum, 66, 33, true },
+    { kAudioTrackNum, 70, kTestAudioFrameDefaultDurationInMs, true },
+    { kAudioTrackNum, 83, kTestAudioFrameDefaultDurationInMs, true },
+  };
+
+  const int kExpectedBuffersOnPartialCluster[] = {
+    0,  // Video simple block without DefaultDuration should be held back
+    0,  // Audio buffer ready, but not emitted because its TS >= held back video
+    0,  // Text buffer ready, but not emitted because its TS >= held back video
+    0,  // 2nd audio buffer ready, also not emitted for same reason as first
+    4,  // All previous buffers emitted, 2nd video held back with no duration
+    4,  // 2nd video still has no duration, 3rd audio ready but not emitted
+    6,  // All previous buffers emitted, 3rd video held back with no duration
+    6,  // 3rd video still has no duration, 4th audio ready but not emitted
+    9,  // Cluster end emits all buffers and 3rd video's duration is estimated
+  };
+
+  ASSERT_EQ(arraysize(kBlockInfo), arraysize(kExpectedBuffersOnPartialCluster));
+  int block_count = arraysize(kBlockInfo);
+
+  // Iteratively create a cluster containing the first N+1 blocks and parse all
+  // but the last byte of the cluster (except when N==|block_count|, just parse
+  // the whole cluster). Verify that the corresponding entry in
+  // |kExpectedBuffersOnPartialCluster| identifies the exact subset of
+  // |kBlockInfo| returned by the parser.
+  for (int i = 0; i < block_count; ++i) {
+    if (i > 0)
+      parser_->Reset();
+    // Since we don't know exactly the offsets of each block in the full
+    // cluster, build a cluster with exactly one additional block so that
+    // parse of all but one byte should deterministically parse all but the
+    // last full block. Don't |exceed block_count| blocks though.
+    int blocks_in_cluster = std::min(i + 2, block_count);
+    scoped_ptr<Cluster> cluster(CreateCluster(0, kBlockInfo,
+                                              blocks_in_cluster));
+    // Parse all but the last byte unless we need to parse the full cluster.
+    bool parse_full_cluster = i == (block_count - 1);
+    int result = parser_->Parse(cluster->data(), parse_full_cluster ?
+                                cluster->size() : cluster->size() - 1);
+    if (parse_full_cluster) {
+      DVLOG(1) << "Verifying parse result of full cluster of "
+               << blocks_in_cluster << " blocks";
+      EXPECT_EQ(cluster->size(), result);
+    } else {
+      DVLOG(1) << "Verifying parse result of cluster of "
+               << blocks_in_cluster << " blocks with last block incomplete";
+      EXPECT_GT(cluster->size(), result);
+      EXPECT_LT(0, result);
+    }
+
+    EXPECT_TRUE(VerifyBuffers(parser_, kBlockInfo,
+                              kExpectedBuffersOnPartialCluster[i]));
+  }
+}
 
 TEST_F(WebMClusterParserTest, Reset) {
   InSequence s;
