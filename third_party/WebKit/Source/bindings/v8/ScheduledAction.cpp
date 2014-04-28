@@ -45,23 +45,21 @@
 
 namespace WebCore {
 
-ScheduledAction::ScheduledAction(v8::Handle<v8::Context> context, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[], v8::Isolate* isolate)
-    : m_context(isolate, context)
+ScheduledAction::ScheduledAction(NewScriptState* scriptState, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[], v8::Isolate* isolate)
+    : m_scriptState(scriptState)
     , m_function(isolate, function)
     , m_info(isolate)
     , m_code(String(), KURL(), TextPosition::belowRangePosition())
-    , m_isolate(isolate)
 {
     m_info.ReserveCapacity(argc);
     for (int i = 0; i < argc; ++i)
         m_info.Append(argv[i]);
 }
 
-ScheduledAction::ScheduledAction(v8::Handle<v8::Context> context, const String& code, const KURL& url, v8::Isolate* isolate)
-    : m_context(isolate, context)
+ScheduledAction::ScheduledAction(NewScriptState* scriptState, const String& code, const KURL& url, v8::Isolate* isolate)
+    : m_scriptState(scriptState)
     , m_info(isolate)
     , m_code(code, url)
-    , m_isolate(isolate)
 {
 }
 
@@ -85,21 +83,18 @@ void ScheduledAction::execute(ExecutionContext* context)
 
 void ScheduledAction::execute(LocalFrame* frame)
 {
-    v8::HandleScope handleScope(m_isolate);
-
-    v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
-    if (context.IsEmpty())
+    if (m_scriptState->contextIsEmpty())
         return;
 
     TRACE_EVENT0("v8", "ScheduledAction::execute");
-
+    v8::HandleScope handleScope(m_scriptState->isolate());
     if (!m_function.isEmpty()) {
-        v8::Context::Scope scope(context);
+        NewScriptState::Scope scope(m_scriptState.get());
         Vector<v8::Handle<v8::Value> > info;
         createLocalHandlesForArgs(&info);
-        frame->script().callFunction(m_function.newLocal(m_isolate), context->Global(), info.size(), info.data());
+        frame->script().callFunction(m_function.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), info.size(), info.data());
     } else {
-        frame->script().executeScriptAndReturnValue(context, ScriptSourceCode(m_code));
+        frame->script().executeScriptAndReturnValue(m_scriptState->context(), ScriptSourceCode(m_code));
     }
 
     // The frame might be invalid at this point because JavaScript could have released it.
@@ -108,16 +103,15 @@ void ScheduledAction::execute(LocalFrame* frame)
 void ScheduledAction::execute(WorkerGlobalScope* worker)
 {
     ASSERT(worker->thread()->isCurrentThread());
-    v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
-    ASSERT(!context.IsEmpty());
-    v8::Context::Scope scope(context);
+    ASSERT(!m_scriptState->contextIsEmpty());
     if (!m_function.isEmpty()) {
+        NewScriptState::Scope scope(m_scriptState.get());
         Vector<v8::Handle<v8::Value> > info;
         createLocalHandlesForArgs(&info);
-        V8ScriptRunner::callFunction(m_function.newLocal(m_isolate), worker, context->Global(), info.size(), info.data(), m_isolate);
-    } else
+        V8ScriptRunner::callFunction(m_function.newLocal(m_scriptState->isolate()), worker, m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
+    } else {
         worker->script()->evaluate(m_code);
+    }
 }
 
 void ScheduledAction::createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* handles)

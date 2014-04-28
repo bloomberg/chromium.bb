@@ -31,6 +31,7 @@
 #ifndef ScheduledAction_h
 #define ScheduledAction_h
 
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/V8PersistentValueVector.h"
@@ -46,8 +47,8 @@ class WorkerGlobalScope;
 class ScheduledAction {
     WTF_MAKE_NONCOPYABLE(ScheduledAction);
 public:
-    ScheduledAction(v8::Handle<v8::Context>, v8::Handle<v8::Function>, int argc, v8::Handle<v8::Value> argv[], v8::Isolate*);
-    ScheduledAction(v8::Handle<v8::Context>, const String&, const KURL&, v8::Isolate*);
+    ScheduledAction(NewScriptState*, v8::Handle<v8::Function>, int argc, v8::Handle<v8::Value> argv[], v8::Isolate*);
+    ScheduledAction(NewScriptState*, const String&, const KURL&, v8::Isolate*);
     ~ScheduledAction();
 
     void execute(ExecutionContext*);
@@ -57,11 +58,10 @@ private:
     void execute(WorkerGlobalScope*);
     void createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* handles);
 
-    ScopedPersistent<v8::Context> m_context;
+    NewScriptStateProtectingContext m_scriptState;
     ScopedPersistent<v8::Function> m_function;
     V8PersistentValueVector<v8::Value> m_info;
     ScriptSourceCode m_code;
-    v8::Isolate* m_isolate;
 };
 
 } // namespace WebCore

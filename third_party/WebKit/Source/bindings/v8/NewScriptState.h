@@ -110,6 +110,7 @@ public:
             m_context.set(m_scriptState->isolate(), m_scriptState->context());
     }
 
+    NewScriptState* operator->() const { return m_scriptState.get(); }
     NewScriptState* get() const { return m_scriptState.get(); }
     void clear()
     {

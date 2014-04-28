@@ -82,12 +82,7 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
         exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
         return;
     }
-    v8::Handle<v8::Context> context = toV8Context(info.GetIsolate(), impl->frame(), DOMWrapperWorld::current(info.GetIsolate()));
-    if (context.IsEmpty()) {
-        exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
-        return;
-    }
-
+    NewScriptState* scriptState = NewScriptState::current(info.GetIsolate());
     v8::Handle<v8::Value> function = info[0];
     String functionString;
     if (!function->IsFunction()) {
@@ -126,14 +121,14 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
 
         // params is passed to action, and released in action's destructor
         ASSERT(impl->frame());
-        action = adoptPtr(new ScheduledAction(context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(scriptState, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else {
         if (impl->document() && !impl->document()->contentSecurityPolicy()->allowEval()) {
             v8SetReturnValue(info, 0);
             return;
         }
         ASSERT(impl->frame());
-        action = adoptPtr(new ScheduledAction(context, functionString, KURL(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(scriptState, functionString, KURL(), info.GetIsolate()));
     }
 
     int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;

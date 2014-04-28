@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot)
+void setTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot)
 {
     WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(info.Holder());
     ASSERT(workerGlobalScope);
@@ -61,8 +61,8 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     if (!script)
         return;
 
+    NewScriptState* scriptState = NewScriptState::current(info.GetIsolate());
     OwnPtr<ScheduledAction> action;
-    v8::Handle<v8::Context> v8Context = script->context();
     if (function->IsString()) {
         if (ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy()) {
             if (!policy->allowEval()) {
@@ -70,7 +70,7 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
                 return;
             }
         }
-        action = adoptPtr(new ScheduledAction(v8Context, toCoreString(function.As<v8::String>()), workerGlobalScope->url(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(scriptState, toCoreString(function.As<v8::String>()), workerGlobalScope->url(), info.GetIsolate()));
     } else if (function->IsFunction()) {
         size_t paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
         OwnPtr<v8::Local<v8::Value>[]> params;
@@ -80,7 +80,7 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
                 params[i] = info[i+2];
         }
         // ScheduledAction takes ownership of actual params and releases them in its destructor.
-        action = adoptPtr(new ScheduledAction(v8Context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(scriptState, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else
         return;
 
@@ -96,12 +96,12 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
 
 void V8WorkerGlobalScope::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    return SetTimeoutOrInterval(info, true);
+    return setTimeoutOrInterval(info, true);
 }
 
 void V8WorkerGlobalScope::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    return SetTimeoutOrInterval(info, false);
+    return setTimeoutOrInterval(info, false);
 }
 
 v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
