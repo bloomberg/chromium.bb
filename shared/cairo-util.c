@@ -500,7 +500,7 @@ theme_get_location(struct theme *t, int x, int y,
 
 	if (x < margin)
 		hlocation = THEME_LOCATION_EXTERIOR;
-	else if (margin <= x && x < margin + grip_size)
+	else if (x < margin + grip_size)
 		hlocation = THEME_LOCATION_RESIZING_LEFT;
 	else if (x < width - margin - grip_size)
 		hlocation = THEME_LOCATION_INTERIOR;
@@ -511,7 +511,7 @@ theme_get_location(struct theme *t, int x, int y,
 
 	if (y < margin)
 		vlocation = THEME_LOCATION_EXTERIOR;
-	else if (margin <= y && y < margin + grip_size)
+	else if (y < margin + grip_size)
 		vlocation = THEME_LOCATION_RESIZING_TOP;
 	else if (y < height - margin - grip_size)
 		vlocation = THEME_LOCATION_INTERIOR;
