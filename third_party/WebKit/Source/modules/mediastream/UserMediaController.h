@@ -25,7 +25,7 @@
 #ifndef UserMediaController_h
 #define UserMediaController_h
 
-#include "core/page/Page.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/mediastream/UserMediaClient.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -34,7 +34,7 @@ namespace WebCore {
 class MediaDevicesRequest;
 class UserMediaRequest;
 
-class UserMediaController FINAL : public Supplement<Page> {
+class UserMediaController FINAL : public Supplement<LocalFrame> {
 public:
     virtual ~UserMediaController();
 
@@ -48,7 +48,7 @@ public:
 
     static PassOwnPtr<UserMediaController> create(UserMediaClient*);
     static const char* supplementName();
-    static UserMediaController* from(Page* page) { return static_cast<UserMediaController*>(Supplement<Page>::from(page, supplementName())); }
+    static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
 
     virtual void trace(Visitor*) OVERRIDE { }
 

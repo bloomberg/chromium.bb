@@ -56,7 +56,6 @@
 #include "web/PageWidgetDelegate.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
-#include "web/UserMediaClientImpl.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -72,7 +71,6 @@ namespace blink {
 class GeolocationClientProxy;
 class LinkHighlight;
 class PopupContainer;
-class UserMediaClientImpl;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentPrivate;
 class WebLocalFrameImpl;
@@ -704,7 +702,6 @@ private:
 
     OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;
 
-    UserMediaClientImpl m_userMediaClientImpl;
     MediaKeysClientImpl m_mediaKeysClientImpl;
     OwnPtr<WebActiveGestureAnimation> m_gestureAnimation;
     WebPoint m_positionOnFlingStart;
