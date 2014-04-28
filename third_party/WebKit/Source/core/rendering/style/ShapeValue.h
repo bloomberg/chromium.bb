@@ -66,7 +66,14 @@ public:
     BasicShape* shape() const { return m_shape.get(); }
 
     StyleImage* image() const { return m_image.get(); }
-    bool isImageValid() const { return image() && image()->cachedImage() && image()->cachedImage()->hasImage(); }
+    bool isImageValid() const
+    {
+        if (!image())
+            return false;
+        if (image()->isImageResource() || image()->isImageResourceSet())
+            return image()->cachedImage() && image()->cachedImage()->hasImage();
+        return image()->isGeneratedImage();
+    }
     void setImage(PassRefPtr<StyleImage> image)
     {
         ASSERT(type() == Image);

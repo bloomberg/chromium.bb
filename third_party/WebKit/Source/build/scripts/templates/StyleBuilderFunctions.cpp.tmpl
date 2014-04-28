@@ -478,7 +478,7 @@ namespace WebCore {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue->getValueID() == CSSValueAuto)
             {{set_value(property)}}(nullptr);
-    } else if (value->isImageValue() || value->isImageSetValue()) {
+    } else if (value->isImageValue() || value->isImageGeneratorValue() || value->isImageSetValue()) {
         {{set_value(property)}}(ShapeValue::createImageValue(state.styleImage({{property_id}}, value)));
     } else if (value->isValueList()) {
         RefPtr<BasicShape> shape;

@@ -93,7 +93,10 @@ var validShapeValues = [
     ["content-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "content-box polygon(10px 10px, 20px 20px, 30px 30px)", "polygon(10px 10px, 20px 20px, 30px 30px) content-box"],
     ["padding-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "padding-box polygon(10px 10px, 20px 20px, 30px 30px)", "polygon(10px 10px, 20px 20px, 30px 30px) padding-box"],
     ["border-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "border-box polygon(10px 10px, 20px 20px, 30px 30px)", "polygon(10px 10px, 20px 20px, 30px 30px) border-box"],
-    ["margin-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "margin-box polygon(10px 10px, 20px 20px, 30px 30px)", "polygon(10px 10px, 20px 20px, 30px 30px) margin-box"]
+    ["margin-box polygon(nonzero, 10px 10px, 20px 20px, 30px 30px)", "margin-box polygon(10px 10px, 20px 20px, 30px 30px)", "polygon(10px 10px, 20px 20px, 30px 30px) margin-box"],
+
+     "linear-gradient(to right, red, blue)",
+     "radial-gradient(at 10px 20px, red 0%, blue 50%, green 95%)"
 ];
 
 // Invalid values for both shape-inside and shape-outside. When an invalid shape value is specified, the
