@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "components/favicon/core/browser/favicon_client.h"
-#include "components/favicon/core/favicon_handler_delegate.h"
+#include "components/favicon/core/favicon_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/favicon_url.h"
@@ -32,7 +32,7 @@ class SkBitmap;
 //
 class FaviconTabHelper : public content::WebContentsObserver,
                          public FaviconClient,
-                         public FaviconHandlerDelegate,
+                         public FaviconDriver,
                          public content::WebContentsUserData<FaviconTabHelper> {
  public:
   virtual ~FaviconTabHelper();
@@ -68,7 +68,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // Saves the favicon for the current page.
   void SaveFavicon();
 
-  // FaviconHandlerDelegate methods.
+  // FaviconDriver methods.
   virtual content::NavigationEntry* GetActiveEntry() OVERRIDE;
   virtual int StartDownload(const GURL& url, int max_bitmap_size) OVERRIDE;
   virtual void NotifyFaviconUpdated(bool icon_url_changed) OVERRIDE;

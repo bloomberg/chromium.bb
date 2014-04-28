@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_DELEGATE_H_
-#define COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_DELEGATE_H_
+#ifndef COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_
+#define COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_
 
 class GURL;
 
@@ -12,16 +12,16 @@ namespace content {
 class NavigationEntry;
 }
 
-// This class provides a delegate interface for a FaviconHandler.  It allows the
-// FaviconHandler to ask its delegate for information or notify its delegate
-// about changes.
-class FaviconHandlerDelegate {
+// Interface that allows Favicon core code to interact with its driver (i.e.,
+// obtain information from it and give information to it). A concrete
+// implementation must be provided by the driver.
+class FaviconDriver {
  public:
   // Returns the current NavigationEntry.
   // TODO(jif): Abstract the NavigationEntry (crbug.com/359598).
   virtual content::NavigationEntry* GetActiveEntry() = 0;
 
-  // Starts the download for the given favicon. When finished, the delegate
+  // Starts the download for the given favicon. When finished, the driver
   // will call OnDidDownloadFavicon() with the results.
   // Returns the unique id of the download request. The id will be passed
   // in OnDidDownloadFavicon().
@@ -31,7 +31,7 @@ class FaviconHandlerDelegate {
   // is the only result. A |max_bitmap_size| of 0 means unlimited.
   virtual int StartDownload(const GURL& url, int max_bitmap_size) = 0;
 
-  // Notifies the delegate that the favicon for the active entry was updated.
+  // Notifies the driver that the favicon for the active entry was updated.
   // |icon_url_changed| is true if a favicon with a different icon URL has
   // been selected since the previous call to NotifyFaviconUpdated().
   virtual void NotifyFaviconUpdated(bool icon_url_changed) = 0;
@@ -40,4 +40,4 @@ class FaviconHandlerDelegate {
   virtual bool IsOffTheRecord() = 0;
 };
 
-#endif  // COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_DELEGATE_H_
+#endif  // COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_

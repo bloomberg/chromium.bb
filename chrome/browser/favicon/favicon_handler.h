@@ -21,7 +21,7 @@
 #include "url/gurl.h"
 
 class FaviconClient;
-class FaviconHandlerDelegate;
+class FaviconDriver;
 class SkBitmap;
 
 namespace base {
@@ -87,7 +87,7 @@ class FaviconHandler {
   };
 
   FaviconHandler(FaviconClient* client,
-                 FaviconHandlerDelegate* delegate,
+                 FaviconDriver* driver,
                  Type icon_type,
                  bool download_largest_icon);
   virtual ~FaviconHandler();
@@ -159,7 +159,7 @@ class FaviconHandler {
   // Returns true if the favicon should be saved.
   virtual bool ShouldSaveFavicon(const GURL& url);
 
-  // Notifies the delegate that the favicon for the active entry was updated.
+  // Notifies the driver that the favicon for the active entry was updated.
   // |icon_url_changed| is true if a favicon with a different icon URL has been
   // selected since the previous call to NotifyFaviconUpdated().
   virtual void NotifyFaviconUpdated(bool icon_url_changed);
@@ -295,8 +295,8 @@ class FaviconHandler {
   // The client which implements embedder-specific Favicon operations.
   FaviconClient* client_;  // weak
 
-  // This handler's delegate.
-  FaviconHandlerDelegate* delegate_;  // weak
+  // This handler's driver.
+  FaviconDriver* driver_;  // weak
 
   // Best image we've seen so far.  As images are downloaded from the page they
   // are stored here. When there is an exact match, or no more images are
