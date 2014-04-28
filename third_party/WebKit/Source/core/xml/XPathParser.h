@@ -126,8 +126,8 @@ private:
     HashSet<ParseNode*> m_parseNodes;
     HashSet<Vector<OwnPtr<Predicate> >*> m_predicateVectors;
     HashSet<Vector<OwnPtr<Expression> >*> m_expressionVectors;
-    HashSet<String*> m_strings;
-    HashSet<Step::NodeTest*> m_nodeTests;
+    HashSet<OwnPtr<String> > m_strings;
+    HashSet<OwnPtr<Step::NodeTest> > m_nodeTests;
 };
 
 } // XPath

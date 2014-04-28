@@ -488,10 +488,8 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtrWillBeRawP
             delete *it;
         m_expressionVectors.clear();
 
-        deleteAllValues(m_strings);
         m_strings.clear();
 
-        deleteAllValues(m_nodeTests);
         m_nodeTests.clear();
 
         m_topExpr = 0;
@@ -587,7 +585,7 @@ void Parser::registerString(String* s)
 
     ASSERT(!m_strings.contains(s));
 
-    m_strings.add(s);
+    m_strings.add(adoptPtr(s));
 }
 
 void Parser::deleteString(String* s)
@@ -598,7 +596,6 @@ void Parser::deleteString(String* s)
     ASSERT(m_strings.contains(s));
 
     m_strings.remove(s);
-    delete s;
 }
 
 void Parser::registerNodeTest(Step::NodeTest* t)
@@ -608,7 +605,7 @@ void Parser::registerNodeTest(Step::NodeTest* t)
 
     ASSERT(!m_nodeTests.contains(t));
 
-    m_nodeTests.add(t);
+    m_nodeTests.add(adoptPtr(t));
 }
 
 void Parser::deleteNodeTest(Step::NodeTest* t)
@@ -619,6 +616,5 @@ void Parser::deleteNodeTest(Step::NodeTest* t)
     ASSERT(m_nodeTests.contains(t));
 
     m_nodeTests.remove(t);
-    delete t;
 }
 

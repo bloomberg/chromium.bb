@@ -22,6 +22,7 @@
 #ifndef WTF_OwnPtr_h
 #define WTF_OwnPtr_h
 
+#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/NullPtr.h"
 #include "wtf/OwnPtrCommon.h"
@@ -48,6 +49,10 @@ namespace WTF {
         // See comment in PassOwnPtr.h for why this takes a const reference.
         OwnPtr(const PassOwnPtr<T>&);
         template<typename U> OwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
+
+        // Hash table deleted values, which are only constructed and never copied or destroyed.
+        OwnPtr(HashTableDeletedValueType) : m_ptr(hashTableDeletedValue()) { }
+        bool isHashTableDeletedValue() const { return m_ptr == hashTableDeletedValue(); }
 
 #if !COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
         // This copy constructor is used implicitly by gcc when it generates
@@ -93,6 +98,8 @@ namespace WTF {
 #endif
 
         void swap(OwnPtr& o) { std::swap(m_ptr, o.m_ptr); }
+
+        static T* hashTableDeletedValue() { return reinterpret_cast<T*>(-1); }
 
     private:
 #if !COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)

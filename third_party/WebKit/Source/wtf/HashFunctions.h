@@ -21,6 +21,7 @@
 #ifndef WTF_HashFunctions_h
 #define WTF_HashFunctions_h
 
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include <stdint.h>
@@ -138,10 +139,12 @@ namespace WTF {
     template<typename P> struct PtrHash<RefPtr<P> > : PtrHash<P*> {
         using PtrHash<P*>::hash;
         static unsigned hash(const RefPtr<P>& key) { return hash(key.get()); }
+        static unsigned hash(const PassRefPtr<P>& key) { return hash(key.get()); }
         using PtrHash<P*>::equal;
         static bool equal(const RefPtr<P>& a, const RefPtr<P>& b) { return a == b; }
         static bool equal(P* a, const RefPtr<P>& b) { return a == b; }
         static bool equal(const RefPtr<P>& a, P* b) { return a == b; }
+        static bool equal(const RefPtr<P>& a, const PassRefPtr<P>& b) { return a == b; }
     };
     template<typename P> struct PtrHash<RawPtr<P> > : PtrHash<P*> {
         using PtrHash<P*>::hash;
@@ -150,6 +153,21 @@ namespace WTF {
         static bool equal(const RawPtr<P>& a, const RawPtr<P>& b) { return a == b; }
         static bool equal(P* a, const RawPtr<P>& b) { return a == b; }
         static bool equal(const RawPtr<P>& a, P* b) { return a == b; }
+    };
+    template<typename P> struct PtrHash<OwnPtr<P> > : PtrHash<P*> {
+        using PtrHash<P*>::hash;
+        static unsigned hash(const OwnPtr<P>& key) { return hash(key.get()); }
+        static unsigned hash(const PassOwnPtr<P>& key) { return hash(key.get()); }
+
+        static bool equal(const OwnPtr<P>& a, const OwnPtr<P>& b)
+        {
+            return a.get() == b.get();
+        }
+        static bool equal(const OwnPtr<P>& a, P* b) { return a == b; }
+        static bool equal(const OwnPtr<P>& a, const PassOwnPtr<P>& b)
+        {
+            return a.get() == b.get();
+        }
     };
 
     // default hash function for each type
@@ -198,6 +216,7 @@ namespace WTF {
     template<typename P> struct DefaultHash<P*> { typedef PtrHash<P*> Hash; };
     template<typename P> struct DefaultHash<RefPtr<P> > { typedef PtrHash<RefPtr<P> > Hash; };
     template<typename P> struct DefaultHash<RawPtr<P> > { typedef PtrHash<RawPtr<P> > Hash; };
+    template<typename P> struct DefaultHash<OwnPtr<P> > { typedef PtrHash<OwnPtr<P> > Hash; };
 
     // make IntPairHash the default hash function for pairs of (at most) 32-bit integers.
 

@@ -299,7 +299,7 @@ namespace WTF {
         typedef Value ValueType;
         typedef Extractor ExtractorType;
         typedef KeyTraits KeyTraitsType;
-        typedef typename Traits::PeekInType ValuePeekInType;
+        typedef typename Traits::PassInType ValuePassInType;
         typedef IdentityHashTranslator<HashFunctions> IdentityTranslatorType;
         typedef HashTableAddResult<HashTable, ValueType> AddResult;
 
@@ -374,7 +374,7 @@ namespace WTF {
         unsigned capacity() const { return m_tableSize; }
         bool isEmpty() const { return !m_keyCount; }
 
-        AddResult add(ValuePeekInType value)
+        AddResult add(ValuePassInType value)
         {
             return add<IdentityTranslatorType>(Extractor::extract(value), value);
         }

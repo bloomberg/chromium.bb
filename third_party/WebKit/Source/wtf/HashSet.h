@@ -41,7 +41,8 @@ namespace WTF {
     private:
         typedef HashArg HashFunctions;
         typedef TraitsArg ValueTraits;
-        typedef const typename ValueTraits::PeekInType& ValuePeekInType;
+        typedef typename ValueTraits::PeekInType ValuePeekInType;
+        typedef typename ValueTraits::PassInType ValuePassInType;
 
     public:
         typedef typename ValueTraits::TraitType ValueType;
@@ -86,7 +87,7 @@ namespace WTF {
 
         // The return value is a pair of an iterator to the new value's location,
         // and a bool that is true if an new entry was added.
-        AddResult add(ValuePeekInType);
+        AddResult add(ValuePassInType);
 
         // An alternate version of add() that finds the object by hashing and comparing
         // with some other type, to avoid the cost of type conversion if the object is already
@@ -188,7 +189,7 @@ namespace WTF {
     }
 
     template<typename T, typename U, typename V, typename W>
-    inline typename HashSet<T, U, V, W>::AddResult HashSet<T, U, V, W>::add(ValuePeekInType value)
+    inline typename HashSet<T, U, V, W>::AddResult HashSet<T, U, V, W>::add(ValuePassInType value)
     {
         return m_impl.add(value);
     }
@@ -244,7 +245,7 @@ namespace WTF {
         for (iterator it = collection.begin(); it != end; ++it)
             delete *it;
     }
-
+    // Deprecated, HashSet<OwnPtr<>> to be used instead.
     template<typename T, typename U, typename V, typename W>
     inline void deleteAllValues(const HashSet<T, U, V, W>& collection)
     {

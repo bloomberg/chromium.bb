@@ -144,6 +144,11 @@ namespace WTF {
 
         static EmptyValueType emptyValue() { return nullptr; }
 
+        static const bool hasIsEmptyValueFunction = true;
+        static bool isEmptyValue(const OwnPtr<P>& value) { return !value; }
+
+        typedef typename OwnPtr<P>::PtrType PeekInType;
+
         typedef PassOwnPtr<P> PassInType;
         static void store(PassOwnPtr<P> value, OwnPtr<P>& storage) { storage = value; }
 
