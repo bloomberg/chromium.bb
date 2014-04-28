@@ -4351,11 +4351,11 @@ surface_create(struct window *window)
 	return surface;
 }
 
-static window_buffer_type
+static enum window_buffer_type
 get_preferred_buffer_type(struct display *display)
 {
 #ifdef HAVE_CAIRO_EGL
-	if (display->argb_device)
+	if (display->argb_device && !getenv("TOYTOOLKIT_NO_EGL"))
 		return WINDOW_BUFFER_TYPE_EGL_WINDOW;
 #endif
 
