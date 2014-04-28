@@ -8,8 +8,13 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/embedder/platform_channel_pair.h"
+#include "mojo/system/local_message_pipe_endpoint.h"
+#include "mojo/system/message_in_transit.h"
+#include "mojo/system/message_pipe.h"
+#include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/raw_channel.h"
 #include "mojo/system/test_utils.h"
+#include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -172,7 +177,141 @@ TEST_F(ChannelTest, InitFails) {
   *mutable_channel() = NULL;
 }
 
-// TODO(vtl): More.
+// ChannelTest.CloseBeforeRun --------------------------------------------------
+
+TEST_F(ChannelTest, CloseBeforeRun) {
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::CreateChannelOnIOThread,
+                 base::Unretained(this)));
+  ASSERT_TRUE(channel());
+
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::InitChannelOnIOThread,
+                 base::Unretained(this)));
+  EXPECT_EQ(TRISTATE_TRUE, init_result());
+
+  scoped_refptr<MessagePipe> mp(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+
+  MessageInTransit::EndpointId local_id =
+      channel()->AttachMessagePipeEndpoint(mp, 1);
+  EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
+
+  mp->Close(0);
+
+  // TODO(vtl): Currently, the |Close()| above won't detach (since it thinks
+  // we're still expecting a "run" message from the other side), so the
+  // |RunMessagePipeEndpoint()| below will return true. We need to refactor
+  // |AttachMessagePipeEndpoint()| to indicate whether |Run...()| will
+  // necessarily be called or not. (Then, in the case that it may not be called,
+  // this will return false.)
+  EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
+                                                Channel::kBootstrapEndpointId));
+
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
+                 base::Unretained(this)));
+
+  EXPECT_TRUE(channel()->HasOneRef());
+}
+
+// ChannelTest.ShutdownAfterAttachAndRun ---------------------------------------
+
+TEST_F(ChannelTest, ShutdownAfterAttach) {
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::CreateChannelOnIOThread,
+                 base::Unretained(this)));
+  ASSERT_TRUE(channel());
+
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::InitChannelOnIOThread,
+                 base::Unretained(this)));
+  EXPECT_EQ(TRISTATE_TRUE, init_result());
+
+  scoped_refptr<MessagePipe> mp(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+
+  MessageInTransit::EndpointId local_id =
+      channel()->AttachMessagePipeEndpoint(mp, 1);
+  EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
+
+  // TODO(vtl): Currently, we always "expect" a |RunMessagePipeEndpoint()| after
+  // an |AttachMessagePipeEndpoint()| (which is actually incorrect). We need to
+  // refactor |AttachMessagePipeEndpoint()| to indicate whether |Run...()| will
+  // necessarily be called or not. (Then, in the case that it may not be called,
+  // we should test a |Shutdown()| without the |Run...()|.)
+  EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
+                                                Channel::kBootstrapEndpointId));
+
+  Waiter waiter;
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_READABLE, 123));
+
+  // Don't wait for the shutdown to run ...
+  io_thread()->PostTask(FROM_HERE,
+                        base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
+                                   base::Unretained(this)));
+
+  // ... since this |Wait()| should fail once the channel is shut down.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  mp->RemoveWaiter(0, &waiter);
+
+  mp->Close(0);
+
+  EXPECT_TRUE(channel()->HasOneRef());
+}
+
+// ChannelTest.WaitAfterAttachRunAndShutdown -----------------------------------
+
+TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::CreateChannelOnIOThread,
+                 base::Unretained(this)));
+  ASSERT_TRUE(channel());
+
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::InitChannelOnIOThread,
+                 base::Unretained(this)));
+  EXPECT_EQ(TRISTATE_TRUE, init_result());
+
+  scoped_refptr<MessagePipe> mp(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+
+  MessageInTransit::EndpointId local_id =
+      channel()->AttachMessagePipeEndpoint(mp, 1);
+  EXPECT_EQ(Channel::kBootstrapEndpointId, local_id);
+
+  EXPECT_TRUE(channel()->RunMessagePipeEndpoint(local_id,
+                                                Channel::kBootstrapEndpointId));
+
+  io_thread()->PostTaskAndWait(
+      FROM_HERE,
+      base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
+                 base::Unretained(this)));
+
+  Waiter waiter;
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_READABLE, 123));
+
+  mp->Close(0);
+
+  EXPECT_TRUE(channel()->HasOneRef());
+}
+
+// TODO(vtl): More. ------------------------------------------------------------
 
 }  // namespace
 }  // namespace system

@@ -92,8 +92,9 @@ void Channel::Shutdown() {
       num_zombies++;
     }
   }
-  DVLOG(2) << "Shut down Channel with " << num_live << " live endpoints and "
-           << num_zombies << " zombies";
+  DVLOG_IF(2, num_live || num_zombies)
+      << "Shut down Channel with " << num_live << " live endpoints and "
+      << num_zombies << " zombies";
 }
 
 MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
