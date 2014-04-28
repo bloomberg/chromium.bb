@@ -355,6 +355,10 @@
       # controls coverage granularity (experimental).
       'asan_coverage%': 0,
 
+      # Enable Chromium overrides of the default configurations for various
+      # dynamic tools (like ASan).
+      'use_sanitizer_options%': 1,
+
       # Enable building with SyzyAsan.
       # See https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
       'syzyasan%': 0,
@@ -979,6 +983,7 @@
     'mac_want_real_dsym%': '<(mac_want_real_dsym)',
     'asan%': '<(asan)',
     'asan_coverage%': '<(asan_coverage)',
+    'use_sanitizer_options%': '<(use_sanitizer_options)',
     'syzyasan%': '<(syzyasan)',
     'syzygy_optimize%': '<(syzygy_optimize)',
     'lsan%': '<(lsan)',
@@ -3651,7 +3656,7 @@
             ],
             # TODO(glider): enable the default options on other systems.
             'conditions': [
-              ['OS=="linux" and (chromeos==0 or target_arch!="ia32")', {
+              ['use_sanitizer_options==1 and OS=="linux" and (chromeos==0 or target_arch!="ia32")', {
                 'dependencies': [
                   '<(DEPTH)/base/base.gyp:sanitizer_options',
                 ],
