@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -23,18 +24,22 @@ class MEDIA_EXPORT VideoFrameScheduler {
   enum Reason {
     DISPLAYED,  // Frame was displayed.
     DROPPED,    // Frame was dropped.
-    RESET,      // Scheduler was reset before frame was scheduled for display.
   };
   typedef base::Callback<void(const scoped_refptr<VideoFrame>&, Reason)> DoneCB;
 
   // Schedule |frame| to be displayed at |wall_ticks|, firing |done_cb| when
   // the scheduler has finished with the frame.
+  //
+  // To avoid reentrancy issues, |done_cb| is run on a separate calling stack.
   virtual void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
                                   base::TimeTicks wall_ticks,
                                   const DoneCB& done_cb) = 0;
 
-  // Causes the scheduler to release all previously scheduled frames. Frames
-  // will be returned as RESET.
+  // Causes the scheduler to cancel any previously scheduled frames.
+  //
+  // There is no guarantee that |done_cb|'s for previously scheduled frames
+  // will not be run. Clients should implement callback tracking/cancellation
+  // if they are sensitive to old callbacks being run.
   virtual void Reset() = 0;
 };
 

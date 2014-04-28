@@ -34,11 +34,8 @@ void VideoFrameSchedulerImpl::ScheduleVideoFrame(
 }
 
 void VideoFrameSchedulerImpl::Reset() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  while (!pending_frames_.empty()) {
-    pending_frames_.top().done_cb.Run(pending_frames_.top().frame, RESET);
-    pending_frames_.pop();
-  }
+  pending_frames_ = PendingFrameQueue();
+  timer_.Stop();
 }
 
 void VideoFrameSchedulerImpl::SetTickClockForTesting(

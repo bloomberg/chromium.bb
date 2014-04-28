@@ -12,6 +12,8 @@
 
 namespace media {
 
+using testing::_;
+
 // NOTE: millisecond-level resolution is used for times as real delayed tasks
 // are posted. Don't use large values if you want to keep tests running fast.
 class VideoFrameSchedulerImplTest : public testing::Test {
@@ -138,8 +140,8 @@ TEST_F(VideoFrameSchedulerImplTest, Reset) {
       VideoFrame::CreateBlackFrame(gfx::Size(8, 8));
   Schedule(frame, 10);
 
-  // Despite being on time, frames are returned immediately.
-  EXPECT_CALL(*this, OnFrameDone(frame, VideoFrameScheduler::RESET));
+  // Despite being on time, frame callback isn't run.
+  EXPECT_CALL(*this, OnFrameDone(_, _)).Times(0);
   AdvanceTime(10);
   Reset();
   RunUntilTimeHasElapsed(10);
