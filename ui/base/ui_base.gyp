@@ -389,6 +389,13 @@
                 ['exclude', '^dragdrop/drag_utils.cc'],
                 ['exclude', '^dragdrop/drag_utils.h'],
               ],
+            }, {
+              'sources/': [
+                ['include', '^dragdrop/os_exchange_data.cc'],
+                ['include', '^dragdrop/os_exchange_data.h'],
+                ['include', '^nine_image_painter_factory.cc'],
+                ['include', '^nine_image_painter_factory.h'],
+              ],
             }],
           ],
         }],
