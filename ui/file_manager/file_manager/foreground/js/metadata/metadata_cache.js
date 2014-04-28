@@ -115,8 +115,10 @@ MetadataCache.EVICTION_THRESHOLD_MARGIN = 500;
  */
 MetadataCache.createFull = function(volumeManager) {
   var cache = new MetadataCache();
-  cache.providers_.push(new FilesystemProvider());
+  // DriveProvider should be prior to FileSystemProvider, because it covers
+  // FileSystemProvider for files in Drive.
   cache.providers_.push(new DriveProvider(volumeManager));
+  cache.providers_.push(new FilesystemProvider());
   cache.providers_.push(new ContentProvider());
   return cache;
 };
