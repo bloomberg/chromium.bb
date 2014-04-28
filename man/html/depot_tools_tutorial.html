@@ -809,7 +809,7 @@ commands mentioned in this tutorial.</p></div>
 </td>
 <td class="content">If your platform does not support manpages (or you prefer something a bit more
 expressive than plain text) you can find all documentation in <em>html</em> form in the
-<code>[DEPOT_TOOLS]/docs/html</code> folder.</td>
+<code>[DEPOT_TOOLS]/man/html</code> folder.</td>
 </tr></table>
 </div>
 <div class="sect2">
@@ -875,21 +875,13 @@ Litmus Test
 <div class="content">
 <pre><code><strong><span class="white">$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools</span></strong></code></pre>
 </div></div>
-<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>end</em> of your PATH and MANPATH (you will probably want
-to put this in your <code>~/.bashrc</code> or <code>~/.zshrc</code>). Assuming you cloned
-<em>depot_tools</em> to <code>/path/to/depot_tools</code>:</p></div>
+<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>end</em> of your PATH (you will probably want to put this
+in your <code>~/.bashrc</code> or <code>~/.zshrc</code>). Assuming you cloned <em>depot_tools</em> to
+<code>/path/to/depot_tools</code>:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code><strong><span class="white">$ export PATH=$PATH:/path/to/depot_tools</span></strong>
-<strong><span class="white">$ export MANPATH=$MANPATH:/path/to/depot_tools/docs</span></strong>  <b>&lt;1&gt;</b></code></pre>
+<pre><code><strong><span class="white">$ export PATH=$PATH:/path/to/depot_tools</span></strong></code></pre>
 </div></div>
-<div class="colist arabic"><ol>
-<li>
-<p>
-Observe that this path is <code>depot_tools/</code><strong><code>docs</code></strong>.
-</p>
-</li>
-</ol></div>
 </div>
 <div class="sect3">
 <h4 id="_windows">WINDOWS</h4>
@@ -1587,7 +1579,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-04-14 16:26:14 PDT
+Last updated 2014-04-28 13:55:43 PDT
 </div>
 </div>
 </body>

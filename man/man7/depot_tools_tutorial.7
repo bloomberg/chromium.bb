@@ -2,12 +2,12 @@
 .\"     Title: depot_tools_tutorial
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/14/2014
+.\"      Date: 04/28/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools e722300
+.\"    Source: depot_tools 32af7d9
 .\"  Language: English
 .\"
-.TH "DEPOT_TOOLS_TUTORIAL" "7" "04/14/2014" "depot_tools e722300" "Chromium depot_tools Manual"
+.TH "DEPOT_TOOLS_TUTORIAL" "7" "04/28/2014" "depot_tools 32af7d9" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -135,7 +135,7 @@ Please refer to the manpages (or \-\-help output) for details about any of the c
 .ps -1
 .br
 .sp
-If your platform does not support manpages (or you prefer something a bit more expressive than plain text) you can find all documentation in \fIhtml\fR form in the [DEPOT_TOOLS]/docs/html folder\&.
+If your platform does not support manpages (or you prefer something a bit more expressive than plain text) you can find all documentation in \fIhtml\fR form in the [DEPOT_TOOLS]/man/html folder\&.
 .sp .5v
 .RE
 .SS "PREREQUISITES"
@@ -222,23 +222,18 @@ Clone the \fIdepot_tools\fR repository:
 .\}
 .sp
 .sp
-Add \fIdepot_tools\fR to the \fIend\fR of your PATH and MANPATH (you will probably want to put this in your ~/\&.bashrc or ~/\&.zshrc)\&. Assuming you cloned \fIdepot_tools\fR to /path/to/depot_tools:
+Add \fIdepot_tools\fR to the \fIend\fR of your PATH (you will probably want to put this in your ~/\&.bashrc or ~/\&.zshrc)\&. Assuming you cloned \fIdepot_tools\fR to /path/to/depot_tools:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
 \fB$ export PATH=$PATH:/path/to/depot_tools\fR
-\fB$ export MANPATH=$MANPATH:/path/to/depot_tools/docs\fR  \fB(1)\fR
 .fi
 .if n \{\
 .RE
 .\}
 .sp
-.sp
-\fB1. \fRObserve that this path is
-depot_tools/\fBdocs\fR\&.
-.br
 .SS "BOOTSTRAPPING CONFIGURATION"
 .sp
 If you have never used git before, you\(cqll need to set some global git configurations; substitute your name and email address in the following commands:

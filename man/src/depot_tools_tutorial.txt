@@ -29,7 +29,7 @@ commands mentioned in this tutorial.
 [NOTE]
 If your platform does not support manpages (or you prefer something a bit more
 expressive than plain text) you can find all documentation in 'html' form in the
-`[DEPOT_TOOLS]/docs/html` folder.
+`[DEPOT_TOOLS]/man/html` folder.
 
 PREREQUISITES
 ~~~~~~~~~~~~~
@@ -74,16 +74,14 @@ Clone the 'depot_tools' repository:
 [white]**$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools**
 ----
 
-Add 'depot_tools' to the 'end' of your PATH and MANPATH (you will probably want
-to put this in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned
-'depot_tools' to `/path/to/depot_tools`:
+Add 'depot_tools' to the 'end' of your PATH (you will probably want to put this
+in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned 'depot_tools' to
+`/path/to/depot_tools`:
 
 [postsubs="quotes"]
 ----
 [white]**$ export PATH=$PATH:/path/to/depot_tools**
-[white]**$ export MANPATH=$MANPATH:/path/to/depot_tools/docs**  <1>
 ----
-<1> Observe that this path is +depot_tools/+**+docs+**.
 
 // No need to show the Windows stuff on the manpage output.
 ifdef::backend-xhtml11[]
