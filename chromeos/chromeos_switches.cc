@@ -15,6 +15,9 @@ const char kAppOemManifestFile[]            = "app-mode-oem-manifest";
 // Possible values: parallel|postpone. Default: parallel.
 const char kAshWebUIInit[]                  = "ash-webui-init";
 
+// Specifies the URL of the consumer device management backend.
+const char kConsumerDeviceManagementUrl[]   = "consumer-device-management-url";
+
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 

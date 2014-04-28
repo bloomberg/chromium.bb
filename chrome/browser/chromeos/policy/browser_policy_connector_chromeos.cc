@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 
+#include <string>
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -46,6 +49,13 @@ namespace policy {
 
 namespace {
 
+// TODO(davidyu): Update the URL to the real one once it is ready.
+// http://crbug.com/366491.
+//
+// The URL for the consumer device management server.
+const char kDefaultConsumerDeviceManagementServerUrl[] =
+    "https://m.google.com/devicemanagement/data/api";
+
 // Install attributes for tests.
 EnterpriseInstallAttributes* g_testing_install_attributes = NULL;
 
@@ -57,6 +67,16 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
   return pool->GetSequencedTaskRunnerWithShutdownBehavior(
       pool->GetSequenceToken(), base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
+
+std::string GetConsumerDeviceManagementServerUrl() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          chromeos::switches::kConsumerDeviceManagementUrl)) {
+    return command_line->GetSwitchValueASCII(
+        chromeos::switches::kConsumerDeviceManagementUrl);
+  }
+  return kDefaultConsumerDeviceManagementServerUrl;
+};
 
 }  // namespace
 
@@ -109,6 +129,14 @@ void BrowserPolicyConnectorChromeOS::Init(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
   ChromeBrowserPolicyConnector::Init(local_state, request_context);
+
+  scoped_ptr<DeviceManagementService::Configuration> configuration(
+      new DeviceManagementServiceConfiguration(
+          GetConsumerDeviceManagementServerUrl()));
+  consumer_device_management_service_.reset(
+      new DeviceManagementService(configuration.Pass()));
+  consumer_device_management_service_->ScheduleInitialization(
+      kServiceInitializationStartupDelay);
 
   if (device_cloud_policy_manager_) {
     // Note: for now the |device_cloud_policy_manager_| is using the global

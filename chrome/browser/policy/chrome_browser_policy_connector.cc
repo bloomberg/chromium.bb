@@ -12,12 +12,10 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/sys_info.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
+#include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
@@ -38,20 +36,11 @@
 #include "components/policy/core/common/policy_provider_android.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/system/statistics_provider.h"
-#endif
-
 using content::BrowserThread;
 
 namespace policy {
 
 namespace {
-
-// The following constants define delays applied before the initial policy fetch
-// on startup. (So that displaying Chrome's GUI does not get delayed.)
-// Delay in milliseconds from startup.
-const int64 kServiceInitializationStartupDelay = 5000;
 
 #if defined(OS_MACOSX)
 base::FilePath GetManagedPolicyPath() {
@@ -76,60 +65,6 @@ base::FilePath GetManagedPolicyPath() {
 }
 #endif  // defined(OS_MACOSX)
 
-class DeviceManagementServiceConfiguration
-    : public DeviceManagementService::Configuration {
- public:
-  DeviceManagementServiceConfiguration() {}
-  virtual ~DeviceManagementServiceConfiguration() {}
-
-  virtual std::string GetServerUrl() OVERRIDE {
-    return BrowserPolicyConnector::GetDeviceManagementUrl();
-  }
-
-  virtual std::string GetAgentParameter() OVERRIDE {
-    chrome::VersionInfo version_info;
-    return base::StringPrintf("%s %s(%s)",
-                              version_info.Name().c_str(),
-                              version_info.Version().c_str(),
-                              version_info.LastChange().c_str());
-  }
-
-  virtual std::string GetPlatformParameter() OVERRIDE {
-    std::string os_name = base::SysInfo::OperatingSystemName();
-    std::string os_hardware = base::SysInfo::OperatingSystemArchitecture();
-
-#if defined(OS_CHROMEOS)
-    chromeos::system::StatisticsProvider* provider =
-        chromeos::system::StatisticsProvider::GetInstance();
-
-    std::string hwclass;
-    if (!provider->GetMachineStatistic(chromeos::system::kHardwareClassKey,
-                                       &hwclass)) {
-      LOG(ERROR) << "Failed to get machine information";
-    }
-    os_name += ",CrOS," + base::SysInfo::GetLsbReleaseBoard();
-    os_hardware += "," + hwclass;
-#endif
-
-    std::string os_version("-");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    int32 os_major_version = 0;
-    int32 os_minor_version = 0;
-    int32 os_bugfix_version = 0;
-    base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                                 &os_minor_version,
-                                                 &os_bugfix_version);
-    os_version = base::StringPrintf("%d.%d.%d",
-                                    os_major_version,
-                                    os_minor_version,
-                                    os_bugfix_version);
-#endif
-
-    return base::StringPrintf(
-        "%s|%s|%s", os_name.c_str(), os_hardware.c_str(), os_version.c_str());
-  }
-};
-
 }  // namespace
 
 ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
@@ -149,7 +84,8 @@ void ChromeBrowserPolicyConnector::Init(
   DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::FILE));
 
   scoped_ptr<DeviceManagementService::Configuration> configuration(
-      new DeviceManagementServiceConfiguration);
+      new DeviceManagementServiceConfiguration(
+          BrowserPolicyConnector::GetDeviceManagementUrl()));
   scoped_ptr<DeviceManagementService> device_management_service(
       new DeviceManagementService(configuration.Pass()));
   device_management_service->ScheduleInitialization(

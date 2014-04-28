@@ -1514,6 +1514,8 @@
         'browser/policy/cloud/user_policy_signin_service_ios.mm',
         'browser/policy/configuration_policy_handler_list_factory.cc',
         'browser/policy/configuration_policy_handler_list_factory.h',
+        'browser/policy/device_management_service_configuration.cc',
+        'browser/policy/device_management_service_configuration.h',
         'browser/policy/file_selection_dialogs_policy_handler.cc',
         'browser/policy/file_selection_dialogs_policy_handler.h',
         'browser/policy/javascript_policy_handler.cc',

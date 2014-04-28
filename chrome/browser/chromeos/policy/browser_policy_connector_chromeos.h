@@ -26,6 +26,7 @@ namespace policy {
 class AppPackUpdater;
 class DeviceCloudPolicyManagerChromeOS;
 class DeviceLocalAccountPolicyService;
+class DeviceManagementService;
 class EnterpriseInstallAttributes;
 class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;
@@ -85,6 +86,11 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   // delegate, if there is one.
   void SetUserPolicyDelegate(ConfigurationPolicyProvider* user_policy_provider);
 
+  // Returns the device management service for consumer management.
+  DeviceManagementService* consumer_device_management_service() const {
+    return consumer_device_management_service_.get();
+  }
+
   // Sets the install attributes for testing. Must be called before the browser
   // is created. Takes ownership of |attributes|.
   static void SetInstallAttributesForTesting(
@@ -113,6 +119,8 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
 
   scoped_ptr<AppPackUpdater> app_pack_updater_;
   scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
+
+  scoped_ptr<DeviceManagementService> consumer_device_management_service_;
 
   base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_;
 
