@@ -340,6 +340,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
+            '../components/nacl.gyp:nacl_loader_unittests',
             '../dbus/dbus.gyp:dbus_unittests',
             '../sandbox/sandbox.gyp:sandbox_linux_unittests',
           ],
