@@ -1141,7 +1141,7 @@ WebGestureEvent WebInputEventFactory::gestureEvent(NSEvent *event, NSView *view)
     switch ([event type]) {
     case NSEventTypeMagnify:
         result.type = WebInputEvent::GesturePinchUpdate;
-        result.data.pinchUpdate.scale = [event magnification];
+        result.data.pinchUpdate.scale = [event magnification] + 1.0;
         break;
     default:
         ASSERT_NOT_REACHED();
