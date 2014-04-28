@@ -10,8 +10,8 @@ from compiler.ast import Module
 from compiler.ast import Node
 from compiler.ast import Stmt
 import compiler
-import copy
 import gyp.common
+import gyp.simple_copy
 import multiprocessing
 import optparse
 import os.path
@@ -331,7 +331,7 @@ def ProcessToolsetsInDict(data):
       if len(toolsets) > 0:
         # Optimization: only do copies if more than one toolset is specified.
         for build in toolsets[1:]:
-          new_target = copy.deepcopy(target)
+          new_target = gyp.simple_copy.deepcopy(target)
           new_target['toolset'] = build
           new_target_list.append(new_target)
         target['toolset'] = toolsets[0]
@@ -419,7 +419,8 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
       # copy with the target-specific data merged into it as the replacement
       # target dict.
       old_target_dict = build_file_data['targets'][index]
-      new_target_dict = copy.deepcopy(build_file_data['target_defaults'])
+      new_target_dict = gyp.simple_copy.deepcopy(
+        build_file_data['target_defaults'])
       MergeDicts(new_target_dict, old_target_dict,
                  build_file_path, build_file_path)
       build_file_data['targets'][index] = new_target_dict
@@ -778,7 +779,7 @@ def ExpandVariables(input, phase, variables, build_file):
     # contexts. However, since filtration has no chance to run on <|(),
     # this seems like the only obvious way to give them access to filters.
     if file_list:
-      processed_variables = copy.deepcopy(variables)
+      processed_variables = gyp.simple_copy.deepcopy(variables)
       ProcessListFiltersInDict(contents, processed_variables)
       # Recurse to expand variables in the contents
       contents = ExpandVariables(contents, phase,
@@ -2219,7 +2220,7 @@ def SetUpConfigurations(target, target_dict):
       else:
         key_base = key
       if not key_base in non_configuration_keys:
-        new_configuration_dict[key] = copy.deepcopy(target_val)
+        new_configuration_dict[key] = gyp.simple_copy.deepcopy(target_val)
 
     # Merge in configuration (with all its parents first).
     MergeConfigWithInheritance(new_configuration_dict, build_file,
