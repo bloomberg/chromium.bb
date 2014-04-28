@@ -20,8 +20,9 @@ void AddExternalInstallError(ExtensionService* service,
                              bool is_new_profile);
 void RemoveExternalInstallError(ExtensionService* service);
 
-// Used for testing.
 bool HasExternalInstallError(ExtensionService* service);
+
+// Used for testing.
 bool HasExternalInstallBubble(ExtensionService* service);
 
 }  // namespace extensions

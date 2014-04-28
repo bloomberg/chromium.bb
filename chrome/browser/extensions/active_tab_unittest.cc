@@ -24,6 +24,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"
@@ -290,13 +291,10 @@ TEST_F(ActiveTabTest, Uninstalling) {
   EXPECT_TRUE(IsAllowed(extension, google));
 
   // Uninstalling the extension should clear its tab permissions.
-  UnloadedExtensionInfo details(extension.get(),
-                                UnloadedExtensionInfo::REASON_DISABLE);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(Profile::FromBrowserContext(
-          web_contents()->GetBrowserContext())),
-      content::Details<UnloadedExtensionInfo>(&details));
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(web_contents()->GetBrowserContext());
+  registry->TriggerOnUnloaded(extension.get(),
+                              UnloadedExtensionInfo::REASON_DISABLE);
 
   // Note: can't EXPECT_FALSE(IsAllowed) here because uninstalled extensions
   // are just that... considered to be uninstalled, and the manager might

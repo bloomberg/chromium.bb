@@ -8,26 +8,25 @@
 #include <set>
 #include <string>
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
 #include "chrome/common/extensions/api/log_private.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "net/base/net_log.h"
-
-class Profile;
 
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 
 class LogPrivateAPI : public BrowserContextKeyedAPI,
-                      public content::NotificationObserver,
+                      public ExtensionRegistryObserver,
                       public net::NetLog::ThreadSafeObserver {
  public:
   // Convenience method to get the LogPrivateAPI for a profile.
@@ -42,13 +41,14 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<LogPrivateAPI>* GetFactoryInstance();
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   friend class BrowserContextKeyedAPIFactory<LogPrivateAPI>;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // ChromeNetLog::ThreadSafeObserver implementation:
   virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
@@ -67,11 +67,14 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
   static const bool kServiceRedirectedInIncognito = true;
 
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   bool logging_net_internals_;
-  content::NotificationRegistrar registrar_;
   std::set<std::string> net_internal_watches_;
   scoped_ptr<base::ListValue> pending_entries_;
+
+  // Listen to extension unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 };
 
 class LogPrivateGetHistoricalFunction : public AsyncExtensionFunction {

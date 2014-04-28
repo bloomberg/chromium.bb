@@ -8,10 +8,12 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
 class Browser;
@@ -20,9 +22,11 @@ class PrefService;
 class Profile;
 
 namespace extensions {
+class ExtensionRegistry;
 
 // Model for the browser actions toolbar.
 class ExtensionToolbarModel : public content::NotificationObserver,
+                              public ExtensionRegistryObserver,
                               public KeyedService {
  public:
   ExtensionToolbarModel(Profile* profile, ExtensionPrefs* extension_prefs);
@@ -137,6 +141,14 @@ class ExtensionToolbarModel : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service
   // and constructs |toolbar_items_| from these data.
@@ -192,6 +204,10 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   int visible_icon_count_;
 
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // For observing change of toolbar order preference by external entity (sync).
   PrefChangeRegistrar pref_change_registrar_;

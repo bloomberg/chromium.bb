@@ -13,6 +13,7 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
@@ -41,14 +42,15 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
       browser_(browser),
 #endif
       extension_(extension),
+      extension_registry_observer_(this),
       closing_(false) {
   extension_view_host_.reset(
       extensions::ExtensionViewHostFactory::CreateInfobarHost(url, browser));
   extension_view_host_->SetAssociatedWebContents(web_contents);
 
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<Profile>(browser->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(browser->profile()));
 
   height_ = std::max(0, height);
@@ -95,18 +97,20 @@ ExtensionInfoBarDelegate*
   return this;
 }
 
+void ExtensionInfoBarDelegate::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  if (extension_ == extension)
+    infobar()->RemoveSelf();
+}
+
 void ExtensionInfoBarDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE) {
-    if (extension_view_host_.get() ==
-        content::Details<extensions::ExtensionHost>(details).ptr())
-      infobar()->RemoveSelf();
-  } else {
-    DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
-    if (extension_ == content::Details<extensions::UnloadedExtensionInfo>(
-        details)->extension)
-      infobar()->RemoveSelf();
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE);
+  if (extension_view_host_.get() ==
+      content::Details<extensions::ExtensionHost>(details).ptr())
+    infobar()->RemoveSelf();
 }

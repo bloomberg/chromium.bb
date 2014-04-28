@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -27,21 +28,17 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/common/extension.h"
-#include "grit/chromium_strings.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/size.h"
 
 namespace extensions {
 
@@ -57,6 +54,10 @@ bool UseBubbleInstall(const Extension* extension, bool is_new_profile) {
 static const int kMenuCommandId = IDC_EXTERNAL_EXTENSION_ALERT;
 
 class ExternalInstallGlobalError;
+
+namespace extensions {
+class ExtensionRegistry;
+}
 
 // This class is refcounted to stay alive while we try and pull webstore data.
 class ExternalInstallDialogDelegate
@@ -89,7 +90,7 @@ class ExternalInstallDialogDelegate
   virtual void OnWebstoreResponseParseFailure(
       const std::string& error) OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -114,7 +115,8 @@ class ExternalInstallDialogDelegate
 // Only shows a menu item, no bubble. Clicking the menu item shows
 // an external install dialog.
 class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
-                                 public content::NotificationObserver {
+                                 public content::NotificationObserver,
+                                 public ExtensionRegistryObserver {
  public:
   ExternalInstallMenuAlert(ExtensionService* service,
                            const Extension* extension);
@@ -135,17 +137,29 @@ class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
 
+ protected:
+  ExtensionService* service_;
+  const Extension* extension_;
+
+ private:
+  // Delete this instance after cleaning jobs.
+  void Clean();
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- protected:
-  ExtensionService* service_;
-  const Extension* extension_;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+
   content::NotificationRegistrar registrar_;
 
- private:
+  // Listen to extension load notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalInstallMenuAlert);
 };
 
@@ -335,14 +349,12 @@ void ExternalInstallDialogDelegate::InstallUIAbort(bool user_initiated) {
 
 // ExternalInstallMenuAlert -------------------------------------------------
 
-ExternalInstallMenuAlert::ExternalInstallMenuAlert(
-    ExtensionService* service,
-    const Extension* extension)
+ExternalInstallMenuAlert::ExternalInstallMenuAlert(ExtensionService* service,
+                                                   const Extension* extension)
     : service_(service),
-      extension_(extension) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(service->profile()));
+      extension_(extension),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(service->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_REMOVED,
                  content::Source<Profile>(service->profile()));
 }
@@ -410,16 +422,25 @@ void ExternalInstallMenuAlert::BubbleViewCancelButtonPressed(
   NOTREACHED();
 }
 
+void ExternalInstallMenuAlert::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (extension == extension_)
+    Clean();
+}
+
 void ExternalInstallMenuAlert::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   // The error is invalidated if the extension has been loaded or removed.
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
-         type == chrome::NOTIFICATION_EXTENSION_REMOVED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_REMOVED);
   const Extension* extension = content::Details<const Extension>(details).ptr();
-  if (extension != extension_)
-    return;
+  if (extension == extension_)
+    Clean();
+}
+
+void ExternalInstallMenuAlert::Clean() {
   GlobalErrorService* error_service =
       GlobalErrorServiceFactory::GetForProfile(service_->profile());
   error_service->RemoveGlobalError(this);

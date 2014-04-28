@@ -10,15 +10,15 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -29,6 +29,7 @@ class ImeObserver;
 }  // namespace chromeos
 
 namespace extensions {
+class ExtensionRegistry;
 struct InputComponentInfo;
 
 class InputImeEventRouter {
@@ -219,7 +220,7 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
 };
 
 class InputImeAPI : public BrowserContextKeyedAPI,
-                    public content::NotificationObserver,
+                    public ExtensionRegistryObserver,
                     public EventRouter::Observer {
  public:
   explicit InputImeAPI(content::BrowserContext* context);
@@ -228,10 +229,13 @@ class InputImeAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<InputImeAPI>* GetFactoryInstance();
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
@@ -246,8 +250,11 @@ class InputImeAPI : public BrowserContextKeyedAPI,
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  Profile* const profile_;
-  content::NotificationRegistrar registrar_;
+  content::BrowserContext* const browser_context_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 };
 
 }  // namespace extensions

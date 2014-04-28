@@ -6,15 +6,13 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "extensions/browser/extension_registry.h"
 
 #if defined(USE_X11)
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
@@ -776,21 +774,16 @@ bool InputImeKeyEventHandledFunction::RunImpl() {
 }
 
 InputImeAPI::InputImeAPI(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+    : browser_context_(context), extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 
-  EventRouter* event_router = EventRouter::Get(profile_);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, input_ime::OnActivate::kEventName);
   event_router->RegisterObserver(this, input_ime::OnFocus::kEventName);
 }
 
 InputImeAPI::~InputImeAPI() {
-  EventRouter::Get(profile_)->UnregisterObserver(this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<InputImeAPI> >
@@ -801,40 +794,38 @@ BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void InputImeAPI::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<const Extension>(details).ptr();
-    const std::vector<InputComponentInfo>* input_components =
-        extensions::InputComponents::GetInputComponents(extension);
-    if (!input_components)
-      return;
-    for (std::vector<extensions::InputComponentInfo>::const_iterator component =
-        input_components->begin(); component != input_components->end();
-        ++component) {
-      if (component->type == extensions::INPUT_COMPONENT_TYPE_IME) {
-        // Don't pass profile_ to register ime, instead always use
-        // GetActiveUserProfile. It is because:
-        // The original profile for login screen is called signin profile.
-        // And the active profile is the incognito profile based on signin
-        // profile. So if |profile_| is signin profile, we need to make sure
-        // the router/observer runs under its incognito profile, because the
-        // component extensions were installed under its incognito profile.
-        input_ime_event_router()->RegisterIme(extension->id(), *component);
-      }
+void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                    const Extension* extension) {
+  const std::vector<InputComponentInfo>* input_components =
+      extensions::InputComponents::GetInputComponents(extension);
+  if (!input_components)
+    return;
+  for (std::vector<extensions::InputComponentInfo>::const_iterator component =
+           input_components->begin();
+       component != input_components->end();
+       ++component) {
+    if (component->type == extensions::INPUT_COMPONENT_TYPE_IME) {
+      // Don't pass profile_ to register ime, instead always use
+      // GetActiveUserProfile. It is because:
+      // The original profile for login screen is called signin profile.
+      // And the active profile is the incognito profile based on signin
+      // profile. So if |profile_| is signin profile, we need to make sure
+      // the router/observer runs under its incognito profile, because the
+      // component extensions were installed under its incognito profile.
+      input_ime_event_router()->RegisterIme(extension->id(), *component);
     }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<const UnloadedExtensionInfo>(details)->extension;
-    const std::vector<InputComponentInfo>* input_components =
-        extensions::InputComponents::GetInputComponents(extension);
-    if (!input_components)
-      return;
-    if (input_components->size() > 0)
-      input_ime_event_router()->UnregisterAllImes(extension->id());
   }
+}
+
+void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UnloadedExtensionInfo::Reason reason) {
+  const std::vector<InputComponentInfo>* input_components =
+      extensions::InputComponents::GetInputComponents(extension);
+  if (!input_components)
+    return;
+  if (input_components->size() > 0)
+    input_ime_event_router()->UnregisterAllImes(extension->id());
 }
 
 void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {

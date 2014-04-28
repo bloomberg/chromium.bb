@@ -35,6 +35,7 @@ class FilterHandler {
   bool IsValidProcess(const std::string& process) const;
 
   const api::log_private::Filter* GetFilter() const { return &filter_; }
+
  private:
   api::log_private::Filter filter_;
 
