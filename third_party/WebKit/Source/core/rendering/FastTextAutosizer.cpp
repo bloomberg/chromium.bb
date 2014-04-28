@@ -246,12 +246,6 @@ static bool hasExplicitWidth(const RenderBlock* block)
 
 FastTextAutosizer::FastTextAutosizer(const Document* document)
     : m_document(document)
-    , m_frameWidth(0)
-    , m_layoutWidth(0)
-    , m_baseMultiplier(0)
-    , m_pageNeedsAutosizing(false)
-    , m_previouslyAutosized(false)
-    , m_updatePageInfoDeferred(false)
     , m_firstBlockToBeginLayout(0)
 #ifndef NDEBUG
     , m_blocksThatHaveBegunLayout()
@@ -259,6 +253,8 @@ FastTextAutosizer::FastTextAutosizer(const Document* document)
     , m_superclusters()
     , m_clusterStack()
     , m_fingerprintMapper()
+    , m_pageInfo()
+    , m_updatePageInfoDeferred(false)
 {
 }
 
@@ -293,7 +289,7 @@ FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const
 
     if (!m_firstBlockToBeginLayout) {
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
-        writeDebugPageInfo(m_document, m_baseMultiplier, m_layoutWidth, m_frameWidth);
+        writeDebugPageInfo(m_document, m_pageInfo.m_baseMultiplier, m_pageInfo.m_layoutWidth, m_pageInfo.m_frameWidth);
 #endif
         m_firstBlockToBeginLayout = block;
         prepareClusterStack(block->parent());
@@ -464,6 +460,7 @@ void FastTextAutosizer::inflate(RenderBlock* block)
     }
 }
 
+// FIXME(crbug.com/367864): Unify this with m_pageInfo.m_settingEnabled.
 bool FastTextAutosizer::enabled() const
 {
     if (!m_document->settings() || !m_document->page() || m_document->printing())
@@ -474,7 +471,7 @@ bool FastTextAutosizer::enabled() const
 
 bool FastTextAutosizer::shouldHandleLayout() const
 {
-    return m_pageNeedsAutosizing && !m_updatePageInfoDeferred;
+    return m_pageInfo.m_pageNeedsAutosizing && !m_updatePageInfoDeferred;
 }
 
 void FastTextAutosizer::updatePageInfoInAllFrames()
@@ -489,18 +486,17 @@ void FastTextAutosizer::updatePageInfoInAllFrames()
 
 void FastTextAutosizer::updatePageInfo()
 {
+    PageInfo previousPageInfo(m_pageInfo);
+
+    m_pageInfo.m_settingEnabled = m_document->settings() && m_document->settings()->textAutosizingEnabled();
     if (!enabled()) {
-        if (m_previouslyAutosized)
+        if (previousPageInfo.m_hasAutosized)
             resetMultipliers();
         return;
     }
 
     if (m_updatePageInfoDeferred)
         return;
-
-    int previousFrameWidth = m_frameWidth;
-    int previousLayoutWidth = m_layoutWidth;
-    float previousBaseMultiplier = m_baseMultiplier;
 
     RenderView* renderView = toRenderView(m_document->renderer());
     bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
@@ -509,33 +505,34 @@ void FastTextAutosizer::updatePageInfo()
     IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
     if (frameSize.isEmpty())
         frameSize = mainFrame->view()->unscaledVisibleContentSize(IncludeScrollbars);
-    m_frameWidth = horizontalWritingMode ? frameSize.width() : frameSize.height();
+    m_pageInfo.m_frameWidth = horizontalWritingMode ? frameSize.width() : frameSize.height();
 
     IntSize layoutSize = m_document->page()->mainFrame()->view()->layoutSize();
-    m_layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
+    m_pageInfo.m_layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
 
     // Compute the base font scale multiplier based on device and accessibility settings.
-    m_baseMultiplier = m_document->settings()->accessibilityFontScaleFactor();
+    m_pageInfo.m_baseMultiplier = m_document->settings()->accessibilityFontScaleFactor();
     // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
     const ViewportDescription& viewportDescription = m_document->page()->mainFrame()->document()->viewportDescription();
     if (!viewportDescription.isSpecifiedByAuthor()) {
         float deviceScaleAdjustment = m_document->settings()->deviceScaleAdjustment();
-        m_baseMultiplier *= deviceScaleAdjustment;
+        m_pageInfo.m_baseMultiplier *= deviceScaleAdjustment;
     }
 
-    m_pageNeedsAutosizing = !!m_frameWidth
-        && (m_baseMultiplier * (static_cast<float>(m_layoutWidth) / m_frameWidth) > 1.0f);
+    m_pageInfo.m_pageNeedsAutosizing = !!m_pageInfo.m_frameWidth
+        && (m_pageInfo.m_baseMultiplier * (static_cast<float>(m_pageInfo.m_layoutWidth) / m_pageInfo.m_frameWidth) > 1.0f);
 
     // If we are no longer autosizing the page, we won't do anything during the next layout.
     // Set all the multipliers back to 1 now.
-    if (!m_pageNeedsAutosizing && m_previouslyAutosized)
+    if (!m_pageInfo.m_pageNeedsAutosizing && previousPageInfo.m_hasAutosized)
         resetMultipliers();
 
     // If page info has changed, multipliers may have changed. Force a layout to recompute them.
-    if (m_pageNeedsAutosizing
-        && (m_frameWidth != previousFrameWidth
-            || m_layoutWidth != previousLayoutWidth
-            || m_baseMultiplier != previousBaseMultiplier))
+    if (m_pageInfo.m_pageNeedsAutosizing
+        && (m_pageInfo.m_frameWidth != previousPageInfo.m_frameWidth
+            || m_pageInfo.m_layoutWidth != previousPageInfo.m_layoutWidth
+            || m_pageInfo.m_baseMultiplier != previousPageInfo.m_baseMultiplier
+            || m_pageInfo.m_settingEnabled != previousPageInfo.m_settingEnabled))
         setAllTextNeedsLayout();
 }
 
@@ -549,7 +546,7 @@ void FastTextAutosizer::resetMultipliers()
         }
         renderer = renderer->nextInPreOrder();
     }
-    m_previouslyAutosized = false;
+    m_pageInfo.m_hasAutosized = false;
 }
 
 void FastTextAutosizer::setAllTextNeedsLayout()
@@ -846,9 +843,9 @@ float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
 
     // Block width, in CSS pixels.
     float blockWidth = widthFromBlock(block);
-    float multiplier = m_frameWidth ? min(blockWidth, static_cast<float>(m_layoutWidth)) / m_frameWidth : 1.0f;
+    float multiplier = m_pageInfo.m_frameWidth ? min(blockWidth, static_cast<float>(m_pageInfo.m_layoutWidth)) / m_pageInfo.m_frameWidth : 1.0f;
 
-    return max(m_baseMultiplier * multiplier, 1.0f);
+    return max(m_pageInfo.m_baseMultiplier * multiplier, 1.0f);
 }
 
 const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(Cluster* cluster)
@@ -960,7 +957,7 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     }
 
     if (multiplier != 1)
-        m_previouslyAutosized = true;
+        m_pageInfo.m_hasAutosized = true;
 }
 
 bool FastTextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)

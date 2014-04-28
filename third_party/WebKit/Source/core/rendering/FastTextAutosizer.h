@@ -213,6 +213,25 @@ private:
 #endif
     };
 
+    struct PageInfo {
+        PageInfo()
+            : m_frameWidth(0)
+            , m_layoutWidth(0)
+            , m_baseMultiplier(0)
+            , m_pageNeedsAutosizing(false)
+            , m_hasAutosized(false)
+            , m_settingEnabled(false)
+        {
+        }
+
+        int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).
+        int m_layoutWidth; // Layout width in CSS pixels.
+        float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
+        bool m_pageNeedsAutosizing;
+        bool m_hasAutosized;
+        bool m_settingEnabled;
+    };
+
     explicit FastTextAutosizer(const Document*);
 
     void beginLayout(RenderBlock*);
@@ -256,12 +275,6 @@ private:
     BlockFlags classifyBlock(const RenderObject*, BlockFlags mask = UINT_MAX);
 
     const Document* m_document;
-    int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).
-    int m_layoutWidth; // Layout width in CSS pixels.
-    float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
-    bool m_pageNeedsAutosizing;
-    bool m_previouslyAutosized;
-    bool m_updatePageInfoDeferred;
     const RenderBlock* m_firstBlockToBeginLayout;
 #ifndef NDEBUG
     BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.
@@ -274,6 +287,9 @@ private:
     ClusterStack m_clusterStack;
     FingerprintMapper m_fingerprintMapper;
     Vector<RefPtr<RenderStyle> > m_stylesRetainedDuringLayout;
+    // FIXME: All frames should share the same m_pageInfo instance.
+    PageInfo m_pageInfo;
+    bool m_updatePageInfoDeferred;
 };
 
 } // namespace WebCore
