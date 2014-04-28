@@ -87,7 +87,8 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
       // Extract the device's Vendor ID and compare to all blacklisted ones.
       device_vid = name.GetModel().substr(0, kVidPidSize);
       for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
-        is_any_device_blacklisted |= (device_vid == kBlacklistedCameras[i].vid);
+        is_any_device_blacklisted |=
+            !strcasecmp(device_vid.c_str(), kBlacklistedCameras[i].vid);
         if (is_any_device_blacklisted)
           break;
       }
