@@ -49,6 +49,20 @@ class BASE_EXPORT OffsetAdjuster {
   static void AdjustOffset(const Adjustments& adjustments,
                            size_t* offset);
 
+  // Adjusts all offsets in |offsets_for_unadjustment| to reflect the reverse
+  // of the adjustments recorded in |adjustments|.  In other words, the offsets
+  // provided represent offsets into an adjusted string and the caller wants
+  // to know the offsets they correspond to in the original string.  If an
+  // offset cannot be successfully unadjusted (e.g., because it points into
+  // the middle of a multibyte sequence), it will be set to string16::npos.
+  static void UnadjustOffsets(const Adjustments& adjustments,
+                              std::vector<size_t>* offsets_for_unadjustment);
+
+  // Adjusts the single |offset| to reflect the reverse of the adjustments
+  // recorded in |adjustments|.
+  static void UnadjustOffset(const Adjustments& adjustments,
+                             size_t* offset);
+
   // Combines two sequential sets of adjustments, storing the combined revised
   // adjustments in |adjustments_on_adjusted_string|.  That is, suppose a
   // string was altered in some way, with the alterations recorded as

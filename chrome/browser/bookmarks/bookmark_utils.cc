@@ -406,13 +406,16 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
   }
 }
 
-base::string16 CleanUpUrlForMatching(const GURL& gurl,
-                                     const std::string& languages) {
-  return base::i18n::ToLower(net::FormatUrl(
+base::string16 CleanUpUrlForMatching(
+    const GURL& gurl,
+    const std::string& languages,
+    base::OffsetAdjuster::Adjustments* adjustments) {
+  base::OffsetAdjuster::Adjustments tmp_adjustments;
+  return base::i18n::ToLower(net::FormatUrlWithAdjustments(
       GURL(TruncateUrl(gurl.spec())), languages,
       net::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
-      NULL, NULL, NULL));
+      NULL, NULL, adjustments ? adjustments : &tmp_adjustments));
 }
 
 base::string16 CleanUpTitleForMatching(const base::string16& title) {

@@ -54,11 +54,16 @@ TermMatches MatchTermInString(const base::string16& term,
 // returns the cleaned up matches.
 TermMatches SortAndDeoverlapMatches(const TermMatches& matches);
 
-// Extracts and returns the offsets from |matches|.
+// Extracts and returns the offsets from |matches|.  This includes both
+// the offsets corresponding to the beginning of a match and the offsets
+// corresponding to the end of a match (i.e., offset+length for that match).
 std::vector<size_t> OffsetsFromTermMatches(const TermMatches& matches);
 
-// Replaces the offsets in |matches| with those given in |offsets|, deleting
-// any which are npos, and returns the updated list of matches.
+// Replaces the offsets and lengths in |matches| with those given in |offsets|.
+// |offsets| gives beginning and ending offsets for each match; this function
+// translates (beginning, ending) offset into (beginning offset, length of
+// match).  It deletes any matches for which an endpoint is npos and returns
+// the updated list of matches.
 TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
                                         const std::vector<size_t>& offsets);
 

@@ -20,39 +20,6 @@ namespace history {
 
 // Matches within URL and Title Strings ----------------------------------------
 
-// The maximum length of URL or title returned by the Cleanup functions.
-static const size_t kCleanedUpUrlMaxLength = 1024u;
-static const size_t kCleanedUpTitleMaxLength = 1024u;
-
-// Attempts to shorten a URL safely (i.e., by preventing the end of the URL
-// from being in the middle of an escape sequence) to no more than
-// kCleanedUpUrlMaxLength characters, returning the result.
-std::string TruncateUrl(const std::string& url) {
-  if (url.length() <= kCleanedUpUrlMaxLength)
-    return url;
-
-  // If we're in the middle of an escape sequence, truncate just before it.
-  if (url[kCleanedUpUrlMaxLength - 1] == '%')
-    return url.substr(0, kCleanedUpUrlMaxLength - 1);
-  if (url[kCleanedUpUrlMaxLength - 2] == '%')
-    return url.substr(0, kCleanedUpUrlMaxLength - 2);
-
-  return url.substr(0, kCleanedUpUrlMaxLength);
-}
-
-base::string16 CleanUpUrlForMatching(const GURL& gurl,
-                                     const std::string& languages) {
-  return base::i18n::ToLower(net::FormatUrl(
-      GURL(TruncateUrl(gurl.spec())), languages,
-      net::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
-      NULL, NULL, NULL));
-}
-
-base::string16 CleanUpTitleForMatching(const base::string16& title) {
-  return base::i18n::ToLower(title.substr(0u, kCleanedUpTitleMaxLength));
-}
-
 TermMatches MatchTermInString(const base::string16& term,
                               const base::string16& cleaned_string,
                               int term_num) {
@@ -92,21 +59,30 @@ TermMatches SortAndDeoverlapMatches(const TermMatches& matches) {
 
 std::vector<size_t> OffsetsFromTermMatches(const TermMatches& matches) {
   std::vector<size_t> offsets;
-  for (TermMatches::const_iterator i = matches.begin(); i != matches.end(); ++i)
+  for (TermMatches::const_iterator i = matches.begin(); i != matches.end();
+       ++i) {
     offsets.push_back(i->offset);
+    offsets.push_back(i->offset + i->length);
+  }
   return offsets;
 }
 
 TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
                                         const std::vector<size_t>& offsets) {
-  DCHECK_EQ(matches.size(), offsets.size());
+  DCHECK_EQ(2 * matches.size(), offsets.size());
   TermMatches new_matches;
   std::vector<size_t>::const_iterator offset_iter = offsets.begin();
   for (TermMatches::const_iterator term_iter = matches.begin();
        term_iter != matches.end(); ++term_iter, ++offset_iter) {
-    if (*offset_iter != base::string16::npos) {
+    const size_t starting_offset = *offset_iter;
+    ++offset_iter;
+    const size_t ending_offset = *offset_iter;
+    if ((starting_offset != base::string16::npos) &&
+        (ending_offset != base::string16::npos) &&
+        (starting_offset != ending_offset)) {
       TermMatch new_match(*term_iter);
-      new_match.offset = *offset_iter;
+      new_match.offset = starting_offset;
+      new_match.length = ending_offset - starting_offset;
       new_matches.push_back(new_match);
     }
   }

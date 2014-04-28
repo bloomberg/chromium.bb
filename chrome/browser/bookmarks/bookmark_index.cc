@@ -12,6 +12,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "components/bookmarks/core/browser/bookmark_client.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
@@ -114,8 +115,8 @@ void BookmarkIndex::Add(const BookmarkNode* node) {
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
   if (index_urls_) {
-    terms = ExtractQueryWords(
-        bookmark_utils::CleanUpUrlForMatching(node->url(), languages_));
+    terms = ExtractQueryWords(bookmark_utils::CleanUpUrlForMatching(
+        node->url(), languages_, NULL));
     for (size_t i = 0; i < terms.size(); ++i)
       RegisterNode(terms[i], node);
   }
@@ -130,8 +131,8 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
   if (index_urls_) {
-    terms = ExtractQueryWords(
-        bookmark_utils::CleanUpUrlForMatching(node->url(), languages_));
+    terms = ExtractQueryWords(bookmark_utils::CleanUpUrlForMatching(
+        node->url(), languages_, NULL));
     for (size_t i = 0; i < terms.size(); ++i)
       UnregisterNode(terms[i], node);
   }
@@ -215,10 +216,10 @@ void BookmarkIndex::AddMatchToResults(
   const base::string16 lower_title =
       base::i18n::ToLower(Normalize(node->GetTitle()));
   parser->ExtractQueryWords(lower_title, &title_words);
+  base::OffsetAdjuster::Adjustments adjustments;
   if (index_urls_) {
-    parser->ExtractQueryWords(
-        bookmark_utils::CleanUpUrlForMatching(node->url(), languages_),
-        &url_words);
+    parser->ExtractQueryWords(bookmark_utils::CleanUpUrlForMatching(
+        node->url(), languages_, &adjustments), &url_words);
   }
   query_parser::Snippet::MatchPositions title_matches, url_matches;
   for (size_t i = 0; i < query_nodes.size(); ++i) {
@@ -239,8 +240,17 @@ void BookmarkIndex::AddMatchToResults(
     // TODO(mpearson): revise match positions appropriately.
     match.title_match_positions.swap(title_matches);
   }
-  if (index_urls_)
+  if (index_urls_) {
+    // Now that we're done processing this entry, correct the offsets of the
+    // matches in |url_matches| so they point to offsets in the original URL
+    // spec, not the cleaned-up URL string that we used for matching.
+    std::vector<size_t> offsets =
+        BookmarkMatch::OffsetsFromMatchPositions(url_matches);
+    base::OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
+    url_matches =
+        BookmarkMatch::ReplaceOffsetsInMatchPositions(url_matches, offsets);
     match.url_match_positions.swap(url_matches);
+  }
   match.node = node;
   results->push_back(match);
 }

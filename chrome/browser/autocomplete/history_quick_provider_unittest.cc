@@ -16,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -90,7 +91,11 @@ struct TestURLInfo {
   {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0},
   {"http://testsearch.com/?q=thequery", "Test Search Engine", 10, 10, 0},
   {"http://testsearch.com/", "Test Search Engine", 9, 9, 0},
-  {"http://anotherengine.com/?q=thequery", "Another Search Engine", 8, 8, 0}
+  {"http://anotherengine.com/?q=thequery", "Another Search Engine", 8, 8, 0},
+  // The encoded stuff between /wiki/ and the # is 第二次世界大戦
+  {"http://ja.wikipedia.org/wiki/%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7%95"
+   "%8C%E5%A4%A7%E6%88%A6#.E3.83.B4.E3.82.A7.E3.83.AB.E3.82.B5.E3.82.A4.E3."
+   "83.A6.E4.BD.93.E5.88.B6", "Title Unimportant", 2, 2, 0}
 };
 
 class HistoryQuickProviderTest : public testing::Test,
@@ -356,6 +361,38 @@ TEST_F(HistoryQuickProviderTest, EncodingMatch) {
   RunTest(ASCIIToUTF16("path with spaces"), false, expected_urls, false,
           ASCIIToUTF16("spaces.com/path with spaces/foo.html"),
           base::string16());
+}
+
+TEST_F(HistoryQuickProviderTest, ContentsClass) {
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back(
+      "http://ja.wikipedia.org/wiki/%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7"
+      "%95%8C%E5%A4%A7%E6%88%A6#.E3.83.B4.E3.82.A7.E3.83.AB.E3.82.B5.E3.82."
+      "A4.E3.83.A6.E4.BD.93.E5.88.B6");
+  RunTest(base::UTF8ToUTF16("第二 e3"), false, expected_urls, false,
+          base::UTF8ToUTF16("ja.wikipedia.org/wiki/第二次世界大戦#.E3.83.B4.E3."
+                            "82.A7.E3.83.AB.E3.82.B5.E3.82.A4.E3.83.A6.E4.BD."
+                            "93.E5.88.B6"),
+          base::string16());
+#ifndef NDEBUG
+  ac_matches_[0].Validate();
+#endif
+  // Verify that contents_class divides the string in the right places.
+  // [22, 24) is the "第二".  All the other pairs are the "e3".
+  ACMatchClassifications contents_class(ac_matches_[0].contents_class);
+  size_t expected_offsets[] = { 0, 22, 24, 31, 33, 40, 42, 49, 51, 58, 60, 67,
+                                69, 76, 78 };
+  // ScoredHistoryMatch may not highlight all the occurrences of these terms
+  // because it only highlights terms at word breaks, and it only stores word
+  // breaks up to some specified number of characters (50 at the time of this
+  // comment).  This test is written flexibly so it still will pass if we
+  // increase that number in the future.  Regardless, we require the first
+  // five offsets to be correct--in this example these cover at least one
+  // occurrence of each term.
+  EXPECT_LE(contents_class.size(), arraysize(expected_offsets));
+  EXPECT_GE(contents_class.size(), 5u);
+  for (size_t i = 0; i < contents_class.size(); ++i)
+    EXPECT_EQ(expected_offsets[i], contents_class[i].offset);
 }
 
 TEST_F(HistoryQuickProviderTest, VisitCountMatches) {

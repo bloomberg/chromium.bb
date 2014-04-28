@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 
 class BookmarkModel;
@@ -109,16 +110,28 @@ void AddIfNotBookmarked(BookmarkModel* model,
 // Removes all bookmarks for the given |url|.
 void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
 
-// Truncates an overly-long URL, unescapes it, and lower-cases it,
-// returning the result.  This unescaping makes it possible to match
-// substrings that were originally escaped for navigation; for
-// example, if the user searched for "a&p", the query would be escaped
-// as "a%26p", so without unescaping, an input string of "a&p" would
-// no longer match this URL.  Note that the resulting unescaped URL
-// may not be directly navigable (which is why we escaped it to begin
-// with).  |languages| is passed to net::FormatUrl().
-base::string16 CleanUpUrlForMatching(const GURL& gurl,
-                                     const std::string& languages);
+// Truncates an overly-long URL, unescapes it and interprets the characters
+// as UTF-8 (both via net::FormatUrl()), and lower-cases it, returning the
+// result.  |languages| is passed to net::FormatUrl().  |adjustments|, if
+// non-NULL, is set to reflect the transformations the URL spec underwent to
+// become the return value.  If a caller computes offsets (e.g., for the
+// position of matched text) in this cleaned-up string, it can use
+// |adjustments| to calculate the location of these offsets in the original
+// string (via base::OffsetAdjuster::UnadjustOffsets()).  This is useful if
+// later the original string gets formatted in a different way for displaying.
+// In this case, knowing the offsets in the original string will allow them to
+// be properly translated to offsets in the newly-formatted string.
+//
+// The unescaping done by this function makes it possible to match substrings
+// that were originally escaped for navigation; for example, if the user
+// searched for "a&p", the query would be escaped as "a%26p", so without
+// unescaping, an input string of "a&p" would no longer match this URL.  Note
+// that the resulting unescaped URL may not be directly navigable (which is
+// why it was escaped to begin with).
+base::string16 CleanUpUrlForMatching(
+    const GURL& gurl,
+    const std::string& languages,
+    base::OffsetAdjuster::Adjustments* adjustments);
 
 // Returns the lower-cased title, possibly truncated if the original title
 // is overly-long.

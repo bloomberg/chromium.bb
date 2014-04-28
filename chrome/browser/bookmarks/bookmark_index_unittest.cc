@@ -293,24 +293,33 @@ TEST_F(BookmarkIndexTest, MatchPositionsTitles) {
 
 // Makes sure match positions are updated appropriately for URL matches.
 TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
+  // The encoded stuff between /wiki/ and the # is 第二次世界大戦
+  const std::string ja_wiki_url = "http://ja.wikipedia.org/wiki/%E7%AC%AC%E4"
+      "%BA%8C%E6%AC%A1%E4%B8%96%E7%95%8C%E5%A4%A7%E6%88%A6#.E3.83.B4.E3.82.A7"
+      ".E3.83.AB.E3.82.B5.E3.82.A4.E3.83.A6.E4.BD.93.E5.88.B6";
   struct TestData {
     const std::string query;
     const std::string url;
     const std::string expected_url_match_positions;
   } data[] = {
-    { "foo",      "http://www.foo.com/",    "11,14" },
-    { "foo",      "http://www.foodie.com/", "11,14" },
-    { "foo",      "http://www.foofoo.com/", "11,14" },
-    { "www",      "http://www.foo.com/",    "7,10"  },
-    { "foo",      "http://www.foodie.com/blah/foo/fi", "11,14:27,30"      },
-    { "foo",      "http://www.blah.com/blah/foo/fi",   "25,28"            },
-    { "foo www",  "http://www.foodie.com/blah/foo/fi", "7,10:11,14:27,30" },
-    { "www foo",  "http://www.foodie.com/blah/foo/fi", "7,10:11,14:27,30" },
-    { "www bla",  "http://www.foodie.com/blah/foo/fi", "7,10:22,25"       },
-    { "http",     "http://www.foo.com/",               "0,4"              },
-    { "http www", "http://www.foo.com/",               "0,4:7,10"         },
-    { "http foo", "http://www.foo.com/",               "0,4:11,14"        },
-    { "http foo", "http://www.bar.com/baz/foodie/hi",  "0,4:23,26"        }
+    { "foo",        "http://www.foo.com/",    "11,14" },
+    { "foo",        "http://www.foodie.com/", "11,14" },
+    { "foo",        "http://www.foofoo.com/", "11,14" },
+    { "www",        "http://www.foo.com/",    "7,10"  },
+    { "foo",        "http://www.foodie.com/blah/foo/fi", "11,14:27,30"      },
+    { "foo",        "http://www.blah.com/blah/foo/fi",   "25,28"            },
+    { "foo www",    "http://www.foodie.com/blah/foo/fi", "7,10:11,14:27,30" },
+    { "www foo",    "http://www.foodie.com/blah/foo/fi", "7,10:11,14:27,30" },
+    { "www bla",    "http://www.foodie.com/blah/foo/fi", "7,10:22,25"       },
+    { "http",       "http://www.foo.com/",               "0,4"              },
+    { "http www",   "http://www.foo.com/",               "0,4:7,10"         },
+    { "http foo",   "http://www.foo.com/",               "0,4:11,14"        },
+    { "http foo",   "http://www.bar.com/baz/foodie/hi",  "0,4:23,26"        },
+    { "第二次",      ja_wiki_url,                         "29,56"            },
+    { "ja 第二次",   ja_wiki_url,                         "7,9:29,56"        },
+    { "第二次 E3.8", ja_wiki_url,                         "29,56:94,98:103,107:"
+                                                         "112,116:121,125:"
+                                                         "130,134:139,143"  }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
@@ -321,7 +330,8 @@ TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
     AddBookmarks(bookmarks);
 
     std::vector<BookmarkMatch> matches;
-    model_->GetBookmarksMatching(ASCIIToUTF16(data[i].query), 1000, &matches);
+    model_->GetBookmarksMatching(
+        base::UTF8ToUTF16(data[i].query), 1000, &matches);
     ASSERT_EQ(1U, matches.size()) << data[i].url << data[i].query;
 
     BookmarkMatch::MatchPositions expected_url_matches;

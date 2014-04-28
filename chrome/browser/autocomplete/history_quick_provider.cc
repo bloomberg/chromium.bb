@@ -245,33 +245,28 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   DCHECK(match.destination_url.is_valid());
 
   // Format the URL autocomplete presentation.
-  std::vector<size_t> offsets =
-      OffsetsFromTermMatches(history_match.url_matches());
   const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll &
       ~(!history_match.match_in_scheme ? 0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
-          net::FormatUrlWithOffsets(info.url(), languages_, format_types,
-              net::UnescapeRule::SPACES, NULL, NULL, &offsets));
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          info.url(),
+          net::FormatUrl(info.url(), languages_, format_types,
+                         net::UnescapeRule::SPACES, NULL, NULL, NULL));
+  std::vector<size_t> offsets =
+      OffsetsFromTermMatches(history_match.url_matches());
+  base::OffsetAdjuster::Adjustments adjustments;
+  match.contents = net::FormatUrlWithAdjustments(
+      info.url(), languages_, format_types, net::UnescapeRule::SPACES, NULL,
+      NULL, &adjustments);
+  base::OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
   history::TermMatches new_matches =
       ReplaceOffsetsInTermMatches(history_match.url_matches(), offsets);
-  match.contents = net::FormatUrl(info.url(), languages_, format_types,
-              net::UnescapeRule::SPACES, NULL, NULL, NULL);
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
-  // The second part of this test can happen if the only match(es) of the user's
-  // term occur in places FormatUrl() decides to omit in the formatted url.
-  // In these cases, it's impossible to set |inline_autocompletion| correctly
-  // and hence the match cannot be the default match.  I (mpearson@) believe
-  // this is likely caused by the mismatch that offsets are originally
-  // computed with respect to the cleaned-up URL yet then applied and
-  // updated by FormatUrl() as if they applied to the original string.
-  // See crbug.com/252630.
-  // TODO(mpearson): replacing the second clause with a DCHECK after fixing
-  // 252630.
-  if (history_match.can_inline() && !new_matches.empty()) {
+  if (history_match.can_inline()) {
+    DCHECK(!new_matches.empty());
     size_t inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;
     // |inline_autocomplete_offset| may be beyond the end of the

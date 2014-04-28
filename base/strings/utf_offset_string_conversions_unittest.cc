@@ -162,6 +162,64 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffsets) {
   }
 }
 
+TEST(UTFOffsetStringConversionsTest, UnadjustOffsets) {
+  // Imagine we have strings as shown in the following cases where the
+  // X's represent encoded characters.
+  // 1: abcXXXdef ==> abcXdef
+  {
+    std::vector<size_t> offsets;
+    for (size_t t = 0; t <= 7; ++t)
+      offsets.push_back(t);
+    OffsetAdjuster::Adjustments adjustments;
+    adjustments.push_back(OffsetAdjuster::Adjustment(3, 3, 1));
+    OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
+    size_t expected_1[] = {0, 1, 2, 3, 6, 7, 8, 9};
+    EXPECT_EQ(offsets.size(), arraysize(expected_1));
+    for (size_t i = 0; i < arraysize(expected_1); ++i)
+      EXPECT_EQ(expected_1[i], offsets[i]);
+  }
+
+  // 2: XXXaXXXXbcXXXXXXXdefXXX ==> XaXXbcXXXXdefX
+  {
+    std::vector<size_t> offsets;
+    for (size_t t = 0; t <= 14; ++t)
+      offsets.push_back(t);
+    OffsetAdjuster::Adjustments adjustments;
+    adjustments.push_back(OffsetAdjuster::Adjustment(0, 3, 1));
+    adjustments.push_back(OffsetAdjuster::Adjustment(4, 4, 2));
+    adjustments.push_back(OffsetAdjuster::Adjustment(10, 7, 4));
+    adjustments.push_back(OffsetAdjuster::Adjustment(20, 3, 1));
+    OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
+    size_t expected_2[] = {
+      0, 3, 4, kNpos, 8, 9, 10, kNpos, kNpos, kNpos, 17, 18, 19, 20, 23
+    };
+    EXPECT_EQ(offsets.size(), arraysize(expected_2));
+    for (size_t i = 0; i < arraysize(expected_2); ++i)
+      EXPECT_EQ(expected_2[i], offsets[i]);
+  }
+
+  // 3: XXXaXXXXbcdXXXeXX ==> aXXXXbcdXXXe
+  {
+    std::vector<size_t> offsets;
+    for (size_t t = 0; t <= 12; ++t)
+      offsets.push_back(t);
+    OffsetAdjuster::Adjustments adjustments;
+    adjustments.push_back(OffsetAdjuster::Adjustment(0, 3, 0));
+    adjustments.push_back(OffsetAdjuster::Adjustment(4, 4, 4));
+    adjustments.push_back(OffsetAdjuster::Adjustment(11, 3, 3));
+    adjustments.push_back(OffsetAdjuster::Adjustment(15, 2, 0));
+    OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
+    size_t expected_3[] = {
+      0,  // this could just as easily be 3
+      4, kNpos, kNpos, kNpos, 8, 9, 10, 11, kNpos, kNpos, 14,
+      15  // this could just as easily be 17
+    };
+    EXPECT_EQ(offsets.size(), arraysize(expected_3));
+    for (size_t i = 0; i < arraysize(expected_3); ++i)
+      EXPECT_EQ(expected_3[i], offsets[i]);
+  }
+}
+
 // MergeSequentialAdjustments is used by net/base/escape.{h,cc} and
 // net/base/net_util.{h,cc}.  The two tests EscapeTest.AdjustOffset and
 // NetUtilTest.FormatUrlWithOffsets test its behavior extensively.  This
