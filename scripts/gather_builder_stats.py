@@ -40,9 +40,10 @@ NICE_DATE_FORMAT = cbuildbot_metadata.NICE_DATE_FORMAT
 NICE_TIME_FORMAT = cbuildbot_metadata.NICE_TIME_FORMAT
 NICE_DATETIME_FORMAT = cbuildbot_metadata.NICE_DATETIME_FORMAT
 
-
-# All CQ worksheets (master and slave) are on the same spreadsheet.
+# Spreadsheet keys
+# CQ master and slaves both use the same spreadsheet
 CQ_SS_KEY = '0AsXDKtaHikmcdElQWVFuT21aMlFXVTN5bVhfQ2ptVFE'
+
 
 class GatherStatsError(Exception):
   """Base exception class for exceptions in this module."""
@@ -120,13 +121,8 @@ class StatsTable(table.Table):
     return self._SSHyperlink(link, 'build %s' % build_number)
 
 
-class CQMasterTable(StatsTable):
-  """Stats table for the CQ Master."""
-  WATERFALL = 'chromeos'
-  TARGET = 'CQ master' # Must match up with name in waterfall.
-
-  WORKSHEET_NAME = 'CQMasterData'
-
+class SpreadsheetMasterTable(StatsTable):
+  """Stats table for master builder that puts results in a spreadsheet."""
   # Bump this number whenever this class adds new data columns, or changes
   # the values of existing data columns.
   SHEETS_VERSION = 1
@@ -138,7 +134,6 @@ class CQMasterTable(StatsTable):
   COL_START_DATETIME = 'start datetime'
   COL_RUNTIME_MINUTES = 'runtime minutes'
   COL_WEEKDAY = 'weekday'
-  COL_CL_COUNT = 'cl count'
   COL_CHROMEOS_VERSION = 'chromeos version'
   COL_CHROME_VERSION = 'chrome version'
   COL_FAILED_STAGES = 'failed stages'
@@ -147,22 +142,23 @@ class CQMasterTable(StatsTable):
   ID_COL = COL_BUILD_NUMBER
 
   COLUMNS = (
-      COL_BUILD_NUMBER,
-      COL_BUILD_LINK,
-      COL_STATUS,
-      COL_START_DATETIME,
-      COL_RUNTIME_MINUTES,
-      COL_WEEKDAY,
-      COL_CL_COUNT,
-      COL_CHROMEOS_VERSION,
-      COL_CHROME_VERSION,
-      COL_FAILED_STAGES,
+     COL_BUILD_NUMBER,
+     COL_BUILD_LINK,
+     COL_STATUS,
+     COL_START_DATETIME,
+     COL_RUNTIME_MINUTES,
+     COL_WEEKDAY,
+     COL_CHROMEOS_VERSION,
+     COL_CHROME_VERSION,
+     COL_FAILED_STAGES,
   )
 
-  def __init__(self):
-    super(CQMasterTable, self).__init__(CQMasterTable.TARGET,
-                                        CQMasterTable.WATERFALL,
-                                        list(CQMasterTable.COLUMNS))
+  def __init__(self, target, waterfall, columns=None):
+    columns = columns or []
+    columns = list(SpreadsheetMasterTable.COLUMNS) + columns
+    super(SpreadsheetMasterTable, self).__init__(target,
+                                                 waterfall,
+                                                 columns)
 
     self._slaves = []
 
@@ -194,6 +190,24 @@ class CQMasterTable(StatsTable):
       for bn in range(build_data.build_number + 1, last_build_number):
         self.AppendGapRow(bn)
 
+    row = self._GetBuildRow(build_data)
+
+    #Use a separate column for each slave.
+    slaves = build_data.slaves
+    for slave_name in slaves:
+      # This adds the slave to our local data, but doesn't add a missing
+      # column to the spreadsheet itself.
+      self._EnsureSlaveKnown(slave_name)
+
+    # Now add the finished row to this table.
+    self.AppendRow(row)
+
+  def _GetBuildRow(self, build_data):
+    """Fetch a row dictionary from |build_data|
+
+    Returns:
+      A dictionary of the form {column_name : value}
+    """
     build_number = build_data.build_number
     build_link = self.GetBuildSSLink(build_number)
 
@@ -207,13 +221,11 @@ class CQMasterTable(StatsTable):
         self.COL_START_DATETIME: build_data.start_datetime_str,
         self.COL_RUNTIME_MINUTES: str(build_data.runtime_minutes),
         self.COL_WEEKDAY: str(is_weekday),
-        self.COL_CL_COUNT: str(build_data.count_changes),
         self.COL_CHROMEOS_VERSION: build_data.chromeos_version,
         self.COL_CHROME_VERSION: build_data.chrome_version,
         self.COL_FAILED_STAGES: ' '.join(build_data.GetFailedStages()),
     }
 
-    # Use a separate column for each slave.
     slaves = build_data.slaves
     for slave_name in slaves:
       slave = slaves[slave_name]
@@ -224,10 +236,6 @@ class CQMasterTable(StatsTable):
       translate_dict = {'fail': 'failed', 'pass': 'passed'}
       slave_status = translate_dict.get(slave['status'], slave['status'])
 
-      # This adds the slave to our local data, but doesn't add a missing
-      # column to the spreadsheet itself.
-      self._EnsureSlaveKnown(slave_name)
-
       # Bizarrely, dashboard_url is not always set for slaves that pass.
       # Only sometimes.  crbug.com/350939.
       if slave_url:
@@ -235,8 +243,7 @@ class CQMasterTable(StatsTable):
       else:
         row[slave_name] = slave_status
 
-    # Now add the finished row to this table.
-    self.AppendRow(row)
+    return row
 
   def _EnsureSlaveKnown(self, slave_name):
     """Ensure that a slave builder name is known.
@@ -258,6 +265,41 @@ class CQMasterTable(StatsTable):
       List of column names for slave builders.
     """
     return self._slaves[:]
+
+
+class CQMasterTable(SpreadsheetMasterTable):
+  """Stats table for the CQ Master."""
+  WATERFALL = 'chromeos'
+  TARGET = 'CQ master' # Must match up with name in waterfall.
+
+  WORKSHEET_NAME = 'CQMasterData'
+
+  # Bump this number whenever this class adds new data columns, or changes
+  # the values of existing data columns.
+  SHEETS_VERSION = 1
+
+  COL_CL_COUNT = 'cl count'
+
+  # These columns are in addition to those inherited from
+  # SpreadsheetMasterTable
+  COLUMNS = (
+      COL_CL_COUNT,
+  )
+
+  def __init__(self):
+    super(CQMasterTable, self).__init__(CQMasterTable.TARGET,
+                                        CQMasterTable.WATERFALL,
+                                        list(CQMasterTable.COLUMNS))
+
+  def _GetBuildRow(self, build_data):
+    """Fetch a row dictionary from |build_data|
+
+    Returns:
+      A dictionary of the form {column_name : value}
+    """
+    row = super(CQMasterTable, self)._GetBuildRow(build_data)
+    row[self.COL_CL_COUNT] = str(build_data.count_changes)
+    return row
 
 
 class SSUploader(object):
