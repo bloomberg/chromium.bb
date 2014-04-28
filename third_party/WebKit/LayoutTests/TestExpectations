@@ -1072,3 +1072,4 @@ crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
 crbug.com/366185 inspector/split-view.html [ Pass Timeout ]
 
+crbug.com/367814 [ Win Debug ] fast/dom/custom/document-register-reentrant-throwing-constructor.html [ Pass Crash ]
