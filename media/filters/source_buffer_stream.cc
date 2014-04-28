@@ -447,6 +447,7 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
 
   DCHECK(!buffers.empty());
   DCHECK(media_segment_start_time_ != kNoTimestamp());
+  DCHECK(media_segment_start_time_ <= buffers.front()->GetDecodeTimestamp());
   DCHECK(!end_of_stream_);
 
   // New media segments must begin with a keyframe.

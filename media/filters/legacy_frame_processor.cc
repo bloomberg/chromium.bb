@@ -56,6 +56,7 @@ bool LegacyFrameProcessor::ProcessFrames(
 
   StreamParser::BufferQueue filtered_audio;
   StreamParser::BufferQueue filtered_video;
+  StreamParser::TextBufferQueueMap filtered_text;
 
   if (audio_track) {
     AdjustBufferTimestamps(audio_buffers, offset);
@@ -71,25 +72,49 @@ bool LegacyFrameProcessor::ProcessFrames(
                            new_media_segment, &filtered_video);
   }
 
-  if ((!filtered_audio.empty() || !filtered_video.empty()) &&
+  // The earliest timestamp in the filtered buffers will be used for the segment
+  // start timestamp.
+  base::TimeDelta segment_timestamp = kInfiniteDuration();
+
+  // Process any buffers for each of the text tracks in the map.
+  for (StreamParser::TextBufferQueueMap::const_iterator itr = text_map.begin();
+       itr != text_map.end();
+       ++itr) {
+    const StreamParser::BufferQueue& text_buffers = itr->second;
+    if (text_buffers.empty())
+      continue;
+
+    if (!FilterTextBuffers(itr->first,
+                           append_window_start,
+                           append_window_end,
+                           offset,
+                           text_buffers,
+                           new_media_segment,
+                           &segment_timestamp,
+                           &filtered_text)) {
+      return false;
+    }
+  }
+
+  if ((!filtered_audio.empty() || !filtered_video.empty() ||
+       !filtered_text.empty()) &&
       *new_media_segment) {
-    // Find the earliest timestamp in the filtered buffers and use that for the
-    // segment start timestamp.
-    base::TimeDelta segment_timestamp = kNoTimestamp();
+    if (!filtered_audio.empty()) {
+      segment_timestamp = std::min(filtered_audio.front()->GetDecodeTimestamp(),
+                                   segment_timestamp);
+    }
 
-    if (!filtered_audio.empty())
-      segment_timestamp = filtered_audio.front()->GetDecodeTimestamp();
-
-    if (!filtered_video.empty() &&
-        (segment_timestamp == kNoTimestamp() ||
-         filtered_video.front()->GetDecodeTimestamp() < segment_timestamp)) {
-      segment_timestamp = filtered_video.front()->GetDecodeTimestamp();
+    if (!filtered_video.empty()) {
+      segment_timestamp = std::min(filtered_video.front()->GetDecodeTimestamp(),
+                                   segment_timestamp);
     }
 
     *new_media_segment = false;
 
+    DCHECK(segment_timestamp != kInfiniteDuration());
     for (TrackBufferMap::iterator itr = track_buffers_.begin();
-         itr != track_buffers_.end(); ++itr) {
+         itr != track_buffers_.end();
+         ++itr) {
       itr->second->stream()->OnNewMediaSegment(segment_timestamp);
     }
   }
@@ -104,26 +129,17 @@ bool LegacyFrameProcessor::ProcessFrames(
     return false;
   }
 
-  if (text_map.empty())
-    return true;
-
-  // Process any buffers for each of the text tracks in the map.
-  bool all_text_buffers_empty = true;
-  for (StreamParser::TextBufferQueueMap::const_iterator itr = text_map.begin();
-       itr != text_map.end();
-       ++itr) {
-    const StreamParser::BufferQueue text_buffers = itr->second;
-    if (text_buffers.empty())
-      continue;
-
-    all_text_buffers_empty = false;
-    if (!OnTextBuffers(itr->first, append_window_start, append_window_end,
-                       offset, text_buffers, new_media_segment)) {
-      return false;
+  if (!filtered_text.empty()) {
+    for (StreamParser::TextBufferQueueMap::const_iterator itr =
+             filtered_text.begin();
+         itr != filtered_text.end();
+         ++itr) {
+      MseTrackBuffer* track = FindTrack(itr->first);
+      if (!track || !AppendAndUpdateDuration(track->stream(), itr->second))
+        return false;
     }
   }
 
-  DCHECK(!all_text_buffers_empty);
   return true;
 }
 
@@ -221,13 +237,15 @@ bool LegacyFrameProcessor::AppendAndUpdateDuration(
   return true;
 }
 
-bool LegacyFrameProcessor::OnTextBuffers(
+bool LegacyFrameProcessor::FilterTextBuffers(
     StreamParser::TrackId text_track_id,
     base::TimeDelta append_window_start,
     base::TimeDelta append_window_end,
     base::TimeDelta timestamp_offset,
     const StreamParser::BufferQueue& buffers,
-    bool* new_media_segment) {
+    bool* new_media_segment,
+    base::TimeDelta* lowest_segment_timestamp,
+    StreamParser::TextBufferQueueMap* filtered_text) {
   DCHECK(!buffers.empty());
   DCHECK(text_track_id != kAudioTrackId && text_track_id != kVideoTrackId);
   DCHECK(new_media_segment);
@@ -239,14 +257,22 @@ bool LegacyFrameProcessor::OnTextBuffers(
   AdjustBufferTimestamps(buffers, timestamp_offset);
 
   StreamParser::BufferQueue filtered_buffers;
-  track->set_needs_random_access_point(false);
-  FilterWithAppendWindow(append_window_start, append_window_end,
-                         buffers, track, new_media_segment, &filtered_buffers);
+  FilterWithAppendWindow(append_window_start,
+                         append_window_end,
+                         buffers,
+                         track,
+                         new_media_segment,
+                         &filtered_buffers);
 
-  if (filtered_buffers.empty())
-    return true;
+  if (!filtered_buffers.empty()) {
+    *lowest_segment_timestamp =
+        std::min(*lowest_segment_timestamp,
+                 filtered_buffers.front()->GetDecodeTimestamp());
+    DCHECK(filtered_text->find(text_track_id) == filtered_text->end());
+    filtered_text->insert(std::make_pair(text_track_id, filtered_buffers));
+  }
 
-  return AppendAndUpdateDuration(track->stream(), filtered_buffers);
+  return true;
 }
 
 }  // namespace media
