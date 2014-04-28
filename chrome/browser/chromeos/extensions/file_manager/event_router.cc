@@ -759,6 +759,7 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
 }
 
 void EventRouter::ShowRemovableDeviceInFileManager(
+    VolumeType type,
     const base::FilePath& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked or running in kiosk app mode and make sure the file
@@ -773,19 +774,24 @@ void EventRouter::ShowRemovableDeviceInFileManager(
   if (IsRecoveryToolRunning(profile_))
     return;
 
-  // According to DCF (Design rule of Camera File system) by JEITA / CP-3461
-  // cameras should have pictures located in the DCIM root directory.
-  const base::FilePath dcim_path = mount_path.Append(
-      FILE_PATH_LITERAL("DCIM"));
+  // Do not pop-up the File Manager, if Google+ Photos may be launched.
+  if (IsGooglePhotosInstalled(profile_)) {
+    // MTP device is handled by Photos app.
+    if (type == VOLUME_TYPE_MTP)
+      return;
+    // According to DCF (Design rule of Camera File system) by JEITA / CP-3461
+    // cameras should have pictures located in the DCIM root directory.
+    // Such removable disks are handled by Photos app.
+    if (type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
+      DirectoryExistsOnUIThread(
+          mount_path.AppendASCII("DCIM"),
+          base::Bind(&base::DoNothing),
+          base::Bind(&util::OpenRemovableDrive, profile_, mount_path));
+      return;
+    }
+  }
 
-  // If there is a DCIM folder and Google+ Photos is installed, then do not
-  // launch Files.app.
-  DirectoryExistsOnUIThread(
-      dcim_path,
-      IsGooglePhotosInstalled(profile_)
-          ? base::Bind(&base::DoNothing)
-          : base::Bind(&util::OpenRemovableDrive, profile_, mount_path),
-      base::Bind(&util::OpenRemovableDrive, profile_, mount_path));
+  util::OpenRemovableDrive(profile_, mount_path);
 }
 
 void EventRouter::DispatchDeviceEvent(
@@ -866,12 +872,14 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
       volume_info,
       is_remounting);
 
-  if (volume_info.type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION &&
+  if ((volume_info.type == VOLUME_TYPE_MTP ||
+       volume_info.type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION) &&
       !is_remounting) {
     // If a new device was mounted, a new File manager window may need to be
     // opened.
     if (error_code == chromeos::MOUNT_ERROR_NONE)
-      ShowRemovableDeviceInFileManager(volume_info.mount_path);
+      ShowRemovableDeviceInFileManager(volume_info.type,
+                                       volume_info.mount_path);
   }
 }
 

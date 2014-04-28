@@ -215,12 +215,15 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     base::FilePath local_path = url.path();
     base::FilePath virtual_path = url.virtual_path();
 
-    bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
+    const bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
     DCHECK(!is_drive_file || drive::util::IsUnderDriveMountPoint(local_path));
 
-    // If the file is under drive mount point, there is no actual file to be
-    // found on the url.path().
-    if (!is_drive_file) {
+    const bool is_native_file =
+        url.type() == fileapi::kFileSystemTypeNativeLocal ||
+        url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal;
+
+    // If the file is from a physical volume, actual file must be found.
+    if (is_native_file) {
       if (!base::PathExists(local_path) ||
           base::IsLink(local_path) ||
           !base::GetFileInfo(local_path, &file_info)) {
