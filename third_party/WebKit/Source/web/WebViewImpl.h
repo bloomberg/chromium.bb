@@ -484,6 +484,8 @@ public:
 
     WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
 
+    bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
+
 private:
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
     // prevent external usage
@@ -696,6 +698,7 @@ private:
     OwnPtr<WebCore::GraphicsLayerFactory> m_graphicsLayerFactory;
     bool m_isAcceleratedCompositingActive;
     bool m_layerTreeViewCommitsDeferred;
+    bool m_matchesHeuristicsForGpuRasterization;
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;

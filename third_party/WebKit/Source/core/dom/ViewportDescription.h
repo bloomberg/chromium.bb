@@ -63,9 +63,10 @@ struct ViewportDescription {
         , zoom(ValueAuto)
         , minZoom(ValueAuto)
         , maxZoom(ValueAuto)
-        , userZoom(ValueAuto)
+        , userZoom(true)
         , orientation(ValueAuto)
         , deprecatedTargetDensityDPI(ValueAuto)
+        , minimalUI(false)
     {
     }
 
@@ -79,9 +80,10 @@ struct ViewportDescription {
     float zoom;
     float minZoom;
     float maxZoom;
-    float userZoom;
+    bool userZoom;
     float orientation;
     float deprecatedTargetDensityDPI; // Only used for Android WebView
+    bool minimalUI;
 
     bool operator==(const ViewportDescription& other) const
     {
@@ -96,7 +98,8 @@ struct ViewportDescription {
             && maxZoom == other.maxZoom
             && userZoom == other.userZoom
             && orientation == other.orientation
-            && deprecatedTargetDensityDPI == other.deprecatedTargetDensityDPI;
+            && deprecatedTargetDensityDPI == other.deprecatedTargetDensityDPI
+            && minimalUI == other.minimalUI;
     }
 
     bool operator!=(const ViewportDescription& other) const

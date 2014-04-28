@@ -92,6 +92,8 @@ public:
     // If useAnchor is false, destination is the final top-left scroll position.
     virtual void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec) = 0;
 
+    virtual void heuristicsForGpuRasterizationUpdated(bool) { }
+
 
     // Flow control and scheduling ---------------------------------------
 

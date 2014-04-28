@@ -2937,6 +2937,27 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScaleControl)
     EXPECT_TRUE(page->viewportDescription().userZoom);
 }
 
+TEST_F(ViewportTest, viewportTriggersGpuRasterization)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+
+    registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization.html", true, 0, 0, setViewportSettings);
+    webViewHelper.webView()->resize(WebSize(640, 480));
+    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+
+    registerMockedHttpURLLoad("viewport/viewport-1.html");
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-1.html", true, 0, 0, setViewportSettings);
+    webViewHelper.webView()->resize(WebSize(640, 480));
+    EXPECT_FALSE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+
+    registerMockedHttpURLLoad("viewport/viewport-15.html");
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-15.html", true, 0, 0, setViewportSettings);
+    webViewHelper.webView()->resize(WebSize(640, 480));
+    EXPECT_FALSE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
+}
+
 class ConsoleMessageWebFrameClient : public WebFrameClient {
 public:
     virtual void didAddMessageToConsole(const WebConsoleMessage& msg, const WebString& sourceName, unsigned sourceLine, const WebString& stackTrace)

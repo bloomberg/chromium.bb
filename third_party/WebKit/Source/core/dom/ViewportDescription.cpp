@@ -100,7 +100,7 @@ PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewpo
     float resultZoom = zoom;
     float resultMinZoom = minZoom;
     float resultMaxZoom = maxZoom;
-    float resultUserZoom = userZoom;
+    bool resultUserZoom = userZoom;
 
     // 1. Resolve min-zoom and max-zoom values.
     if (resultMinZoom != ViewportDescription::ValueAuto && resultMaxZoom != ViewportDescription::ValueAuto)

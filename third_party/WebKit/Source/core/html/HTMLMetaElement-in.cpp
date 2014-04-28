@@ -231,7 +231,7 @@ float HTMLMetaElement::parseViewportValueAsZoom(const String& keyString, const S
     return clampScaleValue(value);
 }
 
-float HTMLMetaElement::parseViewportValueAsUserZoom(const String& keyString, const String& valueString)
+bool HTMLMetaElement::parseViewportValueAsUserZoom(const String& keyString, const String& valueString)
 {
     // yes and no are used as keywords.
     // Numbers >= 1, numbers <= -1, device-width and device-height are mapped to yes.
@@ -241,24 +241,24 @@ float HTMLMetaElement::parseViewportValueAsUserZoom(const String& keyString, con
     DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
     SWITCH(characters, length) {
         CASE("yes") {
-            return 1;
+            return true;
         }
         CASE("no") {
-            return 0;
+            return false;
         }
         CASE("device-width") {
-            return 1;
+            return true;
         }
         CASE("device-height") {
-            return 1;
+            return true;
         }
     }
 
     float value = parsePositiveNumber(keyString, valueString);
     if (fabs(value) < 1)
-        return 0;
+        return false;
 
-    return 1;
+    return true;
 }
 
 float HTMLMetaElement::parseViewportValueAsDPI(const String& keyString, const String& valueString)
@@ -334,7 +334,7 @@ void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const
             return;
         }
         CASE("minimal-ui") {
-            // Ignore vendor-specific argument.
+            description->minimalUI = true;
             return;
         }
     }

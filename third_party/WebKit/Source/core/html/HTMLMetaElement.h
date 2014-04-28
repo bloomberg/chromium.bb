@@ -58,7 +58,7 @@ private:
 
     Length parseViewportValueAsLength(const String& key, const String& value);
     float parseViewportValueAsZoom(const String& key, const String& value);
-    float parseViewportValueAsUserZoom(const String& key, const String& value);
+    bool parseViewportValueAsUserZoom(const String& key, const String& value);
     float parseViewportValueAsDPI(const String& key, const String& value);
 
     void reportViewportWarning(ViewportErrorCode, const String& replacement1, const String& replacement2);

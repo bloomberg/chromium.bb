@@ -392,6 +392,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
     , m_isAcceleratedCompositingActive(false)
     , m_layerTreeViewCommitsDeferred(false)
+    , m_matchesHeuristicsForGpuRasterization(false)
     , m_recreatingGraphicsContext(false)
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
     , m_flingModifier(0)
@@ -2905,6 +2906,13 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
 
     Document* document = page()->mainFrame()->document();
 
+    m_matchesHeuristicsForGpuRasterization = description.minimalUI
+        && description.minZoom == 1.0
+        && description.minWidth == Length(ExtendToZoom)
+        && description.maxWidth == Length(DeviceWidth);
+    if (m_layerTreeView)
+        m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
+
     Length defaultMinWidth = document->viewportDefaultMinWidth();
     if (defaultMinWidth.isAuto())
         defaultMinWidth = Length(ExtendToZoom);
@@ -3863,6 +3871,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
             m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
             m_layerTreeView->setShowScrollBottleneckRects(m_showScrollBottleneckRects);
+            m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
         } else {
             // FIXME: It appears that only unittests, <webview> and android webview
             // printing can hit this code. We should make them not hit this code and
