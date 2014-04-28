@@ -58,8 +58,10 @@ ProcessingInstruction::~ProcessingInstruction()
     if (m_sheet)
         m_sheet->clearOwnerNode();
 
+#if !ENABLE(OILPAN)
     if (inDocument())
         document().styleEngine()->removeStyleSheetCandidateNode(this);
+#endif
 }
 
 String ProcessingInstruction::nodeName() const

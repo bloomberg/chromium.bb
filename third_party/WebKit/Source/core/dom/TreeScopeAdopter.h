@@ -32,6 +32,7 @@ namespace WebCore {
 class TreeScope;
 
 class TreeScopeAdopter {
+    STACK_ALLOCATED();
 public:
     TreeScopeAdopter(Node& toAdopt, TreeScope& newScope);
 

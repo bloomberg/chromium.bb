@@ -45,7 +45,10 @@ public:
 
     Document* document() { return m_treeScope ? &m_treeScope->document() : 0; }
 
+#if !ENABLE(OILPAN)
     void detachFromDocument();
+#endif
+
     CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
 
     void trace(Visitor*);
@@ -54,8 +57,10 @@ private:
     StyleSheetList(TreeScope*);
     const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheets();
 
-    TreeScope* m_treeScope;
-    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > m_detachedStyleSheets;
+    RawPtrWillBeMember<TreeScope> m_treeScope;
+#if !ENABLE(OILPAN)
+    Vector<RefPtr<StyleSheet> > m_detachedStyleSheets;
+#endif
 };
 
 } // namespace WebCore

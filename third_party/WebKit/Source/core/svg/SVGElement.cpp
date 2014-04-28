@@ -114,9 +114,12 @@ SVGElement::~SVGElement()
         // removeAllElementReferencesForTarget() below.
         clearHasSVGRareData();
     }
-#endif
+
+    // With Oilpan, either removedFrom has been called or the document is dead
+    // as well and there is no reason to clear out the extensions.
     document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
+#endif
 }
 
 void SVGElement::willRecalcStyle(StyleRecalcChange change)

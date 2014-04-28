@@ -215,7 +215,7 @@ typedef unsigned char DocumentClassFlags;
 
 class Document;
 
-class DocumentVisibilityObserver {
+class DocumentVisibilityObserver : public WillBeGarbageCollectedMixin {
 public:
     DocumentVisibilityObserver(Document&);
     virtual ~DocumentVisibilityObserver();
@@ -859,7 +859,7 @@ public:
     void cancelFocusAppearanceUpdate();
 
     // Extension for manipulating canvas drawing contexts for use in CSS
-    void getCSSCanvasContext(const String& type, const String& name, int width, int height, bool&, RefPtr<CanvasRenderingContext2D>&, bool&, RefPtr<WebGLRenderingContext>&);
+    void getCSSCanvasContext(const String& type, const String& name, int width, int height, bool&, RefPtrWillBeRawPtr<CanvasRenderingContext2D>&, bool&, RefPtrWillBeRawPtr<WebGLRenderingContext>&);
     HTMLCanvasElement& getCSSCanvasElement(const String& name);
 
     bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
@@ -941,7 +941,8 @@ public:
     // Used to allow element that loads data without going through a FrameLoader to delay the 'load' event.
     void incrementLoadEventDelayCount() { ++m_loadEventDelayCount; }
     void decrementLoadEventDelayCount();
-    bool isDelayingLoadEvent() const { return m_loadEventDelayCount; }
+    void checkLoadEventSoon();
+    bool isDelayingLoadEvent();
     void loadPluginsSoon();
 
     PassRefPtrWillBeRawPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force) const;
@@ -1111,6 +1112,8 @@ private:
 
     void detachParser();
 
+    void clearWeakMembers(Visitor*);
+
     virtual bool isDocument() const OVERRIDE FINAL { return true; }
 
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
@@ -1236,7 +1239,7 @@ private:
     MutationObserverOptions m_mutationObserverTypes;
 
     OwnPtrWillBePersistent<StyleEngine> m_styleEngine;
-    RefPtrWillBePersistent<StyleSheetList> m_styleSheetList;
+    RefPtrWillBeMember<StyleSheetList> m_styleSheetList;
 
     OwnPtr<FormController> m_formController;
 
@@ -1377,7 +1380,8 @@ private:
 
     bool m_hasViewportUnits;
 
-    HashSet<DocumentVisibilityObserver*> m_visibilityObservers;
+    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentVisibilityObserver> > DocumentVisibilityObserverSet;
+    DocumentVisibilityObserverSet m_visibilityObservers;
 
     int m_styleRecalcElementCounter;
 };

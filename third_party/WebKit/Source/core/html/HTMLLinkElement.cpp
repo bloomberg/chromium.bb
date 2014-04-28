@@ -149,8 +149,10 @@ HTMLLinkElement::~HTMLLinkElement()
 {
     m_link.clear();
 
+#if !ENABLE(OILPAN)
     if (inDocument())
         document().styleEngine()->removeStyleSheetCandidateNode(this);
+#endif
 
     linkLoadEventSender().cancelEvent(this);
 }

@@ -50,7 +50,14 @@ PassRefPtr<SVGFEImageElement> SVGFEImageElement::create(Document& document)
 
 SVGFEImageElement::~SVGFEImageElement()
 {
+#if ENABLE(OILPAN)
+    if (m_cachedImage) {
+        m_cachedImage->removeClient(this);
+        m_cachedImage = 0;
+    }
+#else
     clearResourceReferences();
+#endif
 }
 
 bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const

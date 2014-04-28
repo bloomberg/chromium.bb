@@ -93,7 +93,9 @@ void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 
 ContainerNode::~ContainerNode()
 {
+#if !ENABLE(OILPAN)
     willBeDeletedFromDocument();
+#endif
     removeDetachedChildren();
 }
 

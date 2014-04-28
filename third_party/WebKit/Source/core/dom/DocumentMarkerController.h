@@ -29,6 +29,7 @@
 
 #include "core/dom/DocumentMarker.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
@@ -64,6 +65,8 @@ public:
     enum RemovePartiallyOverlappingMarkerOrNot { DoNotRemovePartiallyOverlappingMarker, RemovePartiallyOverlappingMarker };
     void removeMarkers(Range*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(), RemovePartiallyOverlappingMarkerOrNot = DoNotRemovePartiallyOverlappingMarker);
     void removeMarkers(Node*, unsigned startOffset, int length, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(),  RemovePartiallyOverlappingMarkerOrNot = DoNotRemovePartiallyOverlappingMarker);
+
+    void clearWeakMembers(Visitor*);
 
     void removeMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void removeMarkers(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());

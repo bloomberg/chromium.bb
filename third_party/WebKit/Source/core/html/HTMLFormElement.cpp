@@ -83,7 +83,12 @@ PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
 
 HTMLFormElement::~HTMLFormElement()
 {
+#if !ENABLE(OILPAN)
+    // With Oilpan, either removedFrom is called or the document and
+    // form controller are dead as well and there is no need to remove
+    // this form element from it.
     document().formController().willDeleteForm(this);
+#endif
 }
 
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
@@ -160,6 +165,9 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
             notifyFormRemovedFromTree(images, root);
         }
     }
+#if ENABLE(OILPAN)
+    document().formController().willDeleteForm(this);
+#endif
     HTMLElement::removedFrom(insertionPoint);
 }
 

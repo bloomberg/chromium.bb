@@ -42,21 +42,20 @@ StyleSheetList::~StyleSheetList()
 
 inline const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& StyleSheetList::styleSheets()
 {
+#if !ENABLE(OILPAN)
     if (!m_treeScope)
         return m_detachedStyleSheets;
+#endif
     return document()->styleEngine()->styleSheetsForStyleSheetList(*m_treeScope);
 }
 
+#if !ENABLE(OILPAN)
 void StyleSheetList::detachFromDocument()
 {
-    // FIXME: Oilpan: This is safe currently because the Document is
-    // *not* in the oilpan heap and the style engine is alive when the
-    // document dies. When the Document is in the oilpan heap, we need
-    // the StyleSheetList and the document to die together and get rid
-    // of the detachedStyleSheets.
     m_detachedStyleSheets = document()->styleEngine()->styleSheetsForStyleSheetList(*m_treeScope);
-    m_treeScope = 0;
+    m_treeScope = nullptr;
 }
+#endif
 
 unsigned StyleSheetList::length()
 {
@@ -71,8 +70,10 @@ StyleSheet* StyleSheetList::item(unsigned index)
 
 HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
 {
+#if !ENABLE(OILPAN)
     if (!m_treeScope)
         return 0;
+#endif
 
     // IE also supports retrieving a stylesheet by name, using the name/id of the <style> tag
     // (this is consistent with all the other collections)
@@ -94,7 +95,7 @@ CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
 
 void StyleSheetList::trace(Visitor* visitor)
 {
-    visitor->trace(m_detachedStyleSheets);
+    visitor->trace(m_treeScope);
 }
 
 } // namespace WebCore

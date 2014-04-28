@@ -264,12 +264,16 @@ inline InputFieldSpeechButtonElement::InputFieldSpeechButtonElement(Document& do
 
 InputFieldSpeechButtonElement::~InputFieldSpeechButtonElement()
 {
+#if !ENABLE(OILPAN)
+    // With Oilpan, this cleanup is handled with weak processing of the
+    // SpeechInputs.
     SpeechInput* speech = speechInput();
     if (speech && m_listenerId)  { // Could be null when page is unloading.
         if (m_state != Idle)
             speech->cancelRecognition(m_listenerId);
         speech->unregisterListener(m_listenerId);
     }
+#endif
 }
 
 PassRefPtr<InputFieldSpeechButtonElement> InputFieldSpeechButtonElement::create(Document& document)

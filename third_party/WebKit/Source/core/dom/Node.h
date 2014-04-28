@@ -673,7 +673,7 @@ public:
 
     bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
 
-    virtual void trace(Visitor*) { }
+    virtual void trace(Visitor*);
 
 private:
     enum NodeFlags {
@@ -755,8 +755,10 @@ protected:
     {
         ASSERT(m_treeScope || type == CreateDocument || type == CreateShadowRoot);
         ScriptWrappable::init(this);
+#if !ENABLE(OILPAN)
         if (m_treeScope)
             m_treeScope->guardRef();
+#endif
 
 #if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
         trackForDebugging();
@@ -768,7 +770,9 @@ protected:
 
     static void reattachWhitespaceSiblings(Text* start);
 
+#if !ENABLE(OILPAN)
     void willBeDeletedFromDocument();
+#endif
 
     bool hasRareData() const { return getFlag(HasRareDataFlag); }
 
@@ -776,7 +780,9 @@ protected:
     NodeRareData& ensureRareData();
     void clearRareData();
 
+#if !ENABLE(OILPAN)
     void clearEventTargetData();
+#endif
 
     void setHasCustomStyleCallbacks() { setFlag(true, HasCustomStyleCallbacksFlag); }
 
@@ -828,7 +834,7 @@ private:
 
     mutable uint32_t m_nodeFlags;
     ContainerNode* m_parentOrShadowHostNode;
-    TreeScope* m_treeScope;
+    RawPtrWillBeMember<TreeScope> m_treeScope;
     Node* m_previous;
     Node* m_next;
     // When a node has rare data we move the renderer into the rare data.

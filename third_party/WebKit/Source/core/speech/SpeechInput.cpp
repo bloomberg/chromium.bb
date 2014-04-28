@@ -33,6 +33,7 @@
 
 #if ENABLE(INPUT_SPEECH)
 
+#include "core/html/shadow/TextControlInnerElements.h"
 #include "core/speech/SpeechInputClient.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -55,11 +56,11 @@ PassOwnPtr<SpeechInput> SpeechInput::create(PassOwnPtr<SpeechInputClient> client
     return adoptPtr(new SpeechInput(client));
 }
 
-int SpeechInput::registerListener(SpeechInputListener* listener)
+int SpeechInput::registerListener(InputFieldSpeechButtonElement* listener)
 {
 #if defined(DEBUG)
     // Check if already present.
-    for (HashMap<int, SpeechInputListener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (HashMap<int, InputFieldSpeechButtonElement*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
         ASSERT(it->value != listener);
 #endif
 
@@ -123,6 +124,20 @@ const char* SpeechInput::supplementName()
 void provideSpeechInputTo(Page& page, PassOwnPtr<SpeechInputClient> client)
 {
     SpeechInput::provideTo(page, SpeechInput::supplementName(), SpeechInput::create(client));
+}
+
+void SpeechInput::clearWeakMembers(Visitor* visitor)
+{
+    Vector<int> deadListenerIds;
+    HashMap<int, InputFieldSpeechButtonElement*>::const_iterator end = m_listeners.end();
+    for (HashMap<int, InputFieldSpeechButtonElement*>::const_iterator it = m_listeners.begin(); it != end; ++it) {
+        if (!visitor->isAlive(it->value)) {
+            deadListenerIds.append(it->key);
+            m_client->cancelRecognition(it->key);
+        }
+    }
+    for (unsigned i = 0; i < deadListenerIds.size(); ++i)
+        m_listeners.remove(deadListenerIds[i]);
 }
 
 } // namespace WebCore

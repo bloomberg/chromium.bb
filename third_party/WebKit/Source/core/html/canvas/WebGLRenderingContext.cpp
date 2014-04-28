@@ -60,7 +60,7 @@
 
 namespace WebCore {
 
-PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElement* canvas, WebGLContextAttributes* attrs)
+PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElement* canvas, WebGLContextAttributes* attrs)
 {
     Document& document = canvas->document();
     LocalFrame* frame = document.frame();
@@ -96,7 +96,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     if (extensionsUtil->supportsExtension("GL_EXT_debug_marker"))
         context->pushGroupMarkerEXT("WebGLRenderingContext");
 
-    OwnPtr<WebGLRenderingContext> renderingContext = adoptPtr(new WebGLRenderingContext(canvas, context.release(), attrs));
+    OwnPtrWillBeRawPtr<WebGLRenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGLRenderingContext(canvas, context.release(), attrs));
     renderingContext->registerContextExtensions();
     renderingContext->suspendIfNeeded();
 

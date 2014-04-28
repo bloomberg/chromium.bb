@@ -64,6 +64,7 @@ public:
 };
 
 class HTMLCanvasElement FINAL : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
     static PassRefPtr<HTMLCanvasElement> create(Document&);
     virtual ~HTMLCanvasElement();
@@ -145,6 +146,8 @@ public:
     // ImageBufferClient implementation
     virtual void notifySurfaceInvalid() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
@@ -172,7 +175,7 @@ private:
 
     IntSize m_size;
 
-    OwnPtr<CanvasRenderingContext> m_context;
+    OwnPtrWillBeMember<CanvasRenderingContext> m_context;
 
     bool m_rendererIsCanvas;
 

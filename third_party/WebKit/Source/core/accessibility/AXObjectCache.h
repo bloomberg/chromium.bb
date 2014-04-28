@@ -108,6 +108,8 @@ public:
     void remove(AbstractInlineTextBox*);
     void remove(AXID);
 
+    void clearWeakMembers(Visitor*);
+
     void detachWrapper(AXObject*);
     void attachWrapper(AXObject*);
     void childrenChanged(Node*);

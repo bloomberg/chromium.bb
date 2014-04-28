@@ -701,11 +701,13 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
 
     destroyContext();
 
+#if !ENABLE(OILPAN)
     if (m_multisamplingObserverRegistered) {
         Page* page = canvas()->document().page();
         if (page)
             page->removeMultisamplingChangedObserver(this);
     }
+#endif
 
     willDestroyContext(this);
 }

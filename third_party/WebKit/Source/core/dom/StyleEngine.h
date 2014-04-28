@@ -225,7 +225,8 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
-    WillBeHeapHashMap<TreeScope*, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> > m_styleSheetCollectionMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<TreeScope>, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> > StyleSheetCollectionMap;
+    StyleSheetCollectionMap m_styleSheetCollectionMap;
 
     bool m_documentScopeDirty;
     TreeScopeSet m_dirtyTreeScopes;

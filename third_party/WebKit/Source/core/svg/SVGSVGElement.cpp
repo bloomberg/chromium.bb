@@ -96,11 +96,15 @@ SVGSVGElement::~SVGSVGElement()
     if (m_viewSpec)
         m_viewSpec->detachContextElement();
 
+#if !ENABLE(OILPAN)
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
+    // With Oilpan, either removedFrom is called or the document
+    // is dead as well and there is no reason to clear the extensions.
     document().accessSVGExtensions().removeTimeContainer(this);
 
     ASSERT(inDocument() || !accessDocumentSVGExtensions().isSVGRootWithRelativeLengthDescendents(this));
+#endif
 }
 
 PassRefPtr<SVGRectTearOff> SVGSVGElement::viewport() const

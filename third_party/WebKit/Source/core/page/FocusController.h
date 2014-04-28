@@ -28,6 +28,7 @@
 
 #include "core/page/FocusType.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -47,6 +48,7 @@ class Page;
 class TreeScope;
 
 class FocusNavigationScope {
+    STACK_ALLOCATED();
 public:
     Node* rootNode() const;
     Element* owner() const;
@@ -58,7 +60,7 @@ public:
 
 private:
     explicit FocusNavigationScope(TreeScope*);
-    TreeScope* m_rootTreeScope;
+    RawPtrWillBeMember<TreeScope> m_rootTreeScope;
 };
 
 class FocusController {

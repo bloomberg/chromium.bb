@@ -144,7 +144,7 @@ TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeSc
     if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
-    WillBeHeapHashMap<TreeScope*, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
+    StyleSheetCollectionMap::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
     if (result.isNewEntry)
         result.storedValue->value = adoptPtrWillBeNoop(new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope)));
     return result.storedValue->value.get();
@@ -155,7 +155,7 @@ TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& t
     if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
-    WillBeHeapHashMap<TreeScope*, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(&treeScope);
+    StyleSheetCollectionMap::iterator it = m_styleSheetCollectionMap.find(&treeScope);
     if (it == m_styleSheetCollectionMap.end())
         return 0;
     return it->value.get();

@@ -97,7 +97,9 @@ HTMLCanvasElement::~HTMLCanvasElement()
     for (HashSet<CanvasObserver*>::iterator it = m_observers.begin(); it != end; ++it)
         (*it)->canvasDestroyed(this);
 
+#if !ENABLE(OILPAN)
     m_context.clear(); // Ensure this goes away before the ImageBuffer.
+#endif
 }
 
 void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -527,6 +529,12 @@ void HTMLCanvasElement::notifySurfaceInvalid()
         CanvasRenderingContext2D* context2d = toCanvasRenderingContext2D(m_context.get());
         context2d->loseContext();
     }
+}
+
+void HTMLCanvasElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_context);
+    HTMLElement::trace(visitor);
 }
 
 void HTMLCanvasElement::updateExternallyAllocatedMemory() const

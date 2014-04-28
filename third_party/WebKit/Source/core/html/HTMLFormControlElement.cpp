@@ -63,7 +63,9 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
 
 HTMLFormControlElement::~HTMLFormControlElement()
 {
+#if !ENABLE(OILPAN)
     setForm(0);
+#endif
 }
 
 String HTMLFormControlElement::formEnctype() const

@@ -27,6 +27,7 @@
 #define CanvasRenderingContext_h
 
 #include "core/html/HTMLCanvasElement.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
@@ -39,13 +40,17 @@ class HTMLCanvasElement;
 class KURL;
 class WebGLObject;
 
-class CanvasRenderingContext {
-    WTF_MAKE_NONCOPYABLE(CanvasRenderingContext); WTF_MAKE_FAST_ALLOCATED;
+class CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext> {
+    WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     virtual ~CanvasRenderingContext() { }
 
+#if !ENABLE(OILPAN)
     void ref() { m_canvas->ref(); }
     void deref() { m_canvas->deref(); }
+#endif
+
     HTMLCanvasElement* canvas() const { return m_canvas; }
 
     virtual bool is2d() const { return false; }
@@ -56,11 +61,14 @@ public:
     virtual void paintRenderingResultsToCanvas() {}
 
     virtual blink::WebLayer* platformLayer() const { return 0; }
+
+    virtual void trace(Visitor* visitor) { visitor->trace(m_canvas); }
+
 protected:
     CanvasRenderingContext(HTMLCanvasElement*);
 
 private:
-    HTMLCanvasElement* m_canvas;
+    RawPtrWillBeMember<HTMLCanvasElement> m_canvas;
 };
 
 } // namespace WebCore

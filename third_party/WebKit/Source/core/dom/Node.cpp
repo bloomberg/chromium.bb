@@ -271,16 +271,20 @@ Node::~Node()
 
     RELEASE_ASSERT(!renderer());
 
+#if !ENABLE(OILPAN)
     if (!isContainerNode())
         willBeDeletedFromDocument();
+#endif
 
     if (m_previous)
         m_previous->setNextSibling(0);
     if (m_next)
         m_next->setPreviousSibling(0);
 
+#if !ENABLE(OILPAN)
     if (m_treeScope)
         m_treeScope->guardDeref();
+#endif
 
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
 
@@ -288,6 +292,8 @@ Node::~Node()
         WeakNodeMap::notifyNodeDestroyed(this);
 }
 
+#if !ENABLE(OILPAN)
+// With Oilpan all of this is handled with weak processing of the document.
 void Node::willBeDeletedFromDocument()
 {
     if (!isTreeScopeInitialized())
@@ -306,6 +312,7 @@ void Node::willBeDeletedFromDocument()
 
     document.markers().removeMarkers(this);
 }
+#endif
 
 NodeRareData* Node::rareData() const
 {
@@ -2029,12 +2036,17 @@ void Node::removeAllEventListenersRecursively()
     }
 }
 
-typedef HashMap<Node*, OwnPtr<EventTargetData> > EventTargetDataMap;
+typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Node>, OwnPtr<EventTargetData> > EventTargetDataMap;
 
 static EventTargetDataMap& eventTargetDataMap()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<EventTargetDataMap>, map, (new EventTargetDataMap()));
+    return *map;
+#else
     DEFINE_STATIC_LOCAL(EventTargetDataMap, map, ());
     return map;
+#endif
 }
 
 EventTargetData* Node::eventTargetData()
@@ -2052,10 +2064,12 @@ EventTargetData& Node::ensureEventTargetData()
     return *data;
 }
 
+#if !ENABLE(OILPAN)
 void Node::clearEventTargetData()
 {
     eventTargetDataMap().remove(this);
 }
+#endif
 
 WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* Node::mutationObserverRegistry()
 {
@@ -2354,6 +2368,12 @@ bool Node::willRespondToTouchEvents()
 }
 
 // This is here for inlining
+#if ENABLE(OILPAN)
+inline void TreeScope::removedLastRefToScope()
+{
+    dispose();
+}
+#else
 inline void TreeScope::removedLastRefToScope()
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!deletionHasBegun());
@@ -2373,14 +2393,13 @@ inline void TreeScope::removedLastRefToScope()
 #if !ASSERT_DISABLED
         rootNode().m_inRemovedLastRefFunction = false;
 #endif
-#if !ENABLE(OILPAN)
 #if SECURITY_ASSERT_ENABLED
         beginDeletion();
 #endif
         delete this;
-#endif
     }
 }
+#endif
 
 // It's important not to inline removedLastRef, because we don't want to inline the code to
 // delete a Node at each deref call site.
@@ -2540,6 +2559,11 @@ void Node::setCustomElementState(CustomElementState newState)
 
     if (oldState == NotCustomElement || newState == Upgraded)
         setNeedsStyleRecalc(SubtreeStyleChange); // :unresolved has changed
+}
+
+void Node::trace(Visitor* visitor)
+{
+    visitor->trace(m_treeScope);
 }
 
 } // namespace WebCore

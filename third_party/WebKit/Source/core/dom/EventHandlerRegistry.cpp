@@ -199,4 +199,22 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
     }
 }
 
+void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
+{
+    Vector<EventTarget*> deadNodeTargets;
+    for (size_t i = 0; i < EventHandlerClassCount; ++i) {
+        EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
+        const EventTargetSet* targets = eventHandlerTargets(handlerClass);
+        if (!targets)
+            continue;
+        for (EventTargetSet::const_iterator it = targets->begin(); it != targets->end(); ++it) {
+            Node* node = it->key->toNode();
+            if (node && !visitor->isAlive(node))
+                deadNodeTargets.append(node);
+        }
+    }
+    for (size_t i = 0; i < deadNodeTargets.size(); ++i)
+        didRemoveAllEventHandlers(*deadNodeTargets[i]);
+}
+
 } // namespace WebCore

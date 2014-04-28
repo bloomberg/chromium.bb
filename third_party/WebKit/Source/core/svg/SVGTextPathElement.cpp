@@ -70,7 +70,9 @@ PassRefPtr<SVGTextPathElement> SVGTextPathElement::create(Document& document)
 
 SVGTextPathElement::~SVGTextPathElement()
 {
+#if !ENABLE(OILPAN)
     clearResourceReferences();
+#endif
 }
 
 void SVGTextPathElement::clearResourceReferences()

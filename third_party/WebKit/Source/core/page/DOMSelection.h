@@ -96,7 +96,7 @@ public:
     // Microsoft Selection Object API
     void empty();
 
-    void trace(Visitor*) { }
+    void trace(Visitor* visitor) { visitor->trace(m_treeScope); }
 
 private:
     explicit DOMSelection(const TreeScope*);
@@ -111,7 +111,7 @@ private:
 
     void addConsoleError(const String& message);
 
-    const TreeScope* m_treeScope;
+    RawPtrWillBeMember<const TreeScope> m_treeScope;
 };
 
 } // namespace WebCore

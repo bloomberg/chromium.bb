@@ -83,8 +83,9 @@ PassRefPtr<SVGUseElement> SVGUseElement::create(Document& document, bool wasInse
 SVGUseElement::~SVGUseElement()
 {
     setDocumentResource(0);
-
+#if !ENABLE(OILPAN)
     clearResourceReferences();
+#endif
 }
 
 SVGElementInstance* SVGUseElement::instanceRoot()

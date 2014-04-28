@@ -49,6 +49,7 @@ public:
     void didRemoveAllEventHandlers(EventTarget&);
 
     virtual void trace(Visitor*) OVERRIDE { }
+    void clearWeakMembers(Visitor*);
 
 private:
     explicit EventHandlerRegistry(Document&);

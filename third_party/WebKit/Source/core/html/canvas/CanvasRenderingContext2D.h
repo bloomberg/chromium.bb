@@ -63,13 +63,13 @@ class ImageBitmap;
 class ImageData;
 class TextMetrics;
 
-typedef WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet> > MutableStylePropertyMap;
+typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet> > MutableStylePropertyMap;
 
-class CanvasRenderingContext2D FINAL: public ScriptWrappable, public CanvasRenderingContext, public CanvasPathMethods {
+class CanvasRenderingContext2D FINAL: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
 public:
-    static PassOwnPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
+    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     {
-        return adoptPtr(new CanvasRenderingContext2D(canvas, attrs, usesCSSCompatibilityParseMode));
+        return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, usesCSSCompatibilityParseMode));
     }
     virtual ~CanvasRenderingContext2D();
 
@@ -233,6 +233,8 @@ public:
     void loseContext();
     void restoreContext();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     class State FINAL : public CSSFontSelectorClient {
     public:
@@ -343,9 +345,7 @@ private:
 
     virtual blink::WebLayer* platformLayer() const OVERRIDE;
 
-    // FIXME: Oilpan: Make this a vector of embedded State objects rather than pointers
-    // once we support having vectors with objects using a vtable in oilpan.
-    WillBePersistentHeapVector<OwnPtrWillBeMember<State> > m_stateStack;
+    WillBeHeapVector<OwnPtrWillBeMember<State> > m_stateStack;
     bool m_usesCSSCompatibilityParseMode;
     bool m_hasAlpha;
     bool m_isContextLost;

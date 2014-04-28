@@ -44,6 +44,7 @@ class IntRect;
 class SecurityOrigin;
 class SpeechInputClient;
 class SpeechInputListener;
+class InputFieldSpeechButtonElement;
 
 // This class connects the input elements requiring speech input with the platform specific
 // speech recognition engine. It provides methods for the input elements to activate speech
@@ -59,7 +60,7 @@ public:
 
     // Generates a unique ID for the given listener to be used for speech requests.
     // This should be the first call made by listeners before anything else.
-    int registerListener(SpeechInputListener*);
+    int registerListener(InputFieldSpeechButtonElement*);
 
     // Invoked when the listener is done with recording or getting destroyed.
     // Failure to unregister may result in crashes if there were any pending speech events.
@@ -76,12 +77,17 @@ public:
     virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE { }
+    void clearWeakMembers(Visitor*);
 
 private:
     explicit SpeechInput(PassOwnPtr<SpeechInputClient>);
 
     OwnPtr<SpeechInputClient> m_client;
-    HashMap<int, SpeechInputListener*> m_listeners;
+    // FIXME: Oilpan: go back to using SpeechInputListener as the type when
+    // all SpeechInputListeners (SpeechInput and InputFieldSpeechButtonElement)
+    // have been moved to the oilpan heap. At that point SpeechInputListener
+    // will be a GarbageCollectedMixin.
+    HashMap<int, InputFieldSpeechButtonElement*> m_listeners;
     int m_nextListenerId;
 };
 

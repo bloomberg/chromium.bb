@@ -44,7 +44,9 @@ PassRefPtr<SVGMPathElement> SVGMPathElement::create(Document& document)
 
 SVGMPathElement::~SVGMPathElement()
 {
+#if !ENABLE(OILPAN)
     clearResourceReferences();
+#endif
 }
 
 void SVGMPathElement::buildPendingResource()

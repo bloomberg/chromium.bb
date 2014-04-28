@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class ShadowRootRareData {
+class ShadowRootRareData : public NoBaseWillBeGarbageCollectedFinalized<ShadowRootRareData> {
 public:
     ShadowRootRareData()
         : m_descendantShadowElementCount(0)
@@ -70,13 +70,15 @@ public:
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
     void setStyleSheets(PassRefPtrWillBeRawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
+    void trace(Visitor* visitor) { visitor->trace(m_styleSheetList); }
+
 private:
     RefPtr<HTMLShadowElement> m_shadowInsertionPointOfYoungerShadowRoot;
     unsigned m_descendantShadowElementCount;
     unsigned m_descendantContentElementCount;
     unsigned m_childShadowRootCount;
     Vector<RefPtr<InsertionPoint> > m_descendantInsertionPoints;
-    RefPtrWillBePersistent<StyleSheetList> m_styleSheetList;
+    RefPtrWillBeMember<StyleSheetList> m_styleSheetList;
 };
 
 inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)

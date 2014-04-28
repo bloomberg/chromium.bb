@@ -115,8 +115,10 @@ void CanvasRenderingContext2D::unwindStateStack()
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D()
 {
+#if !ENABLE(OILPAN)
 #if !ASSERT_DISABLED
     unwindStateStack();
+#endif
 #endif
 }
 
@@ -158,6 +160,15 @@ void CanvasRenderingContext2D::restoreContext()
             m_isContextLost = false;
         }
     }
+}
+
+void CanvasRenderingContext2D::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_stateStack);
+    visitor->trace(m_fetchedFonts);
+    CanvasRenderingContext::trace(visitor);
+#endif
 }
 
 void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)

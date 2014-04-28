@@ -571,6 +571,18 @@ void AXObjectCache::remove(AbstractInlineTextBox* inlineTextBox)
     m_inlineTextBoxObjectMapping.remove(inlineTextBox);
 }
 
+// FIXME: Oilpan: Use a weak hashmap for this instead.
+void AXObjectCache::clearWeakMembers(Visitor* visitor)
+{
+    Vector<Node*> deadNodes;
+    for (HashMap<Node*, AXID>::iterator it = m_nodeObjectMapping.begin(); it != m_nodeObjectMapping.end(); ++it) {
+        if (!visitor->isAlive(it->key))
+            deadNodes.append(it->key);
+    }
+    for (unsigned i = 0; i < deadNodes.size(); ++i)
+        remove(deadNodes[i]);
+}
+
 AXID AXObjectCache::platformGenerateAXID() const
 {
     static AXID lastUsedID = 0;

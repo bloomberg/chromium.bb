@@ -68,7 +68,7 @@ DOMSelection::DOMSelection(const TreeScope* treeScope)
 
 void DOMSelection::clearTreeScope()
 {
-    m_treeScope = 0;
+    m_treeScope = nullptr;
 }
 
 const VisibleSelection& DOMSelection::visibleSelection() const

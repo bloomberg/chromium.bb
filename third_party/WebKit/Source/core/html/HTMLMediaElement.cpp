@@ -122,17 +122,23 @@ static const char mediaSourceBlobProtocol[] = "blob";
 using namespace HTMLNames;
 using namespace std;
 
-typedef HashMap<Document*, HashSet<HTMLMediaElement*> > DocumentElementSetMap;
+typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement> > WeakMediaElementSet;
+typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Document>, WeakMediaElementSet> DocumentElementSetMap;
 static DocumentElementSetMap& documentToElementSetMap()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<DocumentElementSetMap>, map, (new DocumentElementSetMap()));
+    return *map;
+#else
     DEFINE_STATIC_LOCAL(DocumentElementSetMap, map, ());
     return map;
+#endif
 }
 
 static void addElementToDocumentMap(HTMLMediaElement* element, Document* document)
 {
     DocumentElementSetMap& map = documentToElementSetMap();
-    HashSet<HTMLMediaElement*> set = map.take(document);
+    WeakMediaElementSet set = map.take(document);
     set.add(element);
     map.add(document, set);
 }
@@ -140,7 +146,7 @@ static void addElementToDocumentMap(HTMLMediaElement* element, Document* documen
 static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* document)
 {
     DocumentElementSetMap& map = documentToElementSetMap();
-    HashSet<HTMLMediaElement*> set = map.take(document);
+    WeakMediaElementSet set = map.take(document);
     set.remove(element);
     if (!set.isEmpty())
         map.add(document, set);
@@ -318,7 +324,9 @@ HTMLMediaElement::~HTMLMediaElement()
 
     closeMediaSource();
 
+#if !ENABLE(OILPAN)
     removeElementFromDocumentMap(this, &document());
+#endif
 
     // Destroying the player may cause a resource load to be canceled,
     // which could result in userCancelledLoad() being called back.
@@ -327,6 +335,10 @@ HTMLMediaElement::~HTMLMediaElement()
     // See http://crbug.com/233654 for more details.
     m_completelyLoaded = true;
 
+    // With Oilpan load events on the Document are always delayed during
+    // sweeping so we don't need to explicitly increment and decrement
+    // load event delay counts.
+#if !ENABLE(OILPAN)
     // Destroying the player may cause a resource load to be canceled,
     // which could result in Document::dispatchWindowLoadEvent() being
     // called via ResourceFetch::didLoadResource() then
@@ -334,10 +346,13 @@ HTMLMediaElement::~HTMLMediaElement()
     // object destruction, we use Document::incrementLoadEventDelayCount().
     // See http://crbug.com/275223 for more details.
     document().incrementLoadEventDelayCount();
+#endif
 
     clearMediaPlayerAndAudioSourceProviderClient();
 
+#if !ENABLE(OILPAN)
     document().decrementLoadEventDelayCount();
+#endif
 }
 
 void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
@@ -3464,8 +3479,8 @@ void HTMLMediaElement::setMediaGroup(const AtomicString& group)
 
     // 4. If there is another media element whose Document is the same as m's Document (even if one or both
     // of these elements are not actually in the Document),
-    HashSet<HTMLMediaElement*> elements = documentToElementSetMap().get(&document());
-    for (HashSet<HTMLMediaElement*>::iterator i = elements.begin(); i != elements.end(); ++i) {
+    WeakMediaElementSet elements = documentToElementSetMap().get(&document());
+    for (WeakMediaElementSet::iterator i = elements.begin(); i != elements.end(); ++i) {
         if (*i == this)
             continue;
 

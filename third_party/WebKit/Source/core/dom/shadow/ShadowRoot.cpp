@@ -68,16 +68,20 @@ ShadowRoot::~ShadowRoot()
     ASSERT(!m_prev);
     ASSERT(!m_next);
 
+#if !ENABLE(OILPAN)
     if (m_shadowRootRareData && m_shadowRootRareData->styleSheets())
         m_shadowRootRareData->styleSheets()->detachFromDocument();
 
     document().styleEngine()->didRemoveShadowRoot(this);
+#endif
 
+#if !ENABLE(OILPAN)
     // We cannot let ContainerNode destructor call willBeDeletedFromDocument()
     // for this ShadowRoot instance because TreeScope destructor
     // clears Node::m_treeScope thus ContainerNode is no longer able
     // to access it Document reference after that.
     willBeDeletedFromDocument();
+#endif
 
     // We must remove all of our children first before the TreeScope destructor
     // runs so we don't go through TreeScopeAdopter for each child with a
@@ -230,7 +234,7 @@ ShadowRootRareData* ShadowRoot::ensureShadowRootRareData()
     if (m_shadowRootRareData)
         return m_shadowRootRareData.get();
 
-    m_shadowRootRareData = adoptPtr(new ShadowRootRareData);
+    m_shadowRootRareData = adoptPtrWillBeNoop(new ShadowRootRareData);
     return m_shadowRootRareData.get();
 }
 
@@ -331,6 +335,13 @@ StyleSheetList* ShadowRoot::styleSheets()
         m_shadowRootRareData->setStyleSheets(StyleSheetList::create(this));
 
     return m_shadowRootRareData->styleSheets();
+}
+
+void ShadowRoot::trace(Visitor* visitor)
+{
+    visitor->trace(m_shadowRootRareData);
+    TreeScope::trace(visitor);
+    DocumentFragment::trace(visitor);
 }
 
 }

@@ -157,6 +157,7 @@ void HTMLInputElement::willAddFirstAuthorShadowRoot()
 
 HTMLInputElement::~HTMLInputElement()
 {
+#if !ENABLE(OILPAN)
     // Need to remove form association while this is still an HTMLInputElement
     // so that virtual functions are called correctly.
     setForm(0);
@@ -166,6 +167,7 @@ HTMLInputElement::~HTMLInputElement()
         document().formController().radioButtonGroupScope().removeButton(this);
     if (m_hasTouchEventHandler)
         document().didRemoveTouchEventHandler(this);
+#endif
 }
 
 const AtomicString& HTMLInputElement::name() const

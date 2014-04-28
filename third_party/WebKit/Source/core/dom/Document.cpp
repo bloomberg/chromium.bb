@@ -71,6 +71,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementDataCache.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/EventHandlerRegistry.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MainThreadTaskRunner.h"
@@ -379,7 +380,9 @@ DocumentVisibilityObserver::DocumentVisibilityObserver(Document& document)
 
 DocumentVisibilityObserver::~DocumentVisibilityObserver()
 {
+#if !ENABLE(OILPAN)
     unregisterObserver();
+#endif
 }
 
 void DocumentVisibilityObserver::unregisterObserver()
@@ -524,8 +527,14 @@ Document::~Document()
     ASSERT(!renderView());
     ASSERT(m_ranges.isEmpty());
     ASSERT(!parentTreeScope());
+#if !ENABLE(OILPAN)
     ASSERT(!hasGuardRefCount());
+    // With Oilpan, either the document outlives the visibility observers
+    // or the visibility observers and the document die in the same GC round.
+    // When they die in the same GC round, the list of visibility observers
+    // will not be empty on Document destruction.
     ASSERT(m_visibilityObservers.isEmpty());
+#endif
 
     if (m_templateDocument)
         m_templateDocument->m_templateDocumentHost = 0; // balanced in ensureTemplateDocument().
@@ -546,8 +555,10 @@ Document::~Document()
     if (this == topDocument())
         clearAXObjectCache();
 
+#if !ENABLE(OILPAN)
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
+#endif
 
     if (m_importsController) {
         m_importsController->wasDetachedFrom(*this);
@@ -561,8 +572,10 @@ Document::~Document()
     if (m_styleEngine)
         m_styleEngine->detachFromDocument();
 
+#if !ENABLE(OILPAN)
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
+#endif
 
     // It's possible for multiple Documents to end up referencing the same ResourceFetcher (e.g., SVGImages
     // load the initial empty document and the SVGDocument with the same DocumentLoader).
@@ -1427,8 +1440,8 @@ void Document::didChangeVisibilityState()
     dispatchEvent(Event::create(EventTypeNames::webkitvisibilitychange));
 
     PageVisibilityState state = pageVisibilityState();
-    HashSet<DocumentVisibilityObserver*>::const_iterator observerEnd = m_visibilityObservers.end();
-    for (HashSet<DocumentVisibilityObserver*>::const_iterator it = m_visibilityObservers.begin(); it != observerEnd; ++it)
+    DocumentVisibilityObserverSet::const_iterator observerEnd = m_visibilityObservers.end();
+    for (DocumentVisibilityObserverSet::const_iterator it = m_visibilityObservers.begin(); it != observerEnd; ++it)
         (*it)->didChangeVisibilityState(state);
 }
 
@@ -4830,7 +4843,7 @@ void Document::detachRange(Range* range)
     m_ranges.remove(range);
 }
 
-void Document::getCSSCanvasContext(const String& type, const String& name, int width, int height, bool& is2d, RefPtr<CanvasRenderingContext2D>& context2d, bool& is3d, RefPtr<WebGLRenderingContext>& context3d)
+void Document::getCSSCanvasContext(const String& type, const String& name, int width, int height, bool& is2d, RefPtrWillBeRawPtr<CanvasRenderingContext2D>& context2d, bool& is3d, RefPtrWillBeRawPtr<WebGLRenderingContext>& context3d)
 {
     HTMLCanvasElement& element = getCSSCanvasElement(name);
     element.setSize(IntSize(width, height));
@@ -5033,9 +5046,32 @@ void Document::decrementLoadEventDelayCount()
     ASSERT(m_loadEventDelayCount);
     --m_loadEventDelayCount;
 
-    if (frame() && !m_loadEventDelayCount && !m_loadEventDelayTimer.isActive())
+    if (!m_loadEventDelayCount)
+        checkLoadEventSoon();
+}
+
+void Document::checkLoadEventSoon()
+{
+    if (frame() && !m_loadEventDelayTimer.isActive())
         m_loadEventDelayTimer.startOneShot(0, FROM_HERE);
 }
+
+bool Document::isDelayingLoadEvent()
+{
+#if ENABLE(OILPAN)
+    // Always delay load events until after garbage collection.
+    // This way we don't have to explicitly delay load events via
+    // incrementLoadEventDelayCount and decrementLoadEventDelayCount in
+    // Node destructors.
+    if (ThreadState::current()->isSweepInProgress()) {
+        if (!m_loadEventDelayCount)
+            checkLoadEventSoon();
+        return true;
+    }
+#endif
+    return m_loadEventDelayCount;
+}
+
 
 void Document::loadEventDelayTimerFired(Timer<Document>*)
 {
@@ -5590,9 +5626,40 @@ void Document::invalidateNodeListCaches(const QualifiedName* attrName)
         (*it)->invalidateCacheForAttribute(attrName);
 }
 
+void Document::clearWeakMembers(Visitor* visitor)
+{
+    if (m_axObjectCache)
+        m_axObjectCache->clearWeakMembers(visitor);
+
+    if (m_markers)
+        m_markers->clearWeakMembers(visitor);
+
+    // FIXME: Oilpan: Use a weak counted set instead.
+    if (m_touchEventTargets) {
+        Vector<Node*> deadNodes;
+        for (TouchEventTargetSet::iterator it = m_touchEventTargets->begin(); it != m_touchEventTargets->end(); ++it) {
+            if (!visitor->isAlive(it->key))
+                deadNodes.append(it->key);
+        }
+        for (unsigned i = 0; i < deadNodes.size(); ++i)
+            didClearTouchEventHandlers(deadNodes[i]);
+    }
+
+    EventHandlerRegistry* registry = static_cast<EventHandlerRegistry*>(DocumentSupplement::from(this, EventHandlerRegistry::supplementName()));
+    // FIXME: Oilpan: This is pretty funky. The current code disables all modifications of the
+    // EventHandlerRegistry when the document becomes inactive. To keep that behavior we only
+    // perform weak processing of the registry when the document is active.
+    if (registry && isActive())
+        registry->clearWeakMembers(visitor);
+}
+
 void Document::trace(Visitor* visitor)
 {
+    visitor->trace(m_styleSheetList);
+    visitor->trace(m_visibilityObservers);
+    visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     Supplementable<Document>::trace(visitor);
+    TreeScope::trace(visitor);
     ContainerNode::trace(visitor);
 }
 

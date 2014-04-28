@@ -121,6 +121,8 @@ public:
 
     StyleSheetList* styleSheets();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     ShadowRoot(Document&, ShadowRootType);
     virtual ~ShadowRoot();
@@ -142,7 +144,7 @@ private:
 
     ShadowRoot* m_prev;
     ShadowRoot* m_next;
-    OwnPtr<ShadowRootRareData> m_shadowRootRareData;
+    OwnPtrWillBeMember<ShadowRootRareData> m_shadowRootRareData;
     unsigned m_numberOfStyles : 27;
     unsigned m_type : 1;
     unsigned m_registeredWithParentShadowRoot : 1;

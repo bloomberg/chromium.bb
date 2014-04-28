@@ -59,19 +59,25 @@ TreeScope::TreeScope(ContainerNode& rootNode, Document& document)
     : m_rootNode(rootNode)
     , m_document(&document)
     , m_parentTreeScope(&document)
+#if !ENABLE(OILPAN)
     , m_guardRefCount(0)
+#endif
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
 {
     ASSERT(rootNode != document);
+#if !ENABLE(OILPAN)
     m_parentTreeScope->guardRef();
+#endif
     m_rootNode.setTreeScope(this);
 }
 
 TreeScope::TreeScope(Document& document)
     : m_rootNode(document)
     , m_document(&document)
-    , m_parentTreeScope(0)
+    , m_parentTreeScope(nullptr)
+#if !ENABLE(OILPAN)
     , m_guardRefCount(0)
+#endif
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
 {
     m_rootNode.setTreeScope(this);
@@ -79,9 +85,12 @@ TreeScope::TreeScope(Document& document)
 
 TreeScope::~TreeScope()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!m_guardRefCount);
+#endif
     m_rootNode.setTreeScope(0);
 
+#if !ENABLE(OILPAN)
     if (m_selection) {
         m_selection->clearTreeScope();
         m_selection = nullptr;
@@ -89,6 +98,7 @@ TreeScope::~TreeScope()
 
     if (m_parentTreeScope)
         m_parentTreeScope->guardDeref();
+#endif
 }
 
 TreeScope* TreeScope::olderShadowRootOrParentTreeScope() const
@@ -126,9 +136,11 @@ void TreeScope::setParentTreeScope(TreeScope& newParentScope)
     // A document node cannot be re-parented.
     ASSERT(!rootNode().isDocumentNode());
 
+#if !ENABLE(OILPAN)
     newParentScope.guardRef();
     if (m_parentTreeScope)
         m_parentTreeScope->guardDeref();
+#endif
     m_parentTreeScope = &newParentScope;
     setDocument(newParentScope.document());
 }
@@ -519,6 +531,12 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
         if (style && style->hasViewportUnits())
             element->setNeedsStyleRecalc(LocalStyleChange);
     }
+}
+
+void TreeScope::trace(Visitor* visitor)
+{
+    visitor->trace(m_parentTreeScope);
+    visitor->trace(m_selection);
 }
 
 } // namespace WebCore

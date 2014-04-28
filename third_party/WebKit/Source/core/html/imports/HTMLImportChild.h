@@ -34,6 +34,7 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/html/imports/HTMLImport.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 
@@ -96,7 +97,11 @@ private:
     void shareLoader(HTMLImportChild*);
     void ensureLoader();
 
+#if ENABLE(OILPAN)
+    Persistent<Document> m_master;
+#else
     Document& m_master;
+#endif
     KURL m_url;
     CustomElementMicrotaskImportStep* m_customElementMicrotaskStep;
     HTMLImportLoader* m_loader;

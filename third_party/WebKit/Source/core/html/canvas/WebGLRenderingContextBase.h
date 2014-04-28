@@ -96,7 +96,8 @@ class WebGLVertexArrayObjectOES;
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
 
-class WebGLRenderingContextBase: public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
+class WebGLRenderingContextBase: public CanvasRenderingContext, public ActiveDOMObject, public Page::MultisamplingChangedObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
 public:
     virtual ~WebGLRenderingContextBase();
 

@@ -140,11 +140,18 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
 
 GraphicsContext::~GraphicsContext()
 {
+#if !ENABLE(OILPAN)
+    // These asserts are only valid in debug mode and therefore do not seem
+    // useful. We cannot rely on them in any case. With Oilpan we cannot run
+    // the debug mode only code in CanvasRendingContext2D's destructor which
+    // touches other objects that are dead. Therefore, we disable these asserts
+    // with Oilpan and should probably consider just disabling them.
     ASSERT(!m_paintStateIndex);
     ASSERT(!m_paintState->saveCount());
     ASSERT(!m_annotationCount);
     ASSERT(!m_layerCount);
     ASSERT(m_recordingStateStack.isEmpty());
+#endif
 }
 
 void GraphicsContext::save()

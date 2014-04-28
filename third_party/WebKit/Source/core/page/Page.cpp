@@ -53,6 +53,7 @@
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
+#include "core/speech/SpeechInput.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/HashMap.h"
@@ -470,8 +471,8 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
             frame->document()->initDNSPrefetch();
         break;
     case SettingsDelegate::MultisamplingChange: {
-        HashSet<MultisamplingChangedObserver*>::iterator stop = m_multisamplingChangedObservers.end();
-        for (HashSet<MultisamplingChangedObserver*>::iterator it = m_multisamplingChangedObservers.begin(); it != stop; ++it)
+        WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver> >::iterator stop = m_multisamplingChangedObservers.end();
+        for (WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver> >::iterator it = m_multisamplingChangedObservers.begin(); it != stop; ++it)
             (*it)->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
         break;
     }
@@ -539,7 +540,16 @@ PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
 
 void Page::trace(Visitor* visitor)
 {
+    visitor->registerWeakMembers<Page, &Page::clearWeakMembers>(this);
+    visitor->trace(m_multisamplingChangedObservers);
     Supplementable<Page>::trace(visitor);
+}
+
+void Page::clearWeakMembers(Visitor* visitor)
+{
+    SpeechInput* input = SpeechInput::from(this);
+    if (input)
+        input->clearWeakMembers(visitor);
 }
 
 void Page::willBeDestroyed()

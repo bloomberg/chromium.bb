@@ -38,7 +38,13 @@ inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser
 
 SVGStyleElement::~SVGStyleElement()
 {
+#if ENABLE(OILPAN)
+    // Remove this once StyleSheet has a strong pointer to its owner.
+    if (m_sheet)
+        m_sheet->clearOwnerNode();
+#else
     StyleElement::clearDocumentData(document(), this);
+#endif
 }
 
 PassRefPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)

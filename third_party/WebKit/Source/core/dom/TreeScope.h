@@ -102,6 +102,8 @@ public:
 
     IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
 
+
+#if !ENABLE(OILPAN)
     // Nodes belonging to this scope hold guard references -
     // these are enough to keep the scope from being destroyed, but
     // not enough to keep it from removing its children. This allows a
@@ -109,44 +111,23 @@ public:
     // pointer without introducing reference cycles.
     void guardRef()
     {
-#if ENABLE(OILPAN)
-        if (!m_guardRefCount) {
-            ASSERT(!m_keepAlive);
-            m_keepAlive = adoptPtr(new Persistent<TreeScope>(this));
-        }
-#else
         ASSERT(!deletionHasBegun());
-#endif
         ++m_guardRefCount;
     }
 
     void guardDeref()
     {
         ASSERT(m_guardRefCount > 0);
-#if !ENABLE(OILPAN)
         ASSERT(!deletionHasBegun());
-#endif
         --m_guardRefCount;
-#if ENABLE(OILPAN)
-        if (!m_guardRefCount)
-            clearKeepAlive();
-#else
         if (!m_guardRefCount && !refCount() && !rootNodeHasTreeSharedParent()) {
             beginDeletion();
             delete this;
         }
-#endif
     }
+#endif
 
     void removedLastRefToScope();
-
-#if ENABLE(OILPAN)
-    void clearKeepAlive()
-    {
-        ASSERT(m_keepAlive);
-        m_keepAlive = nullptr;
-    }
-#endif
 
     bool isInclusiveAncestorOf(const TreeScope&) const;
     unsigned short comparePosition(const TreeScope&) const;
@@ -155,6 +136,8 @@ public:
     TreeScope* commonAncestorTreeScope(TreeScope& other);
 
     Element* getElementByAccessKey(const String& key) const;
+
+    virtual void trace(Visitor*);
 
 protected:
     TreeScope(ContainerNode&, Document&);
@@ -165,7 +148,9 @@ protected:
     void setDocument(Document& document) { m_document = &document; }
     void setParentTreeScope(TreeScope&);
 
+#if !ENABLE(OILPAN)
     bool hasGuardRefCount() const { return m_guardRefCount; }
+#endif
 
     void setNeedsStyleRecalcForViewportUnits();
 
@@ -185,8 +170,11 @@ private:
 
     Node& m_rootNode;
     Document* m_document;
-    TreeScope* m_parentTreeScope;
+    RawPtrWillBeMember<TreeScope> m_parentTreeScope;
+
+#if !ENABLE(OILPAN)
     int m_guardRefCount;
+#endif
 
     OwnPtr<DocumentOrderedMap> m_elementsById;
     OwnPtr<DocumentOrderedMap> m_imageMapsByName;
@@ -194,21 +182,7 @@ private:
 
     OwnPtr<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
-#if ENABLE(OILPAN)
-    // With Oilpan, a non-zero reference count will keep the TreeScope alive
-    // with a self-persistent handle. Whenever the ref count goes above zero
-    // we register the TreeScope as a root for garbage collection by allocating a
-    // persistent handle to the object itself. When the ref count goes to zero
-    // we deallocate the persistent handle again so the object can die if there
-    // are no other things keeping it alive.
-    //
-    // FIXME: Oilpan: Remove m_keepAlive and ref counting and use tracing instead.
-    GC_PLUGIN_IGNORE("359444")
-    OwnPtr<Persistent<TreeScope> > m_keepAlive;
-#endif
-
-    GC_PLUGIN_IGNORE("359444")
-    mutable RefPtrWillBePersistent<DOMSelection> m_selection;
+    mutable RefPtrWillBeMember<DOMSelection> m_selection;
 };
 
 inline bool TreeScope::hasElementWithId(StringImpl* id) const

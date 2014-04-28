@@ -38,7 +38,9 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
 {
     ASSERT(needsScopeChange());
 
+#if !ENABLE(OILPAN)
     m_oldScope.guardRef();
+#endif
 
     // If an element is moved from a document and then eventually back again the collection cache for
     // that element may contain stale data as changes made to it will have updated the DOMTreeVersion
@@ -77,7 +79,9 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
         }
     }
 
+#if !ENABLE(OILPAN)
     m_oldScope.guardDeref();
+#endif
 }
 
 void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, Document& newDocument) const
@@ -106,8 +110,10 @@ inline void TreeScopeAdopter::updateTreeScope(Node& node) const
 {
     ASSERT(!node.isTreeScope());
     ASSERT(node.treeScope() == m_oldScope);
+#if !ENABLE(OILPAN)
     m_newScope.guardRef();
     m_oldScope.guardDeref();
+#endif
     node.setTreeScope(&m_newScope);
 }
 
