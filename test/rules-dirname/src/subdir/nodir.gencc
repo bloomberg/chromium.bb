@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 namespace gen {
-  void c() {
-    printf("hi c\n");
+  void nodir() {
+    printf("no dir here\n");
   }
 }

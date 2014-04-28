@@ -933,7 +933,7 @@ class AndroidMkWriter(object):
         'INPUT_ROOT': expansion,
         'INPUT_DIRNAME': dirname,
         }
-    return path
+    return os.path.normpath(path)
 
 
 def PerformBuild(data, configurations, params):

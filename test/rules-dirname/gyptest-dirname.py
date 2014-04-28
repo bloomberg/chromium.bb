@@ -11,7 +11,7 @@ Verifies simple rules when using an explicit build target of 'all'.
 import TestGyp
 import os
 
-test = TestGyp.TestGyp(formats=['make', 'ninja', 'xcode'])
+test = TestGyp.TestGyp(formats=['make', 'ninja', 'android', 'xcode'])
 
 test.run_gyp('actions.gyp', chdir='src')
 
@@ -20,6 +20,7 @@ test.relocate('src', 'relocate/src')
 test.build('actions.gyp', chdir='relocate/src')
 
 expect = """\
+no dir here
 hi c
 hello baz
 """

@@ -26,7 +26,7 @@
             'python', '<@(_inputs)', '<(RULE_INPUT_DIRNAME)', '<@(_outputs)',
           ],
         },
-      ],      
+      ],
     },
     {
       'target_name': 'gencc_int_output',
@@ -34,6 +34,7 @@
       'msvs_cygwin_shell': 0,
       'msvs_cygwin_dirs': ['../../../../../../<(DEPTH)/third_party/cygwin'],
       'sources': [
+        'nodir.gencc',
         'foo/bar/baz.gencc',
         'a/b/c.gencc',
 	'main.cc',
@@ -61,7 +62,7 @@
           ],
           'process_outputs_as_sources': 1,
         },
-      ],      
+      ],
     },
   ],
   'conditions': [
