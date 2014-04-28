@@ -32,6 +32,9 @@ void MemoryBenchmarkingExtension::Install(blink::WebFrame* frame) {
   v8::Context::Scope context_scope(context);
   gin::Handle<MemoryBenchmarkingExtension> controller =
       gin::CreateHandle(isolate, new MemoryBenchmarkingExtension());
+  if (controller.IsEmpty())
+    return;
+
   v8::Handle<v8::Object> global = context->Global();
   v8::Handle<v8::Object> chrome =
       global->Get(gin::StringToV8(isolate, "chrome"))->ToObject();

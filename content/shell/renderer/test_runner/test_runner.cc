@@ -285,6 +285,8 @@ void TestRunnerBindings::Install(base::WeakPtr<TestRunner> runner,
 
   gin::Handle<TestRunnerBindings> bindings =
       gin::CreateHandle(isolate, new TestRunnerBindings(runner));
+  if (bindings.IsEmpty())
+    return;
   v8::Handle<v8::Object> global = context->Global();
   v8::Handle<v8::Value> v8_bindings = bindings.ToV8();
   global->Set(gin::StringToV8(isolate, "testRunner"), v8_bindings);

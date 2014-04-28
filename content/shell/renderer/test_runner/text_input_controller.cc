@@ -68,6 +68,8 @@ void TextInputControllerBindings::Install(
 
   gin::Handle<TextInputControllerBindings> bindings =
       gin::CreateHandle(isolate, new TextInputControllerBindings(controller));
+  if (bindings.IsEmpty())
+    return;
   v8::Handle<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "textInputController"), bindings.ToV8());
 }

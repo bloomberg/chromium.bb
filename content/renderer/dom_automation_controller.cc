@@ -33,6 +33,9 @@ void DomAutomationController::Install(RenderFrame* render_frame,
 
   gin::Handle<DomAutomationController> controller =
       gin::CreateHandle(isolate, new DomAutomationController(render_frame));
+  if (controller.IsEmpty())
+    return;
+
   v8::Handle<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "domAutomationController"),
               controller.ToV8());

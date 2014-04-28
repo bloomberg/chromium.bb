@@ -74,6 +74,9 @@ void SkiaBenchmarking::Install(blink::WebFrame* frame) {
 
   gin::Handle<SkiaBenchmarking> controller =
       gin::CreateHandle(isolate, new SkiaBenchmarking());
+  if (controller.IsEmpty())
+    return;
+
   v8::Handle<v8::Object> global = context->Global();
   v8::Handle<v8::Object> chrome =
       global->Get(gin::StringToV8(isolate, "chrome"))->ToObject();

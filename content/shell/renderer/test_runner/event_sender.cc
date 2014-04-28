@@ -436,6 +436,8 @@ void EventSenderBindings::Install(base::WeakPtr<EventSender> sender,
 
   gin::Handle<EventSenderBindings> bindings =
       gin::CreateHandle(isolate, new EventSenderBindings(sender));
+  if (bindings.IsEmpty())
+    return;
   v8::Handle<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "eventSender"), bindings.ToV8());
 }

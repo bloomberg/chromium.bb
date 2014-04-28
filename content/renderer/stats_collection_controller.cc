@@ -87,6 +87,8 @@ void StatsCollectionController::Install(blink::WebFrame* frame) {
 
   gin::Handle<StatsCollectionController> controller =
       gin::CreateHandle(isolate, new StatsCollectionController());
+  if (controller.IsEmpty())
+    return;
   v8::Handle<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "statsCollectionController"),
               controller.ToV8());

@@ -27,6 +27,8 @@ void GCController::Install(blink::WebFrame* frame) {
 
   gin::Handle<GCController> controller =
       gin::CreateHandle(isolate, new GCController());
+  if (controller.IsEmpty())
+    return;
   v8::Handle<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "GCController"), controller.ToV8());
 }
