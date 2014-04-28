@@ -67,6 +67,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -521,15 +522,28 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
   if (immediate_login) {
-    std::string username =
+    const std::string user_id =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
     UserManager* user_manager = UserManager::Get();
+
+    if (policy::IsDeviceLocalAccountUser(user_id, NULL) &&
+        !user_manager->IsKnownUser(user_id)) {
+      // When a device-local account is removed, its policy is deleted from disk
+      // immediately. If a session using this account happens to be in progress,
+      // the session is allowed to continue with policy served from an in-memory
+      // cache. If Chrome crashes later in the session, the policy becomes
+      // completely unavailable. Exit the session in that case, rather than
+      // allowing it to continue without policy.
+      chrome::AttemptUserExit();
+      return;
+    }
+
     // In case of multi-profiles --login-profile will contain user_id_hash.
-    std::string username_hash =
+    std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
-    user_manager->UserLoggedIn(username, username_hash, true);
-    VLOG(1) << "Relaunching browser for user: " << username
-            << " with hash: " << username_hash;
+    user_manager->UserLoggedIn(user_id, user_id_hash, true);
+    VLOG(1) << "Relaunching browser for user: " << user_id
+            << " with hash: " << user_id_hash;
   }
 }
 
