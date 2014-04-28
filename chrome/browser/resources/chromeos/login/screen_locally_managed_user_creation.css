@@ -15,6 +15,10 @@
   height: 100%;
 }
 
+#managed-user-creation .nofocus:focus {
+  outline: none;
+}
+
 #managed-user-creation .step-controls {
   -webkit-padding-end: 20px;
   bottom: 20px;
