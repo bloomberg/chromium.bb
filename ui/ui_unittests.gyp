@@ -151,12 +151,6 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
-        ['OS != "mac" and OS != "ios"', {
-          'sources': [
-            'gfx/transform_unittest.cc',
-            'gfx/interpolated_transform_unittest.cc',
-          ],
-        }],
         ['OS == "android"', {
           'sources': [
             'gfx/android/scroller_unittest.cc',
