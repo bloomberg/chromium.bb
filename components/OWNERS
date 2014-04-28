@@ -142,7 +142,3 @@ per-file wifi.gypi=mef@chromium.org
 
 per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
-
-# These are for the common case of adding or removing test. If you're doing
-# structural changes, please get a review from a reviewer in this file. 
-per-file components_tests.gyp=*
