@@ -162,12 +162,6 @@ dictionary FileTask {
 
 // Drive file properties.
 dictionary DriveEntryProperties {
-  // Size of this file.
-  double? fileSize;
-
-  // Timestamp of entry update time, in milliseconds past the epoch.
-  double? lastModifiedTime;
-
   // URL to the Drive thumbnail image for this file.
   DOMString? thumbnailUrl;
 
