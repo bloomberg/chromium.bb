@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 
 class Profile;
 

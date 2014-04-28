@@ -17,9 +17,12 @@
         '../url/url.gyp:url_lib',
       ],
       'sources': [
+        'bookmarks/core/browser/base_bookmark_model_observer.cc',
+        'bookmarks/core/browser/base_bookmark_model_observer.h',
         'bookmarks/core/browser/bookmark_client.h',
         'bookmarks/core/browser/bookmark_match.cc',
         'bookmarks/core/browser/bookmark_match.h',
+        'bookmarks/core/browser/bookmark_model_observer.h',
         'bookmarks/core/browser/bookmark_node.cc',
         'bookmarks/core/browser/bookmark_node.h',
         'bookmarks/core/browser/bookmark_prompt_prefs.cc',

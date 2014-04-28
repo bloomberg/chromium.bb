@@ -7,13 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 

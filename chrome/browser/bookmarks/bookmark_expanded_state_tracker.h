@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 
 class BookmarkModel;
 class BookmarkNode;

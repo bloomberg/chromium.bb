@@ -10,8 +10,8 @@
 #include "base/values.h"
 #include "chrome/browser/android/bookmarks/managed_bookmarks_shim.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 // The handler for Javascript messages related to the bookmarks.

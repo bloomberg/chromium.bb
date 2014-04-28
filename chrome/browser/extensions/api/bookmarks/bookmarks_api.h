@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/core/browser/bookmark_node.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"

@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/android/bookmarks/managed_bookmarks_shim.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 
 class Profile;
 

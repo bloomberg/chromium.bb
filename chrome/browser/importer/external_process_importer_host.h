@@ -10,11 +10,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/importer/importer_data_types.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ExternalProcessImporterClient;

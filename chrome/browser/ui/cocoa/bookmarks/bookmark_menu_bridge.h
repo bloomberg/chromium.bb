@@ -23,8 +23,8 @@
 #include <map>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
+#include "components/bookmarks/core/browser/bookmark_model_observer.h"
 
 class BookmarkNode;
 class Profile;
