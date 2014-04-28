@@ -395,6 +395,8 @@
         'browser/chromeos/fileapi/file_system_backend.cc',
         'browser/chromeos/fileapi/file_system_backend.h',
         'browser/chromeos/fileapi/file_system_backend_delegate.h',
+        'browser/chromeos/fileapi/mtp_file_system_backend_delegate.cc',
+        'browser/chromeos/fileapi/mtp_file_system_backend_delegate.h',
         'browser/chromeos/first_run/drive_first_run_controller.cc',
         'browser/chromeos/first_run/drive_first_run_controller.h',
         'browser/chromeos/first_run/first_run.cc',

@@ -23,6 +23,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/storage_monitor/removable_storage_observer.h"
 
 class Profile;
 
@@ -107,7 +108,8 @@ struct VolumeInfo {
 class VolumeManager : public KeyedService,
                       public drive::DriveIntegrationServiceObserver,
                       public chromeos::disks::DiskMountManager::Observer,
-                      public chromeos::file_system_provider::Observer {
+                      public chromeos::file_system_provider::Observer,
+                      public storage_monitor::RemovableStorageObserver {
  public:
   VolumeManager(
       Profile* profile,
@@ -184,7 +186,14 @@ class VolumeManager : public KeyedService,
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();
 
+  // RemovableStorageObserver overrides.
+  virtual void OnRemovableStorageAttached(
+      const storage_monitor::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const storage_monitor::StorageInfo& info) OVERRIDE;
+
  private:
+  void OnStorageMonitorInitialized();
   void OnPrivetVolumesAvailable(
       const local_discovery::PrivetVolumeLister::VolumeList& volumes);
   void DoMountEvent(chromeos::MountError error_code,

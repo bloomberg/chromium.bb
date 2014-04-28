@@ -69,6 +69,8 @@ class StorageInfo {
 
   static bool IsIPhotoDevice(const std::string& device_id);
 
+  static bool IsMTPDevice(const std::string& device_id);
+
   // Get the display name for the removable device represented by this
   // StorageInfo. Include the size for removable devices if |with_size| is true.
   base::string16 GetDisplayName(bool with_size) const;

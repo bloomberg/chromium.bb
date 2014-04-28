@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util.h"
@@ -28,12 +29,14 @@ bool FileSystemBackend::CanHandleURL(const fileapi::FileSystemURL& url) {
   return url.type() == fileapi::kFileSystemTypeNativeLocal ||
          url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal ||
          url.type() == fileapi::kFileSystemTypeDrive ||
-         url.type() == fileapi::kFileSystemTypeProvided;
+         url.type() == fileapi::kFileSystemTypeProvided ||
+         url.type() == fileapi::kFileSystemTypeDeviceMediaAsFileStorage;
 }
 
 FileSystemBackend::FileSystemBackend(
     FileSystemBackendDelegate* drive_delegate,
     FileSystemBackendDelegate* file_system_provider_delegate,
+    FileSystemBackendDelegate* mtp_delegate,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<fileapi::ExternalMountPoints> mount_points,
     fileapi::ExternalMountPoints* system_mount_points)
@@ -42,6 +45,7 @@ FileSystemBackend::FileSystemBackend(
       local_file_util_(fileapi::AsyncFileUtil::CreateForLocalFileSystem()),
       drive_delegate_(drive_delegate),
       file_system_provider_delegate_(file_system_provider_delegate),
+      mtp_delegate_(mtp_delegate),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {}
 
@@ -76,6 +80,7 @@ bool FileSystemBackend::CanHandleType(fileapi::FileSystemType type) const {
     case fileapi::kFileSystemTypeRestrictedNativeLocal:
     case fileapi::kFileSystemTypeNativeLocal:
     case fileapi::kFileSystemTypeNativeForPlatformApp:
+    case fileapi::kFileSystemTypeDeviceMediaAsFileStorage:
       return true;
     default:
       return false;
@@ -225,6 +230,8 @@ fileapi::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
     case fileapi::kFileSystemTypeNativeLocal:
     case fileapi::kFileSystemTypeRestrictedNativeLocal:
       return local_file_util_.get();
+    case fileapi::kFileSystemTypeDeviceMediaAsFileStorage:
+      return mtp_delegate_->GetAsyncFileUtil(type);
     default:
       NOTREACHED();
   }
@@ -248,6 +255,14 @@ fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
   if (!IsAccessAllowed(url)) {
     *error_code = base::File::FILE_ERROR_SECURITY;
     return NULL;
+  }
+
+  if (url.type() == fileapi::kFileSystemTypeDeviceMediaAsFileStorage) {
+    // MTP file operations run on MediaTaskRunner.
+    return fileapi::FileSystemOperation::Create(
+        url, context,
+        make_scoped_ptr(new fileapi::FileSystemOperationContext(
+            context, MediaFileSystemBackend::MediaTaskRunner())));
   }
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal ||
@@ -286,6 +301,9 @@ FileSystemBackend::CreateFileStreamReader(
       return scoped_ptr<webkit_blob::FileStreamReader>(
           webkit_blob::FileStreamReader::CreateForFileSystemFile(
               context, url, offset, expected_modification_time));
+    case fileapi::kFileSystemTypeDeviceMediaAsFileStorage:
+      return mtp_delegate_->CreateFileStreamReader(
+          url, offset, expected_modification_time, context);
     default:
       NOTREACHED();
   }
@@ -316,6 +334,8 @@ FileSystemBackend::CreateFileStreamWriter(
     case fileapi::kFileSystemTypeRestrictedNativeLocal:
       // Restricted native local file system is read only.
       return scoped_ptr<fileapi::FileStreamWriter>();
+    case fileapi::kFileSystemTypeDeviceMediaAsFileStorage:
+      return mtp_delegate_->CreateFileStreamWriter(url, offset, context);
     default:
       NOTREACHED();
   }

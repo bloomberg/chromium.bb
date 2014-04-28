@@ -31,7 +31,8 @@ base::FilePath NormalizeFilePath(const base::FilePath& path) {
 }
 
 bool IsOverlappingMountPathForbidden(fileapi::FileSystemType type) {
-  return type != fileapi::kFileSystemTypeNativeMedia;
+  return type != fileapi::kFileSystemTypeNativeMedia &&
+      type != fileapi::kFileSystemTypeDeviceMedia;
 }
 
 // Wrapper around ref-counted ExternalMountPoints that will be used to lazily

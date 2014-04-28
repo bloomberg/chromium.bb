@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -23,11 +24,14 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/local_discovery/storage/privet_filesystem_constants.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -37,6 +41,8 @@ namespace {
 
 // A named constant to be passed to the |is_remounting| parameter.
 const bool kNotRemounting = false;
+
+const char kFileManagerMTPMountNamePrefix[] = "fileman-mtp-";
 
 // Registers |path| as the "Downloads" folder to the FileSystem API backend.
 // If another folder is already mounted. It revokes and overrides the old one.
@@ -215,6 +221,13 @@ VolumeInfo CreateProvidedFileSystemVolumeInfo(
   return volume_info;
 }
 
+std::string GetMountPointNameForMediaStorage(
+    const storage_monitor::StorageInfo& info) {
+  std::string name(kFileManagerMTPMountNamePrefix);
+  name += info.device_id();
+  return name;
+}
+
 }  // namespace
 
 VolumeInfo::VolumeInfo()
@@ -371,6 +384,15 @@ void VolumeManager::Initialize() {
                    weak_ptr_factory_.GetWeakPtr())));
     privet_volume_lister_->Start();
   }
+
+  // Subscribe to storage monitor for MTP notifications.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableFileManagerMTP) &&
+      storage_monitor::StorageMonitor::GetInstance()) {
+    storage_monitor::StorageMonitor::GetInstance()->EnsureInitialized(
+        base::Bind(&VolumeManager::OnStorageMonitorInitialized,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void VolumeManager::Shutdown() {
@@ -378,6 +400,8 @@ void VolumeManager::Shutdown() {
 
   pref_change_registrar_.RemoveAll();
   disk_mount_manager_->RemoveObserver(this);
+  if (storage_monitor::StorageMonitor::GetInstance())
+    storage_monitor::StorageMonitor::GetInstance()->RemoveObserver(this);
 
   if (drive_integration_service_)
     drive_integration_service_->RemoveObserver(this);
@@ -682,6 +706,69 @@ void VolumeManager::OnPrivetVolumesAvailable(
     VolumeInfo volume_info = CreatePrivetVolumeInfo(*i);
     DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info, false);
   }
+}
+
+void VolumeManager::OnRemovableStorageAttached(
+    const storage_monitor::StorageInfo& info) {
+  if (!storage_monitor::StorageInfo::IsMTPDevice(info.device_id()))
+    return;
+
+  const base::FilePath path = base::FilePath::FromUTF8Unsafe(info.location());
+  const std::string fsid = GetMountPointNameForMediaStorage(info);
+  const std::string name = base::UTF16ToUTF8(info.GetDisplayName(false));
+
+  bool result =
+      fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+          fsid, fileapi::kFileSystemTypeDeviceMediaAsFileStorage,
+          fileapi::FileSystemMountOption(), path);
+  DCHECK(result);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE, base::Bind(
+          &MTPDeviceMapService::RegisterMTPFileSystem,
+          base::Unretained(MTPDeviceMapService::GetInstance()),
+          info.location(), fsid));
+
+  VolumeInfo volume_info;
+  volume_info.type = VOLUME_TYPE_MTP;
+  volume_info.mount_path = path;
+  volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume_info.is_parent = true;
+  volume_info.is_read_only = true;
+  volume_info.volume_id = "mtp:" + name;
+  volume_info.source_path = path;
+  volume_info.device_type = chromeos::DEVICE_TYPE_MOBILE;
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info, false);
+}
+
+void VolumeManager::OnRemovableStorageDetached(
+    const storage_monitor::StorageInfo& info) {
+  if (!storage_monitor::StorageInfo::IsMTPDevice(info.device_id()))
+    return;
+
+  for (std::map<std::string, VolumeInfo>::iterator it =
+           mounted_volumes_.begin(); it != mounted_volumes_.end(); ++it) {
+    if (it->second.source_path.value() == info.location()) {
+      DoUnmountEvent(chromeos::MOUNT_ERROR_NONE, VolumeInfo(it->second));
+
+      const std::string fsid = GetMountPointNameForMediaStorage(info);
+      fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+          fsid);
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO, FROM_HERE, base::Bind(
+              &MTPDeviceMapService::RevokeMTPFileSystem,
+              base::Unretained(MTPDeviceMapService::GetInstance()),
+              fsid));
+      return;
+    }
+  }
+}
+
+void VolumeManager::OnStorageMonitorInitialized() {
+  std::vector<storage_monitor::StorageInfo> storages =
+      storage_monitor::StorageMonitor::GetInstance()->GetAllAvailableStorages();
+  for (size_t i = 0; i < storages.size(); ++i)
+    OnRemovableStorageAttached(storages[i]);
+  storage_monitor::StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 void VolumeManager::DoMountEvent(chromeos::MountError error_code,

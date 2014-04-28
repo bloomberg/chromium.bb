@@ -180,6 +180,12 @@ bool StorageInfo::IsPicasaDevice(const std::string& device_id) {
   return CrackDeviceId(device_id, &type, NULL) && type == PICASA;
 }
 
+// static
+bool StorageInfo::IsMTPDevice(const std::string& device_id) {
+  Type type;
+  return CrackDeviceId(device_id, &type, NULL) && type == MTP_OR_PTP;
+}
+
 base::string16 StorageInfo::GetDisplayName(bool with_size) const {
   return GetDisplayNameWithOverride(base::string16(), with_size);
 }

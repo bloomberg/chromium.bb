@@ -166,6 +166,7 @@
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -2498,6 +2499,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   chromeos::FileSystemBackend* backend = new chromeos::FileSystemBackend(
       new drive::FileSystemBackendDelegate,
       new chromeos::file_system_provider::BackendDelegate,
+      new chromeos::MTPFileSystemBackendDelegate(storage_partition_path),
       browser_context->GetSpecialStoragePolicy(),
       external_mount_points,
       fileapi::ExternalMountPoints::GetSystemInstance());

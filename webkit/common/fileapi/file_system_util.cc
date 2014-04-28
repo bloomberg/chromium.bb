@@ -319,6 +319,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "CloudDevice";
     case kFileSystemTypeProvided:
       return "Provided";
+    case kFileSystemTypeDeviceMediaAsFileStorage:
+      return "DeviceMediaStorage";
     case kFileSystemInternalTypeEnumStart:
     case kFileSystemInternalTypeEnumEnd:
       NOTREACHED();

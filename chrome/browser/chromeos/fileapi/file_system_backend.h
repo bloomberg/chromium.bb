@@ -70,6 +70,7 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
   FileSystemBackend(
       FileSystemBackendDelegate* drive_delegate,
       FileSystemBackendDelegate* file_system_provider_delegate,
+      FileSystemBackendDelegate* mtp_delegate,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<fileapi::ExternalMountPoints> mount_points,
       fileapi::ExternalMountPoints* system_mount_points);
@@ -137,6 +138,9 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
 
   // The delegate instance for the provided file system related operations.
   scoped_ptr<FileSystemBackendDelegate> file_system_provider_delegate_;
+
+  // The delegate instance for the MTP file system related operations.
+  scoped_ptr<FileSystemBackendDelegate> mtp_delegate_;
 
   // Mount points specific to the owning context (i.e. per-profile mount
   // points).

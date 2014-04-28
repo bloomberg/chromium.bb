@@ -122,6 +122,10 @@ enum FileSystemType {
   // A filesystem that is mounted via the FileSystemProvider API.
   kFileSystemTypeProvided,
 
+  // A media filesystem such as MTP or PTP, mounted as a file storage not
+  // limited to media files.
+  kFileSystemTypeDeviceMediaAsFileStorage,
+
   // --------------------------------------------------------------------
   // Marks the end of internal type enum. (This is not the actual fs type)
   // New internal filesystem types must be added above this line.
