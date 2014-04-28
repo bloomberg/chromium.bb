@@ -69,8 +69,10 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
 
 #if defined(OS_WIN)
 #define MAYBE_OpenBrowserUsingShelfOnOtherDisplay DISABLED_OpenBrowserUsingShelfOnOtherDisplay
+#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay
 #else
 #define MAYBE_OpenBrowserUsingShelfOnOtherDisplay OpenBrowserUsingShelfOnOtherDisplay
+#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay OpenBrowserUsingContextMenuOnOtherDisplay
 #endif
 
 IN_PROC_BROWSER_TEST_F(WindowSizerTest,
@@ -161,9 +163,8 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
 
 }  // namespace
 
-// Test is flaky: http://crbug.com/346799
 IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
-                       DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay) {
+                       MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
   chrome::IncrementKeepAliveCount();
 
@@ -174,14 +175,14 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
   BrowserList* browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
 
-  EXPECT_EQ(1u, browser_list->size());
+  ASSERT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
   CloseBrowser(browser_list->get(0));
 
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[1]);
 
   // A new browser must be created on 2nd display.
-  EXPECT_EQ(1u, browser_list->size());
+  ASSERT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[1],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[1], ash::Shell::GetTargetRootWindow());
@@ -189,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[0]);
 
   // Next new browser must be created on 1st display.
-  EXPECT_EQ(2u, browser_list->size());
+  ASSERT_EQ(2u, browser_list->size());
   EXPECT_EQ(root_windows[0],
             browser_list->get(1)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
