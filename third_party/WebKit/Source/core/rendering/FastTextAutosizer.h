@@ -225,7 +225,6 @@ private:
     void resetMultipliers();
     BeginLayoutBehavior prepareForLayout(const RenderBlock*);
     void prepareClusterStack(const RenderObject*);
-    bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
     bool anyClusterHasEnoughTextToAutosize(const BlockSet* roots, const RenderBlock* widthProvider = 0);
     bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
@@ -247,7 +246,6 @@ private:
     void applyMultiplier(RenderObject*, float, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
     Cluster* currentCluster() const;
-    RenderObject* nextChildSkippingChildrenOfBlocks(const RenderObject*, const RenderObject*);
     const RenderBlock* deepestBlockContainingAllText(Cluster*);
     const RenderBlock* deepestBlockContainingAllText(const RenderBlock*);
     // Returns the first text leaf that is in the current cluster. We attempt to not include text
