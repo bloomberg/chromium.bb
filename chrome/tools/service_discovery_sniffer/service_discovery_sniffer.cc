@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "chrome/tools/service_discovery_sniffer/service_discovery_sniffer.h"
-#include "chrome/utility/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/mdns_client.h"
 
 namespace local_discovery {

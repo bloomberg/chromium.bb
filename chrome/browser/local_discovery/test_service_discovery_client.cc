@@ -4,7 +4,7 @@
 
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
 
-#include "chrome/utility/local_discovery/service_discovery_client_impl.h"
+#include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/mdns_client_impl.h"
 
 namespace local_discovery {

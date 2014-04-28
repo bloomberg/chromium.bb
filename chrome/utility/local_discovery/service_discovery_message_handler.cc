@@ -8,7 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
-#include "chrome/utility/local_discovery/service_discovery_client_impl.h"
+#include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "content/public/utility/utility_thread.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/udp/datagram_server_socket.h"

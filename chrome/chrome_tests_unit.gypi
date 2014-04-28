@@ -2160,12 +2160,12 @@
         }],
         ['enable_mdns == 1', {
             'sources': [
-              'utility/local_discovery/local_domain_resolver_unittest.cc',
-              'utility/local_discovery/service_discovery_client_unittest.cc',
               'browser/local_discovery/privet_device_lister_unittest.cc',
               'browser/local_discovery/privet_notifications_unittest.cc',
               'browser/local_discovery/privet_local_printer_lister_unittest.cc',
               'browser/local_discovery/storage/privet_filesystem_attribute_cache_unittest.cc',
+              'common/local_discovery/local_domain_resolver_unittest.cc',
+              'common/local_discovery/service_discovery_client_unittest.cc',
             ]
         }],
         ['configuration_policy==0', {
