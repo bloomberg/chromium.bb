@@ -10,7 +10,6 @@
 
 namespace aura {
 namespace client {
-class DefaultActivationClient;
 class DefaultCaptureClient;
 class FocusClient;
 class WindowTreeClient;
@@ -40,7 +39,6 @@ class ShellPlatformDataAura {
  private:
   scoped_ptr<aura::WindowTreeHost> host_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
-  scoped_ptr<aura::client::DefaultActivationClient> activation_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
   scoped_ptr<ui::EventHandler> ime_filter_;

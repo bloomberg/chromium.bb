@@ -23,7 +23,6 @@
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
@@ -45,6 +44,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "url/gurl.h"
 
 #if defined(WIN32)
@@ -244,8 +244,7 @@ class LauncherImpl : public Application,
     focus_client_.reset(new aura::test::TestFocusClient());
     aura::client::SetFocusClient(window_tree_host_->window(),
                                  focus_client_.get());
-    activation_client_.reset(
-        new aura::client::DefaultActivationClient(window_tree_host_->window()));
+    new wm::DefaultActivationClient(window_tree_host_->window());
     capture_client_.reset(
         new aura::client::DefaultCaptureClient(window_tree_host_->window()));
     ime_filter_.reset(new MinimalInputEventFilter(window_tree_host_->window()));
@@ -263,7 +262,6 @@ class LauncherImpl : public Application,
 
   scoped_ptr<DemoScreen> screen_;
   scoped_ptr<LauncherWindowTreeClient> window_tree_client_;
-  scoped_ptr<aura::client::DefaultActivationClient> activation_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<ui::EventHandler> ime_filter_;

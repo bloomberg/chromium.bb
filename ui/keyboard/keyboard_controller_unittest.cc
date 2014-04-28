@@ -28,6 +28,7 @@
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/wm/core/default_activation_client.h"
 
 namespace keyboard {
 namespace {
@@ -168,6 +169,7 @@ class KeyboardControllerTest : public testing::Test {
 
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp();
+    new wm::DefaultActivationClient(aura_test_helper_->root_window());
     ui::SetUpInputMethodFactoryForTesting();
     focus_controller_.reset(new TestFocusController(root_window()));
     proxy_ = new TestKeyboardControllerProxy();

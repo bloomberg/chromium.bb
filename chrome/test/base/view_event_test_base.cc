@@ -24,6 +24,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/wm_state.h"
 
 #if defined(USE_ASH)
@@ -140,6 +141,7 @@ void ViewEventTestBase::SetUp() {
   aura_test_helper_.reset(
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
+  new wm::DefaultActivationClient(aura_test_helper_->root_window());
   context = aura_test_helper_->root_window();
 #endif  // !USE_ASH && USE_AURA
 

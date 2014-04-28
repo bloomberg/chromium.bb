@@ -68,6 +68,7 @@
             '../aura/aura.gyp:aura_test_support',
             '../compositor/compositor.gyp:compositor',
             '../compositor/compositor.gyp:compositor_test_support',
+            '../wm/wm.gyp:wm',
           ],
         }],
         # See http://crbug.com/162998#c4 for why this is needed.

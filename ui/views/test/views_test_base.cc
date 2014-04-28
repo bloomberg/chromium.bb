@@ -12,6 +12,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/wm_state.h"
 
 namespace views {
@@ -39,6 +40,7 @@ void ViewsTestBase::SetUp() {
 
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
+  new wm::DefaultActivationClient(aura_test_helper_->root_window());
   wm_state_.reset(new ::wm::WMState);
   ui::InitializeInputMethodForTesting();
 }
