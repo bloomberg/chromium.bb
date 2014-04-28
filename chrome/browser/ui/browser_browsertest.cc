@@ -574,33 +574,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   ui_test_utils::NavigateToURL(browser(), url2);
 }
 
-// Make sure that dialogs opened by subframes are closed when the process dies.
-// See http://crbug.com/366510.
-IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
-  // Navigate to an iframe that opens an alert dialog.
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetMainFrame()->ExecuteJavaScript(
-      ASCIIToUTF16("window.location.href = 'data:text/html,"
-                   "<iframe srcdoc=\"<script>alert(1)</script>\">'"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(alert->IsValid());
-  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
-  EXPECT_TRUE(dialog_queue->HasActiveDialog());
-
-  // Crash the renderer process and ensure the dialog is gone.
-  content::RenderProcessHost* child_process = contents->GetRenderProcessHost();
-  content::RenderProcessHostWatcher crash_observer(
-      child_process,
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  base::KillProcess(child_process->GetHandle(), 0, false);
-  crash_observer.Wait();
-  EXPECT_FALSE(dialog_queue->HasActiveDialog());
-
-  // Make sure subsequent navigations work.
-  GURL url2("data:text/html,foo");
-  ui_test_utils::NavigateToURL(browser(), url2);
-}
-
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {

@@ -1166,9 +1166,7 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
   render_view_termination_status_ =
       static_cast<base::TerminationStatus>(status);
 
-  // Reset frame tree state associated with this process.  This must happen
-  // before RenderViewTerminated because observers expect the subframes of any
-  // affected frames to be cleared first.
+  // Reset frame tree state associated with this process.
   delegate_->GetFrameTree()->RenderProcessGone(this);
 
   // Our base class RenderWidgetHost needs to reset some stuff.

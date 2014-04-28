@@ -670,11 +670,8 @@ class CONTENT_EXPORT WebContentsImpl
   // watching |web_contents|. No-op if there is no such observer.
   void RemoveDestructionObserver(WebContentsImpl* web_contents);
 
-  // Callback function when showing JavaScript dialogs.  Takes in a routing ID
-  // pair to identify the RenderFrameHost that opened the dialog, because it's
-  // possible for the RenderFrameHost to be deleted by the time this is called.
-  void OnDialogClosed(int render_process_id,
-                      int render_frame_id,
+  // Callback function when showing JavaScript dialogs.
+  void OnDialogClosed(RenderFrameHost* rfh,
                       IPC::Message* reply_msg,
                       bool dialog_was_suppressed,
                       bool success,
