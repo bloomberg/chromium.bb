@@ -154,9 +154,6 @@ void SVGAElement::defaultEventHandler(Event* event)
                     event->setDefaultHandled();
                     return;
                 }
-                // Only allow navigation to internal <view> anchors.
-                if (targetElement && !isSVGViewElement(*targetElement))
-                    return;
             }
 
             AtomicString target(m_svgTarget->currentValue()->value());
