@@ -1693,6 +1693,8 @@ void Element::didAffectSelector(AffectedSelectorMask mask)
 
 void Element::setAnimationStyleChange(bool animationStyleChange)
 {
+    if (animationStyleChange && document().inStyleRecalc())
+        return;
     if (ActiveAnimations* activeAnimations = elementRareData()->activeAnimations())
         activeAnimations->setAnimationStyleChange(animationStyleChange);
 }
