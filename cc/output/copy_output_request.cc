@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
@@ -35,7 +36,10 @@ CopyOutputRequest::CopyOutputRequest(
     : force_bitmap_result_(force_bitmap_result),
       has_area_(false),
       has_texture_mailbox_(false),
-      result_callback_(result_callback) {}
+      result_callback_(result_callback) {
+  DCHECK(!result_callback_.is_null());
+  TRACE_EVENT_ASYNC_BEGIN0("cc", "CopyOutputRequest", this);
+}
 
 CopyOutputRequest::~CopyOutputRequest() {
   if (!result_callback_.is_null())
@@ -44,6 +48,7 @@ CopyOutputRequest::~CopyOutputRequest() {
 
 void CopyOutputRequest::SendResult(scoped_ptr<CopyOutputResult> result) {
   base::ResetAndReturn(&result_callback_).Run(result.Pass());
+  TRACE_EVENT_ASYNC_END0("cc", "CopyOutputRequest", this);
 }
 
 void CopyOutputRequest::SendEmptyResult() {
