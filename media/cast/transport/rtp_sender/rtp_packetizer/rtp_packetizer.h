@@ -84,7 +84,8 @@ class RtpPacketizer {
             uint32 frame_id,
             uint32 reference_frame_id,
             uint32 timestamp,
-            const std::string& data);
+            const std::string& data,
+            const base::TimeTicks& capture_time);
 
   void BuildCommonRTPheader(Packet* packet, bool marker_bit, uint32 time_stamp);
 

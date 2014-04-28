@@ -72,12 +72,21 @@ class PacedSenderTest : public ::testing::Test {
     NOTREACHED();
   }
 
-  PacketList CreatePacketList(size_t packet_size,
-                              int num_of_packets_in_frame,
-                              bool audio) {
+  SendPacketVector CreateSendPacketVector(size_t packet_size,
+                                          int num_of_packets_in_frame,
+                                          bool audio) {
     DCHECK_GE(packet_size, 12u);
-    PacketList packets;
+    SendPacketVector packets;
+    base::TimeTicks frame_tick = testing_clock_.NowTicks();
+    // Advance the clock so that we don't get the same frame_tick
+    // next time this function is called.
+    testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
     for (int i = 0; i < num_of_packets_in_frame; ++i) {
+      PacketKey key = PacedPacketSender::MakePacketKey(
+          frame_tick,
+          audio ? kAudioSsrc : kVideoSsrc, // ssrc
+          i);
+
       PacketRef packet(new base::RefCountedData<Packet>);
       packet->data.resize(packet_size, kValue);
       // Write ssrc to packet so that it can be recognized as a
@@ -86,7 +95,7 @@ class PacedSenderTest : public ::testing::Test {
           reinterpret_cast<char*>(&packet->data[8]), 4);
       bool success = writer.WriteU32(audio ? kAudioSsrc : kVideoSsrc);
       DCHECK(success);
-      packets.push_back(packet);
+      packets.push_back(std::make_pair(key, packet));
     }
     return packets;
   }
@@ -117,7 +126,7 @@ class PacedSenderTest : public ::testing::Test {
 
 TEST_F(PacedSenderTest, PassThroughRtcp) {
   mock_transport_.AddExpectedSize(kSize1, 2);
-  PacketList packets = CreatePacketList(kSize1, 1, true);
+  SendPacketVector packets = CreateSendPacketVector(kSize1, 1, true);
 
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
   EXPECT_TRUE(paced_sender_->ResendPackets(packets));
@@ -125,12 +134,15 @@ TEST_F(PacedSenderTest, PassThroughRtcp) {
   mock_transport_.AddExpectedSize(kSize2, 1);
   Packet tmp(kSize2, kValue);
   EXPECT_TRUE(paced_sender_->SendRtcpPacket(
+      1,
       new base::RefCountedData<Packet>(tmp)));
 }
 
 TEST_F(PacedSenderTest, BasicPace) {
   int num_of_packets = 27;
-  PacketList packets = CreatePacketList(kSize1, num_of_packets, false);
+  SendPacketVector packets = CreateSendPacketVector(kSize1,
+                                                    num_of_packets,
+                                                    false);
 
   mock_transport_.AddExpectedSize(kSize1, 10);
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
@@ -176,14 +188,14 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   int num_of_packets_in_frame = 12;
   int num_of_packets_in_nack = 12;
 
-  PacketList first_frame_packets =
-      CreatePacketList(kSize1, num_of_packets_in_frame, false);
+  SendPacketVector nack_packets =
+      CreateSendPacketVector(kNackSize, num_of_packets_in_nack, false);
 
-  PacketList second_frame_packets =
-      CreatePacketList(kSize2, num_of_packets_in_frame, true);
+  SendPacketVector first_frame_packets =
+      CreateSendPacketVector(kSize1, num_of_packets_in_frame, false);
 
-  PacketList nack_packets =
-      CreatePacketList(kNackSize, num_of_packets_in_nack, false);
+  SendPacketVector second_frame_packets =
+      CreateSendPacketVector(kSize2, num_of_packets_in_frame, true);
 
   // Check that the first burst of the frame go out on the wire.
   mock_transport_.AddExpectedSize(kSize1, 10);
@@ -207,7 +219,8 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   task_runner_->RunTasks();
 
   // End of NACK plus two packets from the oldest frame.
-  mock_transport_.AddExpectedSize(kNackSize, 4);
+  // Note that two of the NACKs have been de-duped.
+  mock_transport_.AddExpectedSize(kNackSize, 2);
   mock_transport_.AddExpectedSize(kSize1, 2);
   testing_clock_.Advance(timeout);
   task_runner_->RunTasks();
@@ -229,10 +242,11 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   subscriber_.GetPacketEventsAndReset(&packet_events);
   int expected_video_network_event_count = num_of_packets_in_frame;
   int expected_video_retransmitted_event_count = 2 * num_of_packets_in_nack;
+  expected_video_retransmitted_event_count -= 2; // 2 packets deduped
   int expected_audio_network_event_count = num_of_packets_in_frame;
   EXPECT_EQ(expected_video_network_event_count +
-                expected_video_retransmitted_event_count +
-                expected_audio_network_event_count,
+            expected_video_retransmitted_event_count +
+            expected_audio_network_event_count,
             static_cast<int>(packet_events.size()));
   int audio_network_event_count = 0;
   int video_network_event_count = 0;
@@ -260,17 +274,17 @@ TEST_F(PacedSenderTest, PaceWith60fps) {
   // frames just as we sent the first packets in a frame.
   int num_of_packets_in_frame = 17;
 
-  PacketList first_frame_packets =
-      CreatePacketList(kSize1, num_of_packets_in_frame, false);
+  SendPacketVector first_frame_packets =
+      CreateSendPacketVector(kSize1, num_of_packets_in_frame, false);
 
-  PacketList second_frame_packets =
-      CreatePacketList(kSize2, num_of_packets_in_frame, false);
+  SendPacketVector second_frame_packets =
+      CreateSendPacketVector(kSize2, num_of_packets_in_frame, false);
 
-  PacketList third_frame_packets =
-      CreatePacketList(kSize3, num_of_packets_in_frame, false);
+  SendPacketVector third_frame_packets =
+      CreateSendPacketVector(kSize3, num_of_packets_in_frame, false);
 
-  PacketList fourth_frame_packets =
-      CreatePacketList(kSize4, num_of_packets_in_frame, false);
+  SendPacketVector fourth_frame_packets =
+      CreateSendPacketVector(kSize4, num_of_packets_in_frame, false);
 
   base::TimeDelta timeout_10ms = base::TimeDelta::FromMilliseconds(10);
 

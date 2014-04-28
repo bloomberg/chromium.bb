@@ -38,8 +38,6 @@ void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
     // We should always find the packet.
     DCHECK(store_it != stored_packets_.end()) << "Invalid state";
     time_to_packet_map_.erase(time_it);
-    // Save the pointer.
-    PacketRef storted_packet = store_it->second;
     stored_packets_.erase(store_it);
     time_it = time_to_packet_map_.begin();
   }
@@ -55,8 +53,6 @@ void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
     // We should always find the packet.
     DCHECK(store_it != stored_packets_.end()) << "Invalid state";
     time_to_packet_map_.erase(time_it);
-    // Save the pointer.
-    PacketRef storted_packet = store_it->second;
     stored_packets_.erase(store_it);
     time_it = time_to_packet_map_.begin();
   }
@@ -64,6 +60,7 @@ void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
 
 void PacketStorage::StorePacket(uint32 frame_id,
                                 uint16 packet_id,
+                                const PacketKey& key,
                                 PacketRef packet) {
   base::TimeTicks now = clock_->NowTicks();
   CleanupOldPackets(now);
@@ -76,13 +73,13 @@ void PacketStorage::StorePacket(uint32 frame_id,
     DCHECK(false) << "Invalid state";
     return;
   }
-  stored_packets_[index] = packet;
+  stored_packets_[index] = std::make_pair(key, packet);
   time_to_packet_map_.insert(std::make_pair(now, index));
 }
 
 void PacketStorage::GetPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets,
-    PacketList* packets_to_resend) {
+    SendPacketVector* packets_to_resend) {
 
   // Iterate over all frames in the list.
   for (MissingFramesAndPacketsMap::const_iterator it =
@@ -114,7 +111,7 @@ void PacketStorage::GetPackets(
 
 bool PacketStorage::GetPacket(uint8 frame_id,
                               uint16 packet_id,
-                              PacketList* packets) {
+                              SendPacketVector* packets) {
   // Internally we only use the 8 LSB of the frame id.
   uint32 index = (static_cast<uint32>(frame_id) << 16) + packet_id;
   PacketMapIterator it = stored_packets_.find(index);
@@ -128,11 +125,14 @@ bool PacketStorage::GetPacket(uint8 frame_id,
   // then we must return a copy of it instead. This should really only happen
   // when rtp_sender.cc is trying to re-send a packet that is already in the
   // queue to sent.
-  if (it->second->HasOneRef()) {
+  if (it->second.second->HasOneRef()) {
     packets->push_back(it->second);
   } else {
-    packets->push_back(make_scoped_refptr(
-        new base::RefCountedData<Packet>(it->second->data)));
+    packets->push_back(
+        std::make_pair(it->second.first,
+                       make_scoped_refptr(
+                           new base::RefCountedData<Packet>(
+                               it->second.second->data))));
   }
   return true;
 }

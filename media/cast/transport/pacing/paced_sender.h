@@ -26,15 +26,29 @@ class LoggingImpl;
 
 namespace transport {
 
+// Use std::pair for free comparison operators.
+// { capture_time, ssrc, packet_id }
+// The PacketKey is designed to meet two criteria:
+// 1. When we re-send the same packet again, we can use the packet key
+//    to identify it so that we can de-duplicate packets in the queue.
+// 2. The sort order of the PacketKey determines the order that packets
+//    are sent out. Using the capture_time as the first member basically
+//    means that older packets are sent first.
+typedef std::pair<base::TimeTicks, std::pair<uint32, uint16> > PacketKey;
+typedef std::vector<std::pair<PacketKey, PacketRef> > SendPacketVector;
+
 // We have this pure virtual class to enable mocking.
 class PacedPacketSender {
  public:
-  // Inform the pacer / sender of the total number of packets.
-  virtual bool SendPackets(const PacketList& packets) = 0;
-  virtual bool ResendPackets(const PacketList& packets) = 0;
-  virtual bool SendRtcpPacket(PacketRef packet) = 0;
+  virtual bool SendPackets(const SendPacketVector& packets) = 0;
+  virtual bool ResendPackets(const SendPacketVector& packets) = 0;
+  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) = 0;
 
   virtual ~PacedPacketSender() {}
+
+  static PacketKey MakePacketKey(const base::TimeTicks& ticks,
+                                 uint32 ssrc,
+                                 uint16 packet_id);
 };
 
 class PacedSender : public PacedPacketSender,
@@ -56,9 +70,9 @@ class PacedSender : public PacedPacketSender,
   void RegisterVideoSsrc(uint32 video_ssrc);
 
   // PacedPacketSender implementation.
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE;
-  virtual bool ResendPackets(const PacketList& packets) OVERRIDE;
-  virtual bool SendRtcpPacket(PacketRef packet) OVERRIDE;
+  virtual bool SendPackets(const SendPacketVector& packets) OVERRIDE;
+  virtual bool ResendPackets(const SendPacketVector& packets) OVERRIDE;
+  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) OVERRIDE;
 
  private:
   // Actually sends the packets to the transport.
@@ -100,11 +114,7 @@ class PacedSender : public PacedPacketSender,
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
   uint32 audio_ssrc_;
   uint32 video_ssrc_;
-  // Note: We can't combine the |packet_list_| and the |resend_packet_list_|
-  // since then we might get reordering of the retransmitted packets.
-  std::deque<PacketRef> rtcp_packet_list_;
-  std::deque<PacketRef> resend_packet_list_;
-  std::deque<PacketRef> packet_list_;
+  std::map<PacketKey, std::pair<PacketType, PacketRef> > packet_list_;
 
   // Maximum burst size for the next three bursts.
   size_t max_burst_size_;

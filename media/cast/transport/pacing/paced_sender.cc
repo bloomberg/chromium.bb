@@ -35,6 +35,13 @@ CastLoggingEvent GetLoggingEvent(bool is_audio, bool retransmit) {
 
 }  // namespace
 
+
+PacketKey PacedPacketSender::MakePacketKey(const base::TimeTicks& ticks,
+                                           uint32 ssrc,
+                                           uint16 packet_id) {
+  return std::make_pair(ticks, std::make_pair(ssrc, packet_id));
+}
+
 PacedSender::PacedSender(
     base::TickClock* clock,
     LoggingImpl* logging,
@@ -64,34 +71,38 @@ void PacedSender::RegisterVideoSsrc(uint32 video_ssrc) {
   video_ssrc_ = video_ssrc;
 }
 
-bool PacedSender::SendPackets(const PacketList& packets) {
+bool PacedSender::SendPackets(const SendPacketVector& packets) {
   if (packets.empty()) {
     return true;
   }
-  packet_list_.insert(packet_list_.end(), packets.begin(), packets.end());
+  for (size_t i = 0; i < packets.size(); i++) {
+    packet_list_[packets[i].first] =
+        make_pair(PacketType_Normal, packets[i].second);
+  }
   if (state_ == State_Unblocked) {
     SendStoredPackets();
   }
   return true;
 }
 
-bool PacedSender::ResendPackets(const PacketList& packets) {
+bool PacedSender::ResendPackets(const SendPacketVector& packets) {
   if (packets.empty()) {
     return true;
   }
-  resend_packet_list_.insert(resend_packet_list_.end(),
-                             packets.begin(),
-                             packets.end());
+  for (size_t i = 0; i < packets.size(); i++) {
+    packet_list_[packets[i].first] =
+        make_pair(PacketType_Resend, packets[i].second);
+  }
   if (state_ == State_Unblocked) {
     SendStoredPackets();
   }
   return true;
 }
 
-bool PacedSender::SendRtcpPacket(PacketRef packet) {
+bool PacedSender::SendRtcpPacket(uint32 ssrc, PacketRef packet) {
   if (state_ == State_TransportBlocked) {
-
-    rtcp_packet_list_.push_back(packet);
+    packet_list_[PacedPacketSender::MakePacketKey(base::TimeTicks(), ssrc, 0)] =
+        make_pair(PacketType_RTCP, packet);
   } else {
     // We pass the RTCP packets straight through.
     if (!transport_->SendPacket(
@@ -106,35 +117,21 @@ bool PacedSender::SendRtcpPacket(PacketRef packet) {
 }
 
 PacketRef PacedSender::GetNextPacket(PacketType* packet_type) {
-  PacketRef ret;
-  if (!rtcp_packet_list_.empty()) {
-    ret = rtcp_packet_list_.front();
-    rtcp_packet_list_.pop_front();
-    *packet_type = PacketType_RTCP;
-  } else if (!resend_packet_list_.empty()) {
-    ret = resend_packet_list_.front();
-    resend_packet_list_.pop_front();
-    *packet_type = PacketType_Resend;
-  } else if (!packet_list_.empty()) {
-    ret = packet_list_.front();
-    packet_list_.pop_front();
-    *packet_type = PacketType_Normal;
-  } else {
-    NOTREACHED();
-  }
+  std::map<PacketKey, std::pair<PacketType, PacketRef> >::iterator i;
+  i = packet_list_.begin();
+  DCHECK(i != packet_list_.end());
+  *packet_type = i->second.first;
+  PacketRef ret = i->second.second;
+  packet_list_.erase(i);
   return ret;
 }
 
 bool PacedSender::empty() const {
-  return rtcp_packet_list_.empty() &&
-      resend_packet_list_.empty() &&
-      packet_list_.empty();
+  return packet_list_.empty();
 }
 
 size_t PacedSender::size() const {
-  return rtcp_packet_list_.size() +
-      resend_packet_list_.size() +
-      packet_list_.size();
+  return packet_list_.size();
 }
 
 // This function can be called from three places:

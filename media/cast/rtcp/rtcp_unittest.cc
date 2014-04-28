@@ -84,7 +84,8 @@ class LocalRtcpTransport : public transport::PacedPacketSender {
 
   void set_drop_packets(bool drop_packets) { drop_packets_ = drop_packets; }
 
-  virtual bool SendRtcpPacket(transport::PacketRef packet) OVERRIDE {
+  virtual bool SendRtcpPacket(uint32 ssrc,
+                              transport::PacketRef packet) OVERRIDE {
     if (short_delay_) {
       testing_clock_->Advance(
           base::TimeDelta::FromMilliseconds(kAddedShortDelay));
@@ -98,9 +99,13 @@ class LocalRtcpTransport : public transport::PacedPacketSender {
     return true;
   }
 
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE { return false; }
+  virtual bool SendPackets(
+      const transport::SendPacketVector& packets) OVERRIDE {
+    return false;
+  }
 
-  virtual bool ResendPackets(const PacketList& packets) OVERRIDE {
+  virtual bool ResendPackets(
+      const transport::SendPacketVector& packets) OVERRIDE {
     return false;
   }
 

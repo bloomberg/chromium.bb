@@ -237,7 +237,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
   if (packet->data.empty())
     return;  // Sanity don't send empty packets.
 
-  transport_->SendRtcpPacket(packet);
+  transport_->SendRtcpPacket(ssrc_, packet);
 }
 
 void RtcpSender::BuildRR(const transport::RtcpReportBlock* report_block,

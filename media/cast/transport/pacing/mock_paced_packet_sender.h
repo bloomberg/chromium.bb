@@ -17,9 +17,9 @@ class MockPacedPacketSender : public PacedPacketSender {
   MockPacedPacketSender();
   virtual ~MockPacedPacketSender();
 
-  MOCK_METHOD1(SendPackets, bool(const PacketList& packets));
-  MOCK_METHOD1(ResendPackets, bool(const PacketList& packets));
-  MOCK_METHOD1(SendRtcpPacket, bool(PacketRef packet));
+  MOCK_METHOD1(SendPackets, bool(const SendPacketVector& packets));
+  MOCK_METHOD1(ResendPackets, bool(const SendPacketVector& packets));
+  MOCK_METHOD2(SendRtcpPacket, bool(unsigned int ssrc, PacketRef packet));
 };
 
 }  // namespace transport

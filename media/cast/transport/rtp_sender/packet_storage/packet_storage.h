@@ -16,13 +16,14 @@
 #include "base/time/time.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 
 namespace media {
 namespace cast {
 namespace transport {
 
 class StoredPacket;
-typedef std::map<uint32, PacketRef> PacketMap;
+typedef std::map<uint32, std::pair<PacketKey, PacketRef> > PacketMap;
 typedef std::multimap<base::TimeTicks, uint32> TimeToPacketMap;
 
 class PacketStorage {
@@ -32,15 +33,18 @@ class PacketStorage {
   PacketStorage(base::TickClock* clock, int max_time_stored_ms);
   virtual ~PacketStorage();
 
-  void StorePacket(uint32 frame_id, uint16 packet_id, PacketRef packet);
+  void StorePacket(uint32 frame_id,
+                   uint16 packet_id,
+                   const PacketKey& key,
+                   PacketRef packet);
 
   // Copies all missing packets into the packet list.
   void GetPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets,
-      PacketList* packets_to_resend);
+      SendPacketVector* packets_to_resend);
 
   // Copies packet into the packet list.
-  bool GetPacket(uint8 frame_id, uint16 packet_id, PacketList* packets);
+  bool GetPacket(uint8 frame_id, uint16 packet_id, SendPacketVector* packets);
 
  private:
   void CleanupOldPackets(base::TimeTicks now);

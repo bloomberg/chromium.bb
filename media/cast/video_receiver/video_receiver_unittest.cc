@@ -121,7 +121,7 @@ TEST_F(VideoReceiverTest, GetOnePacketEncodedFrame) {
   SimpleEventSubscriber event_subscriber;
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
       .WillRepeatedly(testing::Return(true));
 
   // Enqueue a request for a video frame.
@@ -152,7 +152,7 @@ TEST_F(VideoReceiverTest, GetOnePacketEncodedFrame) {
 }
 
 TEST_F(VideoReceiverTest, MultiplePendingGetCalls) {
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
       .WillRepeatedly(testing::Return(true));
 
   // Enqueue a request for an video frame.

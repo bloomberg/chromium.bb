@@ -119,7 +119,7 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedFrame) {
   SimpleEventSubscriber event_subscriber;
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _)).Times(1);
 
   // Enqueue a request for an audio frame.
   receiver_->GetEncodedAudioFrame(
@@ -149,7 +149,7 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedFrame) {
 }
 
 TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_, _))
       .WillRepeatedly(testing::Return(true));
 
   // Enqueue a request for an audio frame.
