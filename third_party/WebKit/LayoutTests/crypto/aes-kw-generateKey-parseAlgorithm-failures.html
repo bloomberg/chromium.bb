@@ -18,23 +18,19 @@ keyUsages = ['wrapKey', 'unwrapKey'];
 Promise.resolve(null).then(function() {
     return crypto.subtle.generateKey({ name: 'aes-kw' }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-kw', length: 70000 }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-kw', length: -3 }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-kw', length: -Infinity }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

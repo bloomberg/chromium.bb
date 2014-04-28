@@ -30,8 +30,7 @@ Promise.resolve(null).then(function(result) {
     // Can't use an AES-KW key for AES-CBC (even though both are AES keys).
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(16)}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

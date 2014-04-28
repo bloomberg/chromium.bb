@@ -1,11 +1,10 @@
-CONSOLE ERROR: key.algorithm does not match that of operation
 Call encrypt using the wrong AES key
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 PASS key.algorithm.name is "AES-GCM"
-PASS error is null
+error is: InvalidAccessError: key.algorithm does not match that of operation
 PASS successfullyParsed is true
 
 TEST COMPLETE

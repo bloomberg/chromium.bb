@@ -1,11 +1,6 @@
-function shouldBeTypeError(toEval)
+function logError(error)
 {
-    var value = eval(toEval);
-    if (value instanceof TypeError) {
-        testPassed(toEval + " is: " + value.toString());
-    } else {
-        testFailed(toEval + " is not a TypeError: " + value);
-    }
+    debug("error is: " + error.toString());
 }
 
 // Verifies that the given "bytes" holds the same value as "expectedHexString".

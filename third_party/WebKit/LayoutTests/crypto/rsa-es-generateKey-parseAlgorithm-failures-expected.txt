@@ -1,20 +1,14 @@
-CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Outside of numeric range
-CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Is not a number
-CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Missing required property
-CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
-CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
-CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
 Tests generateKey() with bad RSAES-PKCS1-v1_5 parameters
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
+error is: SyntaxError: RsaKeyGenParams: modulusLength: Outside of numeric range
+error is: SyntaxError: RsaKeyGenParams: modulusLength: Is not a number
+error is: SyntaxError: RsaKeyGenParams: modulusLength: Missing required property
+error is: SyntaxError: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
+error is: SyntaxError: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
+error is: SyntaxError: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
 PASS successfullyParsed is true
 
 TEST COMPLETE

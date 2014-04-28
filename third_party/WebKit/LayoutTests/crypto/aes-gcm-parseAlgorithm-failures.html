@@ -28,38 +28,31 @@ Promise.resolve(null).then(function(result) {
 
     return crypto.subtle.encrypt({name: 'AES-gcm'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-gcm', iv: 3}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-gcm', iv: 'foo'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AeS-gcm', iv: new Uint8Array(16), additionalData: '5'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-gcm', iv: new Uint8Array(16), additionalData: new Uint8Array(1), tagLength: 'foo'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-gcm', iv: new Uint8Array(16), additionalData: new Uint8Array(1), tagLength: -1}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-gcm', iv: new Uint8Array(16), additionalData: new Uint8Array(1), tagLength: 8000}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

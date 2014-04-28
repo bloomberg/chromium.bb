@@ -35,6 +35,7 @@
 #include "WebCryptoAlgorithm.h"
 #include "WebCryptoKey.h"
 #include "WebPrivatePtr.h"
+#include "WebString.h"
 #include "WebVector.h"
 
 namespace WebCore { class CryptoResult; }
@@ -47,6 +48,20 @@ namespace blink {
 
 class WebArrayBuffer;
 class WebString;
+
+// FIXME: Remove once Blink has rolled into Chromium.
+#define WEBCRYPTO_HAS_ERROR_TYPE 1
+
+enum WebCryptoErrorType {
+    WebCryptoErrorTypeType,
+    WebCryptoErrorTypeNotSupported,
+    WebCryptoErrorTypeSyntax,
+    WebCryptoErrorTypeInvalidState,
+    WebCryptoErrorTypeInvalidAccess,
+    WebCryptoErrorTypeUnknown,
+    WebCryptoErrorTypeData,
+    WebCryptoErrorTypeOperation,
+};
 
 class WebCryptoResult {
 public:
@@ -66,15 +81,13 @@ public:
         return *this;
     }
 
-    BLINK_PLATFORM_EXPORT void completeWithError();
-
     // Note that WebString is NOT safe to pass across threads.
     //
-    // Error details are intended to be displayed to developers for debugging.
-    // They MUST NEVER reveal any secret information such as bytes of the key
-    // or plain text. An appropriate error would be something like:
+    // Error details are surfaced in an exception, and MUST NEVER reveal any
+    // secret information such as bytes of the key or plain text. An
+    // appropriate error would be something like:
     //   "iv must be 16 bytes long".
-    BLINK_PLATFORM_EXPORT void completeWithError(const WebString&);
+    BLINK_PLATFORM_EXPORT void completeWithError(WebCryptoErrorType, const WebString&);
 
     // Note that WebArrayBuffer is NOT safe to create from another thread.
     BLINK_PLATFORM_EXPORT void completeWithBuffer(const WebArrayBuffer&);
@@ -188,16 +201,16 @@ public:
     //  * The key usages permit the operation being requested.
     //  * The key's algorithm matches that of the requested operation.
     //
-    virtual void encrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
-    virtual void decrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
-    virtual void sign(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
-    virtual void verifySignature(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* signature, unsigned signatureSize, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
-    virtual void digest(const WebCryptoAlgorithm&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
-    virtual void generateKey(const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(); }
-    virtual void importKey(WebCryptoKeyFormat, const unsigned char* keyData, unsigned keyDataSize, const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(); }
-    virtual void exportKey(WebCryptoKeyFormat, const WebCryptoKey&, WebCryptoResult result) { result.completeWithError(); }
-    virtual void wrapKey(WebCryptoKeyFormat, const WebCryptoKey& key, const WebCryptoKey& wrappingKey, const WebCryptoAlgorithm&, WebCryptoResult result) { result.completeWithError(); }
-    virtual void unwrapKey(WebCryptoKeyFormat, const unsigned char* wrappedKey, unsigned wrappedKeySize, const WebCryptoKey&, const WebCryptoAlgorithm& unwrapAlgorithm, const WebCryptoAlgorithm& unwrappedKeyAlgorithm, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(); }
+    virtual void encrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void decrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void sign(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void verifySignature(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* signature, unsigned signatureSize, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void digest(const WebCryptoAlgorithm&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void generateKey(const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void importKey(WebCryptoKeyFormat, const unsigned char* keyData, unsigned keyDataSize, const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void exportKey(WebCryptoKeyFormat, const WebCryptoKey&, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void wrapKey(WebCryptoKeyFormat, const WebCryptoKey& key, const WebCryptoKey& wrappingKey, const WebCryptoAlgorithm&, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
+    virtual void unwrapKey(WebCryptoKeyFormat, const unsigned char* wrappedKey, unsigned wrappedKeySize, const WebCryptoKey&, const WebCryptoAlgorithm& unwrapAlgorithm, const WebCryptoAlgorithm& unwrappedKeyAlgorithm, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(WebCryptoErrorTypeNotSupported, ""); }
 
     // This is the exception to the "Completing the request" guarantees
     // outlined above. This is useful for Blink internal crypto and is not part

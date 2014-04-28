@@ -32,8 +32,7 @@ importUnwrappingKey().then(function(result) {
 
     return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

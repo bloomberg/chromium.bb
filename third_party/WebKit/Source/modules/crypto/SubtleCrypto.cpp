@@ -51,7 +51,7 @@ bool ensureNotNull(T* x, const char* paramName, CryptoResult* result)
 {
     if (!x) {
         String message = String("Invalid ") + paramName + String(" argument");
-        result->completeWithError(blink::WebString(message));
+        result->completeWithError(blink::WebCryptoErrorTypeType, blink::WebString(message));
         return false;
     }
     return true;
@@ -193,7 +193,7 @@ ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key)
         return promise;
 
     if (!key->extractable()) {
-        result->completeWithError("key is not extractable");
+        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key is not extractable");
         return promise;
     }
 
@@ -221,7 +221,7 @@ ScriptPromise SubtleCrypto::wrapKey(const String& rawFormat, Key* key, Key* wrap
         return promise;
 
     if (!key->extractable()) {
-        result->completeWithError("key is not extractable");
+        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key is not extractable");
         return promise;
     }
 

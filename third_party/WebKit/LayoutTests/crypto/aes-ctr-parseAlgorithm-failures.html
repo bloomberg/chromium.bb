@@ -29,33 +29,27 @@ Promise.resolve(null).then(function(result) {
 
     return crypto.subtle.encrypt({name: 'AES-CTR', counter: null}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-CTR'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(0)}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 256}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: -3}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: Infinity}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

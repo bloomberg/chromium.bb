@@ -38,15 +38,9 @@
 
 namespace blink {
 
-void WebCryptoResult::completeWithError()
+void WebCryptoResult::completeWithError(WebCryptoErrorType errorType, const WebString& errorDetails)
 {
-    m_impl->completeWithError();
-    reset();
-}
-
-void WebCryptoResult::completeWithError(const WebString& errorDetails)
-{
-    m_impl->completeWithError(errorDetails);
+    m_impl->completeWithError(errorType, errorDetails);
     reset();
 }
 

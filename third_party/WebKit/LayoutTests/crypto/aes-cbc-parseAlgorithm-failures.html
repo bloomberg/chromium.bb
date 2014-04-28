@@ -29,26 +29,22 @@ Promise.resolve(null).then(function(result) {
     // Bad iv
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: null}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Missing iv
     return crypto.subtle.decrypt({name: 'AES-CBC'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // iv is not a buffer
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: 3}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // iv is too short
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(0)}, key, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

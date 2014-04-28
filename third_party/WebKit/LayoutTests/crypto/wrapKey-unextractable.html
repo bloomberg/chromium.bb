@@ -42,8 +42,7 @@ importWrappingKey().then(function(result) {
     wrapAlgorithm = {name: 'aes-cbc', iv: new Uint8Array(16)};
     return crypto.subtle.wrapKey('raw', key, wrappingKey, wrapAlgorithm);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

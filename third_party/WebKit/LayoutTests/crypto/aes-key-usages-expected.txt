@@ -1,12 +1,10 @@
-CONSOLE ERROR: key.usages does not permit this operation
-CONSOLE ERROR: key.usages does not permit this operation
 Make sure that the usages of an AES key are respected
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
-PASS error is null
+error is: InvalidAccessError: key.usages does not permit this operation
+error is: InvalidAccessError: key.usages does not permit this operation
 PASS successfullyParsed is true
 
 TEST COMPLETE

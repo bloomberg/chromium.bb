@@ -18,23 +18,19 @@ keyUsages = ['encrypt', 'decrypt'];
 Promise.resolve(null).then(function() {
     return crypto.subtle.generateKey({ name: 'aes-ctr' }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-ctr', length: 70000 }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-ctr', length: -3 }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-ctr', length: -Infinity }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

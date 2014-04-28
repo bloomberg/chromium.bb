@@ -1,26 +1,17 @@
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: hash: Algorithm: Unrecognized algorithm name
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Is not a number
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Is not a number
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Is not a number
-CONSOLE ERROR: Invalid key length: it is either zero or not a multiple of 8 bits
 Tests generateKey() with bad HMAC parameters.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
+error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
+error is: NotSupportedError: HmacKeyGenParams: hash: Algorithm: Unrecognized name
+error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
+error is: SyntaxError: HmacKeyGenParams: length: Is not a number
+error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
+error is: SyntaxError: HmacKeyGenParams: length: Outside of numeric range
+error is: SyntaxError: HmacKeyGenParams: length: Is not a number
+error is: SyntaxError: HmacKeyGenParams: length: Is not a number
+error is: DataError: Invalid key length: it is either zero or not a multiple of 8 bits
 PASS successfullyParsed is true
 
 TEST COMPLETE

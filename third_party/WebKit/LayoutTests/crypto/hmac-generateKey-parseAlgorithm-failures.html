@@ -18,48 +18,39 @@ keyUsages = ['sign', 'verify'];
 Promise.resolve(null).then(function() {
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -3}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: ''}, length: 48}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: 5000000000}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: NaN}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: Infinity}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -Infinity}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: crypto}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: undefined}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: true}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

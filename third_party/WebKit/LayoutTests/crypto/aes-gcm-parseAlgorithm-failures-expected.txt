@@ -1,22 +1,15 @@
-CONSOLE ERROR: Algorithm: AES-GCM: AesGcmParams: iv: Missing required property
-CONSOLE ERROR: Algorithm: AES-GCM: AesGcmParams: iv: Not an ArrayBufferView
-CONSOLE ERROR: Algorithm: AES-GCM: AesGcmParams: iv: Not an ArrayBufferView
-CONSOLE ERROR: Algorithm: AES-GCM: AesGcmParams: additionalData: Not an ArrayBufferView
-CONSOLE ERROR: Algorithm: AES-GCM: AesGcmParams: tagLength: Is not a number
-CONSOLE ERROR: Algorithm: AES-GCM: AesGcmParams: tagLength: Outside of numeric range
-CONSOLE ERROR: Algorithm: AES-GCM: AesGcmParams: tagLength: Outside of numeric range
 Tests bad algorithm inputs for AES-GCM
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
+error is: SyntaxError: AesGcmParams: iv: Missing required property
+error is: SyntaxError: AesGcmParams: iv: Not an ArrayBufferView
+error is: SyntaxError: AesGcmParams: iv: Not an ArrayBufferView
+error is: SyntaxError: AesGcmParams: additionalData: Not an ArrayBufferView
+error is: SyntaxError: AesGcmParams: tagLength: Is not a number
+error is: SyntaxError: AesGcmParams: tagLength: Outside of numeric range
+error is: SyntaxError: AesGcmParams: tagLength: Outside of numeric range
 PASS successfullyParsed is true
 
 TEST COMPLETE

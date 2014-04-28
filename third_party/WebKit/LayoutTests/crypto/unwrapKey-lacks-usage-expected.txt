@@ -1,10 +1,9 @@
-CONSOLE ERROR: key.usages does not permit this operation
 Tests that unwrapping keys must have the 'unwrapKey' usage.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
+error is: InvalidAccessError: key.usages does not permit this operation
 PASS successfullyParsed is true
 
 TEST COMPLETE

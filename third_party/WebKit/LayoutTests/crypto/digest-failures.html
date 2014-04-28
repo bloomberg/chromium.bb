@@ -17,39 +17,33 @@ Promise.resolve(null).then(function(result) {
     // Called with too few parameters.
     return crypto.subtle.digest({name: 'sha-1'});
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeTypeError("error");
+    logError(result);
 
     // "null" is not a valid data argument.
     return crypto.subtle.digest({name: 'sha-1'}, null);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // 10 is not a valid data argument.
     return crypto.subtle.digest({name: 'sha-1'}, 10);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // null is not a valid algorithm argument.
     data = new Uint8Array([0]);
     return crypto.subtle.digest(null, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // "sha" is not a recognized algorithm name
     return crypto.subtle.digest({name: 'sha'}, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Algorithm lacks a name.
     return crypto.subtle.digest({}, data);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
   
 }).then(finishJSTest, failAndFinishJSTest);
 

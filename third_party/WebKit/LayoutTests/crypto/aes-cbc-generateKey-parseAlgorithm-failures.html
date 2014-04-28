@@ -19,40 +19,33 @@ Promise.resolve(null).then(function() {
     // Invalid keyUsages
     return crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, -1);
 }).then(failAndFinishJSTest, function(result) {
-    error = result
-    shouldBeTypeError("error");
+    logError(result);
 
     // Invalid keyUsages
     return crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, null);
 }).then(failAndFinishJSTest, function(result) {
-    error = result
-    shouldBeTypeError("error");
+    logError(result);
 
     // Bad key usage "boo".
     return crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, ['boo']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-cbc', length: 70000 }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-cbc', length: -3 }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     return crypto.subtle.generateKey({ name: 'aes-cbc', length: -Infinity }, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

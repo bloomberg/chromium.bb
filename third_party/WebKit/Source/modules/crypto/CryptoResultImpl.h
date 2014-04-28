@@ -55,8 +55,7 @@ public:
 
     static PassRefPtr<CryptoResultImpl> create();
 
-    virtual void completeWithError() OVERRIDE;
-    virtual void completeWithError(const blink::WebString&) OVERRIDE;
+    virtual void completeWithError(blink::WebCryptoErrorType, const blink::WebString&) OVERRIDE;
     virtual void completeWithBuffer(const blink::WebArrayBuffer&) OVERRIDE;
     virtual void completeWithBoolean(bool) OVERRIDE;
     virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;

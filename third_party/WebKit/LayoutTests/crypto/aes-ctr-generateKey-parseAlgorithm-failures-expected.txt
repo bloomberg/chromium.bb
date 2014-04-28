@@ -1,16 +1,12 @@
-CONSOLE ERROR: Algorithm: AES-CTR: AesKeyGenParams: length: Missing required property
-CONSOLE ERROR: Algorithm: AES-CTR: AesKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: AES-CTR: AesKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: AES-CTR: AesKeyGenParams: length: Outside of numeric range
 Tests generateKey() with bad AES-CTR parameters.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
+error is: SyntaxError: AesKeyGenParams: length: Missing required property
+error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
+error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
+error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
 PASS successfullyParsed is true
 
 TEST COMPLETE

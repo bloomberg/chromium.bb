@@ -1,20 +1,14 @@
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: modulusLength: Outside of numeric range
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: modulusLength: Is not a number
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: modulusLength: Missing required property
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 Tests generateKey() with bad RSASSA-PKCS1-v1_5 parameters.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
+error is: SyntaxError: RsaHashedKeyGenParams: modulusLength: Outside of numeric range
+error is: SyntaxError: RsaHashedKeyGenParams: modulusLength: Is not a number
+error is: SyntaxError: RsaHashedKeyGenParams: modulusLength: Missing required property
+error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
+error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
+error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -171,12 +171,12 @@ Vector<String> Key::usages() const
 bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, AlgorithmOperation op, CryptoResult* result) const
 {
     if (!(m_key.usages() & toKeyUsage(op))) {
-        result->completeWithError("key.usages does not permit this operation");
+        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key.usages does not permit this operation");
         return false;
     }
 
     if (m_key.algorithm().id() != algorithm.id()) {
-        result->completeWithError("key.algorithm does not match that of operation");
+        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key.algorithm does not match that of operation");
         return false;
     }
 
@@ -203,7 +203,7 @@ bool Key::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& for
         return true;
     }
 
-    result->completeWithError("Invalid keyFormat argument");
+    result->completeWithError(blink::WebCryptoErrorTypeSyntax, "Invalid keyFormat argument");
     return false;
 }
 
@@ -213,7 +213,7 @@ bool Key::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageM
     for (size_t i = 0; i < usages.size(); ++i) {
         blink::WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
         if (!usage) {
-            result->completeWithError("Invalid keyUsages argument");
+            result->completeWithError(blink::WebCryptoErrorTypeSyntax, "Invalid keyUsages argument");
             return false;
         }
         mask |= usage;

@@ -25,51 +25,43 @@ Promise.resolve(null).then(function() {
     // Invalid data
     return crypto.subtle.importKey('raw', [], aesCbc, extractable, ['encrypt']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid data
     return crypto.subtle.importKey('raw', null, aesCbc, extractable, ['encrypt']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid algorithm
     return crypto.subtle.importKey('raw', aesKeyBytes, null, extractable, ['encrypt']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid format.
     return crypto.subtle.importKey('invalid format', aesKeyBytes, aesCbc, extractable, ['encrypt']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid key usage (case sensitive).
     return crypto.subtle.importKey('raw', aesKeyBytes, aesCbc, extractable, ['ENCRYPT']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // If both the format and key usage are bogus, should complain about the
     // format first.
     return crypto.subtle.importKey('invalid format', aesKeyBytes, aesCbc, extractable, ['ENCRYPT']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Missing hash parameter for HMAC.
     return crypto.subtle.importKey('raw', new Uint8Array(20), {name: 'hmac'}, extractable, ['sign']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // SHA-1 doesn't support the importKey operation.
     return crypto.subtle.importKey('raw', new Uint8Array(20), {name: 'sha-1'}, extractable, ['sign']);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

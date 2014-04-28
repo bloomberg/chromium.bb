@@ -1,20 +1,15 @@
-CONSOLE ERROR: Invalid keyUsages argument
-CONSOLE ERROR: Algorithm: AES-CBC: AesKeyGenParams: length: Missing required property
-CONSOLE ERROR: Algorithm: AES-CBC: AesKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: AES-CBC: AesKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: AES-CBC: AesKeyGenParams: length: Outside of numeric range
 Tests generateKey() with bad AES-CBC parameters.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is: TypeError: The 3rd argument is neither an array, nor does it have indexed properties.
-PASS error is: TypeError: The 3rd argument is neither an array, nor does it have indexed properties.
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
+error is: TypeError: The 3rd argument is neither an array, nor does it have indexed properties.
+error is: TypeError: The 3rd argument is neither an array, nor does it have indexed properties.
+error is: SyntaxError: Invalid keyUsages argument
+error is: SyntaxError: AesKeyGenParams: length: Missing required property
+error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
+error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
+error is: SyntaxError: AesKeyGenParams: length: Outside of numeric range
 PASS successfullyParsed is true
 
 TEST COMPLETE

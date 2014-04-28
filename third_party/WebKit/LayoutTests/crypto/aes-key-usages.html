@@ -38,8 +38,7 @@ function testEncrypt()
     return importKeyExcludingUsage("encrypt").then(function(key) {
         return crypto.subtle.encrypt({name: 'AES-CBC', iv: iv}, key, data);
     }).then(failAndFinishJSTest, function(result) {
-        error = result;
-        shouldBeNull("error");
+        logError(result);
     });
 }
 
@@ -48,8 +47,7 @@ function testDecrypt()
     return importKeyExcludingUsage("decrypt").then(function(key) {
         return crypto.subtle.decrypt({name: 'AES-CBC', iv: iv}, key, data);
     }).then(failAndFinishJSTest, function(result) {
-        error = result;
-        shouldBeNull("error");
+        logError(result);
     });
 }
 

@@ -42,40 +42,34 @@ importWrappingKey().then(function(result) {
     // Invalid key
     return crypto.subtle.wrapKey('raw', 1, wrappingKey, wrapAlgorithm);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid wrappingKey
     return crypto.subtle.wrapKey('raw', key, '', wrapAlgorithm);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid wrapAlgorithm
     return crypto.subtle.wrapKey('raw', key, wrappingKey, undefined);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid format for wrapKey
     return crypto.subtle.wrapKey('bad-format', key, wrappingKey, wrapAlgorithm);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // SHA-1 isn't a valid wrapKey algorithm.
     return crypto.subtle.wrapKey('raw', key, wrappingKey, {name: 'SHA-1'});
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Wrap algorithm doesn't match the wrapping key's algorithm (AES-CBC key
     // with AES-CTR wrap algorithm)
     aesCtrAlgorithm = {name: 'AES-CTR', counter: new Uint8Array(16), length: 0};
     return crypto.subtle.wrapKey('raw', key, wrappingKey, aesCtrAlgorithm);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

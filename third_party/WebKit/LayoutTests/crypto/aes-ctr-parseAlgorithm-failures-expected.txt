@@ -1,20 +1,14 @@
-CONSOLE ERROR: Algorithm: AES-CTR: AesCtrParams: counter: Not an ArrayBufferView
-CONSOLE ERROR: Algorithm: AES-CTR: AesCtrParams: counter: Missing required property
-CONSOLE ERROR: Algorithm: AES-CTR: AesCtrParams: length: Missing required property
-CONSOLE ERROR: Algorithm: AES-CTR: AesCtrParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: AES-CTR: AesCtrParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: AES-CTR: AesCtrParams: length: Outside of numeric range
 Tests bad algorithm inputs for AES-CTR
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
-PASS error is null
+error is: SyntaxError: AesCtrParams: counter: Not an ArrayBufferView
+error is: SyntaxError: AesCtrParams: counter: Missing required property
+error is: SyntaxError: AesCtrParams: length: Missing required property
+error is: SyntaxError: AesCtrParams: length: Outside of numeric range
+error is: SyntaxError: AesCtrParams: length: Outside of numeric range
+error is: SyntaxError: AesCtrParams: length: Outside of numeric range
 PASS successfullyParsed is true
 
 TEST COMPLETE

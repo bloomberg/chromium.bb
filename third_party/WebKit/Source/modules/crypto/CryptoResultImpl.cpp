@@ -34,6 +34,8 @@
 #include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/crypto/Key.h"
 #include "modules/crypto/KeyPair.h"
@@ -44,6 +46,40 @@
 #include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
+
+namespace {
+
+ExceptionCode toExceptionCode(blink::WebCryptoErrorType errorType)
+{
+    switch (errorType) {
+    case blink::WebCryptoErrorTypeNotSupported:
+        return NotSupportedError;
+    case blink::WebCryptoErrorTypeSyntax:
+        return SyntaxError;
+    case blink::WebCryptoErrorTypeInvalidState:
+        return InvalidStateError;
+    case blink::WebCryptoErrorTypeInvalidAccess:
+        return InvalidAccessError;
+    case blink::WebCryptoErrorTypeUnknown:
+        return UnknownError;
+    case blink::WebCryptoErrorTypeData:
+        return DataError;
+    case blink::WebCryptoErrorTypeOperation:
+        // FIXME: This exception type is new to WebCrypto and not yet defined.
+        // Use a placeholder for now.
+        return InvalidStateError;
+    case blink::WebCryptoErrorTypeType:
+        // FIXME: This should construct a TypeError instead. For now do
+        //        something to facilitate refactor, but this will need to be
+        //        revisited.
+        return DataError;
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+} // namespace
 
 // The PromiseState class contains all the state which is tied to an
 // ExecutionContext. Whereas CryptoResultImpl can be deleted from any thread,
@@ -75,19 +111,10 @@ public:
         return m_promiseResolver->promise();
     }
 
-    void completeWithError(const blink::WebString& errorDetails)
+    void completeWithError(blink::WebCryptoErrorType errorType, const blink::WebString& errorDetails)
     {
-        if (!errorDetails.isEmpty()) {
-            // FIXME: Include the line number which started the crypto operation.
-            executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, errorDetails);
-        }
-        m_promiseResolver->reject(V8NullType());
+        m_promiseResolver->reject(DOMException::create(toExceptionCode(errorType), errorDetails));
         delete this;
-    }
-
-    void completeWithError()
-    {
-        completeWithError(blink::WebString());
     }
 
     void completeWithBuffer(const blink::WebArrayBuffer& buffer)
@@ -135,15 +162,10 @@ PassRefPtr<CryptoResultImpl> CryptoResultImpl::create()
     return adoptRef(new CryptoResultImpl(callingExecutionContext(v8::Isolate::GetCurrent())));
 }
 
-void CryptoResultImpl::completeWithError(const blink::WebString& errorDetails)
+void CryptoResultImpl::completeWithError(blink::WebCryptoErrorType errorType, const blink::WebString& errorDetails)
 {
     if (m_promiseState)
-        m_promiseState->completeWithError(errorDetails);
-}
-
-void CryptoResultImpl::completeWithError()
-{
-    completeWithError(blink::WebString());
+        m_promiseState->completeWithError(errorType, errorDetails);
 }
 
 void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)

@@ -33,51 +33,43 @@ importUnwrappingKey().then(function(result) {
     // Invalid wrappedKey
     return crypto.subtle.unwrapKey('raw', null, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid unwrappingKey
     return crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid keyUsages (also, unwrappedKeyAlgorithm is set to null).
     return crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeTypeError("error");
+    logError(result);
 
     // Invalid unwrapAlgorithm
     return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, null, unwrappedKeyAlgorithm, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Invalid unwrappedKeyAlgorithm (specified but bad).
     return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeTypeError("error");
+    logError(result);
 
     // Invalid format
     return crypto.subtle.unwrapKey('bad-format', wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // SHA-1 isn't a valid unwrapKey algorithm.
     return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, {name: 'SHA-1'}, unwrappedKeyAlgorithm, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 
     // Mismatch between the unwrappingKey's algorithm and unwrapAlgorithm.
     aesCtrAlgorithm = {name: 'AES-CTR', counter: new Uint8Array(16), length: 0};
     return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, aesCtrAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
 }).then(failAndFinishJSTest, function(result) {
-    error = result;
-    shouldBeNull("error");
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>
