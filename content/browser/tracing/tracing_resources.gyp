@@ -55,6 +55,7 @@
           'variables': {
             'grit_cmd': ['python', '../../../tools/grit/grit.py'],
             'grit_grd_file': '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd',
+            'grit_rc_header_format%': '',
           },
           'inputs': [
             '<(grit_grd_file)',
@@ -69,7 +70,8 @@
                      '-f', '<(DEPTH)/tools/gritsettings/resource_ids',
                      '-o', '<(grit_out_dir)',
                      '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
-                     '<@(grit_defines)' ],
+                     '<@(grit_defines)',
+                     '<@(grit_rc_header_format)'],
           'message': 'Generating resources from <(grit_grd_file)',
         }
       ],
