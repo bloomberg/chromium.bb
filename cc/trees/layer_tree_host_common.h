@@ -127,21 +127,18 @@ class CC_EXPORT LayerTreeHostCommon {
   template <typename LayerType>
   static LayerType* FindLayerInSubtree(LayerType* root_layer, int layer_id);
 
-  static Layer* get_child_as_raw_ptr(
-      const LayerList& children,
-      size_t index) {
-    return children[index].get();
+  static Layer* get_layer_as_raw_ptr(const LayerList& layers, size_t index) {
+    return layers[index].get();
   }
 
-  static LayerImpl* get_child_as_raw_ptr(
-      const OwnedLayerImplList& children,
-      size_t index) {
-    return children[index];
-  }
-
-  static LayerImpl* get_child_as_raw_ptr(const LayerImplList& children,
+  static LayerImpl* get_layer_as_raw_ptr(const OwnedLayerImplList& layers,
                                          size_t index) {
-    return children[index];
+    return layers[index];
+  }
+
+  static LayerImpl* get_layer_as_raw_ptr(const LayerImplList& layers,
+                                         size_t index) {
+    return layers[index];
   }
 
   struct ScrollUpdateInfo {
@@ -191,7 +188,7 @@ LayerType* LayerTreeHostCommon::FindLayerInSubtree(LayerType* root_layer,
 
   for (size_t i = 0; i < root_layer->children().size(); ++i) {
     if (LayerType* found = FindLayerInSubtree(
-            get_child_as_raw_ptr(root_layer->children(), i), layer_id))
+            get_layer_as_raw_ptr(root_layer->children(), i), layer_id))
       return found;
   }
   return NULL;
@@ -212,7 +209,7 @@ void LayerTreeHostCommon::CallFunctionForSubtree(
   }
 
   for (size_t i = 0; i < root_layer->children().size(); ++i) {
-    CallFunctionForSubtree(get_child_as_raw_ptr(root_layer->children(), i),
+    CallFunctionForSubtree(get_layer_as_raw_ptr(root_layer->children(), i),
                            function);
   }
 }

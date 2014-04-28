@@ -1191,7 +1191,7 @@ static void PreCalculateMetaInformation(
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     LayerType* child_layer =
-        LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
+        LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
 
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformation(child_layer, &data_for_child);
@@ -1343,7 +1343,7 @@ static bool SortChildrenForRecursion(std::vector<LayerType*>* out,
   bool order_changed = false;
   for (size_t i = 0; i < parent.children().size(); ++i) {
     LayerType* current =
-        LayerTreeHostCommon::get_child_as_raw_ptr(parent.children(), i);
+        LayerTreeHostCommon::get_layer_as_raw_ptr(parent.children(), i);
 
     if (current->draw_properties().sorted_for_recursion) {
       order_changed = true;
@@ -1393,7 +1393,7 @@ static void SortLayerListContributions(
   typename LayerType::LayerListType buffer;
   for (size_t i = 0; i < parent.children().size(); ++i) {
     LayerType* child =
-        LayerTreeHostCommon::get_child_as_raw_ptr(parent.children(), i);
+        LayerTreeHostCommon::get_layer_as_raw_ptr(parent.children(), i);
 
     size_t start_index = 0;
     size_t count = 0;
@@ -2060,7 +2060,7 @@ static void CalculateDrawPropertiesInternal(
     LayerType* child =
         layer_draw_properties.has_child_with_a_scroll_parent
             ? sorted_children[i]
-            : LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
+            : LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
 
     child->draw_properties().index_of_first_descendants_addition =
         descendants.size();

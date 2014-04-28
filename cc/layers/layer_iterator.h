@@ -251,7 +251,7 @@ class LayerIterator {
   inline LayerType* current_layer() const {
     return current_layer_represents_target_render_surface()
                ? target_render_surface_layer()
-               : LayerTreeHostCommon::get_child_as_raw_ptr(
+               : LayerTreeHostCommon::get_layer_as_raw_ptr(
                      target_render_surface_children(), current_layer_index_);
   }
 
