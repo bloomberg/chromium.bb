@@ -202,7 +202,7 @@ TEST_F(TouchEmulatorTest, Touch) {
   MouseUp(200, 200);
   EXPECT_EQ(
       "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate"
-      " TouchEnd GestureScrollEnd",
+      " TouchEnd GestureFlingStart",
       ExpectedEvents());
 }
 
@@ -214,13 +214,13 @@ TEST_F(TouchEmulatorTest, MultipleTouches) {
   MouseUp(200, 200);
   EXPECT_EQ(
       "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate"
-      " TouchEnd GestureScrollEnd",
+      " TouchEnd GestureFlingStart",
       ExpectedEvents());
   MouseMove(300, 200);
   MouseMove(200, 200);
   EXPECT_EQ("", ExpectedEvents());
   MouseDown(300, 200);
-  EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());
+  EXPECT_EQ("TouchStart GestureFlingCancel GestureTapDown", ExpectedEvents());
   MouseDrag(300, 300);
   EXPECT_EQ(
       "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate",

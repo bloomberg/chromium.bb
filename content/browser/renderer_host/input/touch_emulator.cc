@@ -316,7 +316,7 @@ void TouchEmulator::PinchEnd(const WebGestureEvent& event) {
   client_->ForwardGestureEvent(pinch_event_);
 }
 
-void TouchEmulator::FillPinchEvent(const WebInputEvent& event) {
+void TouchEmulator::FillPinchEvent(const WebGestureEvent& event) {
   pinch_event_.timeStampSeconds = event.timeStampSeconds;
   pinch_event_.modifiers = event.modifiers;
   pinch_event_.sourceDevice = blink::WebGestureEvent::Touchscreen;
@@ -360,6 +360,16 @@ bool TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   touch_event_.modifiers = mouse_event.modifiers;
   WebTouchEventTraits::ResetTypeAndTouchStates(
       eventType, mouse_event.timeStampSeconds, &touch_event_);
+
+  // On some platforms mouse event's timestamp does not necessarily relate to
+  // the system time at all, so use base::TimeTicks::HighResNow() if possible,
+  // or base::TimeTicks::Now() otherwise.
+  base::TimeTicks now;
+  if (base::TimeTicks::IsHighResNowFastAndReliable())
+    now = base::TimeTicks::HighResNow();
+  else
+    now = base::TimeTicks::Now();
+  touch_event_.timeStampSeconds = (now - base::TimeTicks()).InSecondsF();
 
   WebTouchPoint& point = touch_event_.touches[0];
   point.id = 0;
