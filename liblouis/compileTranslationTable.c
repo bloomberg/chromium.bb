@@ -5171,16 +5171,18 @@ static void defaultLogCallback(int level, const char *message)
 static logcallback logCallbackFunction = defaultLogCallback;
 void EXPORT_CALL lou_registerLogCallback(logcallback callback)
 {
+  if (callback == 0)
+    logCallbackFunction = defaultLogCallback;
   logCallbackFunction = callback;
 }
 
-static int logLevel = LOG_INFO;
-void EXPORT_CALL lou_setLogLevel(int level)
+static logLevels logLevel = LOG_INFO;
+void EXPORT_CALL lou_setLogLevel(logLevels level)
 {
   logLevel = level;
 }
 
-void EXPORT_CALL lou_log(int level, const char *format, ...)
+void EXPORT_CALL lou_log(logLevels level, const char *format, ...)
 {
   if (format == NULL)
       return;
@@ -5203,11 +5205,6 @@ void EXPORT_CALL lou_log(int level, const char *format, ...)
           free(s);
         }
     }
-}
-
-void EXPORT_CALL lou_setDefaultLogCallback()
-{
-  logCallbackFunction = defaultLogCallback;
 }
 
 void logWidecharBuf(int level, const char *msg, widechar *wbuf, int wlen)

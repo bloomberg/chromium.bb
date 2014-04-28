@@ -134,7 +134,9 @@ int EXPORT_CALL lou_compileString (const char *tableList, const char
 
 typedef void (*logcallback)(int level, const char *message);
   void EXPORT_CALL lou_registerLogCallback(logcallback callback);
-/* Register logging callbacks */
+/* Register logging callbacks,
+ * Set to NULL for default callback.
+ */
 
   typedef enum
   {
@@ -146,9 +148,9 @@ typedef void (*logcallback)(int level, const char *message);
     LOG_FATAL = 50000,
     LOG_OFF = 2147483647
   } logLevels;
-  void EXPORT_CALL lou_setLogLevel(int level);
-  void EXPORT_CALL lou_setDefaultLogCallback();
-  void EXPORT_CALL lou_log(int level, const char *format, ...);
+  void EXPORT_CALL lou_setLogLevel(logLevels level);
+
+  void EXPORT_CALL lou_log(logLevels level, const char *format, ...);
 /* General log function for callback logging */
 
   void EXPORT_CALL lou_free (void);
