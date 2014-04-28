@@ -546,6 +546,10 @@ tc-tests-all() {
   # the x86-64 toolchain trybot (though not the buildbots, apparently
   # due to a hardware difference:
   # https://code.google.com/p/nativeclient/issues/detail?id=3697).
+  # Build the SDK libs first so that linking will succeed.
+  echo "@@@BUILD_STEP sdk libs @@@"
+  ${PNACL_BUILD} sdk
+
   echo "@@@BUILD_STEP torture_tests x86-32 @@@"
   tools/toolchain_tester/torture_test.py pnacl x86-32 --verbose \
       --concurrency=8 || handle-error
