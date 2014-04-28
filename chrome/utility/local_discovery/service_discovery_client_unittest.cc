@@ -4,7 +4,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/common/local_discovery/service_discovery_client_impl.h"
+#include "chrome/utility/local_discovery/service_discovery_client_impl.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client_impl.h"

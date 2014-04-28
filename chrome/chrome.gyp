@@ -360,6 +360,8 @@
             }],
             ['enable_mdns == 1', {
               'sources': [
+                'utility/local_discovery/service_discovery_client_impl.cc',
+                'utility/local_discovery/service_discovery_client_impl.h',
                 'utility/local_discovery/service_discovery_message_handler.cc',
                 'utility/local_discovery/service_discovery_message_handler.h',
               ]
