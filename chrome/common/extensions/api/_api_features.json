@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See c/c/e/features/* to understand this file, in particular feature.h,
-// simple_feature.h, and base_feature_provider.h.
+// This features file defines extension APIs implemented under src/chrome.
+// See extensions/common/features/* to understand this file, in particular
+// feature.h, simple_feature.h, and base_feature_provider.h.
 //
 // Note that specifying "web_page", "blessed_web_page", or "all" as a context
 // type will require manually updating chrome/renderer/resources/dispatcher.cc.
@@ -259,10 +260,6 @@
   },
   "dial": {
     "dependencies": ["permission:dial"],
-    "contexts": ["blessed_extension"]
-  },
-  "dns": {
-    "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]
   },
   "downloads": {
@@ -651,26 +648,6 @@
     "dependencies": ["permission:signedInDevices"],
     "contexts": ["blessed_extension"]
   },
-  "socket": {
-    "dependencies": ["permission:socket"],
-    "contexts": ["blessed_extension"]
-  },
-  "sockets.tcp": {
-    "dependencies": ["manifest:sockets"],
-    "contexts": ["blessed_extension"]
-  },
-  "sockets.tcpServer": {
-    "dependencies": ["manifest:sockets"],
-    "contexts": ["blessed_extension"]
-  },
-  "sockets.udp": {
-    "dependencies": ["manifest:sockets"],
-    "contexts": ["blessed_extension"]
-  },
-  "storage": {
-    "dependencies": ["permission:storage"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
-  },
   "streamsPrivate": {
     "dependencies": ["permission:streamsPrivate"],
     "contexts": ["blessed_extension"]
@@ -723,12 +700,6 @@
     "platforms": ["chromeos"],
     "dependencies": ["permission:terminalPrivate"],
     "contexts": ["blessed_extension"]
-  },
-  "test": {
-    "internal": true,
-    "channel": "stable",
-    "extension_types": "all",
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "topSites": {
     "dependencies": ["permission:topSites"],

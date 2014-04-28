@@ -5,12 +5,22 @@
 import posixpath
 
 from compiled_file_system import SingleFile, Unicode
-from extensions_paths import (
-    API_FEATURES, JSON_TEMPLATES, MANIFEST_FEATURES, PERMISSION_FEATURES)
+from extensions_paths import API_PATHS, JSON_TEMPLATES
 import features_utility
 from file_system import FileNotFoundError
 from future import Future
 from third_party.json_schema_compiler.json_parse import Parse
+
+
+_API_FEATURES = '_api_features.json'
+_MANIFEST_FEATURES = '_manifest_features.json'
+_PERMISSION_FEATURES = '_permission_features.json'
+
+
+def _GetFeaturePaths(feature_file, *extra_paths):
+  paths = [posixpath.join(api_path, feature_file) for api_path in API_PATHS]
+  paths.extend(extra_paths)
+  return paths
 
 
 def _AddPlatformsFromDependencies(feature,
@@ -39,7 +49,7 @@ def _AddPlatformsFromDependencies(feature,
 
 
 class _FeaturesCache(object):
-  def __init__(self, file_system, compiled_fs_factory, *json_paths):
+  def __init__(self, file_system, compiled_fs_factory, json_paths):
     populate = self._CreateCache
     if len(json_paths) == 1:
       populate = SingleFile(populate)
@@ -77,17 +87,17 @@ class FeaturesBundle(object):
     self._api_cache = _FeaturesCache(
         file_system,
         compiled_fs_factory,
-        API_FEATURES)
+        _GetFeaturePaths(_API_FEATURES))
     self._manifest_cache = _FeaturesCache(
         file_system,
         compiled_fs_factory,
-        MANIFEST_FEATURES,
-        posixpath.join(JSON_TEMPLATES, 'manifest.json'))
+        _GetFeaturePaths(_MANIFEST_FEATURES,
+                         posixpath.join(JSON_TEMPLATES, 'manifest.json')))
     self._permission_cache = _FeaturesCache(
         file_system,
         compiled_fs_factory,
-        PERMISSION_FEATURES,
-        posixpath.join(JSON_TEMPLATES, 'permissions.json'))
+        _GetFeaturePaths(_PERMISSION_FEATURES,
+                         posixpath.join(JSON_TEMPLATES, 'permissions.json')))
     # Namespace the object store by the file system ID because this class is
     # used by the availability finder cross-channel.
     # TODO(kalman): Configure this at the ObjectStore level.

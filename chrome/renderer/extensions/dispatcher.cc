@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
-#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/sha1.h"
@@ -15,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
@@ -53,6 +53,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -86,6 +87,7 @@
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "grit/common_resources.h"
+#include "grit/extensions_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -161,13 +163,13 @@ class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
 
  private:
   void GetAPIFeatures(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    base::Value* value = base::JSONReader::Read(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_EXTENSION_API_FEATURES).as_string());
+    JSONFeatureProviderSource source("api");
+    source.LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
+    source.LoadJSON(IDR_EXTENSION_API_FEATURES);
     scoped_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
     args.GetReturnValue().Set(
-        converter->ToV8Value(value, context()->v8_context()));
+        converter->ToV8Value(&source.dictionary(), context()->v8_context()));
   }
 };
 

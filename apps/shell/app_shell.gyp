@@ -20,6 +20,7 @@
         # devtools_resources.pak.
         '<(DEPTH)/content/content_shell_and_tests.gyp:generate_content_shell_resources',
         '<(DEPTH)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
+        '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
       ],
@@ -37,6 +38,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
@@ -59,6 +61,7 @@
         '<(DEPTH)/chrome/chrome.gyp:plugin',
         '<(DEPTH)/chrome/chrome.gyp:renderer',
         '<(DEPTH)/chrome/chrome.gyp:utility',
+        '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
         '<(DEPTH)/third_party/WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources',
         # TODO(rockot): Dependencies above this line are temporary.
@@ -75,6 +78,7 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
         '<(DEPTH)/extensions/extensions.gyp:extensions_common',
         '<(DEPTH)/extensions/extensions.gyp:extensions_renderer',
+        '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/ui/wm/wm.gyp:wm',

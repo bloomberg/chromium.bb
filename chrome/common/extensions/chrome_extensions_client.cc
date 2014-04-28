@@ -17,7 +17,12 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/base_feature_provider.h"
+#include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/features/manifest_feature.h"
+#include "extensions/common/features/permission_feature.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
@@ -25,15 +30,27 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "grit/common_resources.h"
+#include "grit/extensions_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-namespace {
-const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
-}  // namespace
-
 namespace extensions {
+
+namespace {
+
+const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
+
+template <class FeatureClass>
+SimpleFeature* CreateFeature() {
+  SimpleFeature* feature = new FeatureClass;
+  feature->AddFilter(
+      scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
+  return feature;
+}
+
+}  // namespace
 
 static base::LazyInstance<ChromeExtensionsClient> g_client =
     LAZY_INSTANCE_INITIALIZER;
@@ -79,9 +96,28 @@ ChromeExtensionsClient::GetPermissionMessageProvider() const {
   return permission_message_provider_;
 }
 
-FeatureProvider* ChromeExtensionsClient::GetFeatureProviderByName(
+scoped_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  return BaseFeatureProvider::GetByName(name);
+  JSONFeatureProviderSource source(name);
+  if (name == "api") {
+    source.LoadJSON(IDR_EXTENSION_API_FEATURES);
+    source.LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
+    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
+        source.dictionary(), CreateFeature<APIFeature>));
+  } else if (name == "manifest") {
+    source.LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
+    source.LoadJSON(IDR_CHROME_EXTENSION_MANIFEST_FEATURES);
+    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
+        source.dictionary(), CreateFeature<ManifestFeature>));
+  } else if (name == "permission") {
+    source.LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
+    source.LoadJSON(IDR_CHROME_EXTENSION_PERMISSION_FEATURES);
+    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
+        source.dictionary(), CreateFeature<PermissionFeature>));
+  } else {
+    NOTREACHED();
+  }
+  return scoped_ptr<FeatureProvider>();
 }
 
 void ChromeExtensionsClient::FilterHostPermissions(
@@ -159,27 +195,21 @@ bool ChromeExtensionsClient::IsScriptableURL(
 bool ChromeExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
   // Test from most common to least common.
-  return extensions::api::GeneratedSchemas::IsGenerated(name) ||
-         extensions::core_api::GeneratedSchemas::IsGenerated(name) ||
+  return api::GeneratedSchemas::IsGenerated(name) ||
+         core_api::GeneratedSchemas::IsGenerated(name) ||
          apps::api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ChromeExtensionsClient::GetAPISchema(
     const std::string& name) const {
   // Test from most common to least common.
-  if (extensions::api::GeneratedSchemas::IsGenerated(name))
-    return extensions::api::GeneratedSchemas::Get(name);
+  if (api::GeneratedSchemas::IsGenerated(name))
+    return api::GeneratedSchemas::Get(name);
 
-  if (extensions::core_api::GeneratedSchemas::IsGenerated(name))
-    return extensions::core_api::GeneratedSchemas::Get(name);
+  if (core_api::GeneratedSchemas::IsGenerated(name))
+    return core_api::GeneratedSchemas::Get(name);
 
   return apps::api::GeneratedSchemas::Get(name);
-}
-
-void ChromeExtensionsClient::AddExtraFeatureFilters(
-    SimpleFeature* feature) const {
-  feature->AddFilter(
-      scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
 }
 
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {

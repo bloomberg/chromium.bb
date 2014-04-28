@@ -44,6 +44,7 @@
         '<(DEPTH)/components/components.gyp:variations',
         '<(DEPTH)/content/content.gyp:content_common',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
+        '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
         '<(DEPTH)/media/cast/cast.gyp:cast_transport',
         '<(DEPTH)/net/net.gyp:net',

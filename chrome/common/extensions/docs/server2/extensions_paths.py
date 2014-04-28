@@ -24,10 +24,6 @@ API_PATHS = (
 
 DOCS = join(CHROME_EXTENSIONS, 'docs/')
 
-API_FEATURES = join(CHROME_API, '_api_features.json')
-MANIFEST_FEATURES = join(CHROME_API, '_manifest_features.json')
-PERMISSION_FEATURES = join(CHROME_API, '_permission_features.json')
-
 EXAMPLES = join(DOCS, 'examples/')
 SERVER2 = join(DOCS, 'server2/')
 STATIC_DOCS = join(DOCS, 'static/')

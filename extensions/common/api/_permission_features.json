@@ -1,0 +1,57 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This features file defines permissions for extension APIs implemented
+// under src/extensions.
+
+// See extensions/common/features/* to understand this file, in particular
+// feature.h, simple_feature.h, and base_feature_provider.h.
+
+// To add a new whitelisted ID, SHA-1 it and force it to uppercase. In Bash:
+//
+// $ echo -n "aaaabbbbccccddddeeeeffffgggghhhh" | \
+// sha1sum | tr '[:lower:]' '[:upper:]'
+// 9A0417016F345C934A1A88F55CA17C05014EEEBA  -
+//
+// Google employees: please update http://go/chrome-api-whitelist to map
+// hashes back to ids.
+
+{
+  "dns": [
+    {
+      "channel": "dev",
+      "extension_types": ["extension", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "platform_app"],
+      "whitelist": [
+        "7AE714FFD394E073F0294CFA134C9F91DB5FBAA4",  // CCD Development
+        "C7DA3A55C2355F994D3FDDAD120B426A0DF63843",  // CCD Testing
+        "75E3CFFFC530582C583E4690EF97C70B9C8423B7"   // CCD Release
+      ]
+    }
+  ],
+  "socket": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        // The connectivity diagnostic utility is a component extension that is
+        // used to try to provide suggestions on how to fix connection issues.
+        // It should be the only non-app allowed to use the socket API.
+        "32A1BA997F8AB8DE29ED1BA94AAF00CF2A3FEFA7"
+      ]
+    }
+  ],
+  "storage": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "min_manifest_version": 2
+  }
+}

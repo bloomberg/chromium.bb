@@ -27,9 +27,6 @@ class BaseFeatureProvider : public FeatureProvider {
                       FeatureFactory factory);
   virtual ~BaseFeatureProvider();
 
-  // Gets a feature provider for a specific feature type, like "permission".
-  static FeatureProvider* GetByName(const std::string& name);
-
   // Gets the feature |feature_name|, if it exists.
   virtual Feature* GetFeature(const std::string& feature_name) const OVERRIDE;
   virtual Feature* GetParent(Feature* feature) const OVERRIDE;

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 
 class GURL;
@@ -46,9 +47,9 @@ class ExtensionsClient {
   virtual const PermissionMessageProvider& GetPermissionMessageProvider()
       const = 0;
 
-  // Gets a feature provider for a specific feature type.
-  virtual FeatureProvider* GetFeatureProviderByName(const std::string& name)
-      const = 0;
+  // Create a FeatureProvider for a specific feature type, e.g. "permission".
+  virtual scoped_ptr<FeatureProvider> CreateFeatureProvider(
+      const std::string& name) const = 0;
 
   // Takes the list of all hosts and filters out those with special
   // permission strings. Adds the regular hosts to |new_hosts|,
@@ -79,9 +80,6 @@ class ExtensionsClient {
 
   // Gets the API schema named |name|.
   virtual base::StringPiece GetAPISchema(const std::string& name) const = 0;
-
-  // Appends extra filters to any Features created by the features system.
-  virtual void AddExtraFeatureFilters(SimpleFeature* feature) const = 0;
 
   // Determines if certain fatal extensions errors should be surpressed
   // (i.e., only logged) or allowed (i.e., logged before crashing).

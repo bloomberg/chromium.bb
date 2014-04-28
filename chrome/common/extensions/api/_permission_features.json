@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See c/c/e/features/* to understand this file, in particular feature.h,
-// simple_feature.h, and base_feature_provider.h.
+// This features file defines permissions for extension APIs implemented
+// under src/chrome.
+// See extensions/common/features/* to understand this file, in particular
+// feature.h, simple_feature.h, and base_feature_provider.h.
 
 // To add a new whitelisted ID, SHA-1 it and force it to uppercase. In Bash:
 //
@@ -310,31 +312,6 @@
   "desktopCapture": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]
-  },
-  "dns": [
-    {
-      "channel": "dev",
-      "extension_types": ["extension", "platform_app"]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["extension", "platform_app"],
-      "whitelist": [
-        "7AE714FFD394E073F0294CFA134C9F91DB5FBAA4",  // CCD Development
-        "C7DA3A55C2355F994D3FDDAD120B426A0DF63843",  // CCD Testing
-        "75E3CFFFC530582C583E4690EF97C70B9C8423B7"   // CCD Release
-      ]
-    }
-  ],
-  "screenlockPrivate": {
-    "channel": "stable",
-    "extension_types":["platform_app"],
-    "whitelist": [
-      "lkegkdgachcnekllcdfkijonogckdnjo",  // API test
-      "190C131D270994E7330E9A3CD48224061CB10E2D",  // dogfood 1
-      "7FDDD1C0CB0052596657FDEC92841D509DC8D404",  // dogfood 2
-      "E13990DC5440B6E270503DA27A35762F423725C3"   // dogfood 3
-    ]
   },
   "downloads": {
     "channel": "stable",
@@ -778,6 +755,16 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
+  "screenlockPrivate": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "whitelist": [
+      "lkegkdgachcnekllcdfkijonogckdnjo",  // API test
+      "190C131D270994E7330E9A3CD48224061CB10E2D",  // dogfood 1
+      "7FDDD1C0CB0052596657FDEC92841D509DC8D404",  // dogfood 2
+      "E13990DC5440B6E270503DA27A35762F423725C3"   // dogfood 3
+    ]
+  },
   "screensaver": {
     "channel": "stable",
     "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
@@ -806,19 +793,6 @@
       "CBCC42ABED43A4B58FE3810E62AFFA010EB0349F"   // PDF
     ]
   },
-  "socket": [{
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  }, {
-    "channel": "stable",
-    "extension_types": ["extension"],
-    "whitelist": [
-      // The connectivity diagnostic utility is a component extension that is
-      // used to try to provide suggestions on how to fix connection issues.  It
-      // should be the only non-app allowed to use the socket API.
-      "32A1BA997F8AB8DE29ED1BA94AAF00CF2A3FEFA7"
-    ]
-  }],
   "syncFileSystem": {
     "channel": "stable",
     "extension_types": ["platform_app"]
@@ -826,11 +800,6 @@
   "systemIndicator": {
     "channel": "dev",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
-  "storage": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "min_manifest_version": 2
   },
   "system.cpu": {
     "channel": "stable",

@@ -2,35 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See c/c/e/features/* to understand this file, in particular feature.h,
-// simple_feature.h, and base_feature_provider.h.
+// This features file defines manifest keys implemented under src/chrome.
+// See extensions/common/features/* to understand this file, in particular
+// feature.h, simple_feature.h, and base_feature_provider.h.
 
 {
   "app": {
     "channel": "stable",
     "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
-  },
-  // The default platform app CSP can only be overridden by whitelisted apps.
-  // This is a separate key from the top-level content_security_policy one since
-  // we can't combine type restrictions with whitelisted ID restrictions. If
-  // there is a need for additional whitelisted entries, the feature system
-  // should instead be extended to support OR-ing of restrictions.
-  "app.content_security_policy": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "min_manifest_version": 2,
-    "whitelist": [
-      "nckgahadagoaajjgafhacjanaoiihapd",  // Google Talk prod
-      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Google Talk beta
-      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Google Talk alpha
-      "ljclpkphhpbpinifbeabbhlfddcpfdde",   // Google Talk debug
-      "lphgohfeebnhcpiohjndkgbhhkoapkjc" // Apps Debugger
-    ]
-  },
-  "app.background": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "min_manifest_version": 2
   },
   "app.isolation": {
     "channel": "stable",
@@ -49,27 +28,6 @@
   "author": {
     "channel": "stable",
     "extension_types": "all"
-  },
-  "background": {
-    "channel": "stable",
-    "extension_types": [
-      // Platform apps specify their background page via app.background.
-      "extension", "legacy_packaged_app", "hosted_app"
-    ]
-  },
-  "background.persistent": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app"
-    ],
-    "min_manifest_version": 2
-  },
-  "background_page": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app"
-    ],
-    "max_manifest_version": 1
   },
   "bluetooth": {
     // Note: The "bluetooth" manifest permission is used by the
@@ -119,13 +77,6 @@
   "content_pack": {
     "channel": "dev",
     "extension_types": ["extension"]
-  },
-  "content_security_policy": {
-    "channel": "stable",
-    // Platform apps have a restricted content security policy that cannot be
-    // overriden (except for a whitelist of exceptions, see the
-    // app.content_security_policy whitelist).
-    "extension_types": ["extension", "legacy_packaged_app"]
   },
   "content_scripts": {
     "channel": "stable",
@@ -234,17 +185,6 @@
     "channel": "stable",
     "extension_types": "all"
   },
-  "incognito": [
-    {
-      "channel": "stable",
-      "extension_types": ["extension", "legacy_packaged_app"]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["platform_app"],
-      "location": "component"
-    }
-  ],
   "input_components": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
@@ -252,18 +192,6 @@
   "key": {
     "channel": "stable",
     "extension_types": "all"
-  },
-  "kiosk_enabled": {
-    "channel": "stable",
-    "extension_types": [
-      "platform_app"
-    ]
-  },
-  "kiosk_only": {
-    "channel": "dev",
-    "extension_types": [
-      "platform_app"
-    ]
   },
   "manifest_version": {
     "channel": "stable",
@@ -322,12 +250,6 @@
       "E61F841D8210B6A9891E5384CB665FBED31FCD7B"   // http://crbug.com/281715
     ]
   },
-  "offline_enabled": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
-    ]
-  },
   "omnibox": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
@@ -373,13 +295,6 @@
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
   },
-  "sandbox": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "platform_app", "legacy_packaged_app"
-    ],
-    "min_manifest_version": 2
-  },
   "script_badge": {
     "channel": "trunk",
     "extension_types": ["extension"]
@@ -391,10 +306,6 @@
   "signature": {
     "channel": "stable",
     "extension_types": "all"
-  },
-  "sockets": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
   },
   "spellcheck": {
     "channel": "dev",
@@ -428,23 +339,5 @@
   "version": {
     "channel": "stable",
     "extension_types": "all"
-  },
-  "web_accessible_resources": [
-    {
-      "channel": "stable",
-      "extension_types": [
-        "extension", "legacy_packaged_app", "hosted_app"
-      ]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["platform_app"],
-      "location": "component"
-    }
-  ],
-  "webview": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "min_manifest_version": 2
   }
 }

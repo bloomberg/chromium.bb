@@ -39,9 +39,10 @@ TestExtensionsClient::GetPermissionMessageProvider() const {
   return provider;
 }
 
-FeatureProvider* TestExtensionsClient::GetFeatureProviderByName(
+// TODO(yoz): Implement something reasonable here.
+scoped_ptr<FeatureProvider> TestExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  return BaseFeatureProvider::GetByName(name);
+  return scoped_ptr<FeatureProvider>();
 }
 
 void TestExtensionsClient::FilterHostPermissions(
@@ -80,10 +81,6 @@ bool TestExtensionsClient::IsAPISchemaGenerated(
 base::StringPiece TestExtensionsClient::GetAPISchema(
     const std::string& name) const {
   return base::StringPiece();
-}
-
-void TestExtensionsClient::AddExtraFeatureFilters(
-    SimpleFeature* feature) const {
 }
 
 bool TestExtensionsClient::ShouldSuppressFatalErrors() const {

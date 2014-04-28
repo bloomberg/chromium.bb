@@ -11,15 +11,24 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/common_manifest_handlers.h"
+#include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/base_feature_provider.h"
+#include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/features/manifest_feature.h"
+#include "extensions/common/features/permission_feature.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
+#include "grit/common_resources.h"
+#include "grit/extensions_resources.h"
 
 using extensions::APIPermissionInfo;
 using extensions::APIPermissionSet;
+using extensions::BaseFeatureProvider;
 using extensions::Extension;
+using extensions::FeatureProvider;
 using extensions::Manifest;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
@@ -29,6 +38,11 @@ using extensions::URLPatternSet;
 namespace apps {
 
 namespace {
+
+template <class FeatureClass>
+extensions::SimpleFeature* CreateFeature() {
+  return new FeatureClass;
+}
 
 // TODO(jamescook): Refactor ChromePermissionsMessageProvider so we can share
 // code.
@@ -114,10 +128,29 @@ ShellExtensionsClient::GetPermissionMessageProvider() const {
   return provider;
 }
 
-extensions::FeatureProvider* ShellExtensionsClient::GetFeatureProviderByName(
+scoped_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  // TODO(jamescook): Factor out an extensions module feature provider.
-  return extensions::BaseFeatureProvider::GetByName(name);
+  extensions::JSONFeatureProviderSource source(name);
+  if (name == "api") {
+    // TODO(yoz): Only include src/extensions resources.
+    source.LoadJSON(IDR_EXTENSION_API_FEATURES);
+    source.LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
+    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
+        source.dictionary(), CreateFeature<extensions::APIFeature>));
+  } else if (name == "manifest") {
+    source.LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
+    source.LoadJSON(IDR_CHROME_EXTENSION_MANIFEST_FEATURES);
+    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
+        source.dictionary(), CreateFeature<extensions::ManifestFeature>));
+  } else if (name == "permission") {
+    source.LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
+    source.LoadJSON(IDR_CHROME_EXTENSION_PERMISSION_FEATURES);
+    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
+        source.dictionary(), CreateFeature<extensions::PermissionFeature>));
+  } else {
+    NOTREACHED();
+  }
+  return scoped_ptr<FeatureProvider>();
 }
 
 void ShellExtensionsClient::FilterHostPermissions(
@@ -175,9 +208,6 @@ base::StringPiece ShellExtensionsClient::GetAPISchema(
 
   return extensions::core_api::GeneratedSchemas::Get(name);
 }
-
-void ShellExtensionsClient::AddExtraFeatureFilters(
-    extensions::SimpleFeature* feature) const {}
 
 bool ShellExtensionsClient::ShouldSuppressFatalErrors() const { return true; }
 

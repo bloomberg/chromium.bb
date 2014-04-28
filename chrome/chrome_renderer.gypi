@@ -22,6 +22,7 @@
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
         '../extensions/extensions.gyp:extensions_renderer',
+        '../extensions/extensions_resources.gyp:extensions_resources',
         '../media/cast/cast.gyp:cast_sender',
         '../media/cast/cast.gyp:cast_transport',
         '../net/net.gyp:net',

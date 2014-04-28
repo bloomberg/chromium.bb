@@ -96,6 +96,8 @@
         'common/features/feature.h',
         'common/features/feature_provider.cc',
         'common/features/feature_provider.h',
+        'common/features/json_feature_provider_source.cc',
+        'common/features/json_feature_provider_source.h',
         'common/features/manifest_feature.cc',
         'common/features/manifest_feature.h',
         'common/features/permission_feature.cc',
