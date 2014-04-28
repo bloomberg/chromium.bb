@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
-#include "device/hid/input_service_linux.cc"
+#include "device/hid/input_service_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

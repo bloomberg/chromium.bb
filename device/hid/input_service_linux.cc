@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/hid/input_service_linux.h"
 
@@ -59,6 +60,19 @@ InputServiceLinux::InputDeviceInfo::Type GetDeviceType(udev_device* device) {
   return InputServiceLinux::InputDeviceInfo::TYPE_UNKNOWN;
 }
 
+std::string GetParentDeviceName(udev_device* device, const char* subsystem) {
+  udev_device* parent =
+      udev_device_get_parent_with_subsystem_devtype(device, subsystem, NULL);
+  if (!parent)
+    return std::string();
+  const char* name = udev_device_get_property_value(parent, "NAME");
+  if (!name)
+    return std::string();
+  std::string result;
+  base::TrimString(name, "\"", &result);
+  return result;
+}
+
 class InputServiceLinuxImpl : public InputServiceLinux,
                               public DeviceMonitorLinux::Observer {
  public:
@@ -90,26 +104,25 @@ void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
   DCHECK(CalledOnValidThread());
   if (!device)
     return;
-  const char* path = udev_device_get_syspath(device);
-  if (!path)
+  const char* devnode = udev_device_get_devnode(device);
+  if (!devnode)
     return;
 
   InputDeviceInfo info;
-  info.id = path;
-
-  const char* name = udev_device_get_property_value(device, "NAME");
-  if (name)
-    info.name = name;
+  info.id = devnode;
 
   const char* subsystem = udev_device_get_subsystem(device);
   if (!subsystem)
     return;
-  else if (strcmp(subsystem, kSubsystemHid) == 0)
+  if (strcmp(subsystem, kSubsystemHid) == 0) {
     info.subsystem = InputServiceLinux::InputDeviceInfo::SUBSYSTEM_HID;
-  else if (strcmp(subsystem, kSubsystemInput) == 0)
+    info.name = GetParentDeviceName(device, kSubsystemHid);
+  } else if (strcmp(subsystem, kSubsystemInput) == 0) {
     info.subsystem = InputServiceLinux::InputDeviceInfo::SUBSYSTEM_INPUT;
-  else
+    info.name = GetParentDeviceName(device, kSubsystemInput);
+  } else {
     return;
+  }
 
   info.type = GetDeviceType(device);
 
@@ -129,10 +142,9 @@ void InputServiceLinuxImpl::OnDeviceRemoved(udev_device* device) {
   DCHECK(CalledOnValidThread());
   if (!device)
     return;
-  const char* path = udev_device_get_syspath(device);
-  if (!path)
-    return;
-  RemoveDevice(path);
+  const char* devnode = udev_device_get_devnode(device);
+  if (devnode)
+    RemoveDevice(devnode);
 }
 
 }  // namespace
