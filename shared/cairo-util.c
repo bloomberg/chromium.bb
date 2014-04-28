@@ -488,10 +488,15 @@ theme_get_location(struct theme *t, int x, int y,
 				int width, int height, int flags)
 {
 	int vlocation, hlocation, location;
-	const int grip_size = 8;
-	int margin, top_margin;
+	int margin, top_margin, grip_size;
 
-	margin = (flags & THEME_FRAME_MAXIMIZED) ? 0 : t->margin;
+	if (flags & THEME_FRAME_MAXIMIZED) {
+		margin = 0;
+		grip_size = 0;
+	} else {
+		margin = t->margin;
+		grip_size = 8;
+	}
 
 	if (flags & THEME_FRAME_NO_TITLE)
 		top_margin = t->width;
