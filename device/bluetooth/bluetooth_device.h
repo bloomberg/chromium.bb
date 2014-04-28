@@ -369,11 +369,12 @@ class BluetoothDevice {
       const ErrorCallback& error_callback) = 0;
 
   // Returns the list of discovered GATT services.
-  std::vector<BluetoothGattService*> GetGattServices() const;
+  virtual std::vector<BluetoothGattService*> GetGattServices() const;
 
   // Returns the GATT service with device-specific identifier |identifier|.
   // Returns NULL, if no such service exists.
-  BluetoothGattService* GetGattService(const std::string& identifier) const;
+  virtual BluetoothGattService* GetGattService(
+      const std::string& identifier) const;
 
  protected:
   BluetoothDevice();

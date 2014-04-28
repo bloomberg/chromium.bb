@@ -5,13 +5,76 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 
 namespace extensions {
+
+class BluetoothLowEnergyEventRouter;
+
+// The profile-keyed service that manages the bluetoothLowEnergy extension API.
+class BluetoothLowEnergyAPI : public BrowserContextKeyedAPI {
+ public:
+  static BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI>*
+      GetFactoryInstance();
+
+  // Convenience method to get the BluetoothLowEnergy API for a browser context.
+  static BluetoothLowEnergyAPI* Get(content::BrowserContext* context);
+
+  explicit BluetoothLowEnergyAPI(content::BrowserContext* context);
+  virtual ~BluetoothLowEnergyAPI();
+
+  // KeyedService implementation..
+  virtual void Shutdown() OVERRIDE;
+
+  BluetoothLowEnergyEventRouter* event_router() const {
+    return event_router_.get();
+  }
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "BluetoothLowEnergyAPI"; }
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
+
+ private:
+  friend class BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI>;
+
+  scoped_ptr<BluetoothLowEnergyEventRouter> event_router_;
+
+  content::BrowserContext* browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyAPI);
+};
+
 namespace api {
 
-class BluetoothLowEnergyGetServiceFunction : public UIThreadExtensionFunction {
+// Base class for bluetoothLowEnergy API functions. This class handles some of
+// the common logic involved in all API functions, such as checking for
+// platform support and returning the correct error.
+class BluetoothLowEnergyExtensionFunction : public UIThreadExtensionFunction {
+ public:
+  BluetoothLowEnergyExtensionFunction();
+
+ protected:
+  virtual ~BluetoothLowEnergyExtensionFunction();
+
+  // ExtensionFunction override.
+  virtual bool RunImpl() OVERRIDE;
+
+  // Implemented by individual bluetoothLowEnergy extension functions to perform
+  // the body of the function. This invoked asynchonously after RunImpl after
+  // the BluetoothLowEnergyEventRouter has obtained a handle on the
+  // BluetoothAdapter.
+  virtual bool DoWork() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyExtensionFunction);
+};
+
+class BluetoothLowEnergyGetServiceFunction
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getService",
                              BLUETOOTHLOWENERGY_GETSERVICE);
@@ -19,11 +82,12 @@ class BluetoothLowEnergyGetServiceFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~BluetoothLowEnergyGetServiceFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
-class BluetoothLowEnergyGetServicesFunction : public UIThreadExtensionFunction {
+class BluetoothLowEnergyGetServicesFunction
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getServices",
                              BLUETOOTHLOWENERGY_GETSERVICES);
@@ -31,12 +95,12 @@ class BluetoothLowEnergyGetServicesFunction : public UIThreadExtensionFunction {
  protected:
   virtual ~BluetoothLowEnergyGetServicesFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyGetCharacteristicFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getCharacteristic",
                              BLUETOOTHLOWENERGY_GETCHARACTERISTIC);
@@ -44,12 +108,12 @@ class BluetoothLowEnergyGetCharacteristicFunction
  protected:
   virtual ~BluetoothLowEnergyGetCharacteristicFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyGetCharacteristicsFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getCharacteristics",
                              BLUETOOTHLOWENERGY_GETCHARACTERISTICS);
@@ -57,12 +121,12 @@ class BluetoothLowEnergyGetCharacteristicsFunction
  protected:
   virtual ~BluetoothLowEnergyGetCharacteristicsFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyGetIncludedServicesFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getIncludedServices",
                              BLUETOOTHLOWENERGY_GETINCLUDEDSERVICES);
@@ -70,12 +134,12 @@ class BluetoothLowEnergyGetIncludedServicesFunction
  protected:
   virtual ~BluetoothLowEnergyGetIncludedServicesFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyGetDescriptorFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getDescriptor",
                              BLUETOOTHLOWENERGY_GETDESCRIPTOR);
@@ -83,12 +147,12 @@ class BluetoothLowEnergyGetDescriptorFunction
  protected:
   virtual ~BluetoothLowEnergyGetDescriptorFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyGetDescriptorsFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getDescriptors",
                              BLUETOOTHLOWENERGY_GETDESCRIPTORS);
@@ -96,12 +160,12 @@ class BluetoothLowEnergyGetDescriptorsFunction
  protected:
   virtual ~BluetoothLowEnergyGetDescriptorsFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyReadCharacteristicValueFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.readCharacteristicValue",
                              BLUETOOTHLOWENERGY_READCHARACTERISTICVALUE);
@@ -109,12 +173,12 @@ class BluetoothLowEnergyReadCharacteristicValueFunction
  protected:
   virtual ~BluetoothLowEnergyReadCharacteristicValueFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyWriteCharacteristicValueFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.writeCharacteristicValue",
                              BLUETOOTHLOWENERGY_WRITECHARACTERISTICVALUE);
@@ -122,12 +186,12 @@ class BluetoothLowEnergyWriteCharacteristicValueFunction
  protected:
   virtual ~BluetoothLowEnergyWriteCharacteristicValueFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyReadDescriptorValueFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.readDescriptorValue",
                              BLUETOOTHLOWENERGY_READDESCRIPTORVALUE);
@@ -135,12 +199,12 @@ class BluetoothLowEnergyReadDescriptorValueFunction
  protected:
   virtual ~BluetoothLowEnergyReadDescriptorValueFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 class BluetoothLowEnergyWriteDescriptorValueFunction
-    : public UIThreadExtensionFunction {
+    : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.writeDescriptorValue",
                              BLUETOOTHLOWENERGY_WRITEDESCRIPTORVALUE);
@@ -148,8 +212,8 @@ class BluetoothLowEnergyWriteDescriptorValueFunction
  protected:
   virtual ~BluetoothLowEnergyWriteDescriptorValueFunction() {}
 
-  // UIThreadExtensionFunction override.
-  virtual bool RunImpl() OVERRIDE;
+  // BluetoothLowEnergyExtensionFunction override.
+  virtual bool DoWork() OVERRIDE;
 };
 
 }  // namespace api

@@ -44,12 +44,13 @@ class BluetoothRemoteGattServiceChromeOS
   virtual device::BluetoothUUID GetUUID() const OVERRIDE;
   virtual bool IsLocal() const OVERRIDE;
   virtual bool IsPrimary() const OVERRIDE;
+  virtual device::BluetoothDevice* GetDevice() const OVERRIDE;
   virtual std::vector<device::BluetoothGattCharacteristic*>
       GetCharacteristics() const OVERRIDE;
   virtual std::vector<device::BluetoothGattService*>
       GetIncludedServices() const OVERRIDE;
   virtual device::BluetoothGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) OVERRIDE;
+      const std::string& identifier) const OVERRIDE;
   virtual bool AddCharacteristic(
       device::BluetoothGattCharacteristic* characteristic) OVERRIDE;
   virtual bool AddIncludedService(

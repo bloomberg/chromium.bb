@@ -13,6 +13,7 @@
 
 namespace device {
 
+class BluetoothDevice;
 class BluetoothGattCharacteristic;
 class BluetoothGattDescriptor;
 
@@ -225,6 +226,10 @@ class BluetoothGattService {
   // services.
   virtual bool IsPrimary() const = 0;
 
+  // Returns the BluetoothDevice that this GATT service was received from, which
+  // also owns this service. Local services always return NULL.
+  virtual BluetoothDevice* GetDevice() const = 0;
+
   // List of characteristics that belong to this service.
   virtual std::vector<BluetoothGattCharacteristic*>
       GetCharacteristics() const = 0;
@@ -236,7 +241,7 @@ class BluetoothGattService {
   // Returns the GATT characteristic with identifier |identifier| if it belongs
   // to this GATT service.
   virtual BluetoothGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) = 0;
+      const std::string& identifier) const = 0;
 
   // Adds characteristics and included services to the local attribute hierarchy
   // represented by this service. These methods only make sense for local

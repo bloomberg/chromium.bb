@@ -32,9 +32,9 @@ namespace bluetoothLowEnergy {
     // this instance represents a remote service.
     DOMString? instanceId;
 
-    // The remote peripheral that the GATT service belongs to. Present, if this
-    // instance represents a remote service.
-    bluetooth.Device? device;
+    // The device address of the remote peripheral that the GATT service belongs
+    // to. Present, if this instance represents a remote service.
+    DOMString? deviceAddress;
   };
 
   // Represents a GATT characteristic, which is a basic data element that

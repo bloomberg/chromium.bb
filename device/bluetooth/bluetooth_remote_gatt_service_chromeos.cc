@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
 
 namespace chromeos {
@@ -102,6 +103,10 @@ bool BluetoothRemoteGattServiceChromeOS::IsPrimary() const {
   return properties->primary.value();
 }
 
+device::BluetoothDevice* BluetoothRemoteGattServiceChromeOS::GetDevice() const {
+  return device_;
+}
+
 std::vector<device::BluetoothGattCharacteristic*>
 BluetoothRemoteGattServiceChromeOS::GetCharacteristics() const {
   std::vector<device::BluetoothGattCharacteristic*> characteristics;
@@ -120,7 +125,7 @@ BluetoothRemoteGattServiceChromeOS::GetIncludedServices() const {
 
 device::BluetoothGattCharacteristic*
 BluetoothRemoteGattServiceChromeOS::GetCharacteristic(
-    const std::string& identifier) {
+    const std::string& identifier) const {
   CharacteristicMap::const_iterator iter =
       characteristics_.find(dbus::ObjectPath(identifier));
   if (iter == characteristics_.end())
