@@ -11,6 +11,7 @@
 #include "device/hid/hid_service.h"
 
 using device::HidService;
+using device::HidUsageAndPage;
 
 namespace extensions {
 
@@ -44,7 +45,8 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     device::HidDeviceInfo device_info;
     if (hid_service->GetDeviceInfo(device_id, &device_info)) {
       if (device_info.vendor_id == vendor_id &&
-          device_info.product_id == product_id) {
+          device_info.product_id == product_id &&
+          IsDeviceAccessible(device_info)) {
         api::hid::HidDeviceInfo api_device_info;
         api_device_info.device_id = resource_id;
         api_device_info.vendor_id = device_info.vendor_id;
@@ -112,6 +114,50 @@ void HidDeviceManager::UpdateDevices() {
   }
   device_ids_.swap(new_device_ids);
   resource_ids_.swap(new_resource_ids);
+}
+
+// static
+// TODO(rockot): Add some tests for this.
+bool HidDeviceManager::IsDeviceAccessible(
+    const device::HidDeviceInfo& device_info) {
+  for (std::vector<device::HidUsageAndPage>::const_iterator iter =
+           device_info.usages.begin();
+      iter != device_info.usages.end(); ++iter) {
+    if (!IsUsageAccessible(*iter)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// static
+bool HidDeviceManager::IsUsageAccessible(
+    const HidUsageAndPage& usage_and_page) {
+  if (usage_and_page.usage_page == HidUsageAndPage::kPageKeyboard)
+    return false;
+
+  if (usage_and_page.usage_page != HidUsageAndPage::kPageGenericDesktop)
+    return true;
+
+  uint16_t usage = usage_and_page.usage;
+  if (usage == HidUsageAndPage::kGenericDesktopPointer ||
+      usage == HidUsageAndPage::kGenericDesktopMouse ||
+      usage == HidUsageAndPage::kGenericDesktopKeyboard ||
+      usage == HidUsageAndPage::kGenericDesktopKeypad) {
+    return false;
+  }
+
+  if (usage >= HidUsageAndPage::kGenericDesktopSystemControl &&
+      usage <= HidUsageAndPage::kGenericDesktopSystemWarmRestart) {
+    return false;
+  }
+
+  if (usage >= HidUsageAndPage::kGenericDesktopSystemDock &&
+      usage <= HidUsageAndPage::kGenericDesktopSystemDisplaySwap) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace extensions
