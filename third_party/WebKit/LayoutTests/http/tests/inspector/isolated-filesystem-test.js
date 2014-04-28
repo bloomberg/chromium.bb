@@ -88,7 +88,9 @@ MockIsolatedFileSystem.prototype = {
     }
 }
 
+var normalizePath = WebInspector.IsolatedFileSystem.normalizePath
 WebInspector.IsolatedFileSystem = MockIsolatedFileSystem;
+WebInspector.IsolatedFileSystem.normalizePath = normalizePath;
 
 var MockIsolatedFileSystemManager = function() {};
 MockIsolatedFileSystemManager.prototype = {
