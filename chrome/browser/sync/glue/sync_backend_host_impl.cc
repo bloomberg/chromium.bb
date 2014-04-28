@@ -485,7 +485,6 @@ SyncedDeviceTracker* SyncBackendHostImpl::GetSyncedDeviceTracker() const {
 }
 
 void SyncBackendHostImpl::RequestBufferedProtocolEventsAndEnableForwarding() {
-  DCHECK(initialized());
   registrar_->sync_thread()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(
@@ -494,7 +493,6 @@ void SyncBackendHostImpl::RequestBufferedProtocolEventsAndEnableForwarding() {
 }
 
 void SyncBackendHostImpl::DisableProtocolEventForwarding() {
-  DCHECK(initialized());
   registrar_->sync_thread()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(
