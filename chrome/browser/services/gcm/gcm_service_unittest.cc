@@ -467,7 +467,28 @@ TEST_F(GCMServiceTest, Shutdown) {
   EXPECT_FALSE(wrapper_->ServiceHasAppHandlers());
 }
 
-TEST_F(GCMServiceTest, SignInAndSignOutUnderPositiveChannelSignal) {
+// These tests are flaky on Android. See http://crbug.com/367600.
+#if defined(OS_ANDROID)
+#define MAYBE_SignInAndSignOutUnderPositiveChannelSignal \
+    DISABLED_SignInAndSignOutUnderPositiveChannelSignal
+#define MAYBE_SignInAndSignOutUnderNonPositiveChannelSignal \
+    DISABLED_SignInAndSignOutUnderNonPositiveChannelSignal
+#define MAYBE_SignOutAndThenSignIn \
+    DISABLED_SignOutAndThenSignIn
+#define MAYBE_StopAndRestartGCM \
+    DISABLED_StopAndRestartGCM
+#else
+#define MAYBE_SignInAndSignOutUnderPositiveChannelSignal \
+    SignInAndSignOutUnderPositiveChannelSignal
+#define MAYBE_SignInAndSignOutUnderNonPositiveChannelSignal \
+    SignInAndSignOutUnderNonPositiveChannelSignal
+#define MAYBE_SignOutAndThenSignIn \
+    SignOutAndThenSignIn
+#define MAYBE_StopAndRestartGCM \
+    StopAndRestartGCM
+#endif
+
+TEST_F(GCMServiceTest, MAYBE_SignInAndSignOutUnderPositiveChannelSignal) {
   wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
   wrapper_->SignIn(kTestAccountID1);
 
@@ -482,7 +503,7 @@ TEST_F(GCMServiceTest, SignInAndSignOutUnderPositiveChannelSignal) {
   EXPECT_EQ(GCMClientMock::CHECKED_OUT, wrapper_->GetGCMClient()->status());
 }
 
-TEST_F(GCMServiceTest, SignInAndSignOutUnderNonPositiveChannelSignal) {
+TEST_F(GCMServiceTest, MAYBE_SignInAndSignOutUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
   wrapper_->CreateService(false, GCMClientMock::NO_DELAY_LOADING);
@@ -499,7 +520,7 @@ TEST_F(GCMServiceTest, SignInAndSignOutUnderNonPositiveChannelSignal) {
   EXPECT_EQ(GCMClientMock::CHECKED_OUT, wrapper_->GetGCMClient()->status());
 }
 
-TEST_F(GCMServiceTest, SignOutAndThenSignIn) {
+TEST_F(GCMServiceTest, MAYBE_SignOutAndThenSignIn) {
   wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
   wrapper_->SignIn(kTestAccountID1);
 
@@ -521,7 +542,7 @@ TEST_F(GCMServiceTest, SignOutAndThenSignIn) {
   EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
 }
 
-TEST_F(GCMServiceTest, StopAndRestartGCM) {
+TEST_F(GCMServiceTest, MAYBE_StopAndRestartGCM) {
   wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
   wrapper_->SignIn(kTestAccountID1);
 
