@@ -823,7 +823,6 @@ crbug.com/350011 [ Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFail
 crbug.com/367201 svg/custom/text-xy-updates-SVGList.xhtml [ NeedsRebaseline ]
 
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
-crbug.com/349528 [ Debug ] fast/mediastream/RTCPeerConnection-lifetime.html [ Crash Pass ]
 
 crbug.com/361940 [ Lion MountainLion Retina Mavericks ] compositing/update-paint-phases.html [ Failure ]
 
@@ -858,15 +857,11 @@ crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Fail
 
 crbug.com/351658 fast/events/window-onerror-03.html [ NeedsManualRebaseline ]
 crbug.com/356991 [ Linux Debug ] fast/canvas/canvas-createImageBitmap-drawImage-video.html [ Crash Pass ]
-crbug.com/356992 [ Debug ] fast/dom/Window/timer-null-script-execution-context.html [ Crash Pass ]
-crbug.com/356994 [ Debug ] fast/dom/shadow/access-document-of-detached-stylesheetlist-crash.html [ Crash Pass ]
-crbug.com/356995 [ Debug ] fast/mediastream/MediaStreamConstructor.html [ Crash Pass ]
 crbug.com/356996 [ Debug ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356996 [ Mac Release ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]
 crbug.com/357002 [ Linux ] http/tests/misc/cache-hit-resource-timing-buffer-full-crash.html [ Failure Pass ]
 crbug.com/357068 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure Pass ]
-crbug.com/357069 [ Debug ] fast/media/lifetime.html [ Crash Pass Timeout ]
 crbug.com/357071 gamepad/gamepad-polling-access.html [ Crash Pass ]
 crbug.com/357074 [ Win ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
 crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Failure Pass ]
@@ -884,8 +879,6 @@ crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pas
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357438 [ Win ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
-crbug.com/357460 [ Debug ] fast/events/touch/gesture/touch-gesture-scroll-div-removed.html [ Crash Pass ]
-crbug.com/357461 [ Debug ] fast/mediastream/RTCPeerConnection-AddRemoveStream.html [ Crash Pass ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass ]
 crbug.com/357464 [ Linux ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
 crbug.com/357464 [ Win Debug ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
