@@ -14,6 +14,7 @@
 #include "platform/TracedValue.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 #include <inttypes.h>
 
@@ -156,6 +157,25 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::d
 {
     RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("id", callbackId);
+    data->setString("frame", toHexString(document->frame()));
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("identifier", identifier);
+    data->setString("url", url.string());
+    data->setString("frame", toHexString(document->frame()));
+    if (!protocol.isNull())
+        data->setString("webSocketProtocol", protocol);
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("identifier", identifier);
     data->setString("frame", toHexString(document->frame()));
     return TracedValue::fromJSONValue(data);
 }

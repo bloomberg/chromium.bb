@@ -13,6 +13,7 @@ namespace WebCore {
 class Document;
 class ExecutionContext;
 class FrameView;
+class KURL;
 class LocalFrame;
 class RenderObject;
 class ResourceRequest;
@@ -62,6 +63,16 @@ public:
 class InspectorAnimationFrameEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, int callbackId);
+};
+
+class InspectorWebSocketCreateEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
+};
+
+class InspectorWebSocketEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier);
 };
 
 } // namespace WebCore
