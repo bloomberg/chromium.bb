@@ -16,7 +16,7 @@
 #define IPC_MESSAGE_START ScreenOrientationMsgStart
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
-                              blink::WebScreenOrientationPortraitPrimary,
+                              blink::WebScreenOrientationUndefined,
                               blink::WebScreenOrientationLandscapeSecondary)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
                               blink::WebScreenOrientationLockDefault,
