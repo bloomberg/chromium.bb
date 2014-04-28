@@ -83,7 +83,8 @@ X11VideoRenderer::~X11VideoRenderer() {
     XRenderFreePicture(display_, picture_);
 }
 
-void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
+void X11VideoRenderer::Paint(
+    const scoped_refptr<media::VideoFrame>& video_frame) {
   if (!image_)
     Initialize(video_frame->coded_size(), video_frame->visible_rect());
 

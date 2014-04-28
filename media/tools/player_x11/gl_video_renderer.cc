@@ -111,7 +111,8 @@ GlVideoRenderer::~GlVideoRenderer() {
   glXDestroyContext(display_, gl_context_);
 }
 
-void GlVideoRenderer::Paint(media::VideoFrame* video_frame) {
+void GlVideoRenderer::Paint(
+    const scoped_refptr<media::VideoFrame>& video_frame) {
   if (!gl_context_)
     Initialize(video_frame->coded_size(), video_frame->visible_rect());
 

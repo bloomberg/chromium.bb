@@ -20,7 +20,7 @@ class X11VideoRenderer : public base::RefCountedThreadSafe<X11VideoRenderer> {
  public:
   X11VideoRenderer(Display* display, Window window);
 
-  void Paint(media::VideoFrame* video_frame);
+  void Paint(const scoped_refptr<media::VideoFrame>& video_frame);
 
  private:
   friend class base::RefCountedThreadSafe<X11VideoRenderer>;

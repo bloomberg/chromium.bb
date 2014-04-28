@@ -19,7 +19,7 @@ class GlVideoRenderer : public base::RefCountedThreadSafe<GlVideoRenderer> {
  public:
   GlVideoRenderer(Display* display, Window window);
 
-  void Paint(media::VideoFrame* video_frame);
+  void Paint(const scoped_refptr<media::VideoFrame>& video_frame);
 
  private:
   friend class base::RefCountedThreadSafe<GlVideoRenderer>;
