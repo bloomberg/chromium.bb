@@ -70,9 +70,6 @@ base::DictionaryValue* SyncSessionSnapshot::ToValue() const {
                     model_neutral_state_.num_local_overwrites);
   value->SetInteger("numServerOverwrites",
                     model_neutral_state_.num_server_overwrites);
-  value->SetInteger(
-      "numServerChangesRemaining",
-      static_cast<int>(model_neutral_state_.num_server_changes_remaining));
   value->Set("downloadProgressMarkers",
              ProgressMarkerMapToValue(download_progress_markers_).release());
   value->SetBoolean("isSilenced", is_silenced_);
@@ -110,10 +107,6 @@ std::string SyncSessionSnapshot::ToString() const {
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json);
   return json;
-}
-
-int64 SyncSessionSnapshot::num_server_changes_remaining() const {
-  return model_neutral_state().num_server_changes_remaining;
 }
 
 const ProgressMarkerMap&

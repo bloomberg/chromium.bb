@@ -52,7 +52,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
   ModelNeutralState model_neutral_state() const {
     return model_neutral_state_;
   }
-  int64 num_server_changes_remaining() const;
   const ProgressMarkerMap& download_progress_markers() const;
   bool is_silenced() const;
   int num_encryption_conflicts() const;

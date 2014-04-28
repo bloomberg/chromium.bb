@@ -32,7 +32,6 @@ SyncStatus AllStatus::CreateBlankStatus() const {
   status.hierarchy_conflicts = 0;
   status.server_conflicts = 0;
   status.committed_count = 0;
-  status.updates_available = 0;
   return status;
 }
 
@@ -50,8 +49,6 @@ SyncStatus AllStatus::CalcSyncing(const SyncCycleEvent &event) const {
   } else if (event.what_happened == SyncCycleEvent::SYNC_CYCLE_ENDED) {
     status.syncing = false;
   }
-
-  status.updates_available += snapshot.num_server_changes_remaining();
 
   status.num_entries_by_type = snapshot.num_entries_by_type();
   status.num_to_delete_entries_by_type =

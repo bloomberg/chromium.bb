@@ -22,8 +22,7 @@ ModelNeutralState::ModelNeutralState()
       last_get_key_result(UNSET),
       last_download_updates_result(UNSET),
       commit_result(UNSET),
-      items_committed(false),
-      num_server_changes_remaining(0) {
+      items_committed(false) {
 }
 
 ModelNeutralState::~ModelNeutralState() {}

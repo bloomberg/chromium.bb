@@ -16,8 +16,6 @@ class StatusControllerTest : public testing::Test { };
 // method was actually setting |bar_| instead!).
 TEST_F(StatusControllerTest, ReadYourWrites) {
   StatusController status;
-  status.set_num_server_changes_remaining(13);
-  EXPECT_EQ(13, status.num_server_changes_remaining());
 
   status.set_last_download_updates_result(SYNCER_OK);
   EXPECT_EQ(SYNCER_OK,

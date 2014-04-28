@@ -241,11 +241,10 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
     return result;
   }
 
-  DVLOG(1) << "GetUpdates "
-           << " returned " << update_response.get_updates().entries_size()
-           << " updates and indicated "
-           << update_response.get_updates().changes_remaining()
-           << " updates left on server.";
+  DVLOG(1) << "GetUpdates returned "
+           << update_response.get_updates().entries_size()
+           << " updates.";
+
 
   if (session->context()->debug_info_getter()) {
     // Clear debug info now that we have successfully sent it to the server.
@@ -268,6 +267,8 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
       base::Time::Now(), update_response, process_result);
   session->SendProtocolEvent(response_event);
 
+  DVLOG(1) << "GetUpdates result: " << process_result;
+
   return process_result;
 }
 
@@ -282,7 +283,6 @@ SyncerError GetUpdatesProcessor::ProcessResponse(
   if (!gu_response.has_changes_remaining()) {
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
-  status->set_num_server_changes_remaining(gu_response.changes_remaining());
 
   syncer::SyncerError result =
       ProcessGetUpdatesResponse(request_types, gu_response, status);

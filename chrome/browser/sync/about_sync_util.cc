@@ -298,7 +298,6 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
   IntSyncStat hierarchy_conflicts(section_this_cycle, "Hierarchy Conflicts");
   IntSyncStat server_conflicts(section_this_cycle, "Server Conflicts");
   IntSyncStat committed_items(section_this_cycle, "Committed Items");
-  IntSyncStat updates_remaining(section_this_cycle, "Updates Remaining");
 
   base::ListValue* section_that_cycle = AddSection(
       stats_list, "Transient Counters (last cycle of last completed session)");
@@ -427,7 +426,6 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
     hierarchy_conflicts.SetValue(full_status.hierarchy_conflicts);
     server_conflicts.SetValue(full_status.server_conflicts);
     committed_items.SetValue(full_status.committed_count);
-    updates_remaining.SetValue(full_status.updates_available);
   }
 
   if (is_status_valid) {

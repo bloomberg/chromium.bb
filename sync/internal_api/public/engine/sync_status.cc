@@ -14,7 +14,6 @@ SyncStatus::SyncStatus()
       server_conflicts(0),
       committed_count(0),
       syncing(false),
-      updates_available(0),
       updates_received(0),
       reflected_updates_received(0),
       tombstone_updates_received(0),

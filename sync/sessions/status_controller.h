@@ -43,11 +43,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
     model_neutral_.commit_request_types = value;
   }
 
-  // Changelog related state.
-  int64 num_server_changes_remaining() const {
-    return model_neutral_.num_server_changes_remaining;
-  }
-
   // Various conflict counters.
   int num_encryption_conflicts() const;
   int num_hierarchy_conflicts() const;
@@ -73,7 +68,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
   SyncerError last_get_key_result() const;
 
   // Download counters.
-  void set_num_server_changes_remaining(int64 changes_remaining);
   void increment_num_updates_downloaded_by(int value);
   void increment_num_tombstone_updates_downloaded_by(int value);
   void increment_num_reflected_updates_downloaded_by(int value);

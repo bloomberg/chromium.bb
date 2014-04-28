@@ -32,11 +32,6 @@ void StatusController::increment_num_reflected_updates_downloaded_by(
   model_neutral_.num_reflected_updates_downloaded_total += value;
 }
 
-void StatusController::set_num_server_changes_remaining(
-    int64 changes_remaining) {
-  model_neutral_.num_server_changes_remaining = changes_remaining;
-}
-
 void StatusController::UpdateStartTime() {
   sync_start_time_ = base::Time::Now();
 }

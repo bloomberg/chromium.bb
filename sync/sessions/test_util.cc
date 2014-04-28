@@ -22,7 +22,6 @@ void SimulateConfigureSuccess(
     ModelTypeSet requsted_types,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     sessions::SyncSession* session) {
-  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
@@ -49,7 +48,6 @@ void SimulateConfigureConnectionFailure(
 void SimulateNormalSuccess(ModelTypeSet requested_types,
                            const sessions::NudgeTracker& nudge_tracker,
                            sessions::SyncSession* session) {
-  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->mutable_status_controller()->set_commit_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
@@ -83,14 +81,12 @@ void SimulateConnectionFailure(
 
 void SimulatePollSuccess(ModelTypeSet requested_types,
                          sessions::SyncSession* session) {
-  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
 void SimulatePollFailed(ModelTypeSet requested_types,
                              sessions::SyncSession* session) {
-  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
 }

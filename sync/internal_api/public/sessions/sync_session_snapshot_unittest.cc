@@ -23,7 +23,6 @@ class SyncSessionSnapshotTest : public testing::Test {};
 
 TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   ModelNeutralState model_neutral;
-  model_neutral.num_server_changes_remaining = 105;
   model_neutral.num_successful_commits = 5;
   model_neutral.num_successful_bookmark_commits = 10;
   model_neutral.num_updates_downloaded_total = 100;
@@ -56,7 +55,7 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                                std::vector<int>(MODEL_TYPE_COUNT, 0),
                                sync_pb::GetUpdatesCallerInfo::UNKNOWN);
   scoped_ptr<base::DictionaryValue> value(snapshot.ToValue());
-  EXPECT_EQ(17u, value->size());
+  EXPECT_EQ(16u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits,
                          *value, "numSuccessfulCommits");
   ExpectDictIntegerValue(model_neutral.num_successful_bookmark_commits,
@@ -71,8 +70,6 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                          *value, "numLocalOverwrites");
   ExpectDictIntegerValue(model_neutral.num_server_overwrites,
                          *value, "numServerOverwrites");
-  ExpectDictIntegerValue(model_neutral.num_server_changes_remaining,
-                         *value, "numServerChangesRemaining");
   ExpectDictDictionaryValue(*expected_download_progress_markers_value,
                             *value, "downloadProgressMarkers");
   ExpectDictBooleanValue(kIsSilenced, *value, "isSilenced");

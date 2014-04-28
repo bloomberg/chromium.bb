@@ -49,8 +49,6 @@ struct SYNC_EXPORT SyncStatus {
 
   bool syncing;
 
-  // Total updates available.  If zero, nothing left to download.
-  int64 updates_available;
   // Total updates received by the syncer since browser start.
   int updates_received;
   // Total updates received that are echoes of our own changes.

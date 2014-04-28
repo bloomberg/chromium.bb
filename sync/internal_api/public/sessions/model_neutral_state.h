@@ -53,11 +53,6 @@ struct SYNC_EXPORT ModelNeutralState {
 
   // Set to true by PostCommitMessageCommand if any commits were successful.
   bool items_committed;
-
-  // Number of changes remaining, according to the server.
-  // Take it as an estimate unless it's value is zero, in which case there
-  // really is nothing more to download.
-  int64 num_server_changes_remaining;
 };
 
 bool HasSyncerError(const ModelNeutralState& state);
