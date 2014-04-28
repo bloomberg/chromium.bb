@@ -90,7 +90,8 @@ private:
 
     enum FinishType {
         FinishSuccessfully,
-        FinishWithErrorOrCancel
+        FinishWithCancel,
+        FinishWithError
     };
 
     void finishLoading(Document* contextDocument, FinishType);

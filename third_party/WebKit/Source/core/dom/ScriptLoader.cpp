@@ -367,8 +367,7 @@ void ScriptLoader::cancel(Document* contextDocument)
 {
     if (!m_resource)
         return;
-    finishLoading(contextDocument, FinishWithErrorOrCancel);
-    stopLoadRequest();
+    finishLoading(contextDocument, FinishWithCancel);
 }
 
 void ScriptLoader::notifyFinished(Resource* resource)
@@ -383,27 +382,32 @@ void ScriptLoader::notifyFinished(Resource* resource)
 
     RefPtr<Document> elementDocument(m_element->document());
     RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
-    finishLoading(contextDocument.get(), resource->errorOccurred() ? FinishWithErrorOrCancel : FinishSuccessfully);
+    finishLoading(contextDocument.get(), resource->errorOccurred() ? FinishWithError : FinishSuccessfully);
 }
 
 void ScriptLoader::finishLoading(Document* contextDocument, ScriptLoader::FinishType type)
 {
-    ASSERT(!m_willBeParserExecuted);
-
     if (!contextDocument)
         return;
 
-    if (type == FinishWithErrorOrCancel) {
+    switch (type) {
+    case FinishWithCancel:
+        if (!m_willBeParserExecuted)
+            contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        stopLoadRequest();
+        break;
+    case FinishWithError:
+        ASSERT(!m_willBeParserExecuted);
         dispatchErrorEvent();
         contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
-        return;
+        m_resource = 0;
+        break;
+    case FinishSuccessfully:
+        ASSERT(!m_willBeParserExecuted);
+        contextDocument->scriptRunner()->notifyScriptReady(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        m_resource = 0;
+        break;
     }
-    if (m_willExecuteInOrder)
-        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::IN_ORDER_EXECUTION);
-    else
-        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::ASYNC_EXECUTION);
-
-    m_resource = 0;
 }
 
 bool ScriptLoader::ignoresLoadRequest() const
