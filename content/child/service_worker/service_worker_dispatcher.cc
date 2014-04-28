@@ -198,7 +198,7 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
   ServiceWorkerMap::iterator found = service_workers_.find(handle_id);
   if (found == service_workers_.end())
     return;
-  found->second->SetState(state);
+  found->second->OnStateChanged(state);
 }
 
 void ServiceWorkerDispatcher::OnSetCurrentServiceWorker(

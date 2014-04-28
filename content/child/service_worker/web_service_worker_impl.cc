@@ -44,15 +44,29 @@ WebServiceWorkerImpl::~WebServiceWorkerImpl() {
     dispatcher->RemoveServiceWorker(handle_id_);
 }
 
-void WebServiceWorkerImpl::SetState(blink::WebServiceWorkerState new_state) {
-  state_ = new_state;
-  if (!proxy_)
-    return;
-  proxy_->dispatchStateChangeEvent();
+void WebServiceWorkerImpl::OnStateChanged(
+    blink::WebServiceWorkerState new_state) {
+  DCHECK(proxy_);
+  if (proxy_->isReady())
+    ChangeState(new_state);
+  else
+    queued_states_.push_back(new_state);
 }
 
 void WebServiceWorkerImpl::setProxy(blink::WebServiceWorkerProxy* proxy) {
   proxy_ = proxy;
+}
+
+void WebServiceWorkerImpl::proxyReadyChanged() {
+  if (!proxy_->isReady())
+    return;
+  for (std::vector<blink::WebServiceWorkerState>::iterator it =
+           queued_states_.begin();
+       it != queued_states_.end();
+       ++it) {
+    ChangeState(*it);
+  }
+  queued_states_.clear();
 }
 
 blink::WebURL WebServiceWorkerImpl::scope() const {
@@ -73,6 +87,13 @@ void WebServiceWorkerImpl::postMessage(const WebString& message,
       handle_id_,
       message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels)));
+}
+
+void WebServiceWorkerImpl::ChangeState(blink::WebServiceWorkerState new_state) {
+  DCHECK(proxy_);
+  DCHECK(proxy_->isReady());
+  state_ = new_state;
+  proxy_->dispatchStateChangeEvent();
 }
 
 }  // namespace content
