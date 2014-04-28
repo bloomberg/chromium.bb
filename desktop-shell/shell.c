@@ -1651,13 +1651,11 @@ resize_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 		height += wl_fixed_to_int(to_y - from_y);
 	}
 
-	shsurf->client->send_configure(shsurf->surface,
-				       resize->edges, width, height);
+	shsurf->client->send_configure(shsurf->surface, width, height);
 }
 
 static void
-send_configure(struct weston_surface *surface,
-	       uint32_t edges, int32_t width, int32_t height)
+send_configure(struct weston_surface *surface, int32_t width, int32_t height)
 {
 	struct shell_surface *shsurf = get_shell_surface(surface);
 
@@ -1665,7 +1663,8 @@ send_configure(struct weston_surface *surface,
 
 	if (shsurf->resource)
 		wl_shell_surface_send_configure(shsurf->resource,
-						edges, width, height);
+						shsurf->resize_edges,
+						width, height);
 }
 
 static const struct weston_shell_client shell_client = {
@@ -2329,7 +2328,7 @@ set_fullscreen(struct shell_surface *shsurf,
 
 	shsurf->type = SHELL_SURFACE_TOPLEVEL;
 
-	shsurf->client->send_configure(shsurf->surface, 0,
+	shsurf->client->send_configure(shsurf->surface,
 				       shsurf->output->width,
 				       shsurf->output->height);
 
@@ -2443,15 +2442,14 @@ set_maximized(struct shell_surface *shsurf,
               struct weston_output *output)
 {
 	struct desktop_shell *shell;
-	uint32_t edges = 0, panel_height = 0;
+	uint32_t panel_height = 0;
 
 	shell_surface_set_output(shsurf, output);
 
 	shell = shell_surface_get_shell(shsurf);
 	panel_height = get_output_panel_height(shell, shsurf->output);
-	edges = WL_SHELL_SURFACE_RESIZE_TOP | WL_SHELL_SURFACE_RESIZE_LEFT;
 
-	shsurf->client->send_configure(shsurf->surface, edges,
+	shsurf->client->send_configure(shsurf->surface,
 	                               shsurf->output->width,
 	                               shsurf->output->height - panel_height);
 
@@ -3509,7 +3507,7 @@ static const struct xdg_surface_interface xdg_surface_implementation = {
 
 static void
 xdg_send_configure(struct weston_surface *surface,
-	       uint32_t edges, int32_t width, int32_t height)
+		   int32_t width, int32_t height)
 {
 	struct shell_surface *shsurf = get_shell_surface(surface);
 
@@ -3608,7 +3606,7 @@ static const struct xdg_popup_interface xdg_popup_implementation = {
 
 static void
 xdg_popup_send_configure(struct weston_surface *surface,
-			 uint32_t edges, int32_t width, int32_t height)
+			 int32_t width, int32_t height)
 {
 }
 
