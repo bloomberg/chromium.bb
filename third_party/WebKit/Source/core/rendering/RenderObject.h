@@ -1010,11 +1010,6 @@ public:
     bool layoutDidGetCalled() { return m_bitfields.layoutDidGetCalled(); }
     void setLayoutDidGetCalled(bool b) { m_bitfields.setLayoutDidGetCalled(b); }
 
-#ifndef NDEBUG
-    bool repaintStateWasCleared() const { return m_bitfields.repaintStateWasCleared(); }
-    void setRepaintStateWasCleared(bool b) { m_bitfields.setRepaintStateWasCleared(b); }
-#endif
-
     bool shouldDisableLayoutState() const { return hasColumns() || hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode(); }
 
 protected:
@@ -1151,9 +1146,6 @@ private:
             , m_childrenInline(false)
             , m_hasColumns(false)
             , m_layoutDidGetCalled(false)
-#ifndef NDEBUG
-            , m_repaintStateWasCleared(false)
-#endif
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
@@ -1162,7 +1154,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 5 (6 in debug) in the second.
+        // 32 bits have been used in the first word, and 5 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintAfterLayout, ShouldDoFullRepaintAfterLayout);
         ADD_BOOLEAN_BITFIELD(shouldRepaintOverflow, ShouldRepaintOverflow);
@@ -1197,9 +1189,6 @@ private:
         ADD_BOOLEAN_BITFIELD(hasColumns, HasColumns);
 
         ADD_BOOLEAN_BITFIELD(layoutDidGetCalled, LayoutDidGetCalled);
-#ifndef NDEBUG
-        ADD_BOOLEAN_BITFIELD(repaintStateWasCleared, RepaintStateWasCleared);
-#endif
 
     private:
         unsigned m_positionedState : 2; // PositionedState

@@ -3390,9 +3390,6 @@ void RenderObject::clearRepaintState()
     setShouldDoFullRepaintIfSelfPaintingLayer(false);
     setShouldRepaintOverflow(false);
     setLayoutDidGetCalled(false);
-#ifndef NDEBUG
-    setRepaintStateWasCleared(true);
-#endif
 }
 
 } // namespace WebCore
