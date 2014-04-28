@@ -644,10 +644,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     {
         ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
 
-        if (matchingBehavior == MatchOnlyUserAgentRules)
-            matchUARules(collector);
-        else
-            matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
+        matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
 
         applyMatchedProperties(state, collector.matchedResult());
 

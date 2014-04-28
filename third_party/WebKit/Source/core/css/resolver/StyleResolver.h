@@ -79,13 +79,9 @@ enum StyleSharingBehavior {
     DisallowStyleSharing,
 };
 
-// MatchOnlyUserAgentRules is used in media queries, where relative units
-// are interpreted according to the document root element style, and styled only
-// from the User Agent Stylesheet rules.
 enum RuleMatchingBehavior {
     MatchAllRules,
-    MatchAllRulesExcludingSMIL,
-    MatchOnlyUserAgentRules,
+    MatchAllRulesExcludingSMIL
 };
 
 const unsigned styleSharingListSize = 40;
