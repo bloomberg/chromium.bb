@@ -1243,6 +1243,7 @@
         'browser/search/most_visited_iframe_source_unittest.cc',
         'browser/search/search_unittest.cc',
         'browser/search/suggestions/suggestions_service_unittest.cc',
+        'browser/search_engines/default_search_manager_unittest.cc',
         'browser/search_engines/default_search_policy_handler_unittest.cc',
         'browser/search_engines/search_host_to_urls_map_unittest.cc',
         'browser/search_engines/search_provider_install_data_unittest.cc',
