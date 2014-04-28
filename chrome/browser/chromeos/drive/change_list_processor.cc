@@ -284,11 +284,12 @@ FileError ChangeListProcessor::ApplyEntryMap(
       // root entry, but we should better be defensive (see crbug.com/297259).
       ResourceEntryMap::iterator it = entries[i];
       if (it->first != root.resource_id()) {
-        // TODO(hashimoto): Handle ApplyEntry errors correctly.
         FileError error = ApplyEntry(it->second);
-        DLOG_IF(WARNING, error != FILE_ERROR_OK)
-            << "ApplyEntry failed: " << FileErrorToString(error)
-            << ", title = " << it->second.title();
+        if (error != FILE_ERROR_OK) {
+          LOG(ERROR) << "ApplyEntry failed: " << FileErrorToString(error)
+                     << ", title = " << it->second.title();
+          return error;
+        }
       }
       entry_map_.erase(it);
     }
@@ -299,12 +300,21 @@ FileError ChangeListProcessor::ApplyEntryMap(
     std::string local_id;
     FileError error = resource_metadata_->GetIdByResourceId(
         deleted_resource_ids[i], &local_id);
-    if (error == FILE_ERROR_OK)
-      error = resource_metadata_->RemoveEntry(local_id);
-
-    DLOG_IF(WARNING, error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
-        << "Failed to delete: " << FileErrorToString(error)
-        << ", resource_id = " << deleted_resource_ids[i];
+    switch (error) {
+      case FILE_ERROR_OK:
+        error = resource_metadata_->RemoveEntry(local_id);
+        break;
+      case FILE_ERROR_NOT_FOUND:
+        error = FILE_ERROR_OK;
+        break;
+      default:
+        break;
+    }
+    if (error != FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed to delete: " << FileErrorToString(error)
+                 << ", resource_id = " << deleted_resource_ids[i];
+      return error;
+    }
   }
 
   return FILE_ERROR_OK;
