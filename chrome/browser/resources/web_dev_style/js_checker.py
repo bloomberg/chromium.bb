@@ -50,6 +50,12 @@ class JSChecker(object):
     return self.RegexCheck(i, line, r'(?:^|\s|\()(const)\s',
         'Use /** @const */ var varName; instead of const varName;')
 
+  def EndJsDocCommentCheck(self, i, line):
+    msg = 'End JSDoc comments with */ instead of **/'
+    def _check(regex):
+      return self.RegexCheck(i, line, regex, msg)
+    return _check(r'^\s*(\*\*/)\s*$') or _check(r'/\*\* @[a-zA-Z]+.* (\*\*/)')
+
   def GetElementByIdCheck(self, i, line):
     """Checks for use of 'document.getElementById' instead of '$'."""
     return self.RegexCheck(i, line, r"(document\.getElementById)\('",

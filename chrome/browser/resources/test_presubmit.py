@@ -127,6 +127,39 @@ class JsStyleGuideTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldPassChromeSendCheck(line)
 
+  def ShouldFailEndJsDocCommentCheck(self, line):
+    """Checks that the **/ checker flags |line| as a style error."""
+    error = self.checker.EndJsDocCommentCheck(1, line)
+    self.assertNotEqual('', error,
+        'Should be flagged as style error: ' + line)
+    self.assertEqual(self.GetHighlight(line, error), '**/')
+
+  def ShouldPassEndJsDocCommentCheck(self, line):
+    """Checks that the **/ checker doesn't flag |line| as a style error."""
+    self.assertEqual('', self.checker.EndJsDocCommentCheck(1, line),
+        'Should not be flagged as style error: ' + line)
+
+  def testEndJsDocCommentFails(self):
+    lines = [
+        "/** @override **/",
+        "/** @type {number} @const **/",
+        "  **/",
+        "**/  ",
+    ]
+    for line in lines:
+      self.ShouldFailEndJsDocCommentCheck(line)
+
+  def testEndJsDocCommentPasses(self):
+    lines = [
+        "/***************/",  # visual separators
+        "  */",  # valid JSDoc comment ends
+        "*/  ",
+        "/**/",  # funky multi-line comment enders
+        "/** @override */",  # legit JSDoc one-liners
+    ]
+    for line in lines:
+      self.ShouldPassEndJsDocCommentCheck(line)
+
   def ShouldFailGetElementByIdCheck(self, line):
     """Checks that the 'getElementById' checker flags |line| as a style
        error.
