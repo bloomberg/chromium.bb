@@ -60,6 +60,9 @@ class MEDIA_EXPORT StreamParser {
     // Indicates that timestampOffset should be updated based on the earliest
     // end timestamp (audio or video) provided during each NewBuffersCB.
     bool auto_update_timestamp_offset;
+
+    // Indicates live stream.
+    Demuxer::Liveness liveness;
   };
 
   // Indicates completion of parser initialization.

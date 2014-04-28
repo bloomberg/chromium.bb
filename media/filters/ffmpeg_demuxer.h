@@ -155,6 +155,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual base::TimeDelta GetStartTime() const OVERRIDE;
   virtual base::Time GetTimelineOffset() const OVERRIDE;
+  virtual Liveness GetLiveness() const OVERRIDE;
 
   // Calls |need_key_cb_| with the initialization data encountered in the file.
   void FireNeedKey(const std::string& init_data_type,
@@ -250,6 +251,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // The Time associated with timestamp 0. Set to a null
   // time if the file doesn't have an association to Time.
   base::Time timeline_offset_;
+
+  // Liveness of the stream.
+  Liveness liveness_;
 
   // Whether audio has been disabled for this demuxer (in which case this class
   // drops packets destined for AUDIO demuxer streams on the floor).

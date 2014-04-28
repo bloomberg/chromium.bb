@@ -40,6 +40,7 @@ class MockDemuxer : public Demuxer {
   MOCK_METHOD1(GetStream, DemuxerStream*(DemuxerStream::Type));
   MOCK_CONST_METHOD0(GetStartTime, base::TimeDelta());
   MOCK_CONST_METHOD0(GetTimelineOffset, base::Time());
+  MOCK_CONST_METHOD0(GetLiveness, Liveness());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemuxer);

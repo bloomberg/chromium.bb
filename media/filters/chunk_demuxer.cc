@@ -974,6 +974,7 @@ ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
       log_cb_(log_cb),
       duration_(kNoTimestamp()),
       user_specified_duration_(-1),
+      liveness_(LIVENESS_UNKNOWN),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(!open_cb_.is_null());
   DCHECK(!need_key_cb_.is_null());
@@ -1062,6 +1063,10 @@ TimeDelta ChunkDemuxer::GetStartTime() const {
 
 base::Time ChunkDemuxer::GetTimelineOffset() const {
   return timeline_offset_;
+}
+
+Demuxer::Liveness ChunkDemuxer::GetLiveness() const {
+  return liveness_;
 }
 
 void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
@@ -1506,6 +1511,17 @@ void ChunkDemuxer::OnSourceInitDone(
     }
 
     timeline_offset_ = params.timeline_offset;
+  }
+
+  if (params.liveness != LIVENESS_UNKNOWN) {
+    if (liveness_ != LIVENESS_UNKNOWN && params.liveness != liveness_) {
+      MEDIA_LOG(log_cb_)
+          << "Liveness is not the same across all SourceBuffers.";
+      ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
+      return;
+    }
+
+    liveness_ = params.liveness;
   }
 
   // Wait until all streams have initialized.

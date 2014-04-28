@@ -159,6 +159,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual base::TimeDelta GetStartTime() const OVERRIDE;
   virtual base::Time GetTimelineOffset() const OVERRIDE;
+  virtual Liveness GetLiveness() const OVERRIDE;
 
   // Methods used by an external object to control this demuxer.
   //
@@ -366,6 +367,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   double user_specified_duration_;
 
   base::Time timeline_offset_;
+  Liveness liveness_;
 
   typedef std::map<std::string, SourceState*> SourceStateMap;
   SourceStateMap source_state_map_;

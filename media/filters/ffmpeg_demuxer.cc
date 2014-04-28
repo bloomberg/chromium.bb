@@ -394,6 +394,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       media_log_(media_log),
       bitrate_(0),
       start_time_(kNoTimestamp()),
+      liveness_(LIVENESS_UNKNOWN),
       audio_disabled_(false),
       text_enabled_(false),
       duration_known_(false),
@@ -504,6 +505,11 @@ base::TimeDelta FFmpegDemuxer::GetStartTime() const {
 
 base::Time FFmpegDemuxer::GetTimelineOffset() const {
   return timeline_offset_;
+}
+
+Demuxer::Liveness FFmpegDemuxer::GetLiveness() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return liveness_;
 }
 
 void FFmpegDemuxer::AddTextStreams() {
@@ -695,6 +701,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     format_context->flags |= AVFMT_FLAG_GENPTS;
 
   timeline_offset_ = ExtractTimelineOffset(format_context);
+
+  if (max_duration == kInfiniteDuration() && !timeline_offset_.is_null()) {
+    liveness_ = LIVENESS_LIVE;
+  } else if (max_duration != kInfiniteDuration()) {
+    liveness_ = LIVENESS_RECORDED;
+  } else {
+    liveness_ = LIVENESS_UNKNOWN;
+  }
 
   // Good to go: set the duration and bitrate and notify we're done
   // initializing.

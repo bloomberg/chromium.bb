@@ -20,6 +20,7 @@ namespace media {
 
 WebMStreamParser::WebMStreamParser()
     : state_(kWaitingForInit),
+      unknown_segment_size_(false),
       parsing_cluster_(false) {
 }
 
@@ -150,6 +151,9 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       return result + element_size;
       break;
     case kWebMIdSegment:
+      // Segment of unknown size indicates live stream.
+      if (element_size == kWebMUnknownSize)
+        unknown_segment_size_ = true;
       // Just consume the segment header.
       return result;
       break;
@@ -190,6 +194,15 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
 
   params.timeline_offset = info_parser.date_utc();
 
+  if (unknown_segment_size_ && (info_parser.duration() <= 0) &&
+      !info_parser.date_utc().is_null()) {
+    params.liveness = Demuxer::LIVENESS_LIVE;
+  } else if (info_parser.duration() >= 0) {
+    params.liveness = Demuxer::LIVENESS_RECORDED;
+  } else {
+    params.liveness = Demuxer::LIVENESS_UNKNOWN;
+  }
+
   const AudioDecoderConfig& audio_config = tracks_parser.audio_decoder_config();
   if (audio_config.is_encrypted())
     FireNeedKey(tracks_parser.audio_encryption_key_id());
@@ -204,7 +217,6 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
     DVLOG(1) << "New config data isn't allowed.";
     return -1;
   }
-
 
   cluster_parser_.reset(new WebMClusterParser(
       info_parser.timecode_scale(),

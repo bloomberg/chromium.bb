@@ -44,6 +44,12 @@ class MEDIA_EXPORT DemuxerHost {
 
 class MEDIA_EXPORT Demuxer {
  public:
+  enum Liveness {
+    LIVENESS_UNKNOWN,
+    LIVENESS_RECORDED,
+    LIVENESS_LIVE,
+  };
+
   // A new potentially encrypted stream has been parsed.
   // First parameter - The type of initialization data.
   // Second parameter - The initialization data associated with the stream.
@@ -91,6 +97,9 @@ class MEDIA_EXPORT Demuxer {
   // If the timstamps are not associated with a Time, then
   // a null Time is returned.
   virtual base::Time GetTimelineOffset() const = 0;
+
+  // Returns liveness of the stream, i.e. whether it is recorded or live.
+  virtual Liveness GetLiveness() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);

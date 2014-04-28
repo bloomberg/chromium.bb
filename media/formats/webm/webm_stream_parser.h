@@ -76,6 +76,8 @@ class WebMStreamParser : public StreamParser {
   base::Closure end_of_segment_cb_;
   LogCB log_cb_;
 
+  bool unknown_segment_size_;
+
   // True if a new cluster id has been seen and its end has not yet been parsed.
   bool parsing_cluster_;
 
