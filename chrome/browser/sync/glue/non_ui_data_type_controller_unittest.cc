@@ -14,7 +14,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller_mock.h"
-#include "chrome/browser/sync/glue/shared_change_processor_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
@@ -57,6 +56,40 @@ ACTION_P(GetWeakPtrToSyncableService, syncable_service) {
   return syncable_service->AsWeakPtr();
 }
 
+class SharedChangeProcessorMock : public SharedChangeProcessor {
+ public:
+  SharedChangeProcessorMock() {}
+
+  MOCK_METHOD5(Connect, base::WeakPtr<syncer::SyncableService>(
+      ProfileSyncComponentsFactory*,
+      ProfileSyncService*,
+      DataTypeErrorHandler*,
+      syncer::ModelType,
+      const base::WeakPtr<syncer::SyncMergeResult>&));
+  MOCK_METHOD0(Disconnect, bool());
+  MOCK_METHOD2(ProcessSyncChanges,
+               syncer::SyncError(const tracked_objects::Location&,
+                         const syncer::SyncChangeList&));
+  MOCK_CONST_METHOD2(GetAllSyncDataReturnError,
+                     syncer::SyncError(syncer::ModelType,
+                                       syncer::SyncDataList*));
+  MOCK_METHOD0(GetSyncCount, int());
+  MOCK_METHOD1(SyncModelHasUserCreatedNodes,
+               bool(bool*));
+  MOCK_METHOD0(CryptoReadyIfNecessary, bool());
+  MOCK_CONST_METHOD1(GetDataTypeContext, bool(std::string*));
+  MOCK_METHOD1(ActivateDataType,
+               void(syncer::ModelSafeGroup));
+
+ protected:
+  virtual ~SharedChangeProcessorMock() {}
+  MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
+                                          const std::string&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessorMock);
+};
+
 class NonUIDataTypeControllerFake
     : public NonUIDataTypeController {
  public:
@@ -64,14 +97,17 @@ class NonUIDataTypeControllerFake
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service,
-      NonUIDataTypeControllerMock* mock)
-      : NonUIDataTypeController(base::MessageLoopProxy::current(),
-                                base::Closure(),
-                                profile_sync_factory,
-                                profile,
-                                sync_service),
+      NonUIDataTypeControllerMock* mock,
+      SharedChangeProcessor* change_processor)
+      : NonUIDataTypeController(
+          base::MessageLoopProxy::current(),
+          base::Closure(),
+          profile_sync_factory,
+          profile,
+          sync_service),
         blocked_(false),
-        mock_(mock) {}
+        mock_(mock),
+        change_processor_(change_processor) {}
 
   virtual syncer::ModelType type() const OVERRIDE {
     return AUTOFILL_PROFILE;
@@ -95,6 +131,10 @@ class NonUIDataTypeControllerFake
       PostTaskOnBackendThread(it->from_here, it->task);
     }
     pending_tasks_.clear();
+  }
+
+  virtual SharedChangeProcessor* CreateSharedChangeProcessor() OVERRIDE {
+    return change_processor_;
   }
 
  protected:
@@ -147,6 +187,7 @@ class NonUIDataTypeControllerFake
   bool blocked_;
   std::vector<PendingTask> pending_tasks_;
   NonUIDataTypeControllerMock* mock_;
+  scoped_refptr<SharedChangeProcessor> change_processor_;
 };
 
 class SyncNonUIDataTypeControllerTest : public testing::Test {
@@ -162,14 +203,14 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     profile_sync_factory_.reset(
         new StrictMock<ProfileSyncComponentsFactoryMock>());
     change_processor_ = new SharedChangeProcessorMock();
-
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonUIDataTypeControllerMock>();
     non_ui_dtc_ =
         new NonUIDataTypeControllerFake(profile_sync_factory_.get(),
                                         &profile_,
                                         &service_,
-                                        dtc_mock_.get());
+                                        dtc_mock_.get(),
+                                        change_processor_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -192,9 +233,6 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   void SetStartExpectations() {
     EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(true));
     EXPECT_CALL(model_load_callback_, Run(_, _));
-    EXPECT_CALL(*profile_sync_factory_,
-                CreateSharedChangeProcessor()).
-        WillOnce(Return(change_processor_.get()));
   }
 
   void SetAssociateExpectations() {
@@ -289,9 +327,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartFirstRun) {
 // Start the DTC and have StartModels() return false.  Then, stop the
 // DTC without finishing model startup.  It should stop cleanly.
 TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringStartModels) {
-  EXPECT_CALL(*profile_sync_factory_,
-              CreateSharedChangeProcessor()).
-      WillOnce(Return(change_processor_.get()));
   EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_.get(), StopModels());
   EXPECT_CALL(model_load_callback_, Run(_, _));

@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
-#include "chrome/browser/sync/glue/shared_change_processor_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -37,7 +36,6 @@ namespace {
 
 using content::BrowserThread;
 using testing::_;
-using testing::NiceMock;
 using testing::Return;
 
 class NoOpAutofillBackend : public AutofillWebDataBackend {
@@ -146,11 +144,9 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   virtual ~SyncAutofillDataTypeControllerTest() {}
 
   virtual void SetUp() {
-    change_processor_ = new NiceMock<SharedChangeProcessorMock>();
-
     EXPECT_CALL(profile_sync_factory_,
-                CreateSharedChangeProcessor()).
-        WillRepeatedly(Return(change_processor_.get()));
+                GetSyncableServiceForType(_)).
+        WillRepeatedly(Return(base::WeakPtr<syncer::SyncableService>()));
 
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
         &profile_, MockWebDataServiceWrapperSyncable::Build);
@@ -176,7 +172,6 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
   virtual void TearDown() {
     autofill_dtc_ = NULL;
-    change_processor_ = NULL;
   }
 
   void BlockForDBThread() {
@@ -188,8 +183,6 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-
-  scoped_refptr<NiceMock<SharedChangeProcessorMock> > change_processor_;
   ProfileSyncComponentsFactoryMock profile_sync_factory_;
   TestingProfile profile_;
   ProfileSyncServiceMock service_;
@@ -214,8 +207,6 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
     base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
                weak_ptr_factory_.GetWeakPtr()));
 
-  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
-      .WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
   autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -245,8 +236,6 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
               &profile_, Profile::EXPLICIT_ACCESS).get());
   web_db->LoadDatabase();
 
-  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
-      .WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
   autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
                  weak_ptr_factory_.GetWeakPtr()));

@@ -28,7 +28,6 @@ class DataTypeManager;
 class DataTypeManagerObserver;
 class FailedDataTypesHandler;
 class GenericChangeProcessor;
-class SharedChangeProcessor;
 class SyncBackendHost;
 class DataTypeErrorHandler;
 }  // namespace browser_sync
@@ -101,9 +100,6 @@ class ProfileSyncComponentsFactory
       browser_sync::DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result) = 0;
-
-  virtual browser_sync::SharedChangeProcessor*
-      CreateSharedChangeProcessor() = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

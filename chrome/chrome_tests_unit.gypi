@@ -1316,8 +1316,6 @@
         'browser/sync/glue/non_ui_data_type_controller_mock.h',
         'browser/sync/glue/non_ui_data_type_controller_unittest.cc',
         'browser/sync/glue/search_engine_data_type_controller_unittest.cc',
-        'browser/sync/glue/shared_change_processor_mock.cc',
-        'browser/sync/glue/shared_change_processor_mock.h',
         'browser/sync/glue/shared_change_processor_unittest.cc',
         'browser/sync/glue/sync_backend_host_impl_unittest.cc',
         'browser/sync/glue/sync_backend_host_mock.cc',

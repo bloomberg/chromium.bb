@@ -51,9 +51,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result) OVERRIDE;
 
-  virtual browser_sync::SharedChangeProcessor*
-      CreateSharedChangeProcessor() OVERRIDE;
-
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) OVERRIDE;
   virtual scoped_ptr<syncer::AttachmentStore>

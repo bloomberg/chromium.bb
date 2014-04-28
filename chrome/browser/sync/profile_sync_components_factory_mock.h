@@ -48,8 +48,6 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
           browser_sync::DataTypeErrorHandler* error_handler,
           const base::WeakPtr<syncer::SyncableService>& local_service,
           const base::WeakPtr<syncer::SyncMergeResult>& merge_result));
-  MOCK_METHOD0(CreateSharedChangeProcessor,
-      browser_sync::SharedChangeProcessor*());
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
   MOCK_METHOD1(CreateCustomAttachmentStoreForTypeMock,

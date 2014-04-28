@@ -463,11 +463,6 @@ browser_sync::GenericChangeProcessor*
       attachment_service.Pass());
 }
 
-browser_sync::SharedChangeProcessor* ProfileSyncComponentsFactoryImpl::
-    CreateSharedChangeProcessor() {
-  return new SharedChangeProcessor();
-}
-
 base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     GetSyncableServiceForType(syncer::ModelType type) {
   if (!profile_) {  // For tests.

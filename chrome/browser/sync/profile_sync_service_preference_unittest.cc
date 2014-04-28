@@ -204,8 +204,6 @@ class ProfileSyncServicePreferenceTest
                                     components,
                                     profile_,
                                     sync_service_);
-    EXPECT_CALL(*components, CreateSharedChangeProcessor()).
-        WillOnce(Return(new SharedChangeProcessor()));
     EXPECT_CALL(*components, CreateGenericChangeProcessor(_, _, _, _)).
         WillOnce(CreateAndSaveChangeProcessor(
                      &change_processor_));

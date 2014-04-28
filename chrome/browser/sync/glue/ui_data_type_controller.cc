@@ -66,13 +66,10 @@ void UIDataTypeController::LoadModels(
                                               type()));
     return;
   }
-
   // Since we can't be called multiple times before Stop() is called,
   // |shared_change_processor_| must be NULL here.
   DCHECK(!shared_change_processor_.get());
-  shared_change_processor_ =
-      profile_sync_factory_->CreateSharedChangeProcessor();
-  DCHECK(shared_change_processor_.get());
+  shared_change_processor_ = new SharedChangeProcessor();
 
   model_load_callback_ = model_load_callback;
   state_ = MODEL_STARTING;

@@ -99,6 +99,10 @@ class NonUIDataTypeController : public DataTypeController {
   // Record causes of start failure.
   virtual void RecordStartFailure(StartResult result);
 
+  // To allow unit tests to control thread interaction during non-ui startup
+  // and shutdown, use a factory method to create the SharedChangeProcessor.
+  virtual SharedChangeProcessor* CreateSharedChangeProcessor();
+
   Profile* profile() const { return profile_; }
 
  private:

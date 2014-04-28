@@ -25,10 +25,6 @@ using testing::Return;
 namespace browser_sync {
 namespace {
 
-ACTION(MakeSharedChangeProcessor) {
-  return new SharedChangeProcessor();
-}
-
 ACTION_P(ReturnAndRelease, change_processor) {
   return change_processor->release();
 }
@@ -71,8 +67,6 @@ class SyncUIDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_, GetSyncableServiceForType(type_)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
-    EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
-        WillOnce(MakeSharedChangeProcessor());
     EXPECT_CALL(*profile_sync_factory_,
                 CreateGenericChangeProcessor(_, _, _, _)).
         WillOnce(ReturnAndRelease(&change_processor_));

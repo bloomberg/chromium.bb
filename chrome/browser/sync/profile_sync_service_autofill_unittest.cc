@@ -30,7 +30,6 @@
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
-#include "chrome/browser/sync/glue/shared_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -86,7 +85,6 @@ using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::DataTypeController;
 using browser_sync::GenericChangeProcessor;
-using browser_sync::SharedChangeProcessor;
 using content::BrowserThread;
 using syncer::AUTOFILL;
 using syncer::BaseNode;
@@ -379,10 +377,6 @@ ACTION(MakeGenericChangeProcessor) {
       syncer::FakeAttachmentService::CreateForTest());
 }
 
-ACTION(MakeSharedChangeProcessor) {
-  return new SharedChangeProcessor();
-}
-
 ACTION_P(MakeAutofillProfileSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
@@ -418,8 +412,6 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
                               DataTypeController* dtc) OVERRIDE {
     EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
-    EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
-        WillOnce(MakeSharedChangeProcessor());
     EXPECT_CALL(*factory, GetSyncableServiceForType(syncer::AUTOFILL)).
         WillOnce(MakeAutocompleteSyncComponents(wds));
   }
@@ -440,8 +432,6 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
                               DataTypeController* dtc) OVERRIDE {
     EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
-    EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
-        WillOnce(MakeSharedChangeProcessor());
     EXPECT_CALL(*factory,
         GetSyncableServiceForType(syncer::AUTOFILL_PROFILE)).
         WillOnce(MakeAutofillProfileSyncComponents(wds));

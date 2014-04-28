@@ -28,10 +28,6 @@ using testing::SetArgumentPointee;
 namespace browser_sync {
 namespace {
 
-ACTION(MakeSharedChangeProcessor) {
-  return new SharedChangeProcessor();
-}
-
 ACTION_P(ReturnAndRelease, change_processor) {
   return change_processor->release();
 }
@@ -74,8 +70,6 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*profile_sync_factory_,
                 GetSyncableServiceForType(syncer::SEARCH_ENGINES)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
-    EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
-        WillOnce(MakeSharedChangeProcessor());
     EXPECT_CALL(*profile_sync_factory_,
                 CreateGenericChangeProcessor(_, _, _, _)).
         WillOnce(ReturnAndRelease(&change_processor_));
@@ -128,9 +122,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceReady) {
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
-  EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
-      WillOnce(MakeSharedChangeProcessor());
-
   EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_FALSE(syncable_service_.syncing());
   search_engine_dtc_->LoadModels(
