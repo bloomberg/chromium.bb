@@ -9,9 +9,9 @@ function initialize_TimelineCoalescing()
 
 InspectorTest.dumpStats = function(record)
 {
-    if (record.type === "Root")
+    if (record.type() === "Root")
         return "";
-    var aggregatedStats = record.aggregatedStats;
+    var aggregatedStats = record.aggregatedStats();
     var timeByCategory = "";
     
     for (category in aggregatedStats) {

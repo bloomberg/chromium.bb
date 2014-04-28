@@ -35,12 +35,12 @@ function test()
     var recordTypes = ["TimerInstall", "TimerRemove", "FunctionCall"];
     function formatter(record)
     {
-        if (recordTypes.indexOf(record.type) === -1)
+        if (recordTypes.indexOf(record.type()) === -1)
             return;
 
         var details = WebInspector.TimelineUIUtils.buildDetailsNode(record, linkifier, false);
         if (details)
-            InspectorTest.addResult("details.textContent for " + record.type + " event: '" + details.textContent + "'");
+            InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent + "'");
     }
 
     function finish()
