@@ -16,6 +16,10 @@ namespace content {
 
 namespace {
 
+const char* kGpuCompositingFeatureName = "gpu_compositing";
+const char* kWebGLFeatureName = "webgl";
+const char* kRasterizationFeatureName = "rasterization";
+
 struct GpuFeatureInfo {
   std::string name;
   uint32 blocked;
@@ -41,7 +45,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           true
       },
       {
-          "gpu_compositing",
+          kGpuCompositingFeatureName,
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
           false,
           "Gpu compositing has been disabled, either via about:flags or"
@@ -50,7 +54,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           true
       },
       {
-          "webgl",
+          kWebGLFeatureName,
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
           command_line.HasSwitch(switches::kDisableExperimentalWebGL),
           "WebGL has been disabled, either via about:flags or command line.",
@@ -113,7 +117,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
       },
 #endif
       {
-          "rasterization",
+          kRasterizationFeatureName,
           manager->IsFeatureBlacklisted(
               gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION) &&
           !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled(),
@@ -230,7 +234,7 @@ base::Value* GetFeatureStatus() {
     std::string status;
     if (gpu_feature_info.disabled) {
       status = "disabled";
-      if (gpu_feature_info.name == "raster") {
+      if (gpu_feature_info.name == kRasterizationFeatureName) {
         if (IsImplSidePaintingEnabled())
           status += "_software_multithreaded";
         else
@@ -252,15 +256,15 @@ base::Value* GetFeatureStatus() {
         status += "_off";
     } else {
       status = "enabled";
-      if (gpu_feature_info.name == "webgl" &&
+      if (gpu_feature_info.name == kWebGLFeatureName &&
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
         status += "_readback";
-      if (gpu_feature_info.name == "raster") {
+      if (gpu_feature_info.name == kRasterizationFeatureName) {
         if (IsForceGpuRasterizationEnabled())
           status += "_force";
       }
     }
-    if (gpu_feature_info.name == "gpu_compositing") {
+    if (gpu_feature_info.name == kGpuCompositingFeatureName) {
       if (IsThreadedCompositingEnabled())
         status += "_threaded";
     }
