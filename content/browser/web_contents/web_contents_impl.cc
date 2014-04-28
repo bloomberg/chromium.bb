@@ -1263,7 +1263,7 @@ bool WebContentsImpl::HandleGestureEvent(
     float zoomOutThreshold = (currentPinchZoomStepDelta_ <= 0) ? -nextStep
         : backStep;
 
-    totalPinchGestureAmount_ += event.data.pinchUpdate.scale;
+    totalPinchGestureAmount_ += (event.data.pinchUpdate.scale - 1.0);
     if (totalPinchGestureAmount_ > zoomInThreshold) {
       currentPinchZoomStepDelta_++;
       if (delegate_)

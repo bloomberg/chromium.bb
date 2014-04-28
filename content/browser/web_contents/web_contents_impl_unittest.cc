@@ -2499,7 +2499,7 @@ TEST_F(WebContentsImplTest, HandleGestureEvent) {
       WebInputEvent::GesturePinchUpdate, WebGestureEvent::Touchpad);
 
   // A pinch less than the step value doesn't change the zoom level.
-  event.data.pinchUpdate.scale = kZoomStepValue * 0.8f;
+  event.data.pinchUpdate.scale = 1.0f + kZoomStepValue * 0.8f;
   EXPECT_TRUE(contents()->HandleGestureEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
@@ -2509,7 +2509,7 @@ TEST_F(WebContentsImplTest, HandleGestureEvent) {
   EXPECT_TRUE(delegate->last_zoom_in());
 
   // Pinching back out one step goes back to 100%.
-  event.data.pinchUpdate.scale = -kZoomStepValue;
+  event.data.pinchUpdate.scale = 1.0f - kZoomStepValue;
   EXPECT_TRUE(contents()->HandleGestureEvent(event));
   EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
   EXPECT_FALSE(delegate->last_zoom_in());
@@ -2527,7 +2527,7 @@ TEST_F(WebContentsImplTest, HandleGestureEvent) {
   // a touchscreen pinch gesture).
   event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::GesturePinchUpdate, WebGestureEvent::Touchscreen);
-  event.data.pinchUpdate.scale = kZoomStepValue * 3;
+  event.data.pinchUpdate.scale = 1.0f + kZoomStepValue * 3;
   EXPECT_FALSE(contents()->HandleGestureEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
