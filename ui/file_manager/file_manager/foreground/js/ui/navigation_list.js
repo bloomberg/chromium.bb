@@ -225,6 +225,8 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
     if (!item.selected)
       return;
     this.activateModelItem_(item.modelItem);
+    // On clicking the root item, clears the selection.
+    this.directoryModel_.clearSelection();
   }.bind(this);
   item.addEventListener('click', handleClick);
 
@@ -278,9 +280,11 @@ NavigationList.prototype.selectByIndex = function(index) {
  */
 NavigationList.prototype.activateModelItem_ = function(modelItem) {
   var onEntryResolved = function(entry) {
-    if (util.isSameEntry(this.directoryModel_.getCurrentDirEntry(), entry)) {
-      // On clicking the current directory, clears the selection.
-      this.directoryModel_.clearSelection();
+    // If the root item of active directory was same as newly activated
+    // root item, keep the active directory as it was.
+    var currentDir = this.directoryModel_.getCurrentDirEntry();
+    if (util.isSameEntry(entry, currentDir) ||
+        util.isDescendantEntry(entry, currentDir)) {
       return;
     }
 
