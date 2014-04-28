@@ -58,9 +58,9 @@ PermissionMenuModel::PermissionMenuModel(const GURL& url,
   permission_.setting = setting;
   permission_.default_setting = CONTENT_SETTING_NUM_SETTINGS;
   AddCheckItem(CONTENT_SETTING_ALLOW,
-               l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW));
+               l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
   AddCheckItem(CONTENT_SETTING_BLOCK,
-               l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK));
+               l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
 }
 
 PermissionMenuModel::~PermissionMenuModel() {}
