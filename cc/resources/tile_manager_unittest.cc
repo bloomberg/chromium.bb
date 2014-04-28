@@ -65,11 +65,13 @@ class TileManagerTest : public testing::TestWithParam<bool>,
       state.num_resources_limit = max_tiles_;
     }
     state.hard_memory_limit_in_bytes = state.soft_memory_limit_in_bytes * 2;
-    state.unused_memory_limit_in_bytes = state.soft_memory_limit_in_bytes;
     state.memory_limit_policy = memory_limit_policy_;
     state.tree_priority = tree_priority;
 
     global_state_ = state;
+    resource_pool_->SetResourceUsageLimits(state.soft_memory_limit_in_bytes,
+                                           state.soft_memory_limit_in_bytes,
+                                           state.num_resources_limit);
     tile_manager_->SetGlobalStateForTesting(state);
   }
 
@@ -657,11 +659,14 @@ class TileManagerTileIteratorTest : public testing::Test,
     state.soft_memory_limit_in_bytes = 100 * 1000 * 1000;
     state.num_resources_limit = max_tiles_;
     state.hard_memory_limit_in_bytes = state.soft_memory_limit_in_bytes * 2;
-    state.unused_memory_limit_in_bytes = state.soft_memory_limit_in_bytes;
     state.memory_limit_policy = memory_limit_policy_;
     state.tree_priority = tree_priority;
 
     global_state_ = state;
+    host_impl_.resource_pool()->SetResourceUsageLimits(
+        state.soft_memory_limit_in_bytes,
+        state.soft_memory_limit_in_bytes,
+        state.num_resources_limit);
     host_impl_.tile_manager()->SetGlobalStateForTesting(state);
   }
 

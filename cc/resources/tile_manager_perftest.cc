@@ -161,7 +161,12 @@ class TileManagerPerfTest : public testing::Test {
         }
       }
 
-      tile_manager_->ManageTiles(GlobalStateForTest());
+      GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
+      resource_pool_->SetResourceUsageLimits(
+          global_state.soft_memory_limit_in_bytes,
+          0,
+          global_state.num_resources_limit);
+      tile_manager_->ManageTiles(global_state);
       tile_manager_->UpdateVisibleTiles();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -218,11 +223,12 @@ class TileManagerTileIteratorPerfTest : public testing::Test,
     state.soft_memory_limit_in_bytes = 100 * 1000 * 1000;
     state.num_resources_limit = max_tiles_;
     state.hard_memory_limit_in_bytes = state.soft_memory_limit_in_bytes * 2;
-    state.unused_memory_limit_in_bytes = state.soft_memory_limit_in_bytes;
     state.memory_limit_policy = memory_limit_policy_;
     state.tree_priority = tree_priority;
 
     global_state_ = state;
+    host_impl_.resource_pool()->SetResourceUsageLimits(
+        state.soft_memory_limit_in_bytes, 0, state.num_resources_limit);
     host_impl_.tile_manager()->SetGlobalStateForTesting(state);
   }
 

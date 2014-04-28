@@ -146,7 +146,6 @@ class GlobalStateThatImpactsTilePriority {
       : memory_limit_policy(ALLOW_NOTHING),
         soft_memory_limit_in_bytes(0),
         hard_memory_limit_in_bytes(0),
-        unused_memory_limit_in_bytes(0),
         num_resources_limit(0),
         tree_priority(SAME_PRIORITY_FOR_BOTH_TREES) {}
 
@@ -154,7 +153,6 @@ class GlobalStateThatImpactsTilePriority {
 
   size_t soft_memory_limit_in_bytes;
   size_t hard_memory_limit_in_bytes;
-  size_t unused_memory_limit_in_bytes;
   size_t num_resources_limit;
 
   TreePriority tree_priority;
@@ -163,7 +161,6 @@ class GlobalStateThatImpactsTilePriority {
     return memory_limit_policy == other.memory_limit_policy &&
            soft_memory_limit_in_bytes == other.soft_memory_limit_in_bytes &&
            hard_memory_limit_in_bytes == other.hard_memory_limit_in_bytes &&
-           unused_memory_limit_in_bytes == other.unused_memory_limit_in_bytes &&
            num_resources_limit == other.num_resources_limit &&
            tree_priority == other.tree_priority;
   }

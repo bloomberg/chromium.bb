@@ -1160,8 +1160,6 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
   if (!tile_manager_)
     return;
 
-  // TODO(reveman): We should avoid keeping around unused resources if
-  // possible. crbug.com/224475
   global_tile_state_.hard_memory_limit_in_bytes = 0;
   global_tile_state_.soft_memory_limit_in_bytes = 0;
   if (visible_ && policy.bytes_limit_when_visible > 0) {
@@ -1172,12 +1170,6 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
          settings_.max_memory_for_prepaint_percentage) /
         100;
   }
-  // Unused limit is calculated from soft-limit, as hard-limit may
-  // be very high and shouldn't typically be exceeded.
-  global_tile_state_.unused_memory_limit_in_bytes = static_cast<size_t>(
-      (static_cast<int64>(global_tile_state_.soft_memory_limit_in_bytes) *
-       settings_.max_unused_resource_memory_percentage) /
-      100);
   global_tile_state_.memory_limit_policy =
       ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
           visible_ ?
@@ -1185,13 +1177,22 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
           gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
   global_tile_state_.num_resources_limit = policy.num_resources_limit;
 
+  // TODO(reveman): We should avoid keeping around unused resources if
+  // possible. crbug.com/224475
+  // Unused limit is calculated from soft-limit, as hard-limit may
+  // be very high and shouldn't typically be exceeded.
+  size_t unused_memory_limit_in_bytes = static_cast<size_t>(
+      (static_cast<int64>(global_tile_state_.soft_memory_limit_in_bytes) *
+       settings_.max_unused_resource_memory_percentage) /
+      100);
+
   DCHECK(resource_pool_);
   resource_pool_->CheckBusyResources();
   // Soft limit is used for resource pool such that memory returns to soft
   // limit after going over.
   resource_pool_->SetResourceUsageLimits(
       global_tile_state_.soft_memory_limit_in_bytes,
-      global_tile_state_.unused_memory_limit_in_bytes,
+      unused_memory_limit_in_bytes,
       global_tile_state_.num_resources_limit);
 
   DidModifyTilePriorities();

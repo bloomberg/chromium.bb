@@ -6380,7 +6380,6 @@ class LayerTreeHostImplWithImplicitLimitsTest : public LayerTreeHostImplTest {
  public:
   virtual void SetUp() OVERRIDE {
     LayerTreeSettings settings = DefaultSettings();
-    settings.max_unused_resource_memory_percentage = 50;
     settings.max_memory_for_prepaint_percentage = 50;
     CreateHostImpl(settings, CreateOutputSurface());
   }
@@ -6397,8 +6396,6 @@ TEST_F(LayerTreeHostImplWithImplicitLimitsTest, ImplicitMemoryLimits) {
             300u * 1024u * 1024u);
   EXPECT_EQ(host_impl_->global_tile_state().soft_memory_limit_in_bytes,
             150u * 1024u * 1024u);
-  EXPECT_EQ(host_impl_->global_tile_state().unused_memory_limit_in_bytes,
-            75u * 1024u * 1024u);
 }
 
 }  // namespace

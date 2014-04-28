@@ -259,6 +259,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
   bool IsContextLost();
   TileManager* tile_manager() { return tile_manager_.get(); }
+  ResourcePool* resource_pool() { return resource_pool_.get(); }
   Renderer* renderer() { return renderer_.get(); }
   const RendererCapabilitiesImpl& GetRendererCapabilities() const;
 
