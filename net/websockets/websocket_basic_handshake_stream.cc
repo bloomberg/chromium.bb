@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -505,6 +506,11 @@ scoped_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
                                extensions_));
   DCHECK(extension_params_.get());
   if (extension_params_->deflate_enabled) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.WebSocket.DeflateMode",
+        extension_params_->deflate_mode,
+        WebSocketDeflater::NUM_CONTEXT_TAKEOVER_MODE_TYPES);
+
     return scoped_ptr<WebSocketStream>(
         new WebSocketDeflateStream(basic_stream.Pass(),
                                    extension_params_->deflate_mode,

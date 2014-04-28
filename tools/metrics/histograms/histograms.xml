@@ -13989,6 +13989,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The time spent in closesocket call in UDPSocketWin::Close.</summary>
 </histogram>
 
+<histogram name="Net.WebSocket.DeflateMode"
+    enum="WebSocketNewPerMessageDeflateContextTakeoverMode">
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
+  <summary>
+    Count the number of WebSockets that accepted permessage-deflate extension
+    for each context take over mode. Used by the new Chromium-based WebSocket
+    implementation.
+  </summary>
+</histogram>
+
 <histogram name="Net.WebSocket.Duration" units="milliseconds">
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
@@ -29795,10 +29807,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebCore.WebSocket.PerMessageDeflateContextTakeOverMode"
     enum="WebSocketPerMessageDeflateContextTakeOverMode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yhirano@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <owner>tyoshino@chromium.org</owner>
   <summary>
     Count the number of WebSockets that accepted permessage-deflate extension
-    for each context take over mode.
+    for each context take over mode. Used by the old Blink-based WebSocket
+    implementation.
   </summary>
 </histogram>
 
@@ -42208,9 +42223,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="FAILED">Failed</int>
 </enum>
 
+<enum name="WebSocketNewPerMessageDeflateContextTakeoverMode" type="int">
+  <int value="0" label="Do not take over"/>
+  <int value="1" label="Take over"/>
+</enum>
+
 <enum name="WebSocketPerMessageDeflateContextTakeOverMode" type="int">
-  <int value="0" label="DoNotTakeOverContext"/>
-  <int value="1" label="TakeOverContext"/>
+  <int value="0" label="Do not take over"/>
+  <int value="1" label="Take over"/>
 </enum>
 
 <enum name="WebSocketSendType" type="int">
