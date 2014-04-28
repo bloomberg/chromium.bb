@@ -1630,14 +1630,14 @@ const Experiment kExperiments[] = {
     "origin-chip",
     IDS_FLAGS_ORIGIN_CHIP_NAME,
     IDS_FLAGS_ORIGIN_CHIP_DESCRIPTION,
-    kOsCrOS | kOsWin,
+    kOsCrOS | kOsWin | kOsLinux,
     MULTI_VALUE_TYPE(kOriginChipChoices)
   },
   {
     "origin-chip-in-omnibox",
     IDS_FLAGS_ORIGIN_CHIP_V2_NAME,
     IDS_FLAGS_ORIGIN_CHIP_V2_DESCRIPTION,
-    kOsCrOS | kOsMac | kOsWin,
+    kOsCrOS | kOsMac | kOsWin | kOsLinux,
     MULTI_VALUE_TYPE(kOriginChipV2Choices)
   },
   {
