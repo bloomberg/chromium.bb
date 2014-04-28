@@ -4351,6 +4351,17 @@ surface_create(struct window *window)
 	return surface;
 }
 
+static window_buffer_type
+get_preferred_buffer_type(struct display *display)
+{
+#ifdef HAVE_CAIRO_EGL
+	if (display->argb_device)
+		return WINDOW_BUFFER_TYPE_EGL_WINDOW;
+#endif
+
+	return WINDOW_BUFFER_TYPE_SHM;
+}
+
 static struct window *
 window_create_internal(struct display *display, int custom)
 {
@@ -4369,14 +4380,7 @@ window_create_internal(struct display *display, int custom)
 	window->custom = custom;
 	window->preferred_format = WINDOW_PREFERRED_FORMAT_NONE;
 
-	if (display->argb_device)
-#ifdef HAVE_CAIRO_EGL
-		surface->buffer_type = WINDOW_BUFFER_TYPE_EGL_WINDOW;
-#else
-		surface->buffer_type = WINDOW_BUFFER_TYPE_SHM;
-#endif
-	else
-		surface->buffer_type = WINDOW_BUFFER_TYPE_SHM;
+	surface->buffer_type = get_preferred_buffer_type(display);
 
 	wl_surface_set_user_data(surface->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
