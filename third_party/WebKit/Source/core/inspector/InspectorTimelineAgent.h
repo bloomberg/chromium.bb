@@ -157,9 +157,6 @@ public:
     void layerTreeDidChange();
     void didUpdateLayerTree();
 
-    void willAutosizeText(RenderObject*);
-    void didAutosizeText(RenderObject*);
-
     void didScheduleStyleRecalculation(Document*);
     bool willRecalculateStyle(Document*);
     void didRecalculateStyle(int elementCount);

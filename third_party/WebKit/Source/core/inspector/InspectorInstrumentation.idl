@@ -217,12 +217,6 @@ interface InspectorInstrumentation {
     [Timeline, Page, Inline=FastReturn]
     void didLayout(const InspectorInstrumentationCookie&, RenderObject* root);
 
-    [Timeline, Inline=FastReturn]
-    void willAutosizeText([Keep] RenderObject* root);
-
-    [Timeline, Inline=FastReturn]
-    void didAutosizeText([Keep] RenderObject* root);
-
     [Page, Inline=FastReturn]
     void didScroll(Page*);
 

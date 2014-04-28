@@ -24,10 +24,11 @@
 #include <algorithm>
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
@@ -231,7 +232,6 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
         return false;
 
     TRACE_EVENT0("webkit", "TextAutosizer: process root cluster");
-    InspectorInstrumentation::willAutosizeText(layoutRoot);
     UseCounter::count(*m_document, UseCounter::TextAutosizing);
 
     TextAutosizingClusterInfo clusterInfo(cluster);
@@ -245,7 +245,6 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     m_hashesToAutosizeSecondPass.clear();
     m_nonAutosizedClusters.clear();
 #endif
-    InspectorInstrumentation::didAutosizeText(layoutRoot);
     m_previouslyAutosized = true;
     return true;
 }

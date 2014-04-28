@@ -85,7 +85,6 @@ static const char RecalculateStyles[] = "RecalculateStyles";
 static const char InvalidateLayout[] = "InvalidateLayout";
 static const char Layout[] = "Layout";
 static const char UpdateLayerTree[] = "UpdateLayerTree";
-static const char AutosizeText[] = "AutosizeText";
 static const char Paint[] = "Paint";
 static const char ScrollLayer[] = "ScrollLayer";
 static const char ResizeImage[] = "ResizeImage";
@@ -531,21 +530,6 @@ void InspectorTimelineAgent::didUpdateLayerTree()
     if (m_pendingLayerTreeData)
         TimelineRecordFactory::setLayerTreeData(entry.data.get(), m_pendingLayerTreeData.release());
     didCompleteCurrentRecord(TimelineRecordType::UpdateLayerTree);
-}
-
-void InspectorTimelineAgent::willAutosizeText(RenderObject* renderer)
-{
-    pushCurrentRecord(TimelineRecordFactory::createNodeData(nodeId(renderer)), TimelineRecordType::AutosizeText, false, renderer->frame());
-}
-
-void InspectorTimelineAgent::didAutosizeText(RenderObject* renderer)
-{
-    if (renderer->needsLayout()) {
-        TimelineRecordEntry& entry = m_recordStack.last();
-        ASSERT(entry.type == TimelineRecordType::AutosizeText);
-        entry.data->setBoolean("needsRelayout", true);
-    }
-    didCompleteCurrentRecord(TimelineRecordType::AutosizeText);
 }
 
 void InspectorTimelineAgent::didScheduleStyleRecalculation(Document* document)
