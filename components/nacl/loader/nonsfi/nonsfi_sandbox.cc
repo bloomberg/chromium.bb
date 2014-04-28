@@ -139,6 +139,7 @@ ErrorCode RestrictMmap(SandboxBPF* sb) {
                   ErrorCode(ErrorCode::ERR_ALLOWED)));
 }
 
+#if defined(__x86_64__) || defined(__arm__)
 ErrorCode RestrictSocketpair(SandboxBPF* sb) {
   // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
   COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
@@ -147,6 +148,7 @@ ErrorCode RestrictSocketpair(SandboxBPF* sb) {
                   ErrorCode(ErrorCode::ERR_ALLOWED),
          sb->Trap(sandbox::CrashSIGSYS_Handler, NULL));
 }
+#endif
 
 bool IsGracefullyDenied(int sysno) {
   switch (sysno) {
