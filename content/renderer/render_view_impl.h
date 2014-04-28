@@ -604,9 +604,7 @@ class CONTENT_EXPORT RenderViewImpl
  protected:
   explicit RenderViewImpl(RenderViewImplParams* params);
 
-  void Initialize(
-      RenderViewImplParams* params,
-      RenderFrameImpl* main_render_frame);
+  void Initialize(RenderViewImplParams* params);
   virtual void SetScreenMetricsEmulationParameters(
       float device_scale_factor,
       const gfx::Point& root_layer_offset,

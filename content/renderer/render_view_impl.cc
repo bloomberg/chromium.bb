@@ -703,9 +703,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       next_snapshot_id_(0) {
 }
 
-void RenderViewImpl::Initialize(
-    RenderViewImplParams* params,
-    RenderFrameImpl* main_render_frame) {
+void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   routing_id_ = params->routing_id;
   surface_id_ = params->surface_id;
   if (params->opener_id != MSG_ROUTING_NONE && params->is_renderer_created)
@@ -713,6 +711,13 @@ void RenderViewImpl::Initialize(
 
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
+
+  RenderFrameImpl* main_render_frame = RenderFrameImpl::Create(
+      this, params->main_frame_routing_id);
+  // The main frame WebLocalFrame object is closed by
+  // RenderFrameImpl::frameDetached().
+  WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame);
+  main_render_frame->SetWebFrame(web_frame);
 
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
@@ -962,14 +967,7 @@ RenderViewImpl* RenderViewImpl::Create(
   else
     render_view = new RenderViewImpl(&params);
 
-  RenderFrameImpl* main_frame = RenderFrameImpl::Create(
-      render_view, main_frame_routing_id);
-  // The main frame WebLocalFrame object is closed by
-  // RenderFrameImpl::frameDetached().
-  WebLocalFrame* web_frame = WebLocalFrame::create(main_frame);
-  main_frame->SetWebFrame(web_frame);
-
-  render_view->Initialize(&params, main_frame);
+  render_view->Initialize(&params);
   return render_view;
 }
 

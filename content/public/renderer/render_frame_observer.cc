@@ -17,6 +17,7 @@ RenderFrameObserver::RenderFrameObserver(RenderFrame* render_frame)
   if (render_frame) {
     RenderFrameImpl* impl = static_cast<RenderFrameImpl*>(render_frame);
     routing_id_ = impl->GetRoutingID();
+    DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
     impl->AddObserver(this);
   }
 }
