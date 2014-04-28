@@ -7,9 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
-#include "content/common/host_shared_bitmap_manager.h"
 
 namespace content {
 
@@ -68,26 +66,14 @@ RendererFrameManager::RendererFrameManager() {
 #else
       std::min(5, 2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256));
 #endif
-  max_handles_ = base::SharedMemory::GetHandleLimit() / 8.0f;
 }
 
 RendererFrameManager::~RendererFrameManager() {}
 
 void RendererFrameManager::CullUnlockedFrames() {
-  uint32 saved_frame_limit = max_number_of_saved_frames();
-
-  if (unlocked_frames_.size() + locked_frames_.size() > 0) {
-    float handles_per_frame =
-        HostSharedBitmapManager::current()->AllocatedBitmapCount() * 1.0f /
-        (unlocked_frames_.size() + locked_frames_.size());
-
-    saved_frame_limit = std::max(
-        1,
-        static_cast<int>(std::min(static_cast<float>(saved_frame_limit),
-                                  max_handles_ / handles_per_frame)));
-  }
   while (!unlocked_frames_.empty() &&
-         unlocked_frames_.size() + locked_frames_.size() > saved_frame_limit) {
+         unlocked_frames_.size() + locked_frames_.size() >
+             max_number_of_saved_frames()) {
     size_t old_size = unlocked_frames_.size();
     // Should remove self from list.
     unlocked_frames_.back()->EvictCurrentFrame();
