@@ -1113,15 +1113,19 @@ util.isSameFileSystem = function(fileSystem1, fileSystem2) {
 util.isDescendantEntry = function(ancestorEntry, childEntry) {
   if (!ancestorEntry.isDirectory)
     return false;
-
-  // TODO(mtomasz): Do not work on URLs. Instead consider comparing file systems
-  // and paths.
+  if (!util.isSameFileSystem(ancestorEntry.filesystem, childEntry.filesystem))
+    return false;
   if (util.isSameEntry(ancestorEntry, childEntry))
     return false;
-  if (childEntry.toURL().indexOf(ancestorEntry.toURL() + '/') !== 0)
+  if (util.isFakeEntry(ancestorEntry) || util.isFakeEntry(childEntry))
     return false;
 
-  return true;
+  // Check if the ancestor's path with trailing slash is a prefix of child's
+  // path.
+  var ancestorPath = ancestorEntry.fullPath;
+  if (ancestorPath.slice(-1) !== '/')
+    ancestorPath += '/';
+  return childEntry.fullPath.indexOf(ancestorPath) === 0;
 };
 
 /**
