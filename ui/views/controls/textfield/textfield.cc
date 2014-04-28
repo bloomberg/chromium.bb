@@ -394,6 +394,14 @@ base::string16 Textfield::GetPlaceholderText() const {
   return placeholder_text_;
 }
 
+gfx::HorizontalAlignment Textfield::GetHorizontalAlignment() const {
+  return GetRenderText()->horizontal_alignment();
+}
+
+void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
+  GetRenderText()->SetHorizontalAlignment(alignment);
+}
+
 void Textfield::ShowImeIfNeeded() {
   if (enabled() && !read_only())
     GetInputMethod()->ShowImeIfNeeded();

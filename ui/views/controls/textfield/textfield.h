@@ -131,6 +131,11 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_text_color_ = color;
   }
 
+  // Get or set the horizontal alignment used for the button from the underlying
+  // RenderText object.
+  gfx::HorizontalAlignment GetHorizontalAlignment() const;
+  void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
+
   // Displays a virtual keyboard or alternate input view if enabled.
   void ShowImeIfNeeded();
 

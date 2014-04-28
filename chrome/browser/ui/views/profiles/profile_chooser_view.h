@@ -14,7 +14,6 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -40,7 +39,6 @@ class Browser;
 class ProfileChooserView : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
-                           public views::MenuButtonListener,
                            public views::StyledLabelListener,
                            public views::TextfieldController,
                            public AvatarMenuObserver,
@@ -87,7 +85,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::Button*, int> ButtonIndexes;
-  typedef std::map<views::View*, std::string> AccountButtonIndexes;
+  typedef std::map<views::Button*, std::string> AccountButtonIndexes;
 
   ProfileChooserView(views::View* anchor_view,
                      views::BubbleBorder::Arrow arrow,
@@ -106,10 +104,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* sender, int event_flags) OVERRIDE;
-
-  // views::MenuButtonListener:
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
 
   // views::StyledLabelListener implementation.
   virtual void StyledLabelLinkClicked(
@@ -151,8 +145,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::View* CreateOptionsView(bool enable_lock);
 
   // Account Management view for the profile |avatar_item|.
-  views::View* CreateCurrentProfileEditableView(
-      const AvatarMenu::Item& avatar_item);
   views::View* CreateCurrentProfileAccountsView(
       const AvatarMenu::Item& avatar_item);
   void CreateAccountButton(views::GridLayout* layout,
@@ -209,7 +201,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Links displayed in the active profile card.
   views::Link* manage_accounts_link_;
-  views::Link* signin_current_profile_link_;
+  views::LabelButton* signin_current_profile_link_;
 
   // The profile name and photo in the active profile card. Owned by the
   // views hierarchy.
@@ -219,7 +211,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Action buttons.
   views::LabelButton* users_button_;
   views::LabelButton* lock_button_;
-  views::LabelButton* add_account_button_;
+  views::Link* add_account_link_;
 
   // Buttons displayed in the gaia signin view.
   views::ImageButton* gaia_signin_cancel_button_;
