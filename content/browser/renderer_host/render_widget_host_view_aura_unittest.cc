@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
@@ -1071,6 +1072,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
+  DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
 
   scoped_ptr<RenderWidgetHostImpl * []> hosts(
       new RenderWidgetHostImpl* [renderer_count]);
@@ -1157,6 +1159,35 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   views[0]->WasHidden();
   EXPECT_FALSE(views[0]->frame_provider_);
 
+  for (size_t i = 0; i < renderer_count - 1; ++i)
+    views[i]->WasHidden();
+
+  // Allocate enough bitmaps so that two frames (proportionally) would be
+  // enough hit the handle limit.
+  int handles_per_frame = 5;
+  RendererFrameManager::GetInstance()->set_max_handles(handles_per_frame * 2);
+
+  for (size_t i = 0; i < (renderer_count - 1) * handles_per_frame; i++) {
+    HostSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
+        1,
+        base::SharedMemory::NULLHandle(),
+        base::GetCurrentProcessHandle(),
+        cc::SharedBitmap::GenerateId());
+  }
+
+  // Hiding this last bitmap should evict all but two frames.
+  views[renderer_count - 1]->WasHidden();
+  for (size_t i = 0; i < renderer_count; ++i) {
+    if (i + 2 < renderer_count)
+      EXPECT_FALSE(views[i]->frame_provider_);
+    else
+      EXPECT_TRUE(views[i]->frame_provider_);
+  }
+  HostSharedBitmapManager::current()->ProcessRemoved(
+      base::GetCurrentProcessHandle());
+  RendererFrameManager::GetInstance()->set_max_handles(
+      base::SharedMemory::GetHandleLimit());
+
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
     delete hosts[i];
@@ -1170,6 +1201,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
+  DCHECK_EQ(0u, HostSharedBitmapManager::current()->AllocatedBitmapCount());
 
   scoped_ptr<RenderWidgetHostImpl * []> hosts(
       new RenderWidgetHostImpl* [renderer_count]);
