@@ -110,8 +110,10 @@ def CollectSources():
                                          info['rev'])],
         }
     patch_packages.append(package)
+    patch_info = {'name': package}
+    patch_info.update(info)
     patch_commands.append(
-        command.GenerateGitPatches('%(' + package + ')s/.git', info))
+        command.GenerateGitPatches('%(' + package + ')s/.git', patch_info))
 
   sources['patches'] = {
       'type': 'build',

@@ -322,11 +322,13 @@ def GenerateGitPatches(git_dir, info):
     git_dir_flag = '--git-dir=' + subst.SubstituteAbsPaths(git_dir)
     basename = info['upstream-name']
 
-    def generatePatch(src_rev, dst_rev, suffix):
+    patch_files = []
+
+    def generatePatch(description, src_rev, dst_rev, suffix):
       src_prefix = '--src-prefix=' + basename + '/'
       dst_prefix = '--dst-prefix=' + basename + suffix + '/'
-      patch_file = subst.SubstituteAbsPaths(
-          path.join('%(output)s', basename + suffix + '.patch'))
+      patch_name = basename + suffix + '.patch'
+      patch_file = subst.SubstituteAbsPaths(path.join('%(output)s', patch_name))
       git_args = [git_dir_flag, 'diff',
                   '--patch-with-stat', '--ignore-space-at-eol', '--full-index',
                   '--no-ext-diff', '--no-color', '--no-renames',
@@ -336,6 +338,7 @@ def GenerateGitPatches(git_dir, info):
           pynacl.repo_tools.GitCmd() + git_args,
           stdout=patch_file
       )
+      patch_files.append((description, patch_name))
 
     def revParse(args):
       output = pynacl.repo_tools.CheckGitOutput([git_dir_flag] + args)
@@ -365,9 +368,26 @@ def GenerateGitPatches(git_dir, info):
       # hex digits of the commit ID is what Git usually produces
       # for --abbrev-commit behavior, 'git describe', etc.
       suffix = '-g' + upstream_snapshot[:7]
-      generatePatch(upstream_base, upstream_snapshot, suffix)
+      generatePatch('Patch the release up to the upstream snapshot version.',
+                    upstream_base, upstream_snapshot, suffix)
 
     if rev != upstream_snapshot:
       # We're using local changes, so generate a patch of those.
-      generatePatch(upstream_snapshot, rev, suffix + '-nacl')
+      generatePatch('Apply NaCl-specific changes.',
+                    upstream_snapshot, rev, suffix + '-nacl')
+
+    with open(subst.SubstituteAbsPaths(path.join('%(output)s',
+                                                 info['name'] + '.series')),
+              'w') as f:
+      f.write("""\
+# This is a "series file" in the style used by the "quilt" tool.
+# It describes how to unpack and apply patches to produce the source
+# tree of the %(name)s component of a toolchain targetting Native Client.
+
+# Source: %(upstream-name)s.tar
+"""
+              % info)
+      for patch in patch_files:
+        f.write('\n# %s\n%s\n' % patch)
+
   return Runnable(generatePatches, git_dir, info)
