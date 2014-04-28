@@ -41,6 +41,8 @@ NICE_TIME_FORMAT = cbuildbot_metadata.NICE_TIME_FORMAT
 NICE_DATETIME_FORMAT = cbuildbot_metadata.NICE_DATETIME_FORMAT
 
 
+# All CQ worksheets (master and slave) are on the same spreadsheet.
+CQ_SS_KEY = '0AsXDKtaHikmcdElQWVFuT21aMlFXVTN5bVhfQ2ptVFE'
 
 class GatherStatsError(Exception):
   """Base exception class for exceptions in this module."""
@@ -118,14 +120,7 @@ class StatsTable(table.Table):
     return self._SSHyperlink(link, 'build %s' % build_number)
 
 
-class CQStatsTable(StatsTable):
-  """Stats table super class for all CQ targets (master or slave)."""
-
-  # All CQ worksheets (master and slave) are on the same spreadsheet.
-  SS_KEY = '0AsXDKtaHikmcdElQWVFuT21aMlFXVTN5bVhfQ2ptVFE'
-
-
-class CQMasterTable(CQStatsTable):
+class CQMasterTable(StatsTable):
   """Stats table for the CQ Master."""
   WATERFALL = 'chromeos'
   TARGET = 'CQ master' # Must match up with name in waterfall.
@@ -447,10 +442,13 @@ class StatsManager(object):
   # This is needed if you are writing data to the Google Sheets spreadsheet.
   GET_SHEETS_VERSION = True
 
-  def __init__(self, config_target):
+  def __init__(self, config_target, ss_key=None,
+               no_sheets_version_filter=False):
     self.builds = []
     self.gs_ctx = gs.GSContext()
     self.config_target = config_target
+    self.ss_key = ss_key
+    self.no_sheets_version_filter = no_sheets_version_filter
 
 
   def Gather(self, start_date, sort_by_build_number=True,
@@ -586,11 +584,15 @@ class StatsManager(object):
 
     assert creds
 
-    # Filter for builds that need to send data to Sheets.
-    version = self.sheets_version
-    builds = [b for b in self.builds if b.sheets_version < version]
-    cros_build_lib.Info('Found %d builds that need to send Sheets v%d data.',
-                        len(builds), version)
+    # Filter for builds that need to send data to Sheets (unless overridden
+    # by command line flag.
+    if self.no_sheets_version_filter:
+      builds = self.builds
+    else:
+      version = self.sheets_version
+      builds = [b for b in self.builds if b.sheets_version < version]
+      cros_build_lib.Info('Found %d builds that need to send Sheets v%d data.',
+                          len(builds), version)
 
     if builds:
       # Fill a data table of type table_class from self.builds.
@@ -606,7 +608,7 @@ class StatsManager(object):
           raise
 
       # Upload data table to sheet.
-      uploader = SSUploader(creds, data_table.SS_KEY)
+      uploader = SSUploader(creds, self.ss_key)
       uploader.Upload(data_table.WORKSHEET_NAME, data_table)
 
   def SendToCarbon(self):
@@ -634,8 +636,8 @@ class CQSlaveStats(StatsManager):
   TABLE_CLASS = None
   GET_SHEETS_VERSION = True
 
-  def __init__(self, slave_target):
-    super(CQSlaveStats, self).__init__(slave_target)
+  def __init__(self, slave_target, **kwargs):
+    super(CQSlaveStats, self).__init__(slave_target, kwargs)
 
   # TODO(mtennant): This is totally untested, but is a refactoring of the
   # graphite code that was in place before for CQ slaves.
@@ -651,11 +653,6 @@ class CQSlaveStats(StatsManager):
         lambda b : b.epoch_time_seconds,
     ))
 
-  # Organized by by increasing graphite version numbers, starting at 0.
-  #CARBON_FUNCS_BY_VERSION = (
-  #    _SendToCarbonV0,
-  #)
-
 
 class CQMasterStats(StatsManager):
   """Manager stats gathering for the Commit Queue Master."""
@@ -663,8 +660,8 @@ class CQMasterStats(StatsManager):
   BOT_TYPE = CQ
   GET_SHEETS_VERSION = True
 
-  def __init__(self):
-    super(CQMasterStats, self).__init__(CQ_MASTER)
+  def __init__(self, **kwargs):
+    super(CQMasterStats, self).__init__(CQ_MASTER, **kwargs)
 
   def _SendToCarbonV0(self, builds):
     # Send runtime data.
@@ -697,8 +694,8 @@ class PreCQStats(StatsManager):
   BOT_TYPE = PRE_CQ
   GET_SHEETS_VERSION = False
 
-  def __init__(self):
-    super(PreCQStats, self).__init__(PRE_CQ_GROUP)
+  def __init__(self, **kwargs):
+    super(PreCQStats, self).__init__(PRE_CQ_GROUP, **kwargs)
 
 
 class CLStats(StatsManager):
@@ -709,8 +706,8 @@ class CLStats(StatsManager):
   BOT_TYPE = CQ
   GET_SHEETS_VERSION = False
 
-  def __init__(self, email):
-    super(CLStats, self).__init__(CQ_MASTER)
+  def __init__(self, email, **kwargs):
+    super(CLStats, self).__init__(CQ_MASTER, **kwargs)
     self.actions = []
     self.per_patch_actions = {}
     self.per_cl_actions = {}
@@ -725,7 +722,7 @@ class CLStats(StatsManager):
       creds: A gdata_lib.Creds object.
     """
     data_table = CQMasterStats.TABLE_CLASS()
-    uploader = SSUploader(creds, data_table.SS_KEY)
+    uploader = SSUploader(creds, self.ss_key)
     ss_failure_category = gdata_lib.PrepColNameForSS(self.COL_FAILURE_CATEGORY)
     rows = uploader.GetRowCacheByCol(data_table.WORKSHEET_NAME,
                                      data_table.COL_BUILD_NUMBER)
@@ -1081,6 +1078,13 @@ def GetParser():
   mode.add_argument('--no-mark-gathered', action='store_false', default=True,
                     dest='mark_gathered',
                     help='Skip marking results as gathered.')
+  mode.add_argument('--no-sheets-version-filter', action='store_true',
+                    default=False,
+                    help='Upload all parsed metadata to spreasheet regardless '
+                         'of sheets version.')
+  mode.add_argument('--override-ss-key', action='store', default=None,
+                    dest='ss_key',
+                    help='Override spreadsheet key.')
 
   return parser
 
@@ -1107,11 +1111,20 @@ def main(argv):
 
   # Prepare the rounds of stats gathering to do.
   stats_managers = []
+
   if options.cq_master:
-    stats_managers.append(CQMasterStats())
+    stats_managers.append(
+        CQMasterStats(
+            ss_key=options.ss_key or CQ_SS_KEY,
+            no_sheets_version_filter=options.no_sheets_version_filter))
 
   if options.cl_actions:
-    stats_managers.append(CLStats(options.email))
+    # CL stats manager uses the CQ spreadsheet to fetch failure reasons
+    stats_managers.append(
+        CLStats(
+            options.email,
+            ss_key=options.ss_key or CQ_SS_KEY,
+            no_sheets_version_filter=options.no_sheets_version_filter))
 
   if options.pre_cq:
     # TODO(mtennant): Add spreadsheet and/or graphite support for pre-cq.
