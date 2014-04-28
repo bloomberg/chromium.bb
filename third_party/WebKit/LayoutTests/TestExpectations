@@ -18,10 +18,6 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 # Inspector tests
 # -----------------------------------------------------------------
 
-# There is no enough plugins support in DRT
-crbug.com/233124 http/tests/inspector/network/network-embed.html [ Skip ]
-crbug.com/233124 http/tests/inspector/network/network-content-replacement-embed.html [ Skip ]
-
 # Transferred size are not supported in DRT.
 crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
