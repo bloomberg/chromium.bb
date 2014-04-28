@@ -80,7 +80,7 @@ private:
     IdToInjectedScriptMap m_idToInjectedScript;
     RefPtr<InjectedScriptHost> m_injectedScriptHost;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
-    typedef HashMap<NewScriptState*, int> ScriptStateToId;
+    typedef HashMap<RefPtr<NewScriptState>, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;
 };
 

@@ -80,7 +80,7 @@ InjectedScript InjectedScriptManager::injectedScriptForId(int id)
         return it->value;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
         if (it->value == id)
-            return injectedScriptFor(it->key);
+            return injectedScriptFor(it->key.get());
     }
     return InjectedScript();
 }
@@ -132,7 +132,7 @@ void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
     // Now remove script states that have id but no injected script.
     Vector<NewScriptState*> scriptStatesToRemove;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
-        NewScriptState* scriptState = it->key;
+        NewScriptState* scriptState = it->key.get();
         if (window == scriptState->domWindow())
             scriptStatesToRemove.append(scriptState);
     }
