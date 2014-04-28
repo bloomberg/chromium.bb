@@ -133,6 +133,8 @@
     'common/android/common_jni_registrar.h',
     'common/android/device_telephony_info.cc',
     'common/android/device_telephony_info.h',
+    'common/android/gin_java_bridge_value.cc',
+    'common/android/gin_java_bridge_value.h',
     'common/android/hash_set.cc',
     'common/android/hash_set.h',
     'common/android/surface_texture_lookup.cc',

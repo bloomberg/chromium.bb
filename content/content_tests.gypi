@@ -604,6 +604,7 @@
         'child/webcrypto/shared_crypto_unittest.cc',
         'child/worker_task_runner_unittest.cc',
         'common/android/address_parser_unittest.cc',
+        'common/android/gin_java_bridge_value_unittest.cc',
         'common/cc_messages_unittest.cc',
         'common/common_param_traits_unittest.cc',
         'common/cursors/webcursor_unittest.cc',
