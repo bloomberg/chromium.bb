@@ -114,6 +114,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
 
         boolean bind(String[] commandLine) {
             if (!mBound) {
+                TraceEvent.begin();
                 final Intent intent = createServiceBindIntent();
                 if (commandLine != null) {
                     intent.putExtra(EXTRA_COMMAND_LINE, commandLine);
@@ -121,6 +122,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 if (mLinkerParams != null)
                     mLinkerParams.addIntentExtras(intent);
                 mBound = mContext.bindService(intent, this, mBindFlags);
+                TraceEvent.end();
             }
             return mBound;
         }

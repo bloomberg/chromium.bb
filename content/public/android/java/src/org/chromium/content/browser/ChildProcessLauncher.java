@@ -15,6 +15,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
@@ -338,6 +339,7 @@ public class ChildProcessLauncher {
             int[] fileFds,
             boolean[] fileAutoClose,
             long clientContext) {
+        TraceEvent.begin();
         assert fileIds.length == fileFds.length && fileFds.length == fileAutoClose.length;
         FileDescriptorInfo[] filesToBeMapped = new FileDescriptorInfo[fileFds.length];
         for (int i = 0; i < fileFds.length; i++) {
@@ -369,6 +371,8 @@ public class ChildProcessLauncher {
             if (allocatedConnection == null) {
                 // Notify the native code so it can free the heap allocated callback.
                 nativeOnChildProcessStarted(clientContext, 0);
+                Log.e(TAG, "Allocation of new service failed.");
+                TraceEvent.end();
                 return;
             }
         }
@@ -377,6 +381,7 @@ public class ChildProcessLauncher {
                 allocatedConnection.getServiceNumber());
         triggerConnectionSetup(allocatedConnection, commandLine, childProcessId, filesToBeMapped,
                 callbackType, clientContext);
+        TraceEvent.end();
     }
 
     @VisibleForTesting
