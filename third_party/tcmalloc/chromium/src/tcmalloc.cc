@@ -269,6 +269,9 @@ extern "C" {
   //    Windows: _msize()
   size_t tc_malloc_size(void* p) __THROW
       ATTRIBUTE_SECTION(google_malloc);
+
+  void* tc_malloc_skip_new_handler(size_t size)
+      ATTRIBUTE_SECTION(google_malloc);
 }  // extern "C"
 
 
