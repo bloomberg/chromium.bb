@@ -158,8 +158,7 @@ InspectorTest.printTimestampRecords = function(typeName, formatter)
 InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
 {
     for (var i = 0; i < records.length; ++i) {
-        var recordTypeName = (typeof records[i].type === "string") ? records[i].type : records[i].type();
-        if (typeName && recordTypeName === WebInspector.TimelineModel.RecordType[typeName])
+        if (typeName && records[i].type === WebInspector.TimelineModel.RecordType[typeName])
             InspectorTest.printTimelineRecordProperties(records[i]);
         if (formatter)
             formatter(records[i]);
@@ -218,17 +217,17 @@ InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallb
         prefix = prefix + "> ";
     if (presentationRecord.coalesced()) {
         suffix = " x " + presentationRecord.presentationChildren().length;
-    } else if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
-        || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
+    } else if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp
+        || record.type === WebInspector.TimelineModel.RecordType.ConsoleTime) {
         suffix = " : " + record.data.message;
     }
     if (detailsCallback)
         suffix += " " + detailsCallback(record);
-    InspectorTest.addResult(prefix + InspectorTest._timelineAgentTypeToString(record.type()) + suffix);
+    InspectorTest.addResult(prefix + InspectorTest._timelineAgentTypeToString(record.type) + suffix);
 
     var numChildren = presentationRecord.presentationChildren() ? presentationRecord.presentationChildren().length : 0;
     for (var i = 0; i < numChildren; ++i) {
-        if (filterTypes && filterTypes.indexOf(presentationRecord.presentationChildren()[i].record().type()) == -1)
+        if (filterTypes && filterTypes.indexOf(presentationRecord.presentationChildren()[i].record().type) == -1)
             continue;
         InspectorTest.dumpPresentationRecord(presentationRecord.presentationChildren()[i], detailsCallback, level + 1, filterTypes);
     }
@@ -242,8 +241,7 @@ InspectorTest.dumpTimelineRecords = function(timelineRecords)
 
 InspectorTest.printTimelineRecordProperties = function(record)
 {
-    var recordType = (typeof record.type === "string") ? record.type : record.type();
-    InspectorTest.addResult(InspectorTest._timelineAgentTypeToString(recordType) + " Properties:");
+    InspectorTest.addResult(InspectorTest._timelineAgentTypeToString(record.type) + " Properties:");
     // Use this recursive routine to print the properties
     if (record instanceof WebInspector.TimelineModel.Record)
         record = record._record;
@@ -264,7 +262,7 @@ InspectorTest.findPresentationRecord = function(type)
     var result;
     function findByType(record)
     {
-        if (record.type() !== type)
+        if (record.type !== type)
             return false;
         result = record;
         return true;
