@@ -1031,7 +1031,7 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRe
 
 crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsManualRebaseline ]
 crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]
-crbug.com/363772 [ Linux Mac ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
+crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/367629 fast/images/exif-orientation-css.html [ NeedsRebaseline ]
 crbug.com/367629 fast/images/exif-orientation-image-document.html [ NeedsRebaseline ]
 crbug.com/367629 fast/images/exif-orientation.html [ NeedsRebaseline ]
@@ -1109,3 +1109,5 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 crbug.com/367846 svg/transforms/animated-path-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 
 crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
+
+crbug.com/169282 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsRebaseline ]
