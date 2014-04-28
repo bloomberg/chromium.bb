@@ -910,9 +910,10 @@ struct weston_surface {
 	} pending;
 
 	/*
-	 * If non-NULL, this function will be called on surface::attach after
-	 * a new buffer has been set up for this surface. The integer params
-	 * are the sx and sy paramerters supplied to surface::attach .
+	 * If non-NULL, this function will be called on
+	 * wl_surface::commit after a new buffer has been set up for
+	 * this surface. The integer params are the sx and sy
+	 * parameters supplied to wl_surface::attach.
 	 */
 	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy);
 	void *configure_private;
