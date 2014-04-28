@@ -167,7 +167,6 @@ CrxInstaller::CrxInstaller(
 }
 
 CrxInstaller::~CrxInstaller() {
-  LOG(WARNING) << "Destroying";
   // Make sure the UI is deleted on the ui thread.
   if (client_) {
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, client_);
@@ -836,7 +835,6 @@ void CrxInstaller::NotifyCrxInstallComplete(bool success) {
 
 void CrxInstaller::CleanupTempFiles() {
   if (!installer_task_runner_->RunsTasksOnCurrentThread()) {
-    LOG(WARNING) << "Post CleanupTempFiles";
     if (!installer_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&CrxInstaller::CleanupTempFiles, this))) {
@@ -845,7 +843,6 @@ void CrxInstaller::CleanupTempFiles() {
     return;
   }
 
-  LOG(WARNING) << "CleanupTempFiles";
   // Delete the temp directory and crx file as necessary.
   if (!temp_dir_.value().empty()) {
     file_util::DeleteFile(temp_dir_, true);
