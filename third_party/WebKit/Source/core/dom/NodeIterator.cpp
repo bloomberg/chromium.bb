@@ -29,6 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 
@@ -74,7 +75,6 @@ bool NodeIterator::NodePointer::moveToPrevious(Node* root)
 NodeIterator::NodeIterator(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_referenceNode(root(), true)
-    , m_detached(false)
 {
     ScriptWrappable::init(this);
     root()->document().attachNodeIterator(this);
@@ -87,11 +87,6 @@ NodeIterator::~NodeIterator()
 
 PassRefPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
 {
-    if (m_detached) {
-        exceptionState.throwDOMException(InvalidStateError, "The iterator is detached.");
-        return nullptr;
-    }
-
     RefPtr<Node> result;
 
     m_candidateNode = m_referenceNode;
@@ -116,11 +111,6 @@ PassRefPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
 
 PassRefPtr<Node> NodeIterator::previousNode(ExceptionState& exceptionState)
 {
-    if (m_detached) {
-        exceptionState.throwDOMException(InvalidStateError, "The iterator is detached.");
-        return nullptr;
-    }
-
     RefPtr<Node> result;
 
     m_candidateNode = m_referenceNode;
@@ -145,9 +135,7 @@ PassRefPtr<Node> NodeIterator::previousNode(ExceptionState& exceptionState)
 
 void NodeIterator::detach()
 {
-    root()->document().detachNodeIterator(this);
-    m_detached = true;
-    m_referenceNode.node.clear();
+    // This is now a no-op as per the DOM specification.
 }
 
 void NodeIterator::nodeWillBeRemoved(Node& removedNode)
@@ -158,7 +146,6 @@ void NodeIterator::nodeWillBeRemoved(Node& removedNode)
 
 void NodeIterator::updateForNodeRemoval(Node& removedNode, NodePointer& referenceNode) const
 {
-    ASSERT(!m_detached);
     ASSERT(root()->document() == removedNode.document());
 
     // Iterator is not affected if the removed node is the reference node and is the root.

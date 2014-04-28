@@ -70,7 +70,6 @@ private:
 
     NodePointer m_referenceNode;
     NodePointer m_candidateNode;
-    bool m_detached;
 };
 
 } // namespace WebCore

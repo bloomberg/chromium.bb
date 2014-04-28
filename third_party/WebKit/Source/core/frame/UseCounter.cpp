@@ -712,6 +712,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ElementSetAttributeNodeNS:
         return "'Element.setAttributeNodeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).";
 
+    case NodeIteratorDetach:
+        return "'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

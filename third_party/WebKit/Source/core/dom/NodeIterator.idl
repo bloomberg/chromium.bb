@@ -31,5 +31,5 @@
 
     [RaisesException] Node nextNode();
     [RaisesException] Node previousNode();
-    void detach();
+    [DeprecateAs=NodeIteratorDetach] void detach();
 };
