@@ -307,18 +307,15 @@ bool AudioManagerMac::HasAudioInputDevices() {
 
 // TODO(xians): There are several places on the OSX specific code which
 // could benefit from these helper functions.
-bool AudioManagerMac::GetDefaultInputDevice(
-    AudioDeviceID* device) {
+bool AudioManagerMac::GetDefaultInputDevice(AudioDeviceID* device) {
   return GetDefaultDevice(device, true);
 }
 
-bool AudioManagerMac::GetDefaultOutputDevice(
-    AudioDeviceID* device) {
+bool AudioManagerMac::GetDefaultOutputDevice(AudioDeviceID* device) {
   return GetDefaultDevice(device, false);
 }
 
-bool AudioManagerMac::GetDefaultDevice(
-    AudioDeviceID* device, bool input) {
+bool AudioManagerMac::GetDefaultDevice(AudioDeviceID* device, bool input) {
   CHECK(device);
 
   // Obtain the current output device selected by the user.
@@ -329,14 +326,12 @@ bool AudioManagerMac::GetDefaultDevice(
   pa.mElement = kAudioObjectPropertyElementMaster;
 
   UInt32 size = sizeof(*device);
-
-  OSStatus result = AudioObjectGetPropertyData(
-      kAudioObjectSystemObject,
-      &pa,
-      0,
-      0,
-      &size,
-      device);
+  OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
+                                               &pa,
+                                               0,
+                                               0,
+                                               &size,
+                                               device);
 
   if ((result != kAudioHardwareNoError) || (*device == kAudioDeviceUnknown)) {
     DLOG(ERROR) << "Error getting default AudioDevice.";
@@ -346,21 +341,16 @@ bool AudioManagerMac::GetDefaultDevice(
   return true;
 }
 
-bool AudioManagerMac::GetDefaultOutputChannels(
-    int* channels) {
+bool AudioManagerMac::GetDefaultOutputChannels(int* channels) {
   AudioDeviceID device;
   if (!GetDefaultOutputDevice(&device))
     return false;
-
-  return GetDeviceChannels(device,
-                           kAudioDevicePropertyScopeOutput,
-                           channels);
+  return GetDeviceChannels(device, kAudioDevicePropertyScopeOutput, channels);
 }
 
-bool AudioManagerMac::GetDeviceChannels(
-    AudioDeviceID device,
-    AudioObjectPropertyScope scope,
-    int* channels) {
+bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
+                                        AudioObjectPropertyScope scope,
+                                        int* channels) {
   CHECK(channels);
 
   // Get stream configuration.
@@ -379,13 +369,7 @@ bool AudioManagerMac::GetDeviceChannels(
   AudioBufferList& buffer_list =
       *reinterpret_cast<AudioBufferList*>(list_storage.get());
 
-  result = AudioObjectGetPropertyData(
-      device,
-      &pa,
-      0,
-      0,
-      &size,
-      &buffer_list);
+  result = AudioObjectGetPropertyData(device, &pa, 0, 0, &size, &buffer_list);
   if (result != noErr)
     return false;
 
@@ -412,13 +396,12 @@ int AudioManagerMac::HardwareSampleRateForDevice(AudioDeviceID device_id) {
       kAudioObjectPropertyScopeGlobal,
       kAudioObjectPropertyElementMaster
   };
-  OSStatus result = AudioObjectGetPropertyData(
-      device_id,
-      &kNominalSampleRateAddress,
-      0,
-      0,
-      &info_size,
-      &nominal_sample_rate);
+  OSStatus result = AudioObjectGetPropertyData(device_id,
+                                               &kNominalSampleRateAddress,
+                                               0,
+                                               0,
+                                               &info_size,
+                                               &nominal_sample_rate);
   if (result != noErr) {
     OSSTATUS_DLOG(WARNING, result)
         << "Could not get default sample rate for device: " << device_id;
