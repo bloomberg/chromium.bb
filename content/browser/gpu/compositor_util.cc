@@ -201,11 +201,7 @@ bool IsImplSidePaintingEnabled() {
   else if (command_line.HasSwitch(switches::kEnableImplSidePainting))
     return true;
 
-#if defined(OS_ANDROID)
-  return true;
-#else
-  return false;
-#endif
+  return IsThreadedCompositingEnabled();
 }
 
 bool IsGpuRasterizationEnabled() {
