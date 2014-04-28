@@ -75,6 +75,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/change_picture_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/date_time_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/display_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/display_overscan_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler.h"
@@ -298,6 +299,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options::AccountsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::BluetoothOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options::DateTimeOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DisplayOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,

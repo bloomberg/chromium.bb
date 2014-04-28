@@ -67,6 +67,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
+#include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
@@ -479,6 +480,10 @@ void SystemTrayDelegateChromeOS::ShowDateSettings() {
       l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
   // Everybody can change the time zone (even though it is a device setting).
   ShowSettingsSubPageForActiveUser(sub_page);
+}
+
+void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
+  SetTimeDialog::ShowDialog(GetNativeWindow());
 }
 
 void SystemTrayDelegateChromeOS::ShowNetworkSettings(

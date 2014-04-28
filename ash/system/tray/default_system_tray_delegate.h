@@ -34,6 +34,7 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowSettings() OVERRIDE;
   virtual bool ShouldShowSettings() OVERRIDE;
   virtual void ShowDateSettings() OVERRIDE;
+  virtual void ShowSetTimeDialog() OVERRIDE;
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE;
   virtual void ShowBluetoothSettings() OVERRIDE;
   virtual void ShowDisplaySettings() OVERRIDE;

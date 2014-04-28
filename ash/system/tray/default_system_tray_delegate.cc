@@ -104,6 +104,9 @@ bool DefaultSystemTrayDelegate::ShouldShowSettings() {
 void DefaultSystemTrayDelegate::ShowDateSettings() {
 }
 
+void DefaultSystemTrayDelegate::ShowSetTimeDialog() {
+}
+
 void DefaultSystemTrayDelegate::ShowNetworkSettings(
     const std::string& service_path) {
 }

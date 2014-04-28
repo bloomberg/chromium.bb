@@ -55,10 +55,10 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
   DateView();
   virtual ~DateView();
 
-  // Sets whether the view is actionable. An actionable date view gives visual
+  // Sets the action the view should take. An actionable date view gives visual
   // feedback on hover, can be focused by keyboard, and clicking/pressing space
-  // or enter on the view shows date-related settings.
-  void SetActionable(bool actionable);
+  // or enter on the view executes the action.
+  void SetAction(TrayDate::DateAction action);
 
   // Updates the format of the displayed time.
   void UpdateTimeFormat();
@@ -81,7 +81,7 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
   // Time format (12/24hr) used for accessibility string.
   base::HourClockType hour_type_;
 
-  bool actionable_;
+  TrayDate::DateAction action_;
 
   DISALLOW_COPY_AND_ASSIGN(DateView);
 };

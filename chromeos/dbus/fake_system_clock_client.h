@@ -20,6 +20,8 @@ class CHROMEOS_EXPORT FakeSystemClockClient : public SystemClockClient {
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual bool HasObserver(Observer* observer) OVERRIDE;
+  virtual void SetTime(int64 time_in_seconds) OVERRIDE;
+  virtual bool CanSetTime() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSystemClockClient);

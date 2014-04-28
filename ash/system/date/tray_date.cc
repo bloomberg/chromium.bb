@@ -20,7 +20,8 @@ namespace ash {
 TrayDate::TrayDate(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       time_tray_(NULL),
-      default_view_(NULL) {
+      default_view_(NULL),
+      login_status_(user::LOGGED_IN_NONE) {
 #if defined(OS_CHROMEOS)
   system_clock_observer_.reset(new SystemClockObserver());
 #endif
@@ -63,6 +64,13 @@ views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayDate::CreateDefaultView(user::LoginStatus status) {
   default_view_ = new DateDefaultView(status);
+
+#if defined(OS_CHROMEOS)
+  // Save the login status we created the view with.
+  login_status_ = status;
+
+  OnSystemClockCanSetTimeChanged(system_clock_observer_->can_set_time());
+#endif
   return default_view_;
 }
 
@@ -105,6 +113,15 @@ void TrayDate::OnSystemClockTimeUpdated() {
     time_tray_->UpdateTimeFormat();
   if (default_view_)
     default_view_->GetDateView()->UpdateTimeFormat();
+}
+
+void TrayDate::OnSystemClockCanSetTimeChanged(bool can_set_time) {
+  // Outside of a logged-in session, the date button should launch the set time
+  // dialog if the time can be set.
+  if (default_view_ && login_status_ == user::LOGGED_IN_NONE) {
+    default_view_->GetDateView()->SetAction(
+        can_set_time ? TrayDate::SET_SYSTEM_TIME : TrayDate::NONE);
+  }
 }
 
 void TrayDate::Refresh() {

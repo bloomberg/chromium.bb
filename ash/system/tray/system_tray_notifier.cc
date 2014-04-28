@@ -260,6 +260,12 @@ void SystemTrayNotifier::NotifySystemClockTimeUpdated() {
                     OnSystemClockTimeUpdated());
 }
 
+void SystemTrayNotifier::NotifySystemClockCanSetTimeChanged(bool can_set_time) {
+  FOR_EACH_OBSERVER(ClockObserver,
+                    clock_observers_,
+                    OnSystemClockCanSetTimeChanged(can_set_time));
+}
+
 void SystemTrayNotifier::NotifyDriveJobUpdated(
     const DriveOperationStatus& status) {
   FOR_EACH_OBSERVER(DriveObserver,

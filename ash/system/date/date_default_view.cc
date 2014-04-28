@@ -46,7 +46,7 @@ DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
       login == ash::user::LOGGED_IN_NONE)
     return;
 
-  date_view_->SetActionable(true);
+  date_view_->SetAction(TrayDate::SHOW_DATE_SETTINGS);
 
   help_ = new TrayPopupHeaderButton(this,
                                     IDR_AURA_UBER_TRAY_HELP,

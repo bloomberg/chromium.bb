@@ -103,6 +103,9 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
   virtual void ShowDateSettings() OVERRIDE {
   }
 
+  virtual void ShowSetTimeDialog() OVERRIDE {
+  }
+
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE {
   }
 

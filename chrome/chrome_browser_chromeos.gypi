@@ -848,6 +848,8 @@
         'browser/chromeos/reset/metrics.h',
         'browser/chromeos/session_length_limiter.cc',
         'browser/chromeos/session_length_limiter.h',
+        'browser/chromeos/set_time_dialog.cc',
+        'browser/chromeos/set_time_dialog.h',
         'browser/chromeos/settings/cros_settings.cc',
         'browser/chromeos/settings/cros_settings.h',
         'browser/chromeos/settings/device_identity_provider.cc',

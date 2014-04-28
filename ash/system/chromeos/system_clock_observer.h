@@ -19,11 +19,16 @@ class SystemClockObserver
 
   // chromeos::SystemClockClient::Observer
   virtual void SystemClockUpdated() OVERRIDE;
+  virtual void SystemClockCanSetTimeChanged(bool can_set_time) OVERRIDE;
 
   // chromeos::system::TimezoneSettings::Observer
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
 
+  bool can_set_time() { return can_set_time_; }
+
  private:
+  bool can_set_time_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemClockObserver);
 };
 

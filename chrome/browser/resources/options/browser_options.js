@@ -295,6 +295,10 @@ cr.define('options', function() {
         }
       }
 
+      // Date and time section (CrOS only).
+      if ($('set-time-button'))
+        $('set-time-button').onclick = this.handleSetTime_.bind(this);
+
       // Default browser section.
       if (!cr.isChromeOS) {
         if (!loadTimeData.getBoolean('showSetDefault')) {
@@ -1727,7 +1731,26 @@ cr.define('options', function() {
           $('profiles-section').hidden &&
           $('sync-section').hidden &&
           $('profiles-supervised-dashboard-tip').hidden;
-    }
+    },
+
+    /**
+     * Updates the date and time section with time sync information.
+     * @param {boolean} canSetTime Whether the system time can be set.
+     * @private
+     */
+    setCanSetTime_: function(canSetTime) {
+      // If the time has been network-synced, it cannot be set manually.
+      $('time-synced-explanation').hidden = canSetTime;
+      $('set-time').hidden = !canSetTime;
+    },
+
+    /**
+     * Handle the 'set date and time' button click.
+     * @private
+     */
+    handleSetTime_: function() {
+      chrome.send('showSetTime');
+    },
   };
 
   //Forward public APIs to private implementations.
@@ -1745,6 +1768,7 @@ cr.define('options', function() {
     'setWallpaperManaged',
     'setAutoOpenFileTypesDisplayed',
     'setBluetoothState',
+    'setCanSetTime',
     'setFontSize',
     'setNativeThemeButtonEnabled',
     'setHighContrastCheckboxState',

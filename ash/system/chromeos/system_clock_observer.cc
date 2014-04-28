@@ -14,6 +14,8 @@ SystemClockObserver::SystemClockObserver() {
   chromeos::DBusThreadManager::Get()->GetSystemClockClient()
       ->AddObserver(this);
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
+  can_set_time_ =
+      chromeos::DBusThreadManager::Get()->GetSystemClockClient()->CanSetTime();
 }
 
 SystemClockObserver::~SystemClockObserver() {
@@ -23,8 +25,13 @@ SystemClockObserver::~SystemClockObserver() {
 }
 
 void SystemClockObserver::SystemClockUpdated() {
+  Shell::GetInstance()->system_tray_notifier()->NotifySystemClockTimeUpdated();
+}
+
+void SystemClockObserver::SystemClockCanSetTimeChanged(bool can_set_time) {
+  can_set_time_ = can_set_time;
   Shell::GetInstance()->system_tray_notifier()
-      ->NotifySystemClockTimeUpdated();
+      ->NotifySystemClockCanSetTimeChanged(can_set_time_);
 }
 
 void SystemClockObserver::TimezoneChanged(const icu::TimeZone& timezone) {

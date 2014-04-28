@@ -1788,6 +1788,12 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
     Accessibility
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_TIME_SYNCED_EXPLANATION" desc="In the settings tab, the text indicating that the date and time are set automatically.">
+    Date and time are set automatically.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SET_TIME_BUTTON" desc="In the settings tab, the prompt on the button to open a dialog to set date and time.">
+    Set date and time
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
     Time zone:
   </message>
@@ -5394,4 +5400,20 @@ All users must sign out to continue.
     Enroll
   </message>
 
+  <!-- Set time/date UI display strings -->
+  <message name="IDS_SET_TIME_TITLE" desc="Title of the set time/date UI.">
+    Check your system time
+  </message>
+  <message name="IDS_SET_TIME_PROMPT" desc="Text prompting the user to check and set the system time.">
+    Chrome was unable to set the system time. Please check the time below and correct it if needed.
+  </message>
+  <message name="IDS_SET_TIME_BUTTON_CLOSE" desc="Text for the button to close the window.">
+    Done
+  </message>
+  <message name="IDS_SET_TIME_DATE_LABEL" desc="Label for the date input element.">
+    System date
+  </message>
+  <message name="IDS_SET_TIME_TIME_LABEL" desc="Label for the time input element.">
+    System time
+  </message>
 </grit-part>

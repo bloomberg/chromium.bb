@@ -409,6 +409,11 @@
       <include name="IDR_GCM_INTERNALS_CSS" file="resources\gcm_internals.css" type="BINDATA" />
       <include name="IDR_GCM_INTERNALS_JS" file="resources\gcm_internals.js" type="BINDATA" />
       <include name="IDR_EASY_UNLOCK_MANIFEST" file="resources\easy_unlock\manifest.json" type="BINDATA" />
+      <if expr="chromeos">
+        <include name="IDR_SET_TIME_HTML" file="resources\chromeos\set_time.html" type="BINDATA" />
+        <include name="IDR_SET_TIME_CSS" file="resources\chromeos\set_time.css" type="BINDATA" />
+        <include name="IDR_SET_TIME_JS" file="resources\chromeos\set_time.js" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

@@ -115,6 +115,7 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();
   void NotifySystemClockTimeUpdated();
+  void NotifySystemClockCanSetTimeChanged(bool can_set_time);
   void NotifyDriveJobUpdated(const DriveOperationStatus& status);
   void NotifyRefreshIME();
   void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,

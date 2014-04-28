@@ -25,4 +25,11 @@ bool FakeSystemClockClient::HasObserver(Observer* observer) {
   return false;
 }
 
+void FakeSystemClockClient::SetTime(int64 time_in_seconds) {
+}
+
+bool FakeSystemClockClient::CanSetTime() {
+  return true;
+}
+
 } // namespace chromeos
