@@ -17,7 +17,7 @@ RenderViewObserver::RenderViewObserver(RenderView* render_view)
   if (render_view) {
     RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view);
     routing_id_ = impl->routing_id();
-    DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
+    // TODO(jam): bring this back DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
     impl->AddObserver(this);
   }
 }
