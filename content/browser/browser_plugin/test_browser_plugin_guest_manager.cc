@@ -19,7 +19,7 @@ void TestBrowserPluginGuestManager::AddGuest(
     int instance_id,
     WebContentsImpl* guest_web_contents) {
   BrowserPluginGuestManager::AddGuest(instance_id, guest_web_contents);
-  if (message_loop_runner_.get())
+  if (message_loop_runner_)
     message_loop_runner_->Quit();
 }
 

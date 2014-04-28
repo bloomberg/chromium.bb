@@ -104,7 +104,7 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
   virtual BrowserPluginGuestManager*
       CreateBrowserPluginGuestManager() OVERRIDE {
     guest_manager_instance_count_++;
-    if (message_loop_runner_.get())
+    if (message_loop_runner_)
       message_loop_runner_->Quit();
     return new TestBrowserPluginGuestManager();
   }
@@ -207,7 +207,7 @@ class MessageObserver : public WebContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     if (message.type() == message_id_) {
       message_received_ = true;
-      if (message_loop_runner_.get())
+      if (message_loop_runner_)
         message_loop_runner_->Quit();
     }
     return false;

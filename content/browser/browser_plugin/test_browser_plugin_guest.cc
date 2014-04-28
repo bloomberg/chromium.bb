@@ -48,10 +48,10 @@ void TestBrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
     last_view_size_observed_ = params.view_size;
     if (!expected_auto_view_size_.IsEmpty() &&
         expected_auto_view_size_ == params.view_size) {
-      if (auto_view_size_message_loop_runner_.get())
+      if (auto_view_size_message_loop_runner_)
         auto_view_size_message_loop_runner_->Quit();
     }
-    if (send_message_loop_runner_.get())
+    if (send_message_loop_runner_)
       send_message_loop_runner_->Quit();
   }
   BrowserPluginGuest::SendMessageToEmbedder(msg);
@@ -85,7 +85,7 @@ void TestBrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
   if (status != base::TERMINATION_STATUS_NORMAL_TERMINATION &&
       status != base::TERMINATION_STATUS_STILL_RUNNING)
     VLOG(0) << "Guest crashed status: " << status;
-  if (crash_message_loop_runner_.get())
+  if (crash_message_loop_runner_)
     crash_message_loop_runner_->Quit();
   BrowserPluginGuest::RenderProcessGone(status);
 }
@@ -98,7 +98,7 @@ void TestBrowserPluginGuest::OnHandleInputEvent(
                                          guest_window_rect,
                                          event);
   input_observed_ = true;
-  if (input_message_loop_runner_.get())
+  if (input_message_loop_runner_)
     input_message_loop_runner_->Quit();
 }
 
@@ -196,11 +196,11 @@ void TestBrowserPluginGuest::WaitForImeCancel() {
 void TestBrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
   if (focused) {
     focus_observed_ = true;
-    if (focus_message_loop_runner_.get())
+    if (focus_message_loop_runner_)
       focus_message_loop_runner_->Quit();
   } else {
     blur_observed_ = true;
-    if (blur_message_loop_runner_.get())
+    if (blur_message_loop_runner_)
       blur_message_loop_runner_->Quit();
   }
   BrowserPluginGuest::OnSetFocus(instance_id, focused);
@@ -208,7 +208,7 @@ void TestBrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
 
 void TestBrowserPluginGuest::OnTakeFocus(bool reverse) {
   advance_focus_observed_ = true;
-  if (advance_focus_message_loop_runner_.get())
+  if (advance_focus_message_loop_runner_)
     advance_focus_message_loop_runner_->Quit();
   BrowserPluginGuest::OnTakeFocus(reverse);
 }
@@ -220,7 +220,7 @@ void TestBrowserPluginGuest::SetDamageBuffer(
 
   if (waiting_for_damage_buffer_with_size_ &&
       expected_damage_buffer_size_ == params.view_rect.size() &&
-      damage_buffer_message_loop_runner_.get()) {
+      damage_buffer_message_loop_runner_) {
     damage_buffer_message_loop_runner_->Quit();
     waiting_for_damage_buffer_with_size_ = false;
   }
@@ -232,14 +232,14 @@ void TestBrowserPluginGuest::DidStopLoading(
     RenderViewHost* render_view_host) {
   BrowserPluginGuest::DidStopLoading(render_view_host);
   load_stop_observed_ = true;
-  if (load_stop_message_loop_runner_.get())
+  if (load_stop_message_loop_runner_)
     load_stop_message_loop_runner_->Quit();
 }
 
 void TestBrowserPluginGuest::OnImeCancelComposition() {
   if (!ime_cancel_observed_) {
     ime_cancel_observed_ = true;
-    if (ime_cancel_message_loop_runner_.get())
+    if (ime_cancel_message_loop_runner_)
       ime_cancel_message_loop_runner_->Quit();
   }
   BrowserPluginGuest::OnImeCancelComposition();
@@ -247,7 +247,7 @@ void TestBrowserPluginGuest::OnImeCancelComposition() {
 
 void TestBrowserPluginGuest::WasHidden() {
   was_hidden_observed_ = true;
-  if (was_hidden_message_loop_runner_.get())
+  if (was_hidden_message_loop_runner_)
     was_hidden_message_loop_runner_->Quit();
 }
 
