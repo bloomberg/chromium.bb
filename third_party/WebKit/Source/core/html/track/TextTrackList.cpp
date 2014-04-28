@@ -264,8 +264,7 @@ const AtomicString& TextTrackList::interfaceName() const
 
 ExecutionContext* TextTrackList::executionContext() const
 {
-    ASSERT(m_owner);
-    return m_owner->executionContext();
+    return m_owner ? m_owner->executionContext() : 0;
 }
 
 #if !ENABLE(OILPAN)
