@@ -2406,7 +2406,7 @@ TEST_F(WebSocketChannelFlowControlTest, EmptyMessageNoQuota) {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText,
        NOT_MASKED,  "FIRST MESSAGE"},
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText,
-       NOT_MASKED,  ""},
+       NOT_MASKED,  NULL},
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText,
        NOT_MASKED,  "THIRD MESSAGE"}};
   stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
