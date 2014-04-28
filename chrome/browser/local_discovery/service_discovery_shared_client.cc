@@ -11,7 +11,7 @@
 #endif
 
 #if defined(ENABLE_MDNS)
-#include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
+#include "chrome/browser/local_discovery/service_discovery_client_utility.h"
 #endif  // ENABLE_MDNS
 
 namespace local_discovery {
@@ -44,7 +44,7 @@ scoped_refptr<ServiceDiscoverySharedClient>
 #if defined(OS_MACOSX)
   return ServiceDiscoveryClientMacFactory::CreateInstance();
 #else
-  return new ServiceDiscoveryClientMdns();
+  return new ServiceDiscoveryClientUtility();
 #endif
 }
 

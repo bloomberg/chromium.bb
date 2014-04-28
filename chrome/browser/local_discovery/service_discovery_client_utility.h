@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_MDNS_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_MDNS_H_
+#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_UTILITY_H_
+#define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_UTILITY_H_
 
 #include <string>
 
@@ -16,11 +16,13 @@ namespace local_discovery {
 
 class ServiceDiscoveryHostClient;
 
-class ServiceDiscoveryClientMdns
+// Wrapper for ServiceDiscoveryHostClient to hide  restarting of utility process
+// from mdns users.
+class ServiceDiscoveryClientUtility
     : public ServiceDiscoverySharedClient,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  ServiceDiscoveryClientMdns();
+  ServiceDiscoveryClientUtility();
 
   // ServiceDiscoveryClient implementation.
   virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
@@ -39,20 +41,20 @@ class ServiceDiscoveryClientMdns
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
-  friend class base::RefCounted<ServiceDiscoveryClientMdns>;
+  friend class base::RefCounted<ServiceDiscoveryClientUtility>;
 
-  virtual ~ServiceDiscoveryClientMdns();
+  virtual ~ServiceDiscoveryClientUtility();
   void ScheduleStartNewClient();
   void StartNewClient();
   void ReportSuccess();
 
   scoped_refptr<ServiceDiscoveryHostClient> host_client_;
   int restart_attempts_;
-  base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceDiscoveryClientUtility> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientMdns);
+  DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientUtility);
 };
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_MDNS_H_
+#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_UTILITY_H_

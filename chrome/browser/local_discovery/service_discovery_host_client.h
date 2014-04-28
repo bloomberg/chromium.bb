@@ -68,7 +68,7 @@ class ServiceDiscoveryHostClient
   class ServiceWatcherProxy;
   class ServiceResolverProxy;
   class LocalDomainResolverProxy;
-  friend class ServiceDiscoveryClientMdns;
+  friend class ServiceDiscoveryClientUtility;
 
   typedef std::map<uint64, ServiceWatcher::UpdatedCallback> WatcherCallbacks;
   typedef std::map<uint64, ServiceResolver::ResolveCompleteCallback>
