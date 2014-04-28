@@ -141,6 +141,9 @@ def ProvisionDevices(options):
       device_settings.ConfigureContentSettingsDict(
           device, device_settings.NETWORK_DISABLED_SETTINGS)
     device.old_interface.RunShellCommandWithSU('date -u %f' % time.time())
+    (_, props) = device.old_interface.GetShellCommandStatusAndOutput('getprop')
+    for prop in props:
+      print prop
   if options.auto_reconnect:
     PushAndLaunchAdbReboot(devices, options.target)
 

@@ -637,9 +637,10 @@ class AndroidCommands(object):
     # A dict of commands to methods that may call them.
     whitelisted_callers = {
         'su': 'RunShellCommandWithSU',
+        'getprop': 'ProvisionDevices',
         }
 
-    base_command = shlex.split(command)[0]
+    base_command = shlex.split(command)[0].strip(';')
     if (base_command in preferred_apis and
         (base_command not in whitelisted_callers or
          whitelisted_callers[base_command] not in [
