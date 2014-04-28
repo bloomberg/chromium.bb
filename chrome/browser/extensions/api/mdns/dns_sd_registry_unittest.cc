@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_delegate.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
-#include "chrome/browser/local_discovery/service_discovery_host_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
