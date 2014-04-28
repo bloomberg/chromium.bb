@@ -330,9 +330,7 @@ public:
     {
         ASSERT(character);
         ASSERT(m_type == StartTag || m_type == EndTag);
-        // FIXME: We should be able to add the following ASSERT once we fix
-        // https://bugs.webkit.org/show_bug.cgi?id=62971
-        //   ASSERT(m_currentAttribute->nameRange.start);
+        ASSERT(m_currentAttribute->nameRange.start);
         m_currentAttribute->name.append(character);
     }
 
