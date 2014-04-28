@@ -323,14 +323,30 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // Smaller numbers mean higher priority.
     uint64 priority;
 
+    // source_address_token_boxer_ is used to protect the
+    // source-address tokens that are given to clients.
+    // Points to either source_address_token_boxer_storage or the
+    // default boxer provided by QuicCryptoServerConfig.
+    const CryptoSecretBoxer* source_address_token_boxer;
+
+    // Holds the override source_address_token_boxer instance if the
+    // Config is not using the default source address token boxer
+    // instance provided by QuicCryptoServerConfig.
+    scoped_ptr<CryptoSecretBoxer> source_address_token_boxer_storage;
+
    private:
     friend class base::RefCounted<Config>;
+
     virtual ~Config();
 
     DISALLOW_COPY_AND_ASSIGN(Config);
   };
 
   typedef std::map<ServerConfigID, scoped_refptr<Config> > ConfigMap;
+
+  // Get a ref to the config with a given server config id.
+  scoped_refptr<Config> GetConfigWithScid(
+      base::StringPiece requested_scid) const;
 
   // ConfigPrimaryTimeLessThan returns true if a->primary_time <
   // b->primary_time.
@@ -346,12 +362,13 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // written to |info|.
   void EvaluateClientHello(
       const uint8* primary_orbit,
+      scoped_refptr<Config> requested_config,
       ValidateClientHelloResultCallback::Result* client_hello_state,
       ValidateClientHelloResultCallback* done_cb) const;
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
   void BuildRejection(
-      const scoped_refptr<Config>& config,
+      const Config& config,
       const CryptoHandshakeMessage& client_hello,
       const ClientHelloInfo& info,
       QuicRandom* rand,
@@ -364,16 +381,20 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // NewSourceAddressToken returns a fresh source address token for the given
   // IP address.
-  std::string NewSourceAddressToken(const IPEndPoint& ip,
-                                    QuicRandom* rand,
-                                    QuicWallTime now) const;
+  std::string NewSourceAddressToken(
+      const Config& config,
+      const IPEndPoint& ip,
+      QuicRandom* rand,
+      QuicWallTime now) const;
 
   // ValidateSourceAddressToken returns true if the source address token in
   // |token| is a valid and timely token for the IP address |ip| given that the
   // current time is |now|.
-  bool ValidateSourceAddressToken(base::StringPiece token,
-                                  const IPEndPoint& ip,
-                                  QuicWallTime now) const;
+  bool ValidateSourceAddressToken(
+      const Config& config,
+      base::StringPiece token,
+      const IPEndPoint& ip,
+      QuicWallTime now) const;
 
   // NewServerNonce generates and encrypts a random nonce.
   std::string NewServerNonce(QuicRandom* rand, QuicWallTime now) const;
@@ -413,9 +434,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // observed client nonces in order to prevent replay attacks.
   mutable scoped_ptr<StrikeRegisterClient> strike_register_client_;
 
-  // source_address_token_boxer_ is used to protect the source-address tokens
-  // that are given to clients.
-  CryptoSecretBoxer source_address_token_boxer_;
+  // Default source_address_token_boxer_ used to protect the
+  // source-address tokens that are given to clients.  Individual
+  // configs may use boxers with alternate secrets.
+  CryptoSecretBoxer default_source_address_token_boxer_;
 
   // server_nonce_boxer_ is used to encrypt and validate suggested server
   // nonces.

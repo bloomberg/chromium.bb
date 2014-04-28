@@ -61,7 +61,7 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
   }
 
   void set_config(base::StringPiece config) {
-    config_ = config.as_string();
+    config.CopyToString(&config_);
   }
 
   QuicServerConfigProtobuf::PrivateKey* add_key() {
@@ -89,12 +89,26 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
     return priority_ > 0;
   }
 
-  int64 priority() const {
+  uint64 priority() const {
     return priority_;
   }
 
   void set_priority(int64 priority) {
     priority_ = priority;
+  }
+
+  bool has_source_address_token_secret_override() const {
+    return !source_address_token_secret_override_.empty();
+  }
+
+  std::string source_address_token_secret_override() const {
+    return source_address_token_secret_override_;
+  }
+
+  void set_source_address_token_secret_override(
+      base::StringPiece source_address_token_secret_override) {
+    source_address_token_secret_override.CopyToString(
+        &source_address_token_secret_override_);
   }
 
  private:
@@ -111,6 +125,11 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
   // primary time.  For use as a secondary sort key when selecting the
   // primary config.
   uint64 priority_;
+
+  // Optional override to the secret used to box/unbox source address
+  // tokens when talking to clients that select this server config.
+  // It can be of any length as it is fed into a KDF before use.
+  std::string source_address_token_secret_override_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServerConfigProtobuf);
 };

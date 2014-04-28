@@ -46,6 +46,19 @@ using std::vector;
 
 namespace net {
 
+namespace {
+
+string DeriveSourceAddressTokenKey(StringPiece source_address_token_secret) {
+  crypto::HKDF hkdf(source_address_token_secret,
+                    StringPiece() /* no salt */,
+                    "QUIC source address token key",
+                    CryptoSecretBoxer::GetKeySize(),
+                    0 /* no fixed IV needed */);
+  return hkdf.server_write_key().as_string();
+}
+
+}  // namespace
+
 // ClientHelloInfo contains information about a client hello message that is
 // only kept for as long as it's being processed.
 struct ClientHelloInfo {
@@ -183,11 +196,8 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       source_address_token_lifetime_secs_(86400),
       server_nonce_strike_register_max_entries_(1 << 10),
       server_nonce_strike_register_window_secs_(120) {
-  crypto::HKDF hkdf(source_address_token_secret, StringPiece() /* no salt */,
-                    "QUIC source address token key",
-                    CryptoSecretBoxer::GetKeySize(),
-                    0 /* no fixed IV needed */);
-  source_address_token_boxer_.SetKey(hkdf.server_write_key());
+  default_source_address_token_boxer_.SetKey(
+      DeriveSourceAddressTokenKey(source_address_token_secret));
 
   // Generate a random key and orbit for server nonces.
   rand->RandBytes(server_nonce_orbit_, sizeof(server_nonce_orbit_));
@@ -386,6 +396,7 @@ bool QuicCryptoServerConfig::SetConfigs(
              parsed_configs.begin();
          i != parsed_configs.end(); ++i) {
       scoped_refptr<Config> config = *i;
+
       ConfigMap::iterator it = configs_.find(config->id);
       if (it != configs_.end()) {
         VLOG(1)
@@ -440,7 +451,11 @@ void QuicCryptoServerConfig::ValidateClientHello(
       new ValidateClientHelloResultCallback::Result(
           client_hello, client_ip, now);
 
+  StringPiece requested_scid;
+  client_hello.GetStringPiece(kSCID, &requested_scid);
+
   uint8 primary_orbit[kOrbitSize];
+  scoped_refptr<Config> requested_config;
   {
     base::AutoLock locked(configs_lock_);
 
@@ -457,10 +472,12 @@ void QuicCryptoServerConfig::ValidateClientHello(
 
       memcpy(primary_orbit, primary_config_->orbit, sizeof(primary_orbit));
     }
+
+    requested_config = GetConfigWithScid(requested_scid);
   }
 
   if (result->error_code == QUIC_NO_ERROR) {
-    EvaluateClientHello(primary_orbit, result, done_cb);
+    EvaluateClientHello(primary_orbit, requested_config, result, done_cb);
   } else {
     done_cb->Run(result);
   }
@@ -527,17 +544,12 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       DCHECK(configs_.find(primary_config_->id)->second == primary_config_);
     }
 
+    // We'll use the config that the client requested in order to do
+    // key-agreement. Otherwise we'll give it a copy of |primary_config_|
+    // to use.
     primary_config = primary_config_;
 
-    if (!requested_scid.empty()) {
-      ConfigMap::const_iterator it = configs_.find(requested_scid.as_string());
-      if (it != configs_.end()) {
-        // We'll use the config that the client requested in order to do
-        // key-agreement. Otherwise we'll give it a copy of |primary_config_|
-        // to use.
-        requested_config = it->second;
-      }
-    }
+    requested_config = GetConfigWithScid(requested_scid);
   }
 
   if (validate_chlo_result.error_code != QUIC_NO_ERROR) {
@@ -551,7 +563,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       !info.client_nonce_well_formed ||
       !info.unique ||
       !requested_config.get()) {
-    BuildRejection(primary_config.get(), client_hello, info, rand, out);
+    BuildRejection(*primary_config, client_hello, info, rand, out);
     return QUIC_NO_ERROR;
   }
 
@@ -718,7 +730,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   }
   out->SetVector(kVER, supported_version_tags);
   out->SetStringPiece(kSourceAddressTokenTag,
-                      NewSourceAddressToken(client_address, rand, info.now));
+                      NewSourceAddressToken(
+                          *requested_config,
+                          client_address, rand,
+                          info.now));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
@@ -727,6 +742,24 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   out->SetValue(kIFCW, initial_flow_control_window_bytes);
 
   return QUIC_NO_ERROR;
+}
+
+scoped_refptr<QuicCryptoServerConfig::Config>
+QuicCryptoServerConfig::GetConfigWithScid(StringPiece requested_scid) const {
+  // In Chromium, we will dead lock if the lock is held by the current thread.
+  // Chromium doesn't have AssertReaderHeld API call.
+  // configs_lock_.AssertReaderHeld();
+
+  if (!requested_scid.empty()) {
+    ConfigMap::const_iterator it = configs_.find(requested_scid.as_string());
+    if (it != configs_.end()) {
+      // We'll use the config that the client requested in order to do
+      // key-agreement.
+      return scoped_refptr<Config>(it->second);
+    }
+  }
+
+  return scoped_refptr<Config>();
 }
 
 // ConfigPrimaryTimeLessThan is a comparator that implements "less than" for
@@ -823,7 +856,9 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
   DVLOG(1) << "New primary config.  orbit: "
            << base::HexEncode(
                reinterpret_cast<const char*>(primary_config_->orbit),
-               kOrbitSize);
+               kOrbitSize)
+           << " scid: " << base::HexEncode(primary_config_->id.data(),
+                                           primary_config_->id.size());
   next_config_promotion_time_ = QuicWallTime::Zero();
   if (primary_config_changed_cb_.get() != NULL) {
     primary_config_changed_cb_->Run(primary_config_->id);
@@ -832,6 +867,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
 
 void QuicCryptoServerConfig::EvaluateClientHello(
     const uint8* primary_orbit,
+    scoped_refptr<Config> requested_config,
     ValidateClientHelloResultCallback::Result* client_hello_state,
     ValidateClientHelloResultCallback* done_cb) const {
   ValidateClientHelloHelper helper(client_hello_state, done_cb);
@@ -854,11 +890,15 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   }
 
   StringPiece srct;
-  if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct) &&
-      ValidateSourceAddressToken(srct, info->client_ip, info->now)) {
+  if (requested_config.get() != NULL &&
+      client_hello.GetStringPiece(kSourceAddressTokenTag, &srct) &&
+      ValidateSourceAddressToken(*requested_config,
+                                 srct,
+                                 info->client_ip,
+                                 info->now)) {
     info->valid_source_address_token = true;
   } else {
-    // No valid source address token.
+    // No server config with the requested ID, or no valid source address token.
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }
@@ -915,15 +955,19 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 }
 
 void QuicCryptoServerConfig::BuildRejection(
-    const scoped_refptr<Config>& config,
+    const Config& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
     QuicRandom* rand,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kREJ);
-  out->SetStringPiece(kSCFG, config->serialized);
+  out->SetStringPiece(kSCFG, config.serialized);
   out->SetStringPiece(kSourceAddressTokenTag,
-                      NewSourceAddressToken(info.client_ip, rand, info.now));
+                      NewSourceAddressToken(
+                          config,
+                          info.client_ip,
+                          rand,
+                          info.now));
   if (replay_protection_) {
     out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
   }
@@ -958,7 +1002,7 @@ void QuicCryptoServerConfig::BuildRejection(
 
   const vector<string>* certs;
   string signature;
-  if (!proof_source_->GetProof(info.sni.as_string(), config->serialized,
+  if (!proof_source_->GetProof(info.sni.as_string(), config.serialized,
                                x509_ecdsa_supported, &certs, &signature)) {
     return;
   }
@@ -970,7 +1014,7 @@ void QuicCryptoServerConfig::BuildRejection(
 
   const string compressed = CertCompressor::CompressChain(
       *certs, their_common_set_hashes, their_cached_cert_hashes,
-      config->common_cert_sets);
+      config.common_cert_sets);
 
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
   // message is taken up by things other than the certificates.
@@ -1013,6 +1057,18 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   scoped_refptr<Config> config(new Config);
   config->serialized = protobuf->config();
 
+  if (!protobuf->has_source_address_token_secret_override()) {
+    // Use the default boxer.
+    config->source_address_token_boxer = &default_source_address_token_boxer_;
+  } else {
+    // Create override boxer instance.
+    CryptoSecretBoxer* boxer = new CryptoSecretBoxer;
+    boxer->SetKey(DeriveSourceAddressTokenKey(
+        protobuf->source_address_token_secret_override()));
+    config->source_address_token_boxer_storage.reset(boxer);
+    config->source_address_token_boxer = boxer;
+  }
+
   if (protobuf->has_primary_time()) {
     config->primary_time =
         QuicWallTime::FromUNIXSeconds(protobuf->primary_time());
@@ -1044,7 +1100,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
 
   StringPiece orbit;
   if (!msg->GetStringPiece(kORBT, &orbit)) {
-    LOG(WARNING) << "Server config message is missing OBIT";
+    LOG(WARNING) << "Server config message is missing ORBT";
     return NULL;
   }
 
@@ -1218,6 +1274,7 @@ void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(
 }
 
 string QuicCryptoServerConfig::NewSourceAddressToken(
+    const Config& config,
     const IPEndPoint& ip,
     QuicRandom* rand,
     QuicWallTime now) const {
@@ -1225,17 +1282,18 @@ string QuicCryptoServerConfig::NewSourceAddressToken(
   source_address_token.set_ip(IPAddressToPackedString(ip.address()));
   source_address_token.set_timestamp(now.ToUNIXSeconds());
 
-  return source_address_token_boxer_.Box(
+  return config.source_address_token_boxer->Box(
       rand, source_address_token.SerializeAsString());
 }
 
 bool QuicCryptoServerConfig::ValidateSourceAddressToken(
+    const Config& config,
     StringPiece token,
     const IPEndPoint& ip,
     QuicWallTime now) const {
   string storage;
   StringPiece plaintext;
-  if (!source_address_token_boxer_.Unbox(token, &storage, &plaintext)) {
+  if (!config.source_address_token_boxer->Unbox(token, &storage, &plaintext)) {
     return false;
   }
 
@@ -1337,7 +1395,8 @@ QuicCryptoServerConfig::Config::Config()
     : channel_id_enabled(false),
       is_primary(false),
       primary_time(QuicWallTime::Zero()),
-      priority(0) {}
+      priority(0),
+      source_address_token_boxer(NULL) {}
 
 QuicCryptoServerConfig::Config::~Config() { STLDeleteElements(&key_exchanges); }
 
