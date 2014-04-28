@@ -790,6 +790,11 @@ const char kScrollEndEffect[] = "scroll-end-effect";
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";
 
+// Map mouse input events into touch gesture events.  Useful for debugging touch
+// gestures without needing a touchscreen.
+const char kSimulateTouchScreenWithMouse[]  =
+    "simulate-touch-screen-with-mouse";
+
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";
 

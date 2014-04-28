@@ -99,6 +99,24 @@ TouchEventQueue::TouchScrollingMode GetTouchScrollingMode() {
   return TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT;
 }
 
+GestureEventWithLatencyInfo MakeGestureEvent(WebInputEvent::Type type,
+                                             double timestamp_seconds,
+                                             int x,
+                                             int y,
+                                             int modifiers,
+                                             const ui::LatencyInfo& latency) {
+  WebGestureEvent result;
+
+  result.type = type;
+  result.x = x;
+  result.y = y;
+  result.sourceDevice = WebGestureEvent::Touchscreen;
+  result.timeStampSeconds = timestamp_seconds;
+  result.modifiers = modifiers;
+
+  return GestureEventWithLatencyInfo(result, latency);
+}
+
 const char* GetEventAckName(InputEventAckState ack_result) {
   switch(ack_result) {
     case INPUT_EVENT_ACK_STATE_UNKNOWN: return "UNKNOWN";
@@ -166,6 +184,14 @@ bool InputRouterImpl::SendInput(scoped_ptr<IPC::Message> message) {
 
 void InputRouterImpl::SendMouseEvent(
     const MouseEventWithLatencyInfo& mouse_event) {
+  // Order is important here; we need to convert all MouseEvents before they
+  // propagate further, e.g., to the tap suppression controller.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSimulateTouchScreenWithMouse)) {
+    SimulateTouchGestureWithMouse(mouse_event);
+    return;
+  }
+
   if (mouse_event.event.type == WebInputEvent::MouseDown &&
       gesture_event_queue_.GetTouchpadTapSuppressionController()->
           ShouldDeferMouseDown(mouse_event))
@@ -700,6 +726,86 @@ void InputRouterImpl::ProcessAckForOverscroll(const WebInputEvent& event,
 
   controller->ReceivedEventACK(
       event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
+}
+
+void InputRouterImpl::SimulateTouchGestureWithMouse(
+    const MouseEventWithLatencyInfo& event) {
+  const WebMouseEvent& mouse_event = event.event;
+  int x = mouse_event.x, y = mouse_event.y;
+  float dx = mouse_event.movementX, dy = mouse_event.movementY;
+  static int startX = 0, startY = 0;
+
+  switch (mouse_event.button) {
+    case WebMouseEvent::ButtonLeft:
+      if (mouse_event.type == WebInputEvent::MouseDown) {
+        startX = x;
+        startY = y;
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollBegin, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+      }
+      if (dx != 0 || dy != 0) {
+        GestureEventWithLatencyInfo gesture_event = MakeGestureEvent(
+            WebInputEvent::GestureScrollUpdate, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency);
+        gesture_event.event.data.scrollUpdate.deltaX = dx;
+        gesture_event.event.data.scrollUpdate.deltaY = dy;
+        SendGestureEvent(gesture_event);
+      }
+      if (mouse_event.type == WebInputEvent::MouseUp) {
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollEnd, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+      }
+      break;
+    case WebMouseEvent::ButtonMiddle:
+      if (mouse_event.type == WebInputEvent::MouseDown) {
+        startX = x;
+        startY = y;
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureShowPress, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureTapDown, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+      }
+      if (mouse_event.type == WebInputEvent::MouseUp) {
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureTap, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+      }
+      break;
+    case WebMouseEvent::ButtonRight:
+      if (mouse_event.type == WebInputEvent::MouseDown) {
+        startX = x;
+        startY = y;
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollBegin, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GesturePinchBegin, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+      }
+      if (dx != 0 || dy != 0) {
+        dx = pow(dy < 0 ? 0.998f : 1.002f, fabs(dy));
+        GestureEventWithLatencyInfo gesture_event = MakeGestureEvent(
+            WebInputEvent::GesturePinchUpdate, mouse_event.timeStampSeconds,
+            startX, startY, 0, event.latency);
+        gesture_event.event.data.pinchUpdate.scale = dx;
+        SendGestureEvent(gesture_event);
+      }
+      if (mouse_event.type == WebInputEvent::MouseUp) {
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GesturePinchEnd, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+        SendGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollEnd, mouse_event.timeStampSeconds,
+            x, y, 0, event.latency));
+      }
+      break;
+    case WebMouseEvent::ButtonNone:
+      break;
+  }
 }
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {

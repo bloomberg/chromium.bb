@@ -171,6 +171,9 @@ private:
   void ProcessAckForOverscroll(const blink::WebInputEvent& event,
                                InputEventAckState ack_result);
 
+  void SimulateTouchGestureWithMouse(
+      const MouseEventWithLatencyInfo& mouse_event);
+
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input
   // to that determination includes current view properties, the allowed touch
