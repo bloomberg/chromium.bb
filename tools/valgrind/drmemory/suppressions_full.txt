@@ -2096,3 +2096,8 @@ name=bug_334448
 *!CLD2::ScriptScanner::GetOneScriptSpanLower
 *!CLD2::DetectLanguageSummaryV2
 *!CLD2::DetectLanguageSummary
+
+UNINITIALIZED READ
+name=bug_42043
+...
+QuickTime.qts!*

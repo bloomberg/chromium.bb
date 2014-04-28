@@ -455,3 +455,13 @@ KERNEL32.dll!DuplicateHandle
 base.dll!base::SharedMemory::ShareToProcessCommon
 content.dll!content::ResourceBuffer::ShareToProcess
 content.dll!content::AsyncResourceHandler::OnReadCompleted
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/42043-uninit
+...
+QuickTime.qts!*
+
+GDI USAGE ERROR
+name=http://crbug.com/42043-gdi
+...
+QuickTime.qts!*
