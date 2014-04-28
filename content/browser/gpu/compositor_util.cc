@@ -136,6 +136,22 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 
 }  // namespace
 
+bool IsPinchVirtualViewportEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // Command line switches take precedence over platform default.
+  if (command_line.HasSwitch(cc::switches::kDisablePinchVirtualViewport))
+    return false;
+  if (command_line.HasSwitch(cc::switches::kEnablePinchVirtualViewport))
+    return true;
+
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool IsThreadedCompositingEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

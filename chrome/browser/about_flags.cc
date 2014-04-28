@@ -972,8 +972,10 @@ const Experiment kExperiments[] = {
     "enable-pinch-virtual-viewport",
     IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_NAME,
     IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION,
-    kOsLinux | kOsWin | kOsAndroid,
-    SINGLE_VALUE_TYPE(cc::switches::kEnablePinchVirtualViewport),
+    kOsLinux | kOsWin | kOsCrOS | kOsAndroid,
+    ENABLE_DISABLE_VALUE_TYPE(
+        cc::switches::kEnablePinchVirtualViewport,
+        cc::switches::kDisablePinchVirtualViewport),
   },
   {
     "enable-viewport-meta",

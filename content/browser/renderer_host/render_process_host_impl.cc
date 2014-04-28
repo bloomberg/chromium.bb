@@ -939,7 +939,10 @@ StoragePartition* RenderProcessHostImpl::GetStoragePartition() const {
   return storage_partition_impl_;
 }
 
-static void AppendGpuCommandLineFlags(CommandLine* command_line) {
+static void AppendCompositorCommandLineFlags(CommandLine* command_line) {
+  if (IsPinchVirtualViewportEnabled())
+    command_line->AppendSwitch(cc::switches::kEnablePinchVirtualViewport);
+
   if (IsThreadedCompositingEnabled())
     command_line->AppendSwitch(switches::kEnableThreadedCompositing);
 
@@ -992,7 +995,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   if (content::IsPinchToZoomEnabled())
     command_line->AppendSwitch(switches::kEnablePinch);
 
-  AppendGpuCommandLineFlags(command_line);
+  AppendCompositorCommandLineFlags(command_line);
 }
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
@@ -1136,7 +1139,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kDisableMainFrameBeforeDraw,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableGpuBenchmarking,
-    cc::switches::kEnablePinchVirtualViewport,
     cc::switches::kEnableMainFrameBeforeActivation,
     cc::switches::kEnableTopControlsPositionCalculation,
     cc::switches::kMaxTilesForInterestArea,
@@ -1644,7 +1646,7 @@ void RenderProcessHost::SetRunRendererInProcess(bool value) {
     // TODO(piman): we should really send configuration through bools rather
     // than by parsing strings, i.e. sending an IPC rather than command line
     // args. crbug.com/314909
-    AppendGpuCommandLineFlags(command_line);
+    AppendCompositorCommandLineFlags(command_line);
   }
 }
 
