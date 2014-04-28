@@ -62,7 +62,7 @@ ETextAlign RenderRubyText::textAlignmentForLine(bool endsWithSoftBreak) const
     return JUSTIFY;
 }
 
-void RenderRubyText::adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
+void RenderRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
 {
     ETextAlign textAlign = style()->textAlign();
     // FIXME: This check is bogus since user can set the initial value.
