@@ -270,7 +270,7 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
   return AV_SAMPLE_FMT_NONE;
 }
 
-static void AVCodecContextToAudioDecoderConfig(
+void AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
     bool is_encrypted,
     AudioDecoderConfig* config,

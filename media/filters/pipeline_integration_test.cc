@@ -528,6 +528,14 @@ TEST_F(PipelineIntegrationTest, BasicPlayback) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus.ogg"), PIPELINE_OK));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   ASSERT_TRUE(Start(
       GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK, kHashed));

@@ -289,6 +289,9 @@ void OpusAudioDecoder::Reset(const base::Closure& closure) {
 void OpusAudioDecoder::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  if (!opus_decoder_)
+    return;
+
   opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
   ResetTimestampState();
   CloseDecoder();
@@ -398,7 +401,8 @@ bool OpusAudioDecoder::ConfigureDecoder() {
 
   if (config_.codec_delay() != opus_extra_data.skip_samples) {
     DLOG(ERROR) << "Invalid file. Codec Delay in container does not match the "
-                << "value in Opus Extra Data.";
+                << "value in Opus Extra Data. " << config_.codec_delay()
+                << " vs " << opus_extra_data.skip_samples;
     return false;
   }
 
@@ -491,12 +495,7 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
   if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
       !input->end_of_stream()) {
     DCHECK(input->timestamp() != kNoTimestamp());
-    // Adjust the timestamp helper so the base timestamp is corrected for frames
-    // dropped due to codec delay.
     output_timestamp_helper_->SetBaseTimestamp(input->timestamp());
-    output_timestamp_helper_->SetBaseTimestamp(
-        input->timestamp() -
-        output_timestamp_helper_->GetFrameDuration(config_.codec_delay()));
   }
 
   // Trim off any extraneous allocation.

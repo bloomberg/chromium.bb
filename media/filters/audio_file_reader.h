@@ -10,6 +10,7 @@
 #include "media/base/media_export.h"
 
 struct AVCodecContext;
+struct AVPacket;
 
 namespace base { class TimeDelta; }
 
@@ -54,7 +55,19 @@ class MEDIA_EXPORT AudioFileReader {
   base::TimeDelta GetDuration() const;
   int GetNumberOfFrames() const;
 
+  // Helper methods which allows AudioFileReader to double as a test utility for
+  // demuxing audio files.  Returns true if a packet could be demuxed from the
+  // first audio stream in the file, |output_packet| will contain the demuxed
+  // packet then.
+  bool ReadPacketForTesting(AVPacket* output_packet);
+
+  const AVCodecContext* codec_context_for_testing() const {
+    return codec_context_;
+  }
+
  private:
+  bool ReadPacket(AVPacket* output_packet);
+
   scoped_ptr<FFmpegGlue> glue_;
   AVCodecContext* codec_context_;
   int stream_index_;

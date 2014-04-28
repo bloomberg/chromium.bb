@@ -126,14 +126,7 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
   bool continue_decoding = true;
 
   while (current_frame < audio_bus->frames() && continue_decoding &&
-         av_read_frame(glue_->format_context(), &packet) >= 0 &&
-         av_dup_packet(&packet) >= 0) {
-    // Skip packets from other streams.
-    if (packet.stream_index != stream_index_) {
-      av_free_packet(&packet);
-      continue;
-    }
-
+         ReadPacket(&packet)) {
     // Make a shallow copy of packet so we can slide packet.data as frames are
     // decoded from the packet; otherwise av_free_packet() will corrupt memory.
     AVPacket packet_temp = packet;
@@ -243,6 +236,23 @@ base::TimeDelta AudioFileReader::GetDuration() const {
 
 int AudioFileReader::GetNumberOfFrames() const {
   return static_cast<int>(ceil(GetDuration().InSecondsF() * sample_rate()));
+}
+
+bool AudioFileReader::ReadPacketForTesting(AVPacket* output_packet) {
+  return ReadPacket(output_packet);
+}
+
+bool AudioFileReader::ReadPacket(AVPacket* output_packet) {
+  while (av_read_frame(glue_->format_context(), output_packet) >= 0 &&
+         av_dup_packet(output_packet) >= 0) {
+    // Skip packets from other streams.
+    if (output_packet->stream_index != stream_index_) {
+      av_free_packet(output_packet);
+      continue;
+    }
+    return true;
+  }
+  return false;
 }
 
 }  // namespace media

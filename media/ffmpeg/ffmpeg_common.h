@@ -94,6 +94,12 @@ void VideoDecoderConfigToAVCodecContext(
     const VideoDecoderConfig& config,
     AVCodecContext* codec_context);
 
+MEDIA_EXPORT void AVCodecContextToAudioDecoderConfig(
+    const AVCodecContext* codec_context,
+    bool is_encrypted,
+    AudioDecoderConfig* config,
+    bool record_stats);
+
 // Converts FFmpeg's channel layout to chrome's ChannelLayout.  |channels| can
 // be used when FFmpeg's channel layout is not informative in order to make a
 // good guess about the plausible channel layout based on number of channels.
