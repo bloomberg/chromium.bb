@@ -72,8 +72,6 @@ const char kPkpIncludeSubdomains[] = "pkp_include_subdomains";
 const char kMode[] = "mode";
 const char kExpiry[] = "expiry";
 const char kDynamicSPKIHashesExpiry[] = "dynamic_spki_hashes_expiry";
-const char kStaticSPKIHashes[] = "static_spki_hashes";
-const char kPreloadedSPKIHashes[] = "preloaded_spki_hashes";
 const char kDynamicSPKIHashes[] = "dynamic_spki_hashes";
 const char kForceHTTPS[] = "force-https";
 const char kStrict[] = "strict";
@@ -170,9 +168,6 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
         continue;
     }
 
-    serialized->Set(kStaticSPKIHashes,
-                    SPKIHashesToListValue(domain_state.static_spki_hashes));
-
     if (now < domain_state.dynamic_spki_hashes_expiry) {
       serialized->Set(kDynamicSPKIHashes,
                       SPKIHashesToListValue(domain_state.dynamic_spki_hashes));
@@ -250,12 +245,6 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                       &dynamic_spki_hashes_expiry);
 
     const base::ListValue* pins_list = NULL;
-    // preloaded_spki_hashes is a legacy synonym for static_spki_hashes.
-    if (parsed->GetList(kStaticSPKIHashes, &pins_list))
-      SPKIHashesFromListValue(*pins_list, &domain_state.static_spki_hashes);
-    else if (parsed->GetList(kPreloadedSPKIHashes, &pins_list))
-      SPKIHashesFromListValue(*pins_list, &domain_state.static_spki_hashes);
-
     if (parsed->GetList(kDynamicSPKIHashes, &pins_list))
       SPKIHashesFromListValue(*pins_list, &domain_state.dynamic_spki_hashes);
 
