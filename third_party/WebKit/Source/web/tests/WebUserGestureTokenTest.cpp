@@ -79,6 +79,10 @@ TEST(WebUserGestureTokenTest, Basic)
     }
 
     EXPECT_TRUE(UserGestureIndicator::processedUserGestureInPast());
+
+    EXPECT_FALSE(token.wasForwarded());
+    token.setForwarded();
+    EXPECT_TRUE(token.wasForwarded());
 }
 
 }

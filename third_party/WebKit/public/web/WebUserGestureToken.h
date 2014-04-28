@@ -56,6 +56,8 @@ public:
     BLINK_EXPORT bool hasGestures() const;
     BLINK_EXPORT void setOutOfProcess();
     BLINK_EXPORT void setJavascriptPrompt();
+    BLINK_EXPORT bool wasForwarded() const;
+    BLINK_EXPORT void setForwarded();
     bool isNull() const { return m_token.isNull(); }
 
 #if BLINK_IMPLEMENTATION

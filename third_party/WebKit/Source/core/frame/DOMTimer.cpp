@@ -53,7 +53,8 @@ static inline bool shouldForwardUserGesture(int interval, int nestingLevel)
 {
     return UserGestureIndicator::processingUserGesture()
         && interval <= maxIntervalForUserGestureForwarding
-        && nestingLevel == 1; // Gestures should not be forwarded to nested timers.
+        && nestingLevel == 1
+        && !UserGestureIndicator::currentToken()->wasForwarded();
 }
 
 double DOMTimer::hiddenPageAlignmentInterval()
@@ -120,6 +121,8 @@ void DOMTimer::fired()
     timerNestingLevel = m_nestingLevel;
     ASSERT(!context->activeDOMObjectsAreSuspended());
     // Only the first execution of a multi-shot timer should get an affirmative user gesture indicator.
+    if (m_userGestureToken)
+        m_userGestureToken->setForwarded();
     UserGestureIndicator gestureIndicator(m_userGestureToken.release());
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimerFire", "data", InspectorTimerFireEvent::data(context, m_timeoutID));

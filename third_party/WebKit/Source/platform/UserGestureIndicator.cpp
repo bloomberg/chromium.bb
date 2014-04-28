@@ -88,12 +88,23 @@ public:
             m_javascriptPrompt = true;
     }
 
+    virtual bool wasForwarded() const OVERRIDE
+    {
+        return m_forwarded;
+    }
+
+    virtual void setForwarded() OVERRIDE
+    {
+        m_forwarded = true;
+    }
+
 private:
     GestureToken()
         : m_consumableGestures(0),
         m_timestamp(0),
         m_outOfProcess(false),
-        m_javascriptPrompt(false)
+        m_javascriptPrompt(false),
+        m_forwarded(false)
     {
     }
 
@@ -101,6 +112,7 @@ private:
     double m_timestamp;
     bool m_outOfProcess;
     bool m_javascriptPrompt;
+    bool m_forwarded;
 };
 
 }
