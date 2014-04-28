@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -109,8 +110,8 @@ class UIControlsX11 : public UIControlsAura {
       screen_position_client->ConvertPointFromScreen(host_->window(),
                                                      &root_location);
     }
-    gfx::Point root_current_location;
-    host_->QueryMouseLocation(&root_current_location);
+    gfx::Point root_current_location =
+        QueryLatestMousePositionRequestInHost(host_);
     host_->ConvertPointFromHost(&root_current_location);
 
     if (root_location != root_current_location && button_down_mask == 0) {

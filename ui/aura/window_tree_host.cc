@@ -257,6 +257,7 @@ void WindowTreeHost::OnHostLostWindowCapture() {
 
 void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
                                           const gfx::Point& host_location) {
+  last_cursor_request_position_in_host_ = host_location;
   MoveCursorToNative(host_location);
   client::CursorClient* cursor_client = client::GetCursorClient(window());
   if (cursor_client) {

@@ -72,11 +72,6 @@ void WindowTreeHostMac::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-bool WindowTreeHostMac::QueryMouseLocation(gfx::Point* location_return) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool WindowTreeHostMac::ConfineCursorToRootWindow() {
   return false;
 }

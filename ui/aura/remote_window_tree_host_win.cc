@@ -414,20 +414,6 @@ void RemoteWindowTreeHostWin::SetCapture() {
 void RemoteWindowTreeHostWin::ReleaseCapture() {
 }
 
-bool RemoteWindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(window());
-  if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
-    *location_return = gfx::Point(0, 0);
-    return false;
-  }
-  POINT pt;
-  GetCursorPos(&pt);
-  *location_return =
-      gfx::Point(static_cast<int>(pt.x), static_cast<int>(pt.y));
-  return true;
-}
-
 void RemoteWindowTreeHostWin::SetCursorNative(gfx::NativeCursor native_cursor) {
   if (!host_)
     return;

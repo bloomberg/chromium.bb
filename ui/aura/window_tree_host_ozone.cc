@@ -83,11 +83,6 @@ void WindowTreeHostOzone::SetCapture() { NOTIMPLEMENTED(); }
 
 void WindowTreeHostOzone::ReleaseCapture() { NOTIMPLEMENTED(); }
 
-bool WindowTreeHostOzone::QueryMouseLocation(gfx::Point* location_return) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void WindowTreeHostOzone::PostNativeEvent(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();

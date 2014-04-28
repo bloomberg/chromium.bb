@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/test/ui_controls_aura.h"
@@ -142,8 +143,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
     }
 
     aura::WindowTreeHost* host = root_window->GetHost();
-    gfx::Point root_current_location;
-    host->QueryMouseLocation(&root_current_location);
+    gfx::Point root_current_location =
+        aura::test::QueryLatestMousePositionRequestInHost(host);
     host->ConvertPointFromHost(&root_current_location);
 
     if (root_location != root_current_location && button_down_mask == 0) {

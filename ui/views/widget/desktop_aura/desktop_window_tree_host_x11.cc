@@ -856,32 +856,6 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
     g_current_capture->OnCaptureReleased();
 }
 
-bool DesktopWindowTreeHostX11::QueryMouseLocation(
-    gfx::Point* location_return) {
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(window());
-  if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
-    *location_return = gfx::Point(0, 0);
-    return false;
-  }
-
-  ::Window root_return, child_return;
-  int root_x_return, root_y_return, win_x_return, win_y_return;
-  unsigned int mask_return;
-  XQueryPointer(xdisplay_,
-                xwindow_,
-                &root_return,
-                &child_return,
-                &root_x_return, &root_y_return,
-                &win_x_return, &win_y_return,
-                &mask_return);
-  *location_return = gfx::Point(
-      std::max(0, std::min(bounds_.width(), win_x_return)),
-      std::max(0, std::min(bounds_.height(), win_y_return)));
-  return (win_x_return >= 0 && win_x_return < bounds_.width() &&
-          win_y_return >= 0 && win_y_return < bounds_.height());
-}
-
 void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }

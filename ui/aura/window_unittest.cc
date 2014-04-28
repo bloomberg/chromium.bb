@@ -19,6 +19,7 @@
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -373,10 +374,8 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   host()->SetRootTransform(transform);
   host()->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
-  gfx::Point mouse_location;
-  EXPECT_TRUE(host()->QueryMouseLocation(&mouse_location));
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
-  EXPECT_EQ("50,120", mouse_location.ToString());
+  EXPECT_EQ("50,120", QueryLatestMousePositionRequestInHost(host()).ToString());
 #endif
   EXPECT_EQ("10,10", gfx::Screen::GetScreenFor(
       root_window())->GetCursorScreenPoint().ToString());
@@ -461,9 +460,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 
 #if !defined(OS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.
-  gfx::Point mouse_location;
-  EXPECT_TRUE(host()->QueryMouseLocation(&mouse_location));
-  EXPECT_EQ("169,80", mouse_location.ToString());
+  EXPECT_EQ("169,80", QueryLatestMousePositionRequestInHost(host()).ToString());
 #endif
   EXPECT_EQ("20,53",
       gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());

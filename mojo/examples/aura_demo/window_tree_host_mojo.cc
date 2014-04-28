@@ -96,11 +96,6 @@ void WindowTreeHostMojo::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-bool WindowTreeHostMojo::QueryMouseLocation(gfx::Point* location_return) {
-  NOTIMPLEMENTED() << "QueryMouseLocation";
-  return false;
-}
-
 void WindowTreeHostMojo::PostNativeEvent(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();

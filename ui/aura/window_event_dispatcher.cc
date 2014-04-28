@@ -584,13 +584,6 @@ void WindowEventDispatcher::OnWindowBoundsChanged(Window* window,
     if (details.dispatcher_destroyed)
       return;
 
-    // Constrain the mouse position within the new root Window size.
-    gfx::Point point;
-    if (host_->QueryMouseLocation(&point)) {
-      SetLastMouseLocation(
-          host_->window(),
-          ui::ConvertPointToDIP(host_->window()->layer(), point));
-    }
     synthesize_mouse_move_ = false;
   }
 

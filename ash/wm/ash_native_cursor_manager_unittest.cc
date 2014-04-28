@@ -10,6 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/image_cursors.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -172,36 +173,6 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
   EXPECT_EQ(1.0f,
             Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
-}
-
-TEST_F(AshNativeCursorManagerTest, DisabledQueryMouseLocation) {
-  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return;
-  // On Windows 8 the ASH environment has two processes, the viewer process
-  // which runs in Windows 8 mode and the browser process. The initialization
-  // happens when the viewer process connects to the browser channel and sends
-  // the initial IPC message.
-  RunAllPendingInMessageLoop();
-#endif
-  root_window->MoveCursorTo(gfx::Point(10, 10));
-#if defined(OS_WIN)
-  // The MoveCursor operation on Windows 8 is implemented in the viewer process
-  // which is notified by an IPC message to perform the MoveCursor operation.
-  // We need to ensure that the IPC is delivered to the viewer process and it
-  // the ACK is sent back from the viewer indicating that the operation
-  // completed.
-  Sleep(100);
-  RunAllPendingInMessageLoop();
-#endif
-  aura::WindowTreeHost* host = root_window->GetHost();
-  gfx::Point mouse_location;
-  EXPECT_TRUE(host->QueryMouseLocation(&mouse_location));
-  EXPECT_EQ("10,10", mouse_location.ToString());
-  Shell::GetInstance()->cursor_manager()->DisableMouseEvents();
-  EXPECT_FALSE(host->QueryMouseLocation(&mouse_location));
-  EXPECT_EQ("0,0", mouse_location.ToString());
 }
 
 }  // namespace test
