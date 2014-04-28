@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
-#define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#ifndef CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_GUEST_H_
+#define CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_GUEST_H_
 
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/guest_view/guest_view.h"
-#include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
+#include "chrome/browser/guestview/guestview.h"
+#include "chrome/browser/guestview/webview/javascript_dialog_helper.h"
+#include "chrome/browser/guestview/webview/webview_find_helper.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,21 +31,25 @@ class WebviewFindFunction;
 // a particular embedder WebContents. This happens on either initial navigation
 // or through the use of the New Window API, when a new window is attached to
 // a particular <webview>.
-class WebViewGuest : public GuestView<WebViewGuest>,
+class WebViewGuest : public GuestView,
                      public content::NotificationObserver,
                      public content::WebContentsObserver {
  public:
   WebViewGuest(content::WebContents* guest_web_contents,
                const std::string& embedder_extension_id);
 
+  static WebViewGuest* From(int embedder_process_id, int instance_id);
+  static WebViewGuest* FromWebContents(content::WebContents* contents);
   // Returns guestview::kInstanceIDNone if |contents| does not correspond to a
   // WebViewGuest.
   static int GetViewInstanceId(content::WebContents* contents);
-  static const std::string& Type;
 
-  // GuestViewBase implementation.
+  // GuestView implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args) OVERRIDE;
+  virtual GuestView::Type GetViewType() const OVERRIDE;
+  virtual WebViewGuest* AsWebView() OVERRIDE;
+  virtual AdViewGuest* AsAdView() OVERRIDE;
 
   // GuestDelegate implementation.
   virtual void AddMessageToConsole(int32 level,
@@ -320,4 +324,4 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_GUEST_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CONTEXT_MENU_CONTENT_TYPE_WEB_VIEW_H_
-#define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CONTEXT_MENU_CONTENT_TYPE_WEB_VIEW_H_
+#ifndef CHROME_BROWSER_GUESTVIEW_WEBVIEW_CONTEXT_MENU_CONTENT_TYPE_WEBVIEW_H_
+#define CHROME_BROWSER_GUESTVIEW_WEBVIEW_CONTEXT_MENU_CONTENT_TYPE_WEBVIEW_H_
 
 #include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
 
@@ -28,4 +28,4 @@ class ContextMenuContentTypeWebView : public ContextMenuContentType {
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentTypeWebView);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CONTEXT_MENU_CONTENT_TYPE_WEB_VIEW_H_
+#endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_CONTEXT_MENU_CONTENT_TYPE_WEBVIEW_H_

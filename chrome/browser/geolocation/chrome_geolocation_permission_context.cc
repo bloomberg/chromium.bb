@@ -15,7 +15,7 @@
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"

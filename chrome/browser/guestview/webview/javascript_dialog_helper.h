@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_JAVASCRIPT_DIALOG_HELPER_H_
-#define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_JAVASCRIPT_DIALOG_HELPER_H_
+#ifndef CHROME_BROWSER_GUESTVIEW_WEBVIEW_JAVASCRIPT_DIALOG_HELPER_H_
+#define CHROME_BROWSER_GUESTVIEW_WEBVIEW_JAVASCRIPT_DIALOG_HELPER_H_
 
 #include "content/public/browser/javascript_dialog_manager.h"
 
@@ -50,4 +50,4 @@ class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogHelper);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_JAVASCRIPT_DIALOG_HELPER_H_
+#endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_JAVASCRIPT_DIALOG_HELPER_H_

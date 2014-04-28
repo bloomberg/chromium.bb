@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/guest_view_base.h"
+#include "chrome/browser/guestview/guestview.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/guest_view/ad_view/ad_view_guest.h"
-#include "chrome/browser/guest_view/guest_view_constants.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guestview/adview/adview_guest.h"
+#include "chrome/browser/guestview/guestview_constants.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/render_process_host.h"
@@ -20,31 +20,32 @@ using content::WebContents;
 
 namespace {
 
-// <embedder_process_id, guest_instance_id> => GuestViewBase*
-typedef std::map<std::pair<int, int>, GuestViewBase*> EmbedderGuestViewMap;
+// <embedder_process_id, guest_instance_id> => GuestView*
+typedef std::map<std::pair<int, int>, GuestView*> EmbedderGuestViewMap;
 static base::LazyInstance<EmbedderGuestViewMap> embedder_guestview_map =
     LAZY_INSTANCE_INITIALIZER;
 
-typedef std::map<WebContents*, GuestViewBase*> WebContentsGuestViewMap;
+typedef std::map<WebContents*, GuestView*> WebContentsGuestViewMap;
 static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-GuestViewBase::Event::Event(const std::string& name,
-                            scoped_ptr<base::DictionaryValue> args)
-    : name_(name), args_(args.Pass()) {
+GuestView::Event::Event(const std::string& name,
+                        scoped_ptr<base::DictionaryValue> args)
+    : name_(name),
+      args_(args.Pass()) {
 }
 
-GuestViewBase::Event::~Event() {
+GuestView::Event::~Event() {
 }
 
-scoped_ptr<base::DictionaryValue> GuestViewBase::Event::GetArguments() {
+scoped_ptr<base::DictionaryValue> GuestView::Event::GetArguments() {
   return args_.Pass();
 }
 
-GuestViewBase::GuestViewBase(WebContents* guest_web_contents,
-                             const std::string& embedder_extension_id)
+GuestView::GuestView(WebContents* guest_web_contents,
+                     const std::string& embedder_extension_id)
     : guest_web_contents_(guest_web_contents),
       embedder_web_contents_(NULL),
       embedder_extension_id_(embedder_extension_id),
@@ -58,40 +59,50 @@ GuestViewBase::GuestViewBase(WebContents* guest_web_contents,
 }
 
 // static
-GuestViewBase* GuestViewBase::Create(WebContents* guest_web_contents,
-                                     const std::string& embedder_extension_id,
-                                     const std::string& view_type) {
-  if (view_type == "webview") {
-    return new WebViewGuest(guest_web_contents, embedder_extension_id);
-  } else if (view_type == "adview") {
-    return new AdViewGuest(guest_web_contents, embedder_extension_id);
+GuestView::Type GuestView::GetViewTypeFromString(const std::string& api_type) {
+  if (api_type == "adview") {
+    return GuestView::ADVIEW;
+  } else if (api_type == "webview") {
+    return GuestView::WEBVIEW;
   }
-  NOTREACHED();
-  return NULL;
+  return GuestView::UNKNOWN;
 }
 
 // static
-GuestViewBase* GuestViewBase::FromWebContents(WebContents* web_contents) {
+GuestView* GuestView::Create(WebContents* guest_web_contents,
+                             const std::string& embedder_extension_id,
+                             GuestView::Type view_type) {
+  switch (view_type) {
+    case GuestView::WEBVIEW:
+      return new WebViewGuest(guest_web_contents, embedder_extension_id);
+    case GuestView::ADVIEW:
+      return new AdViewGuest(guest_web_contents, embedder_extension_id);
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+}
+
+// static
+GuestView* GuestView::FromWebContents(WebContents* web_contents) {
   WebContentsGuestViewMap* guest_map = webcontents_guestview_map.Pointer();
   WebContentsGuestViewMap::iterator it = guest_map->find(web_contents);
   return it == guest_map->end() ? NULL : it->second;
 }
 
 // static
-GuestViewBase* GuestViewBase::From(int embedder_process_id,
-                                   int guest_instance_id) {
+GuestView* GuestView::From(int embedder_process_id, int guest_instance_id) {
   EmbedderGuestViewMap* guest_map = embedder_guestview_map.Pointer();
-  EmbedderGuestViewMap::iterator it =
-      guest_map->find(std::make_pair(embedder_process_id, guest_instance_id));
+  EmbedderGuestViewMap::iterator it = guest_map->find(
+      std::make_pair(embedder_process_id, guest_instance_id));
   return it == guest_map->end() ? NULL : it->second;
 }
 
 // static
-bool GuestViewBase::GetGuestPartitionConfigForSite(
-    const GURL& site,
-    std::string* partition_domain,
-    std::string* partition_name,
-    bool* in_memory) {
+bool GuestView::GetGuestPartitionConfigForSite(const GURL& site,
+                                               std::string* partition_domain,
+                                               std::string* partition_name,
+                                               bool* in_memory) {
   if (!site.SchemeIs(content::kGuestScheme))
     return false;
 
@@ -104,32 +115,31 @@ bool GuestViewBase::GetGuestPartitionConfigForSite(
   *in_memory = (site.path() != "/persist");
   // The partition name is user supplied value, which we have encoded when the
   // URL was created, so it needs to be decoded.
-  *partition_name =
-      net::UnescapeURLComponent(site.query(), net::UnescapeRule::NORMAL);
+  *partition_name = net::UnescapeURLComponent(site.query(),
+                                              net::UnescapeRule::NORMAL);
   return true;
 }
 
 // static
-void GuestViewBase::GetDefaultContentSettingRules(
-    RendererContentSettingRules* rules,
-    bool incognito) {
-  rules->image_rules.push_back(
-      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
-                                  ContentSettingsPattern::Wildcard(),
-                                  CONTENT_SETTING_ALLOW,
-                                  std::string(),
-                                  incognito));
+void GuestView::GetDefaultContentSettingRules(
+    RendererContentSettingRules* rules, bool incognito) {
+  rules->image_rules.push_back(ContentSettingPatternSource(
+    ContentSettingsPattern::Wildcard(),
+    ContentSettingsPattern::Wildcard(),
+    CONTENT_SETTING_ALLOW,
+    std::string(),
+    incognito));
 
-  rules->script_rules.push_back(
-      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
-                                  ContentSettingsPattern::Wildcard(),
-                                  CONTENT_SETTING_ALLOW,
-                                  std::string(),
-                                  incognito));
+  rules->script_rules.push_back(ContentSettingPatternSource(
+    ContentSettingsPattern::Wildcard(),
+    ContentSettingsPattern::Wildcard(),
+    CONTENT_SETTING_ALLOW,
+    std::string(),
+    incognito));
 }
 
-void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
-                           const base::DictionaryValue& args) {
+void GuestView::Attach(content::WebContents* embedder_web_contents,
+                       const base::DictionaryValue& args) {
   embedder_web_contents_ = embedder_web_contents;
   embedder_render_process_id_ =
       embedder_web_contents->GetRenderProcessHost()->GetID();
@@ -138,7 +148,7 @@ void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
   embedder_guestview_map.Get().insert(std::make_pair(key, this));
 
-  // GuestViewBase::Attach is called prior to initialization (and initial
+  // GuestView::Attach is called prior to initialization (and initial
   // navigation) of the guest in the content layer in order to permit mapping
   // the necessary associations between the <*view> element and its guest. This
   // is needed by the <webview> WebRequest API to allow intercepting resource
@@ -150,11 +160,23 @@ void GuestViewBase::Attach(content::WebContents* embedder_web_contents,
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GuestViewBase::SendQueuedEvents,
+      base::Bind(&GuestView::SendQueuedEvents,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-GuestViewBase::~GuestViewBase() {
+GuestView::Type GuestView::GetViewType() const {
+  return GuestView::UNKNOWN;
+}
+
+WebViewGuest* GuestView::AsWebView() {
+  return NULL;
+}
+
+AdViewGuest* GuestView::AsAdView() {
+  return NULL;
+}
+
+GuestView::~GuestView() {
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
   embedder_guestview_map.Get().erase(key);
 
@@ -163,7 +185,7 @@ GuestViewBase::~GuestViewBase() {
   pending_events_.clear();
 }
 
-void GuestViewBase::DispatchEvent(Event* event) {
+void GuestView::DispatchEvent(Event* event) {
   scoped_ptr<Event> event_ptr(event);
   if (!in_extension()) {
     NOTREACHED();
@@ -184,16 +206,12 @@ void GuestViewBase::DispatchEvent(Event* event) {
   args->Append(event->GetArguments().release());
 
   extensions::EventRouter::DispatchEvent(
-      embedder_web_contents_,
-      profile,
-      embedder_extension_id_,
-      event->name(),
-      args.Pass(),
-      extensions::EventRouter::USER_GESTURE_UNKNOWN,
-      info);
+      embedder_web_contents_, profile, embedder_extension_id_,
+      event->name(), args.Pass(),
+      extensions::EventRouter::USER_GESTURE_UNKNOWN, info);
 }
 
-void GuestViewBase::SendQueuedEvents() {
+void GuestView::SendQueuedEvents() {
   if (!attached())
     return;
 

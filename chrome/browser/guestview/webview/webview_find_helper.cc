@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
+#include "chrome/browser/guestview/webview/webview_find_helper.h"
 
 #include <utility>
 
 #include "chrome/browser/extensions/api/webview/webview_api.h"
-#include "chrome/browser/guest_view/web_view/web_view_constants.h"
+#include "chrome/browser/guestview/webview/webview_constants.h"
 
 WebviewFindHelper::WebviewFindHelper(WebViewGuest* webview_guest)
     : webview_guest_(webview_guest),
@@ -36,8 +36,8 @@ void WebviewFindHelper::DispatchFindUpdateEvent(bool canceled,
   args->SetBoolean(webview::kFindCanceled, canceled);
   args->SetBoolean(webview::kFindFinalUpdate, final_update);
   DCHECK(webview_guest_);
-  webview_guest_->DispatchEvent(
-      new GuestViewBase::Event(webview::kEventFindReply, args.Pass()));
+  webview_guest_->DispatchEvent(new GuestView::Event(webview::kEventFindReply,
+                                                     args.Pass()));
 }
 
 void WebviewFindHelper::EndFindSession(int session_request_id, bool canceled) {

@@ -35,7 +35,7 @@
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"

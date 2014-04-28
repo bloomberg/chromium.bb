@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
-#define CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
+#ifndef CHROME_BROWSER_GUESTVIEW_GUESTVIEW_H_
+#define CHROME_BROWSER_GUESTVIEW_GUESTVIEW_H_
 
 #include <queue>
 
@@ -16,16 +16,22 @@ class AdViewGuest;
 class WebViewGuest;
 struct RendererContentSettingRules;
 
-// A GuestViewBase is the base class browser-side API implementation for a
-// <*view> tag. GuestViewBase maintains an association between a guest
-// WebContents and an embedder WebContents. It receives events issued from
-// the guest and relays them to the embedder.
-class GuestViewBase : public content::BrowserPluginGuestDelegate {
+// A GuestView is the base class browser-side API implementation for a <*view>
+// tag. GuestView maintains an association between a guest WebContents and an
+// embedder WebContents. It receives events issued from the guest and relays
+// them to the embedder.
+class GuestView : public content::BrowserPluginGuestDelegate {
  public:
+  enum Type {
+    WEBVIEW,
+    ADVIEW,
+    UNKNOWN
+  };
+
   class Event {
    public:
-    Event(const std::string& name, scoped_ptr<base::DictionaryValue> args);
-    ~Event();
+     Event(const std::string& name, scoped_ptr<base::DictionaryValue> args);
+     ~Event();
 
     const std::string& name() const { return name_; }
 
@@ -36,26 +42,19 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
     scoped_ptr<base::DictionaryValue> args_;
   };
 
-  // Returns a *ViewGuest if this GuestView is of the given view type.
-  template <typename T>
-  T* As() {
-    if (GetViewType() == T::Type) {
-      return static_cast<T*>(this);
-    }
-    return NULL;
-  }
+  static Type GetViewTypeFromString(const std::string& api_type);
 
-  static GuestViewBase* Create(content::WebContents* guest_web_contents,
-                               const std::string& embedder_extension_id,
-                               const std::string& view_type);
+  static GuestView* Create(content::WebContents* guest_web_contents,
+                           const std::string& embedder_extension_id,
+                           Type view_type);
 
-  static GuestViewBase* FromWebContents(content::WebContents* web_contents);
+  static GuestView* FromWebContents(content::WebContents* web_contents);
 
-  static GuestViewBase* From(int embedder_process_id, int instance_id);
+  static GuestView* From(int embedder_process_id, int instance_id);
 
-  // For GuestViewBases, we create special guest processes, which host the
+  // For GuestViews, we create special guest processes, which host the
   // tag content separately from the main application that embeds the tag.
-  // A GuestViewBase can specify both the partition name and whether the storage
+  // A GuestView can specify both the partition name and whether the storage
   // for that partition should be persisted. Each tag gets a SiteInstance with
   // a specially formatted URL, based on the application it is hosted by and
   // the partition requested by it. The format for that URL is:
@@ -66,10 +65,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
                                              bool* in_memory);
 
   // By default, JavaScript and images are enabled in guest content.
-  static void GetDefaultContentSettingRules(RendererContentSettingRules* rules,
-                                            bool incognito);
-
-  virtual const std::string& GetViewType() const = 0;
+  static void GetDefaultContentSettingRules(
+      RendererContentSettingRules* rules, bool incognito);
 
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args);
@@ -82,6 +79,14 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   content::WebContents* guest_web_contents() const {
     return guest_web_contents_;
   }
+
+  virtual Type GetViewType() const;
+
+  // Returns a WebViewGuest if this GuestView belongs to a <webview>.
+  virtual WebViewGuest* AsWebView() = 0;
+
+  // Returns an AdViewGuest if the GuestView belongs to an <adview>.
+  virtual AdViewGuest* AsAdView() = 0;
 
   // Returns whether this guest has an associated embedder.
   bool attached() const { return !!embedder_web_contents_; }
@@ -98,7 +103,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   }
 
   // Returns whether this GuestView is embedded in an extension/app.
-  bool in_extension() const { return !embedder_extension_id_.empty(); }
+  bool in_extension() const {
+    return !embedder_extension_id_.empty();
+  }
 
   // Returns the user browser context of the embedder.
   content::BrowserContext* browser_context() const { return browser_context_; }
@@ -107,9 +114,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   int embedder_render_process_id() const { return embedder_render_process_id_; }
 
  protected:
-  GuestViewBase(content::WebContents* guest_web_contents,
-                const std::string& embedder_extension_id);
-  virtual ~GuestViewBase();
+  GuestView(content::WebContents* guest_web_contents,
+            const std::string& embedder_extension_id);
+  virtual ~GuestView();
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
   void DispatchEvent(Event* event);
@@ -135,9 +142,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
-  base::WeakPtrFactory<GuestViewBase> weak_ptr_factory_;
+  base::WeakPtrFactory<GuestView> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GuestViewBase);
+  DISALLOW_COPY_AND_ASSIGN(GuestView);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
+#endif  // CHROME_BROWSER_GUESTVIEW_GUESTVIEW_H_
