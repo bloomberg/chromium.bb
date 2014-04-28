@@ -149,6 +149,33 @@
         <include name="IDR_PDF_BUTTON_HIGH_5" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_save.png" type="BINDATA" />
         <include name="IDR_PDF_BUTTON_HIGH_6" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_print.png" type="BINDATA" />
       </if>
+      <include name="IDR_CRYPTOTOKEN_UTIL_JS" file="cryptotoken/util.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_B64_JS" file="cryptotoken/b64.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_CLOSEABLE_JS" file="cryptotoken/closeable.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_COUNTDOWN_JS" file="cryptotoken/countdown.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_SHA256_JS" file="cryptotoken/sha256.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_LLGNUBBY_JS" file="cryptotoken/llgnubby.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_LLHIDGNUBBY_JS" file="cryptotoken/llhidgnubby.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_LLUSBGNUBBY_JS" file="cryptotoken/llusbgnubby.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GNUBBIES_JS" file="cryptotoken/gnubbies.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GNUBBY_JS" file="cryptotoken/gnubby.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GNUBBY_U2F_JS" file="cryptotoken/gnubby-u2f.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GNUBBYCODETYPES_JS" file="cryptotoken/gnubbycodetypes.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GNUBBYFACTORY_JS" file="cryptotoken/gnubbyfactory.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GNUBBYMSGTYPES_JS" file="cryptotoken/gnubbymsgtypes.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_USBGNUBBYFACTORY_JS" file="cryptotoken/usbgnubbyfactory.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_DEVICESTATUSCODES_JS" file="cryptotoken/devicestatuscodes.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_ENROLLER_JS" file="cryptotoken/enroller.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_ENROLLHELPER_JS" file="cryptotoken/enrollhelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_USBENROLLHELPER_JS" file="cryptotoken/usbenrollhelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_REQUESTQUEUE_JS" file="cryptotoken/requestqueue.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_SIGNER_JS" file="cryptotoken/signer.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_SIGNHELPER_JS" file="cryptotoken/signhelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_SINGLESIGNER_JS" file="cryptotoken/singlesigner.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_MULTIPLESIGNER_JS" file="cryptotoken/multiplesigner.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_USBSIGNHELPER_JS" file="cryptotoken/usbsignhelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_WEBREQUEST_JS" file="cryptotoken/webrequest.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_BACKGROUND_JS" file="cryptotoken/background.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

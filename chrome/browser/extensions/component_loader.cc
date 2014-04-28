@@ -594,6 +594,9 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     Add(IDR_PDF_MANIFEST, base::FilePath(FILE_PATH_LITERAL("pdf")));
   }
 #endif
+
+  Add(IDR_CRYPTOTOKEN_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("cryptotoken")));
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
