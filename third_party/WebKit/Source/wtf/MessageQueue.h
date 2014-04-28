@@ -34,6 +34,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
@@ -53,7 +54,6 @@ namespace WTF {
         WTF_MAKE_NONCOPYABLE(MessageQueue);
     public:
         MessageQueue() : m_killed(false) { }
-        ~MessageQueue();
 
         // Returns true if the queue is still alive, false if the queue has been killed.
         bool append(PassOwnPtr<DataType>);
@@ -77,21 +77,15 @@ namespace WTF {
     private:
         mutable Mutex m_mutex;
         ThreadCondition m_condition;
-        Deque<DataType*> m_queue;
+        Deque<OwnPtr<DataType> > m_queue;
         bool m_killed;
     };
-
-    template<typename DataType>
-    MessageQueue<DataType>::~MessageQueue()
-    {
-        deleteAllValues(m_queue);
-    }
 
     template<typename DataType>
     inline bool MessageQueue<DataType>::append(PassOwnPtr<DataType> message)
     {
         MutexLocker lock(m_mutex);
-        m_queue.append(message.leakPtr());
+        m_queue.append(message);
         m_condition.signal();
         return !m_killed;
     }
@@ -100,7 +94,7 @@ namespace WTF {
     inline void MessageQueue<DataType>::appendAndKill(PassOwnPtr<DataType> message)
     {
         MutexLocker lock(m_mutex);
-        m_queue.append(message.leakPtr());
+        m_queue.append(message);
         m_killed = true;
         m_condition.broadcast();
     }
@@ -111,7 +105,7 @@ namespace WTF {
     {
         MutexLocker lock(m_mutex);
         bool wasEmpty = m_queue.isEmpty();
-        m_queue.append(message.leakPtr());
+        m_queue.append(message);
         m_condition.signal();
         return wasEmpty;
     }
@@ -120,7 +114,7 @@ namespace WTF {
     inline void MessageQueue<DataType>::prepend(PassOwnPtr<DataType> message)
     {
         MutexLocker lock(m_mutex);
-        m_queue.prepend(message.leakPtr());
+        m_queue.prepend(message);
         m_condition.signal();
     }
 
@@ -154,13 +148,10 @@ namespace WTF {
             return nullptr;
         }
 
-        DequeConstIterator<DataType*> found = m_queue.begin();
-
-        ASSERT_WITH_SECURITY_IMPLICATION(found != m_queue.end());
-        OwnPtr<DataType> message = adoptPtr(*found);
-        m_queue.remove(found);
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_queue.isEmpty());
         result = MessageQueueMessageReceived;
-        return message.release();
+
+        return m_queue.takeFirst();
     }
 
     template<typename DataType>
@@ -172,7 +163,7 @@ namespace WTF {
         if (m_queue.isEmpty())
             return nullptr;
 
-        return adoptPtr(m_queue.takeFirst());
+        return m_queue.takeFirst();
     }
 
     template<typename DataType>
@@ -182,7 +173,7 @@ namespace WTF {
         if (m_queue.isEmpty())
             return nullptr;
 
-        return adoptPtr(m_queue.takeFirst());
+        return m_queue.takeFirst();
     }
 
     template<typename DataType>
