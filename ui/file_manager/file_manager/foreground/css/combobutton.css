@@ -21,6 +21,16 @@
   width: 22px;
 }
 
+/* This pseudo element expands clickable area of the .trigger */
+.buttonbar .combobutton > .trigger::before {
+  content: '';
+  display: block;
+  height: 31px;
+  position: absolute;
+  top: -5px;
+  width: 30px;
+}
+
 .buttonbar .combobutton:not([multiple]) > .trigger {
   display: none;
 }
