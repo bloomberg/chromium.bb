@@ -20,6 +20,7 @@ group("root") {
     "//apps/common/api:apps_api",
     #"//chrome",
     "//components/language_usage_metrics",
+    "//components/metrics",
     "//components/navigation_metrics",
     "//components/onc",
     "//components/os_crypt",
