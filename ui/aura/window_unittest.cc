@@ -2231,7 +2231,6 @@ TEST_F(WindowTest, RootWindowSetWhenReparenting) {
   parent1.SetBounds(gfx::Rect(10, 10, 300, 300));
   parent2.SetBounds(gfx::Rect(20, 20, 300, 300));
 
-  BoundsChangedWindowObserver observer;
   Window child(NULL);
   child.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   child.SetBounds(gfx::Rect(5, 5, 100, 100));
@@ -2245,6 +2244,7 @@ TEST_F(WindowTest, RootWindowSetWhenReparenting) {
   gfx::Rect new_bounds(gfx::Rect(35, 35, 50, 50));
   child.SetBounds(new_bounds);
 
+  BoundsChangedWindowObserver observer;
   child.AddObserver(&observer);
 
   // Reparenting the |child| will cause it to get moved. During this move

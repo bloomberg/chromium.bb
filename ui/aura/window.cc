@@ -636,12 +636,10 @@ gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
 }
 
 void Window::AddObserver(WindowObserver* observer) {
-  observer->OnObservingWindow(this);
   observers_.AddObserver(observer);
 }
 
 void Window::RemoveObserver(WindowObserver* observer) {
-  observer->OnUnobservingWindow(this);
   observers_.RemoveObserver(observer);
 }
 

@@ -31,8 +31,6 @@ class AURA_EXPORT WindowObserver {
     Window* receiver;   // The window receiving the notification.
   };
 
-  WindowObserver();
-
   // Called when a window is added or removed. Notifications are sent to the
   // following hierarchies in this order:
   // 1. |target|.
@@ -113,22 +111,7 @@ class AURA_EXPORT WindowObserver {
                                               Window* new_root) {}
 
  protected:
-  virtual ~WindowObserver();
-
- private:
-  friend class Window;
-
-  // Called when this is added as an observer on |window|.
-  void OnObservingWindow(Window* window);
-
-  // Called when this is removed from the observers on |window|.
-  void OnUnobservingWindow(Window* window);
-
-  // Tracks the number of windows being observed to track down
-  // http://crbug.com/365364.
-  int observing_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
+  virtual ~WindowObserver() {}
 };
 
 }  // namespace aura
