@@ -103,7 +103,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, TaskManagerNewPrintPreview) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchPrint("about:blank")));
 }
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest, TaskManagerExistingPrintPreview) {
+// Disable the test for mac as it started being flaky, see http://crbug/367665.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#define MAYBE_TaskManagerExistingPrintPreview DISABLED_TaskManagerExistingPrintPreview
+#else
+#define MAYBE_TaskManagerExistingPrintPreview TaskManagerExistingPrintPreview
+#endif
+IN_PROC_BROWSER_TEST_F(PrintPreviewTest,
+                       MAYBE_TaskManagerExistingPrintPreview) {
   // Create the print preview dialog.
   Print();
 
