@@ -378,14 +378,25 @@ void Label::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  UpdateColorsFromTheme(theme);
+  if (!enabled_color_set_) {
+    requested_enabled_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelEnabledColor);
+  }
+  if (!disabled_color_set_) {
+    requested_disabled_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelDisabledColor);
+  }
+  if (!background_color_set_) {
+    background_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelBackgroundColor);
+  }
+  RecalculateColors();
 }
 
 void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   font_list_ = font_list;
   enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
   auto_color_readability_ = true;
-  UpdateColorsFromTheme(ui::NativeTheme::instance());
   horizontal_alignment_ = gfx::ALIGN_CENTER;
   line_height_ = 0;
   is_multi_line_ = false;
@@ -479,12 +490,12 @@ int Label::ComputeDrawStringFlags() const {
 
   flags |= gfx::Canvas::MULTI_LINE;
 #if !defined(OS_WIN)
-    // Don't elide multiline labels on Linux.
-    // Todo(davemoore): Do we depend on eliding multiline text?
-    // Pango insists on limiting the number of lines to one if text is
-    // elided. You can get around this if you can pass a maximum height
-    // but we don't currently have that data when we call the pango code.
-    flags |= gfx::Canvas::NO_ELLIPSIS;
+  // Don't elide multiline labels on Linux.
+  // Todo(davemoore): Do we depend on eliding multiline text?
+  // Pango insists on limiting the number of lines to one if text is
+  // elided. You can get around this if you can pass a maximum height
+  // but we don't currently have that data when we call the pango code.
+  flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
   if (allow_character_break_)
     flags |= gfx::Canvas::CHARACTER_BREAK;
@@ -532,22 +543,6 @@ void Label::CalculateDrawStringParams(base::string16* paint_text,
   *flags = ComputeDrawStringFlags();
   if (!is_multi_line_ || (elide_behavior_ == NO_ELIDE))
      *flags |= gfx::Canvas::NO_ELLIPSIS;
-}
-
-void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
-  if (!enabled_color_set_) {
-    requested_enabled_color_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelEnabledColor);
-  }
-  if (!disabled_color_set_) {
-    requested_disabled_color_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelDisabledColor);
-  }
-  if (!background_color_set_) {
-    background_color_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelBackgroundColor);
-  }
-  RecalculateColors();
 }
 
 void Label::ResetCachedSize() {
