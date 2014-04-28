@@ -68,11 +68,9 @@
     void stopImmediatePropagation();
 
     // IE Extensions
-    readonly attribute EventTarget      srcElement;
+    [MeasureAs=EventSrcElement] readonly attribute EventTarget srcElement;
     [ImplementedAs=legacyReturnValue, MeasureAs=EventReturnValue] attribute boolean returnValue;
-             attribute boolean          cancelBubble;
-
-    readonly attribute NodeList path;
-
-    [Custom=Getter] readonly attribute DataTransfer clipboardData;
+    [MeasureAs=EventCancelBubble] attribute boolean cancelBubble;
+    [MeasureAs=EventPath] readonly attribute NodeList path;
+    [Custom=Getter, MeasureAs=EventClipboardData] readonly attribute DataTransfer clipboardData;
 };
