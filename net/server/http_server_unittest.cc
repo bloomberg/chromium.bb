@@ -91,12 +91,22 @@ class TestHttpClient {
   }
 
   bool Read(std::string* message) {
-    net::TestCompletionCallback callback;
-    ReadInternal(callback.callback());
-    int bytes_received = callback.WaitForResult();
-    if (bytes_received <= 0)
-      return false;
-    *message = std::string(read_buffer_->data(), bytes_received);
+    return Read(message, 1);
+  }
+
+  bool Read(std::string* message, int expected_bytes) {
+    int total_bytes_received = 0;
+    message->clear();
+    while (total_bytes_received < expected_bytes) {
+      net::TestCompletionCallback callback;
+      ReadInternal(callback.callback());
+      int bytes_received = callback.WaitForResult();
+      if (bytes_received <= 0)
+        return false;
+
+      total_bytes_received += bytes_received;
+      message->append(read_buffer_->data(), bytes_received);
+    }
     return true;
   }
 
@@ -308,8 +318,7 @@ TEST_F(HttpServerTest, Send200) {
   ASSERT_TRUE(EndsWith(response, "Response!", true));
 }
 
-// Flaky on at least OS X and Vista. http://crbug.com/365067.
-TEST_F(HttpServerTest, DISABLED_SendRaw) {
+TEST_F(HttpServerTest, SendRaw) {
   TestHttpClient client;
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
   client.Send("GET /test HTTP/1.1\r\n\r\n");
@@ -318,9 +327,10 @@ TEST_F(HttpServerTest, DISABLED_SendRaw) {
   server_->SendRaw(GetConnectionId(0), "More Data");
   server_->SendRaw(GetConnectionId(0), "Third Piece of Data");
 
+  const std::string expected_response("Raw Data More DataThird Piece of Data");
   std::string response;
-  ASSERT_TRUE(client.Read(&response));
-  ASSERT_EQ("Raw Data More DataThird Piece of Data", response);
+  ASSERT_TRUE(client.Read(&response, expected_response.length()));
+  ASSERT_EQ(expected_response, response);
 }
 
 namespace {
