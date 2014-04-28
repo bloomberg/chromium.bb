@@ -157,7 +157,8 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
       webrtc::ScreenCapturer::Create());
   DesktopCaptureDevice capture_device(
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
-      capturer.Pass());
+      capturer.Pass(),
+      DesktopMediaID::TYPE_SCREEN);
   media::VideoCaptureFormat format;
   base::WaitableEvent done_event(false, false);
   int frame_size;
@@ -195,7 +196,8 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   DesktopCaptureDevice capture_device(
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
-      scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
+      scoped_ptr<webrtc::DesktopCapturer>(mock_capturer),
+      DesktopMediaID::TYPE_SCREEN);
 
   media::VideoCaptureFormat format;
   base::WaitableEvent done_event(false, false);
@@ -242,7 +244,8 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   DesktopCaptureDevice capture_device(
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
-      scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
+      scoped_ptr<webrtc::DesktopCapturer>(mock_capturer),
+      DesktopMediaID::TYPE_SCREEN);
 
   media::VideoCaptureFormat format;
   base::WaitableEvent done_event(false, false);

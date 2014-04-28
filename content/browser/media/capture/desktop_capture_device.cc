@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "media/base/video_util.h"
@@ -50,7 +52,8 @@ class DesktopCaptureDevice::Core
       public webrtc::DesktopCapturer::Callback {
  public:
   Core(scoped_refptr<base::SequencedTaskRunner> task_runner,
-       scoped_ptr<webrtc::DesktopCapturer> capturer);
+       scoped_ptr<webrtc::DesktopCapturer> capturer,
+       DesktopMediaID::Type type);
 
   // Implementation of VideoCaptureDevice methods.
   void AllocateAndStart(const media::VideoCaptureParams& params,
@@ -125,16 +128,22 @@ class DesktopCaptureDevice::Core
   // True when waiting for |desktop_capturer_| to capture current frame.
   bool capture_in_progress_;
 
+  // The type of the capturer.
+  DesktopMediaID::Type capturer_type_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 DesktopCaptureDevice::Core::Core(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_ptr<webrtc::DesktopCapturer> capturer)
+    scoped_ptr<webrtc::DesktopCapturer> capturer,
+    DesktopMediaID::Type type)
     : task_runner_(task_runner),
       desktop_capturer_(capturer.Pass()),
       capture_task_posted_(false),
-      capture_in_progress_(false) {}
+      capture_in_progress_(false),
+      capturer_type_(type) {
+}
 
 DesktopCaptureDevice::Core::~Core() {
 }
@@ -172,6 +181,18 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(capture_in_progress_);
 
+  static bool first_call = true;
+  if (first_call) {
+    first_call = false;
+    if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
+      IncrementDesktopCaptureCounter(frame ? FIRST_SCREEN_CAPTURE_SUCCEEDED
+                                           : FIRST_SCREEN_CAPTURE_FAILED);
+    } else {
+      IncrementDesktopCaptureCounter(frame ? FIRST_WINDOW_CAPTURE_SUCCEEDED
+                                           : FIRST_WINDOW_CAPTURE_FAILED);
+    }
+  }
+
   capture_in_progress_ = false;
 
   if (!frame) {
@@ -183,6 +204,13 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
 
   if (!client_)
     return;
+
+  base::TimeDelta capture_time(
+      base::TimeDelta::FromMilliseconds(frame->capture_time_ms()));
+  UMA_HISTOGRAM_TIMES(
+      capturer_type_ == DesktopMediaID::TYPE_SCREEN ? kUmaScreenCaptureTime
+                                                    : kUmaWindowCaptureTime,
+      capture_time);
 
   scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
@@ -389,6 +417,7 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
         capturer.reset(new webrtc::DesktopAndCursorComposer(
             screen_capturer.release(),
             webrtc::MouseCursorMonitor::CreateForScreen(options, source.id)));
+        IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED);
       }
       break;
     }
@@ -401,6 +430,7 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
         capturer.reset(new webrtc::DesktopAndCursorComposer(
             window_capturer.release(),
             webrtc::MouseCursorMonitor::CreateForWindow(options, source.id)));
+        IncrementDesktopCaptureCounter(WINDOW_CATPTURER_CREATED);
       }
       break;
     }
@@ -411,16 +441,20 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   }
 
   scoped_ptr<media::VideoCaptureDevice> result;
-  if (capturer)
-    result.reset(new DesktopCaptureDevice(task_runner, capturer.Pass()));
+  if (capturer) {
+    result.reset(
+        new DesktopCaptureDevice(task_runner, capturer.Pass(), source.type));
+  }
 
   return result.Pass();
 }
 
 DesktopCaptureDevice::DesktopCaptureDevice(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_ptr<webrtc::DesktopCapturer> capturer)
-    : core_(new Core(task_runner, capturer.Pass())) {}
+    scoped_ptr<webrtc::DesktopCapturer> capturer,
+    DesktopMediaID::Type type)
+    : core_(new Core(task_runner, capturer.Pass(), type)) {
+}
 
 DesktopCaptureDevice::~DesktopCaptureDevice() {
   StopAndDeAllocate();

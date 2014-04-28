@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "media/video/capture/video_capture_device.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -21,8 +22,6 @@ class DesktopCapturer;
 
 namespace content {
 
-struct DesktopMediaID;
-
 // DesktopCaptureDevice implements VideoCaptureDevice for screens and windows.
 // It's essentially an adapter between webrtc::DesktopCapturer and
 // VideoCaptureDevice.
@@ -35,7 +34,8 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
       const DesktopMediaID& source);
 
   DesktopCaptureDevice(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                       scoped_ptr<webrtc::DesktopCapturer> desktop_capturer);
+                       scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
+                       DesktopMediaID::Type type);
   virtual ~DesktopCaptureDevice();
 
   // VideoCaptureDevice interface.

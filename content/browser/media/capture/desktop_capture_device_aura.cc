@@ -5,11 +5,13 @@
 #include "content/browser/media/capture/desktop_capture_device_aura.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/timer/timer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/media/capture/content_video_capture_device_core.h"
+#include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/video_util.h"
@@ -124,6 +126,14 @@ class DesktopVideoCaptureMachine
 
   // Response callback for cc::Layer::RequestCopyOfOutput().
   void DidCopyOutput(
+      scoped_refptr<media::VideoFrame> video_frame,
+      base::TimeTicks start_time,
+      const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+      scoped_ptr<cc::CopyOutputResult> result);
+
+  // A helper which does the real work for DidCopyOutput. Returns true if
+  // succeeded.
+  bool ProcessCopyOutputResponse(
       scoped_refptr<media::VideoFrame> video_frame,
       base::TimeTicks start_time,
       const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
@@ -292,8 +302,37 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
     base::TimeTicks start_time,
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
+  static bool first_call = true;
+
+  bool succeeded = ProcessCopyOutputResponse(
+      video_frame, start_time, capture_frame_cb, result.Pass());
+
+  base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
+  UMA_HISTOGRAM_TIMES(
+      window_id_.type == DesktopMediaID::TYPE_SCREEN ? kUmaScreenCaptureTime
+                                                     : kUmaWindowCaptureTime,
+      capture_time);
+
+  if (first_call) {
+    first_call = false;
+    if (window_id_.type == DesktopMediaID::TYPE_SCREEN) {
+      IncrementDesktopCaptureCounter(succeeded ? FIRST_SCREEN_CAPTURE_SUCCEEDED
+                                               : FIRST_SCREEN_CAPTURE_FAILED);
+    } else {
+      IncrementDesktopCaptureCounter(succeeded
+                                         ? FIRST_WINDOW_CAPTURE_SUCCEEDED
+                                         : FIRST_WINDOW_CAPTURE_SUCCEEDED);
+    }
+  }
+}
+
+bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
+    scoped_refptr<media::VideoFrame> video_frame,
+    base::TimeTicks start_time,
+    const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
+    scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_layer_)
-    return;
+    return false;
 
   // Compute the dest size we want after the letterboxing resize. Make the
   // coordinates and sizes even because we letterbox in YUV space
@@ -309,19 +348,19 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
                               region_in_frame.width() & ~1,
                               region_in_frame.height() & ~1);
   if (region_in_frame.IsEmpty())
-    return;
+    return false;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
-    return;
+    return false;
 
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());
   if (!texture_mailbox.IsTexture())
-    return;
+    return false;
 
   gfx::Rect result_rect(result->size());
   if (!yuv_readback_pipeline_ ||
@@ -350,6 +389,7 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
                  scaled_cursor_bitmap_,
                  cursor_position_in_frame,
                  base::Passed(&release_callback)));
+  return true;
 }
 
 gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
@@ -432,6 +472,9 @@ DesktopCaptureDeviceAura::~DesktopCaptureDeviceAura() {
 // static
 media::VideoCaptureDevice* DesktopCaptureDeviceAura::Create(
     const DesktopMediaID& source) {
+  IncrementDesktopCaptureCounter(source.type == DesktopMediaID::TYPE_SCREEN
+                                     ? SCREEN_CAPTURER_CREATED
+                                     : WINDOW_CATPTURER_CREATED);
   return new DesktopCaptureDeviceAura(source);
 }
 

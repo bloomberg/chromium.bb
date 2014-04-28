@@ -30201,6 +30201,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.DesktopCaptureCounters" enum="DesktopCaptureCounters">
+  <owner>jiayl@chromium.org</owner>
+  <summary>
+    Counters on creation of DesktopCaptureDevice and the first capture call.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.NumDataChannelsPerPeerConnection">
   <owner>perkj@chromium.org</owner>
   <summary>
@@ -30237,6 +30244,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     individual message is added to the histogram as a sample immediately when a
     message is sent.
   </summary>
+</histogram>
+
+<histogram name="WebRTC.ScreenCaptureTime" units="milliseconds">
+  <owner>jiayl@chromium.org</owner>
+  <summary>Time for capturing one frame in screen capturing.</summary>
 </histogram>
 
 <histogram name="WebRTC.SentAudioTrackDuration" units="milliseconds">
@@ -30289,6 +30301,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Counts number of calls to WebRTC APIs from JavaScript, once per origin per
     renderer process.
   </summary>
+</histogram>
+
+<histogram name="WebRTC.WindowCaptureTime" units="milliseconds">
+  <owner>jiayl@chromium.org</owner>
+  <summary>Time for capturing one frame in window capturing.</summary>
 </histogram>
 
 <histogram name="Webstore.ExtensionInstallResult" enum="BooleanSuccess">
@@ -31674,6 +31691,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Proxy not available"/>
   <int value="1" label="Proxy available but not enabled"/>
   <int value="2" label="Proxy available and enabled"/>
+</enum>
+
+<enum name="DesktopCaptureCounters" type="int">
+  <int value="0" label="Screen capturer created."/>
+  <int value="1" label="Window capturer created."/>
+  <int value="2" label="First screen capture call succeeded."/>
+  <int value="3" label="First screen capture call failed."/>
+  <int value="4" label="First window capture call succeeded."/>
+  <int value="5" label="First window capture call failed."/>
 </enum>
 
 <enum name="DevicePermissionActions" type="int">

@@ -1489,6 +1489,8 @@
         'browser/media/capture/desktop_capture_device.h',
         'browser/media/capture/desktop_capture_device_aura.cc',
         'browser/media/capture/desktop_capture_device_aura.h',
+        'browser/media/capture/desktop_capture_device_uma_types.cc',
+        'browser/media/capture/desktop_capture_device_uma_types.h',
       ],
       'dependencies': [
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
