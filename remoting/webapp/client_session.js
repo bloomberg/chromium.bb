@@ -1309,9 +1309,11 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
 };
 
 remoting.ClientSession.prototype.resetScroll_ = function() {
-  var plugin = this.plugin_.element();
-  plugin.style.marginTop = '0px';
-  plugin.style.marginLeft = '0px';
+  if (this.plugin_) {
+    var plugin = this.plugin_.element();
+    plugin.style.marginTop = '0px';
+    plugin.style.marginLeft = '0px';
+  }
 };
 
 /**
