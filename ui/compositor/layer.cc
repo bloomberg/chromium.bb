@@ -164,6 +164,12 @@ void Layer::Add(Layer* child) {
 }
 
 void Layer::Remove(Layer* child) {
+  // Current bounds are used to calculate offsets when layers are reparented.
+  // Stop (and complete) an ongoing animation to update the bounds immediately.
+  if (child->GetAnimator()) {
+    child->GetAnimator()->StopAnimatingProperty(
+        ui::LayerAnimationElement::BOUNDS);
+  }
   std::vector<Layer*>::iterator i =
       std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());

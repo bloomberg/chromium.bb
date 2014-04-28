@@ -108,6 +108,7 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
         Shell::GetPrimaryRootWindowController()
             ->animating_wallpaper_controller()
             ->GetController(false);
+    EXPECT_TRUE(!!controller);
     ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(controller->widget()));
   }
 
@@ -179,8 +180,7 @@ TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
 
 // Test for crbug.com/149043 "Unlock screen, no launcher appears". Ensure we
 // move all desktop views if there are more than one.
-// Disabled for crbug.com/366993
-TEST_F(DesktopBackgroundControllerTest, DISABLED_BackgroundMovementDuringUnlock) {
+TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
