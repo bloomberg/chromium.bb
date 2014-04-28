@@ -103,5 +103,13 @@ PassRefPtr<TypeBuilder::Array<int> > ScriptProfile::buildInspectorObjectForSampl
     return array.release();
 }
 
+PassRefPtr<TypeBuilder::Array<double> > ScriptProfile::buildInspectorObjectForTimestamps() const
+{
+    RefPtr<TypeBuilder::Array<double> > array = TypeBuilder::Array<double>::create();
+    int count = m_profile->GetSamplesCount();
+    for (int i = 0; i < count; i++)
+        array->addItem(m_profile->GetSampleTimestamp(i));
+    return array.release();
+}
 
 } // namespace WebCore

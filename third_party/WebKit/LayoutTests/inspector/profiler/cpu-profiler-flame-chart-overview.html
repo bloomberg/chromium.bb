@@ -806,6 +806,13 @@ function test()
             "samples": [2,16,21,26,35,36,37,2,2,2,2,2,2,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,48,52,52,61,2,37,37,37,37,37,37,37]
           }
     };
+    var profile = profileAndExpectations._profile;
+    var startTime = profile.startTime * 1000;
+    var endTime = profile.endTime * 1000;
+    var samplingInterval = (endTime - startTime) / (profile.samples.length - 1);
+    profile.timestamps = [];
+    for (var i = 0; i < profile.samples.length; ++i)
+        profile.timestamps.push(startTime + i * samplingInterval);
     profileAndExpectations.target = function() {};
     WebInspector.inspectorView.showPanel("profiles");
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);

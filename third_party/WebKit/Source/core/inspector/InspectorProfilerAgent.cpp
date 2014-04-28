@@ -59,6 +59,7 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(const Scri
         .setStartTime(scriptProfile.startTime())
         .setEndTime(scriptProfile.endTime());
     profile->setSamples(scriptProfile.buildInspectorObjectForSamples());
+    profile->setTimestamps(scriptProfile.buildInspectorObjectForTimestamps());
     return profile.release();
 }
 

@@ -57,6 +57,7 @@ public:
 
     PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
     PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
+    PassRefPtr<TypeBuilder::Array<double> > buildInspectorObjectForTimestamps() const;
 
 private:
     ScriptProfile(v8::CpuProfile* profile, double idleTime)
