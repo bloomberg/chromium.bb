@@ -31,6 +31,39 @@
 #include "config.h"
 #include "platform/image-decoders/bmp/BMPImageReader.h"
 
+namespace {
+
+// See comments on m_lookupTableAddresses in the header.
+const uint8_t nBitTo8BitlookupTable[] = {
+    // 1 bit
+    0, 255,
+    // 2 bits
+    0, 85, 170, 255,
+    // 3 bits
+    0, 36, 73, 109, 146, 182, 219, 255,
+    // 4 bits
+    0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255,
+    // 5 bits
+    0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123,
+    132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255,
+    // 6 bits
+    0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61,
+    65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125,
+    130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190,
+    194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255,
+    // 7 bits
+    0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30,
+    32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62,
+    64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94,
+    96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126,
+    129, 131, 133, 135, 137, 139, 141, 143, 145, 147, 149, 151, 153, 155, 157, 159,
+    161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181, 183, 185, 187, 189, 191,
+    193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 217, 219, 221, 223,
+    225, 227, 229, 231, 233, 235, 237, 239, 241, 243, 245, 247, 249, 251, 253, 255,
+};
+
+}
+
 namespace WebCore {
 
 BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool usesAndMask)
@@ -290,7 +323,7 @@ bool BMPImageReader::isInfoHeaderValid() const
     }
 
     // Each compression type is only valid with certain bit depths (except RGB,
-    // which can be used with any bit depth).  Also, some formats do not
+    // which can be used with any bit depth). Also, some formats do not support
     // some compression types.
     switch (m_infoHeader.biCompression) {
     case RGB:
@@ -418,7 +451,7 @@ bool BMPImageReader::processBitmasks()
         m_decodedOffset = m_imgDataOffset;
     m_needToProcessBitmasks = false;
 
-    // Check masks and set shift values.
+    // Check masks and set shift and LUT address values.
     for (int i = 0; i < 4; ++i) {
         // Trim the mask to the allowed bit depth.  Some Windows V4+ BMPs
         // specify a bogus alpha channel in bits that don't exist in the pixel
@@ -427,11 +460,12 @@ bool BMPImageReader::processBitmasks()
             m_bitMasks[i] &= ((static_cast<uint32_t>(1) << m_infoHeader.biBitCount) - 1);
 
         // For empty masks (common on the alpha channel, especially after the
-        // trimming above), quickly clear the shifts and continue, to avoid an
-        // infinite loop in the counting code below.
+        // trimming above), quickly clear the shift and LUT address and
+        // continue, to avoid an infinite loop in the counting code below.
         uint32_t tempMask = m_bitMasks[i];
         if (!tempMask) {
-            m_bitShiftsRight[i] = m_bitShiftsLeft[i] = 0;
+            m_bitShiftsRight[i] = 0;
+            m_lookupTableAddresses[i] = 0;
             continue;
         }
 
@@ -446,8 +480,9 @@ bool BMPImageReader::processBitmasks()
             ++m_bitShiftsRight[i];
 
         // Count size of mask.
-        for (m_bitShiftsLeft[i] = 8; tempMask & 1; tempMask >>= 1)
-            --m_bitShiftsLeft[i];
+        size_t numBits = 0;
+        for (; tempMask & 1; tempMask >>= 1)
+            ++numBits;
 
         // Make sure bitmask is contiguous.
         if (tempMask)
@@ -455,10 +490,13 @@ bool BMPImageReader::processBitmasks()
 
         // Since RGBABuffer tops out at 8 bits per channel, adjust the shift
         // amounts to use the most significant 8 bits of the channel.
-        if (m_bitShiftsLeft[i] < 0) {
-            m_bitShiftsRight[i] -= m_bitShiftsLeft[i];
-            m_bitShiftsLeft[i] = 0;
+        if (numBits >= 8) {
+            m_bitShiftsRight[i] += (numBits - 8);
+            numBits = 0;
         }
+
+        // Calculate LUT address.
+        m_lookupTableAddresses[i] = numBits ? (nBitTo8BitlookupTable + (1 << numBits) - 2) : 0;
     }
 
     return true;
