@@ -177,6 +177,13 @@ new file mode 100644
 +%(deps_sha)s
 """
 
+# The possible values of the --bisect_mode flag, which determines what to
+# use when classifying a revision as "good" or "bad".
+BISECT_MODE_MEAN = 'mean'
+BISECT_MODE_STD_DEV = 'std_dev'
+BISECT_MODE_RETURN_CODE = 'return_code'
+
+
 def _AddAdditionalDepotInfo(depot_info):
   """Adds additional depot info to the global depot variables."""
   global DEPOT_DEPS_NAME
@@ -2029,6 +2036,15 @@ class BisectPerformanceMetrics(object):
       return False
     return True
 
+  def _IsBisectModeUsingMetric(self):
+    return self.opts.bisect_mode in [BISECT_MODE_MEAN, BISECT_MODE_STD_DEV]
+
+  def _IsBisectModeReturnCode(self):
+    return self.opts.bisect_mode in [BISECT_MODE_RETURN_CODE]
+
+  def _IsBisectModeStandardDeviation(self):
+    return self.opts.bisect_mode in [BISECT_MODE_STD_DEV]
+
   def RunPerformanceTestAndParseResults(
       self, command_to_run, metric, reset_on_first_run=False,
       upload_on_last_run=False, results_label=None):
@@ -2083,15 +2099,15 @@ class BisectPerformanceMetrics(object):
     output_of_all_runs = ''
     for i in xrange(self.opts.repeat_test_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
+      current_args = copy.copy(args)
+      if is_telemetry:
+        if i == 0 and reset_on_first_run:
+          current_args.append('--reset-results')
+        elif i == self.opts.repeat_test_count - 1 and upload_on_last_run:
+          current_args.append('--upload-results')
+        if results_label:
+          current_args.append('--results-label=%s' % results_label)
       try:
-        current_args = copy.copy(args)
-        if is_telemetry:
-          if i == 0 and reset_on_first_run:
-            current_args.append('--reset-results')
-          elif i == self.opts.repeat_test_count - 1 and upload_on_last_run:
-            current_args.append('--upload-results')
-          if results_label:
-            current_args.append('--results-label=%s' % results_label)
         (output, return_code) = RunProcessAndRetrieveOutput(current_args,
                                                             cwd=self.src_cwd)
       except OSError, e:
@@ -2111,11 +2127,17 @@ class BisectPerformanceMetrics(object):
       if self.opts.output_buildbot_annotations:
         print output
 
-      metric_values += self.ParseMetricValuesFromOutput(metric, output)
+      if self._IsBisectModeUsingMetric():
+        metric_values += self.ParseMetricValuesFromOutput(metric, output)
+        # If we're bisecting on a metric (ie, changes in the mean or
+        # standard deviation) and no metric values are produced, bail out.
+        if not metric_values:
+          break
+      elif self._IsBisectModeReturnCode():
+        metric_values.append(return_code)
 
       elapsed_minutes = (time.time() - start_time) / 60.0
-
-      if elapsed_minutes >= self.opts.max_time_minutes or not metric_values:
+      if elapsed_minutes >= self.opts.max_time_minutes:
         break
 
     if len(metric_values) == 0:
@@ -2124,22 +2146,43 @@ class BisectPerformanceMetrics(object):
       # that were found in the output here.
       return (err_text, failure_code, output_of_all_runs)
 
-    # Need to get the average value if there were multiple values.
-    truncated_mean = CalculateTruncatedMean(metric_values,
-        self.opts.truncate_percent)
-    standard_err = CalculateStandardError(metric_values)
-    standard_dev = CalculateStandardDeviation(metric_values)
+    # If we're bisecting on return codes, we're really just looking for zero vs
+    # non-zero.
+    if self._IsBisectModeReturnCode():
+      # If any of the return codes is non-zero, output 1.
+      overall_return_code = 0 if (
+          all(current_value == 0 for current_value in metric_values)) else 1
 
-    values = {
-      'mean': truncated_mean,
-      'std_err': standard_err,
-      'std_dev': standard_dev,
-      'values': metric_values,
-    }
+      values = {
+        'mean': overall_return_code,
+        'std_err': 0.0,
+        'std_dev': 0.0,
+        'values': metric_values,
+      }
 
-    print 'Results of performance test: %12f %12f' % (
-        truncated_mean, standard_err)
-    print
+      print 'Results of performance test: Command returned with %d' % (
+          overall_return_code)
+      print
+    else:
+      # Need to get the average value if there were multiple values.
+      truncated_mean = CalculateTruncatedMean(metric_values,
+          self.opts.truncate_percent)
+      standard_err = CalculateStandardError(metric_values)
+      standard_dev = CalculateStandardDeviation(metric_values)
+
+      if self._IsBisectModeStandardDeviation():
+        metric_values = [standard_dev]
+
+      values = {
+        'mean': truncated_mean,
+        'std_err': standard_err,
+        'std_dev': standard_dev,
+        'values': metric_values,
+      }
+
+      print 'Results of performance test: %12f %12f' % (
+          truncated_mean, standard_err)
+      print
     return (values, success_code, output_of_all_runs)
 
   def FindAllRevisionsToSync(self, revision, depot):
@@ -2400,7 +2443,7 @@ class BisectPerformanceMetrics(object):
       return ('Failed to sync revision: [%s]' % (str(revision, )),
           BUILD_RESULT_FAIL)
 
-  def CheckIfRunPassed(self, current_value, known_good_value, known_bad_value):
+  def _CheckIfRunPassed(self, current_value, known_good_value, known_bad_value):
     """Given known good and bad values, decide if the current_value passed
     or failed.
 
@@ -2413,8 +2456,14 @@ class BisectPerformanceMetrics(object):
       True if the current_value is closer to the known_good_value than the
       known_bad_value.
     """
-    dist_to_good_value = abs(current_value['mean'] - known_good_value['mean'])
-    dist_to_bad_value = abs(current_value['mean'] - known_bad_value['mean'])
+    if self.opts.bisect_mode == BISECT_MODE_STD_DEV:
+      dist_to_good_value = abs(current_value['std_dev'] -
+          known_good_value['std_dev'])
+      dist_to_bad_value = abs(current_value['std_dev'] -
+          known_bad_value['std_dev'])
+    else:
+      dist_to_good_value = abs(current_value['mean'] - known_good_value['mean'])
+      dist_to_bad_value = abs(current_value['mean'] - known_bad_value['mean'])
 
     return dist_to_good_value < dist_to_bad_value
 
@@ -2970,9 +3019,9 @@ class BisectPerformanceMetrics(object):
             next_revision_data['perf_time'] = run_results[3]
             next_revision_data['build_time'] = run_results[4]
 
-          passed_regression = self.CheckIfRunPassed(run_results[0],
-                                                    known_good_value,
-                                                    known_bad_value)
+          passed_regression = self._CheckIfRunPassed(run_results[0],
+                                                     known_good_value,
+                                                     known_bad_value)
 
           next_revision_data['passed'] = passed_regression
           next_revision_data['value'] = run_results[0]
@@ -3027,17 +3076,23 @@ class BisectPerformanceMetrics(object):
     print " __o_\___          Aw Snap! We hit a speed bump!"
     print "=-O----O-'__.~.___________________________________"
     print
-    print 'Bisect reproduced a %.02f%% (+-%.02f%%) change in the %s metric.' % (
-        results_dict['regression_size'], results_dict['regression_std_err'],
-        '/'.join(self.opts.metric))
+    if self._IsBisectModeReturnCode():
+      print ('Bisect reproduced a change in return codes while running the '
+          'performance test.')
+    else:
+      print ('Bisect reproduced a %.02f%% (+-%.02f%%) change in the '
+          '%s metric.' % (results_dict['regression_size'],
+          results_dict['regression_std_err'], '/'.join(self.opts.metric)))
     self._PrintConfidence(results_dict)
 
   def _PrintFailedBanner(self, results_dict):
     print
-    print ('Bisect could not reproduce a change in the '
-        '%s/%s metric.' % (self.opts.metric[0], self.opts.metric[1]))
+    if self._IsBisectModeReturnCode():
+      print 'Bisect could not reproduce a change in the return code.'
+    else:
+      print ('Bisect could not reproduce a change in the '
+          '%s metric.' % '/'.join(self.opts.metric))
     print
-    self._PrintConfidence(results_dict)
 
   def _GetViewVCLinkFromDepotAndHash(self, cl, depot):
     info = self.source_control.QueryRevisionInfo(cl,
@@ -3074,6 +3129,53 @@ class BisectPerformanceMetrics(object):
     print 'Commit  : %s' % cl
     print 'Date    : %s' % info['date']
 
+  def _PrintTableRow(self, column_widths, row_data):
+    assert len(column_widths) == len(row_data)
+
+    text = ''
+    for i in xrange(len(column_widths)):
+      current_row_data = row_data[i].center(column_widths[i], ' ')
+      text += ('%%%ds' % column_widths[i]) % current_row_data
+    print text
+
+  def _PrintTestedCommitsHeader(self):
+    if self.opts.bisect_mode == BISECT_MODE_MEAN:
+      self._PrintTableRow(
+          [20, 70, 14, 12, 13],
+          ['Depot', 'Commit SHA', 'Mean', 'Std. Error', 'State'])
+    elif self.opts.bisect_mode == BISECT_MODE_STD_DEV:
+      self._PrintTableRow(
+          [20, 70, 14, 12, 13],
+          ['Depot', 'Commit SHA', 'Std. Error', 'Mean', 'State'])
+    elif self.opts.bisect_mode == BISECT_MODE_RETURN_CODE:
+      self._PrintTableRow(
+          [20, 70, 14, 13],
+          ['Depot', 'Commit SHA', 'Return Code', 'State'])
+    else:
+      assert False, "Invalid bisect_mode specified."
+      print '  %20s  %70s  %14s %13s' % ('Depot'.center(20, ' '),
+          'Commit SHA'.center(70, ' '), 'Return Code'.center(14, ' '),
+           'State'.center(13, ' '))
+
+  def _PrintTestedCommitsEntry(self, current_data, cl_link, state_str):
+    if self.opts.bisect_mode == BISECT_MODE_MEAN:
+      std_error = '+-%.02f' % current_data['value']['std_err']
+      mean = '%.02f' % current_data['value']['mean']
+      self._PrintTableRow(
+          [20, 70, 12, 14, 13],
+          [current_data['depot'], cl_link, mean, std_error, state_str])
+    elif self.opts.bisect_mode == BISECT_MODE_STD_DEV:
+      std_error = '+-%.02f' % current_data['value']['std_err']
+      mean = '%.02f' % current_data['value']['mean']
+      self._PrintTableRow(
+          [20, 70, 12, 14, 13],
+          [current_data['depot'], cl_link, std_error, mean, state_str])
+    elif self.opts.bisect_mode == BISECT_MODE_RETURN_CODE:
+      mean = '%d' % current_data['value']['mean']
+      self._PrintTableRow(
+          [20, 70, 14, 13],
+          [current_data['depot'], cl_link, mean, state_str])
+
   def _PrintTestedCommitsTable(self, revision_data_sorted,
       first_working_revision, last_broken_revision, confidence,
       final_step=True):
@@ -3082,9 +3184,7 @@ class BisectPerformanceMetrics(object):
       print 'Tested commits:'
     else:
       print 'Partial results:'
-    print '  %20s  %70s  %12s %14s %13s' % ('Depot'.center(20, ' '),
-        'Commit SHA'.center(70, ' '), 'Mean'.center(12, ' '),
-        'Std. Error'.center(14, ' '), 'State'.center(13, ' '))
+    self._PrintTestedCommitsHeader()
     state = 0
     for current_id, current_data in revision_data_sorted:
       if current_data['value']:
@@ -3110,16 +3210,11 @@ class BisectPerformanceMetrics(object):
           state_str = ''
         state_str = state_str.center(13, ' ')
 
-        std_error = ('+-%.02f' %
-            current_data['value']['std_err']).center(14, ' ')
-        mean = ('%.02f' % current_data['value']['mean']).center(12, ' ')
         cl_link = self._GetViewVCLinkFromDepotAndHash(current_id,
             current_data['depot'])
         if not cl_link:
           cl_link = current_id
-        print '  %20s  %70s  %12s %14s %13s' % (
-            current_data['depot'].center(20, ' '), cl_link.center(70, ' '),
-            mean, std_error, state_str)
+        self._PrintTestedCommitsEntry(current_data, cl_link, state_str)
 
   def _PrintReproSteps(self):
     print
@@ -3494,6 +3589,7 @@ class BisectOptions(object):
     self.target_arch = 'ia32'
     self.builder_host = None
     self.builder_port = None
+    self.bisect_mode = BISECT_MODE_MEAN
 
   def _CreateCommandLineParser(self):
     """Creates a parser with bisect options.
@@ -3548,6 +3644,13 @@ class BisectOptions(object):
                      'truncated mean. Values will be clamped to range [0, '
                      '25]. Default value is 25 (highest/lowest 25% will be '
                      'discarded).')
+    group.add_option('--bisect_mode',
+                     type='choice',
+                     choices=[BISECT_MODE_MEAN, BISECT_MODE_STD_DEV,
+                        BISECT_MODE_RETURN_CODE],
+                     default=BISECT_MODE_MEAN,
+                     help='The bisect mode. Choices are to bisect on the '
+                     'difference in mean, std_dev, or return_code.')
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Build options')
@@ -3647,7 +3750,7 @@ class BisectOptions(object):
       if not opts.bad_revision:
         raise RuntimeError('missing required parameter: --bad_revision')
 
-      if not opts.metric:
+      if not opts.metric and opts.bisect_mode != BISECT_MODE_RETURN_CODE:
         raise RuntimeError('missing required parameter: --metric')
 
       if opts.gs_bucket:
@@ -3675,7 +3778,8 @@ class BisectOptions(object):
           raise RuntimeError('missing required parameter: --working_directory')
 
       metric_values = opts.metric.split('/')
-      if len(metric_values) != 2:
+      if (len(metric_values) != 2 and
+          opts.bisect_mode != BISECT_MODE_RETURN_CODE):
         raise RuntimeError("Invalid metric specified: [%s]" % opts.metric)
 
       opts.metric = metric_values

@@ -368,6 +368,9 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma,
   if config['max_time_minutes']:
     cmd.extend(['--max_time_minutes', config['max_time_minutes']])
 
+  if config.has_key('bisect_mode'):
+    cmd.extend(['--bisect_mode', config['bisect_mode']])
+
   cmd.extend(['--build_preference', 'ninja'])
 
   if '--browser=cros' in config['command']:
