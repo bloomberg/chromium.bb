@@ -71,9 +71,8 @@ hooks = [
   # Pull NaCl Toolchain binaries. This needs to be before running GYP below.
   {
     "pattern": ".",
-    "action": ["python",
-               "native_client/build/package_version/package_version.py",
-               "sync", '--extract'
+    "action": ["python", "native_client/build/download_toolchains.py",
+               "--keep", "--arm-untrusted", "native_client/TOOL_REVISIONS"
     ],
   },
   # Pull GN binaries. This needs to be before running GYP below.
