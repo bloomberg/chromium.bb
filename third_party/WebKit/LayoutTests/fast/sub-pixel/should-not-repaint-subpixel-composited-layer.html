@@ -1,37 +1,21 @@
 <!DOCTYPE html>
 <html>
 <style>
-#container {
+#layer {
     position: relative;
+    left: 10px;
     width: 100px;
     height: 50px;
     transform: translateZ(0);
 }
-#test {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border: 1px solid red;
-}
 #console {
     display: none;
-}
-body, html {
-    margin: 0px;
-    padding: 0px;
 }
 </style>
 <script src="../../resources/run-after-display.js"></script>
 <script>
-var testData = [
-    // left of #container, initial left of #test, final left of #test
-    [ '10.5px', '12.5px', '10.5px' ],
-    [ '10.6px', '12.4px', '10.4px' ],
-    [ '10.4px', '12.6px', '10.6px' ],
-    [ '10.6px', '12.6px', '10.6px' ],
-    [ '10.4px', '12.4px', '10.4px' ]
-];
-var testIndex = 0;
+
+var left = 10;
 
 if (window.testRunner) {
     testRunner.dumpAsText();
@@ -39,22 +23,21 @@ if (window.testRunner) {
 }
 
 function repaintTest() {
-    document.getElementById('container').style.left = testData[testIndex][0];
-    document.getElementById('test').style.left = testData[testIndex][1];
     runAfterDisplay(runTest);
 };
 
 function runTest() {
     if (window.internals)
         internals.startTrackingRepaints(document);
-    document.getElementById('test').style.left = testData[testIndex][2];
+    left += 0.1;
+    document.getElementById('layer').style.left = left + 'px';
     if (window.internals) {
-        document.getElementById('console').textContent += testData[testIndex] + ':\n'
+        document.getElementById('console').textContent += left + ':\n'
             + internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
         internals.stopTrackingRepaints(document);
     }
 
-    if (++testIndex < testData.length) {
+    if (left < 12) {
         repaintTest();
     } else {
         // Display the test results only after test is done so that it does not affect repaint rect results.
@@ -65,5 +48,5 @@ function runTest() {
 }
 </script>
 <body onload="repaintTest()">
-<div id="container"><div id="test"></div></div>
+<div id="layer"></div>
 <pre id="console"></pre>

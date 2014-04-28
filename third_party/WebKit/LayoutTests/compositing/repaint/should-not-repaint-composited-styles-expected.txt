@@ -48,7 +48,7 @@ filter change with non-composited child
           (bounds 100.00 100.00)
           (drawsContent 1)
           (repaint rects
-            (rect 0.00 0.00 100.00 99.00)
+            (rect 0.00 0.00 100.00 100.00)
           )
         )
         (GraphicsLayer
@@ -110,7 +110,7 @@ filter change with non-composited child
           (bounds 100.00 100.00)
           (drawsContent 1)
           (repaint rects
-            (rect 0.00 0.00 100.00 99.00)
+            (rect 0.00 0.00 100.00 100.00)
           )
           (children 1
             (GraphicsLayer
@@ -131,7 +131,7 @@ filter change with non-composited child
           (bounds 100.00 100.00)
           (drawsContent 1)
           (repaint rects
-            (rect 0.00 0.00 100.00 99.00)
+            (rect 0.00 0.00 100.00 100.00)
           )
         )
         (GraphicsLayer
@@ -156,7 +156,7 @@ filter change with non-composited child
           (bounds 100.00 100.00)
           (drawsContent 1)
           (repaint rects
-            (rect 0.00 0.00 100.00 99.00)
+            (rect 0.00 0.00 100.00 100.00)
           )
         )
       )
