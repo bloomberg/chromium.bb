@@ -792,7 +792,7 @@ void LocationBarView::Layout() {
   const int bubble_height = std::max(location_height - (kBubblePadding * 2), 0);
   if (!keyword.empty() && !is_keyword_hint) {
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, true, 0,
-                                      kBubblePadding, kItemPadding, 0,
+                                      kBubblePadding, kItemPadding,
                                       selected_keyword_view_);
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
@@ -819,47 +819,40 @@ void LocationBarView::Layout() {
     const double kMaxBubbleFraction = 0.5;
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, false,
                                       kMaxBubbleFraction, kBubblePadding,
-                                      kItemPadding, 0, ev_bubble_view_);
+                                      kItemPadding, ev_bubble_view_);
   } else if (!origin_chip_view_->visible()) {
     leading_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
-        0,
         location_icon_view_);
   }
 
   if (star_view_->visible()) {
     trailing_decorations.AddDecoration(
-        vertical_edge_thickness(), location_height,
-        0, star_view_);
+        vertical_edge_thickness(), location_height, star_view_);
   }
   if (translate_icon_view_->visible()) {
     trailing_decorations.AddDecoration(
-        vertical_edge_thickness(), location_height,
-        0,
-        translate_icon_view_);
+        vertical_edge_thickness(), location_height, translate_icon_view_);
   }
   if (open_pdf_in_reader_view_->visible()) {
     trailing_decorations.AddDecoration(
-        vertical_edge_thickness(), location_height,
-        0,
-        open_pdf_in_reader_view_);
+        vertical_edge_thickness(), location_height, open_pdf_in_reader_view_);
   }
   if (manage_passwords_icon_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
-                                       location_height, 0,
+                                       location_height,
                                        manage_passwords_icon_view_);
   }
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible()) {
       trailing_decorations.AddDecoration(
-          vertical_edge_thickness(), location_height,
-          0, (*i));
+          vertical_edge_thickness(), location_height, (*i));
     }
   }
   if (zoom_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
-                                       location_height, 0, zoom_view_);
+                                       location_height, zoom_view_);
   }
   for (ContentSettingViews::const_reverse_iterator i(
            content_setting_views_.rbegin()); i != content_setting_views_.rend();
@@ -867,24 +860,24 @@ void LocationBarView::Layout() {
     if ((*i)->visible()) {
       trailing_decorations.AddDecoration(
           bubble_location_y, bubble_height, false, 0, kItemPadding,
-          kItemPadding, 0, (*i));
+          kItemPadding, (*i));
     }
   }
   if (generated_credit_card_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
-                                       location_height, 0,
+                                       location_height,
                                        generated_credit_card_view_);
   }
   if (mic_search_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
-                                       location_height, 0, mic_search_view_);
+                                       location_height, mic_search_view_);
   }
   // Because IMEs may eat the tab key, we don't show "press tab to search" while
   // IME composition is in progress.
   if (!keyword.empty() && is_keyword_hint && !omnibox_view_->IsImeComposing()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
                                        location_height, true, 0, kItemPadding,
-                                       kItemPadding, 0, keyword_hint_view_);
+                                       kItemPadding, keyword_hint_view_);
     if (keyword_hint_view_->keyword() != keyword)
       keyword_hint_view_->SetKeyword(keyword);
   }

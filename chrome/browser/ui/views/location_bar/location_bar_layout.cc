@@ -18,7 +18,6 @@ struct LocationBarDecoration {
                         double max_fraction,
                         int edge_item_padding,
                         int item_padding,
-                        int builtin_padding,
                         views::View* view);
 
   // The y position of the view inside its parent.
@@ -43,10 +42,6 @@ struct LocationBarDecoration {
   // Padding to use if the decoration follows another decoration.
   int item_padding;
 
-  // Padding built into the decoration and that should be removed, on
-  // both sides, during layout.
-  int builtin_padding;
-
   views::View* view;
 
   // The width computed by the layout process.
@@ -59,7 +54,6 @@ LocationBarDecoration::LocationBarDecoration(int y,
                                              double max_fraction,
                                              int edge_item_padding,
                                              int item_padding,
-                                             int builtin_padding,
                                              views::View* view)
     : y(y),
       height(height),
@@ -67,7 +61,6 @@ LocationBarDecoration::LocationBarDecoration(int y,
       max_fraction(max_fraction),
       edge_item_padding(edge_item_padding),
       item_padding(item_padding),
-      builtin_padding(builtin_padding),
       view(view),
       computed_width(0) {
   DCHECK((max_fraction == 0.0) || (!auto_collapse && (max_fraction > 0.0)));
@@ -91,20 +84,18 @@ void LocationBarLayout::AddDecoration(int y,
                                       double max_fraction,
                                       int edge_item_padding,
                                       int item_padding,
-                                      int builtin_padding,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
       y, height, auto_collapse, max_fraction, edge_item_padding, item_padding,
-      builtin_padding, view));
+      view));
 }
 
 void LocationBarLayout::AddDecoration(int y,
                                       int height,
-                                      int builtin_padding,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
       y, height, false, 0, LocationBarView::kItemPadding,
-      LocationBarView::kItemPadding, builtin_padding, view));
+      LocationBarView::kItemPadding, view));
 }
 
 void LocationBarLayout::LayoutPass1(int* entry_width) {
@@ -113,7 +104,7 @@ void LocationBarLayout::LayoutPass1(int* entry_width) {
        ++i) {
     // Autocollapsing decorations are ignored in this pass.
     if (!(*i)->auto_collapse) {
-      *entry_width -= -2 * (*i)->builtin_padding +
+      *entry_width -=
           (first_item ? (*i)->edge_item_padding : (*i)->item_padding);
     }
     first_item = false;
@@ -145,7 +136,7 @@ void LocationBarLayout::LayoutPass3(gfx::Rect* bounds, int* available_width) {
        ++i) {
     // Collapse decorations if needed.
     if ((*i)->auto_collapse) {
-      int padding = -2 * (*i)->builtin_padding +
+      int padding =
           (first_visible ? (*i)->edge_item_padding : (*i)->item_padding);
       // Try preferred size, if it fails try minimum size, if it fails collapse.
       (*i)->computed_width = (*i)->view->GetPreferredSize().width();
@@ -165,18 +156,15 @@ void LocationBarLayout::LayoutPass3(gfx::Rect* bounds, int* available_width) {
     // Layout visible decorations.
     if (!(*i)->view->visible())
       continue;
-    int padding = -(*i)->builtin_padding +
+    int padding =
         (first_visible ? (*i)->edge_item_padding : (*i)->item_padding);
     first_visible = false;
     int x = (position_ == LEFT_EDGE) ? (bounds->x() + padding) :
         (bounds->right() - padding - (*i)->computed_width);
     (*i)->view->SetBounds(x, (*i)->y, (*i)->computed_width, (*i)->height);
-    bounds->set_width(bounds->width() - padding - (*i)->computed_width +
-        (*i)->builtin_padding);
-    if (position_ == LEFT_EDGE) {
-      bounds->set_x(
-          bounds->x() + padding + (*i)->computed_width - (*i)->builtin_padding);
-    }
+    bounds->set_width(bounds->width() - padding - (*i)->computed_width);
+    if (position_ == LEFT_EDGE)
+      bounds->set_x(bounds->x() + padding + (*i)->computed_width);
   }
   bounds->set_width(bounds->width() - item_edit_padding_);
   if (position_ == LEFT_EDGE)
