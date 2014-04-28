@@ -69,7 +69,8 @@ class ScreenIos : public gfx::Screen {
 
   // Returns the primary display.
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
-    UIScreen* mainScreen = [[UIScreen screens] objectAtIndex:0];
+    UIScreen* mainScreen = [UIScreen mainScreen];
+    CHECK(mainScreen);
     gfx::Display display(0, gfx::Rect(mainScreen.bounds));
     display.set_device_scale_factor([mainScreen scale]);
     return display;
