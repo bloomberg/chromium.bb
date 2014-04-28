@@ -6,7 +6,6 @@
 
 #include "base/files/file.h"
 #include "base/stl_util.h"
-#include "base/values.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -37,8 +36,7 @@ RequestManager::~RequestManager() {
   STLDeleteValues(&requests_);
 }
 
-int RequestManager::CreateRequest(const SuccessCallback& success_callback,
-                                  const ErrorCallback& error_callback) {
+int RequestManager::CreateRequest(scoped_ptr<HandlerInterface> handler) {
   // The request id is unique per request manager, so per service, thereof
   // per profile.
   int request_id = next_id_++;
@@ -48,8 +46,7 @@ int RequestManager::CreateRequest(const SuccessCallback& success_callback,
     return 0;
 
   Request* request = new Request;
-  request->success_callback = success_callback;
-  request->error_callback = error_callback;
+  request->handler = handler.Pass();
   request->timeout_timer.Start(FROM_HERE,
                                timeout_,
                                base::Bind(&RequestManager::OnRequestTimeout,
@@ -57,19 +54,28 @@ int RequestManager::CreateRequest(const SuccessCallback& success_callback,
                                           request_id));
   requests_[request_id] = request;
 
+  // Execute the request implementation. In case of an execution failure,
+  // unregister and return 0. This may often happen, eg. if the providing
+  // extension is not listening for the request event being sent.
+  // In such case, there is no reason we should abort as soon as possible.
+  if (!request->handler->Execute(request_id)) {
+    delete request;
+    requests_.erase(request_id);
+    return 0;
+  }
+
   return request_id;
 }
 
 bool RequestManager::FulfillRequest(int request_id,
-                                    scoped_ptr<base::DictionaryValue> response,
+                                    scoped_ptr<RequestValue> response,
                                     bool has_next) {
   RequestMap::iterator request_it = requests_.find(request_id);
 
   if (request_it == requests_.end())
     return false;
 
-  if (!request_it->second->success_callback.is_null())
-    request_it->second->success_callback.Run(response.Pass(), has_next);
+  request_it->second->handler->OnSuccess(request_id, response.Pass(), has_next);
   if (!has_next) {
     delete request_it->second;
     requests_.erase(request_it);
@@ -86,8 +92,7 @@ bool RequestManager::RejectRequest(int request_id, base::File::Error error) {
   if (request_it == requests_.end())
     return false;
 
-  if (!request_it->second->error_callback.is_null())
-    request_it->second->error_callback.Run(error);
+  request_it->second->handler->OnError(request_id, error);
   delete request_it->second;
   requests_.erase(request_it);
 

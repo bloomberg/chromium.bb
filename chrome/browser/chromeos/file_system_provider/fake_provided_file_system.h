@@ -28,7 +28,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual ~FakeProvidedFileSystem();
 
   // ProvidedFileSystemInterface overrides.
-  virtual bool RequestUnmount(
+  virtual void RequestUnmount(
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
@@ -41,6 +41,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
 
  private:
   ProvidedFileSystemInfo file_system_info_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);
 };
 

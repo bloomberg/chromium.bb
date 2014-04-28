@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
+#include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
@@ -84,6 +85,11 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
     event_router_.reset(new FakeEventRouter(profile_.get()));
+    event_router_->AddEventListener(
+        extensions::api::file_system_provider::OnUnmountRequested::kEventName,
+        NULL,
+        kExtensionId);
+
     base::FilePath mount_path =
         util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
     file_system_info_.reset(new ProvidedFileSystemInfo(
@@ -102,9 +108,8 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
 TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Success) {
   EventLogger logger;
 
-  bool result = provided_file_system_->RequestUnmount(
+  provided_file_system_->RequestUnmount(
       base::Bind(&EventLogger::OnStatusCallback, logger.GetWeakPtr()));
-  ASSERT_TRUE(result);
   base::RunLoop().RunUntilIdle();
 
   // Verify that the event has been sent to the providing extension.
@@ -129,7 +134,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Success) {
   // Simulate sending a success response from the providing extension.
   RequestManager* request_manager = provided_file_system_->GetRequestManager();
   ASSERT_TRUE(request_manager);
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  scoped_ptr<RequestValue> response;
   bool reply_result = request_manager->FulfillRequest(
       request_id, response.Pass(), false /* has_next */);
   EXPECT_TRUE(reply_result);
@@ -142,9 +147,8 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Success) {
 TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Error) {
   EventLogger logger;
 
-  bool result = provided_file_system_->RequestUnmount(
+  provided_file_system_->RequestUnmount(
       base::Bind(&EventLogger::OnStatusCallback, logger.GetWeakPtr()));
-  ASSERT_TRUE(result);
   base::RunLoop().RunUntilIdle();
 
   // Verify that the event has been sent to the providing extension.

@@ -8,6 +8,11 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
+#include "webkit/browser/fileapi/async_file_util.h"
+
+namespace base {
+class FilePath;
+}  // namespace base
 
 namespace extensions {
 class EventRouter;
@@ -25,7 +30,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual ~ProvidedFileSystem();
 
   // ProvidedFileSystemInterface overrides.
-  virtual bool RequestUnmount(
+  virtual void RequestUnmount(
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;

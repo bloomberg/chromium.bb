@@ -13,15 +13,15 @@ namespace file_system_provider {
 
 FakeProvidedFileSystem::FakeProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info)
-    : file_system_info_(file_system_info) {}
+    : file_system_info_(file_system_info) {
+}
 
 FakeProvidedFileSystem::~FakeProvidedFileSystem() {}
 
-bool FakeProvidedFileSystem::RequestUnmount(
+void FakeProvidedFileSystem::RequestUnmount(
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(callback, base::File::FILE_OK));
-  return true;
 }
 
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()

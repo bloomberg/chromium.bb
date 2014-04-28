@@ -47,6 +47,8 @@ Service::Service(Profile* profile,
 }
 
 Service::~Service() {
+  extension_registry_->RemoveObserver(this);
+
   ProvidedFileSystemMap::iterator it = file_system_map_.begin();
   while (it != file_system_map_.end()) {
     const int file_system_id = it->first;
@@ -204,10 +206,11 @@ bool Service::RequestUnmount(int file_system_id) {
   if (file_system_it == file_system_map_.end())
     return false;
 
-  return file_system_it->second->RequestUnmount(
+  file_system_it->second->RequestUnmount(
       base::Bind(&Service::OnRequestUnmountStatus,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_system_it->second->GetFileSystemInfo()));
+  return true;
 }
 
 std::vector<ProvidedFileSystemInfo> Service::GetProvidedFileSystemInfoList() {
