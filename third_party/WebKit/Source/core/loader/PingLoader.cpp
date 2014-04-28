@@ -121,7 +121,7 @@ void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchI
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, initiatorInfo, credentialsAllowed));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
+    PingLoader* leakedPingLoader ALLOW_UNUSED = pingLoader.leakPtr();
 }
 
 PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)

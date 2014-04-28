@@ -186,7 +186,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     }
 
     // Balanced by adoptPtr() in wtfThreadEntryPoint.
-    ThreadFunctionInvocation* ALLOW_UNUSED leakedInvocation = invocation.leakPtr();
+    ThreadFunctionInvocation* leakedInvocation ALLOW_UNUSED = invocation.leakPtr();
 
     return establishIdentifierForPthreadHandle(threadHandle);
 }
