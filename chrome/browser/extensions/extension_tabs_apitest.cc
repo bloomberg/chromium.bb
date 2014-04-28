@@ -199,7 +199,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest,
                                   "test_race.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleFile) {
+
+// Disabled for being flaky, see http://crbug/367695.
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest,
+                       DISABLED_CaptureVisibleFile) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_file.html")) << message_;
 }
