@@ -4,78 +4,133 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_tab.h"
 
+#include "apps/saved_files_service.h"
+#include "base/files/file_path.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
-#include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/animation.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
-// A scrollable list of permissions for the given app.
-class PermissionsScrollView : public views::ScrollView {
+namespace {
+
+// A view to display a title with an expandable permissions list section.
+class ExpandableContainerView : public views::View,
+                                public views::ButtonListener,
+                                public gfx::AnimationDelegate {
  public:
-  PermissionsScrollView(int min_height,
-                        int max_height,
-                        const extensions::Extension* app);
+  ExpandableContainerView(
+      views::View* owner,
+      const base::string16& title,
+      const std::vector<base::string16>& permission_messages);
+  virtual ~ExpandableContainerView();
+
+  // views::View:
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+
+  // Expand/Collapse the detail section for this ExpandableContainerView.
+  void ToggleDetailLevel();
 
  private:
-  virtual ~PermissionsScrollView();
+  // A view which displays the permission messages as a bulleted list.
+  class DetailsView : public views::View {
+   public:
+    explicit DetailsView(std::vector<base::string16> messages);
+    virtual ~DetailsView() {}
+
+    // views::View:
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+    // Animates this to be a height proportional to |ratio|.
+    void AnimateToRatio(double ratio);
+
+   private:
+    views::GridLayout* layout_;
+
+    // The current state of the animation, as a decimal from 0 to 1 (0 is fully
+    // collapsed, 1 is fully expanded).
+    double visible_ratio_;
+
+    DISALLOW_COPY_AND_ASSIGN(DetailsView);
+  };
+
+  // The dialog that owns |this|. It's also an ancestor in the View hierarchy.
+  views::View* owner_;
+
+  // A view for showing |permission_messages|.
+  DetailsView* details_view_;
+
+  gfx::SlideAnimation slide_animation_;
+
+  // The up/down arrow next to the heading (points up/down depending on whether
+  // the details section is expanded).
+  views::ImageButton* arrow_toggle_;
+
+  // Whether the details section is expanded.
+  bool expanded_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExpandableContainerView);
 };
 
-PermissionsScrollView::PermissionsScrollView(int min_height,
-                                             int max_height,
-                                             const extensions::Extension* app) {
-  ClipHeightTo(min_height, max_height);
-  SetVerticalScrollBar(new views::OverlayScrollBar(false));
-
-  views::View* inner_scrollable_view = new views::View();
-  this->SetContents(inner_scrollable_view);
-
-  // Get the permission messages for the app.
-  std::vector<base::string16> permission_messages =
-      extensions::PermissionMessageProvider::Get()->GetWarningMessages(
-          app->GetActivePermissions(), app->GetType());
-
-  // Create the layout.
-  views::GridLayout* layout =
-      views::GridLayout::CreatePanel(inner_scrollable_view);
-  inner_scrollable_view->SetLayoutManager(layout);
+ExpandableContainerView::DetailsView::DetailsView(
+    std::vector<base::string16> messages)
+    : layout_(new views::GridLayout(this)), visible_ratio_(0) {
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  SetLayoutManager(layout);
 
   // Create 2 columns: one for the bullet, one for the bullet text.
-  static const int kPermissionBulletsColumnSetId = 1;
-  views::ColumnSet* permission_bullets_column_set =
-      layout->AddColumnSet(kPermissionBulletsColumnSetId);
-  permission_bullets_column_set->AddPaddingColumn(0, 10);
-  permission_bullets_column_set->AddColumn(views::GridLayout::LEADING,
-                                           views::GridLayout::LEADING,
-                                           0,
-                                           views::GridLayout::USE_PREF,
-                                           0,  // no fixed width
-                                           0);
-  permission_bullets_column_set->AddPaddingColumn(0, 5);
-  permission_bullets_column_set->AddColumn(views::GridLayout::LEADING,
-                                           views::GridLayout::LEADING,
-                                           0,
-                                           views::GridLayout::USE_PREF,
-                                           0,  // no fixed width
-                                           0);
+  static const int kColumnSet = 1;
+  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSet);
+  column_set->AddPaddingColumn(0, 10);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddPaddingColumn(0, 5);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
 
   // Add permissions to scrollable view.
-  for (std::vector<base::string16>::const_iterator it =
-           permission_messages.begin();
-       it != permission_messages.end();
+  for (std::vector<base::string16>::const_iterator it = messages.begin();
+       it != messages.end();
        ++it) {
     views::Label* permission_label = new views::Label(*it);
 
     permission_label->SetMultiLine(true);
     permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    permission_label->SizeToFit(250);
 
-    layout->StartRow(0, kPermissionBulletsColumnSetId);
+    layout->StartRow(0, kColumnSet);
     // Extract only the bullet from the IDS_EXTENSION_PERMISSION_LINE text.
     layout->AddView(new views::Label(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PERMISSION_LINE, base::string16())));
@@ -83,11 +138,139 @@ PermissionsScrollView::PermissionsScrollView(int min_height,
     // bullet.
     layout->AddView(permission_label);
 
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   }
 }
 
-PermissionsScrollView::~PermissionsScrollView() {}
+gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() {
+  gfx::Size size = views::View::GetPreferredSize();
+  return gfx::Size(size.width(), size.height() * visible_ratio_);
+}
+
+void ExpandableContainerView::DetailsView::AnimateToRatio(double ratio) {
+  visible_ratio_ = ratio;
+  PreferredSizeChanged();
+  SchedulePaint();
+}
+
+ExpandableContainerView::ExpandableContainerView(
+    views::View* owner,
+    const base::string16& title,
+    const std::vector<base::string16>& permission_messages)
+    : owner_(owner),
+      details_view_(NULL),
+      slide_animation_(this),
+      arrow_toggle_(NULL),
+      expanded_(false) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+  const int kMainColumnSetId = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(kMainColumnSetId);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+
+  // A column set that is split in half, to allow for the expand/collapse button
+  // image to be aligned to the right of the view.
+  const int kSplitColumnSetId = 1;
+  views::ColumnSet* split_column_set = layout->AddColumnSet(kSplitColumnSetId);
+  split_column_set->AddColumn(views::GridLayout::LEADING,
+                              views::GridLayout::LEADING,
+                              1,
+                              views::GridLayout::USE_PREF,
+                              0,
+                              0);
+  split_column_set->AddPaddingColumn(0,
+                                     views::kRelatedControlHorizontalSpacing);
+  split_column_set->AddColumn(views::GridLayout::TRAILING,
+                              views::GridLayout::LEADING,
+                              1,
+                              views::GridLayout::USE_PREF,
+                              0,
+                              0);
+
+  // To display the heading and count next to each other, create a sub-view
+  // with a box layout that stacks them horizontally.
+  views::View* title_view = new views::View();
+  title_view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           0,
+                           0,
+                           views::kRelatedControlSmallHorizontalSpacing));
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  // Format the title as 'Title - number'. Unfortunately, this needs to be in
+  // separate views because labels only support a single font per view.
+  title_view->AddChildView(
+      new views::Label(title, rb.GetFontList(ui::ResourceBundle::BoldFont)));
+  title_view->AddChildView(
+      new views::Label(base::UTF8ToUTF16("\xe2\x80\x93")));  // En-dash.
+  title_view->AddChildView(
+      new views::Label(base::IntToString16(permission_messages.size())));
+
+  arrow_toggle_ = new views::ImageButton(this);
+  arrow_toggle_->SetImage(views::Button::STATE_NORMAL,
+                          rb.GetImageSkiaNamed(IDR_DOWN_ARROW));
+
+  layout->StartRow(0, kSplitColumnSetId);
+  layout->AddView(title_view);
+  layout->AddView(arrow_toggle_);
+
+  details_view_ = new DetailsView(permission_messages);
+  layout->StartRow(0, kMainColumnSetId);
+  layout->AddView(details_view_);
+}
+
+ExpandableContainerView::~ExpandableContainerView() {
+}
+
+void ExpandableContainerView::ButtonPressed(views::Button* sender,
+                                            const ui::Event& event) {
+  ToggleDetailLevel();
+}
+
+void ExpandableContainerView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  DCHECK_EQ(&slide_animation_, animation);
+  if (details_view_) {
+    details_view_->AnimateToRatio(animation->GetCurrentValue());
+  }
+}
+
+void ExpandableContainerView::AnimationEnded(const gfx::Animation* animation) {
+  if (arrow_toggle_) {
+    if (animation->GetCurrentValue() != 0.0) {
+      arrow_toggle_->SetImage(
+          views::Button::STATE_NORMAL,
+          ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_UP_ARROW));
+    } else {
+      arrow_toggle_->SetImage(
+          views::Button::STATE_NORMAL,
+          ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_DOWN_ARROW));
+    }
+  }
+}
+
+void ExpandableContainerView::ChildPreferredSizeChanged(views::View* child) {
+  owner_->Layout();
+}
+
+void ExpandableContainerView::ToggleDetailLevel() {
+  expanded_ = !expanded_;
+
+  if (slide_animation_.IsShowing())
+    slide_animation_.Hide();
+  else
+    slide_animation_.Show();
+}
+
+}  // namespace
 
 AppInfoPermissionsTab::AppInfoPermissionsTab(
     gfx::NativeWindow parent_window,
@@ -95,31 +278,151 @@ AppInfoPermissionsTab::AppInfoPermissionsTab(
     const extensions::Extension* app,
     const base::Closure& close_callback)
     : AppInfoTab(parent_window, profile, app, close_callback) {
+  this->SetLayoutManager(new views::FillLayout);
 
-  // Create the layout.
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
+  // Create a scrollview and add it to the tab.
+  views::View* scrollable_content = new views::View();
+  scroll_view_ = new views::ScrollView();
+  scroll_view_->SetContents(scrollable_content);
+  AddChildView(scroll_view_);
 
-  static const int kPermissionsColumnSetId = 0;
-  views::ColumnSet* permissions_column_set =
-      layout->AddColumnSet(kPermissionsColumnSetId);
-  permissions_column_set->AddColumn(views::GridLayout::LEADING,
-                                    views::GridLayout::LEADING,
-                                    0,
-                                    views::GridLayout::USE_PREF,
-                                    0,  // no fixed width
-                                    0);
+  // Give the inner scrollview (the 'scrollable' part) a layout.
+  views::GridLayout* layout =
+      views::GridLayout::CreatePanel(scrollable_content);
+  scrollable_content->SetLayoutManager(layout);
 
-  views::Label* required_permissions_heading = new views::Label(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_CAN_ACCESS));
-  required_permissions_heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Main column that stretches to the width of the view.
+  static const int kMainColumnSetId = 0;
+  views::ColumnSet* main_column_set = layout->AddColumnSet(kMainColumnSetId);
+  main_column_set->AddColumn(
+      views::GridLayout::FILL,
+      views::GridLayout::FILL,
+      1,  // This column resizes to the width of the dialog.
+      views::GridLayout::USE_PREF,
+      0,
+      0);
 
-  layout->StartRow(0, kPermissionsColumnSetId);
-  layout->AddView(required_permissions_heading);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  layout->StartRow(0, kPermissionsColumnSetId);
-  layout->AddView(new PermissionsScrollView(0, 100, app));
-  layout->AddPaddingRow(0, views::kUnrelatedControlHorizontalSpacing);
+  const std::vector<base::string16> required_permission_messages =
+      GetRequiredPermissionMessages();
+  const std::vector<base::string16> optional_permission_messages =
+      GetOptionalPermissionMessages();
+  const std::vector<base::string16> retained_file_permission_messages =
+      GetRetainedFilePermissionMessages();
+
+  if (required_permission_messages.empty() &&
+      optional_permission_messages.empty() &&
+      retained_file_permission_messages.empty()) {
+    // If there are no permissions at all, display an appropriate message.
+    views::Label* no_permissions_text = new views::Label(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_NO_PERMISSIONS_TEXT));
+    no_permissions_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    layout->StartRow(0, kMainColumnSetId);
+    layout->AddView(no_permissions_text);
+  } else {
+    views::Label* heading = new views::Label(l10n_util::GetStringUTF16(
+        IDS_APPLICATION_INFO_REQUIRED_PERMISSIONS_TEXT));
+    heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    if (!required_permission_messages.empty()) {
+      ExpandableContainerView* details_container = new ExpandableContainerView(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_APPLICATION_INFO_REQUIRED_PERMISSIONS_TEXT),
+          required_permission_messages);
+      // Required permissions are visible by default.
+      details_container->ToggleDetailLevel();
+
+      layout->StartRow(0, kMainColumnSetId);
+      layout->AddView(details_container);
+      layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
+    }
+
+    if (!optional_permission_messages.empty()) {
+      ExpandableContainerView* details_container = new ExpandableContainerView(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_APPLICATION_INFO_OPTIONAL_PERMISSIONS_TEXT),
+          optional_permission_messages);
+
+      layout->StartRow(0, kMainColumnSetId);
+      layout->AddView(details_container);
+      layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
+    }
+
+    if (!retained_file_permission_messages.empty()) {
+      ExpandableContainerView* details_container = new ExpandableContainerView(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT),
+          retained_file_permission_messages);
+
+      layout->StartRow(0, kMainColumnSetId);
+      layout->AddView(details_container);
+      layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
+    }
+  }
 }
 
-AppInfoPermissionsTab::~AppInfoPermissionsTab() {}
+AppInfoPermissionsTab::~AppInfoPermissionsTab() {
+}
+
+void AppInfoPermissionsTab::Layout() {
+  // To avoid 'jumping' issues when the scrollbar becomes visible, size the
+  // scrollable area as though it always has a visible scrollbar.
+  views::View* contents_view = scroll_view_->contents();
+  int content_width = width() - scroll_view_->GetScrollBarWidth();
+  int content_height = contents_view->GetHeightForWidth(content_width);
+  contents_view->SetBounds(0, 0, content_width, content_height);
+  scroll_view_->SetBounds(0, 0, width(), height());
+}
+
+const extensions::PermissionSet* AppInfoPermissionsTab::GetRequiredPermissions()
+    const {
+  return extensions::PermissionsData::GetRequiredPermissions(app_);
+}
+
+const std::vector<base::string16>
+AppInfoPermissionsTab::GetRequiredPermissionMessages() const {
+  return extensions::PermissionMessageProvider::Get()->GetWarningMessages(
+      GetRequiredPermissions(), app_->GetType());
+}
+
+const extensions::PermissionSet* AppInfoPermissionsTab::GetOptionalPermissions()
+    const {
+  return extensions::PermissionsData::GetOptionalPermissions(app_);
+}
+
+const std::vector<base::string16>
+AppInfoPermissionsTab::GetOptionalPermissionMessages() const {
+  return extensions::PermissionMessageProvider::Get()->GetWarningMessages(
+      GetOptionalPermissions(), app_->GetType());
+}
+
+const std::vector<base::FilePath>
+AppInfoPermissionsTab::GetRetainedFilePermissions() const {
+  std::vector<base::FilePath> retained_file_paths;
+  if (app_->HasAPIPermission(extensions::APIPermission::kFileSystem)) {
+    std::vector<apps::SavedFileEntry> retained_file_entries =
+        apps::SavedFilesService::Get(profile_)->GetAllFileEntries(app_->id());
+    for (std::vector<apps::SavedFileEntry>::const_iterator it =
+             retained_file_entries.begin();
+         it != retained_file_entries.end();
+         ++it) {
+      retained_file_paths.push_back(it->path);
+    }
+  }
+  return retained_file_paths;
+}
+
+const std::vector<base::string16>
+AppInfoPermissionsTab::GetRetainedFilePermissionMessages() const {
+  const std::vector<base::FilePath> permissions = GetRetainedFilePermissions();
+  std::vector<base::string16> file_permission_messages;
+  for (std::vector<base::FilePath>::const_iterator it = permissions.begin();
+       it != permissions.end();
+       ++it) {
+    file_permission_messages.push_back(it->LossyDisplayName());
+  }
+  return file_permission_messages;
+}

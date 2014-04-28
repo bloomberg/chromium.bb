@@ -2233,6 +2233,18 @@ Even if you have downloaded files from this website before, the website might ha
           Uninstall
         </message>
       </if>
+      <message name="IDS_APPLICATION_INFO_REQUIRED_PERMISSIONS_TEXT" desc="Heading for the required permissions for the app (the permissions that the user must grant the app upon installation).">
+        Required
+      </message>
+      <message name="IDS_APPLICATION_INFO_OPTIONAL_PERMISSIONS_TEXT" desc="Heading for the optional permissions for the app (the permissions that the user may choose to grant the app, but are not required for the basic app's functionality).">
+        Optional
+      </message>
+      <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="Heading for the retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
+        Files
+      </message>
+      <message name="IDS_APPLICATION_INFO_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the App Info dialog if the app has no permissions of any kind.">
+        This app requires no special permissions.
+      </message>
 
       <!-- "Create application shortcuts" dialog -->
       <if expr="not use_titlecase">
