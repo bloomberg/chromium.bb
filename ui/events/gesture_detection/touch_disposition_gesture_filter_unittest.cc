@@ -938,4 +938,46 @@ TEST_F(TouchDispositionGestureFilterTest, TestCancelMidGesture) {
                             GetAndResetSentGestures()));
 }
 
+// Test that a MultiFingerSwipe event is dispatched when appropriate.
+TEST_F(TouchDispositionGestureFilterTest, TestAllowedMultiFingerSwipe) {
+  PushGesture(ET_GESTURE_SCROLL_BEGIN);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SCROLL_BEGIN),
+                            GetAndResetSentGestures()));
+
+  PushGesture(ET_GESTURE_PINCH_BEGIN);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_PINCH_BEGIN),
+                            GetAndResetSentGestures()));
+
+  PushGesture(ET_GESTURE_MULTIFINGER_SWIPE);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_MULTIFINGER_SWIPE),
+                            GetAndResetSentGestures()));
+}
+
+  // Test that a MultiFingerSwipe event is dispatched when appropriate.
+TEST_F(TouchDispositionGestureFilterTest, TestDisallowedMultiFingerSwipe) {
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+
+  PushGesture(ET_GESTURE_SCROLL_BEGIN);
+  MoveTouchPoint(0, 0, 0);
+  SendTouchConsumedAck();
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(ET_GESTURE_PINCH_BEGIN);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_FALSE(GesturesSent());
+
+  PushGesture(ET_GESTURE_MULTIFINGER_SWIPE);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_FALSE(GesturesSent());
+}
+
 }  // namespace ui

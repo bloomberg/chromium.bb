@@ -137,7 +137,7 @@ void MockMotionEvent::PressPoint(float x, float y) {
   if (pointer_count == 1 && (action == ACTION_UP || action == ACTION_CANCEL))
     pointer_count = 0;
 
-  DCHECK_LT(pointer_count + 1, static_cast<size_t>(MAX_POINTERS));
+  DCHECK_LT(pointer_count, static_cast<size_t>(MAX_POINTERS));
   points[pointer_count++] = gfx::PointF(x, y);
   action = pointer_count > 1 ? ACTION_POINTER_DOWN : ACTION_DOWN;
 }
