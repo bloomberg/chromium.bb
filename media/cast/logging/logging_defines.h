@@ -107,33 +107,6 @@ struct PacketEvent {
   CastLoggingEvent type;
 };
 
-// Generic statistics given the raw data. More specific data (e.g. frame rate
-// and bit rate) can be computed given the basic metrics.
-// Some of the metrics will only be set when applicable, e.g. delay and size.
-struct FrameLogStats {
-  FrameLogStats();
-  ~FrameLogStats();
-  base::TimeTicks first_event_time;
-  base::TimeTicks last_event_time;
-  int event_counter;
-  size_t sum_size;
-  base::TimeDelta min_delay;
-  base::TimeDelta max_delay;
-  base::TimeDelta sum_delay;
-};
-
-struct PacketLogStats {
-  PacketLogStats();
-  ~PacketLogStats();
-  base::TimeTicks first_event_time;
-  base::TimeTicks last_event_time;
-  int event_counter;
-  size_t sum_size;
-};
-
-typedef std::map<CastLoggingEvent, FrameLogStats> FrameStatsMap;
-typedef std::map<CastLoggingEvent, PacketLogStats> PacketStatsMap;
-
 }  // namespace cast
 }  // namespace media
 

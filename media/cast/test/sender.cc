@@ -14,12 +14,14 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_file.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
+#include "base/values.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
@@ -36,6 +38,8 @@
 #include "media/cast/logging/log_serializer.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/proto/raw_events.pb.h"
+#include "media/cast/logging/receiver_time_offset_estimator_impl.h"
+#include "media/cast/logging/stats_event_subscriber.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/input_builder.h"
@@ -801,7 +805,7 @@ void DumpLoggingData(const media::cast::proto::LogMetadata& log_metadata,
     VLOG(0) << "Failed to write logs to file.";
 }
 
-void WriteLogsToFileAndStopSubscribing(
+void WriteLogsToFileAndDestroySubscribers(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
     scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber,
     scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber,
@@ -832,6 +836,30 @@ void WriteLogsToFileAndStopSubscribing(
                   frame_events,
                   packet_events,
                   audio_log_file.Pass());
+}
+
+void WriteStatsAndDestroySubscribers(
+    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
+    scoped_ptr<media::cast::StatsEventSubscriber> video_event_subscriber,
+    scoped_ptr<media::cast::StatsEventSubscriber> audio_event_subscriber,
+    scoped_ptr<media::cast::ReceiverTimeOffsetEstimatorImpl> estimator) {
+  cast_environment->Logging()->RemoveRawEventSubscriber(
+      video_event_subscriber.get());
+  cast_environment->Logging()->RemoveRawEventSubscriber(
+      audio_event_subscriber.get());
+  cast_environment->Logging()->RemoveRawEventSubscriber(estimator.get());
+
+  scoped_ptr<base::DictionaryValue> stats = video_event_subscriber->GetStats();
+  std::string json;
+  base::JSONWriter::WriteWithOptions(
+      stats.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+  VLOG(0) << "Video stats: " << json;
+
+  stats = audio_event_subscriber->GetStats();
+  json.clear();
+  base::JSONWriter::WriteWithOptions(
+      stats.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+  VLOG(0) << "Audio stats: " << json;
 }
 
 }  // namespace
@@ -942,6 +970,23 @@ int main(int argc, char** argv) {
   cast_environment->Logging()->AddRawEventSubscriber(
       audio_event_subscriber.get());
 
+  // Subscribers for stats.
+  scoped_ptr<media::cast::ReceiverTimeOffsetEstimatorImpl> offset_estimator(
+      new media::cast::ReceiverTimeOffsetEstimatorImpl);
+  cast_environment->Logging()->AddRawEventSubscriber(offset_estimator.get());
+  scoped_ptr<media::cast::StatsEventSubscriber> video_stats_subscriber(
+      new media::cast::StatsEventSubscriber(media::cast::VIDEO_EVENT,
+                                            cast_environment->Clock(),
+                                            offset_estimator.get()));
+  scoped_ptr<media::cast::StatsEventSubscriber> audio_stats_subscriber(
+      new media::cast::StatsEventSubscriber(media::cast::AUDIO_EVENT,
+                                            cast_environment->Clock(),
+                                            offset_estimator.get()));
+  cast_environment->Logging()->AddRawEventSubscriber(
+      video_stats_subscriber.get());
+  cast_environment->Logging()->AddRawEventSubscriber(
+      audio_stats_subscriber.get());
+
   base::ScopedFILE video_log_file(fopen(video_log_file_name.c_str(), "w"));
   if (!video_log_file) {
     VLOG(1) << "Failed to open video log file for writing.";
@@ -954,18 +999,29 @@ int main(int argc, char** argv) {
     exit(-1);
   }
 
-  const int logging_duration_seconds = 300;
+  const int logging_duration_seconds = 10;
   io_message_loop.message_loop_proxy()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WriteLogsToFileAndStopSubscribing,
+      base::Bind(&WriteLogsToFileAndDestroySubscribers,
                  cast_environment,
                  base::Passed(&video_event_subscriber),
                  base::Passed(&audio_event_subscriber),
                  base::Passed(&video_log_file),
                  base::Passed(&audio_log_file)),
       base::TimeDelta::FromSeconds(logging_duration_seconds));
+
+  io_message_loop.message_loop_proxy()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WriteStatsAndDestroySubscribers,
+                 cast_environment,
+                 base::Passed(&video_stats_subscriber),
+                 base::Passed(&audio_stats_subscriber),
+                 base::Passed(&offset_estimator)),
+      base::TimeDelta::FromSeconds(logging_duration_seconds));
+
   send_process->Start(cast_sender->audio_frame_input(),
                       cast_sender->video_frame_input());
+
   io_message_loop.Run();
   return 0;
 }

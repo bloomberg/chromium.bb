@@ -104,15 +104,5 @@ PacketEvent::PacketEvent()
       type(kUnknown) {}
 PacketEvent::~PacketEvent() {}
 
-FrameLogStats::FrameLogStats()
-    : event_counter(0),
-      sum_size(0) {}
-FrameLogStats::~FrameLogStats() {}
-
-PacketLogStats::PacketLogStats()
-    : event_counter(0),
-      sum_size(0) {}
-PacketLogStats::~PacketLogStats() {}
-
 }  // namespace cast
 }  // namespace media

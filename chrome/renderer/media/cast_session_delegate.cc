@@ -13,11 +13,9 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/logging/encoding_event_subscriber.h"
 #include "media/cast/logging/log_serializer.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/logging/stats_event_subscriber.h"
-#include "media/cast/logging/stats_util.h"
+#include "media/cast/logging/raw_event_subscriber_bundle.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender.h"
 
@@ -29,19 +27,6 @@ using media::cast::VideoSenderConfig;
 static base::LazyInstance<CastThreads> g_cast_threads =
     LAZY_INSTANCE_INITIALIZER;
 
-namespace {
-
-// Allow 9MB for serialized video / audio event logs.
-const int kMaxSerializedBytes = 9000000;
-
-// Assume serialized log data for each frame will take up to 150 bytes.
-const int kMaxVideoEventEntries = kMaxSerializedBytes / 150;
-
-// Assume serialized log data for each frame will take up to 75 bytes.
-const int kMaxAudioEventEntries = kMaxSerializedBytes / 75;
-
-}  // namespace
-
 CastSessionDelegate::CastSessionDelegate()
     : io_message_loop_proxy_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()),
@@ -51,17 +36,6 @@ CastSessionDelegate::CastSessionDelegate()
 
 CastSessionDelegate::~CastSessionDelegate() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  if (cast_environment_.get()) {
-    if (audio_event_subscriber_.get()) {
-      cast_environment_->Logging()->RemoveRawEventSubscriber(
-          audio_event_subscriber_.get());
-    }
-    if (video_event_subscriber_.get()) {
-      cast_environment_->Logging()->RemoveRawEventSubscriber(
-          video_event_subscriber_.get());
-    }
-  }
 }
 
 void CastSessionDelegate::StartAudio(
@@ -129,6 +103,9 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
       g_cast_threads.Get().GetAudioEncodeMessageLoopProxy(),
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy());
 
+  event_subscribers_.reset(
+      new media::cast::RawEventSubscriberBundle(cast_environment_));
+
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportSenderIPC, and they both share the same thread.
   cast_transport_.reset(new CastTransportSenderIPC(
@@ -143,61 +120,13 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
 
 void CastSessionDelegate::ToggleLogging(bool is_audio, bool enable) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  if (!cast_environment_.get())
+  if (!event_subscribers_.get())
     return;
-  if (enable) {
-    if (is_audio) {
-      if (!audio_event_subscriber_.get()) {
-        audio_event_subscriber_.reset(new media::cast::EncodingEventSubscriber(
-            media::cast::AUDIO_EVENT, kMaxAudioEventEntries));
-        cast_environment_->Logging()->AddRawEventSubscriber(
-            audio_event_subscriber_.get());
-      }
-      if (!audio_stats_subscriber_.get()) {
-        audio_stats_subscriber_.reset(
-            new media::cast::StatsEventSubscriber(media::cast::AUDIO_EVENT));
-        cast_environment_->Logging()->AddRawEventSubscriber(
-            audio_stats_subscriber_.get());
-      }
-    } else {
-      if (!video_event_subscriber_.get()) {
-        video_event_subscriber_.reset(new media::cast::EncodingEventSubscriber(
-            media::cast::VIDEO_EVENT, kMaxVideoEventEntries));
-        cast_environment_->Logging()->AddRawEventSubscriber(
-            video_event_subscriber_.get());
-      }
-      if (!video_stats_subscriber_.get()) {
-        video_stats_subscriber_.reset(
-            new media::cast::StatsEventSubscriber(media::cast::VIDEO_EVENT));
-        cast_environment_->Logging()->AddRawEventSubscriber(
-            video_stats_subscriber_.get());
-      }
-    }
-  } else {
-    if (is_audio) {
-      if (audio_event_subscriber_.get()) {
-        cast_environment_->Logging()->RemoveRawEventSubscriber(
-            audio_event_subscriber_.get());
-        audio_event_subscriber_.reset();
-      }
-      if (audio_stats_subscriber_.get()) {
-        cast_environment_->Logging()->RemoveRawEventSubscriber(
-            audio_stats_subscriber_.get());
-        audio_stats_subscriber_.reset();
-      }
-    } else {
-      if (video_event_subscriber_.get()) {
-        cast_environment_->Logging()->RemoveRawEventSubscriber(
-            video_event_subscriber_.get());
-        video_event_subscriber_.reset();
-      }
-      if (video_stats_subscriber_.get()) {
-        cast_environment_->Logging()->RemoveRawEventSubscriber(
-            video_stats_subscriber_.get());
-        video_stats_subscriber_.reset();
-      }
-    }
-  }
+
+  if (enable)
+    event_subscribers_->AddEventSubscribers(is_audio);
+  else
+    event_subscribers_->RemoveEventSubscribers(is_audio);
 }
 
 void CastSessionDelegate::GetEventLogsAndReset(
@@ -205,8 +134,13 @@ void CastSessionDelegate::GetEventLogsAndReset(
     const EventLogsCallback& callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
+  if (!event_subscribers_.get()) {
+    callback.Run(make_scoped_ptr(new base::BinaryValue).Pass());
+    return;
+  }
+
   media::cast::EncodingEventSubscriber* subscriber =
-      is_audio ? audio_event_subscriber_.get() : video_event_subscriber_.get();
+      event_subscribers_->GetEncodingEventSubscriber(is_audio);
   if (!subscriber) {
     callback.Run(make_scoped_ptr(new base::BinaryValue).Pass());
     return;
@@ -218,13 +152,13 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
   subscriber->GetEventsAndReset(&metadata, &frame_events, &packet_events);
 
-  scoped_ptr<char[]> serialized_log(new char[kMaxSerializedBytes]);
+  scoped_ptr<char[]> serialized_log(new char[media::cast::kMaxSerializedBytes]);
   int output_bytes;
   bool success = media::cast::SerializeEvents(metadata,
                                               frame_events,
                                               packet_events,
                                               true,
-                                              kMaxSerializedBytes,
+                                              media::cast::kMaxSerializedBytes,
                                               serialized_log.get(),
                                               &output_bytes);
 
@@ -243,21 +177,22 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
 void CastSessionDelegate::GetStatsAndReset(bool is_audio,
                                            const StatsCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  if (!event_subscribers_.get()) {
+    callback.Run(make_scoped_ptr(new base::DictionaryValue).Pass());
+    return;
+  }
+
   media::cast::StatsEventSubscriber* subscriber =
-      is_audio ? audio_stats_subscriber_.get() : video_stats_subscriber_.get();
+      event_subscribers_->GetStatsEventSubscriber(is_audio);
   if (!subscriber) {
     callback.Run(make_scoped_ptr(new base::DictionaryValue).Pass());
     return;
   }
 
-  media::cast::FrameStatsMap frame_stats;
-  subscriber->GetFrameStats(&frame_stats);
-  media::cast::PacketStatsMap packet_stats;
-  subscriber->GetPacketStats(&packet_stats);
+  scoped_ptr<base::DictionaryValue> stats = subscriber->GetStats();
   subscriber->Reset();
-
-  scoped_ptr<base::DictionaryValue> stats = media::cast::ConvertStats(
-      frame_stats, packet_stats);
 
   callback.Run(stats.Pass());
 }
