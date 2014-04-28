@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -186,6 +187,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void ShellMainDelegate::PreSandboxStartup() {
+#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+  // Create an instance of the CPU class to parse /proc/cpuinfo and cache
+  // cpu_brand info.
+  base::CPU cpu_info;
+#endif
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     std::string process_type =

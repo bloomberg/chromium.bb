@@ -5,6 +5,7 @@
 #include "chrome/app/chrome_main_delegate.h"
 
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -646,6 +647,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
 #if defined(OS_WIN)
   child_process_logging::Init();
+#endif
+#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+  // Create an instance of the CPU class to parse /proc/cpuinfo and cache
+  // cpu_brand info.
+  base::CPU cpu_info;
 #endif
 
   // Initialize the user data dir for any process type that needs it.
