@@ -1393,10 +1393,14 @@ def UploadSymbols(buildroot, board, official, cnt, failed_list):
   else:
     dedupe_namespace = upload_symbols.STAGING_DEDUPE_NAMESPACE
 
+  # TODO(vapier): Delete this once http://crbug.com/355843 is fixed.
+  old_log = cros_build_lib.logger.getEffectiveLevel()
+  cros_build_lib.logger.setLevel(logging.DEBUG)
   ret = upload_symbols.UploadSymbols(
       board=board, official=official, upload_limit=cnt,
       root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR),
       failed_list=failed_list, dedupe_namespace=dedupe_namespace)
+  cros_build_lib.logger.setLevel(old_log)
   if ret:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437

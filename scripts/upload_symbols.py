@@ -367,8 +367,9 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
 
   item = None
   try:
-    storage = isolateserver.get_storage_api(constants.ISOLATESERVER,
-                                            dedupe_namespace)
+    with timeout_util.Timeout(DEDUPE_TIMEOUT):
+      storage = isolateserver.get_storage_api(constants.ISOLATESERVER,
+                                              dedupe_namespace)
     for item in iter(dedupe_queue.get, None):
       with timeout_util.Timeout(DEDUPE_TIMEOUT):
         cros_build_lib.Debug('sending %s to dedupe server', item.sym_file)
@@ -567,14 +568,20 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
   # cannot safely share the storage object between threads/processes, but
   # we also want to minimize creating new ones as each object has to init
   # new state (like server connections).
+  storage_query = None
   if dedupe_namespace:
     dedupe_limit = DEDUPE_LIMIT
     dedupe_queue = multiprocessing.Queue()
-    storage_query = isolateserver.get_storage_api(constants.ISOLATESERVER,
-                                                  dedupe_namespace)
+    try:
+      with timeout_util.Timeout(DEDUPE_TIMEOUT):
+        storage_query = isolateserver.get_storage_api(constants.ISOLATESERVER,
+                                                      dedupe_namespace)
+    except Exception:
+      cros_build_lib.Warning('initializing dedupe server connection failed',
+                             exc_info=True)
   else:
     dedupe_limit = 1
-    dedupe_queue = storage_query = None
+    dedupe_queue = None
   # Can't use parallel.BackgroundTaskRunner because that'll create multiple
   # processes and we want only one the whole time (see comment above).
   storage_notify_proc = multiprocessing.Process(
