@@ -57,6 +57,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
+#include "third_party/smhasher/src/City.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image.h"
@@ -70,9 +71,6 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif
-
-// TODO(zmo): we can't include "City.h" due to type def conflicts.
-extern uint64 CityHash64(const char*, size_t);
 
 namespace gpu {
 namespace gles2 {

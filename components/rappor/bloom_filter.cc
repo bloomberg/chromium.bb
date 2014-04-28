@@ -5,9 +5,7 @@
 #include "components/rappor/bloom_filter.h"
 
 #include "base/logging.h"
-
-// TODO(holte): we can't include "City.h" due to typedef conflicts.
-extern uint64 CityHash64WithSeed(const char *buf, size_t len, uint64 seed);
+#include "third_party/smhasher/src/City.h"
 
 namespace rappor {
 

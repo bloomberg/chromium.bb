@@ -14,11 +14,7 @@
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
-
-// From third_party/smhasher/src/City.h; that file can't be included here due
-// to macro redefinitions (of UINT8_C, etc.) on Windows.
-// TODO(mvrable): Clean up City.h so it can be included directly.
-uint64 CityHash64(const char *buf, size_t len);
+#include "third_party/smhasher/src/City.h"
 
 namespace {
 
