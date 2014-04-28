@@ -33,35 +33,35 @@ interface CanvasRenderingContext2D {
     void restore();
 
     [TypeChecking=Interface|Nullable, RuntimeEnabled=ExperimentalCanvasFeatures] attribute SVGMatrix currentTransform;
-    void scale(float sx, float sy);
-    void rotate(float angle);
-    void translate(float tx, float ty);
-    void transform(float m11, float m12, float m21, float m22, float dx, float dy);
-    void setTransform(float m11, float m12, float m21, float m22, float dx, float dy);
+    void scale(unrestricted float sx, unrestricted float sy);
+    void rotate(unrestricted float angle);
+    void translate(unrestricted float tx, unrestricted float ty);
+    void transform(unrestricted float m11, unrestricted float m12, unrestricted float m21, unrestricted float m22, unrestricted float dx, unrestricted float dy);
+    void setTransform(unrestricted float m11, unrestricted float m12, unrestricted float m21, unrestricted float m22, unrestricted float dx, unrestricted float dy);
     void resetTransform();
 
-    attribute float globalAlpha;
+    attribute unrestricted float globalAlpha;
     [TreatNullAs=NullString] attribute DOMString globalCompositeOperation;
 
     [RaisesException] CanvasGradient createLinearGradient(float x0, float y0, float x1, float y1);
     [RaisesException] CanvasGradient createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1);
 
-    attribute float lineWidth;
+    attribute unrestricted float lineWidth;
     [TreatNullAs=NullString] attribute DOMString lineCap;
     [TreatNullAs=NullString] attribute DOMString lineJoin;
-    attribute float miterLimit;
+    attribute unrestricted float miterLimit;
 
-    attribute float shadowOffsetX;
-    attribute float shadowOffsetY;
-    attribute float shadowBlur;
+    attribute unrestricted float shadowOffsetX;
+    attribute unrestricted float shadowOffsetY;
+    attribute unrestricted float shadowBlur;
     [TreatNullAs=NullString] attribute DOMString shadowColor;
 
-    void setLineDash(sequence<float> dash);
-    sequence<float> getLineDash();
-    attribute float lineDashOffset;
+    void setLineDash(sequence<unrestricted float> dash);
+    sequence<unrestricted float> getLineDash();
+    attribute unrestricted float lineDashOffset;
 
-    void clearRect(float x, float y, float width, float height);
-    void fillRect(float x, float y, float width, float height);
+    void clearRect(unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
+    void fillRect(unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
 
     void beginPath();
 
@@ -81,12 +81,12 @@ interface CanvasRenderingContext2D {
     [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] void clip(Path2D path, CanvasWindingRule winding);
 
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
-    boolean isPointInPath(float x, float y);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInPath(Path2D path, float x, float y);
-    [TypeChecking=Interface|Nullable] boolean isPointInPath(float x, float y, CanvasWindingRule winding);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInPath(Path2D path, float x, float y, CanvasWindingRule winding);
-    boolean isPointInStroke(float x, float y);
-    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInStroke(Path2D path, float x, float y);
+    boolean isPointInPath(unrestricted float x, unrestricted float y);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInPath(Path2D path, unrestricted float x, unrestricted float y);
+    [TypeChecking=Interface|Nullable] boolean isPointInPath(unrestricted float x, unrestricted float y, CanvasWindingRule winding);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInPath(Path2D path, unrestricted float x, unrestricted float y, CanvasWindingRule winding);
+    boolean isPointInStroke(unrestricted float x, unrestricted float y);
+    [RuntimeEnabled=Path2D, TypeChecking=Interface|Nullable] boolean isPointInStroke(Path2D path, unrestricted float x, unrestricted float y);
 
     [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView();
     [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable] void scrollPathIntoView(Path2D path);
@@ -95,8 +95,8 @@ interface CanvasRenderingContext2D {
     attribute DOMString font;
     attribute DOMString textAlign;
     attribute DOMString textBaseline;
-    void fillText(DOMString text, float x, float y, optional float maxWidth);
-    void strokeText(DOMString text, float x, float y, optional float maxWidth);
+    void fillText(DOMString text, unrestricted float x, unrestricted float y, optional unrestricted float maxWidth);
+    void strokeText(DOMString text, unrestricted float x, unrestricted float y, optional unrestricted float maxWidth);
 
     TextMetrics measureText(DOMString text);
 
@@ -104,20 +104,20 @@ interface CanvasRenderingContext2D {
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental
     [RuntimeEnabled=ExperimentalCanvasFeatures] boolean isContextLost();
 
-    void strokeRect(float x, float y, float width, float height);
+    void strokeRect(unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
 
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, float x, float y);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, float x, float y, float width, float height);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, float x, float y);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, float x, float y, float width, float height);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, float x, float y);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, float x, float y, float width, float height);
-    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, float x, float y);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, float x, float y, float width, float height);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, unrestricted float x, unrestricted float y);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLImageElement image, unrestricted float sx, unrestricted float sy, unrestricted float sw, unrestricted float sh, unrestricted float dx, unrestricted float dy, unrestricted float dw, unrestricted float dh);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, unrestricted float x, unrestricted float y);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLCanvasElement canvas, unrestricted float sx, unrestricted float sy, unrestricted float sw, unrestricted float sh, unrestricted float dx, unrestricted float dy, unrestricted float dw, unrestricted float dh);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, unrestricted float x, unrestricted float y);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
+    [RaisesException, TypeChecking=Interface|Nullable] void drawImage(HTMLVideoElement video, unrestricted float sx, unrestricted float sy, unrestricted float sw, unrestricted float sh, unrestricted float dx, unrestricted float dy, unrestricted float dw, unrestricted float dh);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, unrestricted float x, unrestricted float y);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, unrestricted float sx, unrestricted float sy, unrestricted float sw, unrestricted float sh, unrestricted float dx, unrestricted float dy, unrestricted float dw, unrestricted float dh);
 
     [RaisesException, TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy);
     [RaisesException, TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
@@ -145,28 +145,28 @@ interface CanvasRenderingContext2D {
     Canvas2DContextAttributes getContextAttributes();
 
     // Non-standard APIs. Candidates for deprecation
-    [MeasureAs=CanvasRenderingContext2DSetAlpha] void setAlpha(float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetAlpha] void setAlpha(unrestricted float alpha);
     [MeasureAs=CanvasRenderingContext2DSetCompositeOperation] void setCompositeOperation(DOMString compositeOperation);
-    [MeasureAs=CanvasRenderingContext2DSetLineWidth] void setLineWidth(float width);
+    [MeasureAs=CanvasRenderingContext2DSetLineWidth] void setLineWidth(unrestricted float width);
     [MeasureAs=CanvasRenderingContext2DSetLineCap] void setLineCap(DOMString cap);
     [MeasureAs=CanvasRenderingContext2DSetLineJoin] void setLineJoin(DOMString join);
-    [MeasureAs=CanvasRenderingContext2DSetMiterLimit] void setMiterLimit(float limit);
+    [MeasureAs=CanvasRenderingContext2DSetMiterLimit] void setMiterLimit(unrestricted float limit);
     [MeasureAs=CanvasRenderingContext2DClearShadow] void clearShadow();
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor([LegacyOverloadString] DOMString color, optional float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float grayLevel, optional float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float r, float g, float b, float a);
-    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float c, float m, float y, float k, float a);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor([LegacyOverloadString] DOMString color, optional float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float grayLevel, optional float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float r, float g, float b, float a);
-    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float c, float m, float y, float k, float a);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor([LegacyOverloadString] DOMString color, optional unrestricted float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(unrestricted float grayLevel, optional unrestricted float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(unrestricted float r, unrestricted float g, unrestricted float b, unrestricted float a);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(unrestricted float c, unrestricted float m, unrestricted float y, unrestricted float k, unrestricted float a);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor([LegacyOverloadString] DOMString color, optional unrestricted float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(unrestricted float grayLevel, optional unrestricted float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(unrestricted float r, unrestricted float g, unrestricted float b, unrestricted float a);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(unrestricted float c, unrestricted float m, unrestricted float y, unrestricted float k, unrestricted float a);
     [TypeChecking=Interface|Nullable, MeasureAs=CanvasRenderingContext2DDrawImageFromRect] void drawImageFromRect(
-        HTMLImageElement? image, optional float sx, optional float sy, optional float sw, optional float sh,
-        optional float dx, optional float dy, optional float dw, optional float dh, optional DOMString compositeOperation);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, [LegacyOverloadString] optional DOMString color, optional float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float grayLevel, optional float alpha);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float r, float g, float b, float a);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float c, float m, float y, float k, float a);
+        HTMLImageElement? image, optional unrestricted float sx, optional unrestricted float sy, optional unrestricted float sw, optional unrestricted float sh,
+        optional unrestricted float dx, optional unrestricted float dy, optional unrestricted float dw, optional unrestricted float dh, optional DOMString compositeOperation);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, [LegacyOverloadString] optional DOMString color, optional unrestricted float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float grayLevel, optional unrestricted float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float r, unrestricted float g, unrestricted float b, unrestricted float a);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float c, unrestricted float m, unrestricted float y, unrestricted float k, unrestricted float a);
 };
 
 CanvasRenderingContext2D implements CanvasPathMethods;
