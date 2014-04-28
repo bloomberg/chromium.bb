@@ -192,7 +192,24 @@
   // Required to import scripts in a web worker. Note, that in Apps v2, it is
   // enough that anything is passed to web_accessible_resources. If there is
   // at least any file, then all files are allowed. http://crbug.com/179127.
-  "web_accessible_resources": ["foreground/js/metadata/byte_reader.js"],
+  "web_accessible_resources": [
+    "background/js/test_util.js",
+    "background/js/volume_manager.js",
+    "common/js/async_util.js",
+    "common/js/error_util.js",
+    "common/js/path_util.js",
+    "common/js/util.js",
+    "foreground/js/metadata/byte_reader.js",
+    "foreground/js/metadata/exif_parser.js",
+    "foreground/js/metadata/function_parallel.js",
+    "foreground/js/metadata/function_sequence.js",
+    "foreground/js/metadata/id3_parser.js",
+    "foreground/js/metadata/image_parsers.js",
+    "foreground/js/metadata/metadata_cache.js",
+    "foreground/js/metadata/metadata_dispatcher.js",
+    "foreground/js/metadata/metadata_parser.js",
+    "foreground/js/metadata/mpeg_parser.js"
+  ],
   "app": {
     "background": {
       "scripts": [

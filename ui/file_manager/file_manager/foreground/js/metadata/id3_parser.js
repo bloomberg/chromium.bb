@@ -4,8 +4,17 @@
 
 'use strict';
 
-importScripts('function_sequence.js');
-importScripts('function_parallel.js');
+/**
+ * Protocol + host parts of extension URL.
+ * @type {string}
+ * @const
+ */
+var FILE_MANAGER_HOST = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+
+importScripts(
+    FILE_MANAGER_HOST + '/foreground/js/metadata/function_sequence.js');
+importScripts(
+    FILE_MANAGER_HOST + '/foreground/js/metadata/function_parallel.js');
 
 function Id3Parser(parent) {
   MetadataParser.call(this, parent, 'id3', /\.(mp3)$/i);

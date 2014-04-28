@@ -874,16 +874,11 @@ function ContentProvider() {
   // Pass all URLs to the metadata reader until we have a correct filter.
   this.urlFilter_ = /.*/;
 
-  var path = document.location.pathname;
-  var workerPath = document.location.origin +
-      path.substring(0, path.lastIndexOf('/') + 1) +
-      'foreground/js/metadata/metadata_dispatcher.js';
-
-  this.dispatcher_ = new SharedWorker(workerPath).port;
-  this.dispatcher_.start();
-
-  this.dispatcher_.onmessage = this.onMessage_.bind(this);
-  this.dispatcher_.postMessage({verb: 'init'});
+  var dispatcher = new SharedWorker(ContentProvider.WORKER_SCRIPT).port;
+  dispatcher.onmessage = this.onMessage_.bind(this);
+  dispatcher.postMessage({verb: 'init'});
+  dispatcher.start();
+  this.dispatcher_ = dispatcher;
 
   // Initialization is not complete until the Worker sends back the
   // 'initialized' message.  See below.
@@ -893,6 +888,15 @@ function ContentProvider() {
   // Note that simultaneous requests for same url are handled in MetadataCache.
   this.callbacks_ = {};
 }
+
+/**
+ * Path of a worker script.
+ * @type {string}
+ * @const
+ */
+ContentProvider.WORKER_SCRIPT =
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+    'foreground/js/metadata/metadata_dispatcher.js';
 
 ContentProvider.prototype = {
   __proto__: MetadataProvider.prototype

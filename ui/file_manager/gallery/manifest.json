@@ -1,6 +1,6 @@
 {
-  // chrome-extension://jcgeabjmjgoblfofpppfkcoakmfobdko/
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw0/gRbJc545iEGRZs20Rl/HtrSUp8H3gJd4Y6hCe0CG1xQiJhZ5nc8qZyxa96gMxRAKBq54S6sjVVtV6uS70oU6FvrvwItByYkkqr4ZE7eMJKwMqnGItxWbh6KBodf89lpKoIy6MtYTqubBhXB/IQBZsXah90tXwRzaaJNWw+2BBRIhcPsH3ng+wgN7rwFxo4HIv9ZpqkYlx90rwkfjOmKPPnSXyXFIBJfmqfdbd8PLtcxzzOTE+vxwoXZuYWrthKm4uKfNqXIYns74sSJlqyKfctuR+nQdNh8uePv0e+/Ul3wER1/jIXULLjfyoaklyDs+ak3SDf+xWScJ+0LJ0AwIDAQAB",
+  // chrome-extension://nlkncpkkdoccmpiclbokaimcnedabhhm/
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1hFTC+sl9e4ufs6ccGhspbgnMQb3GMikA/QwghFVp00WDwFu7no8xIOWJwY9lFQP+NrbSsze3JL9Wg6FmHC6xKIncwZJKwyDDd2g+9/gEZLn5Ar1piPyf+ELtuX+m0Pjp0l2+rVMz2UiP5OUvFqvmCZqJJQnTVjRut3IMjDP6npb5HyDTgqlPgNHWmsLAQZZKTyYfqswBFkvmwiSHTNJuxkh+i1hxo2m8RcBQsXWL8Mt9+WPl0uABIZc7UvLoZwNz1pAKWb5sv0y4oBugpw4ZVIvCT/pxplLXF35GGBNWAkgimkpYu+SldoZQV8SZW1kUSIcrpYW80mA7KxfK5H8vwIDAQAB",
   "manifest_version": 2,
   "name": "Gallery",
   "version": "2.0",
@@ -16,8 +16,11 @@
     "fileBrowserPrivate",
     "fullscreen",
     "mediaPlayerPrivate",
+    "metricsPrivate",
     "storage",
-    "chrome://theme/"
+    "chrome://theme/",
+    "chrome://resources/",
+    "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj"
   ],
   "file_handlers": {
     "video": {
@@ -40,11 +43,20 @@
   "app": {
     "background": {
       "scripts": [
-        "js/error_util.js",
-        "js/test_util.js",
+        "chrome://resources/js/cr.js",
+        "chrome://resources/js/cr/event_target.js",
+        "chrome://resources/js/cr/ui/array_data_model.js",
+        "chrome://resources/js/load_time_data.js",
+        // util.js and async_util.js should be included before volume_manager.js.
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/util.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/async_util.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/path_util.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/test_util.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/error_util.js",
         "js/background.js"
       ]
     },
-    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' chrome://theme data:; media-src 'self'; object-src 'self'"
+    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' 'unsafe-inline'; img-src 'self' chrome://resources chrome://theme data:; media-src 'self'; object-src 'self';"
   }
 }

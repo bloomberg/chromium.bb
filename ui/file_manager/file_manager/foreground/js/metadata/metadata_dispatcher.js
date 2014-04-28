@@ -1,15 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 'use strict';
 
+/**
+ * Protocol + host parts of extension URL.
+ * @type {string}
+ * @const
+ */
+var FILE_MANAGER_HOST = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+
 // All of these scripts could be imported with a single call to importScripts,
 // but then load and compile time errors would all be reported from the same
 // line.
-importScripts('metadata_parser.js');
-importScripts('byte_reader.js');
-importScripts('../../../common/js/util.js');
+importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/metadata_parser.js');
+importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/byte_reader.js');
+importScripts(FILE_MANAGER_HOST + '/common/js/util.js');
 
 /**
  * Dispatches metadata requests to the correct parser.
@@ -23,10 +30,10 @@ function MetadataDispatcher(port) {
 
   // Make sure to update component_extension_resources.grd
   // when adding new parsers.
-  importScripts('exif_parser.js');
-  importScripts('image_parsers.js');
-  importScripts('mpeg_parser.js');
-  importScripts('id3_parser.js');
+  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/exif_parser.js');
+  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/image_parsers.js');
+  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/mpeg_parser.js');
+  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/id3_parser.js');
 
   var patterns = [];
 
