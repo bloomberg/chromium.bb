@@ -601,13 +601,16 @@ void RenderWidgetHostImpl::WasResized() {
   is_fullscreen_ = IsFullscreen();
   float old_overdraw_bottom_height = overdraw_bottom_height_;
   overdraw_bottom_height_ = view_->GetOverdrawBottomHeight();
+  gfx::Size old_visible_viewport_size = visible_viewport_size_;
+  visible_viewport_size_ = view_->GetVisibleViewportSize();
 
   bool size_changed = new_size != last_requested_size_;
   bool side_payload_changed =
       screen_info_out_of_date_ ||
       old_physical_backing_size != physical_backing_size_ ||
       was_fullscreen != is_fullscreen_ ||
-      old_overdraw_bottom_height != overdraw_bottom_height_;
+      old_overdraw_bottom_height != overdraw_bottom_height_ ||
+      old_visible_viewport_size != visible_viewport_size_;
 
   if (!size_changed && !side_payload_changed)
     return;
@@ -627,6 +630,7 @@ void RenderWidgetHostImpl::WasResized() {
   params.new_size = new_size;
   params.physical_backing_size = physical_backing_size_;
   params.overdraw_bottom_height = overdraw_bottom_height_;
+  params.visible_viewport_size = visible_viewport_size_;
   params.resizer_rect = GetRootWindowResizerRect();
   params.is_fullscreen = is_fullscreen_;
   if (!Send(new ViewMsg_Resize(routing_id_, params))) {

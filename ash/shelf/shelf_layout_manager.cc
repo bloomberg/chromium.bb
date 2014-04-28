@@ -46,6 +46,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/screen.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -775,7 +776,7 @@ void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     TargetBounds* target_bounds) {
-  const gfx::Rect available_bounds(GetAvailableBounds());
+  const gfx::Rect available_bounds(root_window_->bounds());
   gfx::Rect status_size(
       shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
   int shelf_width = 0, shelf_height = 0;
@@ -795,15 +796,22 @@ void ShelfLayoutManager::CalculateTargetBounds(
     else
       shelf_width = kAutoHideSize;
   } else if (state.visibility_state == SHELF_HIDDEN ||
-      !keyboard_bounds_.IsEmpty()) {
+      (!keyboard_bounds_.IsEmpty() && !keyboard::IsKeyboardOverscrollEnabled()))
+  {
     if (IsHorizontalAlignment())
       shelf_height = 0;
     else
       shelf_width = 0;
   }
 
+  int bottom_shelf_vertical_offset = available_bounds.bottom();
+  if (keyboard_bounds_.IsEmpty())
+    bottom_shelf_vertical_offset -= shelf_height;
+  else
+    bottom_shelf_vertical_offset -= keyboard_bounds_.height();
+
   target_bounds->shelf_bounds_in_root = SelectValueForShelfAlignment(
-      gfx::Rect(available_bounds.x(), available_bounds.bottom() - shelf_height,
+      gfx::Rect(available_bounds.x(), bottom_shelf_vertical_offset,
                     available_bounds.width(), shelf_height),
       gfx::Rect(available_bounds.x(), available_bounds.y(),
                     shelf_width, available_bounds.height()),
@@ -839,8 +847,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
   // should probably be pushed to a separate component. This would simplify or
   // remove entirely the dependency on keyboard and dock.
 
-  // Also push in the work area inset for the keyboard if it is visible.
-  if (!keyboard_bounds_.IsEmpty()) {
+  if (!keyboard_bounds_.IsEmpty() && !keyboard::IsKeyboardOverscrollEnabled()) {
+    // Also push in the work area inset for the keyboard if it is visible.
     gfx::Insets keyboard_insets(0, 0, keyboard_bounds_.height(), 0);
     target_bounds->work_area_insets += keyboard_insets;
   }
@@ -1132,12 +1140,6 @@ bool ShelfLayoutManager::IsShelfForcedToBeVisible() const {
   return force_shelf_always_visibile_ &&
       workspace_controller_->GetWindowState() !=
           WORKSPACE_WINDOW_STATE_FULL_SCREEN;
-}
-
-gfx::Rect ShelfLayoutManager::GetAvailableBounds() const {
-  gfx::Rect bounds(root_window_->bounds());
-  bounds.set_height(bounds.height() - keyboard_bounds_.height());
-  return bounds;
 }
 
 void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {

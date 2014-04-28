@@ -324,10 +324,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // Returns true if the shelf should be forced to be visible.
   bool IsShelfForcedToBeVisible() const;
 
-  // Return the bounds available in the parent, taking into account the bounds
-  // of the keyboard if necessary.
-  gfx::Rect GetAvailableBounds() const;
-
   // Overridden from keyboard::KeyboardControllerObserver:
   virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
 

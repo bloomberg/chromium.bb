@@ -39,6 +39,7 @@
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
@@ -157,6 +158,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual gfx::Size GetVisibleViewportSize() const OVERRIDE;
+  virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
 
   // Overridden from RenderWidgetHostViewPort:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -240,6 +243,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnSwapCompositorFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
+
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
@@ -405,6 +409,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            UpdateCursorIfOverSelf);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraCopyRequestTest,
                            DestroyedAfterCopyRequest);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           VisibleViewportTest);
 
   class WindowObserver;
   friend class WindowObserver;
@@ -723,6 +729,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       yuv_readback_pipeline_;
 
   TouchEditingClient* touch_editing_client_;
+
+  gfx::Insets insets_;
 
   std::vector<ui::LatencyInfo> software_latency_info_;
 

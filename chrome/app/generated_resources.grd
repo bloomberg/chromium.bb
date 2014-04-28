@@ -13950,6 +13950,13 @@ Do you accept?
       Enable virtual keyboard support.
     </message>
 
+    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the virtual keyboard">
+      Virtual Keyboard Overscroll
+    </message>
+    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_DESCRIPTION" desc="Description of about:flags option to turn on overscrolling for the virtual keyboard">
+      Enable virtual keyboard overscroll support.
+    </message>
+
     <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME" desc="Name of about:flags option to turn on swipe selection for the virtual keyboard">
       Swipe Selection
     </message>

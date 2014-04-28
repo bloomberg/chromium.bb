@@ -114,6 +114,15 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Returns true if the mouse pointer is currently locked.
   virtual bool IsMouseLocked() = 0;
 
+  // Retrives the size of the viewport for the visible region. May be smaller
+  // than the view size if a portion of the view is obstructed (e.g. by a
+  // virtual keyboard).
+  virtual gfx::Size GetVisibleViewportSize() const = 0;
+
+  // Set insets for the visible region of the root window. Used to compute the
+  // visible viewport.
+  virtual void SetInsets(const gfx::Insets& insets) = 0;
+
 #if defined(OS_MACOSX)
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;

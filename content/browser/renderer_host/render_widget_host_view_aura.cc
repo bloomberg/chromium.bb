@@ -875,6 +875,22 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
 }
 
+gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {
+  gfx::Rect window_bounds = window_->bounds();
+  int viewport_width = std::max(
+      0, window_bounds.width() - insets_.left() - insets_.right());
+  int viewport_height = std::max(
+      0, window_bounds.height() - insets_.top() - insets_.bottom());
+  return gfx::Size(viewport_width, viewport_height);
+}
+
+void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
+  if (insets != insets_) {
+    insets_ = insets;
+    host_->WasResized();
+  }
+}
+
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
   const gfx::Display display = gfx::Screen::GetScreenFor(window_)->

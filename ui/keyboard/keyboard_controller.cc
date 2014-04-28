@@ -6,6 +6,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
@@ -234,6 +237,32 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
     FOR_EACH_OBSERVER(KeyboardControllerObserver,
                       observer_list_,
                       OnKeyboardBoundsChanging(new_bounds));
+    if (keyboard::IsKeyboardOverscrollEnabled()) {
+      // Adjust the height of the viewport for visible windows on the primary
+      // display.
+      // TODO(kevers): Add EnvObserver to properly initialize insets if a
+      // window is created while the keyboard is visible.
+      scoped_ptr<content::RenderWidgetHostIterator> widgets(
+          content::RenderWidgetHost::GetRenderWidgetHosts());
+      aura::Window *keyboard_window = proxy_->GetKeyboardWindow();
+      aura::Window *root_window = keyboard_window->GetRootWindow();
+      while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+        content::RenderWidgetHostView* view = widget->GetView();
+        aura::Window *window = view->GetNativeView();
+        if (window != keyboard_window && window->GetRootWindow() == root_window)
+        {
+          gfx::Rect window_bounds = window->GetBoundsInScreen();
+          gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
+          int overlap = intersect.height();
+          if (overlap > 0 && overlap < window_bounds.height())
+            view->SetInsets(gfx::Insets(0, 0, overlap, 0));
+          else
+            view->SetInsets(gfx::Insets(0, 0, 0, 0));
+          // TODO(kevers): Add window observer to native window to update insets
+          // on a window move or resize.
+        }
+      }
+    }
   }
 }
 

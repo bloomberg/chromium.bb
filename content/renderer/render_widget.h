@@ -320,6 +320,7 @@ class CONTENT_EXPORT RenderWidget
   void Resize(const gfx::Size& new_size,
               const gfx::Size& physical_backing_size,
               float overdraw_bottom_height,
+              const gfx::Size& visible_viewport_size,
               const gfx::Rect& resizer_rect,
               bool is_fullscreen,
               ResizeAck resize_ack);
@@ -550,6 +551,9 @@ class CONTENT_EXPORT RenderWidget
   // The height of the physical backing surface that is overdrawn opaquely in
   // the browser, for example by an on-screen-keyboard (in DPI-adjusted pixels).
   float overdraw_bottom_height_;
+
+  // The size of the visible viewport in DPI-adjusted pixels.
+  gfx::Size visible_viewport_size_;
 
   // The area that must be reserved for drawing the resize corner.
   gfx::Rect resizer_rect_;

@@ -607,4 +607,12 @@ SkBitmap::Config RenderWidgetHostViewBase::PreferredReadbackFormat() {
   return SkBitmap::kARGB_8888_Config;
 }
 
+gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
+  return GetViewBounds().size();
+}
+
+void RenderWidgetHostViewBase::SetInsets(const gfx::Insets& insets) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace content

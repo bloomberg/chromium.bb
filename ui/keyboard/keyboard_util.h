@@ -68,6 +68,9 @@ KEYBOARD_EXPORT bool IsKeyboardEnabled();
 // Returns true if the keyboard usability test is enabled.
 KEYBOARD_EXPORT bool IsKeyboardUsabilityExperimentEnabled();
 
+// Returns true if keyboard overscroll mode is enabled.
+KEYBOARD_EXPORT bool IsKeyboardOverscrollEnabled();
+
 // Returns true if an IME extension can specify a custom input view for the
 // virtual keyboard window.
 KEYBOARD_EXPORT bool IsInputViewEnabled();

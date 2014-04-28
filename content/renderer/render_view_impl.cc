@@ -3187,6 +3187,7 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
     Resize(new_size,
            physical_backing_size_,
            overdraw_bottom_height_,
+           visible_viewport_size_,
            resizer_rect_,
            is_fullscreen_,
            NO_RESIZE_ACK);

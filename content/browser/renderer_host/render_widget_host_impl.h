@@ -761,6 +761,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // the browser, for example by an on-screen-keyboard (in DPI-adjusted pixels).
   float overdraw_bottom_height_;
 
+  // The size of the visible viewport, which may be smaller than the view if the
+  // view is partially occluded (e.g. by a virtual keyboard).  The size is in
+  // DPI-adjusted pixels.
+  gfx::Size visible_viewport_size_;
+
   // The size we last sent as requested size to the renderer. |current_size_|
   // is only updated once the resize message has been ack'd. This on the other
   // hand is updated when the resize message is sent. This is very similar to

@@ -89,6 +89,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
 
+  virtual gfx::Size GetVisibleViewportSize() const OVERRIDE;
+  virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
+
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
   // Notification that a resize or move session ended on the native widget.

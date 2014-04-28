@@ -13,6 +13,12 @@ const char kDisableInputView[] = "disable-input-view";
 const char kEnableInputView[] = "enable-input-view";
 
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
+
+const char kDisableVirtualKeyboardOverscroll[] =
+    "disable-virtual-keyboard-overscroll";
+const char kEnableVirtualKeyboardOverscroll[] =
+    "enable-virtual-keyboard-overscroll";
+
 const char kKeyboardUsabilityExperiment[] = "keyboard-usability-experiment";
 
 }  // namespace switches

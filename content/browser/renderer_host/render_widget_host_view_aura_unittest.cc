@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -1380,6 +1381,35 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   // these things being destroyed.
   EXPECT_EQ(2, callback_count_);
   EXPECT_FALSE(result_);
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
+  gfx::Rect view_rect(100, 100);
+
+  view_->InitAsChild(NULL);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_rect.size());
+  view_->WasShown();
+
+  // Defaults to full height of the view.
+  EXPECT_EQ(100, view_->GetVisibleViewportSize().height());
+
+  widget_host_->ResetSizeAndRepaintPendingFlags();
+  sink_->ClearMessages();
+  view_->SetInsets(gfx::Insets(0, 0, 40, 0));
+
+  EXPECT_EQ(60, view_->GetVisibleViewportSize().height());
+
+  const IPC::Message *message = sink_->GetFirstMessageMatching(
+      ViewMsg_Resize::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ViewMsg_Resize::Param params;
+  ViewMsg_Resize::Read(message, &params);
+  EXPECT_EQ(60, params.a.visible_viewport_size.height());
 }
 
 }  // namespace content

@@ -107,6 +107,24 @@ bool IsKeyboardUsabilityExperimentEnabled() {
       switches::kKeyboardUsabilityExperiment);
 }
 
+bool IsKeyboardOverscrollEnabled() {
+  if (!IsKeyboardEnabled())
+    return false;
+  // Users of the accessibility on-screen keyboard are likely to be using mouse
+  // input, which may interfere with overscrolling.
+  if (g_accessibility_keyboard_enabled)
+    return false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableVirtualKeyboardOverscroll)) {
+    return false;
+  }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVirtualKeyboardOverscroll)) {
+    return true;
+  }
+  return false;
+}
+
 bool IsInputViewEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableInputView))
     return true;
