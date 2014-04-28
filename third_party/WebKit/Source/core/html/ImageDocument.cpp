@@ -197,10 +197,7 @@ void ImageDocument::createDocumentStructure()
     body->setAttribute(styleAttr, "margin: 0px;");
 
     m_imageElement = HTMLImageElement::create(*this);
-    if (frame()->isMainFrame())
-        m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none; text-align:center; position:absolute; margin:auto; top:0px; bottom:0px; left:0px; right:0px;");
-    else
-        m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none;");
+    m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
     m_imageElement->setLoadManually(true);
     m_imageElement->setSrc(url().string());
     body->appendChild(m_imageElement.get());
