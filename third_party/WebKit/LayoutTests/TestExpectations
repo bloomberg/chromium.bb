@@ -18,11 +18,6 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 # Inspector tests
 # -----------------------------------------------------------------
 
-# Transferred size are not supported in DRT.
-crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
-crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
-crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
-
 crbug.com/364088 inspector/audits/audits-panel-noimages-functional.html [ Pass Failure ]
 
 # -----------------------------------------------------------------

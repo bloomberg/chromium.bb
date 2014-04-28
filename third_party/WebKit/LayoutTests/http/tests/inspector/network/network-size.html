@@ -36,12 +36,12 @@ function test()
         var request1 = WebInspector.inspectorView.panel("network").requests[requestsCount - 2];
         InspectorTest.addResult(request1.url);
         InspectorTest.addResult("resourceSize: " + request1.resourceSize);
-        InspectorTest.addResult("transferSize: " + (request1.transferSize - request1.responseHeadersSize));
+        InspectorTest.addResult("transferSize: " + request1.transferSize);
 
         var request2 = WebInspector.inspectorView.panel("network").requests[requestsCount - 1];
         InspectorTest.addResult(request2.url);
         InspectorTest.addResult("resourceSize: " + request2.resourceSize);
-        InspectorTest.addResult("transferSize: " + (request2.transferSize - request2.responseHeadersSize));
+        InspectorTest.addResult("transferSize: " + request2.transferSize);
 
         InspectorTest.completeTest();
     }
