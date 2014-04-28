@@ -220,10 +220,10 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
 
   scoped_ptr<base::hash_set<base::FilePath> > active_paths(
       new base::hash_set<base::FilePath>());
-  const ExtensionSet& extensions =
-      ExtensionRegistry::Get(context_)->enabled_extensions();
-  for (ExtensionSet::const_iterator iter = extensions.begin();
-       iter != extensions.end();
+  scoped_ptr<ExtensionSet> extensions =
+      ExtensionRegistry::Get(context_)->GenerateInstalledExtensionsSet();
+  for (ExtensionSet::const_iterator iter = extensions->begin();
+       iter != extensions->end();
        ++iter) {
     if (AppIsolationInfo::HasIsolatedStorage(iter->get())) {
       active_paths->insert(

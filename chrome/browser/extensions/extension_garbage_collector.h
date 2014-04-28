@@ -60,9 +60,9 @@ class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
   // removed iff there are no pending installations.
   void GarbageCollectExtensions();
 
-  // Garbage collects apps/extensions isolated storage, if it is not currently
-  // active (i.e. is not in ExtensionRegistry::ENABLED). There is an exception
-  // for ephemeral apps, because they can outlive their cache lifetimes.
+  // Garbage collects apps/extensions isolated storage if it is uninstalled.
+  // There is an exception for ephemeral apps because they can outlive their
+  // cache lifetimes.
   void GarbageCollectIsolatedStorageIfNeeded();
 
   // The BrowserContext associated with the GarbageCollector.
