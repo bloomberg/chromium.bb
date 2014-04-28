@@ -64,7 +64,6 @@ crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 
-crbug.com/248155 [ Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ Failure ]
 crbug.com/316604 [ Win ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
