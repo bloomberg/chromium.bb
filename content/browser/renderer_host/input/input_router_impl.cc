@@ -88,10 +88,10 @@ double GetTouchMoveSlopSuppressionLengthDips() {
 TouchEventQueue::TouchScrollingMode GetTouchScrollingMode() {
   std::string modeString = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kTouchScrollingMode);
+  if (modeString == switches::kTouchScrollingModeAsyncTouchmove)
+    return TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE;
   if (modeString == switches::kTouchScrollingModeSyncTouchmove)
     return TouchEventQueue::TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE;
-  if (modeString == switches::kTouchScrollingModeAbsorbTouchmove)
-    return TouchEventQueue::TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE;
   if (modeString == switches::kTouchScrollingModeTouchcancel)
     return TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL;
   if (modeString != "")
@@ -448,15 +448,14 @@ void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
 
   // Touch events should always indicate in the event whether they are
   // cancelable (respect ACK disposition) or not.
-  bool ignoresAck =
-      WebInputEventTraits::IgnoresAckDisposition(input_event.type);
+  bool ignores_ack = WebInputEventTraits::IgnoresAckDisposition(input_event);
   if (WebInputEvent::isTouchEventType(input_event.type)) {
-    DCHECK(!ignoresAck ==
+    DCHECK(!ignores_ack ==
            static_cast<const blink::WebTouchEvent&>(input_event).cancelable);
   }
 
   // If we don't care about the ack disposition, send the ack immediately.
-  if (ignoresAck) {
+  if (ignores_ack) {
     ProcessInputEventAck(input_event.type,
                          INPUT_EVENT_ACK_STATE_IGNORED,
                          latency_info,
@@ -530,10 +529,10 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
                                       bool is_keyboard_shortcut) {
   if (Send(new InputMsg_HandleInputEvent(
           routing_id(), &input_event, latency_info, is_keyboard_shortcut))) {
-    // Ack messages for ignored ack event types are not required, and might
-    // never be sent by the renderer. Consequently, such event types should not
-    // affect event timing or in-flight event count metrics.
-    if (!WebInputEventTraits::IgnoresAckDisposition(input_event.type)) {
+    // Ack messages for ignored ack event types should never be sent by the
+    // renderer. Consequently, such event types should not affect event time
+    // or in-flight event count metrics.
+    if (!WebInputEventTraits::IgnoresAckDisposition(input_event)) {
       input_event_start_time_ = TimeTicks::Now();
       client_->IncrementInFlightEventCount();
     }
@@ -545,11 +544,6 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
 void InputRouterImpl::OnInputEventAck(WebInputEvent::Type event_type,
                                       InputEventAckState ack_result,
                                       const ui::LatencyInfo& latency_info) {
-  // A synthetic ack will already have been sent for this event, and it should
-  // not affect event timing or in-flight count metrics.
-  if (WebInputEventTraits::IgnoresAckDisposition(event_type))
-    return;
-
   client_->DecrementInFlightEventCount();
 
   // Log the time delta for processing an input event.

@@ -240,7 +240,7 @@ CONTENT_EXPORT extern const char kTestSandbox[];
 CONTENT_EXPORT extern const char kTestType[];
 CONTENT_EXPORT extern const char kTouchAckTimeoutDelayMs[];
 CONTENT_EXPORT extern const char kTouchScrollingMode[];
-CONTENT_EXPORT extern const char kTouchScrollingModeAbsorbTouchmove[];
+CONTENT_EXPORT extern const char kTouchScrollingModeAsyncTouchmove[];
 CONTENT_EXPORT extern const char kTouchScrollingModeSyncTouchmove[];
 CONTENT_EXPORT extern const char kTouchScrollingModeTouchcancel[];
 CONTENT_EXPORT extern const char kTraceShutdown[];

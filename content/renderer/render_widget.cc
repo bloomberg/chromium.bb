@@ -1077,7 +1077,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
           kInputHandlingTimeThrottlingThresholdMicroseconds;
   }
 
-  if (!WebInputEventTraits::IgnoresAckDisposition(input_event->type)) {
+  if (!WebInputEventTraits::IgnoresAckDisposition(*input_event)) {
     scoped_ptr<IPC::Message> response(
         new InputHostMsg_HandleInputEvent_ACK(routing_id_,
                                               input_event->type,
