@@ -1,0 +1,89 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var timerId = setTimeout(function()
+    {
+        evaluateInFrontend("InspectorTest.testFunctionTimerFired(" + timerId + ", " + timerId2 + ")");
+    }, 0);
+
+    var timerId2 = setTimeout(function() { }, 0);
+    clearTimeout(timerId2);
+    return timerId;
+}
+
+function test()
+{
+    InspectorTest.eventHandler["Tracing.dataCollected"] = dataCollected;
+    InspectorTest.eventHandler["Tracing.tracingComplete"] = tracingComplete;
+    InspectorTest.sendCommand("Tracing.start", { "categories" : "disabled-by-default-devtools.timeline", "type": "" }, onStart);
+
+    var firedTimerId;
+    var removedTimerId;
+    InspectorTest.testFunctionTimerFired = function(timerId1, timerId2)
+    {
+        firedTimerId = timerId1;
+        removedTimerId = timerId2;
+        InspectorTest.log("SUCCESS: testFunctionTimerFired");
+        InspectorTest.sendCommand("Tracing.end", { }, onStop);
+    }
+
+    function onStart(response)
+    {
+        InspectorTest.log("Recording started");
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testFunction()" });
+    }
+
+    var devtoolsEvents = [];
+    function dataCollected(reply)
+    {
+        var allEvents = reply.params.value;
+        devtoolsEvents = devtoolsEvents.concat(allEvents.filter(function(e)
+        {
+            return e.cat === "disabled-by-default-devtools.timeline";
+        }));
+    }
+
+    function tracingComplete(event)
+    {
+        InspectorTest.log("Tracing complete");
+
+        function hasTimerId(id, e) { return e.args.data.timerId === id}
+
+        var installTimer1 = findEvent("TimerInstall", "I", hasTimerId.bind(this, firedTimerId));
+        var installTimer2 = findEvent("TimerInstall", "I", hasTimerId.bind(this, removedTimerId));
+
+        InspectorTest.assert(!!installTimer1.args.data.frame, "TimerInstall frame");
+        InspectorTest.assertEquals(installTimer1.args.data.frame, installTimer2.args.data.frame, "TimerInstall frame match");
+
+        findEvent("TimerRemove", "I", hasTimerId.bind(this, removedTimerId));
+        findEvent("TimerFire", "X", hasTimerId.bind(this, firedTimerId));
+
+        InspectorTest.log("SUCCESS: found all expected events.");
+        InspectorTest.completeTest();
+    }
+
+    function findEvent(name, ph, condition)
+    {
+        for (var i = 0; i < devtoolsEvents.length; i++) {
+            var e = devtoolsEvents[i];
+            if (e.name === name && e.ph === ph && (!condition || condition(e)))
+                return e;
+        }
+        throw new Error("Couldn't find event " + name + " / " + ph + "\n\n in " + JSON.stringify(devtoolsEvents, null, 2));
+    }
+
+    function onStop(response)
+    {
+        InspectorTest.log("Recording stopped");
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+<div id="myDiv">DIV</div>
+</body>
+</html>

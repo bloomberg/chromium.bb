@@ -117,4 +117,39 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorResourceFinishEvent::d
     return TracedValue::fromJSONValue(data);
 }
 
+static LocalFrame* frameForExecutionContext(ExecutionContext* context)
+{
+    LocalFrame* frame = 0;
+    if (context->isDocument())
+        frame = toDocument(context)->frame();
+    return frame;
+}
+
+static PassRefPtr<JSONObject> genericTimerData(ExecutionContext* context, int timerId)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("timerId", timerId);
+    if (LocalFrame* frame = frameForExecutionContext(context))
+        data->setString("frame", toHexString(frame));
+    return data.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerInstallEvent::data(ExecutionContext* context, int timerId, int timeout, bool singleShot)
+{
+    RefPtr<JSONObject> data = genericTimerData(context, timerId);
+    data->setNumber("timeout", timeout);
+    data->setBoolean("singleShot", singleShot);
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerRemoveEvent::data(ExecutionContext* context, int timerId)
+{
+    return TracedValue::fromJSONValue(genericTimerData(context, timerId));
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimerFireEvent::data(ExecutionContext* context, int timerId)
+{
+    return TracedValue::fromJSONValue(genericTimerData(context, timerId));
+}
+
 }

@@ -1,0 +1,7 @@
+DIV
+Recording started
+SUCCESS: testFunctionTimerFired
+Recording stopped
+Tracing complete
+SUCCESS: found all expected events.
+

@@ -10,6 +10,7 @@
 
 namespace WebCore {
 
+class ExecutionContext;
 class FrameView;
 class LocalFrame;
 class RenderObject;
@@ -40,6 +41,21 @@ public:
 class InspectorResourceFinishEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, double finishTime, bool didFail);
+};
+
+class InspectorTimerInstallEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
+};
+
+class InspectorTimerRemoveEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
+};
+
+class InspectorTimerFireEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
 };
 
 } // namespace WebCore
