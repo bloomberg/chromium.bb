@@ -348,7 +348,7 @@
                    'dsinclair@chromium.org',
                    'rune+blink@opera.com',
                    'ojan@chromium.org',
-                   'chrishtr@chromium.org' ],
+                   'blink-reviews-rendering@chromium.org' ],
     'compositing': [ 'abarth@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
