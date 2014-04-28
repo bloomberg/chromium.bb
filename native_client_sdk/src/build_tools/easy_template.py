@@ -32,9 +32,18 @@ def TemplateToPython(template, statement_re, expr_re):
         line_ending = line[-1] + line_ending
         line = line[:-1]
 
-      m = expr_re.search(line)
-      if m:
-        line = line.replace('%', '%%')
+      ms = list(expr_re.finditer(line))
+      if ms:
+        # Only replace % with %% outside of the expr matches.
+        new_line = ''
+        start = 0
+        for m in ms:
+          new_line += line[start:m.start()].replace('%', '%%')
+          new_line += line[m.start():m.end()]
+          start = m.end()
+        new_line += line[start:].replace('%', '%%')
+        line = new_line
+
         subst_line = r'r"""%s""" %% (%s,)' % (
             re.sub(expr_re, '%s', line),
             ', '.join(re.findall(expr_re, line)))

@@ -109,6 +109,13 @@ struct Foo {
         {'name': 'name', 'type': 'std::string'},
         {'name': 'problems', 'type': 'array', 'basetype': 'int', 'size': 99}]})
 
+  def testModulo(self):
+    self._RunTest('No expression %', 'No expression %', {})
+    self._RunTest('% before {{3 + 4}}', '% before 7', {})
+    self._RunTest('{{2**8}} % after', '256 % after', {})
+    self._RunTest('inside {{8 % 3}}', 'inside 2', {})
+    self._RunTest('Everywhere % {{8 % 3}} %', 'Everywhere % 2 %', {})
+
 
 if __name__ == '__main__':
   unittest.main()
