@@ -628,6 +628,23 @@ bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& 
     return request.options().synchronousPolicy == RequestSynchronously && resource->isLoading();
 }
 
+void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type)
+{
+    if (request.resourceRequest().url().protocolIsData() || (m_documentLoader && m_documentLoader->substituteData().isValid()))
+        return;
+
+    if (type == ResourceLoadingFromCache && !m_validatedURLs.contains(request.resourceRequest().url())) {
+        // Resources loaded from memory cache should be reported the first time they're used.
+        RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
+        populateResourceTiming(info.get(), resource, true);
+        m_scheduledResourceTimingReports.add(info, resource->type() == Resource::MainResource);
+        if (!m_resourceTimingReportTimer.isActive())
+            m_resourceTimingReportTimer.startOneShot(0, FROM_HERE);
+    }
+
+    m_validatedURLs.add(request.resourceRequest().url());
+}
+
 ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, FetchRequest& request)
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || type == Resource::Raw);
@@ -725,18 +742,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
             return 0;
     }
 
-    if (!request.resourceRequest().url().protocolIsData() && (!m_documentLoader || !m_documentLoader->substituteData().isValid())) {
-        if (policy == Use && !m_validatedURLs.contains(request.resourceRequest().url())) {
-            // Resources loaded from memory cache should be reported the first time they're used.
-            RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
-            populateResourceTiming(info.get(), resource.get(), true);
-            m_scheduledResourceTimingReports.add(info, resource->type() == Resource::MainResource);
-            if (!m_resourceTimingReportTimer.isActive())
-                m_resourceTimingReportTimer.startOneShot(0, FROM_HERE);
-        }
-
-        m_validatedURLs.add(request.resourceRequest().url());
-    }
+    requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork);
 
     ASSERT(resource->url() == url.string());
     m_documentResources.set(resource->url(), resource);

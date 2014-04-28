@@ -71,6 +71,7 @@ public:
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 
     void traceAfterDispatch(Visitor*);
+    void restoreCachedResourceIfNeeded(Document&);
 
 private:
     CSSImageValue(const String& rawValue, const KURL&, StyleImage*);

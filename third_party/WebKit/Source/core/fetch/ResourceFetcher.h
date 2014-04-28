@@ -157,6 +157,11 @@ public:
     virtual void refResourceLoaderHost() OVERRIDE;
     virtual void derefResourceLoaderHost() OVERRIDE;
 
+    enum ResourceLoadStartType {
+        ResourceLoadingFromNetwork,
+        ResourceLoadingFromCache
+    };
+    void requestLoadStarted(Resource*, const FetchRequest&, ResourceLoadStartType);
     static const ResourceLoaderOptions& defaultResourceOptions();
 private:
 
