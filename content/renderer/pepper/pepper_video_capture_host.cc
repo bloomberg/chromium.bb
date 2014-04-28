@@ -45,9 +45,12 @@ PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHostImpl* host,
                           PepperMediaDeviceManager::GetForRenderView(
                               host->GetRenderViewForInstance(pp_instance())),
                           PP_DEVICETYPE_DEV_VIDEOCAPTURE,
-                          host->GetDocumentURL(instance)) {}
+                          host->GetDocumentURL(instance)) {
+}
 
-PepperVideoCaptureHost::~PepperVideoCaptureHost() { Close(); }
+PepperVideoCaptureHost::~PepperVideoCaptureHost() {
+  Close();
+}
 
 bool PepperVideoCaptureHost::Init() {
   return !!renderer_ppapi_host_->GetPluginInstance(pp_instance());
@@ -73,10 +76,7 @@ int32_t PepperVideoCaptureHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-void PepperVideoCaptureHost::OnInitialized(media::VideoCapture* capture,
-                                           bool succeeded) {
-  DCHECK(capture == platform_video_capture_.get());
-
+void PepperVideoCaptureHost::OnInitialized(bool succeeded) {
   if (succeeded) {
     open_reply_context_.params.set_result(PP_OK);
   } else {
@@ -88,25 +88,22 @@ void PepperVideoCaptureHost::OnInitialized(media::VideoCapture* capture,
                     PpapiPluginMsg_VideoCapture_OpenReply());
 }
 
-void PepperVideoCaptureHost::OnStarted(media::VideoCapture* capture) {
+void PepperVideoCaptureHost::OnStarted() {
   if (SetStatus(PP_VIDEO_CAPTURE_STATUS_STARTED, false))
     SendStatus();
 }
 
-void PepperVideoCaptureHost::OnStopped(media::VideoCapture* capture) {
+void PepperVideoCaptureHost::OnStopped() {
   if (SetStatus(PP_VIDEO_CAPTURE_STATUS_STOPPED, false))
     SendStatus();
 }
 
-void PepperVideoCaptureHost::OnPaused(media::VideoCapture* capture) {
+void PepperVideoCaptureHost::OnPaused() {
   if (SetStatus(PP_VIDEO_CAPTURE_STATUS_PAUSED, false))
     SendStatus();
 }
 
-void PepperVideoCaptureHost::OnError(media::VideoCapture* capture,
-                                     int error_code) {
-  // Today, the media layer only sends "1" as an error.
-  DCHECK(error_code == 1);
+void PepperVideoCaptureHost::OnError() {
   PostErrorReply();
 }
 
@@ -119,15 +116,13 @@ void PepperVideoCaptureHost::PostErrorReply() {
       pp_resource(), PpapiPluginMsg_VideoCapture_OnError(PP_ERROR_FAILED));
 }
 
-void PepperVideoCaptureHost::OnRemoved(media::VideoCapture* capture) {}
-
 void PepperVideoCaptureHost::OnFrameReady(
-    media::VideoCapture* capture,
-    const scoped_refptr<media::VideoFrame>& frame) {
+    const scoped_refptr<media::VideoFrame>& frame,
+    media::VideoCaptureFormat format) {
   DCHECK(frame.get());
 
-  if (alloc_size_ != frame->coded_size()) {
-    AllocBuffers(frame->coded_size(), capture->CaptureFrameRate());
+  if (alloc_size_ != frame->coded_size() || buffers_.empty()) {
+    AllocBuffers(frame->coded_size(), format.frame_rate);
     alloc_size_ = frame->coded_size();
   }
 
@@ -238,7 +233,7 @@ void PepperVideoCaptureHost::AllocBuffers(const gfx::Size& resolution,
     // We couldn't allocate/map buffers at all. Send an error and stop the
     // capture.
     SetStatus(PP_VIDEO_CAPTURE_STATUS_STOPPING, true);
-    platform_video_capture_->StopCapture(this);
+    platform_video_capture_->StopCapture();
     PostErrorReply();
     return;
   }
@@ -266,8 +261,8 @@ int32_t PepperVideoCaptureHost::OnOpen(
   RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
       renderer_ppapi_host_->GetRenderViewForInstance(pp_instance()));
 
-  platform_video_capture_ = new PepperPlatformVideoCapture(
-      render_view->AsWeakPtr(), device_id, document_url, this);
+  platform_video_capture_.reset(new PepperPlatformVideoCapture(
+      render_view->AsWeakPtr(), device_id, document_url, this));
 
   open_reply_context_ = context->MakeReplyMessageContext();
 
@@ -284,7 +279,7 @@ int32_t PepperVideoCaptureHost::OnStartCapture(
 
   // It's safe to call this regardless it's capturing or not, because
   // PepperPlatformVideoCapture maintains the state.
-  platform_video_capture_->StartCapture(this, video_capture_params_);
+  platform_video_capture_->StartCapture(video_capture_params_);
   return PP_OK;
 }
 
@@ -316,7 +311,7 @@ int32_t PepperVideoCaptureHost::StopCapture() {
   ReleaseBuffers();
   // It's safe to call this regardless it's capturing or not, because
   // PepperPlatformVideoCapture maintains the state.
-  platform_video_capture_->StopCapture(this);
+  platform_video_capture_->StopCapture();
   return PP_OK;
 }
 
@@ -362,9 +357,9 @@ void PepperVideoCaptureHost::SetRequestedInfo(
 }
 
 void PepperVideoCaptureHost::DetachPlatformVideoCapture() {
-  if (platform_video_capture_.get()) {
+  if (platform_video_capture_) {
     platform_video_capture_->DetachEventHandler();
-    platform_video_capture_ = NULL;
+    platform_video_capture_.reset();
   }
 }
 
@@ -416,8 +411,10 @@ bool PepperVideoCaptureHost::SetStatus(PP_VideoCaptureStatus_Dev status,
 }
 
 PepperVideoCaptureHost::BufferInfo::BufferInfo()
-    : in_use(false), data(NULL), buffer() {}
+    : in_use(false), data(NULL), buffer() {
+}
 
-PepperVideoCaptureHost::BufferInfo::~BufferInfo() {}
+PepperVideoCaptureHost::BufferInfo::~BufferInfo() {
+}
 
 }  // namespace content

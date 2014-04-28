@@ -116,7 +116,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                      new_frame->stride(media::VideoFrame::kVPlane),
                      frame_size.width(), frame_size.height());
 
-  DeliverVideoFrame(new_frame);
+  DeliverVideoFrame(new_frame, format_);
 }
 
 // PpFrameWriterProxy is a helper class to make sure the user won't use
@@ -190,4 +190,3 @@ bool VideoDestinationHandler::Open(
 }
 
 }  // namespace content
-

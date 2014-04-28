@@ -12,7 +12,6 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/video/capture/mock_video_capture_event_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +19,6 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::SaveArg;
 using media::BindToCurrentLoop;
-using media::MockVideoCaptureEventHandler;
 
 namespace content {
 
@@ -53,9 +51,10 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
       base::Closure destruct_video_capture_callback)
       : destruct_video_capture_callback_(
           destruct_video_capture_callback) {}
+  virtual ~MockVideoCaptureImplManager() {}
 
  protected:
-  virtual VideoCaptureImpl* CreateVideoCaptureImpl(
+  virtual VideoCaptureImpl* CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId id,
       VideoCaptureMessageFilter* filter) const OVERRIDE {
     return new MockVideoCaptureImpl(id,
@@ -72,7 +71,8 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
 class VideoCaptureImplManagerTest : public ::testing::Test {
  public:
   VideoCaptureImplManagerTest()
-      : manager_(BindToCurrentLoop(cleanup_run_loop_.QuitClosure())) {
+      : manager_(new MockVideoCaptureImplManager(
+          BindToCurrentLoop(cleanup_run_loop_.QuitClosure()))) {
     params_.requested_format = media::VideoCaptureFormat(
         gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
     child_process_.reset(new ChildProcess());
@@ -89,15 +89,43 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
               base::Unretained(this)));
       return;
     }
-    manager_.video_capture_message_filter()->OnFilterAdded(NULL);
+    manager_->video_capture_message_filter()->OnFilterAdded(NULL);
   }
 
  protected:
+  MOCK_METHOD2(OnFrameReady,
+              void(const scoped_refptr<media::VideoFrame>&,
+                   const media::VideoCaptureFormat&));
+  MOCK_METHOD0(OnStarted, void());
+  MOCK_METHOD0(OnStopped, void());
+
+  void OnStateUpdate(VideoCaptureState state) {
+    switch (state) {
+      case VIDEO_CAPTURE_STATE_STARTED:
+        OnStarted();
+        break;
+      case VIDEO_CAPTURE_STATE_STOPPED:
+        OnStopped();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  base::Closure StartCapture(const media::VideoCaptureParams& params) {
+    return manager_->StartCapture(
+        0, params,
+        base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
+                   base::Unretained(this)),
+        base::Bind(&VideoCaptureImplManagerTest::OnFrameReady,
+                   base::Unretained(this)));
+  }
+
   base::MessageLoop message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   media::VideoCaptureParams params_;
   base::RunLoop cleanup_run_loop_;
-  MockVideoCaptureImplManager manager_;
+  scoped_ptr<MockVideoCaptureImplManager> manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManagerTest);
@@ -106,30 +134,18 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
 // Multiple clients with the same session id. There is only one
 // media::VideoCapture object.
 TEST_F(VideoCaptureImplManagerTest, MultipleClients) {
-  scoped_ptr<MockVideoCaptureEventHandler> client1(
-      new MockVideoCaptureEventHandler);
-  scoped_ptr<MockVideoCaptureEventHandler> client2(
-      new MockVideoCaptureEventHandler);
-
-  media::VideoCapture* device1 = NULL;
-  media::VideoCapture* device2 = NULL;
-
-  scoped_ptr<VideoCaptureHandle> handle1;
-  scoped_ptr<VideoCaptureHandle> handle2;
+  base::Closure release_cb1 = manager_->UseDevice(0);
+  base::Closure release_cb2 = manager_->UseDevice(0);
+  base::Closure stop_cb1, stop_cb2;
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = BindToCurrentLoop(
         run_loop.QuitClosure());
-
-    EXPECT_CALL(*client1, OnStarted(_)).WillOnce(SaveArg<0>(&device1));
-    EXPECT_CALL(*client2, OnStarted(_)).WillOnce(
-        DoAll(
-            SaveArg<0>(&device2),
-            RunClosure(quit_closure)));
-    handle1 = manager_.UseDevice(1);
-    handle2 = manager_.UseDevice(1);
-    handle1->StartCapture(client1.get(), params_);
-    handle2->StartCapture(client2.get(), params_);
+    EXPECT_CALL(*this, OnStarted()).WillOnce(
+        RunClosure(quit_closure));
+    EXPECT_CALL(*this, OnStarted()).RetiresOnSaturation();
+    stop_cb1 = StartCapture(params_);
+    stop_cb2 = StartCapture(params_);
     FakeChannelSetup();
     run_loop.Run();
   }
@@ -138,20 +154,22 @@ TEST_F(VideoCaptureImplManagerTest, MultipleClients) {
     base::RunLoop run_loop;
     base::Closure quit_closure = BindToCurrentLoop(
         run_loop.QuitClosure());
-
-    EXPECT_CALL(*client1, OnStopped(_));
-    EXPECT_CALL(*client1, OnRemoved(_));
-    EXPECT_CALL(*client2, OnStopped(_));
-    EXPECT_CALL(*client2, OnRemoved(_)).WillOnce(
+    EXPECT_CALL(*this, OnStopped()).WillOnce(
         RunClosure(quit_closure));
-    handle1->StopCapture(client1.get());
-    handle2->StopCapture(client2.get());
+    EXPECT_CALL(*this, OnStopped()).RetiresOnSaturation();
+    stop_cb1.Run();
+    stop_cb2.Run();
     run_loop.Run();
   }
-  EXPECT_TRUE(device1 == device2);
 
-  handle1.reset();
-  handle2.reset();
+  release_cb1.Run();
+  release_cb2.Run();
+  cleanup_run_loop_.Run();
+}
+
+TEST_F(VideoCaptureImplManagerTest, NoLeak) {
+  manager_->UseDevice(0).Reset();
+  manager_.reset();
   cleanup_run_loop_.Run();
 }
 

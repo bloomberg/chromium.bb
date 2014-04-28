@@ -7,21 +7,25 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/common/media/video_capture.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
-#include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_types.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace content {
 class PepperPlatformVideoCapture;
 class RendererPpapiHostImpl;
 
-class PepperVideoCaptureHost : public ppapi::host::ResourceHost,
-                               public media::VideoCapture::EventHandler {
+class PepperVideoCaptureHost : public ppapi::host::ResourceHost {
  public:
   PepperVideoCaptureHost(RendererPpapiHostImpl* host,
                          PP_Instance instance,
@@ -35,17 +39,28 @@ class PepperVideoCaptureHost : public ppapi::host::ResourceHost,
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  void OnInitialized(media::VideoCapture* capture, bool succeeded);
+  // These methods are called by PepperPlatformVideoCapture only.
 
-  // media::VideoCapture::EventHandler
-  virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnError(media::VideoCapture* capture, int error_code) OVERRIDE;
-  virtual void OnRemoved(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnFrameReady(media::VideoCapture* capture,
-                            const scoped_refptr<media::VideoFrame>& frame)
-      OVERRIDE;
+  // Called when video capture is initialized. We can start
+  // video capture if |succeeded| is true.
+  void OnInitialized(bool succeeded);
+
+  // Called when video capture has started successfully.
+  void OnStarted();
+
+  // Called when video capture has stopped. There will be no more
+  // frames delivered.
+  void OnStopped();
+
+  // Called when video capture has paused.
+  void OnPaused();
+
+  // Called when video capture cannot be started because of an error.
+  void OnError();
+
+  // Called when a video frame is ready.
+  void OnFrameReady(const scoped_refptr<media::VideoFrame>& frame,
+                    media::VideoCaptureFormat format);
 
  private:
   int32_t OnOpen(ppapi::host::HostMessageContext* context,
@@ -72,7 +87,7 @@ class PepperVideoCaptureHost : public ppapi::host::ResourceHost,
 
   bool SetStatus(PP_VideoCaptureStatus_Dev status, bool forced);
 
-  scoped_refptr<PepperPlatformVideoCapture> platform_video_capture_;
+  scoped_ptr<PepperPlatformVideoCapture> platform_video_capture_;
 
   // Buffers of video frame.
   struct BufferInfo {

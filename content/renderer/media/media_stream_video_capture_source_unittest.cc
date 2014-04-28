@@ -17,11 +17,11 @@ class MockVideoCapturerDelegate : public VideoCapturerDelegate {
   explicit MockVideoCapturerDelegate(const StreamDeviceInfo& device_info)
       : VideoCapturerDelegate(device_info) {}
 
-  MOCK_METHOD3(StartDeliver,
+  MOCK_METHOD3(StartCapture,
                void(const media::VideoCaptureParams& params,
-                    const NewFrameCallback& new_frame_callback,
+                    const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const StartedCallback& started_callback));
-  MOCK_METHOD0(StopDeliver,void());
+  MOCK_METHOD0(StopCapture,void());
 
  private:
   virtual ~MockVideoCapturerDelegate() {}
@@ -68,13 +68,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
   device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
 
-  EXPECT_CALL(*delegate_, StartDeliver(
+  EXPECT_CALL(*delegate_, StartCapture(
       testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
       testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
-  EXPECT_CALL(*delegate_, StopDeliver());
+  EXPECT_CALL(*delegate_, StopCapture());
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest,
@@ -83,13 +83,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
 
-  EXPECT_CALL(*delegate_, StartDeliver(
+  EXPECT_CALL(*delegate_, StartCapture(
       testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
       testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
-  EXPECT_CALL(*delegate_, StopDeliver());
+  EXPECT_CALL(*delegate_, StopCapture());
 }
 
 }  // namespace content

@@ -7,26 +7,21 @@
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/media_stream_video_source.h"
-#include "media/video/capture/video_capture.h"
 
 namespace content {
-
-class VideoCaptureHandle;
 
 // VideoCapturerDelegate is a delegate used by MediaStreamVideoCapturerSource
 // for local video capturer. It uses VideoCaptureImplManager to start / stop
 // and receive I420 frames from Chrome's video capture implementation.
+//
+// This is a render thread only object.
 class CONTENT_EXPORT VideoCapturerDelegate
-    : public media::VideoCapture::EventHandler,
-      public base::RefCountedThreadSafe<VideoCapturerDelegate> {
+    : public base::RefCountedThreadSafe<VideoCapturerDelegate> {
  public:
-  typedef base::Callback<void(const scoped_refptr<media::VideoFrame>&)>
-      NewFrameCallback;
   typedef base::Callback<void(bool running)> StartedCallback;
-  typedef base::Callback<void(const media::VideoCaptureFormats& formats)>
-      SupportedFormatsCallback;
 
   explicit VideoCapturerDelegate(
       const StreamDeviceInfo& device_info);
@@ -38,33 +33,20 @@ class CONTENT_EXPORT VideoCapturerDelegate
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
-      const SupportedFormatsCallback& callback);
+      const VideoCaptureDeviceFormatsCB& callback);
 
-  // Starts deliver frames using the resolution in |params|.
+  // Starts capturing frames using the resolution in |params|.
   // |new_frame_callback| is triggered when a new video frame is available.
   // |started_callback| is triggered before the first video frame is received
   // or if the underlying video capturer fails to start.
-  virtual void StartDeliver(
+  virtual void StartCapture(
       const media::VideoCaptureParams& params,
-      const NewFrameCallback& new_frame_callback,
+      const VideoCaptureDeliverFrameCB& new_frame_callback,
       const StartedCallback& started_callback);
 
-  // Stops deliver frames and clears all callbacks including the
+  // Stops capturing frames and clears all callbacks including the
   // SupportedFormatsCallback callback.
-  virtual void StopDeliver();
-
- protected:
-  // media::VideoCapture::EventHandler implementation.
-  // These functions are called on the IO thread (same as where
-  // |capture_engine_| runs).
-  virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnError(media::VideoCapture* capture, int error_code) OVERRIDE;
-  virtual void OnRemoved(media::VideoCapture* capture) OVERRIDE;
-  virtual void OnFrameReady(
-      media::VideoCapture* capture,
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
+  virtual void StopCapture();
 
  private:
   friend class base::RefCountedThreadSafe<VideoCapturerDelegate>;
@@ -73,9 +55,9 @@ class CONTENT_EXPORT VideoCapturerDelegate
   virtual ~VideoCapturerDelegate();
 
   void OnFrameReadyOnRenderThread(
-      media::VideoCapture* capture,
-      const scoped_refptr<media::VideoFrame>& frame);
-  void OnErrorOnRenderThread(media::VideoCapture* capture);
+      const scoped_refptr<media::VideoFrame>& frame,
+      const media::VideoCaptureFormat& format);
+  void OnStateUpdateOnRenderThread(VideoCaptureState state);
   void OnDeviceFormatsInUseReceived(const media::VideoCaptureFormats& formats);
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& formats);
@@ -83,27 +65,31 @@ class CONTENT_EXPORT VideoCapturerDelegate
   // The id identifies which video capture device is used for this video
   // capture session.
   media::VideoCaptureSessionId session_id_;
-  scoped_ptr<VideoCaptureHandle> capture_engine_;
+  base::Closure release_device_cb_;
+  base::Closure stop_capture_cb_;
 
   bool is_screen_cast_;
-
-  // Accessed on the thread where StartDeliver is called.
   bool got_first_frame_;
 
-  // |new_frame_callback_| is provided to this class in StartDeliver and must be
-  // valid until StopDeliver is called.
-  NewFrameCallback new_frame_callback_;
-  // |started_callback| is provided to this class in StartDeliver and must be
+  // |new_frame_callback_| is provided to this class in StartToDeliver and must
+  // be valid until StopDeliver is called.
+  VideoCaptureDeliverFrameCB new_frame_callback_;
+  // |started_callback| is provided to this class in StartToDeliver and must be
   // valid until StopDeliver is called.
   StartedCallback started_callback_;
-  // Message loop of the caller of StartDeliver.
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
-  SupportedFormatsCallback source_formats_callback_;
+  VideoCaptureDeviceFormatsCB source_formats_callback_;
+
+  // Bound to the render thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCapturerDelegate);
 };
 
+// Owned by WebMediaStreamSource in Blink as a representation of a video
+// stream coming from a camera.
+// This is a render thread only object. All methods must be called on the
+// render thread.
 class CONTENT_EXPORT MediaStreamVideoCapturerSource
     : public MediaStreamVideoSource {
  public:

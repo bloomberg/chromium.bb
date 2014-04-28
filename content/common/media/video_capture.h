@@ -7,6 +7,10 @@
 #ifndef CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
 #define CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
 
+#include "base/time/time.h"
+#include "media/base/video_frame.h"
+#include "media/video/capture/video_capture_types.h"
+
 namespace content {
 
 // Current status of the video capture device. It's used by multiple classes
@@ -23,6 +27,15 @@ enum VideoCaptureState {
   VIDEO_CAPTURE_STATE_ENDED,
   VIDEO_CAPTURE_STATE_LAST = VIDEO_CAPTURE_STATE_ENDED
 };
+
+typedef base::Callback<void(VideoCaptureState)>
+    VideoCaptureStateUpdateCB;
+typedef base::Callback<void(const media::VideoCaptureFormats&)>
+    VideoCaptureDeviceFormatsCB;
+typedef base::Callback<
+  void(const scoped_refptr<media::VideoFrame>&,
+       const media::VideoCaptureFormat&)>
+    VideoCaptureDeliverFrameCB;
 
 }  // namespace content
 

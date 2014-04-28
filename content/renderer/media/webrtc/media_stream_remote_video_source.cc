@@ -149,7 +149,7 @@ void MediaStreamRemoteVideoSource::DoRenderFrameOnMainThread(
     scoped_refptr<media::VideoFrame> video_frame) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state() == STARTED)
-    DeliverVideoFrame(video_frame);
+    DeliverVideoFrame(video_frame, format_);
 }
 
 }  // namespace content

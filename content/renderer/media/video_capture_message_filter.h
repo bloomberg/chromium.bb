@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "ipc/message_filter.h"
-#include "media/video/capture/video_capture.h"
+#include "media/video/capture/video_capture_types.h"
 
 namespace gpu {
 struct MailboxHolder;

@@ -5,9 +5,11 @@
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 
 namespace {
@@ -38,24 +40,27 @@ VideoCapturerDelegate::VideoCapturerDelegate(
                       device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE),
       got_first_frame_(false) {
   DVLOG(3) << "VideoCapturerDelegate::ctor";
-  // RenderThreadImpl::current() may be NULL in testing.
+
+  // NULL in unit test.
   if (RenderThreadImpl::current()) {
-    capture_engine_ = RenderThreadImpl::current()->video_capture_impl_manager()
-              ->UseDevice(device_info.session_id);
-    DCHECK(capture_engine_);
+    VideoCaptureImplManager* manager =
+        RenderThreadImpl::current()->video_capture_impl_manager();
+    if (manager)
+      release_device_cb_ = manager->UseDevice(session_id_);
   }
-  message_loop_proxy_ = base::MessageLoopProxy::current();
 }
 
 VideoCapturerDelegate::~VideoCapturerDelegate() {
   DVLOG(3) << "VideoCapturerDelegate::dtor";
   DCHECK(new_frame_callback_.is_null());
+  if (!release_device_cb_.is_null())
+    release_device_cb_.Run();
 }
 
 void VideoCapturerDelegate::GetCurrentSupportedFormats(
     int max_requested_width,
     int max_requested_height,
-    const SupportedFormatsCallback& callback) {
+    const VideoCaptureDeviceFormatsCB& callback) {
   DVLOG(3) << "GetCurrentSupportedFormats("
            << " { max_requested_height = " << max_requested_height << "})"
            << " { max_requested_width = " << max_requested_width << "})";
@@ -75,85 +80,64 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
     return;
   }
 
+  // NULL in unit test.
+  if (!RenderThreadImpl::current())
+    return;
+  VideoCaptureImplManager* manager =
+      RenderThreadImpl::current()->video_capture_impl_manager();
+  if (!manager)
+    return;
   DCHECK(source_formats_callback_.is_null());
   source_formats_callback_ = callback;
-  capture_engine_->GetDeviceFormatsInUse(base::Bind(
-      &VideoCapturerDelegate::OnDeviceFormatsInUseReceived, this));
+  manager->GetDeviceFormatsInUse(
+      session_id_,
+      media::BindToCurrentLoop(
+          base::Bind(
+              &VideoCapturerDelegate::OnDeviceFormatsInUseReceived, this)));
 }
 
-void VideoCapturerDelegate::StartDeliver(
+void VideoCapturerDelegate::StartCapture(
     const media::VideoCaptureParams& params,
-    const NewFrameCallback& new_frame_callback,
+    const VideoCaptureDeliverFrameCB& new_frame_callback,
     const StartedCallback& started_callback) {
   DCHECK(params.requested_format.IsValid());
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   new_frame_callback_ = new_frame_callback;
   started_callback_ = started_callback;
   got_first_frame_ = false;
 
-  // Increase the reference count to ensure the object is not deleted until
-  // it is unregistered in VideoCapturerDelegate::OnRemoved.
-  AddRef();
-  capture_engine_->StartCapture(this, params);
+  // NULL in unit test.
+  if (!RenderThreadImpl::current())
+    return;
+  VideoCaptureImplManager* manager =
+      RenderThreadImpl::current()->video_capture_impl_manager();
+  if (!manager)
+    return;
+  stop_capture_cb_ =
+      manager->StartCapture(
+          session_id_,
+          params,
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCapturerDelegate::OnStateUpdateOnRenderThread, this)),
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCapturerDelegate::OnFrameReadyOnRenderThread, this)));
 }
 
-void VideoCapturerDelegate::StopDeliver() {
+void VideoCapturerDelegate::StopCapture() {
   // Immediately make sure we don't provide more frames.
-  DVLOG(3) << "VideoCapturerDelegate::StopDeliver()";
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  capture_engine_->StopCapture(this);
+  DVLOG(3) << "VideoCapturerDelegate::StopCapture()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!stop_capture_cb_.is_null()) {
+    base::ResetAndReturn(&stop_capture_cb_).Run();
+  }
   new_frame_callback_.Reset();
   started_callback_.Reset();
   source_formats_callback_.Reset();
 }
 
-void VideoCapturerDelegate::OnStarted(media::VideoCapture* capture) {
-  DVLOG(3) << "VideoCapturerDelegate::OnStarted";
-  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
-}
-
-void VideoCapturerDelegate::OnStopped(media::VideoCapture* capture) {
-  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
-}
-
-void VideoCapturerDelegate::OnPaused(media::VideoCapture* capture) {
-  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
-}
-
-void VideoCapturerDelegate::OnError(media::VideoCapture* capture,
-                                    int error_code) {
-  DVLOG(3) << "VideoCapturerDelegate::OnError";
-  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCapturerDelegate::OnErrorOnRenderThread, this, capture));
-}
-
-void VideoCapturerDelegate::OnRemoved(media::VideoCapture* capture) {
-  DVLOG(3) << " MediaStreamVideoCapturerSource::OnRemoved";
-  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
-
-  // Balance the AddRef in StartDeliver.
-  // This means we are no longer registered as an event handler and can safely
-  // be deleted.
-  Release();
-}
-
-void VideoCapturerDelegate::OnFrameReady(
-    media::VideoCapture* capture,
-    const scoped_refptr<media::VideoFrame>& frame) {
-  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCapturerDelegate::OnFrameReadyOnRenderThread,
-                 this,
-                 capture,
-                 frame));
-}
-
 void VideoCapturerDelegate::OnFrameReadyOnRenderThread(
-    media::VideoCapture* capture,
-    const scoped_refptr<media::VideoFrame>& frame) {
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
   if (!got_first_frame_) {
     got_first_frame_ = true;
     if (!started_callback_.is_null())
@@ -161,41 +145,54 @@ void VideoCapturerDelegate::OnFrameReadyOnRenderThread(
   }
 
   if (!new_frame_callback_.is_null()) {
-    new_frame_callback_.Run(frame);
+    new_frame_callback_.Run(frame, format);
   }
 }
 
-void VideoCapturerDelegate::OnErrorOnRenderThread(
-    media::VideoCapture* capture) {
-  if (!started_callback_.is_null())
+void VideoCapturerDelegate::OnStateUpdateOnRenderThread(
+    VideoCaptureState state) {
+  if (state == VIDEO_CAPTURE_STATE_ERROR && !started_callback_.is_null()) {
     started_callback_.Run(false);
+  }
 }
 
 void VideoCapturerDelegate::OnDeviceFormatsInUseReceived(
     const media::VideoCaptureFormats& formats_in_use) {
   DVLOG(3) << "OnDeviceFormatsInUseReceived: " << formats_in_use.size();
-  DCHECK(message_loop_proxy_ == base::MessageLoopProxy::current());
-  // StopDeliver() might have destroyed |source_formats_callback_| before
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // StopCapture() might have destroyed |source_formats_callback_| before
   // arriving here.
   if (source_formats_callback_.is_null())
     return;
+  // If there are no formats in use, try to retrieve the whole list of
+  // supported form.
   if (!formats_in_use.empty()) {
     source_formats_callback_.Run(formats_in_use);
     source_formats_callback_.Reset();
-  } else {
-    // If there are no formats in use, try to retrieve the whole list of
-    // supported formats.
-    capture_engine_->GetDeviceSupportedFormats(base::Bind(
-        &VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated, this));
+    return;
   }
+
+  // NULL in unit test.
+  if (!RenderThreadImpl::current())
+    return;
+  VideoCaptureImplManager* manager =
+      RenderThreadImpl::current()->video_capture_impl_manager();
+  if (!manager)
+    return;
+  manager->GetDeviceSupportedFormats(
+      session_id_,
+      media::BindToCurrentLoop(
+          base::Bind(
+              &VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated,
+              this)));
 }
 
 void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
     const media::VideoCaptureFormats& formats) {
   DVLOG(3) << "OnDeviceSupportedFormatsEnumerated: " << formats.size()
            << " received";
-  DCHECK(message_loop_proxy_ == base::MessageLoopProxy::current());
-  // StopDeliver() might have destroyed |source_formats_callback_| before
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // StopCapture() might have destroyed |source_formats_callback_| before
   // arriving here.
   if (source_formats_callback_.is_null())
     return;
@@ -246,7 +243,7 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
       device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
     new_params.allow_resolution_change = true;
   }
-  delegate_->StartDeliver(
+  delegate_->StartCapture(
       new_params,
       base::Bind(&MediaStreamVideoCapturerSource::DeliverVideoFrame,
                  base::Unretained(this)),
@@ -255,7 +252,7 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
-  delegate_->StopDeliver();
+  delegate_->StopCapture();
 }
 
 }  // namespace content

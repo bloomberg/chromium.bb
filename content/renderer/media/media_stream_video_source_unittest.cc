@@ -106,7 +106,7 @@ class MediaStreamVideoSourceTest
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateBlackFrame(gfx::Size(capture_width,
                                                       capture_height));
-    mock_source()->DeliverVideoFrame(frame);
+    mock_source()->DeliverVideoFrame(frame, media::VideoCaptureFormat());
     EXPECT_EQ(1, sink.number_of_frames());
 
     // Expect the delivered frame to be cropped.
@@ -418,7 +418,8 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   {
     scoped_refptr<media::VideoFrame> frame1 =
         media::VideoFrame::CreateBlackFrame(gfx::Size(320, 240));
-    mock_source()->DeliverVideoFrame(frame1);
+    mock_source()->DeliverVideoFrame(frame1,
+                                     media::VideoCaptureFormat());
   }
   EXPECT_EQ(1, sink.number_of_frames());
   // Expect the delivered frame to be passed unchanged since its smaller than
@@ -429,7 +430,8 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   {
     scoped_refptr<media::VideoFrame> frame2 =
           media::VideoFrame::CreateBlackFrame(gfx::Size(640, 480));
-    mock_source()->DeliverVideoFrame(frame2);
+    mock_source()->DeliverVideoFrame(frame2,
+                                     media::VideoCaptureFormat());
   }
   EXPECT_EQ(2, sink.number_of_frames());
   // Expect the delivered frame to be passed unchanged since its smaller than
@@ -440,7 +442,8 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   {
     scoped_refptr<media::VideoFrame> frame3 =
           media::VideoFrame::CreateBlackFrame(gfx::Size(1280, 720));
-    mock_source()->DeliverVideoFrame(frame3);
+    mock_source()->DeliverVideoFrame(frame3,
+                                     media::VideoCaptureFormat());
   }
   EXPECT_EQ(3, sink.number_of_frames());
   // Expect a frame to be cropped since its larger than max requested.

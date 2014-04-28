@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/video/capture/mock_video_capture_event_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +15,6 @@ using ::testing::AtLeast;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SaveArg;
-using media::MockVideoCaptureEventHandler;
 
 namespace content {
 
@@ -72,6 +69,7 @@ class VideoCaptureImplTest : public ::testing::Test {
                             media::VideoCaptureSessionId session_id,
                             const media::VideoCaptureParams& params) {
       OnStateChanged(VIDEO_CAPTURE_STATE_STARTED);
+      capture_params_ = params;
     }
 
     void DevicePauseCapture(int device_id) {}
@@ -96,6 +94,13 @@ class VideoCaptureImplTest : public ::testing::Test {
                                media::VideoCaptureSessionId session_id) {
       OnDeviceFormatsInUseReceived(media::VideoCaptureFormats());
     }
+
+    const media::VideoCaptureParams& capture_params() const {
+      return capture_params_;
+    }
+
+   private:
+    media::VideoCaptureParams capture_params_;
   };
 
   VideoCaptureImplTest() {
@@ -110,23 +115,68 @@ class VideoCaptureImplTest : public ::testing::Test {
     message_filter_ = new MockVideoCaptureMessageFilter;
     session_id_ = 1;
 
-    video_capture_impl_ = new MockVideoCaptureImpl(
-        session_id_, message_filter_.get());
+    video_capture_impl_.reset(new MockVideoCaptureImpl(
+        session_id_, message_filter_.get()));
 
     video_capture_impl_->device_id_ = 2;
   }
 
   virtual ~VideoCaptureImplTest() {
-    delete video_capture_impl_;
   }
 
  protected:
+  MOCK_METHOD2(OnFrameReady,
+              void(const scoped_refptr<media::VideoFrame>&,
+                   const media::VideoCaptureFormat&));
+  MOCK_METHOD1(OnStateUpdate, void(VideoCaptureState));
+  MOCK_METHOD1(OnDeviceFormatsInUse,
+               void(const media::VideoCaptureFormats&));
+  MOCK_METHOD1(OnDeviceSupportedFormats,
+               void(const media::VideoCaptureFormats&));
+
+  void Init() {
+    video_capture_impl_->Init();
+  }
+
+  void StartCapture(int client_id,
+                    const media::VideoCaptureParams& params) {
+    video_capture_impl_->StartCapture(
+        client_id, params,
+        base::Bind(&VideoCaptureImplTest::OnStateUpdate,
+                   base::Unretained(this)),
+        base::Bind(&VideoCaptureImplTest::OnFrameReady,
+                   base::Unretained(this)));
+  }
+
+  void StopCapture(int client_id) {
+    video_capture_impl_->StopCapture(client_id);
+  }
+
+  void DeInit() {
+    video_capture_impl_->DeInit();
+  }
+
+  void GetDeviceSupportedFormats() {
+    const base::Callback<void(const media::VideoCaptureFormats&)>
+        callback = base::Bind(
+            &VideoCaptureImplTest::OnDeviceSupportedFormats,
+            base::Unretained(this));
+    video_capture_impl_->GetDeviceSupportedFormats(callback);
+  }
+
+  void GetDeviceFormatsInUse() {
+    const base::Callback<void(const media::VideoCaptureFormats&)>
+        callback = base::Bind(
+            &VideoCaptureImplTest::OnDeviceFormatsInUse,
+            base::Unretained(this));
+    video_capture_impl_->GetDeviceFormatsInUse(callback);
+  }
+
   base::MessageLoop message_loop_;
-  base::RunLoop run_loop_;
   scoped_ptr<ChildProcess> child_process_;
   scoped_refptr<MockVideoCaptureMessageFilter> message_filter_;
   media::VideoCaptureSessionId session_id_;
-  MockVideoCaptureImpl* video_capture_impl_;
+  scoped_ptr<MockVideoCaptureImpl> video_capture_impl_;
   media::VideoCaptureParams params_small_;
   media::VideoCaptureParams params_large_;
 
@@ -136,155 +186,95 @@ class VideoCaptureImplTest : public ::testing::Test {
 
 TEST_F(VideoCaptureImplTest, Simple) {
   // Execute SetCapture() and StopCapture() for one client.
-  scoped_ptr<MockVideoCaptureEventHandler> client(
-      new MockVideoCaptureEventHandler);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
 
-  EXPECT_CALL(*client, OnStarted(_));
-  EXPECT_CALL(*client, OnStopped(_));
-  EXPECT_CALL(*client, OnRemoved(_));
-
-  video_capture_impl_->StartCapture(client.get(), params_small_);
-  video_capture_impl_->StopCapture(client.get());
-  video_capture_impl_->DeInit(
-      media::BindToCurrentLoop(run_loop_.QuitClosure()));
-  run_loop_.Run();
+  Init();
+  StartCapture(0, params_small_);
+  StopCapture(0);
+  DeInit();
 }
 
 TEST_F(VideoCaptureImplTest, TwoClientsInSequence) {
-  // Execute SetCapture() and StopCapture() for 2 clients in sequence.
-  scoped_ptr<MockVideoCaptureEventHandler> client1(
-      new MockVideoCaptureEventHandler);
-  scoped_ptr<MockVideoCaptureEventHandler> client2(
-      new MockVideoCaptureEventHandler);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
 
-  EXPECT_CALL(*client1, OnStarted(_));
-  EXPECT_CALL(*client1, OnStopped(_));
-  EXPECT_CALL(*client1, OnRemoved(_));
-  EXPECT_CALL(*client2, OnStarted(_));
-  EXPECT_CALL(*client2, OnStopped(_));
-  EXPECT_CALL(*client2, OnRemoved(_));
-
-  video_capture_impl_->StartCapture(client1.get(), params_small_);
-  video_capture_impl_->StopCapture(client1.get());
-  video_capture_impl_->StartCapture(client2.get(), params_small_);
-  video_capture_impl_->StopCapture(client2.get());
-  video_capture_impl_->DeInit(
-      media::BindToCurrentLoop(run_loop_.QuitClosure()));
-  run_loop_.Run();
+  Init();
+  StartCapture(0, params_small_);
+  StopCapture(0);
+  StartCapture(1, params_small_);
+  StopCapture(1);
+  DeInit();
 }
 
 TEST_F(VideoCaptureImplTest, LargeAndSmall) {
-  // Execute SetCapture() and StopCapture() for 2 clients simultaneously.
-  // The large client starts first and stops first.
-  scoped_ptr<MockVideoCaptureEventHandler> client_small(
-      new MockVideoCaptureEventHandler);
-  scoped_ptr<MockVideoCaptureEventHandler> client_large(
-      new MockVideoCaptureEventHandler);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
 
-  EXPECT_CALL(*client_large, OnStarted(_));
-  EXPECT_CALL(*client_small, OnStarted(_));
-  EXPECT_CALL(*client_large, OnStopped(_));
-  EXPECT_CALL(*client_large, OnRemoved(_));
-  EXPECT_CALL(*client_small, OnStopped(_));
-  EXPECT_CALL(*client_small, OnRemoved(_));
-
-  video_capture_impl_->StartCapture(client_large.get(), params_large_);
-  video_capture_impl_->StartCapture(client_small.get(), params_small_);
-  video_capture_impl_->StopCapture(client_large.get());
-  video_capture_impl_->StopCapture(client_small.get());
-  video_capture_impl_->DeInit(
-      media::BindToCurrentLoop(run_loop_.QuitClosure()));
-  run_loop_.Run();
+  Init();
+  StartCapture(0, params_large_);
+  StopCapture(0);
+  StartCapture(1, params_small_);
+  StopCapture(1);
+  DeInit();
 }
 
 TEST_F(VideoCaptureImplTest, SmallAndLarge) {
-  // Execute SetCapture() and StopCapture() for 2 clients simultaneously.
-  // The small client starts first and stops first.
-  scoped_ptr<MockVideoCaptureEventHandler> client_small(
-      new MockVideoCaptureEventHandler);
-  scoped_ptr<MockVideoCaptureEventHandler> client_large(
-      new MockVideoCaptureEventHandler);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
 
-  EXPECT_CALL(*client_small, OnStarted(_));
-  EXPECT_CALL(*client_large, OnStarted(_));
-  EXPECT_CALL(*client_small, OnStopped(_));
-  EXPECT_CALL(*client_small, OnRemoved(_));
-  EXPECT_CALL(*client_large, OnStopped(_));
-  EXPECT_CALL(*client_large, OnRemoved(_));
-
-  video_capture_impl_->StartCapture(client_small.get(), params_small_);
-  video_capture_impl_->StartCapture(client_large.get(), params_large_);
-  video_capture_impl_->StopCapture(client_small.get());
-  video_capture_impl_->StopCapture(client_large.get());
-  video_capture_impl_->DeInit(
-      media::BindToCurrentLoop(run_loop_.QuitClosure()));
-  run_loop_.Run();
+  Init();
+  StartCapture(0, params_small_);
+  StopCapture(0);
+  StartCapture(1, params_large_);
+  StopCapture(1);
+  DeInit();
 }
 
 // Check that a request to GetDeviceSupportedFormats() ends up eventually in the
 // provided callback.
 TEST_F(VideoCaptureImplTest, GetDeviceFormats) {
-  scoped_ptr<MockVideoCaptureEventHandler> client(
-      new MockVideoCaptureEventHandler);
+  EXPECT_CALL(*this, OnDeviceSupportedFormats(_));
 
-  EXPECT_CALL(*client, OnDeviceSupportedFormatsEnumerated(_));
-
-  const base::Callback<void(const media::VideoCaptureFormats&)>
-      callback = base::Bind(
-          &MockVideoCaptureEventHandler::OnDeviceSupportedFormatsEnumerated,
-          base::Unretained(client.get()));
-  video_capture_impl_->GetDeviceSupportedFormats(callback);
-  video_capture_impl_->DeInit(
-      media::BindToCurrentLoop(run_loop_.QuitClosure()));
-  run_loop_.Run();
+  Init();
+  GetDeviceSupportedFormats();
+  DeInit();
 }
 
 // Check that two requests to GetDeviceSupportedFormats() end up eventually
 // calling the provided callbacks.
 TEST_F(VideoCaptureImplTest, TwoClientsGetDeviceFormats) {
-  scoped_ptr<MockVideoCaptureEventHandler> client1(
-      new MockVideoCaptureEventHandler);
-  scoped_ptr<MockVideoCaptureEventHandler> client2(
-      new MockVideoCaptureEventHandler);
+  EXPECT_CALL(*this, OnDeviceSupportedFormats(_)).Times(2);
 
-  EXPECT_CALL(*client1, OnDeviceSupportedFormatsEnumerated(_));
-  EXPECT_CALL(*client2, OnDeviceSupportedFormatsEnumerated(_));
-
-  const base::Callback<void(const media::VideoCaptureFormats&)>
-      callback1 = base::Bind(
-          &MockVideoCaptureEventHandler::OnDeviceSupportedFormatsEnumerated,
-          base::Unretained(client1.get()));
-  const base::Callback<void(const media::VideoCaptureFormats&)>
-      callback2 = base::Bind(
-          &MockVideoCaptureEventHandler::OnDeviceSupportedFormatsEnumerated,
-          base::Unretained(client2.get()));
-
-  video_capture_impl_->GetDeviceSupportedFormats(callback1);
-  video_capture_impl_->GetDeviceSupportedFormats(callback2);
-  video_capture_impl_->DeInit(
-      media::BindToCurrentLoop(run_loop_.QuitClosure()));
-  run_loop_.Run();
+  Init();
+  GetDeviceSupportedFormats();
+  GetDeviceSupportedFormats();
+  DeInit();
 }
 
 // Check that a request to GetDeviceFormatsInUse() ends up eventually in the
 // provided callback.
 TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
-  scoped_ptr<MockVideoCaptureEventHandler> client(
-      new MockVideoCaptureEventHandler);
+  EXPECT_CALL(*this, OnDeviceFormatsInUse(_));
 
-  media::VideoCaptureFormats formats_in_use;
-  EXPECT_CALL(*client, OnDeviceFormatsInUseReceived(_))
-      .WillOnce(SaveArg<0>(&formats_in_use));
+  Init();
+  GetDeviceFormatsInUse();
+  DeInit();
+}
 
-  const base::Callback<void(const media::VideoCaptureFormats&)> callback =
-      base::Bind(&MockVideoCaptureEventHandler::OnDeviceFormatsInUseReceived,
-                 base::Unretained(client.get()));
-  video_capture_impl_->GetDeviceFormatsInUse(callback);
-  video_capture_impl_->DeInit(
-      media::BindToCurrentLoop(run_loop_.QuitClosure()));
-  run_loop_.Run();
+TEST_F(VideoCaptureImplTest, AlreadyStarted) {
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
 
-  EXPECT_TRUE(formats_in_use.empty());
+  Init();
+  StartCapture(0, params_small_);
+  StartCapture(1, params_large_);
+  StopCapture(0);
+  StopCapture(1);
+  DeInit();
+  DCHECK(video_capture_impl_->capture_params().requested_format
+            .frame_size ==
+         params_small_.requested_format.frame_size);
 }
 
 }  // namespace content

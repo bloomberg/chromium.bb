@@ -12,7 +12,7 @@
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "media/video/capture/video_capture_proxy.h"
+#include "media/base/bind_to_current_loop.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -25,13 +25,10 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
     : render_view_(render_view),
       device_id_(device_id),
       session_id_(0),
-      handler_proxy_(new media::VideoCaptureHandlerProxy(
-          this,
-          base::MessageLoopProxy::current())),
       handler_(handler),
-      unbalanced_start_(false),
       pending_open_device_(false),
-      pending_open_device_id_(-1) {
+      pending_open_device_id_(-1),
+      weak_factory_(this) {
   // We need to open the device and obtain the label and session ID before
   // initializing.
   if (render_view_.get()) {
@@ -39,62 +36,45 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE,
         device_id,
         document_url,
-        base::Bind(&PepperPlatformVideoCapture::OnDeviceOpened, this));
+        base::Bind(&PepperPlatformVideoCapture::OnDeviceOpened,
+                   weak_factory_.GetWeakPtr()));
     pending_open_device_ = true;
   }
 }
 
 void PepperPlatformVideoCapture::StartCapture(
-    media::VideoCapture::EventHandler* handler,
     const media::VideoCaptureParams& params) {
-  DCHECK(handler == handler_);
-
-  if (unbalanced_start_)
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!stop_capture_cb_.is_null())
     return;
-
-  if (video_capture_) {
-    unbalanced_start_ = true;
-    AddRef();  // Will be balanced in OnRemoved().
-    video_capture_->StartCapture(handler_proxy_.get(), params);
-  }
+  VideoCaptureImplManager* manager =
+      RenderThreadImpl::current()->video_capture_impl_manager();
+  stop_capture_cb_ =
+      manager->StartCapture(session_id_,
+                            params,
+                            media::BindToCurrentLoop(base::Bind(
+                                &PepperPlatformVideoCapture::OnStateUpdate,
+                                weak_factory_.GetWeakPtr())),
+                            media::BindToCurrentLoop(base::Bind(
+                                &PepperPlatformVideoCapture::OnFrameReady,
+                                weak_factory_.GetWeakPtr())));
 }
 
-void PepperPlatformVideoCapture::StopCapture(
-    media::VideoCapture::EventHandler* handler) {
-  DCHECK(handler == handler_);
-  if (!unbalanced_start_)
+void PepperPlatformVideoCapture::StopCapture() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (stop_capture_cb_.is_null())
     return;
-
-  if (video_capture_) {
-    unbalanced_start_ = false;
-    video_capture_->StopCapture(handler_proxy_.get());
-  }
-}
-
-bool PepperPlatformVideoCapture::CaptureStarted() {
-  return handler_proxy_->state().started;
-}
-
-int PepperPlatformVideoCapture::CaptureFrameRate() {
-  return handler_proxy_->state().frame_rate;
-}
-
-void PepperPlatformVideoCapture::GetDeviceSupportedFormats(
-    const DeviceFormatsCallback& callback) {
-  NOTREACHED();
-}
-
-void PepperPlatformVideoCapture::GetDeviceFormatsInUse(
-    const DeviceFormatsInUseCallback& callback) {
-  NOTREACHED();
+  stop_capture_cb_.Run();
+  stop_capture_cb_.Reset();
 }
 
 void PepperPlatformVideoCapture::DetachEventHandler() {
   handler_ = NULL;
-  StopCapture(NULL);
-
-  video_capture_.reset();
-
+  StopCapture();
+  if (!release_device_cb_.is_null()) {
+    release_device_cb_.Run();
+    release_device_cb_.Reset();
+  }
   if (render_view_.get()) {
     if (!label_.empty()) {
       GetMediaDeviceManager()->CloseDevice(label_);
@@ -108,51 +88,11 @@ void PepperPlatformVideoCapture::DetachEventHandler() {
   }
 }
 
-void PepperPlatformVideoCapture::OnStarted(VideoCapture* capture) {
-  if (handler_)
-    handler_->OnStarted(capture);
-}
-
-void PepperPlatformVideoCapture::OnStopped(VideoCapture* capture) {
-  if (handler_)
-    handler_->OnStopped(capture);
-}
-
-void PepperPlatformVideoCapture::OnPaused(VideoCapture* capture) {
-  if (handler_)
-    handler_->OnPaused(capture);
-}
-
-void PepperPlatformVideoCapture::OnError(VideoCapture* capture,
-                                         int error_code) {
-  if (handler_)
-    handler_->OnError(capture, error_code);
-}
-
-void PepperPlatformVideoCapture::OnRemoved(VideoCapture* capture) {
-  if (handler_)
-    handler_->OnRemoved(capture);
-
-  Release();  // Balance the AddRef() in StartCapture().
-}
-
-void PepperPlatformVideoCapture::OnFrameReady(
-    VideoCapture* capture,
-    const scoped_refptr<media::VideoFrame>& frame) {
-  if (handler_)
-    handler_->OnFrameReady(capture, frame);
-}
-
 PepperPlatformVideoCapture::~PepperPlatformVideoCapture() {
-  DCHECK(!video_capture_);
+  DCHECK(stop_capture_cb_.is_null());
+  DCHECK(release_device_cb_.is_null());
   DCHECK(label_.empty());
   DCHECK(!pending_open_device_);
-}
-
-void PepperPlatformVideoCapture::Initialize() {
-  VideoCaptureImplManager* manager =
-      RenderThreadImpl::current()->video_capture_impl_manager();
-  video_capture_ = manager->UseDevice(session_id_);
 }
 
 void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
@@ -166,11 +106,41 @@ void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
     label_ = label;
     session_id_ = GetMediaDeviceManager()->GetSessionID(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE, label);
-    Initialize();
+    VideoCaptureImplManager* manager =
+        RenderThreadImpl::current()->video_capture_impl_manager();
+    release_device_cb_ = manager->UseDevice(session_id_);
   }
 
   if (handler_)
-    handler_->OnInitialized(this, succeeded);
+    handler_->OnInitialized(succeeded);
+}
+
+void PepperPlatformVideoCapture::OnStateUpdate(VideoCaptureState state) {
+  if (!handler_)
+    return;
+  switch (state) {
+    case VIDEO_CAPTURE_STATE_STARTED:
+      handler_->OnStarted();
+      break;
+    case VIDEO_CAPTURE_STATE_STOPPED:
+      handler_->OnStopped();
+      break;
+    case VIDEO_CAPTURE_STATE_PAUSED:
+      handler_->OnPaused();
+      break;
+    case VIDEO_CAPTURE_STATE_ERROR:
+      handler_->OnError();
+      break;
+    default:
+      NOTREACHED() << "Unexpected state: " << state << ".";
+  }
+}
+
+void PepperPlatformVideoCapture::OnFrameReady(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
+  if (handler_ && !stop_capture_cb_.is_null())
+    handler_->OnFrameReady(frame, format);
 }
 
 PepperMediaDeviceManager* PepperPlatformVideoCapture::GetMediaDeviceManager() {

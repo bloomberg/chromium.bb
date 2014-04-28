@@ -82,7 +82,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // Delivers |frame| to registered tracks according to their constraints.
   // Note: current implementation assumes |frame| be contiguous layout of image
   // planes and I420.
-  virtual void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
+  // |format| contains extra information like the frame rate of this source.
+  virtual void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
+                                 const media::VideoCaptureFormat& format);
 
   // An implementation must fetch the formats that can currently be used by
   // the source and call OnSupportedFormats when done.

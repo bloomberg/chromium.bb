@@ -368,7 +368,8 @@ void MediaStreamVideoSource::DoStopSource() {
 }
 
 void MediaStreamVideoSource::DeliverVideoFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
   DCHECK(CalledOnValidThread());
   scoped_refptr<media::VideoFrame> video_frame(frame);
 
