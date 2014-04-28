@@ -68,8 +68,6 @@
       'nss_util.cc',
       'nss_util.h',
       'nss_util_internal.h',
-      'openpgp_symmetric_encryption.cc',
-      'openpgp_symmetric_encryption.h',
       'openssl_util.cc',
       'openssl_util.h',
       'p224.cc',

@@ -49,8 +49,6 @@ component("crypto") {
     "nss_util.cc",
     "nss_util.h",
     "nss_util_internal.h",
-    "openpgp_symmetric_encryption.cc",
-    "openpgp_symmetric_encryption.h",
     "openssl_util.cc",
     "openssl_util.h",
     "p224.cc",
@@ -105,12 +103,6 @@ component("crypto") {
     ]
   }
 
-  if (use_openssl || !is_linux) {
-    sources -= [
-      "openpgp_symmetric_encryption.cc",
-      "openpgp_symmetric_encryption.h",
-    ]
-  }
   if (!is_mac) {
     sources -= [
       "cssm_init.cc",
@@ -218,21 +210,17 @@ test("crypto_unittests") {
     "signature_creator_unittest.cc",
     "signature_verifier_unittest.cc",
     "symmetric_key_unittest.cc",
-    "openpgp_symmetric_encryption_unittest.cc",
   ]
 
   if (use_openssl) {
     sources -= [
       "nss_util_unittest.cc",
-      "openpgp_symmetric_encryption_unittest.cc",
-      "rsa_private_key_nss_unittest.cc",
     ]
   }
 
   if (use_openssl || !is_linux) {
     sources -= [
       "rsa_private_key_nss_unittest.cc",
-      "openpgp_symmetric_encryption_unittest.cc",
     ]
   }
 

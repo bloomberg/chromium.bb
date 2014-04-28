@@ -36,7 +36,6 @@
         ['exclude', '_nss\.(cc|h)$'],
         ['exclude', '^(mock_)?apple_'],
         ['exclude', '^capi_'],
-        ['exclude', '^openpgp_'],
         ['exclude', '^cssm_'],
         ['exclude', '^nss_'],
         ['exclude', '^mac_'],
