@@ -87,6 +87,80 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Form name or ID";
     case SavePasswordProgressLogger::STRING_MESSAGE:
       return "Message";
+    case SavePasswordProgressLogger::STRING_SET_AUTH_METHOD:
+      return "LoginHandler::SetAuth";
+    case SavePasswordProgressLogger::STRING_AUTHENTICATION_HANDLED:
+      return "Authentication already handled";
+    case SavePasswordProgressLogger::STRING_LOGINHANDLER_FORM:
+      return "LoginHandler reports this form";
+    case SavePasswordProgressLogger::STRING_SEND_PASSWORD_FORMS_METHOD:
+      return "PasswordAutofillAgent::SendPasswordForms";
+    case SavePasswordProgressLogger::STRING_SECURITY_ORIGIN:
+      return "Security origin";
+    case SavePasswordProgressLogger::STRING_SECURITY_ORIGIN_FAILURE:
+      return "Security origin cannot access password manager.";
+    case SavePasswordProgressLogger::STRING_WEBPAGE_EMPTY:
+      return "Webpage is empty.";
+    case SavePasswordProgressLogger::STRING_NUMBER_OF_ALL_FORMS:
+      return "Number of all forms";
+    case SavePasswordProgressLogger::STRING_FORM_FOUND_ON_PAGE:
+      return "Form found on page";
+    case SavePasswordProgressLogger::STRING_FORM_IS_VISIBLE:
+      return "Form is visible";
+    case SavePasswordProgressLogger::STRING_FORM_IS_PASSWORD:
+      return "Form is a password form";
+    case SavePasswordProgressLogger::STRING_WILL_SUBMIT_FORM_METHOD:
+      return "PasswordAutofillAgent::WillSubmitForm";
+    case SavePasswordProgressLogger::STRING_HTML_FORM_FOR_SUBMIT:
+      return "HTML form for submit";
+    case SavePasswordProgressLogger::STRING_CREATED_PASSWORD_FORM:
+      return "Created PasswordForm";
+    case SavePasswordProgressLogger::STRING_SUBMITTED_PASSWORD_REPLACED:
+      return "Submitted password replaced with the provisionally saved one.";
+    case SavePasswordProgressLogger::STRING_DID_START_PROVISIONAL_LOAD_METHOD:
+      return "PasswordAutofillAgent::DidStartProvisionalLoad";
+    case SavePasswordProgressLogger::STRING_FORM_FRAME_EQ_FRAME:
+      return "form_frame == frame";
+    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME:
+      return "provisionally_saved_forms_[form_frame]";
+    case SavePasswordProgressLogger::STRING_PASSWORD_FORM_FOUND_ON_PAGE:
+      return "PasswordForm found on the page";
+    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_METHOD:
+      return "PasswordManager::ProvisionallySavePassword";
+    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM:
+      return "ProvisionallySavePassword form";
+    case SavePasswordProgressLogger::STRING_IS_SAVING_ENABLED:
+      return "IsSavingEnabled";
+    case SavePasswordProgressLogger::STRING_EMPTY_PASSWORD:
+      return "Empty password";
+    case SavePasswordProgressLogger::STRING_EXACT_MATCH:
+      return "Form manager found, exact match.";
+    case SavePasswordProgressLogger::STRING_MATCH_WITHOUT_ACTION:
+      return "Form manager found, match except for action.";
+    case SavePasswordProgressLogger::STRING_NO_FORM_MANAGER:
+      return "No form manager found.";
+    case SavePasswordProgressLogger::STRING_FORM_BLACKLISTED:
+      return "Form blacklisted.";
+    case SavePasswordProgressLogger::STRING_INVALID_FORM:
+      return "Invalid form.";
+    case SavePasswordProgressLogger::STRING_AUTOCOMPLETE_OFF:
+      return "Autocomplete=off.";
+    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM:
+      return "provisionally_saved_form";
+    case SavePasswordProgressLogger::STRING_IGNORE_POSSIBLE_USERNAMES:
+      return "Ignore other possible usernames";
+    case SavePasswordProgressLogger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD:
+      return "PasswordManager::OnPasswordFormsRendered";
+    case SavePasswordProgressLogger::STRING_NO_PROVISIONAL_SAVE_MANAGER:
+      return "No provisional save manager";
+    case SavePasswordProgressLogger::STRING_NUMBER_OF_VISIBLE_FORMS:
+      return "Number of visible forms";
+    case SavePasswordProgressLogger::STRING_PASSWORD_FORM_REAPPEARED:
+      return "Password form re-appeared";
+    case SavePasswordProgressLogger::STRING_SAVING_DISABLED:
+      return "Saving disabled";
+    case SavePasswordProgressLogger::STRING_NO_MATCHING_FORM:
+      return "No matching form";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

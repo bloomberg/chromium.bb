@@ -30,6 +30,7 @@ class PrefRegistrySyncable;
 
 namespace password_manager {
 
+class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordManagerTest;
@@ -114,9 +115,12 @@ class PasswordManager : public LoginModel {
   };
 
   // Log failure for UMA. Logs additional metrics if the |form_origin|
-  // corresponds to one of the top, explicitly monitored websites.
+  // corresponds to one of the top, explicitly monitored websites. For some
+  // values of |failure| also sends logs to the internals page through |logger|,
+  // it |logger| is not NULL.
   void RecordFailure(ProvisionalSaveFailure failure,
-                     const std::string& form_origin);
+                     const std::string& form_origin,
+                     BrowserSavePasswordProgressLogger* logger);
 
   // Possibly set up FieldTrial for testing other possible usernames. This only
   // happens if there are other_possible_usernames to be shown and the

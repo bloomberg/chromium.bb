@@ -14,6 +14,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -135,7 +136,21 @@ void LoginHandler::SetAuth(const base::string16& username,
                            const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (TestAndSetAuthHandled())
+  scoped_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_ && password_manager_->client()->IsLoggingActive()) {
+    logger.reset(new password_manager::BrowserSavePasswordProgressLogger(
+        password_manager_->client()));
+    logger->LogMessage(
+        autofill::SavePasswordProgressLogger::STRING_SET_AUTH_METHOD);
+  }
+
+  bool already_handled = TestAndSetAuthHandled();
+  if (logger) {
+    logger->LogBoolean(
+        autofill::SavePasswordProgressLogger::STRING_AUTHENTICATION_HANDLED,
+        already_handled);
+  }
+  if (already_handled)
     return;
 
   // Tell the password manager the credentials were submitted / accepted.
@@ -143,6 +158,11 @@ void LoginHandler::SetAuth(const base::string16& username,
     password_form_.username_value = username;
     password_form_.password_value = password;
     password_manager_->ProvisionallySavePassword(password_form_);
+    if (logger) {
+      logger->LogPasswordForm(
+          autofill::SavePasswordProgressLogger::STRING_LOGINHANDLER_FORM,
+          password_form_);
+    }
   }
 
   // Calling NotifyAuthSupplied() directly instead of posting a task

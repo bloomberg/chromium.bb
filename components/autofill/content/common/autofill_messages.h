@@ -113,6 +113,10 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_PreviewForm,
 IPC_MESSAGE_ROUTED1(AutofillMsg_FillPasswordForm,
                     autofill::PasswordFormFillData /* the fill form data*/)
 
+// Notification to start (|active| == true) or stop (|active| == false) logging
+// the decisions made about saving the password.
+IPC_MESSAGE_ROUTED1(AutofillMsg_ChangeLoggingState, bool /* active */)
+
 // Send the heuristic and server field type predictions to the renderer.
 IPC_MESSAGE_ROUTED1(
     AutofillMsg_FieldTypePredictionsAvailable,

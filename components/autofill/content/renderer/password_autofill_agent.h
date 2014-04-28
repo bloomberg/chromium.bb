@@ -130,6 +130,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data);
+  void OnChangeLoggingState(bool active);
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
@@ -194,6 +195,9 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   FrameToPasswordFormMap provisionally_saved_forms_;
 
   PasswordValueGatekeeper gatekeeper_;
+
+  // True indicates that user debug information should be logged.
+  bool logging_state_active_;
 
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 
