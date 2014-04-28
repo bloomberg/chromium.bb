@@ -25,6 +25,10 @@
 
 class Profile;
 
+namespace gcm {
+class GCMService;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -57,6 +61,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
 
   TiclInvalidationService(
       scoped_ptr<IdentityProvider> identity_provider,
+      gcm::GCMService* gcm_service,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       Profile* profile);
   virtual ~TiclInvalidationService();
@@ -145,6 +150,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
 
   PrefChangeRegistrar pref_change_registrar_;
   InvalidationNetworkChannel network_channel_type_;
+  gcm::GCMService* gcm_service_;
   scoped_ptr<GCMInvalidationBridge> gcm_invalidation_bridge_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 

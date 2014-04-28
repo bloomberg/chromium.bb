@@ -8,6 +8,9 @@
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
+#include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/services/gcm/gcm_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
@@ -46,6 +49,7 @@ class TiclInvalidationServiceTestDelegate {
             SigninManagerFactory::GetForProfile(profile_.get()),
             token_service_.get(),
             NULL)),
+        gcm::GCMProfileServiceFactory::GetForProfile(profile_.get()),
         profile_->GetRequestContext(),
         profile_.get()));
   }
@@ -103,6 +107,7 @@ class TiclInvalidationServiceChannelTest : public ::testing::Test {
         fake_signin_manager_, token_service_.get(), NULL));
     invalidation_service_.reset(new TiclInvalidationService(
         identity_provider.Pass(),
+        gcm::GCMProfileServiceFactory::GetForProfile(profile_.get()),
         profile_->GetRequestContext(),
         profile_.get()));
     invalidation_service_->Init(scoped_ptr<syncer::InvalidationStateTracker>(
