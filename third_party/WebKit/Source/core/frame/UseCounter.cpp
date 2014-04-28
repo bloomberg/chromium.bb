@@ -715,6 +715,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case NodeIteratorDetach:
         return "'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).";
 
+    case AttrNodeValue:
+        return "'Attr.nodeValue' is deprecated. Please use 'value' instead.";
+
+    case AttrTextContent:
+        return "'Attr.textContent' is deprecated. Please use 'value' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

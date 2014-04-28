@@ -12,6 +12,4 @@ SubTest 7 = PASS
 SubTest 8 = PASS
 SubTest 9 = PASS
 SubTest 10 = PASS
-SubTest 11 = PASS
-SubTest 12 = PASS
 Complete Test = PASS

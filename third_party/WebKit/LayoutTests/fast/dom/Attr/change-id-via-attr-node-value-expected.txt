@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'Attr.nodeValue' is deprecated. Please use 'value' instead.
 Test that different ways of changing an element's id all work properly.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -7,34 +8,34 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 1. Check id after parsing.
 PASS document.getElementById("a") is document.body
 PASS document.body.id is "a"
-PASS document.body.getAttributeNode("id").textContent is "a"
+PASS document.body.getAttributeNode("id").value is "a"
 
 2. Change Attr.value.
 PASS document.getElementById("a") is null
 PASS document.getElementById("b") is document.body
-PASS document.body.getAttributeNode("id").textContent is "b"
+PASS document.body.getAttributeNode("id").value is "b"
 
 3. Change HTMLElement.id.
 PASS document.getElementById("b") is null
 PASS document.getElementById("c") is document.body
-PASS document.body.getAttributeNode("id").textContent is "c"
+PASS document.body.getAttributeNode("id").value is "c"
 
 4. Change id attribute via setAttribute().
 PASS document.getElementById("c") is null
 PASS document.getElementById("d") is document.body
-PASS document.body.getAttributeNode("id").textContent is "d"
+PASS document.body.getAttributeNode("id").value is "d"
 
 5. Change id attribute via setAttributeNS().
 PASS document.getElementById("d") is null
 PASS document.getElementById("e") is document.body
-PASS document.body.getAttributeNode("id").textContent is "e"
+PASS document.body.getAttributeNode("id").value is "e"
 
 6. Change Attr.nodeValue.
 PASS document.getElementById("e") is null
 PASS document.getElementById("f") is document.body
 PASS document.body.id is "f"
 PASS document.body.getAttribute("id") is "f"
-PASS attrNode.textContent is "f"
+PASS attrNode.value is "f"
 PASS attrNode.childNodes.length is 1
 
 7. Attr.replaceChild().
@@ -42,7 +43,7 @@ PASS document.getElementById("f") is null
 PASS document.getElementById("g") is document.body
 PASS document.body.id is "g"
 PASS document.body.getAttribute("id") is "g"
-PASS attrNode.textContent is "g"
+PASS attrNode.value is "g"
 PASS attrNode.childNodes.length is 1
 
 8. Attr.insertBefore().
@@ -50,7 +51,7 @@ PASS document.getElementById("g") is null
 PASS document.getElementById("0g") is document.body
 PASS document.body.id is "0g"
 PASS document.body.getAttribute("id") is "0g"
-PASS attrNode.textContent is "0g"
+PASS attrNode.value is "0g"
 PASS attrNode.childNodes.length is 2
 
 9. attr.appendChild().
@@ -58,7 +59,7 @@ PASS document.getElementById("0g") is null
 PASS document.getElementById("0g2") is document.body
 PASS document.body.id is "0g2"
 PASS document.body.getAttribute("id") is "0g2"
-PASS attrNode.textContent is "0g2"
+PASS attrNode.value is "0g2"
 PASS attrNode.childNodes.length is 3
 
 10. Attr.removeChild()
@@ -67,36 +68,36 @@ PASS document.getElementById("h") is null
 PASS document.getElementById("") is null
 PASS document.body.id is ""
 PASS document.body.getAttribute("id") is ""
-PASS document.body.getAttributeNode("id").textContent is ""
+PASS document.body.getAttributeNode("id").value is ""
 
 11. Changing Text.nodeValue.
 PASS attrNode.firstChild.nodeValue is "i"
 PASS document.getElementById("i") is document.body
 PASS document.body.id is "i"
 PASS document.body.getAttribute("id") is "i"
-PASS attrNode.textContent is "i"
+PASS attrNode.value is "i"
 PASS attrNode.childNodes.length is 1
 
-12. Chnaging Attr.textContent.
+12. Chnaging Attr.value.
 PASS document.getElementById("i") is null
 PASS document.getElementById("hi") is document.body
 PASS document.body.id is "hi"
 PASS document.body.getAttribute("id") is "hi"
-PASS attrNode.textContent is "hi"
+PASS attrNode.value is "hi"
 PASS attrNode.childNodes.length is 1
 
 13. Text.splitText().
 PASS document.getElementById("hi") is document.body
 PASS document.body.id is "hi"
 PASS document.body.getAttribute("id") is "hi"
-PASS document.body.getAttributeNode("id").textContent is "hi"
+PASS document.body.getAttributeNode("id").value is "hi"
 PASS document.body.getAttributeNode("id").childNodes.length is 2
 
 14. Node.normalize(), joining text nodes.
 PASS document.getElementById("hi") is document.body
 PASS document.body.id is "hi"
 PASS document.body.getAttribute("id") is "hi"
-PASS document.body.getAttributeNode("id").textContent is "hi"
+PASS document.body.getAttributeNode("id").value is "hi"
 PASS document.body.getAttributeNode("id").childNodes.length is 1
 
 15. Changing Attr.nodeValue.
@@ -104,7 +105,7 @@ PASS document.getElementById("hi") is null
 PASS document.getElementById("j") is document.body
 PASS document.body.id is "j"
 PASS document.body.getAttribute("id") is "j"
-PASS attrNode.textContent is "j"
+PASS attrNode.value is "j"
 PASS attrNode.childNodes.length is 1
 
 16. Changing Text.data.
@@ -112,7 +113,7 @@ PASS document.getElementById("j") is null
 PASS document.getElementById("k") is document.body
 PASS document.body.id is "k"
 PASS document.body.getAttribute("id") is "k"
-PASS attrNode.textContent is "k"
+PASS attrNode.value is "k"
 PASS attrNode.childNodes.length is 1
 
 17. Changing text child with appendData().
@@ -120,7 +121,7 @@ PASS document.getElementById("k") is null
 PASS document.getElementById("kl") is document.body
 PASS document.body.id is "kl"
 PASS document.body.getAttribute("id") is "kl"
-PASS attrNode.textContent is "kl"
+PASS attrNode.value is "kl"
 PASS attrNode.childNodes.length is 1
 
 18. Changing text child with insertData().
@@ -128,7 +129,7 @@ PASS document.getElementById("kl") is null
 PASS document.getElementById("k1l") is document.body
 PASS document.body.id is "k1l"
 PASS document.body.getAttribute("id") is "k1l"
-PASS attrNode.textContent is "k1l"
+PASS attrNode.value is "k1l"
 PASS attrNode.childNodes.length is 1
 
 19. Changing text child with deleteData().
@@ -136,7 +137,7 @@ PASS document.getElementById("k1l") is null
 PASS document.getElementById("l") is document.body
 PASS document.body.id is "l"
 PASS document.body.getAttribute("id") is "l"
-PASS attrNode.textContent is "l"
+PASS attrNode.value is "l"
 PASS attrNode.childNodes.length is 1
 
 20. Changing text child with replaceData().
@@ -144,7 +145,7 @@ PASS document.getElementById("l") is null
 PASS document.getElementById("mn") is document.body
 PASS document.body.id is "mn"
 PASS document.body.getAttribute("id") is "mn"
-PASS attrNode.textContent is "mn"
+PASS attrNode.value is "mn"
 PASS attrNode.childNodes.length is 1
 
 21. Remove an Attr node.

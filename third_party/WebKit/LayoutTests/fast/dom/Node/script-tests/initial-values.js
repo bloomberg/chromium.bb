@@ -11,7 +11,6 @@ shouldBe("attr.name", "'foo'");
 shouldBe("attr.localName", "null");
 shouldBe("attr.namespaceURI", "null");
 shouldBe("attr.prefix", "null");
-shouldBe("attr.nodeValue", "''");
 shouldBe("attr.value", "''");
 
 debug("Attribute creation using createElement on an XHTML doc:")
@@ -23,7 +22,6 @@ shouldBe("attr.name", "'foo'");
 shouldBe("attr.localName", "null");
 shouldBe("attr.namespaceURI", "null");
 shouldBe("attr.prefix", "null");
-shouldBe("attr.nodeValue", "''");
 shouldBe("attr.value", "''");
 
 var comment = document.createComment("foo");

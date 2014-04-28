@@ -17,7 +17,7 @@ function testGetAttributeNodeMixedCase()
 {
     var div = document.createElement('div');
     var a = div.ownerDocument.createAttribute("mixedCaseAttrib");
-    a.nodeValue = "x";
+    a.value = "x";
     div.setAttributeNode(a);
     return div.getAttribute("mixedCaseAttrib");
 }
@@ -28,7 +28,7 @@ function testGetAttributeNodeLowerCase(div)
 {
     var div = document.createElement('div');
     var a = div.ownerDocument.createAttribute("lowercaseattrib");
-    a.nodeValue = "x";
+    a.value = "x";
     div.setAttributeNode(a);
     return div.getAttribute("lowerCaseAttrib");
 }
@@ -39,11 +39,11 @@ function testSetAttributeNodeKeepsRef(div)
 {
     var div = document.createElement('div');
     var a = div.ownerDocument.createAttribute("attrib_name");
-    a.nodeValue = "0";
+    a.value = "0";
     div.setAttributeNode(a);
 
     // Mutate the attribute node.
-    a.nodeValue = "1";
+    a.value = "1";
     
     return div.getAttribute("attrib_name");
 }
@@ -54,7 +54,7 @@ function testAttribNodeNamePreservesCase()
 {
     var div = document.createElement('div');
     var a = div.ownerDocument.createAttribute("A");
-    a.nodeValue = "x";
+    a.value = "x";
     div.setAttributeNode(a);
       
     var result = [ a.name, a.nodeName ];
@@ -70,7 +70,7 @@ function testAttribNodeNamePreservesCaseGetNode()
     var body = document.body;
 
     var a = body.ownerDocument.createAttribute("A");
-    a.nodeValue = "x";
+    a.value = "x";
 
     body.setAttributeNode(a);
 
@@ -90,7 +90,7 @@ function testAttribNodeNamePreservesCaseGetNode2()
     var body = document.body;
 
     var a = body.ownerDocument.createAttribute("B");
-    a.nodeValue = "x";
+    a.value = "x";
 
     body.setAttributeNode(a);
 
@@ -100,7 +100,7 @@ function testAttribNodeNamePreservesCaseGetNode2()
 
     // Now create node second time -- this time case is preserved in FF!
     a = body.ownerDocument.createAttribute("B");
-    a.nodeValue = "x";
+    a.value = "x";
     body.setAttributeNode(a);
 
     a = document.body.getAttributeNode("B");
@@ -117,7 +117,7 @@ function testAttribNodeNameGetMutate()
     var body = document.body;
 
     var a = body.ownerDocument.createAttribute("c");
-    a.nodeValue = "0";
+    a.value = "0";
     body.setAttributeNode(a);
 
     a = document.body.getAttributeNode("c");
@@ -125,14 +125,14 @@ function testAttribNodeNameGetMutate()
 
     a = document.body.getAttributeNode("c");
 
-    return a.nodeValue;
+    return a.value;
 }
 
 shouldBe("testAttribNodeNameGetMutate()", '"1"');
 
 var node = document.createElement("div");
 var attrib = document.createAttribute("myAttrib");
-attrib.nodeValue = "XXX";
+attrib.value = "XXX";
 node.setAttributeNode(attrib);
 
 shouldBe("(new XMLSerializer).serializeToString(node)", '"<div xmlns=\\"http://www.w3.org/1999/xhtml\\" myAttrib=\\"XXX\\"></div>"');

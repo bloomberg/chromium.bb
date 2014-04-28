@@ -15,8 +15,6 @@ window.onload = function()
     var aliasTests = [
         // Attr/Node attributes
         function(iFrame) { iFrame.attributes['src'].value = alertMsg("value"); iFrame.src = iFrame.src;},
-        function(iFrame) { iFrame.attributes['src'].textContent = alertMsg("textContent");},
-        function(iFrame) { iFrame.attributes['src'].nodeValue = alertMsg("nodeValue");},
         
         // Text Node Manipulation
         function(iFrame) { iFrame.attributes['src'].firstChild.replaceWholeText(alertMsg("nodeValue"));},
@@ -27,7 +25,7 @@ window.onload = function()
         function(iFrame) { iFrame.setAttributeNS(null, "src", alertMsg("setAttributeNS"));},
         function(iFrame) {
             var a = document.createAttribute('src');
-            a.nodeValue = alertMsg("setAttributeNode");
+            a.value = alertMsg("setAttributeNode");
             iFrame.setAttributeNode(a);
         },
         // Child manipulation methods
@@ -61,12 +59,12 @@ window.onload = function()
         // NamedNodeMap
         function(iFrame) {
             var a = document.createAttribute('src');
-            a.nodeValue = alertMsg("setNamedItem()");
+            a.value = alertMsg("setNamedItem()");
             iFrame.attributes.setNamedItem(a);
         },
         function(iFrame) {
             var a = document.createAttribute('src');
-            a.nodeValue = alertMsg("setNamedItemNS()");
+            a.value = alertMsg("setNamedItemNS()");
             iFrame.attributes.setNamedItemNS(a);
         }
     ];

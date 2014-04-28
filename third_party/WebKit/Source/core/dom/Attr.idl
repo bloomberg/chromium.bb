@@ -27,6 +27,8 @@ interface Attr : Node {
     [MeasureAs=AttributeSpecified] readonly attribute boolean specified;
 
     [ImplementedAs=valueForBindings, TreatReturnedNullStringAs=Null, TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString value;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, DeprecateAs=AttrNodeValue, ImplementedAs=valueForBindings] attribute DOMString nodeValue;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, DeprecateAs=AttrTextContent, ImplementedAs=valueForBindings] attribute DOMString textContent;
 
     // DOM Level 2
 

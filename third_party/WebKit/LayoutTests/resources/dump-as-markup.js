@@ -200,7 +200,7 @@ Markup._get = function(node, depth, shadowRootList)
               attrNames.sort();
               for (var j = 0; j < attrNames.length; j += 1) {
                 str += Markup._indent(depth + 1) + attrNames[j];
-                str += '="' + node.attributes[attrPos[attrNames[j]]].nodeValue + '"';
+                str += '="' + node.attributes[attrPos[attrNames[j]]].value + '"';
               }
             }
         }

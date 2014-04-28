@@ -8,8 +8,6 @@
             }
             function isReallyEmpty(attr) {
                 return attr.value === ""
-                && attr.nodeValue === ""
-                && attr.textContent === ""
                 && attr.hasChildNodes() === false
                 && attr.firstChild === null
                 && attr.lastChild === null
@@ -27,40 +25,32 @@
                 dynamicAttr.value = "";
                 tests[2] = isReallyEmpty(dynamicAttr);
 
-                dynamicAttr.textContent = "bar";
-                dynamicAttr.textContent = "";
-                tests[3] = isReallyEmpty(dynamicAttr);
-
                 var parsedAttr = document.body.getAttributeNode("id");
-                tests[4] = isReallyEmpty(parsedAttr);
+                tests[3] = isReallyEmpty(parsedAttr);
 
                 parsedAttr.value = "";
-                tests[5] = isReallyEmpty(parsedAttr);
+                tests[4] = isReallyEmpty(parsedAttr);
 
                 parsedAttr.value = "bar";
                 parsedAttr.value = "";
-                tests[6] = isReallyEmpty(parsedAttr);
-
-                parsedAttr.textContent = "bar";
-                parsedAttr.textContent = "";
-                tests[7] = isReallyEmpty(parsedAttr);
+                tests[5] = isReallyEmpty(parsedAttr);
 
                 var parsedAttrIntitiallyNonEmpty = document.body.getAttributeNode("class");
                 parsedAttrIntitiallyNonEmpty.value = "";
-                tests[8] = isReallyEmpty(parsedAttrIntitiallyNonEmpty);
+                tests[6] = isReallyEmpty(parsedAttrIntitiallyNonEmpty);
 
-                parsedAttrIntitiallyNonEmpty.textContent = "bar";
-                parsedAttrIntitiallyNonEmpty.textContent = "";
-                tests[9] = isReallyEmpty(parsedAttrIntitiallyNonEmpty);
+                parsedAttrIntitiallyNonEmpty.value = "bar";
+                parsedAttrIntitiallyNonEmpty.value = "";
+                tests[7] = isReallyEmpty(parsedAttrIntitiallyNonEmpty);
 
                 document.body.setAttribute("title", "");
 
                 var parsedAttrNodeChangedToEmptyBySetAttribute = document.body.getAttributeNode("title");
-                tests[10] = isReallyEmpty(parsedAttrNodeChangedToEmptyBySetAttribute);
+                tests[8] = isReallyEmpty(parsedAttrNodeChangedToEmptyBySetAttribute);
 
-                parsedAttrNodeChangedToEmptyBySetAttribute.textContent = "bar";
-                parsedAttrNodeChangedToEmptyBySetAttribute.textContent = "";
-                tests[11] = isReallyEmpty(parsedAttrNodeChangedToEmptyBySetAttribute);
+                parsedAttrNodeChangedToEmptyBySetAttribute.value = "bar";
+                parsedAttrNodeChangedToEmptyBySetAttribute.value = "";
+                tests[9] = isReallyEmpty(parsedAttrNodeChangedToEmptyBySetAttribute);
 
                 var results = document.getElementsByTagName("p")[1];
                 while (results.hasChildNodes()) {

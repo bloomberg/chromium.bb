@@ -9,7 +9,6 @@ PASS attr.name is 'foo'
 FAIL attr.localName should be null (of type object). Was foo (of type string).
 PASS attr.namespaceURI is null
 PASS attr.prefix is null
-PASS attr.nodeValue is ''
 PASS attr.value is ''
 Attribute creation using createElement on an XHTML doc:
 PASS attr.nodeName is 'foo'
@@ -17,7 +16,6 @@ PASS attr.name is 'foo'
 FAIL attr.localName should be null (of type object). Was foo (of type string).
 PASS attr.namespaceURI is null
 PASS attr.prefix is null
-PASS attr.nodeValue is ''
 PASS attr.value is ''
 PASS comment.nodeName is '#comment'
 PASS comment.localName is null
