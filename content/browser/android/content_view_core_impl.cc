@@ -1376,8 +1376,12 @@ jboolean ContentViewCoreImpl::OnAnimate(JNIEnv* env, jobject /* obj */,
 
 void ContentViewCoreImpl::WasResized(JNIEnv* env, jobject obj) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  if (view)
+  if (view) {
+    RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
+        view->GetRenderWidgetHost());
+    host->SendScreenRects();
     view->WasResized();
+  }
 }
 
 void ContentViewCoreImpl::ShowInterstitialPage(
