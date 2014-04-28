@@ -73,11 +73,13 @@ per-file onc.gypi=pneubeck@chromium.org
 per-file onc.gypi=stevenjb@chromium.org
 
 per-file password_manager*=albertb@chromium.org
+per-file password_manager*=dubroy@chromium.org
 per-file password_manager*=gcasto@chromium.org
 per-file password_manager*=isherman@chromium.org
 per-file password_manager*=mdm@chromium.org
 per-file password_manager*=stuartmorgan@chromium.org
 per-file password_manager*=tim@chromium.org
+per-file password_manager*=vabr@chromium.org
 
 per-file precache*=bengr@chromium.org
 per-file precache*=sclittle@chromium.org
