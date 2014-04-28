@@ -289,8 +289,7 @@ TemplateURLService::TemplateURLService(Profile* profile)
       models_associated_(false),
       processing_syncer_changes_(false),
       pending_synced_default_search_(false),
-      dsp_change_origin_(DSP_CHANGE_OTHER),
-      default_search_manager_(new DefaultSearchManager(GetPrefs())) {
+      dsp_change_origin_(DSP_CHANGE_OTHER) {
   DCHECK(profile_);
   Init(NULL, 0);
 }
@@ -679,12 +678,6 @@ bool TemplateURLService::CanMakeDefault(const TemplateURL* url) {
 void TemplateURLService::SetUserSelectedDefaultSearchProvider(
     TemplateURL* url) {
   SetDefaultSearchProvider(url);
-  if (default_search_manager_) {
-    if (url)
-      default_search_manager_->SetUserSelectedDefaultSearchEngine(url->data());
-    else
-      default_search_manager_->ClearUserSelectedDefaultSearchEngine();
-  }
 }
 
 TemplateURL* TemplateURLService::GetDefaultSearchProvider() {
