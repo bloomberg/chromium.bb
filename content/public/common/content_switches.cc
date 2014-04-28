@@ -845,9 +845,9 @@ const char kTestType[]                      = "test-type";
 const char kTouchAckTimeoutDelayMs[]        = "touch-ack-timeout-delay-ms";
 
 const char kTouchScrollingMode[]            = "touch-scrolling-mode";
-const char kTouchScrollingModeTouchcancel[] = "touchcancel";
+const char kTouchScrollingModeAsyncTouchmove[] = "async-touchmove";
 const char kTouchScrollingModeSyncTouchmove[] = "sync-touchmove";
-const char kTouchScrollingModeAbsorbTouchmove[] = "absorb-touchmove";
+const char kTouchScrollingModeTouchcancel[] = "touchcancel";
 
 // Causes TRACE_EVENT flags to be recorded beginning with shutdown. Optionally,
 // can specify the specific trace categories to include (e.g.
