@@ -178,7 +178,7 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
         toText(this)->updateTextRenderer(offsetOfReplacedData, oldLength, recalcStyleBehavior);
 
     if (nodeType() == PROCESSING_INSTRUCTION_NODE)
-        toProcessingInstruction(this)->checkStyleSheet();
+        toProcessingInstruction(this)->didAttributeChanged();
 
     if (document().frame())
         document().frame()->selection().didUpdateCharacterData(this, offsetOfReplacedData, oldLength, newLength);

@@ -48,10 +48,10 @@ public:
     bool isCSS() const { return m_isCSS; }
     bool isXSL() const { return m_isXSL; }
 
+    void didAttributeChanged();
     bool isLoading() const;
 
 private:
-    friend class CharacterData;
     ProcessingInstruction(Document&, const String& target, const String& data);
 
     virtual String nodeName() const OVERRIDE;
@@ -61,7 +61,9 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    void checkStyleSheet();
+    bool checkStyleSheet(String& href, String& charset);
+    void process(const String& href, const String& charset);
+
     virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) OVERRIDE;
     virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) OVERRIDE;
 

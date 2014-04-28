@@ -81,68 +81,81 @@ PassRefPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
     return create(document(), m_target, m_data);
 }
 
-void ProcessingInstruction::checkStyleSheet()
+void ProcessingInstruction::didAttributeChanged()
 {
-    if (m_target == "xml-stylesheet" && document().frame() && parentNode() == document()) {
-        // see http://www.w3.org/TR/xml-stylesheet/
-        // ### support stylesheet included in a fragment of this (or another) document
-        // ### make sure this gets called when adding from javascript
-        bool attrsOk;
-        const HashMap<String, String> attrs = parseAttributes(m_data, attrsOk);
-        if (!attrsOk)
-            return;
-        HashMap<String, String>::const_iterator i = attrs.find("type");
-        String type;
-        if (i != attrs.end())
-            type = i->value;
+    ASSERT(!m_sheet);
+    ASSERT(!isLoading());
+    String href;
+    String charset;
+    if (!checkStyleSheet(href, charset))
+        return;
+    process(href, charset);
+}
 
-        m_isCSS = type.isEmpty() || type == "text/css";
-        m_isXSL = (type == "text/xml" || type == "text/xsl" || type == "application/xml" ||
-                   type == "application/xhtml+xml" || type == "application/rss+xml" || type == "application/atom+xml");
-        if (!m_isCSS && !m_isXSL)
-            return;
+bool ProcessingInstruction::checkStyleSheet(String& href, String& charset)
+{
+    if (m_target != "xml-stylesheet" || !document().frame() || parentNode() != document())
+        return false;
 
-        String href = attrs.get("href");
-        String alternate = attrs.get("alternate");
-        m_alternate = alternate == "yes";
-        m_title = attrs.get("title");
-        m_media = attrs.get("media");
+    // see http://www.w3.org/TR/xml-stylesheet/
+    // ### support stylesheet included in a fragment of this (or another) document
+    // ### make sure this gets called when adding from javascript
+    bool attrsOk;
+    const HashMap<String, String> attrs = parseAttributes(m_data, attrsOk);
+    if (!attrsOk)
+        return false;
+    HashMap<String, String>::const_iterator i = attrs.find("type");
+    String type;
+    if (i != attrs.end())
+        type = i->value;
 
-        if (m_alternate && m_title.isEmpty())
-            return;
+    m_isCSS = type.isEmpty() || type == "text/css";
+    m_isXSL = (type == "text/xml" || type == "text/xsl" || type == "application/xml" || type == "application/xhtml+xml" || type == "application/rss+xml" || type == "application/atom+xml");
+    if (!m_isCSS && !m_isXSL)
+        return false;
 
-        if (href.length() > 1 && href[0] == '#') {
-            m_localHref = href.substring(1);
-            // We need to make a synthetic XSLStyleSheet that is embedded.  It needs to be able
-            // to kick off import/include loads that can hang off some parent sheet.
-            if (m_isXSL) {
-                KURL finalURL(ParsedURLString, m_localHref);
-                m_sheet = XSLStyleSheet::createEmbedded(this, finalURL);
-                m_loading = false;
-            }
-        } else {
-            clearResource();
+    href = attrs.get("href");
+    charset = attrs.get("charset");
+    String alternate = attrs.get("alternate");
+    m_alternate = alternate == "yes";
+    m_title = attrs.get("title");
+    m_media = attrs.get("media");
 
-            String url = document().completeURL(href).string();
+    return !m_alternate || !m_title.isEmpty();
+}
 
-            ResourcePtr<StyleSheetResource> resource;
-            FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
-            if (m_isXSL) {
-                resource = document().fetcher()->fetchXSLStyleSheet(request);
-            } else {
-                String charset = attrs.get("charset");
-                if (charset.isEmpty())
-                    charset = document().charset();
-                request.setCharset(charset);
-                resource = document().fetcher()->fetchCSSStyleSheet(request);
-            }
-
-            if (resource) {
-                m_loading = true;
-                document().styleEngine()->addPendingSheet();
-                setResource(resource);
-            }
+void ProcessingInstruction::process(const String& href, const String& charset)
+{
+    if (href.length() > 1 && href[0] == '#') {
+        m_localHref = href.substring(1);
+        // We need to make a synthetic XSLStyleSheet that is embedded.
+        // It needs to be able to kick off import/include loads that
+        // can hang off some parent sheet.
+        if (m_isXSL) {
+            KURL finalURL(ParsedURLString, m_localHref);
+            m_sheet = XSLStyleSheet::createEmbedded(this, finalURL);
+            m_loading = false;
         }
+        return;
+    }
+
+    clearResource();
+
+    String url = document().completeURL(href).string();
+
+    ResourcePtr<StyleSheetResource> resource;
+    FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
+    if (m_isXSL) {
+        resource = document().fetcher()->fetchXSLStyleSheet(request);
+    } else {
+        request.setCharset(charset.isEmpty() ? document().charset() : charset);
+        resource = document().fetcher()->fetchCSSStyleSheet(request);
+    }
+
+    if (resource) {
+        m_loading = true;
+        document().styleEngine()->addPendingSheet();
+        setResource(resource);
     }
 }
 
@@ -226,8 +239,16 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
     CharacterData::insertedInto(insertionPoint);
     if (!insertionPoint->inDocument())
         return InsertionDone;
+
+    String href;
+    String charset;
+    // To make it possible for us to see isXSL in
+    // StyleEngine::addStyleSheetCandidateNode, split checkStyleSheet
+    // into two methods, checkStyleSheet and process.
+    bool isValid = checkStyleSheet(href, charset);
     document().styleEngine()->addStyleSheetCandidateNode(this, m_createdByParser);
-    checkStyleSheet();
+    if (isValid)
+        process(href, charset);
     return InsertionDone;
 }
 
