@@ -229,43 +229,35 @@ TEST(QuicCryptoClientConfigTest, CanonicalNotUsedIfNotValid) {
 
 TEST(QuicCryptoClientConfigTest, ClearCachedStates) {
   QuicCryptoClientConfig config;
-  QuicServerId canonical_server_id("www.google.com", 80, false,
-                                   PRIVACY_MODE_DISABLED);
-  QuicCryptoClientConfig::CachedState* state =
-      config.LookupOrCreate(canonical_server_id);
+  QuicServerId server_id("www.google.com", 80, false, PRIVACY_MODE_DISABLED);
+  QuicCryptoClientConfig::CachedState* state = config.LookupOrCreate(server_id);
   // TODO(rch): Populate other fields of |state|.
   vector<string> certs(1);
   certs[0] = "Hello Cert";
   state->SetProof(certs, "signature");
   state->set_source_address_token("TOKEN");
   state->SetProofValid();
+  EXPECT_EQ(1u, state->generation_counter());
 
   // Verify LookupOrCreate returns the same data.
-  QuicServerId other_server_id("www.google.com", 80, false,
-                               PRIVACY_MODE_DISABLED);
+  QuicCryptoClientConfig::CachedState* other = config.LookupOrCreate(server_id);
 
-  QuicCryptoClientConfig::CachedState* other =
-      config.LookupOrCreate(other_server_id);
-
-  EXPECT_TRUE(other->proof_valid());
-  EXPECT_EQ(state->server_config(), other->server_config());
-  EXPECT_EQ(state->signature(), other->signature());
-  EXPECT_EQ(state->certs(), other->certs());
-  EXPECT_EQ(state->source_address_token(), other->source_address_token());
+  EXPECT_EQ(state, other);
   EXPECT_EQ(1u, other->generation_counter());
 
-  // Clear the cached state.
+  // Clear the cached states.
   config.ClearCachedStates();
 
   // Verify LookupOrCreate doesn't have any data.
   QuicCryptoClientConfig::CachedState* cleared_cache =
-      config.LookupOrCreate(other_server_id);
+      config.LookupOrCreate(server_id);
 
+  EXPECT_EQ(state, cleared_cache);
   EXPECT_FALSE(cleared_cache->proof_valid());
   EXPECT_TRUE(cleared_cache->server_config().empty());
   EXPECT_TRUE(cleared_cache->certs().empty());
   EXPECT_TRUE(cleared_cache->signature().empty());
-  EXPECT_LT(1u, cleared_cache->generation_counter());
+  EXPECT_EQ(2u, cleared_cache->generation_counter());
 }
 
 }  // namespace test

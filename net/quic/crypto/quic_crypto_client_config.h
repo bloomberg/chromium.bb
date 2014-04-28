@@ -64,6 +64,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     void SetProof(const std::vector<std::string>& certs,
                   base::StringPiece signature);
 
+    // Clears all the data.
+    void Clear();
+
     // Clears the certificate chain and signature and invalidates the proof.
     void ClearProof();
 

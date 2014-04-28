@@ -648,7 +648,7 @@ base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
   return list;
 }
 
-void QuicStreamFactory::ClearCachedStates() {
+void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {
   crypto_config_.ClearCachedStates();
 }
 
@@ -754,7 +754,7 @@ int QuicStreamFactory::CreateSession(
   writer->SetConnection(connection);
   connection->options()->max_packet_length = max_packet_length_;
 
-  InitializeCachedState(server_id, server_info);
+  InitializeCachedStateInCryptoConfig(server_id, server_info);
 
   QuicConfig config = config_;
   if (http_server_properties_) {
@@ -790,7 +790,7 @@ void QuicStreamFactory::ActivateSession(
   ip_aliases_[ip_alias_key].insert(session);
 }
 
-void QuicStreamFactory::InitializeCachedState(
+void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     const QuicServerId& server_id,
     const scoped_ptr<QuicServerInfo>& server_info) {
   if (!server_info)

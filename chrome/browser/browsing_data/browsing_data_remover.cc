@@ -899,16 +899,16 @@ void BrowsingDataRemover::DoClearCache(int rv) {
             (next_cache_state_ == STATE_CREATE_MAIN)
                 ? main_context_getter_.get()
                 : media_context_getter_.get();
-        net::HttpTransactionFactory* factory =
-            getter->GetURLRequestContext()->http_transaction_factory();
-
-        // Clear QUIC server information from memory.
-        net::HttpCache* http_cache = factory->GetCache();
-        http_cache->GetSession()->quic_stream_factory()->ClearCachedStates();
+        net::HttpCache* http_cache =
+            getter->GetURLRequestContext()->http_transaction_factory()->
+                GetCache();
 
         next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN) ?
                                 STATE_DELETE_MAIN : STATE_DELETE_MEDIA;
 
+        // Clear QUIC server information from memory and the disk cache.
+        http_cache->GetSession()->quic_stream_factory()->
+            ClearCachedStatesInCryptoConfig();
         rv = http_cache->GetBackend(
             &cache_, base::Bind(&BrowsingDataRemover::DoClearCache,
                                 base::Unretained(this)));

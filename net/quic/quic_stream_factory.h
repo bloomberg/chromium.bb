@@ -133,7 +133,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   base::Value* QuicStreamFactoryInfoToValue() const;
 
   // Delete all cached state objects in |crypto_config_|.
-  void ClearCachedStates();
+  void ClearCachedStatesInCryptoConfig();
 
   // NetworkChangeNotifier::IPAddressObserver methods:
 
@@ -215,8 +215,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Initializes the cached state associated with |server_id| in
   // |crypto_config_| with the information in |server_info|.
-  void InitializeCachedState(const QuicServerId& server_id,
-                             const scoped_ptr<QuicServerInfo>& server_info);
+  void InitializeCachedStateInCryptoConfig(
+      const QuicServerId& server_id,
+      const scoped_ptr<QuicServerInfo>& server_info);
 
   bool require_confirmation_;
   HostResolver* host_resolver_;

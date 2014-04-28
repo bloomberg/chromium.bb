@@ -149,6 +149,17 @@ void QuicCryptoClientConfig::CachedState::SetProof(const vector<string>& certs,
   server_config_sig_ = signature.as_string();
 }
 
+void QuicCryptoClientConfig::CachedState::Clear() {
+  server_config_.clear();
+  source_address_token_.clear();
+  certs_.clear();
+  server_config_sig_.clear();
+  server_config_valid_ = false;
+  proof_verify_details_.reset();
+  scfg_.reset();
+  ++generation_counter_;
+}
+
 void QuicCryptoClientConfig::CachedState::ClearProof() {
   SetProofInvalid();
   certs_.clear();
@@ -274,9 +285,7 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
 void QuicCryptoClientConfig::ClearCachedStates() {
   for (CachedStateMap::const_iterator it = cached_states_.begin();
        it != cached_states_.end(); ++it) {
-    CachedState* cached = it->second;
-    cached->ClearProof();
-    cached->InvalidateServerConfig();
+    it->second->Clear();
   }
 }
 
