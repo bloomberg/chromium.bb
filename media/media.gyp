@@ -1200,6 +1200,7 @@
         'base/run_all_perftests.cc',
         'base/sinc_resampler_perftest.cc',
         'base/vector_math_perftest.cc',
+        'base/yuv_convert_perftest.cc',
         'filters/pipeline_integration_perftest.cc',
         'filters/pipeline_integration_test_base.cc',
       ],
