@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -156,17 +154,4 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
   EXPECT_TRUE(tab_strip->CloseWebContentsAt(1,
                                             TabStripModel::CLOSE_USER_GESTURE));
   EXPECT_EQ(1, tab_strip->count());
-}
-
-// Test that adding a sheet disables fullscreen.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, Fullscreen) {
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
-
-  // Dialog will delete it self when closed.
-  NiceMock<ConstrainedWindowDelegateMock> delegate;
-  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
-
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
-
-  dialog.CloseWebContentsModalDialog();
 }

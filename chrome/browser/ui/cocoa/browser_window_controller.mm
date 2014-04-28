@@ -2083,9 +2083,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if (fullscreen == [self isFullscreen])
     return;
 
-  if (!chrome::IsCommandEnabled(browser_.get(), IDC_FULLSCREEN))
-    return;
-
   if (fullscreen) {
     const BOOL shouldUseSystemFullscreen =
         chrome::mac::SupportsSystemFullscreen() && !fullscreenWindow_ &&
