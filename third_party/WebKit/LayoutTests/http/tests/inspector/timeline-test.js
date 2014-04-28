@@ -169,11 +169,11 @@ InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
 InspectorTest.innerPrintTimelinePresentationRecords = function(records, typeName, formatter)
 {
     for (var i = 0; i < records.length; ++i) {
-        if (typeName && records[i].type === WebInspector.TimelineModel.RecordType[typeName])
+        if (typeName && records[i].type() === WebInspector.TimelineModel.RecordType[typeName])
             InspectorTest.printTimelineRecordProperties(records[i]);
         if (formatter)
             formatter(records[i]);
-        InspectorTest.innerPrintTimelinePresentationRecords(records[i].children, typeName, formatter);
+        InspectorTest.innerPrintTimelinePresentationRecords(records[i].children(), typeName, formatter);
     }
 };
 
