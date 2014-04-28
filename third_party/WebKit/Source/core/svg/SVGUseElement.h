@@ -74,7 +74,6 @@ private:
 
     void clearResourceReferences();
     void buildShadowAndInstanceTree(SVGElement* target);
-    void detachInstance();
 
     void scheduleShadowTreeRecreation();
     virtual bool haveLoadedRequiredResources() OVERRIDE { return !isStructurallyExternal() || m_haveFiredLoadEvent; }

@@ -120,13 +120,6 @@ void SVGDocumentExtensions::pauseAnimations()
         (*itr)->pauseAnimations();
 }
 
-void SVGDocumentExtensions::unpauseAnimations()
-{
-    HashSet<SVGSVGElement*>::iterator end = m_timeContainers.end();
-    for (HashSet<SVGSVGElement*>::iterator itr = m_timeContainers.begin(); itr != end; ++itr)
-        (*itr)->unpauseAnimations();
-}
-
 void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
 {
     Vector<RefPtr<SVGSVGElement> > timeContainers;

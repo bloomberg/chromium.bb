@@ -52,7 +52,6 @@ public:
 
     virtual ~SVGTransformList();
 
-    PassRefPtr<SVGTransform> createSVGTransformFromMatrix(const AffineTransform&) const;
     PassRefPtr<SVGTransform> consolidate();
 
     bool concatenate(AffineTransform& result) const;
@@ -74,8 +73,6 @@ public:
 
 private:
     SVGTransformList();
-
-    bool adjustFromToListValues(PassRefPtr<SVGTransformList> fromList, PassRefPtr<SVGTransformList> toList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded);
 
     template <typename CharType>
     bool parseInternal(const CharType*& ptr, const CharType* end);

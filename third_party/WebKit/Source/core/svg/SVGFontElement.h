@@ -68,8 +68,6 @@ public:
     SVGGlyph svgGlyphForGlyph(Glyph);
     Glyph missingGlyph();
 
-    SVGMissingGlyphElement* firstMissingGlyphElement() const;
-
 private:
     explicit SVGFontElement(Document&);
 

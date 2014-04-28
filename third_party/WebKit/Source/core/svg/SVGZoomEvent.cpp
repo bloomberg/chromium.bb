@@ -46,11 +46,6 @@ float SVGZoomEvent::previousScale() const
     return m_previousScale;
 }
 
-void SVGZoomEvent::setPreviousScale(float scale)
-{
-    m_previousScale = scale;
-}
-
 PassRefPtr<SVGPointTearOff> SVGZoomEvent::previousTranslate() const
 {
     RefPtr<SVGPointTearOff> pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_previousTranslate), 0, PropertyIsNotAnimVal);
@@ -61,11 +56,6 @@ PassRefPtr<SVGPointTearOff> SVGZoomEvent::previousTranslate() const
 float SVGZoomEvent::newScale() const
 {
     return m_newScale;
-}
-
-void SVGZoomEvent::setNewScale(float scale)
-{
-    m_newScale = scale;
 }
 
 PassRefPtr<SVGPointTearOff> SVGZoomEvent::newTranslate() const

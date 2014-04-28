@@ -59,11 +59,6 @@ void SVGFontElement::invalidateGlyphCache()
     m_isGlyphCacheValid = false;
 }
 
-SVGMissingGlyphElement* SVGFontElement::firstMissingGlyphElement() const
-{
-    return Traversal<SVGMissingGlyphElement>::firstChild(*this);
-}
-
 void SVGFontElement::registerLigaturesInGlyphCache(Vector<String>& ligatures)
 {
     ASSERT(!ligatures.isEmpty());

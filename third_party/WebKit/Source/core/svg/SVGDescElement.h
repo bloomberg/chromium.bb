@@ -29,8 +29,6 @@ class SVGDescElement FINAL : public SVGElement {
 public:
     static PassRefPtr<SVGDescElement> create(Document&);
 
-    String description() const;
-
 private:
     explicit SVGDescElement(Document&);
 

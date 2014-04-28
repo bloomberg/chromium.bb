@@ -92,8 +92,6 @@ public:
     FloatPoint translate() const;
     FloatSize scale() const;
 
-    bool isValid() const { return m_transformType != SVG_TRANSFORM_UNKNOWN; }
-
     virtual String valueAsString() const OVERRIDE;
 
     virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) OVERRIDE;
@@ -124,13 +122,6 @@ inline bool operator==(const SVGTransform& a, const SVGTransform& b)
 inline bool operator!=(const SVGTransform& a, const SVGTransform& b)
 {
     return !(a == b);
-}
-
-inline PassRefPtr<SVGTransform> toSVGTransform(PassRefPtr<SVGPropertyBase> passBase)
-{
-    RefPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGTransform::classType());
-    return static_pointer_cast<SVGTransform>(base.release());
 }
 
 } // namespace WebCore

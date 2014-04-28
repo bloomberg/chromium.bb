@@ -180,11 +180,6 @@ private:
 template <typename Property, typename TearOffType = typename Property::TearOffType, typename PrimitiveType = typename Property::PrimitiveType>
 class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static PassRefPtr<SVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
-    {
-        return adoptRef(new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
-    }
-
     virtual bool needsSynchronizeAttribute() OVERRIDE
     {
         // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.

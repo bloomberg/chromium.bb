@@ -39,7 +39,6 @@ public:
 
     // Helper function used by SVGFont
     static void inheritUnspecifiedAttributes(SVGGlyph&, const SVGFontData*);
-    static String querySVGFontLanguage(const SVGElement*);
 
     // Helper function shared between SVGGlyphElement & SVGMissingGlyphElement
     static SVGGlyph buildGenericGlyphIdentifier(const SVGElement*);

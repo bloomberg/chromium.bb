@@ -35,9 +35,4 @@ PassRefPtr<SVGDescElement> SVGDescElement::create(Document& document)
     return adoptRef(new SVGDescElement(document));
 }
 
-String SVGDescElement::description() const
-{
-    return textContent().simplifyWhiteSpace();
-}
-
 }

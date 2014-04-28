@@ -39,12 +39,10 @@ public:
     PassRefPtr<SVGRectTearOff> zoomRectScreen() const;
 
     float previousScale() const;
-    void setPreviousScale(float);
 
     PassRefPtr<SVGPointTearOff> previousTranslate() const;
 
     float newScale() const;
-    void setNewScale(float);
 
     PassRefPtr<SVGPointTearOff> newTranslate() const;
 

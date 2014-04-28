@@ -58,7 +58,6 @@ public:
 
     void startAnimations();
     void pauseAnimations();
-    void unpauseAnimations();
     void dispatchSVGLoadEventToOutermostSVGElements();
 
     void reportWarning(const String&);

@@ -202,9 +202,6 @@ private:
     void mapInstanceToElement(SVGElementInstance*);
     void removeInstanceMapping(SVGElementInstance*);
 
-    void cleanupAnimatedProperties();
-    friend class CleanUpAnimatedPropertiesCaller;
-
     HashSet<SVGElement*> m_elementsWithRelativeLengths;
 
     typedef HashMap<QualifiedName, RefPtr<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
