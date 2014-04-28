@@ -46,6 +46,9 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   virtual void OnStateChanged() OVERRIDE;
 
  private:
+  // This function creates signed in user specific strings in loadTimeData.
+  void GenerateSignedinUserSpecificStrings(base::DictionaryValue* dictionary);
+
   // Callback for the "requestDefaultProfileIcons" message.
   // Sends the array of default profile icon URLs and profile names to WebUI.
   // First item of |args| is the dialog mode, i.e. "create" or "manage".

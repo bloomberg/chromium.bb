@@ -37,6 +37,19 @@
   background-color: pink;
 }
 
+#disconnect-managed-profile-domain-name {
+  font-weight: bold;
+}
+
+#disconnect-managed-profile-domain-information {
+  background-color: #f0f0f0;
+  padding: 14px 0 14px 17px;
+}
+
+#disconnect-managed-profile-message {
+  padding-top: 9px;
+}
+
 #create-profile-error-bubble,
 #manage-profile-error-bubble {
   -webkit-transition: max-height 200ms, padding 200ms;

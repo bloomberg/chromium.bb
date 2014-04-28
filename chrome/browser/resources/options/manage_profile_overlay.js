@@ -554,6 +554,10 @@ cr.define('options', function() {
       $('manage-profile-overlay-create').hidden = true;
       $('manage-profile-overlay-manage').hidden = true;
       $('manage-profile-overlay-delete').hidden = true;
+      $('disconnect-managed-profile-domain-information').innerHTML =
+          loadTimeData.getString('disconnectManagedProfileDomainInformation');
+      $('disconnect-managed-profile-text').innerHTML =
+          loadTimeData.getString('disconnectManagedProfileText');
       $('manage-profile-overlay-disconnect-managed').hidden = false;
 
       // Because this dialog isn't useful when refreshing or as part of the

@@ -55,25 +55,23 @@
   <!-- Dialog for disconnecting enterprise managed profiles. -->
   <div id="manage-profile-overlay-disconnect-managed" hidden>
     <h1 i18n-content="disconnectManagedProfileTitle"></h1>
+    <div class="content-area"
+        id="disconnect-managed-profile-domain-information"
+        i18n-values=".innerHTML:disconnectManagedProfileDomainInformation">
+    </div>
     <div class="content-area">
       <div id="disconnect-managed-profile-message">
         <div id="disconnect-managed-profile-text"
-            i18n-content="disconnectManagedProfileText">
+            i18n-values=".innerHTML:disconnectManagedProfileText">
         </div>
       </div>
     </div>
     <div class="action-area">
-      <div class="action-area-shortcut-container">
-        <a id="disconnect-managed-profile-learn-more" class="reset-hidden"
-            i18n-content="disconnectManagedProfileLearnMore" target="_blank"
-            i18n-values="href:enterpriseManagedAccountHelpURL">
-        </a>
-      </div>
       <div class="button-strip">
-        <button id="disconnect-managed-profile-cancel"
-            i18n-content="cancel"></button>
         <button id="disconnect-managed-profile-ok" class="default-button"
             i18n-content="disconnectManagedProfileOK"></button>
+        <button id="disconnect-managed-profile-cancel"
+            i18n-content="cancel"></button>
       </div>
     </div>
   </div>

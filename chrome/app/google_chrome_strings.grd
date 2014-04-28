@@ -134,14 +134,8 @@ Chrome supports. -->
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
-      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE" desc="Title of the disconnect managed profile dialog.">
-        Delete managed Chrome user
-      </message>
       <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TEXT" desc="Message explaining to the user what will happen if they disconnect the managed profile.">
-        You are signed in with a managed account which is controlled by an administrator. If you disconnect from this account, this Chrome user and all associated Chrome data, such as apps, bookmarks, history, passwords, and other settings will be removed from this computer.
-      </message>
-      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the Chrome user profile.">
-        Delete Chrome user
+        Disconnecting <ph name="USERNAME">$1<ex>someone@example.com</ex></ph> will clear your history, bookmarks, settings, and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK">&lt;a target="_blank" href="$2"&gt;</ph>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Google Chrome

@@ -13566,8 +13566,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_PROFILES_DELETE_MANAGED_ADDENDUM" desc="Additional message shown in the same dialog following the IDS_PROFILES_DELETE_MESSAGE, explaining to the user what will happen if they delete the profile of a supervised user.">
         Settings and browsing history for this supervised user may still be visible by the manager at <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.chrome.com/manage"&gt;</ph>www.chrome.com/manage<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_LEARN_MORE" desc="Learn more link that provides more information on managed accounts.">
-        Learn more
+      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE" desc="Title of the disconnect managed profile dialog.">
+        Disconnect your Google Account
+      </message>
+      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_DOMAIN_INFORMATION" desc="The text that provides the domain information.">
+        This account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
+      </message>
+      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL" desc="The text to display on the button that clears the data and disconnect user account.">
+        Clear data and disconnect
       </message>
       <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
         <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)

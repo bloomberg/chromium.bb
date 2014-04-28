@@ -35,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -105,10 +106,6 @@ void ManageProfileHandler::GetLocalizedValues(
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE },
     { "disconnectManagedProfileOK",
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL },
-    { "disconnectManagedProfileText",
-        IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TEXT },
-    { "disconnectManagedProfileLearnMore",
-        IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_LEARN_MORE },
     { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
@@ -130,8 +127,7 @@ void ManageProfileHandler::GetLocalizedValues(
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
 
-  localized_strings->SetString("enterpriseManagedAccountHelpURL",
-                               chrome::kEnterpriseManagedAccountHelpURL);
+  GenerateSignedinUserSpecificStrings(localized_strings);
 }
 
 void ManageProfileHandler::InitializeHandler() {
@@ -205,6 +201,41 @@ void ManageProfileHandler::Observe(
 
 void ManageProfileHandler::OnStateChanged() {
   RequestCreateProfileUpdate(NULL);
+}
+
+void ManageProfileHandler::GenerateSignedinUserSpecificStrings(
+    base::DictionaryValue* dictionary) {
+#if !defined(OS_CHROMEOS)
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DCHECK(profile);
+  SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile);
+  DCHECK(manager);
+  std::string username = manager->GetAuthenticatedUsername();
+  std::string domain_name;
+  // If there is no one logged in or if the profile name is empty then the
+  // domain name is empty. This happens in browser tests.
+  if (!username.empty())
+    domain_name = "<span id=disconnect-managed-profile-domain-name>" +
+                  gaia::ExtractDomainName(username) + "</span>";
+
+  dictionary->SetString(
+      "disconnectManagedProfileDomainInformation",
+      l10n_util::GetStringFUTF16(
+          IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_DOMAIN_INFORMATION,
+          base::ASCIIToUTF16(domain_name)));
+
+  dictionary->SetString(
+      "disconnectManagedProfileText",
+      l10n_util::GetStringFUTF16(
+          IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TEXT,
+          base::UTF8ToUTF16(username),
+          base::UTF8ToUTF16(chrome::kSyncGoogleDashboardURL)));
+#else
+  dictionary->SetString("disconnectManagedProfileDomainInformation",
+                        base::string16());
+  dictionary->SetString("disconnectManagedProfileText",
+                        base::string16());
+#endif
 }
 
 void ManageProfileHandler::RequestDefaultProfileIcons(
@@ -434,6 +465,11 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
   web_ui()->CallJavascriptFunction("CreateProfileOverlay.updateSignedInStatus",
                                    base::StringValue(username),
                                    base::FundamentalValue(has_error));
+
+  base::DictionaryValue replacements;
+  GenerateSignedinUserSpecificStrings(&replacements);
+  web_ui()->CallJavascriptFunction("loadTimeData.overrideValues", replacements);
+
   OnCreateManagedUserPrefChange();
 }
 
