@@ -3089,7 +3089,8 @@ void WebContentsImpl::RunJavaScriptMessage(
         default_prompt,
         base::Bind(&WebContentsImpl::OnDialogClosed,
                    base::Unretained(this),
-                   rfh,
+                   rfh->GetProcess()->GetID(),
+                   rfh->GetRoutingID(),
                    reply_msg,
                    false),
         &suppress_this_message);
@@ -3098,7 +3099,8 @@ void WebContentsImpl::RunJavaScriptMessage(
   if (suppress_this_message) {
     // If we are suppressing messages, just reply as if the user immediately
     // pressed "Cancel", passing true to |dialog_was_suppressed|.
-    OnDialogClosed(rfh, reply_msg, true, false, base::string16());
+    OnDialogClosed(rfh->GetProcess()->GetID(), rfh->GetRoutingID(), reply_msg,
+                   true, false, base::string16());
   }
 
   // OnDialogClosed (two lines up) may have caused deletion of this object (see
@@ -3131,7 +3133,8 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   dialog_manager_->RunBeforeUnloadDialog(
       this, message, is_reload,
       base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
-                 rfh, reply_msg, false));
+                 rfh->GetProcess()->GetID(), rfh->GetRoutingID(), reply_msg,
+                 false));
 }
 
 WebContents* WebContentsImpl::GetAsWebContents() {
@@ -3807,17 +3810,21 @@ bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
 }
 #endif
 
-void WebContentsImpl::OnDialogClosed(RenderFrameHost* rfh,
+void WebContentsImpl::OnDialogClosed(int render_process_id,
+                                     int render_frame_id,
                                      IPC::Message* reply_msg,
                                      bool dialog_was_suppressed,
                                      bool success,
                                      const base::string16& user_input) {
+  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(render_process_id,
+                                                         render_frame_id);
   last_dialog_suppressed_ = dialog_was_suppressed;
 
   if (is_showing_before_unload_dialog_ && !success) {
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.
-    DidStopLoading(rfh);
+    if (rfh)
+      DidStopLoading(rfh);
     controller_.DiscardNonCommittedEntries();
 
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -3825,8 +3832,10 @@ void WebContentsImpl::OnDialogClosed(RenderFrameHost* rfh,
   }
 
   is_showing_before_unload_dialog_ = false;
-  static_cast<RenderFrameHostImpl*>(rfh)->JavaScriptDialogClosed(
-      reply_msg, success, user_input, dialog_was_suppressed);
+  if (rfh) {
+    rfh->JavaScriptDialogClosed(reply_msg, success, user_input,
+                                dialog_was_suppressed);
+  }
 }
 
 void WebContentsImpl::SetEncoding(const std::string& encoding) {
