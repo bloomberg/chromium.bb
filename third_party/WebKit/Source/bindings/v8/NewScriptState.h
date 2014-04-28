@@ -6,7 +6,6 @@
 #define NewScriptState_h
 
 #include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "wtf/RefCounted.h"
 #include <v8.h>
@@ -81,9 +80,6 @@ public:
 
     bool evalEnabled() const;
     void setEvalEnabled(bool);
-
-    // FIXME: Once we replace all ScriptStates with NewScriptStates, remove this method.
-    ScriptState* oldScriptState();
 
 private:
     NewScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);

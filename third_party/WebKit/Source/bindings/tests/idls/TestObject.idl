@@ -431,12 +431,7 @@ interface TestObject {
 
     // Extended attributes for methods
     [LogActivity, LogAllWorlds] void activityLoggingAccessForAllWorldsMethod();
-    [CallWith=ScriptState] void callWithScriptStateVoidMethod();
-    [CallWith=ScriptState] long callWithScriptStateLongMethod();
     [CallWith=ExecutionContext] void callWithExecutionContextVoidMethod();
-    [CallWith=ScriptState&ExecutionContext] void callWithScriptStateExecutionContextVoidMethod();
-    [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethod();
-    [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
     [CallWith=NewScriptState] void callWithNewScriptStateVoidMethod();
     [CallWith=NewScriptState] long callWithNewScriptStateLongMethod();
     [CallWith=NewScriptState&ExecutionContext] void callWithNewScriptStateExecutionContextVoidMethod();

@@ -35,7 +35,7 @@
 
 ActiveDOMObject
 CachedAttribute=*
-CallWith=ExecutionContext|ScriptState|NewScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
+CallWith=ExecutionContext|NewScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity=Frame|Node
 Clamp
 Conditional=*
@@ -88,7 +88,7 @@ Replaceable
 RuntimeEnabled=*
 SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
-SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
+SetterCallWith=ExecutionContext|ScriptArguments|ActiveWindow|FirstWindow
 SpecialWrapFor=*
 TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined

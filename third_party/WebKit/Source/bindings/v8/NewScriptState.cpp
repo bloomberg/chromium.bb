@@ -55,13 +55,6 @@ void NewScriptState::setEvalEnabled(bool enabled)
     return context()->AllowCodeGenerationFromStrings(enabled);
 }
 
-ScriptState* NewScriptState::oldScriptState()
-{
-    ASSERT(!m_context.isEmpty());
-    v8::HandleScope scope(m_isolate);
-    return ScriptState::forContext(context());
-}
-
 ExecutionContext* NewScriptState::executionContext() const
 {
     v8::HandleScope scope(m_isolate);

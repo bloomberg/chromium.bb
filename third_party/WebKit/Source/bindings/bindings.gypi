@@ -77,8 +77,6 @@
             'v8/ScriptRegexp.cpp',
             'v8/ScriptRegexp.h',
             'v8/ScriptSourceCode.h',
-            'v8/ScriptState.cpp',
-            'v8/ScriptState.h',
             'v8/ScriptString.cpp',
             'v8/ScriptString.h',
             'v8/ScriptValue.cpp',

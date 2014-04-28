@@ -183,11 +183,6 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 {# instance members (non-static members) in partial interface take |impl| #}
 ASSERT(impl);
 {% endif %}
-{% if method.is_call_with_script_state %}
-ScriptState* state = ScriptState::current();
-if (!state)
-    return;
-{% endif %}
 {% if method.is_call_with_new_script_state %}
 NewScriptState* state = NewScriptState::current(info.GetIsolate());
 {% endif %}
@@ -202,7 +197,7 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {{cpp_value}};
 {% elif method.is_constructor %}
 {{method.cpp_type}} impl = {{cpp_value}};
-{% elif method.is_call_with_script_state or method.is_call_with_new_script_state or method.is_raises_exception %}
+{% elif method.is_call_with_new_script_state or method.is_raises_exception %}
 {# FIXME: consider always using a local variable #}
 {{method.cpp_type}} result = {{cpp_value}};
 {% endif %}
