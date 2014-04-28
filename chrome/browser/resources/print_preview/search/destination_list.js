@@ -128,11 +128,7 @@ cr.define('print_preview', function() {
       numItems = Math.min(numItems, this.destinations_.length);
       var headerHeight =
           this.getChildElement('.destination-list > header').offsetHeight;
-      var throbberHeight =
-          getIsVisible(this.getChildElement('.throbber-container')) ?
-              DestinationList.HEIGHT_OF_ITEM_ : 0;
-      return headerHeight + numItems * DestinationList.HEIGHT_OF_ITEM_ +
-          throbberHeight;
+      return headerHeight + numItems * DestinationList.HEIGHT_OF_ITEM_;
     },
 
     /** @param {boolean} isVisible Whether the throbber is visible. */

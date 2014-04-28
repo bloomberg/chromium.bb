@@ -26,10 +26,14 @@
 }
 
 .destination-list .throbber-container {
-  -webkit-box-align: center;
-  display: -webkit-box;
-  height: 30px;
-  padding: 0 22px;
+  display: inline;
+  padding: 0 16px 0 8px;
+  position: relative;
+}
+
+.destination-list .throbber {
+  position: absolute;
+  top: -1px;
 }
 
 .destination-list .no-destinations-message {

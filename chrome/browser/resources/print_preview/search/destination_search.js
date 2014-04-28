@@ -367,34 +367,57 @@ cr.define('print_preview', function() {
         lists.push(this.cloudList_);
       }
 
+      var getListsTotalHeight = function(lists, counts) {
+        return lists.reduce(function(sum, list, index) {
+          return sum + list.getEstimatedHeightInPixels(counts[index]) +
+              DestinationSearch.LIST_BOTTOM_PADDING_;
+        }, 0);
+      };
+      var getCounts = function(lists, count) {
+        return lists.map(function(list) { return count; });
+      };
+
       var availableHeight = this.getAvailableListsHeight_();
-      this.getChildElement('.lists').style.maxHeight = availableHeight + 'px';
+      var listsEl = this.getChildElement('.lists');
+      listsEl.style.maxHeight = availableHeight + 'px';
 
       var maxListLength = lists.reduce(function(prevCount, list) {
         return Math.max(prevCount, list.getDestinationsCount());
       }, 0);
       for (var i = 1; i <= maxListLength; i++) {
-        var listsHeight = lists.reduce(function(sum, list) {
-          return sum + list.getEstimatedHeightInPixels(i) +
-              DestinationSearch.LIST_BOTTOM_PADDING_;
-        }, 0);
-        if (listsHeight > availableHeight) {
-          i -= 1;
+        if (getListsTotalHeight(lists, getCounts(lists, i)) > availableHeight) {
+          i--;
           break;
         }
       }
+      var counts = getCounts(lists, i);
+      // Fill up the possible n-1 free slots left by the previous loop.
+      if (getListsTotalHeight(lists, counts) < availableHeight) {
+        for (var countIndex = 0; countIndex < counts.length; countIndex++) {
+          counts[countIndex]++;
+          if (getListsTotalHeight(lists, counts) > availableHeight) {
+            counts[countIndex]--;
+            break;
+          }
+        }
+      }
 
-      lists.forEach(function(list) {
-        list.updateShortListSize(i);
+      lists.forEach(function(list, index) {
+        list.updateShortListSize(counts[index]);
       });
 
       // Set height of the list manually so that search filter doesn't change
       // lists height.
-      this.getChildElement('.lists').style.height =
-          lists.reduce(function(sum, list) {
-            return sum + list.getEstimatedHeightInPixels(i) +
-                DestinationSearch.LIST_BOTTOM_PADDING_;
-          }, 0) + 'px';
+      var listsHeight = getListsTotalHeight(lists, counts) + 'px';
+      if (listsHeight != listsEl.style.height) {
+        // Try to close account select if there's a possibility it's open now.
+        var accountSelectEl = this.getChildElement('.account-select');
+        if (!accountSelectEl.disabled) {
+          accountSelectEl.disabled = true;
+          accountSelectEl.disabled = false;
+        }
+        listsEl.style.height = listsHeight;
+      }
     },
 
     /**
