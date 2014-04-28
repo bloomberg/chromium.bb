@@ -7,6 +7,27 @@
 
 #include <string>
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebCrypto.h"
+
+#if !defined(WEBCRYPTO_HAS_ERROR_TYPE)
+
+// TODO(eroman): Delete once Blink changes have rolled into Chromium.
+namespace blink {
+
+enum WebCryptoErrorType {
+  WebCryptoErrorTypeType,
+  WebCryptoErrorTypeNotSupported,
+  WebCryptoErrorTypeSyntax,
+  WebCryptoErrorTypeInvalidState,
+  WebCryptoErrorTypeInvalidAccess,
+  WebCryptoErrorTypeUnknown,
+  WebCryptoErrorTypeData,
+  WebCryptoErrorTypeOperation,
+};
+
+}  // namespace blink
+
+#endif
 
 namespace content {
 
@@ -31,19 +52,21 @@ class CONTENT_EXPORT Status {
   // Returns true if the Status represent success.
   bool IsSuccess() const;
 
-  // Returns true if the Status contains a non-empty error message.
-  bool HasErrorDetails() const;
+  // Returns a UTF-8 error message (non-localized) describing the error.
+  const std::string& error_details() const { return error_details_; }
 
-  // Returns a UTF-8 error message (non-localized) describing the error. This
-  // message is intended to be displayed in the dev tools console.
-  std::string ToString() const;
+  blink::WebCryptoErrorType error_type() const { return error_type_; }
 
   // Constructs a status representing success.
   static Status Success();
 
-  // Constructs a status representing a generic error. It contains no extra
-  // details.
-  static Status Error();
+  // Constructs a status representing a generic operation error. It contains no
+  // extra details.
+  static Status OperationError();
+
+  // Constructs a status representing a generic data error. It contains no
+  // extra details.
+  static Status DataError();
 
   // ------------------------------------
   // Errors when importing a JWK formatted key
@@ -119,6 +142,10 @@ class CONTENT_EXPORT Status {
   // key data there.
   static Status ErrorImportEmptyKeyData();
 
+  // The key data buffer provided for importKey() is an incorrect length for
+  // AES.
+  static Status ErrorImportAesKeyLength();
+
   // The wrong key was used for the operation. For instance, a public key was
   // used to verify a RsaSsaPkcs1v1_5 signature, or tried exporting a private
   // key using spki format.
@@ -182,13 +209,15 @@ class CONTENT_EXPORT Status {
  private:
   enum Type { TYPE_ERROR, TYPE_SUCCESS };
 
-  // Constructs an error with the specified message.
-  explicit Status(const std::string& error_details_utf8);
+  // Constructs an error with the specified error type and message.
+  Status(blink::WebCryptoErrorType error_type,
+         const std::string& error_details_utf8);
 
   // Constructs a success or error without any details.
   explicit Status(Type type);
 
   Type type_;
+  blink::WebCryptoErrorType error_type_;
   std::string error_details_;
 };
 

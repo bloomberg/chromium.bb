@@ -8,170 +8,209 @@ namespace content {
 
 namespace webcrypto {
 
-bool Status::IsError() const { return type_ == TYPE_ERROR; }
-
-bool Status::IsSuccess() const { return type_ == TYPE_SUCCESS; }
-
-bool Status::HasErrorDetails() const { return !error_details_.empty(); }
-
-std::string Status::ToString() const {
-  return IsSuccess() ? "Success" : error_details_;
+bool Status::IsError() const {
+  return type_ == TYPE_ERROR;
 }
 
-Status Status::Success() { return Status(TYPE_SUCCESS); }
+bool Status::IsSuccess() const {
+  return type_ == TYPE_SUCCESS;
+}
 
-Status Status::Error() { return Status(TYPE_ERROR); }
+Status Status::Success() {
+  return Status(TYPE_SUCCESS);
+}
+
+Status Status::OperationError() {
+  return Status(blink::WebCryptoErrorTypeOperation, "");
+}
+
+Status Status::DataError() {
+  return Status(blink::WebCryptoErrorTypeData, "");
+}
 
 Status Status::ErrorJwkNotDictionary() {
-  return Status("JWK input could not be parsed to a JSON dictionary");
+  return Status(blink::WebCryptoErrorTypeData,
+                "JWK input could not be parsed to a JSON dictionary");
 }
 
 Status Status::ErrorJwkPropertyMissing(const std::string& property) {
-  return Status("The required JWK property \"" + property + "\" was missing");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The required JWK property \"" + property + "\" was missing");
 }
 
 Status Status::ErrorJwkPropertyWrongType(const std::string& property,
                                          const std::string& expected_type) {
-  return Status("The JWK property \"" + property + "\" must be a " +
-                expected_type);
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      "The JWK property \"" + property + "\" must be a " + expected_type);
 }
 
 Status Status::ErrorJwkBase64Decode(const std::string& property) {
-  return Status("The JWK property \"" + property +
-                "\" could not be base64 decoded");
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      "The JWK property \"" + property + "\" could not be base64 decoded");
 }
 
 Status Status::ErrorJwkExtInconsistent() {
   return Status(
+      blink::WebCryptoErrorTypeData,
       "The \"ext\" property of the JWK dictionary is inconsistent what that "
       "specified by the Web Crypto call");
 }
 
 Status Status::ErrorJwkUnrecognizedAlgorithm() {
-  return Status("The JWK \"alg\" property was not recognized");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"alg\" property was not recognized");
 }
 
 Status Status::ErrorJwkAlgorithmInconsistent() {
-  return Status(
-      "The JWK \"alg\" property was inconsistent with that specified "
-      "by the Web Crypto call");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"alg\" property was inconsistent with that specified "
+                "by the Web Crypto call");
 }
 
 Status Status::ErrorJwkUnrecognizedUse() {
-  return Status("The JWK \"use\" property could not be parsed");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"use\" property could not be parsed");
 }
 
 Status Status::ErrorJwkUnrecognizedKeyop() {
-  return Status("The JWK \"key_ops\" property could not be parsed");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"key_ops\" property could not be parsed");
 }
 
 Status Status::ErrorJwkUseInconsistent() {
-  return Status(
-      "The JWK \"use\" property was inconsistent with that specified "
-      "by the Web Crypto call. The JWK usage must be a superset of "
-      "those requested");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"use\" property was inconsistent with that specified "
+                "by the Web Crypto call. The JWK usage must be a superset of "
+                "those requested");
 }
 
 Status Status::ErrorJwkKeyopsInconsistent() {
-  return Status(
-      "The JWK \"key_ops\" property was inconsistent with that "
-      "specified by the Web Crypto call. The JWK usage must be a "
-      "superset of those requested");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"key_ops\" property was inconsistent with that "
+                "specified by the Web Crypto call. The JWK usage must be a "
+                "superset of those requested");
 }
 
 Status Status::ErrorJwkUseAndKeyopsInconsistent() {
-  return Status(
-      "The JWK \"use\" and \"key_ops\" properties were both found "
-      "but are inconsistent with each other.");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"use\" and \"key_ops\" properties were both found "
+                "but are inconsistent with each other.");
 }
 
 Status Status::ErrorJwkRsaPrivateKeyUnsupported() {
-  return Status(
-      "JWK RSA key contained \"d\" property: Private key import is "
-      "not yet supported");
+  return Status(blink::WebCryptoErrorTypeNotSupported,
+                "JWK RSA key contained \"d\" property: Private key import is "
+                "not yet supported");
 }
 
 Status Status::ErrorJwkUnrecognizedKty() {
-  return Status("The JWK \"kty\" property was unrecognized");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"kty\" property was unrecognized");
 }
 
 Status Status::ErrorJwkIncorrectKeyLength() {
-  return Status(
-      "The JWK \"k\" property did not include the right length "
-      "of key data for the given algorithm.");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"k\" property did not include the right length "
+                "of key data for the given algorithm.");
 }
 
 Status Status::ErrorImportEmptyKeyData() {
-  return Status("No key data was provided");
+  return Status(blink::WebCryptoErrorTypeData, "No key data was provided");
+}
+
+Status Status::ErrorImportAesKeyLength() {
+  return Status(blink::WebCryptoErrorTypeData,
+#if defined(WEBCRYPTO_HAS_ERROR_TYPE)
+                "AES key data must be 128, 192 or 256 bits");
+#else
+                "");
+#endif
 }
 
 Status Status::ErrorUnexpectedKeyType() {
-  return Status("The key is not of the expected type");
+  return Status(blink::WebCryptoErrorTypeInvalidAccess,
+                "The key is not of the expected type");
 }
 
 Status Status::ErrorIncorrectSizeAesCbcIv() {
-  return Status("The \"iv\" has an unexpected length -- must be 16 bytes");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The \"iv\" has an unexpected length -- must be 16 bytes");
 }
 
 Status Status::ErrorDataTooLarge() {
-  return Status("The provided data is too large");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The provided data is too large");
 }
 
 Status Status::ErrorDataTooSmall() {
-  return Status("The provided data is too small");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The provided data is too small");
 }
 
 Status Status::ErrorUnsupported() {
-  return Status("The requested operation is unsupported");
+  return Status(blink::WebCryptoErrorTypeNotSupported,
+                "The requested operation is unsupported");
 }
 
 Status Status::ErrorUnexpected() {
-  return Status("Something unexpected happened...");
+  return Status(blink::WebCryptoErrorTypeUnknown,
+                "Something unexpected happened...");
 }
 
 Status Status::ErrorInvalidAesGcmTagLength() {
   return Status(
+      blink::WebCryptoErrorTypeData,
       "The tag length is invalid: Must be 32, 64, 96, 104, 112, 120, or 128 "
       "bits");
 }
 
 Status Status::ErrorInvalidAesKwDataLength() {
-  return Status(
-      "The AES-KW input data length is invalid: not a multiple of 8 "
-      "bytes");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The AES-KW input data length is invalid: not a multiple of 8 "
+                "bytes");
 }
 
 Status Status::ErrorGenerateKeyPublicExponent() {
-  return Status("The \"publicExponent\" is either empty, zero, or too large");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The \"publicExponent\" is either empty, zero, or too large");
 }
 
 Status Status::ErrorImportRsaEmptyModulus() {
-  return Status("The modulus is empty");
+  return Status(blink::WebCryptoErrorTypeData, "The modulus is empty");
 }
 
 Status Status::ErrorGenerateRsaZeroModulus() {
-  return Status("The modulus bit length cannot be zero");
+  return Status(blink::WebCryptoErrorTypeData,
+                "The modulus bit length cannot be zero");
 }
 
 Status Status::ErrorImportRsaEmptyExponent() {
-  return Status("No bytes for the exponent were provided");
+  return Status(blink::WebCryptoErrorTypeData,
+                "No bytes for the exponent were provided");
 }
 
 Status Status::ErrorKeyNotExtractable() {
-  return Status("They key is not extractable");
+  return Status(blink::WebCryptoErrorTypeInvalidAccess,
+                "They key is not extractable");
 }
 
 Status Status::ErrorGenerateKeyLength() {
-  return Status(
-      "Invalid key length: it is either zero or not a multiple of 8 "
-      "bits");
+  return Status(blink::WebCryptoErrorTypeData,
+                "Invalid key length: it is either zero or not a multiple of 8 "
+                "bits");
 }
 
-Status::Status(const std::string& error_details_utf8)
-    : type_(TYPE_ERROR), error_details_(error_details_utf8) {}
+Status::Status(blink::WebCryptoErrorType error_type,
+               const std::string& error_details_utf8)
+    : type_(TYPE_ERROR),
+      error_type_(error_type),
+      error_details_(error_details_utf8) {
+}
 
-Status::Status(Type type) : type_(type) {}
-
+Status::Status(Type type) : type_(type) {
+}
 
 }  // namespace webcrypto
 

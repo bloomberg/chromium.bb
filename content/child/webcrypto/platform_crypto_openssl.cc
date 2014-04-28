@@ -99,7 +99,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
       EVP_CIPHER_CTX_new());
 
   if (!context.get())
-    return Status::Error();
+    return Status::OperationError();
 
   const EVP_CIPHER* const cipher = GetAESCipherByKeyLength(key->key().size());
   DCHECK(cipher);
@@ -110,7 +110,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                          &key->key()[0],
                          iv.bytes(),
                          cipher_operation)) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   // According to the openssl docs, the amount of data written may be as large
@@ -133,11 +133,11 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                         &output_len,
                         data.bytes(),
                         data.byte_length()))
-    return Status::Error();
+    return Status::OperationError();
   int final_output_chunk_len = 0;
   if (!EVP_CipherFinal_ex(
           context.get(), buffer_data + output_len, &final_output_chunk_len)) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   const unsigned int final_output_len =
@@ -170,7 +170,7 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
       return error;
 
     if (!EVP_DigestUpdate(digest_context_.get(), data, size))
-      return Status::Error();
+      return Status::OperationError();
 
     return Status::Success();
   }
@@ -206,10 +206,10 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
       return Status::ErrorUnexpected();
 
     if (!digest_context_.get())
-      return Status::Error();
+      return Status::OperationError();
 
     if (!EVP_DigestInit_ex(digest_context_.get(), digest_algorithm, NULL))
-      return Status::Error();
+      return Status::OperationError();
 
     initialized_ = true;
     return Status::Success();
@@ -228,7 +228,7 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
 
     if (!EVP_DigestFinal_ex(digest_context_.get(), result, result_size) ||
         static_cast<int>(*result_size) != hash_expected_size)
-      return Status::Error();
+      return Status::OperationError();
 
     return Status::Success();
   }
@@ -284,7 +284,7 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
 
   std::vector<unsigned char> random_bytes(keylen_bytes, 0);
   if (!(RAND_bytes(&random_bytes[0], keylen_bytes)))
-    return Status::Error();
+    return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(algorithm, keylen_bytes, &key_algorithm))
@@ -368,7 +368,7 @@ Status SignHmac(SymKey* key,
                                       hmac_result.safe_buffer(),
                                       &hmac_actual_length);
   if (!success || hmac_actual_length != hmac_expected_length)
-    return Status::Error();
+    return Status::OperationError();
 
   *buffer = result;
   return Status::Success();

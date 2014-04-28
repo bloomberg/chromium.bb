@@ -225,13 +225,13 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
 
   crypto::ScopedSECItem param(PK11_ParamFromIV(CKM_AES_CBC_PAD, &iv_item));
   if (!param)
-    return Status::Error();
+    return Status::OperationError();
 
   crypto::ScopedPK11Context context(PK11_CreateContextBySymKey(
       CKM_AES_CBC_PAD, operation, key->key(), param.get()));
 
   if (!context.get())
-    return Status::Error();
+    return Status::OperationError();
 
   // Oddly PK11_CipherOp takes input and output lengths as "int" rather than
   // "unsigned int". Do some checks now to avoid integer overflowing.
@@ -247,7 +247,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
   // https://bugzilla.mozilla.com/show_bug.cgi?id=921687.
   if (operation == CKA_DECRYPT &&
       (data.byte_length() == 0 || (data.byte_length() % AES_BLOCK_SIZE != 0))) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   // TODO(eroman): Refine the output buffer size. It can be computed exactly for
@@ -266,7 +266,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                                   buffer->byteLength(),
                                   data.bytes(),
                                   data.byte_length())) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   unsigned int final_output_chunk_len;
@@ -274,7 +274,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                                      buffer_data + output_len,
                                      &final_output_chunk_len,
                                      output_max_len - output_len)) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   ShrinkBuffer(buffer, final_output_chunk_len + output_len);
@@ -351,7 +351,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                           data.byte_length());
 
   if (result != SECSuccess)
-    return Status::Error();
+    return Status::OperationError();
 
   // Unfortunately the buffer needs to be shrunk for decryption (see the NSS bug
   // above).
@@ -525,7 +525,7 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   // accurate error, providing if doesn't leak any information to web pages
   // about other web crypto users, key details, etc.
   if (!new_key)
-    return Status::Error();
+    return Status::OperationError();
 
 #if defined(USE_NSS)
   // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=981170
@@ -536,7 +536,7 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   // To understand this workaround see the fix for 981170:
   // https://hg.mozilla.org/projects/nss/rev/753bb69e543c
   if (!NSS_VersionCheck("3.16") && PORT_GetError() == SEC_ERROR_BAD_DATA)
-    return Status::Error();
+    return Status::OperationError();
 #endif
 
   *unwrapped_key = new_key.Pass();
@@ -723,7 +723,7 @@ class DigestorNSS : public blink::WebCryptoDigestor {
 
     hash_context_ = HASH_Create(hash_type);
     if (!hash_context_)
-      return Status::Error();
+      return Status::OperationError();
 
     HASH_Begin(hash_context_);
 
@@ -780,7 +780,7 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
                                  false,
                                  NULL));
   if (!pk11_sym_key.get())
-    return Status::Error();
+    return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(
@@ -797,11 +797,13 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
 
 Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer) {
   if (PK11_ExtractKeyValue(key->key()) != SECSuccess)
-    return Status::Error();
+    return Status::OperationError();
 
+  // http://crbug.com/366427: the spec does not define any other failures for
+  // exporting, so none of the subsequent errors are spec compliant.
   const SECItem* key_data = PK11_GetKeyData(key->key());
   if (!key_data)
-    return Status::Error();
+    return Status::OperationError();
 
   *buffer = CreateArrayBuffer(key_data->data, key_data->len);
 
@@ -854,16 +856,16 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
   const ScopedCERTSubjectPublicKeyInfo spki(
       SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_item));
   if (!spki)
-    return Status::Error();
+    return Status::DataError();
 
   crypto::ScopedSECKEYPublicKey sec_public_key(
       SECKEY_ExtractPublicKey(spki.get()));
   if (!sec_public_key)
-    return Status::Error();
+    return Status::DataError();
 
   const KeyType sec_key_type = SECKEY_GetPublicKeyType(sec_public_key.get());
   if (!ValidateNssKeyTypeAgainstInputAlgorithm(sec_key_type, algorithm))
-    return Status::Error();
+    return Status::DataError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePublicKeyAlgorithm(
@@ -882,8 +884,10 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
 Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer) {
   const crypto::ScopedSECItem spki_der(
       SECKEY_EncodeDERSubjectPublicKeyInfo(key->key()));
+  // http://crbug.com/366427: the spec does not define any other failures for
+  // exporting, so none of the subsequent errors are spec compliant.
   if (!spki_der)
-    return Status::Error();
+    return Status::OperationError();
 
   DCHECK(spki_der->data);
   DCHECK(spki_der->len);
@@ -925,27 +929,29 @@ Status ExportKeyPkcs8(PrivateKey* key,
   scoped_ptr<RSAPrivateKey, FreeRsaPrivateKey> free_private_key(
       &rsa_private_key);
 
+  // http://crbug.com/366427: the spec does not define any other failures for
+  // exporting, so none of the subsequent errors are spec compliant.
   if (!InitRSAPrivateKey(key->key(), &rsa_private_key))
-    return Status::Error();
+    return Status::OperationError();
 
   crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   if (!arena.get())
-    return Status::Error();
+    return Status::OperationError();
 
   if (!SEC_ASN1EncodeItem(arena.get(),
                           &private_key_info.privateKey,
                           &rsa_private_key,
                           RSAPrivateKeyTemplate))
-    return Status::Error();
+    return Status::OperationError();
 
   if (SECSuccess !=
       SECOID_SetAlgorithmID(
           arena.get(), &private_key_info.algorithm, algorithm, NULL))
-    return Status::Error();
+    return Status::OperationError();
 
   if (!SEC_ASN1EncodeInteger(
           arena.get(), &private_key_info.version, kPrivateKeyInfoVersion))
-    return Status::Error();
+    return Status::OperationError();
 
   crypto::ScopedSECItem encoded_key(
       SEC_ASN1EncodeItem(NULL,
@@ -958,7 +964,7 @@ Status ExportKeyPkcs8(PrivateKey* key,
 #endif  // defined(USE_NSS)
 
   if (!encoded_key.get())
-    return Status::Error();
+    return Status::OperationError();
 
   *buffer = CreateArrayBuffer(encoded_key->data, encoded_key->len);
   return Status::Success();
@@ -991,14 +997,14 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                                                KU_ALL,  // usage
                                                &seckey_private_key,
                                                NULL) != SECSuccess) {
-    return Status::Error();
+    return Status::DataError();
   }
   DCHECK(seckey_private_key);
   crypto::ScopedSECKEYPrivateKey private_key(seckey_private_key);
 
   const KeyType sec_key_type = SECKEY_GetPrivateKeyType(private_key.get());
   if (!ValidateNssKeyTypeAgainstInputAlgorithm(sec_key_type, algorithm))
-    return Status::Error();
+    return Status::DataError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePrivateKeyAlgorithm(algorithm, private_key.get(), &key_algorithm))
@@ -1033,7 +1039,7 @@ Status SignHmac(SymKey* key,
                           &param_item,
                           &signature_item,
                           &data_item) != SECSuccess) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   DCHECK_NE(0u, signature_item.len);
@@ -1046,7 +1052,7 @@ Status SignHmac(SymKey* key,
                           &param_item,
                           &signature_item,
                           &data_item) != SECSuccess) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   DCHECK_EQ(buffer->byteLength(), signature_item.len);
@@ -1078,7 +1084,7 @@ Status EncryptRsaEsPkcs1v1_5(PublicKey* key,
                            const_cast<unsigned char*>(data.bytes()),
                            data.byte_length(),
                            NULL) != SECSuccess) {
-    return Status::Error();
+    return Status::OperationError();
   }
   return Status::Success();
 }
@@ -1102,7 +1108,7 @@ Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
                             max_output_length_bytes,
                             const_cast<unsigned char*>(data.bytes()),
                             data.byte_length()) != SECSuccess) {
-    return Status::Error();
+    return Status::OperationError();
   }
   DCHECK_LE(output_length_bytes, max_output_length_bytes);
   ShrinkBuffer(buffer, output_length_bytes);
@@ -1143,7 +1149,7 @@ Status SignRsaSsaPkcs1v1_5(PrivateKey* key,
                    data.byte_length(),
                    key->key(),
                    sign_alg_tag) != SECSuccess) {
-    return Status::Error();
+    return Status::OperationError();
   }
 
   *buffer = CreateArrayBuffer(signature_item->data, signature_item->len);
@@ -1222,7 +1228,7 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           blink::WebCryptoKey* private_key) {
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
   if (!slot)
-    return Status::Error();
+    return Status::OperationError();
 
   unsigned long public_exponent_long;
   if (!BigIntegerToLong(public_exponent.bytes(),
@@ -1272,7 +1278,7 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                                       operation_flags_mask,
                                       NULL));
   if (!private_key)
-    return Status::Error();
+    return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePublicKeyAlgorithm(algorithm, sec_public_key, &key_algorithm))
@@ -1301,6 +1307,8 @@ Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
                  blink::WebArrayBuffer* buffer) {
   DigestorNSS digestor(algorithm);
   Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
+  // http://crbug.com/366427: the spec does not define any other failures for
+  // digest, so none of the subsequent errors are spec compliant.
   if (!error.IsSuccess())
     return error;
   return digestor.FinishWithWebArrayAndStatus(buffer);
@@ -1324,13 +1332,13 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
 
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
   if (!slot)
-    return Status::Error();
+    return Status::OperationError();
 
   crypto::ScopedPK11SymKey pk11_key(
       PK11_KeyGen(slot.get(), mech, NULL, keylen_bytes, NULL));
 
   if (!pk11_key)
-    return Status::Error();
+    return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(algorithm, keylen_bytes, &key_algorithm))
@@ -1387,13 +1395,13 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
   crypto::ScopedSECItem pubkey_der(
       SEC_ASN1EncodeItem(NULL, NULL, &pubkey_in, rsa_public_key_template));
   if (!pubkey_der)
-    return Status::Error();
+    return Status::OperationError();
 
   // Import the DER-encoded public key to create an RSA SECKEYPublicKey.
   crypto::ScopedSECKEYPublicKey pubkey(
       SECKEY_ImportDERPublicKey(pubkey_der.get(), CKK_RSA));
   if (!pubkey)
-    return Status::Error();
+    return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePublicKeyAlgorithm(algorithm, pubkey.get(), &key_algorithm))
@@ -1438,7 +1446,7 @@ Status WrapSymKeyAesKw(SymKey* wrapping_key,
                                     wrapping_key->key(),
                                     key->key(),
                                     &wrapped_key_item)) {
-    return Status::Error();
+    return Status::OperationError();
   }
   if (output_length != wrapped_key_item.len)
     return Status::ErrorUnexpected();
@@ -1493,10 +1501,10 @@ Status DecryptAesKw(SymKey* wrapping_key,
   // Once the decrypt is complete, extract the resultant raw bytes from NSS and
   // return them to the caller.
   if (PK11_ExtractKeyValue(decrypted.get()) != SECSuccess)
-    return Status::Error();
+    return Status::OperationError();
   const SECItem* const key_data = PK11_GetKeyData(decrypted.get());
   if (!key_data)
-    return Status::Error();
+    return Status::OperationError();
   *buffer = webcrypto::CreateArrayBuffer(key_data->data, key_data->len);
 
   return Status::Success();
@@ -1522,7 +1530,7 @@ Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
   if (SECSuccess !=
       PK11_PubWrapSymKey(
           CKM_RSA_PKCS, wrapping_key->key(), key->key(), &wrapped_key_item)) {
-    return Status::Error();
+    return Status::OperationError();
   }
   if (wrapped_key_item.len != modulus_length_bytes)
     return Status::ErrorUnexpected();
@@ -1565,7 +1573,7 @@ Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
                                         flags,
                                         false));
   if (!unwrapped_key)
-    return Status::Error();
+    return Status::OperationError();
 
   const unsigned int key_length = PK11_GetKeyLength(unwrapped_key.get());
 

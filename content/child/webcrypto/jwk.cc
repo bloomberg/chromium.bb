@@ -794,7 +794,7 @@ Status ExportKeyJwk(const blink::WebCryptoKey& key,
                     blink::WebArrayBuffer* buffer) {
   DCHECK(key.extractable());
   base::DictionaryValue jwk_dict;
-  Status status = Status::Error();
+  Status status = Status::OperationError();
 
   switch (key.type()) {
     case blink::WebCryptoKeyTypeSecret: {

@@ -127,7 +127,7 @@ Status EncryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
 
   // RSAES encryption does not support empty input
   if (!data.byte_length())
-    return Status::Error();
+    return Status::ErrorDataTooSmall();
 
   return platform::EncryptRsaEsPkcs1v1_5(public_key, data, buffer);
 }
@@ -143,7 +143,7 @@ Status DecryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
 
   // RSAES decryption does not support empty input
   if (!data.byte_length())
-    return Status::Error();
+    return Status::ErrorDataTooSmall();
 
   return platform::DecryptRsaEsPkcs1v1_5(private_key, data, buffer);
 }
@@ -222,7 +222,7 @@ Status ImportKeyRaw(const CryptoData& key_data,
     case blink::WebCryptoAlgorithmIdAesGcm:
     case blink::WebCryptoAlgorithmIdAesKw:
       if (!IsValidAesKeyLengthBytes(key_data.byte_length()))
-        return Status::Error();
+        return Status::ErrorImportAesKeyLength();
     // Fallthrough intentional!
     case blink::WebCryptoAlgorithmIdHmac:
       return platform::ImportKeyRaw(
@@ -466,8 +466,8 @@ Status UnwrapKeyDecryptAndImport(
       format, CryptoData(buffer), algorithm, extractable, usage_mask, key);
   // NOTE! Returning the details of any ImportKey() failure here would leak
   // information about the plaintext internals of the encrypted key. Instead,
-  // collapse any error into the generic Status::Error().
-  return status.IsError() ? Status::Error() : Status::Success();
+  // collapse any error into the generic Status::OperationError().
+  return status.IsError() ? Status::OperationError() : Status::Success();
 }
 
 Status WrapKeyExportAndEncrypt(
