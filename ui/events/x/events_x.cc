@@ -149,8 +149,28 @@ int GetEventFlagsFromXState(unsigned int state) {
 }
 
 int GetEventFlagsFromXKeyEvent(XEvent* xevent) {
+  DCHECK(xevent->type == KeyPress || xevent->type == KeyRelease);
+
+#if defined(OS_CHROMEOS)
+  const int ime_fabricated_flag = 0;
+#else
+  // XIM fabricates key events for the character compositions by XK_Multi_key.
+  // For example, when a user hits XK_Multi_key, XK_apostrophe, and XK_e in
+  // order to input "é", then XIM generates a key event with keycode=0 and
+  // state=0 for the composition, and the sequence of X11 key events will be
+  // XK_Multi_key, XK_apostrophe, **NoSymbol**, and XK_e.
+  //
+  // We have to send these fabricated key events to XIM so it can correctly
+  // handle the character compositions.
+  const bool fabricated_by_xim =
+      xevent->xkey.keycode == 0 && xevent->xkey.state == 0;
+  const int ime_fabricated_flag =
+      fabricated_by_xim ? ui::EF_IME_FABRICATED_KEY : 0;
+#endif
+
   return GetEventFlagsFromXState(xevent->xkey.state) |
-         (IsKeypadKey(XLookupKeysym(&xevent->xkey, 0)) ? ui::EF_NUMPAD_KEY : 0);
+      (IsKeypadKey(XLookupKeysym(&xevent->xkey, 0)) ? ui::EF_NUMPAD_KEY : 0) |
+      ime_fabricated_flag;
 }
 
 // Get the event flag for the button in XButtonEvent. During a ButtonPress

@@ -100,7 +100,8 @@ X11InputMethodContextImplGtk2::X11InputMethodContextImplGtk2(
     : delegate_(delegate),
       gtk_context_simple_(NULL),
       gtk_multicontext_(NULL),
-      gtk_context_(NULL) {
+      gtk_context_(NULL),
+      gdk_last_set_client_window_(NULL) {
   CHECK(delegate_);
 
   {
@@ -165,7 +166,10 @@ bool X11InputMethodContextImplGtk2::DispatchKeyEvent(
   }
 
   // Set the client window and cursor location.
-  gtk_im_context_set_client_window(gtk_context_, event->key.window);
+  if (event->key.window != gdk_last_set_client_window_) {
+    gtk_im_context_set_client_window(gtk_context_, event->key.window);
+    gdk_last_set_client_window_ = event->key.window;
+  }
   // Convert the last known caret bounds relative to the screen coordinates
   // to a GdkRectangle relative to the client window.
   gint x = 0;
@@ -195,6 +199,7 @@ void X11InputMethodContextImplGtk2::Reset() {
   gtk_im_context_reset(gtk_multicontext_);
   gtk_im_context_focus_out(gtk_context_simple_);
   gtk_im_context_focus_out(gtk_multicontext_);
+  gdk_last_set_client_window_ = NULL;
 }
 
 void X11InputMethodContextImplGtk2::OnTextInputTypeChanged(

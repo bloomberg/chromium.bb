@@ -13,6 +13,7 @@
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/gfx/rect.h"
 
+typedef struct _GdkDrawable GdkWindow;
 typedef struct _GtkIMContext GtkIMContext;
 
 namespace libgtk2ui {
@@ -59,6 +60,9 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
   // An alias to |gtk_context_simple_| or |gtk_multicontext_| depending on the
   // text input type.  Can be NULL when it's not focused.
   GtkIMContext* gtk_context_;
+
+  // Last set client window.
+  GdkWindow* gdk_last_set_client_window_;
 
   // Last known caret bounds relative to the screen coordinates.
   gfx::Rect last_caret_bounds_;

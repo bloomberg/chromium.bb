@@ -56,7 +56,8 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
 
   // Let an IME handle the key event first.
   if (input_method_context_->DispatchKeyEvent(event)) {
-    if (event.type() == ET_KEY_PRESSED) {
+    if (event.type() == ET_KEY_PRESSED &&
+        (event.flags() & ui::EF_IME_FABRICATED_KEY) == 0) {
       const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
                                           VKEY_PROCESSKEY,
                                           event.flags(),
