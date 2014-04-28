@@ -217,7 +217,7 @@ static void timer_callback(int fd, short events, void *context)
 
 // Reentrant!
 void MessagePumpLibevent::Run(Delegate* delegate) {
-  DCHECK(keep_running_) << "Quit must have been called outside of Run!";
+  AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
   AutoReset<bool> auto_reset_in_run(&in_run_, true);
 
   // event_base_loopexit() + EVLOOP_ONCE is leaky, see http://crbug.com/25641.
@@ -275,12 +275,10 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
       }
     }
   }
-
-  keep_running_ = true;
 }
 
 void MessagePumpLibevent::Quit() {
-  DCHECK(in_run_);
+  DCHECK(in_run_) << "Quit was called outside of Run!";
   // Tell both libevent and Run that they should break out of their loops.
   keep_running_ = false;
   ScheduleWork();

@@ -6,8 +6,10 @@
 
 #include <unistd.h>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libevent/event.h"
@@ -81,6 +83,12 @@ TEST_F(MessagePumpLibeventTest, TestWatchingFromBadThread) {
       "watch_file_descriptor_caller_checker_.CalledOnValidThread\\(\\)");
 }
 
+TEST_F(MessagePumpLibeventTest, QuitOutsideOfRun) {
+  scoped_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
+  ASSERT_DEATH(pump->Quit(), "Check failed: in_run_. "
+                             "Quit was called outside of Run!");
+}
+
 #endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
 class BaseWatcher : public MessagePumpLibevent::Watcher {
@@ -152,6 +160,41 @@ TEST_F(MessagePumpLibeventTest, StopWatcher) {
   StopWatcher delegate(&watcher);
   pump->WatchFileDescriptor(pipefds_[1],
       false, MessagePumpLibevent::WATCH_READ_WRITE, &watcher, &delegate);
+
+  // Spoof a libevent notification.
+  OnLibeventNotification(pump.get(), &watcher);
+}
+
+void QuitMessageLoopAndStart(const Closure& quit_closure) {
+  quit_closure.Run();
+
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+  RunLoop runloop;
+  MessageLoop::current()->PostTask(FROM_HERE, runloop.QuitClosure());
+  runloop.Run();
+}
+
+class NestedPumpWatcher : public MessagePumpLibevent::Watcher {
+ public:
+  NestedPumpWatcher() {}
+  virtual ~NestedPumpWatcher() {}
+
+  virtual void OnFileCanReadWithoutBlocking(int /* fd */) OVERRIDE {
+    RunLoop runloop;
+    MessageLoop::current()->PostTask(FROM_HERE, Bind(&QuitMessageLoopAndStart,
+                                                     runloop.QuitClosure()));
+    runloop.Run();
+  }
+
+  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) OVERRIDE {}
+};
+
+TEST_F(MessagePumpLibeventTest, NestedPumpWatcher) {
+  scoped_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
+  MessagePumpLibevent::FileDescriptorWatcher watcher;
+  NestedPumpWatcher delegate;
+  pump->WatchFileDescriptor(pipefds_[1],
+      false, MessagePumpLibevent::WATCH_READ, &watcher, &delegate);
 
   // Spoof a libevent notification.
   OnLibeventNotification(pump.get(), &watcher);
