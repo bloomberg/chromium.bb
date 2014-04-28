@@ -492,32 +492,42 @@ DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
       this.isSearching())
     return;
 
-  if (kind == util.EntryChangedKind.CREATED) {
-    // Refresh the cache.
-    this.metadataCache_.clear([entry], '*');
-    entry.getParent(function(parentEntry) {
-      if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
-        // Do nothing if current directory changed during async operations.
-        return;
-      }
-      this.currentDirContents_.prefetchMetadata([entry], function() {
+  switch (kind) {
+    case util.EntryChangedKind.CREATED:
+      // Refresh the cache.
+      this.metadataCache_.clear([entry], '*');
+      entry.getParent(function(parentEntry) {
         if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
           // Do nothing if current directory changed during async operations.
           return;
         }
+        this.currentDirContents_.prefetchMetadata([entry], function() {
+          if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
+            // Do nothing if current directory changed during async operations.
+            return;
+          }
 
-        var index = this.findIndexByEntry_(entry);
-        if (index >= 0)
-          this.getFileList().replaceItem(this.getFileList().item(index), entry);
-        else
-          this.getFileList().push(entry);
+          var index = this.findIndexByEntry_(entry);
+          if (index >= 0) {
+            this.getFileList().replaceItem(
+                this.getFileList().item(index), entry);
+          } else {
+            this.getFileList().push(entry);
+          }
+        }.bind(this));
       }.bind(this));
-    }.bind(this));
-  } else {
-    // This is the delete event.
-    var index = this.findIndexByEntry_(entry);
-    if (index >= 0)
-      this.getFileList().splice(index, 1);
+      break;
+
+    case util.EntryChangedKind.DELETED:
+      // This is the delete event.
+      var index = this.findIndexByEntry_(entry);
+      if (index >= 0)
+        this.getFileList().splice(index, 1);
+      break;
+
+    default:
+      console.error('Invalid EntryChangedKind: ' + kind);
+      break;
   }
 };
 

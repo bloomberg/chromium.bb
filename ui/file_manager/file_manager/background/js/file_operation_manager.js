@@ -939,7 +939,7 @@ FileOperationManager.ZipTask.prototype.run = function(
             this.zipBaseDirEntry,
             destPath,
             function(entry) {
-              entryChangedCallback(util.EntryChangedKind.CREATE, entry);
+              entryChangedCallback(util.EntryChangedKind.CREATED, entry);
               successCallback();
             },
             function(error) {
