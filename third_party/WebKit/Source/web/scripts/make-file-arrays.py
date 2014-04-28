@@ -34,6 +34,15 @@ import re
 import sys
 from optparse import OptionParser
 
+rjsmin_path = os.path.abspath(os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "build",
+        "scripts"))
+sys.path.append(rjsmin_path)
+import rjsmin
+
 
 def make_variable_name_and_read(file_name):
     result = re.match(r'([\w\d_]+)\.([\w\d_]+)', os.path.basename(file_name))
@@ -53,21 +62,13 @@ def strip_whitespace_and_comments(file_name, content):
         sys.exit(1)
     extension = result.group(1).lower()
     multi_line_comment = re.compile(r'/\*.*?\*/', re.MULTILINE | re.DOTALL)
-    single_line_comment = re.compile(r'^//.*$', re.MULTILINE)
     # Don't accidentally match URLs (http://...)
-    trailing_comment = re.compile(r'([^:])//.*$', re.MULTILINE)
     repeating_space = re.compile(r'[ \t]+', re.MULTILINE)
     leading_space = re.compile(r'^[ \t]+', re.MULTILINE)
     trailing_space = re.compile(r'[ \t]+$', re.MULTILINE)
     empty_line = re.compile(r'\n+')
     if extension == 'js':
-        content = multi_line_comment.sub('', content)
-        content = single_line_comment.sub('', content)
-        content = trailing_comment.sub(r'\1', content)
-        content = repeating_space.sub(' ', content)
-        content = leading_space.sub('', content)
-        content = trailing_space.sub('', content)
-        content = empty_line.sub('\n', content)
+        content = rjsmin.jsmin(content)
     elif extension == 'css':
         content = multi_line_comment.sub('', content)
         content = repeating_space.sub(' ', content)

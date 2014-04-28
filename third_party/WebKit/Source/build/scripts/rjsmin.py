@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: ascii -*-
 #
 # Copyright 2011 - 2013
 # Andr\xe9 Malo or his licensors, as applicable
@@ -91,7 +90,7 @@ def _make_jsmin(python_only=False):
     try:
         xrange
     except NameError:
-        xrange = range # pylint: disable = W0622
+        xrange = range  # pylint: disable = W0622
 
     space_chars = r'[\000-\011\013\014\016-\040]'
 
@@ -105,8 +104,7 @@ def _make_jsmin(python_only=False):
     charclass = r'(?:\[[^\\\]\r\n]*(?:\\[^\r\n][^\\\]\r\n]*)*\])'
     nospecial = r'[^/\\\[\r\n]'
     regex = r'(?:/(?![\r\n/*])%s*(?:(?:\\[^\r\n]|%s)%s*)*/)' % (
-        nospecial, charclass, nospecial
-    )
+        nospecial, charclass, nospecial)
     space = r'(?:%s|%s)' % (space_chars, space_comment)
     newline = r'(?:%s?[\r\n])' % line_comment
 
@@ -136,31 +134,24 @@ def _make_jsmin(python_only=False):
             return ''.join(['%s%s%s' % (
                 chr(first),
                 last > first + 1 and '-' or '',
-                last != first and chr(last) or ''
-            ) for first, last in result])
+                last != first and chr(last) or '') for first, last in result])
 
-        return _re.sub(r'([\000-\040\047])', # for better portability
+        return _re.sub(r'([\000-\040\047])',  # for better portability
             lambda m: '\\%03o' % ord(m.group(1)), (sequentize(result)
                 .replace('\\', '\\\\')
                 .replace('[', '\\[')
-                .replace(']', '\\]')
-            )
-        )
+                .replace(']', '\\]')))
 
     def id_literal_(what):
         """ Make id_literal like char class """
         match = _re.compile(what).match
-        result = ''.join([
-            chr(c) for c in xrange(127) if not match(chr(c))
-        ])
+        result = ''.join([chr(c) for c in xrange(127) if not match(chr(c))])
         return '[^%s]' % fix_charclass(result)
 
     def not_id_literal_(keep):
         """ Make negated id_literal like char class """
         match = _re.compile(id_literal_(keep)).match
-        result = ''.join([
-            chr(c) for c in xrange(127) if not match(chr(c))
-        ])
+        result = ''.join([chr(c) for c in xrange(127) if not match(chr(c))])
         return r'[%s]' % fix_charclass(result)
 
     not_id_literal = not_id_literal_(r'[a-zA-Z0-9_$]')
@@ -189,23 +180,29 @@ def _make_jsmin(python_only=False):
         r'|(?<=\+)(%(space)s)+(?=\+)'
         r'|(?<=-)(%(space)s)+(?=-)'
         r'|%(space)s+'
-        r'|(?:%(newline)s%(space)s*)+'
-    ) % locals()).sub
+        r'|(?:%(newline)s%(space)s*)+') % locals()).sub
     #print space_sub.__self__.pattern
 
     def space_subber(match):
         """ Substitution callback """
         # pylint: disable = C0321, R0911
         groups = match.groups()
-        if groups[0]: return groups[0]
-        elif groups[1]: return groups[1]
-        elif groups[2]: return groups[2]
-        elif groups[3]: return groups[3]
-        elif groups[4]: return '\n'
-        elif groups[5] or groups[6] or groups[7]: return ' '
-        else: return ''
+        if groups[0]:
+            return groups[0]
+        elif groups[1]:
+            return groups[1]
+        elif groups[2]:
+            return groups[2]
+        elif groups[3]:
+            return groups[3]
+        elif groups[4]:
+            return '\n'
+        elif groups[5] or groups[6] or groups[7]:
+            return ' '
+        else:
+            return ''
 
-    def jsmin(script): # pylint: disable = W0621
+    def jsmin(script):  # pylint: disable = W0621
         r"""
         Minify javascript based on `jsmin.c by Douglas Crockford`_\.
 
@@ -264,8 +261,7 @@ def jsmin_for_posers(script):
             (groups[5] and ' ') or
             (groups[6] and ' ') or
             (groups[7] and ' ') or
-            ''
-        )
+            '')
 
     return _re.sub(
         r'([^\047"/\000-\040]+)|((?:(?:\047[^\047\\\r\n]*(?:\\(?:[^\r\n]|\r?'
@@ -291,8 +287,7 @@ def jsmin_for_posers(script):
         r'\040]|(?:/\*[^*]*\*+(?:[^/*][^*]*\*+)*/)))+(?=-)|(?:[\000-\011\013'
         r'\014\016-\040]|(?:/\*[^*]*\*+(?:[^/*][^*]*\*+)*/))+|(?:(?:(?://[^'
         r'\r\n]*)?[\r\n])(?:[\000-\011\013\014\016-\040]|(?:/\*[^*]*\*+(?:[^'
-        r'/*][^*]*\*+)*/))*)+', subber, '\n%s\n' % script
-    ).strip()
+        r'/*][^*]*\*+)*/))*)+', subber, '\n%s\n' % script).strip()
 
 
 if __name__ == '__main__':
