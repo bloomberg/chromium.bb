@@ -30,7 +30,6 @@ class Arguments;
 
 namespace WebTestRunner {
 class TestInterfaces;
-class WebPermissions;
 class WebTestDelegate;
 }
 
@@ -39,6 +38,7 @@ namespace content {
 class InvokeCallbackTask;
 class NotificationPresenter;
 class TestPageOverlay;
+class WebPermissions;
 class WebTestProxyBase;
 
 class TestRunner : public ::WebTestRunner::WebTestRunner,
@@ -698,9 +698,9 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   blink::WebFrame* top_loading_frame_;
 
   // WebPermissionClient mock object.
-  scoped_ptr< ::WebTestRunner::WebPermissions> web_permissions_;
+  scoped_ptr<WebPermissions> web_permissions_;
 
-  scoped_ptr<content::NotificationPresenter> notification_presenter_;
+  scoped_ptr<NotificationPresenter> notification_presenter_;
 
   bool pointer_locked_;
   enum {

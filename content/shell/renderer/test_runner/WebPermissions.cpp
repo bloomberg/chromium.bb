@@ -9,9 +9,10 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
+using namespace WebTestRunner;
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 WebPermissions::WebPermissions()
     : m_delegate(0)
@@ -110,4 +111,4 @@ void WebPermissions::reset()
     m_runningInsecureContentAllowed = false;
 }
 
-}
+}  // namespace content

@@ -5,13 +5,15 @@
 #ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBPERMISSIONS_H_
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBPERMISSIONS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 
 namespace WebTestRunner {
-
 class WebTestDelegate;
+}
+
+namespace content {
 
 class WebPermissions : public blink::WebPermissionClient {
 public:
@@ -37,11 +39,11 @@ public:
     // Resets the policy to allow everything, except for running insecure content.
     void reset();
 
-    void setDelegate(WebTestDelegate*);
+    void setDelegate(WebTestRunner::WebTestDelegate*);
     void setDumpCallbacks(bool);
 
 private:
-    WebTestDelegate* m_delegate;
+    WebTestRunner::WebTestDelegate* m_delegate;
     bool m_dumpCallbacks;
 
     bool m_imagesAllowed;
@@ -54,6 +56,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(WebPermissions);
 };
 
-}
+}  // namespace content
 
-#endif
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBPERMISSIONS_H_
