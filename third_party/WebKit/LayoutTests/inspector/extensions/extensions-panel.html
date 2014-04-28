@@ -68,7 +68,7 @@ function initialize_extensionsPanelTest()
 
         function showUILocationHook(uiLocation)
         {
-            showURL("sources", uiLocation.url(), uiLocation.lineNumber);
+            showURL("sources", uiLocation.uiSourceCode.url, uiLocation.lineNumber);
         }
 
         function showResourceHook(resource, lineNumber)
