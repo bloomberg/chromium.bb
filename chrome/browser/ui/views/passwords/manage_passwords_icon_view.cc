@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -14,49 +15,46 @@
 ManagePasswordsIconView::ManagePasswordsIconView(
     LocationBarView::Delegate* location_bar_delegate)
     : location_bar_delegate_(location_bar_delegate) {
+  set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
   SetAccessibilityFocusable(true);
-  Update(NULL);
+  SetState(ManagePasswordsIcon::INACTIVE_STATE);
 }
 
 ManagePasswordsIconView::~ManagePasswordsIconView() {}
 
-void ManagePasswordsIconView::Update(
-    ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller) {
-  SetVisible(manage_passwords_bubble_ui_controller &&
-      manage_passwords_bubble_ui_controller->
-          manage_passwords_icon_to_be_shown() &&
-      !location_bar_delegate_->GetToolbarModel()->input_in_progress());
-  if (!visible()) {
-    ManagePasswordsBubbleView::CloseBubble();
+void ManagePasswordsIconView::SetStateInternal(
+    ManagePasswordsIcon::State state) {
+  if (state == ManagePasswordsIcon::INACTIVE_STATE) {
+    SetVisible(false);
+    if (ManagePasswordsBubbleView::IsShowing())
+      ManagePasswordsBubbleView::CloseBubble();
     return;
   }
-  int icon_to_display =
-      manage_passwords_bubble_ui_controller->autofill_blocked()
-          ? IDR_SAVE_PASSWORD_BLACKLISTED
-          : IDR_SAVE_PASSWORD;
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      icon_to_display));
-  SetTooltip(manage_passwords_bubble_ui_controller->password_to_be_saved());
+
+  // Start with the correct values for ManagePasswordsIcon::MANAGE_STATE, and
+  // adjust things accordingly if we're either in BLACKLISTED_STATE or
+  // PENDING_STATE.
+  int which_icon = IDR_SAVE_PASSWORD;
+  int which_text = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
+  if (state == ManagePasswordsIcon::BLACKLISTED_STATE)
+    which_icon = IDR_SAVE_PASSWORD_BLACKLISTED;
+  else if (state == ManagePasswordsIcon::PENDING_STATE)
+    which_text = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
+
+  SetVisible(true);
+  SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(which_icon));
+  SetTooltipText(l10n_util::GetStringUTF16(which_text));
 }
 
-void ManagePasswordsIconView::ShowBubbleIfNeeded(
-    ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller) {
-  if (manage_passwords_bubble_ui_controller->
-          manage_passwords_bubble_needs_showing() &&
-      visible() &&
-      !ManagePasswordsBubbleView::IsShowing()) {
-    ManagePasswordsBubbleView::ShowBubble(
-        location_bar_delegate_->GetWebContents(),
-        ManagePasswordsBubbleView::AUTOMATIC);
-    manage_passwords_bubble_ui_controller->OnBubbleShown();
-  }
-}
+void ManagePasswordsIconView::ShowBubbleWithoutUserInteraction() {
+  // Suppress the bubble if the user is working in the omnibox.
+  if (location_bar_delegate_->GetToolbarModel()->input_in_progress())
+    return;
 
-void ManagePasswordsIconView::SetTooltip(bool password_to_be_saved) {
-  SetTooltipText(l10n_util::GetStringUTF16(
-      (password_to_be_saved ?
-          IDS_PASSWORD_MANAGER_TOOLTIP_SAVE :
-          IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE)));
+  ManagePasswordsBubbleView::ShowBubble(
+      location_bar_delegate_->GetWebContents(),
+      ManagePasswordsBubbleView::AUTOMATIC);
 }
 
 bool ManagePasswordsIconView::GetTooltipText(const gfx::Point& p,

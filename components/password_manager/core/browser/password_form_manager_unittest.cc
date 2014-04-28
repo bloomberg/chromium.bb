@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/mock_password_manager_driver.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -43,25 +44,6 @@ void RunAllPendingTasks() {
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   run_loop.Run();
 }
-
-class MockPasswordManagerDriver : public PasswordManagerDriver {
- public:
-  MockPasswordManagerDriver() {}
-  virtual ~MockPasswordManagerDriver() {}
-
-  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
-  MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
-  MOCK_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
-  MOCK_METHOD0(GetPasswordManager, PasswordManager*());
-  MOCK_METHOD0(GetAutofillManager, autofill::AutofillManager*());
-  MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
-  MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
-  MOCK_METHOD1(AccountCreationFormsFound,
-               void(const std::vector<autofill::FormData>&));
-  MOCK_METHOD2(AcceptPasswordAutofillSuggestion,
-               void(const base::string16&, const base::string16&));
-};
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:

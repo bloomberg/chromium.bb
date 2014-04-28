@@ -104,6 +104,8 @@
         '..',
       ],
       'sources': [
+        'password_manager/core/browser/mock_password_manager_driver.cc',
+        'password_manager/core/browser/mock_password_manager_driver.h',
         'password_manager/core/browser/mock_password_store.cc',
         'password_manager/core/browser/mock_password_store.h',
         'password_manager/core/browser/password_form_data.cc',

@@ -16,6 +16,8 @@ namespace content {
 class WebContents;
 }
 
+class ManagePasswordsIcon;
+
 // Per-tab class to control the Omnibox password icon and bubble.
 class ManagePasswordsBubbleUIController
     : public content::WebContentsObserver,
@@ -51,14 +53,14 @@ class ManagePasswordsBubbleUIController
   // the action off to the FormManager.
   virtual void NeverSavePassword();
 
-  // Called when the bubble is opened after the icon gets displayed. We change
-  // the state to know that we do not need to pop up the bubble again.
-  void OnBubbleShown();
-
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage();
 
   virtual const autofill::PasswordForm& PendingCredentials() const;
+
+  // Set the state of the Omnibox icon, and possibly show the associated bubble
+  // without user interaction.
+  virtual void UpdateIconAndBubbleState(ManagePasswordsIcon* icon);
 
   bool manage_passwords_icon_to_be_shown() const {
     return manage_passwords_icon_to_be_shown_;
@@ -70,10 +72,6 @@ class ManagePasswordsBubbleUIController
 
   bool manage_passwords_bubble_needs_showing() const {
     return manage_passwords_bubble_needs_showing_;
-  }
-
-  void unset_manage_passwords_bubble_needs_showing() {
-    manage_passwords_bubble_needs_showing_ = false;
   }
 
   void unset_password_to_be_saved() {
@@ -88,6 +86,8 @@ class ManagePasswordsBubbleUIController
   void set_autofill_blocked(bool autofill_blocked) {
     autofill_blocked_ = autofill_blocked;
   }
+
+  const GURL& origin() const { return origin_; }
 
  protected:
   explicit ManagePasswordsBubbleUIController(

@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/origin_chip_info.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -378,7 +379,7 @@ void LocationBarView::Init() {
   AddChildView(open_pdf_in_reader_view_);
 
   manage_passwords_icon_view_ = new ManagePasswordsIconView(delegate_);
-  manage_passwords_icon_view_->set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
+  manage_passwords_icon_view_->SetState(ManagePasswordsIcon::INACTIVE_STATE);
   AddChildView(manage_passwords_icon_view_);
 
   translate_icon_view_ = new TranslateIconView(command_updater());
@@ -1192,18 +1193,9 @@ bool LocationBarView::RefreshManagePasswordsIconView() {
   if (!web_contents)
     return false;
   const bool was_visible = manage_passwords_icon_view_->visible();
-  manage_passwords_icon_view_->Update(
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents));
+  ManagePasswordsBubbleUIController::FromWebContents(
+      web_contents)->UpdateIconAndBubbleState(manage_passwords_icon_view_);
   return was_visible != manage_passwords_icon_view_->visible();
-}
-
-void LocationBarView::ShowManagePasswordsBubbleIfNeeded() {
-  DCHECK(manage_passwords_icon_view_);
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return;
-  manage_passwords_icon_view_->ShowBubbleIfNeeded(
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents));
 }
 
 void LocationBarView::ShowFirstRunBubbleInternal() {
@@ -1295,7 +1287,6 @@ void LocationBarView::UpdateManagePasswordsIconAndBubble() {
     Layout();
     SchedulePaint();
   }
-  ShowManagePasswordsBubbleIfNeeded();
 }
 
 void LocationBarView::UpdatePageActions() {

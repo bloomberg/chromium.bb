@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "chrome/common/url_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/notification_service.h"
@@ -115,10 +116,6 @@ void ManagePasswordsBubbleUIController::OnLoginsChanged(
   }
 }
 
-void ManagePasswordsBubbleUIController::OnBubbleShown() {
-  unset_manage_passwords_bubble_needs_showing();
-}
-
 void ManagePasswordsBubbleUIController::
     NavigateToPasswordManagerSettingsPage() {
 // TODO(mkwst): chrome_pages.h is compiled out of Android. Need to figure out
@@ -156,4 +153,24 @@ const autofill::PasswordForm& ManagePasswordsBubbleUIController::
     PendingCredentials() const {
   DCHECK(form_manager_);
   return form_manager_->pending_credentials();
+}
+
+void ManagePasswordsBubbleUIController::UpdateIconAndBubbleState(
+    ManagePasswordsIcon* icon) {
+  ManagePasswordsIcon::State state = ManagePasswordsIcon::INACTIVE_STATE;
+
+  if (autofill_blocked_)
+    state = ManagePasswordsIcon::BLACKLISTED_STATE;
+  else if (password_to_be_saved_)
+    state = ManagePasswordsIcon::PENDING_STATE;
+  else if (manage_passwords_icon_to_be_shown_)
+    state = ManagePasswordsIcon::MANAGE_STATE;
+
+  icon->SetState(state);
+
+  if (manage_passwords_bubble_needs_showing_) {
+    DCHECK(state == ManagePasswordsIcon::PENDING_STATE);
+    icon->ShowBubbleWithoutUserInteraction();
+    manage_passwords_bubble_needs_showing_ = false;
+  }
 }

@@ -88,7 +88,9 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
   DCHECK(browser);
   DCHECK(browser->window());
   DCHECK(browser->fullscreen_controller());
-  DCHECK(!IsShowing());
+
+  if (IsShowing())
+    return;
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
