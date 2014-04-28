@@ -28,9 +28,6 @@ class GLViewRendererManager {
 
   static GLViewRendererManager* GetInstance();
 
-  // TODO(boliu): Move RenderThread checking out of this class.
-  bool OnRenderThread() const;
-
   Key PushBack(RendererType view);
 
   // |key| must be already in manager. Move renderer corresponding to |key| to
@@ -47,10 +44,7 @@ class GLViewRendererManager {
   GLViewRendererManager();
   ~GLViewRendererManager();
 
-  void MarkRenderThread();
-
   mutable base::Lock lock_;
-  base::PlatformThreadHandle render_thread_;
   ListType mru_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GLViewRendererManager);

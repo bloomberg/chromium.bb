@@ -1615,16 +1615,16 @@ public class AwContents {
         mIsAttachedToWindow = false;
         hideAutofillPopup();
         if (mNativeAwContents != 0) {
-            if (mContainerView.isHardwareAccelerated()) {
-                boolean result = mInternalAccessAdapter.executeHardwareAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        nativeReleaseHardwareDrawOnRenderThread(mNativeAwContents);
-                    }
-                });
-                if (!result) {
-                    Log.d(TAG, "executeHardwareAction failed");
+            Runnable releaseHardware = new Runnable() {
+                @Override
+                public void run() {
+                    nativeReleaseHardwareDrawOnRenderThread(mNativeAwContents);
                 }
+            };
+            boolean result = mInternalAccessAdapter.executeHardwareAction(releaseHardware);
+            if (!result) {
+                Log.e(TAG, "May leak or deadlock. Leaked window?");
+                releaseHardware.run();
             }
 
             nativeOnDetachedFromWindow(mNativeAwContents);

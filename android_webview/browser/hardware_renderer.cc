@@ -206,23 +206,22 @@ void HardwareRenderer::CalculateTileMemoryPolicy() {
 
 namespace internal {
 
-bool ScopedAllowGL::allow_gl = false;
+base::LazyInstance<base::ThreadLocalBoolean> ScopedAllowGL::allow_gl;
 
 // static
 bool ScopedAllowGL::IsAllowed() {
-  return GLViewRendererManager::GetInstance()->OnRenderThread() && allow_gl;
+  return allow_gl.Get().Get();
 }
 
 ScopedAllowGL::ScopedAllowGL() {
-  DCHECK(GLViewRendererManager::GetInstance()->OnRenderThread());
-  DCHECK(!allow_gl);
-  allow_gl = true;
+  DCHECK(!allow_gl.Get().Get());
+  allow_gl.Get().Set(true);
 
   if (g_service.Get())
     g_service.Get()->RunTasks();
 }
 
-ScopedAllowGL::~ScopedAllowGL() { allow_gl = false; }
+ScopedAllowGL::~ScopedAllowGL() { allow_gl.Get().Set(false); }
 
 DeferredGpuCommandService::DeferredGpuCommandService() {}
 

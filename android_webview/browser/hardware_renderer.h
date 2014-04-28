@@ -9,7 +9,9 @@
 
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/shared_renderer_state.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_local.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 
 struct AwDrawGLInfo;
@@ -61,7 +63,7 @@ class ScopedAllowGL {
   static bool IsAllowed();
 
  private:
-  static bool allow_gl;
+  static base::LazyInstance<base::ThreadLocalBoolean> allow_gl;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowGL);
 };
