@@ -5,8 +5,6 @@
 #ifndef CHROME_COMMON_EXTENSIONS_AD_INJECTION_CONSTANTS_H_
 #define CHROME_COMMON_EXTENSIONS_AD_INJECTION_CONSTANTS_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 
 namespace extensions {
@@ -31,7 +29,7 @@ extern const size_t kMaximumDepthToCheck;
 
 // Returns true if the given |api| can potentially inject ads, and should
 // therefore be examined.
-bool ApiCanInjectAds(const std::string& api);
+bool ApiCanInjectAds(const char* api);
 
 }  // namespace ad_injection_constants
 }  // namespace extensions

@@ -8,22 +8,19 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "chrome/common/extensions/dom_action_types.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDOMActivityLogger.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace content {
 class V8ValueConverter;
 }
 
 namespace extensions {
+
+class ActivityLogConverterStrategy;
 
 // Used to log DOM API calls from within WebKit. The events are sent via IPC to
 // extensions::ActivityLog for recording and display.
@@ -33,13 +30,16 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
   explicit DOMActivityLogger(const std::string& extension_id);
   virtual ~DOMActivityLogger();
 
-  // This will soon be deprecated, and converted to the logX methods below.
+  // Marshalls the arguments into an ExtensionHostMsg_DOMAction_Params
+  // and sends it over to the browser (via IPC) for appending it to the
+  // extension activity log.
+  // (Overrides the log method in blink::WebDOMActivityLogger)
   virtual void log(const blink::WebString& api_name,
                    int argc,
                    const v8::Handle<v8::Value> argv[],
                    const blink::WebString& call_type,
                    const blink::WebURL& url,
-                   const blink::WebString& title);
+                   const blink::WebString& title) OVERRIDE;
 
   // Check (using the WebKit API) if there is no logger attached to the world
   // corresponding to world_id, and if so, construct a new logger and attach it.
@@ -48,38 +48,6 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
                             const std::string& extension_id);
 
  private:
-  // blink::WebDOMActivityLogger implementation.
-  // Marshals the arguments into an ExtensionHostMsg_DOMAction_Params and sends
-  // it over to the browser (via IPC) for appending it to the extension activity
-  // log.
-  // These methods don't have the OVERRIDE keyword due to the complexities it
-  // introduces when changes blink apis.
-  virtual void logGetter(const blink::WebString& api_name,
-                         const blink::WebURL& url,
-                         const blink::WebString& title);
-  virtual void logSetter(const blink::WebString& api_name,
-                         const v8::Handle<v8::Value>& new_value,
-                         const blink::WebURL& url,
-                         const blink::WebString& title);
-  virtual void logSetter(const blink::WebString& api_name,
-                         const v8::Handle<v8::Value>& new_value,
-                         const v8::Handle<v8::Value>& old_value,
-                         const blink::WebURL& url,
-                         const blink::WebString& title);
-  virtual void logMethod(const blink::WebString& api_name,
-                         int argc,
-                         const v8::Handle<v8::Value>* argv,
-                         const blink::WebURL& url,
-                         const blink::WebString& title);
-
-  // Helper function to actually send the message across IPC.
-  void SendDomActionMessage(const std::string& api_call,
-                            const GURL& url,
-                            const base::string16& url_title,
-                            DomActionType::Type call_type,
-                            scoped_ptr<base::ListValue> args);
-
-  // The id of the extension with which this logger is associated.
   std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMActivityLogger);
