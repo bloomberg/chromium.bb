@@ -399,6 +399,8 @@ class LoadingAnimationView : public views::View,
       container_->AddChildView(
           new views::Label(base::ASCIIToUTF16("."), font_list));
     }
+
+    OnNativeThemeChanged(GetNativeTheme());
   }
 
   virtual ~LoadingAnimationView() {}
@@ -577,6 +579,8 @@ AutofillDialogViews::OverlayView::OverlayView(
 
   AddChildView(image_view_);
   AddChildView(message_view_);
+
+  OnNativeThemeChanged(GetNativeTheme());
 }
 
 AutofillDialogViews::OverlayView::~OverlayView() {}
@@ -1627,6 +1631,7 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
       views::Background::CreateSolidBackground(kShadingColor));
 
   legal_document_view_ = new views::StyledLabel(base::string16(), this);
+  OnNativeThemeChanged(GetNativeTheme());
 
   footnote_view_->AddChildView(legal_document_view_);
   footnote_view_->SetVisible(false);

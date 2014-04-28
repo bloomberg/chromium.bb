@@ -855,6 +855,12 @@ void Textfield::OnEnabledChanged() {
   SchedulePaint();
 }
 
+void Textfield::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this)
+    UpdateColorsFromTheme(GetNativeTheme());
+}
+
 void Textfield::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
   PaintTextAndCursor(canvas);
@@ -899,15 +905,7 @@ gfx::Point Textfield::GetKeyboardContextMenuLocation() {
 }
 
 void Textfield::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  gfx::RenderText* render_text = GetRenderText();
-  render_text->SetColor(GetTextColor());
-  UpdateBackgroundColor();
-  render_text->set_cursor_color(GetTextColor());
-  render_text->set_selection_color(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionColor));
-  render_text->set_selection_background_focused_color(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
-
+  UpdateColorsFromTheme(theme);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1471,6 +1469,17 @@ void Textfield::UpdateBackgroundColor() {
   set_background(Background::CreateSolidBackground(color));
   GetRenderText()->set_background_is_transparent(SkColorGetA(color) != 0xFF);
   SchedulePaint();
+}
+
+void Textfield::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
+  gfx::RenderText* render_text = GetRenderText();
+  render_text->SetColor(GetTextColor());
+  UpdateBackgroundColor();
+  render_text->set_cursor_color(GetTextColor());
+  render_text->set_selection_color(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionColor));
+  render_text->set_selection_background_focused_color(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
 }
 
 void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {

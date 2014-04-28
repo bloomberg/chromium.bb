@@ -158,6 +158,8 @@ OmniboxViewViews::~OmniboxViewViews() {
 void OmniboxViewViews::Init() {
   set_controller(this);
   SetTextInputType(DetermineTextInputType());
+  SetBackgroundColor(location_bar_view_->GetColor(
+      ToolbarModel::NONE, LocationBarView::BACKGROUND));
 
   if (popup_window_mode_)
     SetReadOnly(true);

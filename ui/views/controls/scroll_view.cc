@@ -20,16 +20,23 @@ namespace {
 // Subclass of ScrollView that resets the border when the theme changes.
 class ScrollViewWithBorder : public views::ScrollView {
  public:
-  ScrollViewWithBorder() {}
+  ScrollViewWithBorder() {
+    SetThemeSpecificState();
+  }
 
   // View overrides;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE {
-    SetBorder(Border::CreateSolidBorder(
-        1,
-        theme->GetSystemColor(ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+    SetThemeSpecificState();
   }
 
  private:
+  void SetThemeSpecificState() {
+    SetBorder(Border::CreateSolidBorder(
+        1,
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+  }
+
   DISALLOW_COPY_AND_ASSIGN(ScrollViewWithBorder);
 };
 

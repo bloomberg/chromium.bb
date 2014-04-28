@@ -14,14 +14,12 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
-#include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
 
 namespace views {
 
-class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
+class StyledLabelTest : public testing::Test, public StyledLabelListener {
  public:
   StyledLabelTest() {}
   virtual ~StyledLabelTest() {}
@@ -294,25 +292,16 @@ TEST_F(StyledLabelTest, Color) {
                                     text_red.size() + text_link.size()),
                           style_info_link);
 
-  styled()->SetBounds(0, 0, 1000, 1000);
-  styled()->Layout();
-
-  Widget* widget = new Widget();
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
-  View* container = new View();
-  widget->SetContentsView(container);
-  container->AddChildView(styled());
-
   // Obtain the default text color for a label.
-  Label* label = new Label(ASCIIToUTF16(text));
-  container->AddChildView(label);
-  const SkColor kDefaultTextColor = label->enabled_color();
+  Label label(ASCIIToUTF16(text));
+  const SkColor kDefaultTextColor = label.enabled_color();
 
   // Obtain the default text color for a link;
-  Link* link = new Link(ASCIIToUTF16(text_link));
-  container->AddChildView(link);
-  const SkColor kDefaultLinkColor = link->enabled_color();
+  Link link(ASCIIToUTF16(text_link));
+  const SkColor kDefaultLinkColor = link.enabled_color();
+
+  styled()->SetBounds(0, 0, 1000, 1000);
+  styled()->Layout();
 
   EXPECT_EQ(SK_ColorRED,
             static_cast<Label*>(styled()->child_at(0))->enabled_color());
@@ -320,18 +309,23 @@ TEST_F(StyledLabelTest, Color) {
             static_cast<Label*>(styled()->child_at(1))->enabled_color());
   EXPECT_EQ(kDefaultTextColor,
             static_cast<Label*>(styled()->child_at(2))->enabled_color());
+}
 
-  // Test adjusted color readability.
+TEST_F(StyledLabelTest, ColorReadability) {
+  const std::string text(
+      "This is a block of text that needs color adjustment.");
+  InitStyledLabel(text);
   styled()->SetDisplayedOnBackgroundColor(SK_ColorBLACK);
+
+  // Obtain the text color if it were a pure label.
+  Label label(ASCIIToUTF16(text));
+  label.SetBackgroundColor(SK_ColorBLACK);
+
+  styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  label->SetBackgroundColor(SK_ColorBLACK);
 
-  const SkColor kAdjustedTextColor = label->enabled_color();
-  EXPECT_NE(kAdjustedTextColor, kDefaultTextColor);
-  EXPECT_EQ(kAdjustedTextColor,
-            static_cast<Label*>(styled()->child_at(2))->enabled_color());
-
-  widget->CloseNow();
+  EXPECT_EQ(label.enabled_color(),
+            static_cast<Label*>(styled()->child_at(0))->enabled_color());
 }
 
 TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
@@ -412,4 +406,4 @@ TEST_F(StyledLabelTest, HandleEmptyLayout) {
   EXPECT_EQ(0, styled()->child_count());
 }
 
-}  // namespace views
+}  // namespace
