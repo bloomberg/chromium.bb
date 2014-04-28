@@ -239,6 +239,14 @@ bool DownloadResourceHandler::OnResponseStarted(
       info->original_mime_type.clear();
   }
 
+  // Blink verifies that the requester of this download is allowed to set a
+  // suggested name for the security origin of the downlaod URL. However, this
+  // assumption doesn't hold if there were cross origin redirects. Therefore,
+  // clear the suggested_name for such requests.
+  if (info->url_chain.size() > 1 &&
+      info->url_chain.front().GetOrigin() != info->url_chain.back().GetOrigin())
+    info->save_info->suggested_name.clear();
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&StartOnUIThread,

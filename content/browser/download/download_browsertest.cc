@@ -36,18 +36,22 @@
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/net/url_request_slow_download_job.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using ::testing::_;
+using ::net::test_server::EmbeddedTestServer;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::InSequence;
 using ::testing::Property;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::_;
 
 namespace content {
 
@@ -503,6 +507,54 @@ bool InitialSizeFilter(int* download_size, DownloadItem* download) {
   return true;
 }
 
+// Request handler to be used with CreateRedirectHandler().
+scoped_ptr<net::test_server::HttpResponse> HandleRequestAndSendRedirectResponse(
+    const std::string& relative_url,
+    const GURL& target_url,
+    const net::test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::BasicHttpResponse> response;
+  if (request.relative_url == relative_url) {
+    response.reset(new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_FOUND);
+    response->AddCustomHeader("Location", target_url.spec());
+  }
+  return response.PassAs<net::test_server::HttpResponse>();
+}
+
+// Creates a request handler for EmbeddedTestServer that responds with a HTTP
+// 302 redirect if the request URL matches |relative_url|.
+EmbeddedTestServer::HandleRequestCallback CreateRedirectHandler(
+    const std::string& relative_url,
+    const GURL& target_url) {
+  return base::Bind(
+      &HandleRequestAndSendRedirectResponse, relative_url, target_url);
+}
+
+// Request handler to be used with CreateBasicResponseHandler().
+scoped_ptr<net::test_server::HttpResponse> HandleRequestAndSendBasicResponse(
+    const std::string& relative_url,
+    const std::string& content_type,
+    const std::string& body,
+    const net::test_server::HttpRequest& request) {
+  scoped_ptr<net::test_server::BasicHttpResponse> response;
+  if (request.relative_url == relative_url) {
+    response.reset(new net::test_server::BasicHttpResponse);
+    response->set_content_type(content_type);
+    response->set_content(body);
+  }
+  return response.PassAs<net::test_server::HttpResponse>();
+}
+
+// Creates a request handler for an EmbeddedTestServer that response with an
+// HTTP 200 status code, a Content-Type header and a body.
+EmbeddedTestServer::HandleRequestCallback CreateBasicResponseHandler(
+    const std::string& relative_url,
+    const std::string& content_type,
+    const std::string& body) {
+  return base::Bind(
+      &HandleRequestAndSendBasicResponse, relative_url, content_type, body);
+}
+
 }  // namespace
 
 class DownloadContentTest : public ContentBrowserTest {
@@ -582,8 +634,10 @@ class DownloadContentTest : public ContentBrowserTest {
            (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);
   }
 
-  void DownloadAndWait(Shell* shell, const GURL& url,
-                       DownloadItem::DownloadState expected_terminal_state) {
+  void NavigateToURLAndWaitForDownload(
+      Shell* shell,
+      const GURL& url,
+      DownloadItem::DownloadState expected_terminal_state) {
     scoped_ptr<DownloadTestObserver> observer(CreateWaiter(shell, 1));
     NavigateToURL(shell, url);
     observer->WaitForFinished();
@@ -746,7 +800,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   // Download the file and wait.
-  DownloadAndWait(shell(), url, DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
 
   // Should now have 2 items on the manager.
   downloads.clear();
@@ -800,7 +854,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
 
   // The following is served with a Content-Type of application/octet-stream.
   GURL url(URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kTestFilePath)));
-  DownloadAndWait(shell(), url, DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
 }
 #endif
 
@@ -1560,7 +1614,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   // single threaded. The response to this download request should follow the
   // response to the previous resumption request.
   GURL url2(test_server()->GetURL("rangereset?size=100&rst_limit=0&token=x"));
-  DownloadAndWait(shell(), url2, DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(shell(), url2, DownloadItem::COMPLETE);
 
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
@@ -1608,7 +1662,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   // single threaded. The response to this download request should follow the
   // response to the previous resumption request.
   GURL url2(test_server()->GetURL("rangereset?size=100&rst_limit=0&token=x"));
-  DownloadAndWait(shell(), url2, DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(shell(), url2, DownloadItem::COMPLETE);
 
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
@@ -1649,6 +1703,98 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
   EXPECT_EQ("A=B",
             content::GetCookies(shell()->web_contents()->GetBrowserContext(),
                                 GURL(download)));
+}
+
+// A filename suggestion specified via a @download attribute should not be
+// effective if the final download URL is in another origin from the original
+// download URL.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadAttributeCrossOriginRedirect) {
+  EmbeddedTestServer origin_one;
+  EmbeddedTestServer origin_two;
+  ASSERT_TRUE(origin_one.InitializeAndWaitUntilReady());
+  ASSERT_TRUE(origin_two.InitializeAndWaitUntilReady());
+
+  // The download-attribute.html page contains an anchor element whose href is
+  // set to the value of the query parameter (specified as |target| in the URL
+  // below). The suggested filename for the anchor is 'suggested-filename'. When
+  // the page is loaded, a script simulates a click on the anchor, triggering a
+  // download of the target URL.
+  //
+  // We construct two test servers; origin_one and origin_two. Once started, the
+  // server URLs will differ by the port number. Therefore they will be in
+  // different origins.
+  GURL download_url = origin_one.GetURL("/ping");
+  GURL referrer_url = origin_one.GetURL(
+      std::string("/download-attribute.html?target=") + download_url.spec());
+
+  // <origin_one>/download-attribute.html initiates a download of
+  // <origin_one>/ping, which redirects to <origin_two>/download.
+  origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+  origin_one.RegisterRequestHandler(
+      CreateRedirectHandler("/ping", origin_two.GetURL("/download")));
+  origin_two.RegisterRequestHandler(CreateBasicResponseHandler(
+      "/download", "application/octet-stream", "Hello"));
+
+  NavigateToURLAndWaitForDownload(
+      shell(), referrer_url, DownloadItem::COMPLETE);
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+
+  EXPECT_EQ(FILE_PATH_LITERAL("download"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
+  ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
+}
+
+// A filename suggestion specified via a @download attribute should be effective
+// if the final download URL is in the same origin as the initial download URL.
+// Test that this holds even if there are cross origin redirects in the middle
+// of the redirect chain.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadAttributeSameOriginRedirect) {
+  EmbeddedTestServer origin_one;
+  EmbeddedTestServer origin_two;
+  ASSERT_TRUE(origin_one.InitializeAndWaitUntilReady());
+  ASSERT_TRUE(origin_two.InitializeAndWaitUntilReady());
+
+  // The download-attribute.html page contains an anchor element whose href is
+  // set to the value of the query parameter (specified as |target| in the URL
+  // below). The suggested filename for the anchor is 'suggested-filename'. When
+  // the page is loaded, a script simulates a click on the anchor, triggering a
+  // download of the target URL.
+  //
+  // We construct two test servers; origin_one and origin_two. Once started, the
+  // server URLs will differ by the port number. Therefore they will be in
+  // different origins.
+  GURL download_url = origin_one.GetURL("/ping");
+  GURL referrer_url = origin_one.GetURL(
+      std::string("/download-attribute.html?target=") + download_url.spec());
+  origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+
+  // <origin_one>/download-attribute.html initiates a download of
+  // <origin_one>/ping, which redirects to <origin_two>/pong, and then finally
+  // to <origin_one>/download.
+  origin_one.RegisterRequestHandler(
+      CreateRedirectHandler("/ping", origin_two.GetURL("/pong")));
+  origin_two.RegisterRequestHandler(
+      CreateRedirectHandler("/pong", origin_one.GetURL("/download")));
+  origin_one.RegisterRequestHandler(CreateBasicResponseHandler(
+      "/download", "application/octet-stream", "Hello"));
+
+  NavigateToURLAndWaitForDownload(
+      shell(), referrer_url, DownloadItem::COMPLETE);
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+
+  EXPECT_EQ(FILE_PATH_LITERAL("suggested-filename"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
+  ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
 
 }  // namespace content
