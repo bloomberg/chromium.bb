@@ -66,6 +66,10 @@ public:
     }
 
     // All setters are called on the main thread.
+    void setConnectRequestResult(bool connectRequestResult)
+    {
+        m_connectRequestResult = connectRequestResult;
+    }
     void setSendRequestResult(WebSocketChannel::SendResult sendRequestResult)
     {
         m_sendRequestResult = sendRequestResult;
@@ -76,6 +80,10 @@ public:
     }
 
     // All getter are called on the worker thread.
+    bool connectRequestResult() const
+    {
+        return m_connectRequestResult;
+    }
     WebSocketChannel::SendResult sendRequestResult() const
     {
         return m_sendRequestResult;
@@ -100,12 +108,14 @@ public:
 private:
     ThreadableWebSocketChannelSyncHelper(PassOwnPtr<blink::WebWaitableEvent> event)
         : m_event(event)
+        , m_connectRequestResult(false)
         , m_sendRequestResult(WebSocketChannel::SendFail)
         , m_bufferedAmount(0)
     {
     }
 
     OwnPtr<blink::WebWaitableEvent> m_event;
+    bool m_connectRequestResult;
     WebSocketChannel::SendResult m_sendRequestResult;
     unsigned long m_bufferedAmount;
 };
@@ -126,10 +136,11 @@ WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
         m_bridge->disconnect();
 }
 
-void WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& protocol)
+bool WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
     if (m_bridge)
-        m_bridge->connect(url, protocol);
+        return m_bridge->connect(url, protocol);
+    return false;
 }
 
 String WorkerThreadableWebSocketChannel::subprotocol()
@@ -259,9 +270,13 @@ void WorkerThreadableWebSocketChannel::Peer::destroy()
 void WorkerThreadableWebSocketChannel::Peer::connect(const KURL& url, const String& protocol)
 {
     ASSERT(isMainThread());
-    if (!m_mainWebSocketChannel)
-        return;
-    m_mainWebSocketChannel->connect(url, protocol);
+    if (!m_mainWebSocketChannel || !m_workerClientWrapper) {
+        m_syncHelper->setConnectRequestResult(false);
+    } else {
+        bool connectRequestResult = m_mainWebSocketChannel->connect(url, protocol);
+        m_syncHelper->setConnectRequestResult(connectRequestResult);
+    }
+    m_syncHelper->signalWorkerThread();
 }
 
 void WorkerThreadableWebSocketChannel::Peer::send(const String& message)
@@ -472,10 +487,13 @@ void WorkerThreadableWebSocketChannel::Bridge::initialize(const String& sourceUR
     }
 }
 
-void WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const String& protocol)
+bool WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const String& protocol)
 {
     ASSERT(m_workerClientWrapper);
     m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::connect, m_peer, url.copy(), protocol.isolatedCopy())));
+    RefPtr<Bridge> protect(this);
+    waitForMethodCompletion();
+    return m_syncHelper->connectRequestResult();
 }
 
 WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(const String& message)
@@ -498,6 +516,7 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(cons
     OwnPtr<Vector<char> > data = adoptPtr(new Vector<char>(byteLength));
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
+
     m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::sendArrayBuffer, m_peer, data.release())));
     RefPtr<Bridge> protect(this);
     waitForMethodCompletion();

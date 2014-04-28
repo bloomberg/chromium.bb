@@ -35,7 +35,10 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketFrame.h"
@@ -119,11 +122,19 @@ NewWebSocketChannelImpl::~NewWebSocketChannelImpl()
     abortAsyncOperations();
 }
 
-void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
+bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p connect()", this);
     if (!m_handle)
-        return;
+        return false;
+
+    if (executionContext()->isDocument() && document()->frame() && !document()->frame()->loader().mixedContentChecker()->canConnectInsecureWebSocket(document()->securityOrigin(), url))
+        return false;
+    if (MixedContentChecker::isMixedContent(document()->securityOrigin(), url)) {
+        String message = "Connecting to a non-secure WebSocket server from a secure origin is deprecated.";
+        document()->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
+    }
+
     m_url = url;
     Vector<String> protocols;
     // Avoid placing an empty token in the Vector when the protocol string is
@@ -141,6 +152,7 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     flowControlIfNecessary();
     if (m_identifier)
         InspectorInstrumentation::didCreateWebSocket(document(), m_identifier, url, protocol);
+    return true;
 }
 
 String NewWebSocketChannelImpl::subprotocol()

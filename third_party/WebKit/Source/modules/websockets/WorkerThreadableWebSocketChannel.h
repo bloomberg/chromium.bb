@@ -71,7 +71,7 @@ public:
     virtual ~WorkerThreadableWebSocketChannel();
 
     // WebSocketChannel functions.
-    virtual void connect(const KURL&, const String& protocol) OVERRIDE;
+    virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
     virtual String subprotocol() OVERRIDE;
     virtual String extensions() OVERRIDE;
     virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
@@ -147,7 +147,7 @@ private:
         // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
         void initialize(const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
-        void connect(const KURL&, const String& protocol);
+        bool connect(const KURL&, const String& protocol);
         WebSocketChannel::SendResult send(const String& message);
         WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
         WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>);

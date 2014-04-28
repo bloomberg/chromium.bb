@@ -70,7 +70,7 @@ public:
     bool send(const char* data, int length);
 
     // WebSocketChannel functions.
-    virtual void connect(const KURL&, const String& protocol) OVERRIDE;
+    virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
     virtual String subprotocol() OVERRIDE;
     virtual String extensions() OVERRIDE;
     virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;

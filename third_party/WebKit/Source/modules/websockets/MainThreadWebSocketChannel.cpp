@@ -40,6 +40,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/page/Page.h"
 #include "modules/websockets/WebSocketChannelClient.h"
@@ -87,11 +88,19 @@ MainThreadWebSocketChannel::~MainThreadWebSocketChannel()
 {
 }
 
-void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol)
+bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p connect()", this);
     ASSERT(!m_handle);
     ASSERT(!m_suspended);
+
+    if (m_document->frame() && !m_document->frame()->loader().mixedContentChecker()->canConnectInsecureWebSocket(m_document->securityOrigin(), url))
+        return false;
+    if (MixedContentChecker::isMixedContent(m_document->securityOrigin(), url)) {
+        String message = "Connecting to a non-secure WebSocket server from a secure origin is deprecated.";
+        m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
+    }
+
     m_handshake = adoptPtr(new WebSocketHandshake(url, protocol, m_document));
     m_handshake->reset();
     m_handshake->addExtensionProcessor(m_perMessageDeflate.createExtensionProcessor());
@@ -100,6 +109,7 @@ void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
         InspectorInstrumentation::didCreateWebSocket(m_document, m_identifier, url, protocol);
     ref();
     m_handle = SocketStreamHandle::create(m_handshake->url(), this);
+    return true;
 }
 
 String MainThreadWebSocketChannel::subprotocol()
