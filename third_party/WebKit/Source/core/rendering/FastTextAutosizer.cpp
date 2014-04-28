@@ -393,7 +393,7 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
                 if (blockSuppressesAutosizing(renderTableCell))
                     shouldAutosize = false;
                 else if (Supercluster* supercluster = getSupercluster(renderTableCell))
-                    shouldAutosize = anyClusterHasEnoughTextToAutosize(supercluster->m_roots, table);
+                    shouldAutosize = superclusterHasEnoughTextToAutosize(supercluster, table);
                 else
                     shouldAutosize = clusterWouldHaveEnoughTextToAutosize(renderTableCell, table);
 
@@ -770,12 +770,19 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
     return cluster->m_multiplier;
 }
 
-bool FastTextAutosizer::anyClusterHasEnoughTextToAutosize(const BlockSet* roots, const RenderBlock* widthProvider)
+bool FastTextAutosizer::superclusterHasEnoughTextToAutosize(Supercluster* supercluster, const RenderBlock* widthProvider)
 {
-    for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it) {
-        if (clusterWouldHaveEnoughTextToAutosize(*it, widthProvider))
+    if (supercluster->m_hasEnoughTextToAutosize != UnknownAmountOfText)
+        return supercluster->m_hasEnoughTextToAutosize == HasEnoughText;
+
+    BlockSet::iterator end = supercluster->m_roots->end();
+    for (BlockSet::iterator it = supercluster->m_roots->begin(); it != end; ++it) {
+        if (clusterWouldHaveEnoughTextToAutosize(*it, widthProvider)) {
+            supercluster->m_hasEnoughTextToAutosize = HasEnoughText;
             return true;
+        }
     }
+    supercluster->m_hasEnoughTextToAutosize = NotEnoughText;
     return false;
 }
 
@@ -783,12 +790,8 @@ float FastTextAutosizer::superclusterMultiplier(Cluster* cluster)
 {
     Supercluster* supercluster = cluster->m_supercluster;
     if (!supercluster->m_multiplier) {
-        const BlockSet* roots = supercluster->m_roots;
-        const RenderBlock* widthProvider;
-
-        widthProvider = maxClusterWidthProvider(cluster->m_supercluster, cluster->m_root);
-
-        supercluster->m_multiplier = anyClusterHasEnoughTextToAutosize(roots, widthProvider)
+        const RenderBlock* widthProvider = maxClusterWidthProvider(cluster->m_supercluster, cluster->m_root);
+        supercluster->m_multiplier = superclusterHasEnoughTextToAutosize(supercluster, widthProvider)
             ? multiplierFromBlock(widthProvider) : 1.0f;
     }
     ASSERT(supercluster->m_multiplier);

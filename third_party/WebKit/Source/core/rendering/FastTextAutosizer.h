@@ -125,11 +125,13 @@ private:
     struct Supercluster {
         explicit Supercluster(const BlockSet* roots)
             : m_roots(roots)
+            , m_hasEnoughTextToAutosize(UnknownAmountOfText)
             , m_multiplier(0)
         {
         }
 
         const BlockSet* const m_roots;
+        HasEnoughTextToAutosize m_hasEnoughTextToAutosize;
         float m_multiplier;
     };
 
@@ -245,7 +247,7 @@ private:
     BeginLayoutBehavior prepareForLayout(const RenderBlock*);
     void prepareClusterStack(const RenderObject*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
-    bool anyClusterHasEnoughTextToAutosize(const BlockSet* roots, const RenderBlock* widthProvider = 0);
+    bool superclusterHasEnoughTextToAutosize(Supercluster*, const RenderBlock* widthProvider = 0);
     bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
     Fingerprint getFingerprint(const RenderObject*);
     Fingerprint computeFingerprint(const RenderObject*);
