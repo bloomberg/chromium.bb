@@ -52,6 +52,12 @@ class CONTENT_EXPORT RendererOverridesHandler
       GrantPermissionsForSetFileInputFiles(
           scoped_refptr<DevToolsProtocol::Command> command);
 
+  // Network domain.
+  scoped_refptr<DevToolsProtocol::Response> ClearBrowserCache(
+      scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> ClearBrowserCookies(
+      scoped_refptr<DevToolsProtocol::Command> command);
+
   // Page domain.
   scoped_refptr<DevToolsProtocol::Response> PageDisable(
       scoped_refptr<DevToolsProtocol::Command> command);

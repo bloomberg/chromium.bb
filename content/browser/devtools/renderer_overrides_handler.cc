@@ -24,6 +24,7 @@
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -90,6 +91,16 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
       devtools::DOM::setFileInputFiles::kName,
       base::Bind(
           &RendererOverridesHandler::GrantPermissionsForSetFileInputFiles,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Network::clearBrowserCache::kName,
+      base::Bind(
+          &RendererOverridesHandler::ClearBrowserCache,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Network::clearBrowserCookies::kName,
+      base::Bind(
+          &RendererOverridesHandler::ClearBrowserCookies,
           base::Unretained(this)));
   RegisterCommandHandler(
       devtools::Page::disable::kName,
@@ -284,6 +295,23 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
         host->GetProcess()->GetID(), base::FilePath(file));
   }
   return NULL;
+}
+
+
+// Network agent handlers  ----------------------------------------------------
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::ClearBrowserCache(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  GetContentClient()->browser()->ClearCache(agent_->GetRenderViewHost());
+  return command->SuccessResponse(NULL);
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::ClearBrowserCookies(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  GetContentClient()->browser()->ClearCookies(agent_->GetRenderViewHost());
+  return command->SuccessResponse(NULL);
 }
 
 
