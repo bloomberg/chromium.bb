@@ -32,7 +32,7 @@ function test()
     {
         var layoutRecord = InspectorTest.findPresentationRecord("Layout");
         InspectorTest.addResult("layout invalidated: " + layoutRecord.callSiteStackTrace[0].functionName);
-        InspectorTest.addResult("layout forced: " + layoutRecord.stackTrace[0].functionName);
+        InspectorTest.addResult("layout forced: " + layoutRecord.stackTrace()[0].functionName);
         InspectorTest.completeTest();
     }
 }

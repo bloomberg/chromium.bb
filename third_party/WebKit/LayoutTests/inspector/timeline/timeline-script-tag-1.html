@@ -35,7 +35,8 @@ function test()
                 var children = [];
                 var skipCategories = { rendering: true, painting: true };
                 for (var i = 0; i < record.children.length; ++i) {
-                    if (!skipCategories[WebInspector.TimelineUIUtils.categoryForRecord(record.children[i]).name])
+                    var modelRecord = new WebInspector.TimelineModel.Record(WebInspector.panels.timeline._model, record.children[i], null);
+                    if (!skipCategories[WebInspector.TimelineUIUtils.categoryForRecord(modelRecord).name])
                         children.push(record.children[i]);
                 }
                 record.children = children;
