@@ -26,7 +26,11 @@ function setUpTest()
     }
 
     window.jsTestIsAsync = true;
-    setTimeout(testIt, 0);
+    iframe = document.getElementById('scrollable');
+    if (iframe.contentDocument.readyState != "complete")
+        iframe.onload = testIt;
+    else
+        testIt();
 }
 
 function testIt()
