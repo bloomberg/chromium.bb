@@ -52,6 +52,7 @@ LayerImpl* LayerImplForScrollAreaAndScrollbar(FakeLayerTreeHost* host,
   } else {
     child2 = PaintedScrollbarLayer::Create(scrollbar.Pass(), child1->id());
   }
+  child2->ToScrollbarLayer()->SetClipLayer(layer_tree_root->id());
   layer_tree_root->AddChild(child1);
   layer_tree_root->InsertChild(child2, reverse_order ? 0 : 1);
   host->SetRootLayer(layer_tree_root);

@@ -47,16 +47,44 @@ ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
   return this;
 }
 
+namespace {
+
+typedef void (LayerImpl::*ScrollbarRegistrationOperation)(
+    ScrollbarLayerImplBase*);
+
+void RegisterScrollbarWithLayers(ScrollbarLayerImplBase* scrollbar,
+                                 LayerImpl* container_layer,
+                                 LayerImpl* scroll_layer,
+                                 ScrollbarRegistrationOperation operation) {
+  if (!container_layer || !scroll_layer)
+    return;
+
+  DCHECK(scrollbar);
+
+  // Scrollbars must be notifed of changes to their scroll and container layers
+  // and all scrollable layers in between.
+  for (LayerImpl* current_layer = scroll_layer;
+       current_layer && current_layer != container_layer->parent();
+       current_layer = current_layer->parent()) {
+    // TODO(wjmaclean) We shouldn't need to exempt the scroll_layer from the
+    // scrollable() test below. https://crbug.com/367858.
+    if (current_layer->scrollable() || current_layer == container_layer ||
+        current_layer == scroll_layer)
+      (current_layer->*operation)(scrollbar);
+  }
+}
+}  // namespace
+
 void ScrollbarLayerImplBase::SetScrollLayerById(int id) {
   LayerImpl* scroll_layer = layer_tree_impl()->LayerById(id);
   if (scroll_layer_ == scroll_layer)
     return;
 
-  if (scroll_layer_)
-    scroll_layer_->RemoveScrollbar(this);
+  RegisterScrollbarWithLayers(
+      this, clip_layer_, scroll_layer_, &LayerImpl::RemoveScrollbar);
   scroll_layer_ = scroll_layer;
-  if (scroll_layer_)
-    scroll_layer_->AddScrollbar(this);
+  RegisterScrollbarWithLayers(
+      this, clip_layer_, scroll_layer_, &LayerImpl::AddScrollbar);
 }
 
 void ScrollbarLayerImplBase::SetClipLayerById(int id) {
@@ -64,11 +92,11 @@ void ScrollbarLayerImplBase::SetClipLayerById(int id) {
   if (clip_layer_ == clip_layer)
     return;
 
-  if (clip_layer_)
-    clip_layer_->RemoveScrollbar(this);
+  RegisterScrollbarWithLayers(
+      this, clip_layer_, scroll_layer_, &LayerImpl::RemoveScrollbar);
   clip_layer_ = clip_layer;
-  if (clip_layer_)
-    clip_layer_->AddScrollbar(this);
+  RegisterScrollbarWithLayers(
+      this, clip_layer_, scroll_layer_, &LayerImpl::AddScrollbar);
 }
 
 gfx::Rect ScrollbarLayerImplBase::ScrollbarLayerRectToContentRect(

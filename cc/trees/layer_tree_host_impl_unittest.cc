@@ -1477,6 +1477,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   scrollbar->SetBounds(gfx::Size(15, viewport_size.height()));
   scrollbar->SetContentBounds(gfx::Size(15, viewport_size.height()));
   scrollbar->SetPosition(gfx::Point(285, 0));
+  scrollbar->SetClipLayerById(1);
   scrollbar->SetScrollLayerById(2);
 
   scroll->AddChild(contents.Pass());
