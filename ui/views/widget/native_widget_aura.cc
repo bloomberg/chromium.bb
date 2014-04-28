@@ -137,13 +137,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     }
   }
 
-  // Set properties before addeing to the parent so that its layout manager
-  // sees the correct values.
-  window_->SetProperty(aura::client::kCanMaximizeKey,
-                       GetWidget()->widget_delegate()->CanMaximize());
-  window_->SetProperty(aura::client::kCanResizeKey,
-                       GetWidget()->widget_delegate()->CanResize());
-
   if (parent) {
     parent->AddChild(window_);
   } else {
@@ -173,6 +166,11 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   }
 
   aura::client::SetActivationDelegate(window_, this);
+
+  window_->SetProperty(aura::client::kCanMaximizeKey,
+                       GetWidget()->widget_delegate()->CanMaximize());
+  window_->SetProperty(aura::client::kCanResizeKey,
+                       GetWidget()->widget_delegate()->CanResize());
 
   window_reorderer_.reset(new WindowReorderer(window_,
       GetWidget()->GetRootView()));
