@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -38,6 +39,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -538,6 +540,18 @@ class KioskTest : public OobeBaseTest {
 IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
   WaitForAppLaunchSuccess();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, NotSignedInWithGAIAAccount) {
+  // Tests that the kiosk session is not considered to be logged in with a GAIA
+  // account.
+  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  WaitForAppLaunchSuccess();
+
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+  ASSERT_TRUE(app_profile);
+  EXPECT_FALSE(app_profile->GetPrefs()->HasPrefPath(
+      prefs::kGoogleServicesUsername));
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, PRE_LaunchAppNetworkDown) {
@@ -1202,6 +1216,13 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
       "});",
       &result));
   EXPECT_EQ(kTestAccessToken, result);
+
+  // Verify that the session is not considered to be logged in with a GAIA
+  // account.
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+  ASSERT_TRUE(app_profile);
+  EXPECT_FALSE(app_profile->GetPrefs()->HasPrefPath(
+      prefs::kGoogleServicesUsername));
 
   // Terminate the app.
   window->GetBaseWindow()->Close();

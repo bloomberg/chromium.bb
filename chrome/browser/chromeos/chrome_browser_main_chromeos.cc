@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
@@ -163,10 +165,13 @@ class StubLogin : public LoginStatusConsumer,
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
-    std::string login_user =
+    const std::string login_user =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             chromeos::switches::kLoginUser);
-    profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername, login_user);
+    if (!policy::IsDeviceLocalAccountUser(login_user, NULL)) {
+      profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                     login_user);
+    }
     profile_prepared_ = true;
     LoginUtils::Get()->DoBrowserLaunch(profile, NULL);
     delete this;

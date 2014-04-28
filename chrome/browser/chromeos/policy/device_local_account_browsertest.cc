@@ -91,6 +91,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -621,6 +622,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
     EXPECT_EQ(GURL(kStartupURLs[i]),
               tabs->GetWebContentsAt(i)->GetVisibleURL());
   }
+
+  // Verify that the session is not considered to be logged in with a GAIA
+  // account.
+  Profile* profile = GetProfileForTest();
+  ASSERT_TRUE(profile);
+  EXPECT_FALSE(profile->GetPrefs()->HasPrefPath(
+      prefs::kGoogleServicesUsername));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {

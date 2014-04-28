@@ -465,7 +465,7 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
 
     user_profile->GetPrefs()->SetString(prefs::kManagedUserId,
                                         managed_user_sync_id);
-  } else {
+  } else if (UserManager::Get()->IsLoggedInAsRegularUser()) {
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).
