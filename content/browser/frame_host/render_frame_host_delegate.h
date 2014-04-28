@@ -79,6 +79,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                       bool is_reload,
                                       IPC::Message* reply_msg) {}
 
+  // Another page accessed the top-level initial empty document, which means it
+  // is no longer safe to display a pending URL without risking a URL spoof.
+  virtual void DidAccessInitialDocument() {}
+
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.
   virtual WebContents* GetAsWebContents();

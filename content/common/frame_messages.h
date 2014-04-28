@@ -429,6 +429,11 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)
 
+// Notifies that the initial empty document of a view has been accessed.
+// After this, it is no longer safe to show a pending navigation's URL without
+// making a URL spoof possible.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DidAccessInitialDocument)
+
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can

@@ -283,13 +283,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderViewHost.
   void CancelSuspendedNavigations();
 
-  // Whether the initial empty page of this view has been accessed by another
-  // page, making it unsafe to show the pending URL.  Always false after the
-  // first commit.
-  bool has_accessed_initial_document() {
-    return has_accessed_initial_document_;
-  }
-
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
   bool IsSwappedOut() const { return rvh_state_ == STATE_SWAPPED_OUT; }
@@ -534,7 +527,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
   void OnRunFileChooser(const FileChooserParams& params);
-  void OnDidAccessInitialDocument();
   void OnFocusedNodeTouched(bool editable);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -594,12 +586,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // a new one if a second navigation occurs.
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   scoped_ptr<FrameMsg_Navigate_Params> suspended_nav_params_;
-
-  // Whether the initial empty page of this view has been accessed by another
-  // page, making it unsafe to show the pending URL.  Usually false unless
-  // another window tries to modify the blank page.  Always false after the
-  // first commit.
-  bool has_accessed_initial_document_;
 
   // The current state of this RVH.
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.

@@ -1332,7 +1332,10 @@ blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
 
 void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  render_view_->didAccessInitialDocument(frame);
+  // Notify the browser process that it is no longer safe to show the pending
+  // URL of the main frame, since a URL spoof is now possible.
+  if (!frame->parent() && render_view_->page_id_ == -1)
+    Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
 }
 
 blink::WebFrame* RenderFrameImpl::createChildFrame(

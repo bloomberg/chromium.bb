@@ -1406,13 +1406,9 @@ int32 NavigationControllerImpl::GetMaxRestoredPageID() const {
 }
 
 bool NavigationControllerImpl::IsUnmodifiedBlankTab() const {
-  // TODO(creis): Move has_accessed_initial_document from RenderViewHost to
-  // WebContents and NavigationControllerDelegate.
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      delegate_->GetRenderViewHost());
   return IsInitialNavigation() &&
-      !GetLastCommittedEntry() &&
-      !rvh->has_accessed_initial_document();
+         !GetLastCommittedEntry() &&
+         !delegate_->HasAccessedInitialDocument();
 }
 
 SessionStorageNamespace*

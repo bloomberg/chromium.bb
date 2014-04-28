@@ -339,6 +339,7 @@ class CONTENT_EXPORT WebContentsImpl
                                       const base::string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
+  virtual void DidAccessInitialDocument() OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual bool IsNeverVisible() OVERRIDE;
 
@@ -371,7 +372,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DidDisownOpener(RenderViewHost* rvh) OVERRIDE;
-  virtual void DidAccessInitialDocument() OVERRIDE;
   virtual void DocumentAvailableInMainFrame(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(
@@ -557,6 +557,11 @@ class CONTENT_EXPORT WebContentsImpl
   // Activate this WebContents and show a form repost warning.
   virtual void ActivateAndShowRepostFormWarningDialog() OVERRIDE;
 
+  // Whether the initial empty page of this view has been accessed by another
+  // page, making it unsafe to show the pending URL. Always false after the
+  // first commit.
+  virtual bool HasAccessedInitialDocument() OVERRIDE;
+
   // Updates the max page ID for the current SiteInstance in this
   // WebContentsImpl to be at least |page_id|.
   virtual void UpdateMaxPageID(int32 page_id) OVERRIDE;
@@ -620,7 +625,6 @@ class CONTENT_EXPORT WebContentsImpl
   void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
  private:
-  friend class NavigationControllerImpl;
   friend class TestNavigationObserver;
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -968,6 +972,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   // True if this is a secure page which displayed insecure content.
   bool displayed_insecure_content_;
+
+  // Whether the initial empty page has been accessed by another page, making it
+  // unsafe to show the pending URL. Usually false unless another window tries
+  // to modify the blank page.  Always false after the first commit.
+  bool has_accessed_initial_document_;
 
   // Data for misc internal state ----------------------------------------------
 

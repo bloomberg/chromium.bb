@@ -2066,13 +2066,6 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
 #endif  // defined(OS_ANDROID)
 }
 
-void RenderViewImpl::didAccessInitialDocument(WebLocalFrame* frame) {
-  // Notify the browser process that it is no longer safe to show the pending
-  // URL of the main frame, since a URL spoof is now possible.
-  if (!frame->parent() && page_id_ == -1)
-    Send(new ViewHostMsg_DidAccessInitialDocument(routing_id_));
-}
-
 void RenderViewImpl::didDisownOpener(blink::WebLocalFrame* frame) {
   // We only need to notify the browser if the active, top-level frame clears
   // its opener.  We can ignore cases where a swapped out frame clears its

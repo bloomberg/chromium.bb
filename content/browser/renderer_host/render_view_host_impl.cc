@@ -207,7 +207,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
       navigations_suspended_(false),
-      has_accessed_initial_document_(false),
       main_frame_routing_id_(main_frame_routing_id),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
@@ -1040,8 +1039,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_HidePopup, OnHidePopup)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidAccessInitialDocument,
-                        OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
@@ -1678,11 +1675,6 @@ void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
 
 void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
   delegate_->RunFileChooser(this, params);
-}
-
-void RenderViewHostImpl::OnDidAccessInitialDocument() {
-  has_accessed_initial_document_ = true;
-  delegate_->DidAccessInitialDocument();
 }
 
 void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {

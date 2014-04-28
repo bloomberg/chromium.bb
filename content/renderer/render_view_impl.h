@@ -683,7 +683,6 @@ class CONTENT_EXPORT RenderViewImpl
   // still live here and are called from RenderFrameImpl. These implementations
   // are to be moved to RenderFrameImpl <http://crbug.com/361761>.
 
-  void didAccessInitialDocument(blink::WebLocalFrame* frame);
   void didDisownOpener(blink::WebLocalFrame* frame);
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource);

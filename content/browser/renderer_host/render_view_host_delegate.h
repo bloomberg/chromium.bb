@@ -144,11 +144,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // the window.
   virtual void DidDisownOpener(RenderViewHost* rvh) {}
 
-  // Another page accessed the initial empty document of this RenderView,
-  // which means it is no longer safe to display a pending URL without
-  // risking a URL spoof.
-  virtual void DidAccessInitialDocument() {}
-
   // The RenderView's main frame document element is ready. This happens when
   // the document has finished parsing.
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}

@@ -1648,11 +1648,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_LockMouse,
 // ViewHostMsg_UnlockMouse).
 IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
 
-// Notifies that the initial empty document of a view has been accessed.
-// After this, it is no longer safe to show a pending navigation's URL without
-// making a URL spoof possible.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidAccessInitialDocument)
-
 // Notifies that multiple touch targets may have been pressed, and to show
 // the disambiguation popup.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,

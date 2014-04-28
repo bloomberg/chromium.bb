@@ -2887,16 +2887,15 @@ TEST_F(NavigationControllerTest, ShowRendererURLInNewTabUntilModified) {
       NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
           is_renderer_initiated());
   EXPECT_TRUE(controller.IsInitialNavigation());
-  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
 
   // There should be no title yet.
   EXPECT_TRUE(contents()->GetTitle().empty());
 
   // If something else modifies the contents of the about:blank page, then
   // we must revert to showing about:blank to avoid a URL spoof.
-  test_rvh()->OnMessageReceived(
-        ViewHostMsg_DidAccessInitialDocument(0));
-  EXPECT_TRUE(test_rvh()->has_accessed_initial_document());
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_DidAccessInitialDocument(0));
+  EXPECT_TRUE(contents()->HasAccessedInitialDocument());
   EXPECT_FALSE(controller.GetVisibleEntry());
   EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
 
@@ -2928,7 +2927,7 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
       NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
           is_renderer_initiated());
   EXPECT_TRUE(controller.IsInitialNavigation());
-  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
 
   // There should be no title yet.
   EXPECT_TRUE(contents()->GetTitle().empty());
@@ -2947,9 +2946,8 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
 
   // If something else later modifies the contents of the about:blank page, then
   // we must revert to showing about:blank to avoid a URL spoof.
-  test_rvh()->OnMessageReceived(
-        ViewHostMsg_DidAccessInitialDocument(0));
-  EXPECT_TRUE(test_rvh()->has_accessed_initial_document());
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_DidAccessInitialDocument(0));
+  EXPECT_TRUE(contents()->HasAccessedInitialDocument());
   EXPECT_FALSE(controller.GetVisibleEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
 
@@ -2980,7 +2978,7 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
       NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
           is_renderer_initiated());
   EXPECT_TRUE(controller.IsInitialNavigation());
-  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
 
   // There should be no title yet.
   EXPECT_TRUE(contents()->GetTitle().empty());
@@ -2998,9 +2996,8 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
 
   // If something else later modifies the contents of the about:blank page, then
   // we must revert to showing about:blank to avoid a URL spoof.
-  test_rvh()->OnMessageReceived(
-        ViewHostMsg_DidAccessInitialDocument(0));
-  EXPECT_TRUE(test_rvh()->has_accessed_initial_document());
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_DidAccessInitialDocument(0));
+  EXPECT_TRUE(contents()->HasAccessedInitialDocument());
   EXPECT_FALSE(controller.GetVisibleEntry());
   EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
 
@@ -3027,7 +3024,7 @@ TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
       NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
           is_renderer_initiated());
   EXPECT_TRUE(controller.IsInitialNavigation());
-  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
 
   // Simulate a commit and then starting a new pending navigation.
   main_test_rfh()->SendNavigate(0, url1);
@@ -3038,7 +3035,7 @@ TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
 
   // We should not consider this an initial navigation, and thus should
   // not show the pending URL.
-  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
   EXPECT_FALSE(controller.IsInitialNavigation());
   EXPECT_TRUE(controller.GetVisibleEntry());
   EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());

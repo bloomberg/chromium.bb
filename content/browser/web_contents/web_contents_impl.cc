@@ -335,6 +335,7 @@ WebContentsImpl::WebContentsImpl(
       upload_size_(0),
       upload_position_(0),
       displayed_insecure_content_(false),
+      has_accessed_initial_document_(false),
       capturer_count_(0),
       should_normally_be_visible_(true),
       is_being_destroyed_(false),
@@ -2465,6 +2466,10 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
     RenderFrameHostImpl* render_frame_host,
     const LoadCommittedDetails& details,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  // Now that something has committed, we don't need to track whether the
+  // initial page has been accessed.
+  has_accessed_initial_document_ = false;
+
   // If we navigate off the page, close all JavaScript dialogs.
   if (dialog_manager_ && !details.is_in_page)
     dialog_manager_->CancelActiveAndPendingDialogs(this);
@@ -2849,6 +2854,10 @@ void WebContentsImpl::ActivateAndShowRepostFormWarningDialog() {
   Activate();
   if (delegate_)
     delegate_->ShowRepostFormWarningDialog(this);
+}
+
+bool WebContentsImpl::HasAccessedInitialDocument() {
+  return has_accessed_initial_document_;
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
@@ -3414,6 +3423,8 @@ void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
 }
 
 void WebContentsImpl::DidAccessInitialDocument() {
+  has_accessed_initial_document_ = true;
+
   // We may have left a failed browser-initiated navigation in the address bar
   // to let the user edit it and try again.  Clear it now that content might
   // show up underneath it.

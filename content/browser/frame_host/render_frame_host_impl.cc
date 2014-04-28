@@ -288,6 +288,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                     OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
                                     OnRunBeforeUnloadConfirm)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
+                        OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
@@ -436,10 +438,6 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
     // Kills the process.
     process->ReceivedBadMessage();
   }
-
-  // Now that something has committed, we don't need to track whether the
-  // initial page has been accessed.
-  render_view_host_->has_accessed_initial_document_ = false;
 
   // Without this check, an evil renderer can trick the browser into creating
   // a navigation entry for a banned URL.  If the user clicks the back button
@@ -676,6 +674,10 @@ void RenderFrameHostImpl::OnCancelDesktopNotification(int notification_id) {
   }
   cancel_notification_callbacks_[notification_id].Run();
   cancel_notification_callbacks_.erase(notification_id);
+}
+
+void RenderFrameHostImpl::OnDidAccessInitialDocument() {
+  delegate_->DidAccessInitialDocument();
 }
 
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
