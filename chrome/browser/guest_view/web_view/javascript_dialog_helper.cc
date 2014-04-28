@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guestview/webview/javascript_dialog_helper.h"
+#include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/guestview/guestview_constants.h"
-#include "chrome/browser/guestview/webview/webview_constants.h"
-#include "chrome/browser/guestview/webview/webview_guest.h"
-#include "chrome/browser/guestview/webview/webview_permission_types.h"
+#include "chrome/browser/guest_view/guest_view_constants.h"
+#include "chrome/browser/guest_view/web_view/web_view_constants.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 
 namespace {
 
