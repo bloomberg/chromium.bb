@@ -437,7 +437,6 @@ skia.dll!SkGlyphCache::findImage
 skia.dll!D1G_NoBounder_RectClip
 skia.dll!SkDraw::drawPosText
 skia.dll!SkBitmapDevice::drawPosText
-skia.dll!SkCanvas::onDrawPosText
 
 HANDLE LEAK
 name=http://crbug.com/346993
