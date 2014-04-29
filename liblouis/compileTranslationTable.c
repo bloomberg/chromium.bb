@@ -5173,7 +5173,8 @@ void EXPORT_CALL lou_registerLogCallback(logcallback callback)
 {
   if (callback == 0)
     logCallbackFunction = defaultLogCallback;
-  logCallbackFunction = callback;
+  else
+    logCallbackFunction = callback;
 }
 
 static logLevels logLevel = LOG_INFO;
@@ -5209,6 +5210,14 @@ void EXPORT_CALL lou_log(logLevels level, const char *format, ...)
 
 void logWidecharBuf(int level, const char *msg, widechar *wbuf, int wlen)
 {
+  /* When calculating output size:
+   * Each wdiechar is represented in hex, thus needing two bytes for each
+   * byte in the widechar (sizeof(widechar) * 2)
+   * Allow space for the "0x%X " formatting (+ 3)
+   * Number of characters in widechar buffer (wlen * )
+   * Give space for additional message (+ strlen(msg))
+   * Remember the null terminator (+ 1)
+   */
   int logBufSize = (wlen * ((sizeof(widechar) * 2) + 3)) + 1 + strlen(msg);
   char *logMessage = malloc(logBufSize);
   char *p = logMessage;
