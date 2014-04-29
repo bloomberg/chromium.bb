@@ -49,6 +49,7 @@ group("root") {
     "//third_party/WebKit/Source/wtf",
     "//third_party/zlib",
     "//tools/gn",
+    "//ui/base:ui_base",
     "//ui/base/strings",
     "//ui/events",
     "//ui/gfx",
@@ -72,6 +73,7 @@ group("root") {
       "//third_party/libusb",
       "//third_party/WebKit/Source/wtf",  # TODO(brettw) re-enable for Android.
       "//tools/gn",
+      "//ui/base:ui_base",
       "//ui/events",
       "//ui/gfx",
     ]
