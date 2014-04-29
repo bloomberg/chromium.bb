@@ -707,7 +707,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kIdentity);
 
   // These are private.
-  skip.insert(APIPermission::kAccessibilityPrivate);
   skip.insert(APIPermission::kAutoTestPrivate);
   skip.insert(APIPermission::kBookmarkManagerPrivate);
   skip.insert(APIPermission::kBrailleDisplayPrivate);

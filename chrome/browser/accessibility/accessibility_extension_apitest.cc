@@ -38,6 +38,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetAlertsForTab) {
                                      base::ASCIIToUTF16(kAlertMessage), false);
   CommandLine::ForCurrentProcess()->AppendSwitch(
       extensions::switches::kEnableExperimentalExtensionApis);
-  ASSERT_TRUE(RunComponentExtensionTest("accessibility/get_alerts_for_tab"))
-      << message_;
+  ASSERT_TRUE(RunExtensionTest("accessibility/get_alerts_for_tab")) << message_;
 }

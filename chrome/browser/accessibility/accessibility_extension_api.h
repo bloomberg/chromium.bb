@@ -98,42 +98,42 @@ class ExtensionAccessibilityEventRouter {
 // API function that enables or disables accessibility support.  Event
 // listeners are only installed when accessibility support is enabled, to
 // minimize the impact.
-class AccessibilityPrivateSetAccessibilityEnabledFunction
+class AccessibilitySetAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateSetAccessibilityEnabledFunction() {}
+  virtual ~AccessibilitySetAccessibilityEnabledFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
-      "accessibilityPrivate.setAccessibilityEnabled",
+      "experimental.accessibility.setAccessibilityEnabled",
       EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED)
 };
 
 // API function that enables or disables web content accessibility support.
-class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
+class AccessibilitySetNativeAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateSetNativeAccessibilityEnabledFunction() {}
+  virtual ~AccessibilitySetNativeAccessibilityEnabledFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
-      "accessibilityPrivate.setNativeAccessibilityEnabled",
+      "experimental.accessibility.setNativeAccessibilityEnabled",
       EXPERIMENTAL_ACCESSIBILITY_SETNATIVEACCESSIBILITYENABLED)
 };
 
 // API function that returns the most recent focused control.
-class AccessibilityPrivateGetFocusedControlFunction
+class AccessibilityGetFocusedControlFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateGetFocusedControlFunction() {}
+  virtual ~AccessibilityGetFocusedControlFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
-      "accessibilityPrivate.getFocusedControl",
+      "experimental.accessibility.getFocusedControl",
       EXPERIMENTAL_ACCESSIBILITY_GETFOCUSEDCONTROL)
 };
 
 // API function that returns alerts being shown on the give tab.
-class AccessibilityPrivateGetAlertsForTabFunction
+class AccessibilityGetAlertsForTabFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateGetAlertsForTabFunction() {}
+  virtual ~AccessibilityGetAlertsForTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
-      "accessibilityPrivate.getAlertsForTab",
+      "experimental.accessibility.getAlertsForTab",
       EXPERIMENTAL_ACCESSIBILITY_GETALERTSFORTAB)
 };
 
