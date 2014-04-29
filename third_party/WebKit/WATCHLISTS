@@ -323,7 +323,7 @@
              'ch.dumez@samsung.com',
              'rob.buis@samsung.com',
              'ojan@chromium.org',
-             'chrishtr@chromium.org' ],
+             'blink-reviews-dom@chromium.org' ],
     'events': [ 'eae+blinkwatch@chromium.org', 'dglazkov+blink@chromium.org', 'ojan@chromium.org' ],
     'heap': [ 'ager@chromium.org', 'haraken@chromium.org', 'kouhei+heap@chromium.org' ],
     'html': [ 'adamk+blink@chromium.org', 'dglazkov+blink@chromium.org', 'ojan@chromium.org' ],
