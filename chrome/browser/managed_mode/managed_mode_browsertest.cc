@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::InterstitialPage;
@@ -157,6 +159,23 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
   ManagedUserService* managed_user_service_;
 };
 
+class MockTabStripModelObserver : public TabStripModelObserver {
+ public:
+  explicit MockTabStripModelObserver(TabStripModel* tab_strip)
+      : tab_strip_(tab_strip) {
+    tab_strip_->AddObserver(this);
+  }
+
+  ~MockTabStripModelObserver() {
+    tab_strip_->RemoveObserver(this);
+  }
+
+  MOCK_METHOD3(TabClosingAt, void(TabStripModel*, content::WebContents*, int));
+
+ private:
+  TabStripModel* tab_strip_;
+};
+
 // Navigates to a blocked URL.
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
                        SendAccessRequestOnBlockedURL) {
@@ -173,7 +192,35 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   GoBack(tab);
 
+  // Make sure that the tab is still there.
+  EXPECT_EQ(tab, browser()->tab_strip_model()->GetActiveWebContents());
+
   CheckShownPageIsNotInterstitial(tab);
+}
+
+// Navigates to a blocked URL in a new tab. We expect the tab to be closed
+// automatically on pressing the "back" button on the interstitial.
+IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, OpenBlockedURLInNewTab) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  WebContents* prev_tab = tab_strip->GetActiveWebContents();
+
+  // Open blocked URL in a new tab.
+  GURL test_url("http://www.example.com/files/simple.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), test_url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Check that we got the interstitial.
+  WebContents* tab = tab_strip->GetActiveWebContents();
+  CheckShownPageIsInterstitial(tab);
+
+  // On pressing the "back" button, the new tab should be closed, and we should
+  // get back to the previous active tab.
+  MockTabStripModelObserver observer(tab_strip);
+  EXPECT_CALL(observer,
+              TabClosingAt(tab_strip, tab, tab_strip->active_index()));
+  GoBack(tab);
+  EXPECT_EQ(prev_tab, tab_strip->GetActiveWebContents());
 }
 
 // Tests whether a visit attempt adds a special history entry.

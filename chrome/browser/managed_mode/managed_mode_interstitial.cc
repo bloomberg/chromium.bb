@@ -224,6 +224,11 @@ void ManagedModeInterstitial::OnFilteringPrefsChanged() {
 }
 
 void ManagedModeInterstitial::DispatchContinueRequest(bool continue_request) {
+  // If there is no history entry to go back to, close the tab instead.
+  int nav_entry_count = web_contents_->GetController().GetEntryCount();
+  if (!continue_request && nav_entry_count == 0)
+    web_contents_->Close();
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(callback_, continue_request));
 }

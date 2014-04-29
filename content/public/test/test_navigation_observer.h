@@ -52,6 +52,7 @@ class TestNavigationObserver {
       TestWebContentsObserver* observer,
       WebContents* web_contents,
       const LoadCommittedDetails& load_details);
+  void OnDidAttachInterstitialPage(WebContents* web_contents);
   void OnDidStartLoading(WebContents* web_contents);
   void OnDidStopLoading(WebContents* web_contents);
 

@@ -30,6 +30,10 @@ class TestNavigationObserver::TestWebContentsObserver
     parent_->OnNavigationEntryCommitted(this, web_contents(), load_details);
   }
 
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    parent_->OnDidAttachInterstitialPage(web_contents());
+  }
+
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
     parent_->OnWebContentsDestroyed(this, web_contents);
   }
@@ -115,6 +119,13 @@ void TestNavigationObserver::OnNavigationEntryCommitted(
     TestWebContentsObserver* observer,
     WebContents* web_contents,
     const LoadCommittedDetails& load_details) {
+  navigation_started_ = true;
+}
+
+void TestNavigationObserver::OnDidAttachInterstitialPage(
+    WebContents* web_contents) {
+  // Going to an interstitial page does not trigger NavigationEntryCommitted,
+  // but has the same meaning for us here.
   navigation_started_ = true;
 }
 
