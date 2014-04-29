@@ -357,8 +357,17 @@ scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
   scoped_ptr<ListNode> list(new ListNode);
   list->set_begin_token(cur_token());
   bool just_got_comma = false;
+  bool first_time = true;
   while (!LookAhead(stop_before)) {
-    just_got_comma = false;
+    if (!first_time) {
+      if (!just_got_comma) {
+        // Require commas separate things in lists.
+        *err_ = Err(cur_token(), "Expected comma between items.");
+        return scoped_ptr<ListNode>();
+      }
+    }
+    first_time = false;
+
     // Why _OR? We're parsing things that are higher precedence than the ,
     // that separates the items of the list. , should appear lower than
     // boolean expressions (the lowest of which is OR), but above assignments.

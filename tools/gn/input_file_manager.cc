@@ -20,6 +20,61 @@ void InvokeFileLoadCallback(const InputFileManager::FileLoadCallback& cb,
   cb.Run(node);
 }
 
+bool DoLoadFile(const LocationRange& origin,
+                const BuildSettings* build_settings,
+                const SourceFile& name,
+                InputFile* file,
+                std::vector<Token>* tokens,
+                scoped_ptr<ParseNode>* root,
+                Err* err) {
+  // Do all of this stuff outside the lock. We should not give out file
+  // pointers until the read is complete.
+  if (g_scheduler->verbose_logging()) {
+    std::string logmsg = name.value();
+    if (origin.begin().file())
+      logmsg += " (referenced from " + origin.begin().Describe(false) + ")";
+    g_scheduler->Log("Loading", logmsg);
+  }
+
+  // Read.
+  base::FilePath primary_path = build_settings->GetFullPath(name);
+  ScopedTrace load_trace(TraceItem::TRACE_FILE_LOAD, name.value());
+  if (!file->Load(primary_path)) {
+    if (!build_settings->secondary_source_path().empty()) {
+      // Fall back to secondary source tree.
+      base::FilePath secondary_path =
+          build_settings->GetFullPathSecondary(name);
+      if (!file->Load(secondary_path)) {
+        *err = Err(origin, "Can't load input file.",
+                   "Unable to load either \n" +
+                   FilePathToUTF8(primary_path) + " or \n" +
+                   FilePathToUTF8(secondary_path));
+        return false;
+      }
+    } else {
+      *err = Err(origin,
+                 "Unable to load \"" + FilePathToUTF8(primary_path) + "\".");
+      return false;
+    }
+  }
+  load_trace.Done();
+
+  ScopedTrace exec_trace(TraceItem::TRACE_FILE_PARSE, name.value());
+
+  // Tokenize.
+  *tokens = Tokenizer::Tokenize(file, err);
+  if (err->has_error())
+    return false;
+
+  // Parse.
+  *root = Parser::Parse(*tokens, err);
+  if (err->has_error())
+    return false;
+
+  exec_trace.Done();
+  return true;
+}
+
 }  // namespace
 
 InputFileManager::InputFileData::InputFileData(const SourceFile& file_name)
@@ -211,52 +266,16 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
                                 const SourceFile& name,
                                 InputFile* file,
                                 Err* err) {
-  // Do all of this stuff outside the lock. We should not give out file
-  // pointers until the read is complete.
-  if (g_scheduler->verbose_logging()) {
-    std::string logmsg = name.value();
-    if (origin.begin().file())
-      logmsg += " (referenced from " + origin.begin().Describe(false) + ")";
-    g_scheduler->Log("Loading", logmsg);
-  }
+  std::vector<Token> tokens;
+  scoped_ptr<ParseNode> root;
+  bool success = DoLoadFile(origin, build_settings, name, file,
+                            &tokens, &root, err);
+  // Can't return early. We have to ensure that the completion event is
+  // signaled in all cases bacause another thread could be blocked on this one.
 
-  // Read.
-  base::FilePath primary_path = build_settings->GetFullPath(name);
-  ScopedTrace load_trace(TraceItem::TRACE_FILE_LOAD, name.value());
-  if (!file->Load(primary_path)) {
-    if (!build_settings->secondary_source_path().empty()) {
-      // Fall back to secondary source tree.
-      base::FilePath secondary_path =
-          build_settings->GetFullPathSecondary(name);
-      if (!file->Load(secondary_path)) {
-        *err = Err(origin, "Can't load input file.",
-                   "Unable to load either \n" +
-                   FilePathToUTF8(primary_path) + " or \n" +
-                   FilePathToUTF8(secondary_path));
-        return false;
-      }
-    } else {
-      *err = Err(origin,
-                 "Unable to load \"" + FilePathToUTF8(primary_path) + "\".");
-      return false;
-    }
-  }
-  load_trace.Done();
-
-  ScopedTrace exec_trace(TraceItem::TRACE_FILE_PARSE, name.value());
-
-  // Tokenize.
-  std::vector<Token> tokens = Tokenizer::Tokenize(file, err);
-  if (err->has_error())
-    return false;
-
-  // Parse.
-  scoped_ptr<ParseNode> root = Parser::Parse(tokens, err);
-  if (err->has_error())
-    return false;
+  // Save this pointer for running the callbacks below, which happens after the
+  // scoped ptr ownership is taken away inside the lock.
   ParseNode* unowned_root = root.get();
-
-  exec_trace.Done();
 
   std::vector<FileLoadCallback> callbacks;
   {
@@ -265,8 +284,10 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
 
     InputFileData* data = input_files_[name];
     data->loaded = true;
-    data->tokens.swap(tokens);
-    data->parsed_root = root.Pass();
+    if (success) {
+      data->tokens.swap(tokens);
+      data->parsed_root = root.Pass();
+    }
 
     // Unblock waiters on this event.
     //
@@ -288,7 +309,9 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
   // Run pending invocations. Theoretically we could schedule each of these
   // separately to get some parallelism. But normally there will only be one
   // item in the list, so that's extra overhead and complexity for no gain.
-  for (size_t i = 0; i < callbacks.size(); i++)
-    callbacks[i].Run(unowned_root);
-  return true;
+  if (success) {
+    for (size_t i = 0; i < callbacks.size(); i++)
+      callbacks[i].Run(unowned_root);
+  }
+  return success;
 }

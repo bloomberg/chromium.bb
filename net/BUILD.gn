@@ -16,7 +16,7 @@ if (is_android) {
 # The list of net files is kept in net.gypi. Read it.
 gypi_values = exec_script(
     "//build/gypi_to_gn.py",
-    [ rebase_path("net.gypi") ]
+    [ rebase_path("net.gypi") ],
     "scope",
     [ "net.gypi" ])
 

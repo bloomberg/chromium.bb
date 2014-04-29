@@ -125,6 +125,7 @@ TEST(Parser, FunctionCall) {
       "  LITERAL(1)\n"
       "  LITERAL(2)\n");
   DoExpressionErrorTest("foo(1, 2,)", 1, 10);
+  DoExpressionErrorTest("foo(1 2)", 1, 7);
 }
 
 TEST(Parser, ParenExpression) {

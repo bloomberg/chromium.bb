@@ -271,7 +271,7 @@ component("gfx") {
   if (is_android) {
     sources -= [
       "animation/throb_animation.cc",
-      "canvas_skia.cc"
+      "canvas_skia.cc",
       "display_observer.cc",
       "selection_model.cc",
     ]

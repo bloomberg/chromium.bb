@@ -16,7 +16,7 @@ gypi_values = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("skia_gn_files.gypi"),
       "--replace=<(skia_include_path)=//third_party/skia/include",
-      "--replace=<(skia_src_path)=//third_party/skia/src" ]
+      "--replace=<(skia_src_path)=//third_party/skia/src" ],
     "scope",
     [ "skia_gn_files.gypi" ])
 
