@@ -7,6 +7,8 @@
     },
     "functions": [
       {
+        "name": "setAdapterState",
+        "type": "function",
         "description": "Changes the state of the Bluetooth adapter.",
         "parameters": [
           {
@@ -14,46 +16,44 @@
             "$ref": "NewAdapterState"
           },
           {
-            "type": "function",
             "name": "callback",
+            "type": "function",
             "parameters": []
           }
-        ],
-        "name": "setAdapterState",
-        "type": "function"
+        ]
       },
       {
+        "name": "setPairingResponse",
+        "type": "function",
         "parameters": [
           {
             "name": "options",
             "$ref": "SetPairingResponseOptions"
           },
           {
-            "type": "function",
             "name": "callback",
+            "type": "function",
             "parameters": []
           }
-        ],
-        "name": "setPairingResponse",
-        "type": "function"
+        ]
       }
     ],
     "events": [
       {
+        "name": "onPairing",
+        "type": "function",
         "description": "Fired when a pairing event occurs.",
         "parameters": [
           {
-            "description": "A pairing event.",
             "name": "pairingEvent",
+            "description": "A pairing event.",
             "$ref": "PairingEvent"
           }
         ],
         "options":
         {
           "maxListeners": 1
-        },
-        "name": "onPairing",
-        "type": "function"
+        }
       }
     ],
     "types": [
@@ -138,21 +138,21 @@
         "properties": {
           "name": {
             "optional": true,
-            "description": "The human-readable name of the adapter.",
             "name": "name",
-            "type": "string"
+            "type": "string",
+            "description": "The human-readable name of the adapter."
           },
           "powered": {
             "optional": true,
-            "description": "Whether or not the adapter has power.",
             "name": "powered",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether or not the adapter has power."
           },
           "discoverable": {
             "optional": true,
-            "description": "Whether the adapter is discoverable by other devices.",
             "name": "discoverable",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether the adapter is discoverable by other devices."
           }
         }
       },
