@@ -27,6 +27,15 @@
         'rand_util.h',
         'rand_util.cc',
       ],
+      'conditions': [
+        ['asan==1', {
+          'cflags!': [
+            # Compiling mutate.cc with ASan takes too long, see
+            # http://crbug.com/360158.
+            '-fsanitize=address',
+          ],
+        }],
+      ],
       'include_dirs': [
         '../../..',
       ],
@@ -53,6 +62,15 @@
         'generate.cc',
         'rand_util.h',
         'rand_util.cc',
+      ],
+      'conditions': [
+        ['asan==1', {
+          'cflags!': [
+            # Compiling generate.cc with ASan takes too long, see
+            # http://crbug.com/360158.
+            '-fsanitize=address',
+          ],
+        }],
       ],
       'include_dirs': [
         '../../..',
