@@ -629,6 +629,28 @@ void FeatureInfo::InitializeFeatures() {
     validators_.compressed_texture_format.AddValue(GL_ETC1_RGB8_OES);
   }
 
+  if (extensions.Contains("GL_AMD_compressed_ATC_texture")) {
+    AddExtensionString("GL_AMD_compressed_ATC_texture");
+    validators_.compressed_texture_format.AddValue(
+        GL_ATC_RGB_AMD);
+    validators_.compressed_texture_format.AddValue(
+        GL_ATC_RGBA_EXPLICIT_ALPHA_AMD);
+    validators_.compressed_texture_format.AddValue(
+        GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD);
+  }
+
+  if (extensions.Contains("GL_IMG_texture_compression_pvrtc")) {
+    AddExtensionString("GL_IMG_texture_compression_pvrtc");
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
+  }
+
   // Ideally we would only expose this extension on Mac OS X, to
   // support GL_CHROMIUM_iosurface and the compositor. We don't want
   // applications to start using it; they should use ordinary non-

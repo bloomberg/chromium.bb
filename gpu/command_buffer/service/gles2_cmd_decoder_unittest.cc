@@ -140,6 +140,66 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
   }
 };
 
+class GLES2DecoderCompressedFormatsTest : public GLES2DecoderManualInitTest {
+ public:
+  GLES2DecoderCompressedFormatsTest() { }
+
+  static bool ValueInArray(GLint value, GLint* array, GLint count) {
+    for (GLint ii = 0; ii < count; ++ii) {
+      if (array[ii] == value) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void CheckFormats(const char* extension, const GLenum* formats, int count) {
+    InitState init;
+    init.extensions = extension;
+    init.gl_version = "3.0";
+    init.bind_generates_resource = true;
+    InitDecoder(init);
+
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+
+    typedef GetIntegerv::Result Result;
+    Result* result = static_cast<Result*>(shared_memory_address_);
+    GetIntegerv cmd;
+    result->size = 0;
+    EXPECT_CALL(*gl_, GetIntegerv(_, _))
+        .Times(0)
+        .RetiresOnSaturation();
+    cmd.Init(
+        GL_NUM_COMPRESSED_TEXTURE_FORMATS,
+        shared_memory_id_, shared_memory_offset_);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(1, result->GetNumResults());
+    GLint num_formats = result->GetData()[0];
+    EXPECT_EQ(count, num_formats);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    result->size = 0;
+    cmd.Init(
+        GL_COMPRESSED_TEXTURE_FORMATS,
+        shared_memory_id_, shared_memory_offset_);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(num_formats, result->GetNumResults());
+
+    for (int i = 0; i < count; ++i) {
+      EXPECT_TRUE(ValueInArray(
+        formats[i],
+        result->GetData(), result->GetNumResults()));
+    }
+
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+};
+
 class GLES2DecoderRestoreStateTest : public GLES2DecoderManualInitTest {
  public:
   GLES2DecoderRestoreStateTest() { }
@@ -5034,66 +5094,40 @@ TEST_F(GLES2DecoderTest, ReadPixelsGLError) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
-static bool ValueInArray(GLint value, GLint* array, GLint count) {
-  for (GLint ii = 0; ii < count; ++ii) {
-    if (array[ii] == value) {
-      return true;
-    }
-  }
-  return false;
+TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsS3TC) {
+  const GLenum formats[] = {
+    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+  };
+  CheckFormats("GL_EXT_texture_compression_s3tc", formats, 4);
 }
 
-TEST_F(GLES2DecoderManualInitTest, GetCompressedTextureFormats) {
-  InitState init;
-  init.extensions = "GL_EXT_texture_compression_s3tc";
-  init.gl_version = "3.0";
-  init.bind_generates_resource = true;
-  InitDecoder(init);
+TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsATC) {
+  const GLenum formats[] = {
+    GL_ATC_RGB_AMD,
+    GL_ATC_RGBA_EXPLICIT_ALPHA_AMD,
+    GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD
+  };
+  CheckFormats("GL_AMD_compressed_ATC_texture", formats, 3);
+}
 
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
+TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsPVRTC) {
+  const GLenum formats[] = {
+    GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+    GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,
+    GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+    GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
+  };
+  CheckFormats("GL_IMG_texture_compression_pvrtc", formats, 4);
+}
 
-  typedef GetIntegerv::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  GetIntegerv cmd;
-  result->size = 0;
-  EXPECT_CALL(*gl_, GetIntegerv(_, _))
-      .Times(0)
-      .RetiresOnSaturation();
-  cmd.Init(
-      GL_NUM_COMPRESSED_TEXTURE_FORMATS,
-      shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(1, result->GetNumResults());
-  GLint num_formats = result->GetData()[0];
-  EXPECT_EQ(4, num_formats);
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  result->size = 0;
-  cmd.Init(
-      GL_COMPRESSED_TEXTURE_FORMATS,
-      shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(num_formats, result->GetNumResults());
-
-  EXPECT_TRUE(ValueInArray(
-      GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-      result->GetData(), result->GetNumResults()));
-  EXPECT_TRUE(ValueInArray(
-      GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
-      result->GetData(), result->GetNumResults()));
-  EXPECT_TRUE(ValueInArray(
-      GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
-      result->GetData(), result->GetNumResults()));
-  EXPECT_TRUE(ValueInArray(
-      GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-      result->GetData(), result->GetNumResults()));
-
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+TEST_F(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsETC1) {
+  const GLenum formats[] = {
+    GL_ETC1_RGB8_OES
+  };
+  CheckFormats("GL_OES_compressed_ETC1_RGB8_texture", formats, 1);
 }
 
 TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
@@ -5381,49 +5415,6 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   copy_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 4, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(copy_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
-}
-
-TEST_F(GLES2DecoderManualInitTest, GetCompressedTextureFormatsETC1) {
-  InitState init;
-  init.extensions = "GL_OES_compressed_ETC1_RGB8_texture";
-  init.gl_version = "opengl es 2.0";
-  init.bind_generates_resource = true;
-  InitDecoder(init);
-
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-
-  typedef GetIntegerv::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  GetIntegerv cmd;
-  result->size = 0;
-  EXPECT_CALL(*gl_, GetIntegerv(_, _))
-      .Times(0)
-      .RetiresOnSaturation();
-  cmd.Init(
-      GL_NUM_COMPRESSED_TEXTURE_FORMATS,
-      shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(1, result->GetNumResults());
-  GLint num_formats = result->GetData()[0];
-  EXPECT_EQ(1, num_formats);
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  result->size = 0;
-  cmd.Init(
-      GL_COMPRESSED_TEXTURE_FORMATS,
-      shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(num_formats, result->GetNumResults());
-
-  EXPECT_TRUE(ValueInArray(
-      GL_ETC1_RGB8_OES,
-      result->GetData(), result->GetNumResults()));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetProgramInfoCHROMIUMValidArgs) {

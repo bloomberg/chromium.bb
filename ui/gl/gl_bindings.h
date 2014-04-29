@@ -152,6 +152,17 @@
 // GL_OES_compressed_ETC1_RGB8_texture
 #define GL_ETC1_RGB8_OES                                 0x8D64
 
+// GL_AMD_compressed_ATC_texture
+#define GL_ATC_RGB_AMD                                   0x8C92
+#define GL_ATC_RGBA_EXPLICIT_ALPHA_AMD                   0x8C93
+#define GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD               0x87EE
+
+// GL_IMG_texture_compression_pvrtc
+#define GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG               0x8C00
+#define GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG               0x8C01
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG              0x8C02
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG              0x8C03
+
 // GL_OES_vertex_array_object
 #define GL_VERTEX_ARRAY_BINDING_OES                      0x85B5
 

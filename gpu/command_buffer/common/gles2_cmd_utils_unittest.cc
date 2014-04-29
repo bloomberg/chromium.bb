@@ -245,6 +245,19 @@ TEST_F(GLES2UtilTest, GetChannelsForCompressedFormat) {
       GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
   EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(
       GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
+  EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(GL_ATC_RGB_AMD));
+  EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(
+      GL_ATC_RGBA_EXPLICIT_ALPHA_AMD));
+  EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(
+      GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD));
+  EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(
+      GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG));
+  EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(
+      GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
+  EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(
+      GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG));
+  EXPECT_EQ(0u, GLES2Util::GetChannelsForFormat(
+      GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
 }
 
 namespace {
