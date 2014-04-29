@@ -607,7 +607,8 @@ class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
 };
 
 // Crashing on Android due to kSingleProcess flag: http://crbug.com/342525
-#if defined(OS_ANDROID)
+// Also disabled in debug due to flakiness: http://crbug.com/368134
+#if defined(OS_ANDROID) || !defined(NDEBUG)
 #define MAYBE_RenderThreadShutdownTest DISABLED_RenderThreadShutdownTest
 #else
 #define MAYBE_RenderThreadShutdownTest RenderThreadShutdownTest
