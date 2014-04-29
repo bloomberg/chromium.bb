@@ -21,7 +21,7 @@ from telemetry.page import test_expectations
 class MemoryExpectations(test_expectations.TestExpectations):
   def SetExpectations(self):
     # Sample Usage:
-    # self.Fail('Maps.maps_001',
+    # self.Fail('Memory.CSS3D',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
     self.Fail('Memory.CSS3D', ['mac', ('nvidia', 0x0fd5)], bug=368037)
