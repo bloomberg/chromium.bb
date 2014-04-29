@@ -9,7 +9,10 @@
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
+
+#if !defined(__LP64__)
 #include <time64.h>
+#endif
 
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
@@ -37,7 +40,8 @@ int futimes(int fd, const struct timeval tv[2]) {
   return syscall(__NR_utimensat, fd, NULL, ts, 0);
 }
 
-// Android has only timegm64() and no timegm().
+#if !defined(__LP64__)
+// 32-bit Android has only timegm64() and not timegm().
 // We replicate the behaviour of timegm() when the result overflows time_t.
 time_t timegm(struct tm* const t) {
   // time_t is signed on Android.
@@ -48,6 +52,7 @@ time_t timegm(struct tm* const t) {
     return -1;
   return result;
 }
+#endif
 
 // The following is only needed when building with GCC 4.6 or higher
 // (i.e. not with Android GCC 4.4.3, nor with Clang).
