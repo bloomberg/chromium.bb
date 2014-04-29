@@ -39,7 +39,7 @@ void ViewManagerConnection::Initialize(
     ServiceConnector<ViewManagerConnection, RootNodeManager>* service_factory,
     ScopedMessagePipeHandle client_handle) {
   DCHECK_EQ(0, id_);  // Should only get Initialize() once.
-  ServiceConnection<ViewManager, ViewManagerConnection, RootNodeManager>::
+  ServiceConnection<IViewManager, ViewManagerConnection, RootNodeManager>::
       Initialize(service_factory, client_handle.Pass());
   id_ = context()->GetAndAdvanceNextConnectionId();
   context()->AddConnection(this);

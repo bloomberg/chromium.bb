@@ -15,8 +15,8 @@ module mojo.services.view_manager {
 // uint16 as the connection id of the originating connection is used.
 //
 // The root node is identified with a connection id of 0, and value of 1.
-[Peer=ViewManagerClient]
-interface ViewManager {
+[Peer=IViewManagerClient]
+interface IViewManager {
   // Creates a new node with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
   CreateNode(uint16 node_id) => (bool success);
@@ -43,8 +43,8 @@ interface ViewManager {
   SetView(uint32 node_id, uint32 view_id, uint32 change_id) => (bool success);
 };
 
-[Peer=ViewManager]
-interface ViewManagerClient {
+[Peer=IViewManager]
+interface IViewManagerClient {
   // Invoked once the connection has been established. |connection_id| is the id
   // used to uniquely identify the connection.
   OnConnectionEstablished(uint16 connection_id);

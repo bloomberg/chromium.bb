@@ -24,7 +24,7 @@ class View;
 
 // Manages a connection from the client.
 class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
-    : public ServiceConnection<ViewManager, ViewManagerConnection,
+    : public ServiceConnection<IViewManager, ViewManagerConnection,
                                RootNodeManager>,
       public NodeDelegate {
  public:
@@ -75,7 +75,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                    const ViewId& view_id,
                    ChangeId change_id);
 
-  // Overridden from ViewManager:
+  // Overridden from IViewManager:
   virtual void CreateNode(uint16_t node_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteNode(uint32_t transport_node_id,
@@ -99,7 +99,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                        ChangeId change_id,
                        const mojo::Callback<void(bool)>& callback) OVERRIDE;
 
-  // Overriden from NodeDelegate:
+  // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const NodeId& node,
                                       const NodeId& new_parent,
                                       const NodeId& old_parent) OVERRIDE;

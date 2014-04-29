@@ -4,6 +4,8 @@
 
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
+#include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 
@@ -88,7 +90,17 @@ void RemoveChildImpl(ViewTreeNode* child, ViewTreeNode::Children* children) {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewTreeNode, public:
 
-ViewTreeNode::ViewTreeNode() : owned_by_parent_(true), parent_(NULL) {}
+ViewTreeNode::ViewTreeNode()
+    : manager_(NULL),
+      id_(-1),
+      owned_by_parent_(true),
+      parent_(NULL) {}
+
+ViewTreeNode::ViewTreeNode(ViewManager* manager)
+    : manager_(manager),
+      id_(ViewManagerPrivate(manager).synchronizer()->CreateViewTreeNode()),
+      owned_by_parent_(true),
+      parent_(NULL) {}
 
 ViewTreeNode::~ViewTreeNode() {
   while (!children_.empty()) {
@@ -122,12 +134,14 @@ void ViewTreeNode::AddChild(ViewTreeNode* child) {
     RemoveChildImpl(child, &child->parent_->children_);
   children_.push_back(child);
   child->parent_ = this;
+  ViewManagerPrivate(manager_).synchronizer()->AddChild(child->id(), id_);
 }
 
 void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
   DCHECK_EQ(this, child->parent());
   ScopedTreeNotifier(child, this, NULL);
   RemoveChildImpl(child, &children_);
+  ViewManagerPrivate(manager_).synchronizer()->RemoveChild(child->id(), id_);
 }
 
 bool ViewTreeNode::Contains(ViewTreeNode* child) const {
