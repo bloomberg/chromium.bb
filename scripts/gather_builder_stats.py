@@ -421,9 +421,10 @@ class SSUploader(object):
           cros_build_lib.Debug('Adding spreadsheet row for %s %s.',
                                id_col, id_val)
           self._scomm.InsertRow(row_dict)
-      except gdata_lib.SpreadsheetError:
+      except gdata_lib.SpreadsheetError as e:
         cros_build_lib.Error('Failure while uploading spreadsheet row for'
-                             ' %s %s.', id_col, id_val)
+                             ' %s %s with data %s. Error: %s.', id_col, id_val,
+                             row_dict, e)
 
 
 class StatsManager(object):
