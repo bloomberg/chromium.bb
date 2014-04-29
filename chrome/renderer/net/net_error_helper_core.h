@@ -214,8 +214,9 @@ class NetErrorHelperCore {
   int auto_reload_count_;
   bool can_auto_reload_page_;
 
-  // Non-NO_BUTTON only when a navigation has been initiated from the error
-  // page.  Used to detect when such navigations result in errors.
+  // This value is set only when a navigation has been initiated from
+  // the error page.  It is used to detect when such navigations result
+  // in errors.
   Button navigation_from_button_;
 };
 

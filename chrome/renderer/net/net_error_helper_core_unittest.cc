@@ -114,13 +114,14 @@ std::string NetErrorString(net::Error net_error) {
 class NetErrorHelperCoreTest : public testing::Test,
                                public NetErrorHelperCore::Delegate {
  public:
-  NetErrorHelperCoreTest() : timer_(new base::MockTimer(false, false)),
-                             core_(this),
-                             update_count_(0),
-                             error_html_update_count_(0),
-                             reload_count_(0),
-                             load_stale_count_(0),
-                             enable_page_helper_functions_count_(0) {
+  NetErrorHelperCoreTest()
+      : timer_(new base::MockTimer(false, false)),
+        core_(this),
+        update_count_(0),
+        error_html_update_count_(0),
+        reload_count_(0),
+        load_stale_count_(0),
+        enable_page_helper_functions_count_(0) {
     core_.set_auto_reload_enabled(false);
     core_.set_timer_for_testing(scoped_ptr<base::Timer>(timer_));
   }

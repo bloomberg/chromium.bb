@@ -85,8 +85,7 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
                  &NetErrorPageController::LoadStaleButtonClick)
       .SetMethod("reloadButtonClick",
                  &NetErrorPageController::ReloadButtonClick)
-      .SetMethod("moreButtonClick",
-                 &NetErrorPageController::MoreButtonClick);
+      .SetMethod("moreButtonClick", &NetErrorPageController::MoreButtonClick);
 }
 
 void NetErrorPageController::OnDestruct() {}

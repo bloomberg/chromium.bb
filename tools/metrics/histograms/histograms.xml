@@ -11651,6 +11651,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrorPageCounts" enum="NetErrorPageEvents">
+  <owner>rdsmith@chromium.org</owner>
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Counts of various events that can occur on the network error page. See the
+    histogram for details.
+  </summary>
+</histogram>
+
 <histogram name="Net.FileError_Flush">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -37477,6 +37486,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="804" label="DNS_CACHE_MISS"/>
   <int value="805" label="DNS_SEARCH_EMPTY"/>
   <int value="806" label="DNS_SORT_ERROR"/>
+</enum>
+
+<enum name="NetErrorPageEvents" type="int">
+  <int value="0" label="Error Page Shown"/>
+  <int value="1" label="Reload Button Shown"/>
+  <int value="2" label="Reload Button Clicked"/>
+  <int value="3" label="Reload Button Click Load Error"/>
+  <int value="4" label="Load Stale Button Shown"/>
+  <int value="5" label="Load Stale Button Clicked"/>
+  <int value="6" label="Load Stale Button Click Load Error"/>
+  <int value="7" label="More Button Clicked"/>
+  <int value="8" label="Browser Initiated Reload"/>
 </enum>
 
 <enum name="NetPreconnectUtilization" type="int">
