@@ -2979,9 +2979,12 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 		return;
 	}
 
-	widget = window_find_widget(input->touch_focus,
-				    wl_fixed_to_double(x_w),
-				    wl_fixed_to_double(y_w));
+	if (input->grab)
+		widget = input->grab;
+	else
+		widget = window_find_widget(input->touch_focus,
+					    wl_fixed_to_double(x_w),
+					    wl_fixed_to_double(y_w));
 	if (widget) {
 		struct touch_point *tp = xmalloc(sizeof *tp);
 		if (tp) {
