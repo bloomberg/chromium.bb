@@ -21,7 +21,8 @@ body { width: 800px; margin: 0; overflow-y: hidden; }
 
 <table cellspacing="0" cellpadding="0">
     <tr>
-        <td style="width: 380px; font-size: 19px">
+        <td style="width: 380px; font-size: 16px">
+            <!-- The Fast Text Autosizer uses the containing block's width which is so wide that this will not have enough text to autosize. -->
             This text should be autosized to 19px computed font size (16 * 380/320), since being a table cell causes this to be a new cluster.
         </td>
     </tr>

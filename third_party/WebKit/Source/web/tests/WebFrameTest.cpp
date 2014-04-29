@@ -741,7 +741,7 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
     EXPECT_TRUE(checkTextAutosizingMultiplier(document, 1));
 }
 
-TEST_F(WebFrameTest, SetFrameRectResetsTextAutosizingMultipliers)
+TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("iframe_reload.html");
@@ -762,13 +762,21 @@ TEST_F(WebFrameTest, SetFrameRectResetsTextAutosizingMultipliers)
     webViewHelper.webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webViewImpl()->layout();
 
-    for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext())
+    for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         EXPECT_TRUE(setTextAutosizingMultiplier(frame->document(), 2));
+        for (WebCore::RenderObject* renderer = frame->document()->renderer(); renderer; renderer = renderer->nextInPreOrder()) {
+            if (renderer->isText())
+                EXPECT_FALSE(renderer->needsLayout());
+        }
+    }
 
     frameView->setFrameRect(WebCore::IntRect(0, 0, 200, 200));
-
-    for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext())
-        EXPECT_TRUE(checkTextAutosizingMultiplier(frame->document(), 1));
+    for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
+        for (WebCore::RenderObject* renderer = frame->document()->renderer(); renderer; renderer = renderer->nextInPreOrder()) {
+            if (renderer->isText())
+                EXPECT_TRUE(renderer->needsLayout());
+        }
+    }
 }
 
 TEST_F(WebFrameTest, FixedLayoutSizeStopsResizeFromChangingLayoutSize)

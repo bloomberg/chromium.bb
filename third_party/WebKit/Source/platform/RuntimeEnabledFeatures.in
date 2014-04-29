@@ -60,7 +60,7 @@ FileAPIBlobClose status=experimental
 FileConstructor status=experimental
 FileSystem status=stable
 FontLoadEvents status=stable
-FastTextAutosizing
+FastTextAutosizing status=stable
 Gamepad status=stable
 HTMLImports status=stable
 HighResolutionTimeInWorkers status=stable
