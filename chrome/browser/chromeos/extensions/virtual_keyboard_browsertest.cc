@@ -118,7 +118,9 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
   std::string utf8_content_;
 };
 
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, AttributesTest) {
+// crbug.com/367817. Either this feature or just the test are depending
+// on the presense of Object.observe which is presently disabled by default.
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_AttributesTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("attributes_test.js")));
 }
 
