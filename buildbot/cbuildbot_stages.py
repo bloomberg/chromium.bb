@@ -4373,8 +4373,9 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
       streak_value = self._UpdateStreakCounter(
           final_status=final_status, counter_name=builder_run.config.name,
           dry_run=self._run.debug)
-      cros_build_lib.Info('New pass/fail streak value for %s is: %s',
-                          builder_run.config.name, streak_value)
+      verb = 'passed' if streak_value > 0 else 'failed'
+      cros_build_lib.Info('Builder %s has %s %s time(s) in a row.',
+                          builder_run.config.name, verb, abs(streak_value))
       # See if updated streak should trigger a notification email.
       if (builder_run.config.health_alert_recipients and
           streak_value <= -builder_run.config.health_threshold):
