@@ -196,27 +196,23 @@ def GetGitRepoRevision(cwd, branch='HEAD'):
   return RunGit(cwd, ['rev-parse', branch]).output.strip()
 
 
-def DoesCommitExistInRepo(cwd, commit_hash):
-  """Determine if commit object exists in a repo.
+def DoesCommitExistInRepo(cwd, commit):
+  """Determine whether a commit (SHA1 or ref) exists in a repo.
 
   Args:
     cwd: A directory within the project repo.
-    commit_hash: The hash of the commit object to look for.
+    commit: The commit to look for. This can be a SHA1 or it can be a ref.
+
+  Returns:
+    True if the commit exists in the repo.
   """
-  return 0 == RunGit(cwd, ['rev-list', '-n1', commit_hash],
-                     error_code_ok=True).returncode
-
-
-def DoesLocalBranchExist(repo_dir, branch):
-  """Returns True if the local branch exists.
-
-  Args:
-    repo_dir: Directory of the git repository to check.
-    branch: The name of the branch to test for.
-  """
-  return os.path.isfile(
-      os.path.join(repo_dir, '.git/refs/heads',
-                   branch.lstrip('/')))
+  try:
+    RunGit(cwd, ['rev-list', '-n1', commit])
+  except cros_build_lib.RunCommandError as e:
+    if e.result.returncode == 128:
+      return False
+    raise
+  return True
 
 
 def GetCurrentBranch(cwd):

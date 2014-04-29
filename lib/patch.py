@@ -849,7 +849,7 @@ class GitRepoPatch(PatchQuery):
 
     cros_build_lib.Info('Attempting to cherry-pick change %s', self)
 
-    if not git.DoesLocalBranchExist(git_repo, constants.PATCH_BRANCH):
+    if not git.DoesCommitExistInRepo(git_repo, constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
     else:
       cmd = ['checkout', '-f', constants.PATCH_BRANCH]

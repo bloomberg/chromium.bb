@@ -900,7 +900,7 @@ def _CheckLocalPatches(sourceroot, local_patches):
       else:
         local_branch = branch
 
-      if local_branch and git.DoesLocalBranchExist(project_dir, local_branch):
+      if local_branch and git.DoesCommitExistInRepo(project_dir, local_branch):
         verified_patches.append('%s:%s' % (project, local_branch))
         ok = True
 
