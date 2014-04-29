@@ -14,6 +14,10 @@ login.createScreen('ResetScreen', 'reset', function() {
           'click', function(event) {
         chrome.send('resetOnLearnMore');
       });
+      $('powerwash-help-link').addEventListener(
+          'click', function(event) {
+        chrome.send('resetOnLearnMore');
+      });
     },
 
     /**
