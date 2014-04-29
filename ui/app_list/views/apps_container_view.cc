@@ -25,7 +25,7 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
                                      PaginationModel* pagination_model,
                                      AppListModel* model)
     : model_(model),
-      show_state_(SHOW_APPS),
+      show_state_(SHOW_NONE),
       top_icon_animation_pending_count_(0) {
   apps_grid_view_ = new AppsGridView(app_list_main_view, pagination_model);
   int cols = kPreferredCols;

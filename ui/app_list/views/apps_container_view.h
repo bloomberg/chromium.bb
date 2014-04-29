@@ -77,6 +77,7 @@ class AppsContainerView : public views::View,
 
  private:
   enum ShowState {
+    SHOW_NONE,  // initial state
     SHOW_APPS,
     SHOW_ACTIVE_FOLDER,
     SHOW_ITEM_REPARENT,

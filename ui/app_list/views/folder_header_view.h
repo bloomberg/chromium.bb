@@ -50,6 +50,9 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   // Updates UI.
   void Update();
 
+  // Updates the accessible name of the folder name control.
+  void UpdateFolderNameAccessibleName();
+
   // Gets and sets the folder name for test.
   const base::string16& GetFolderNameForTest();
   void SetFolderNameForTest(const base::string16& name);
