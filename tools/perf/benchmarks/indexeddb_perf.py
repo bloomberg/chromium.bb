@@ -89,8 +89,6 @@ class IndexedDb(test.Test):
   def CreatePageSet(self, options):
     indexeddb_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
                                  'data', 'indexeddb')
-    return page_set.PageSet.FromDict({
-        'pages': [
-            { 'url': 'file://perf_test.html' }
-          ]
-        }, indexeddb_dir)
+    ps = page_set.PageSet(file_path=indexeddb_dir)
+    ps.AddPageWithDefaultRunNavigate('file://perf_test.html')
+    return ps

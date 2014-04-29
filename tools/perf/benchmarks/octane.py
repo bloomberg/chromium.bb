@@ -80,12 +80,10 @@ class Octane(test.Test):
   test = _OctaneMeasurement
 
   def CreatePageSet(self, options):
-    return page_set.PageSet.FromDict({
-      'archive_data_file': '../page_sets/data/octane.json',
-      'make_javascript_deterministic': False,
-      'pages': [{
-          'url':
-          'http://octane-benchmark.googlecode.com/svn/latest/index.html?auto=1'
-          }
-        ]
-      }, os.path.abspath(__file__))
+    ps = page_set.PageSet(
+      archive_data_file='../page_sets/data/octane.json',
+      make_javascript_deterministic=False,
+      file_path=os.path.abspath(__file__))
+    ps.AddPageWithDefaultRunNavigate(
+      'http://octane-benchmark.googlecode.com/svn/latest/index.html?auto=1')
+    return ps

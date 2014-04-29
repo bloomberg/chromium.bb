@@ -60,13 +60,12 @@ class _DromaeoBenchmark(test.Test):
     # The docstring of benchmark classes may also be used as a description
     # when 'run_benchmarks list' is run.
     description = self.__doc__ or 'Dromaeo JavaScript Benchmark'
-    page_set_dict = {
-        'description': description,
-        'pages': [{'url': url}],
-    }
     dromaeo_dir = os.path.join(util.GetChromiumSrcDir(),
                                'chrome', 'test', 'data', 'dromaeo')
-    return page_set.PageSet.FromDict(page_set_dict, dromaeo_dir)
+    ps = page_set.PageSet(description=description,
+                          file_path=dromaeo_dir)
+    ps.AddPageWithDefaultRunNavigate(url)
+    return ps
 
 
 class DromaeoDomCoreAttr(_DromaeoBenchmark):

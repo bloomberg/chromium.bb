@@ -14,8 +14,6 @@ second depending on the test. Final Score is computed by calculating geometric
 mean of individual tests scores.
 """
 
-import os
-
 from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
@@ -83,21 +81,16 @@ class PeaceKeeperBenchmark(test.Test):
     # The docstring of benchmark classes may also be used as a description
     # when 'run_benchmarks list' is run.
     description = self.__doc__ or 'PeaceKeeper Benchmark'
-    test_urls = []
+    ps = page_set.PageSet(
+      description=description,
+      archive_data_file='../page_sets/data/peacekeeper_%s.json' % self.tag,
+      make_javascript_deterministic=False)
     for test_name in self.test_param:
-      test_urls.append(
-        {"url": ("http://peacekeeper.futuremark.com/run.action?debug=true&"
-                 "repeat=false&forceSuiteName=%s&forceTestName=%s") %
-                 (self.tag, test_name)
-        })
-
-    page_set_dict = {
-        'description': description,
-        'archive_data_file': '../page_sets/data/peacekeeper_%s.json' % self.tag,
-        'make_javascript_deterministic': False,
-        'pages': test_urls,
-    }
-    return page_set.PageSet.FromDict(page_set_dict, os.path.abspath(__file__))
+      ps.AddPageWithDefaultRunNavigate(
+        ('http://peacekeeper.futuremark.com/run.action?debug=true&'
+         'repeat=false&forceSuiteName=%s&forceTestName=%s') %
+        (self.tag, test_name))
+    return ps
 
 
 class PeaceKeeperRender(PeaceKeeperBenchmark):

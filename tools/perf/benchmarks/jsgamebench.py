@@ -42,9 +42,8 @@ class Jsgamebench(test.Test):
   test = _JsgamebenchMeasurement
 
   def CreatePageSet(self, options):
-    return page_set.PageSet.FromDict({
-        'archive_data_file': '../page_sets/data/jsgamebench.json',
-        'pages': [
-          { 'url': 'http://localhost/' }
-          ]
-        }, os.path.dirname(__file__))
+    ps = page_set.PageSet(
+      archive_data_file='../page_sets/data/jsgamebench.json',
+      file_path=os.path.dirname(__file__))
+    ps.AddPageWithDefaultRunNavigate('http://localhost/')
+    return ps
