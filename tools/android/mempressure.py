@@ -14,9 +14,9 @@ BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__),
                                  'build',
                                  'android')
 sys.path.append(BUILD_ANDROID_DIR)
-from pylib import android_commands
 from pylib import constants
 from pylib import flag_changer
+from pylib.device import device_utils
 
 # Browser Constants
 DEFAULT_BROWSER = 'chrome'
@@ -84,14 +84,14 @@ def main(argv):
   package = package_info.package
   activity = package_info.activity
 
-  adb = android_commands.AndroidCommands(device=None)
+  device = device_utils.DeviceUtils(None)
 
-  adb.EnableAdbRoot()
-  flags = flag_changer.FlagChanger(adb, package_info.cmdline_file)
+  device.old_interface.EnableAdbRoot()
+  flags = flag_changer.FlagChanger(device, package_info.cmdline_file)
   if ENABLE_TEST_INTENTS_FLAG not in flags.Get():
     flags.AddFlags([ENABLE_TEST_INTENTS_FLAG])
 
-  adb.StartActivity(package, activity, action=action)
+  device.old_interface.StartActivity(package, activity, action=action)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

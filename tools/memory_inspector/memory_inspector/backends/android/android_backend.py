@@ -25,8 +25,9 @@ from memory_inspector.core import symbol
 
 # The memory_inspector/__init__ module will add the <CHROME_SRC>/build/android
 # deps to the PYTHONPATH for pylib.
-from pylib import android_commands  # pylint: disable=F0401
-from pylib.symbols import elf_symbolizer  # pylint: disable=F0401
+from pylib import android_commands
+from pylib.device import device_utils
+from pylib.symbols import elf_symbolizer
 
 
 _MEMDUMP_PREBUILT_PATH = os.path.join(constants.PROJECT_SRC,
@@ -62,7 +63,7 @@ class AndroidBackend(backends.Backend):
       device = self._devices.get(device_id)
       if not device:
         device = AndroidDevice(
-          self, android_commands.AndroidCommands(device_id))
+          self, device_utils.DeviceUtils(device_id))
         self._devices[device_id] = device
       yield device
 
@@ -157,13 +158,13 @@ class AndroidDevice(backends.Device):
   _SETTINGS_KEYS = {
       'native_symbol_paths': 'Comma-separated list of native libs search path'}
 
-  def __init__(self, backend, adb):
+  def __init__(self, backend, underlying_device):
     super(AndroidDevice, self).__init__(
         backend=backend,
         settings=backends.Settings(AndroidDevice._SETTINGS_KEYS))
-    self.adb = adb
-    self._id = adb.GetDevice()
-    self._name = adb.GetProductModel()
+    self.underlying_device = underlying_device
+    self._id = underlying_device.old_interface.GetDevice()
+    self._name = underlying_device.old_interface.GetProductModel()
     self._sys_stats = None
     self._last_device_stats = None
     self._sys_stats_last_update = None
@@ -172,7 +173,7 @@ class AndroidDevice(backends.Device):
 
   def Initialize(self):
     """Starts adb root and deploys the prebuilt binaries on initialization."""
-    self.adb.EnableAdbRoot()
+    self.underlying_device.old_interface.EnableAdbRoot()
 
     # Download (from GCS) and deploy prebuilt helper binaries on the device.
     self._DeployPrebuiltOnDeviceIfNeeded(_MEMDUMP_PREBUILT_PATH,
@@ -183,16 +184,18 @@ class AndroidDevice(backends.Device):
 
   def IsNativeTracingEnabled(self):
     """Checks for the libc.debug.malloc system property."""
-    return bool(self.adb.system_properties[_DLMALLOC_DEBUG_SYSPROP])
+    return bool(self.underlying_device.old_interface.system_properties[
+        _DLMALLOC_DEBUG_SYSPROP])
 
   def EnableNativeTracing(self, enabled):
     """Enables libc.debug.malloc and restarts the shell."""
     assert(self._initialized)
     prop_value = '1' if enabled else ''
-    self.adb.system_properties[_DLMALLOC_DEBUG_SYSPROP] = prop_value
+    self.underlying_device.old_interface.system_properties[
+        _DLMALLOC_DEBUG_SYSPROP] = prop_value
     assert(self.IsNativeTracingEnabled())
     # The libc.debug property takes effect only after restarting the Zygote.
-    self.adb.RestartShell()
+    self.underlying_device.old_interface.RestartShell()
 
   def ListProcesses(self):
     """Returns a sequence of |AndroidProcess|."""
@@ -248,7 +251,9 @@ class AndroidDevice(backends.Device):
         datetime.datetime.now() - self._sys_stats_last_update <= max_ttl):
       return self._sys_stats
 
-    dump_out = '\n'.join(self.adb.RunShellCommand(_PSEXT_PATH_ON_DEVICE))
+    dump_out = '\n'.join(
+        self.underlying_device.old_interface.RunShellCommand(
+            _PSEXT_PATH_ON_DEVICE))
     stats = json.loads(dump_out)
     assert(all([x in stats for x in ['cpu', 'processes', 'time', 'mem']])), (
         'ps_ext returned a malformed JSON dictionary.')
@@ -275,11 +280,13 @@ class AndroidDevice(backends.Device):
     prebuilts_fetcher.GetIfChanged(local_path)
     with open(local_path, 'rb') as f:
       local_hash = hashlib.md5(f.read()).hexdigest()
-    device_md5_out = self.adb.RunShellCommand('md5 "%s"' % path_on_device)
+    device_md5_out = self.underlying_device.old_interface.RunShellCommand(
+        'md5 "%s"' % path_on_device)
     if local_hash in device_md5_out:
       return
-    self.adb.Adb().Push(local_path, path_on_device)
-    self.adb.RunShellCommand('chmod 755 "%s"' % path_on_device)
+    self.underlying_device.old_interface.Adb().Push(local_path, path_on_device)
+    self.underlying_device.old_interface.RunShellCommand(
+        'chmod 755 "%s"' % path_on_device)
 
   @property
   def name(self):
@@ -302,7 +309,7 @@ class AndroidProcess(backends.Process):
   def DumpMemoryMaps(self):
     """Grabs and parses memory maps through memdump."""
     cmd = '%s %d' % (_MEMDUMP_PATH_ON_DEVICE, self.pid)
-    dump_out = self.device.adb.RunShellCommand(cmd)
+    dump_out = self.device.underlying_device.old_interface.RunShellCommand(cmd)
     return memdump_parser.Parse(dump_out)
 
   def DumpNativeHeap(self):
@@ -310,12 +317,14 @@ class AndroidProcess(backends.Process):
     # TODO(primiano): grab also mmap bt (depends on pending framework change).
     dump_file_path = _DUMPHEAP_OUT_FILE_PATH % self.pid
     cmd = 'am dumpheap -n %d %s' % (self.pid, dump_file_path)
-    self.device.adb.RunShellCommand(cmd)
+    self.device.underlying_device.old_interface.RunShellCommand(cmd)
     # TODO(primiano): Some pre-KK versions of Android might need a sleep here
     # as, IIRC, 'am dumpheap' did not wait for the dump to be completed before
     # returning. Double check this and either add a sleep or remove this TODO.
-    dump_out = self.device.adb.GetFileContents(dump_file_path)
-    self.device.adb.RunShellCommand('rm %s' % dump_file_path)
+    dump_out = self.device.underlying_device.old_interface.GetFileContents(
+        dump_file_path)
+    self.device.underlying_device.old_interface.RunShellCommand(
+        'rm %s' % dump_file_path)
     return dumpheap_native_parser.Parse(dump_out)
 
   def GetStats(self):

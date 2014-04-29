@@ -18,9 +18,9 @@ _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
-  from pylib import android_commands
   from pylib import forwarder
   from pylib import valgrind_tools
+  from pylib.device import device_utils
 
 ANDROID_TEST_HTTP_PORT = 2311
 ANDROID_TEST_HTTPS_PORT = 2411
@@ -87,22 +87,22 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
   def __init__(self, package, chrome_version='HEAD'):
     super(AndroidTestEnvironment, self).__init__(chrome_version)
     self._package = package
-    self._adb = None
+    self._device = None
     self._forwarder = None
 
   # override
   def GlobalSetUp(self):
     os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
     os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
-    self._adb = android_commands.AndroidCommands()
+    self._device = device_utils.DeviceUtils(None)
     forwarder.Forwarder.Map(
         [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
          (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],
-        self._adb)
+        self._device)
 
   # override
   def GlobalTearDown(self):
-    forwarder.Forwarder.UnmapAllDevicePorts(self._adb)
+    forwarder.Forwarder.UnmapAllDevicePorts(self._device)
 
   # override
   def GetOS(self):

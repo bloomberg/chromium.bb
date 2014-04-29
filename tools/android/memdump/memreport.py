@@ -18,8 +18,8 @@ from string import Template
 
 sys.path.append(os.path.join(sys.path[0], os.pardir, os.pardir, os.pardir,
                              'build','android'))
-from pylib import android_commands
 from pylib import constants
+from pylib.device import device_utils
 
 
 _ENTRIES = [
@@ -205,10 +205,10 @@ def _RunManualGraph(package_name, interval):
 
 
   def _CollectStats(count):
-    adb = android_commands.AndroidCommands()
-    pid_list = adb.ExtractPid(package_name)
-    memdump = adb.RunShellCommand('/data/local/tmp/memdump ' +
-                                  ' '.join(pid_list))
+    device = device_utils.DeviceUtils()
+    pid_list = device.old_interface.ExtractPid(package_name)
+    memdump = device.old_interface.RunShellCommand(
+        '/data/local/tmp/memdump ' + ' '.join(pid_list))
     process_stats = _CollectMemoryStats(memdump,
                                         [value for (key, value) in _ENTRIES])
     for (pid, process) in zip(pid_list, process_stats):

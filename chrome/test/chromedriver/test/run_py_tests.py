@@ -40,6 +40,7 @@ if util.IsLinux():
   from pylib import constants
   from pylib import forwarder
   from pylib import valgrind_tools
+  from pylib.device import device_utils
 
 
 _NEGATIVE_FILTER = [
@@ -179,18 +180,18 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         chrome_paths.GetTestData())
     ChromeDriverTest._sync_server = webserver.SyncWebServer()
     if _ANDROID_PACKAGE_KEY:
-      ChromeDriverTest._adb = android_commands.AndroidCommands(
+      ChromeDriverTest._device = device_utils.DeviceUtils(
           android_commands.GetAttachedDevices()[0])
       http_host_port = ChromeDriverTest._http_server._server.server_port
       sync_host_port = ChromeDriverTest._sync_server._server.server_port
       forwarder.Forwarder.Map(
           [(http_host_port, http_host_port), (sync_host_port, sync_host_port)],
-          ChromeDriverTest._adb)
+          ChromeDriverTest._device)
 
   @staticmethod
   def GlobalTearDown():
     if _ANDROID_PACKAGE_KEY:
-      forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._adb)
+      forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._device)
     ChromeDriverTest._http_server.Shutdown()
 
   @staticmethod
