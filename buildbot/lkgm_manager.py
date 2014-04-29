@@ -30,10 +30,10 @@ PALADIN_REF_ATTR = 'ref'
 PALADIN_CHANGE_ID_ATTR = 'change_id'
 PALADIN_COMMIT_ATTR = 'commit'
 PALADIN_PATCH_NUMBER_ATTR = 'patch_number'
-# TODO(yjhong): remove PALADIN_OWNER_ATTR after
-# ValidationPool.PrintLinkstoChanges() switches to using PALADIN_OWNER_EMAIL.
-PALADIN_OWNER_ATTR = 'owner'
 PALADIN_OWNER_EMAIL_ATTR = 'owner_email'
+PALADIN_FAIL_COUNT_ATTR = 'fail_count'
+PALADIN_PASS_COUNT_ATTR = 'pass_count'
+PALADIN_TOTAL_FAIL_COUNT_ATTR = 'total_fail_count'
 
 
 MANIFEST_ELEMENT = 'manifest'
@@ -238,8 +238,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       pending_commit.setAttribute(PALADIN_CHANGE_ID_ATTR, patch.change_id)
       pending_commit.setAttribute(PALADIN_COMMIT_ATTR, patch.commit)
       pending_commit.setAttribute(PALADIN_PATCH_NUMBER_ATTR, patch.patch_number)
-      pending_commit.setAttribute(PALADIN_OWNER_ATTR, patch.owner)
       pending_commit.setAttribute(PALADIN_OWNER_EMAIL_ATTR, patch.owner_email)
+      pending_commit.setAttribute(PALADIN_FAIL_COUNT_ATTR,
+                                  str(patch.fail_count))
+      pending_commit.setAttribute(PALADIN_PASS_COUNT_ATTR,
+                                  str(patch.pass_count))
+      pending_commit.setAttribute(PALADIN_TOTAL_FAIL_COUNT_ATTR,
+                                  str(patch.total_fail_count))
       manifest_dom.documentElement.appendChild(pending_commit)
 
     with open(manifest, 'w+') as manifest_file:

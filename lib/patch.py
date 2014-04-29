@@ -1242,7 +1242,8 @@ class GerritFetchOnlyPatch(GitRepoPatch):
   """Object that contains information to cherry-pick a Gerrit CL."""
 
   def __init__(self, project_url, project, ref, tracking_branch, remote,
-               sha1, change_id, gerrit_number, patch_number, owner_email=None):
+               sha1, change_id, gerrit_number, patch_number, owner_email=None,
+               fail_count=None, pass_count=None, total_fail_count=None):
     """Initializes a GerritFetchOnlyPatch object."""
     super(GerritFetchOnlyPatch, self).__init__(
         project_url, project, ref, tracking_branch, remote,
@@ -1252,7 +1253,7 @@ class GerritFetchOnlyPatch(GitRepoPatch):
     # TODO: Do we need three variables for the commit hash?
     self.revision = self.commit = self.sha1
 
-    # Set owner, owner_email, and url for printing the CL link.
+    # Variables below are required to print the CL link.
     self.owner_email = owner_email
     self.owner = None
     if self.owner_email:
@@ -1260,6 +1261,9 @@ class GerritFetchOnlyPatch(GitRepoPatch):
 
     self.url = gob_util.GetChangePageUrl(
         constants.GERRIT_HOSTS[self.remote], int(self.gerrit_number))
+    self.fail_count = fail_count
+    self.pass_count = pass_count
+    self.total_fail_count = total_fail_count
 
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id

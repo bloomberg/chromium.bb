@@ -505,8 +505,10 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       gerrit_patch.change_id = '1234567890'
       gerrit_patch.commit = '0987654321'
       gerrit_patch.patch_number = '4'
-      gerrit_patch.owner = 'foo'
       gerrit_patch.owner_email = 'foo@chromium.org'
+      gerrit_patch.fail_count = 1
+      gerrit_patch.pass_count = 1
+      gerrit_patch.total_fail_count = 3
       self.manager._AddPatchesToManifest(tmp_manifest, [gerrit_patch])
 
       new_doc = minidom.parse(tmp_manifest)
@@ -524,8 +526,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
                        gerrit_patch.tracking_branch)
       self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
                        gerrit_patch.ref)
-      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_OWNER_ATTR),
-                       gerrit_patch.owner)
       self.assertEqual(
           element.getAttribute(lkgm_manager.PALADIN_OWNER_EMAIL_ATTR),
           gerrit_patch.owner_email)
@@ -535,6 +535,15 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       self.assertEqual(
           element.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
           gerrit_patch.patch_number)
+      self.assertEqual(
+          element.getAttribute(lkgm_manager.PALADIN_FAIL_COUNT_ATTR),
+          str(gerrit_patch.fail_count))
+      self.assertEqual(
+          element.getAttribute(lkgm_manager.PALADIN_PASS_COUNT_ATTR),
+          str(gerrit_patch.pass_count))
+      self.assertEqual(
+          element.getAttribute(lkgm_manager.PALADIN_TOTAL_FAIL_COUNT_ATTR),
+          str(gerrit_patch.total_fail_count))
 
     finally:
       os.remove(tmp_manifest)

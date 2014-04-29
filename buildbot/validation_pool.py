@@ -1705,18 +1705,16 @@ class ValidationPool(object):
   def PrintLinksToChanges(cls, changes):
     """Print links to the specified |changes|.
 
+    This method prints a link to list of |changes| by using the
+    information stored in |changes|. It should not attempt to query
+    Google Storage or Gerrit.
+
     Args:
       changes: A list of cros_patch.GerritPatch instances to generate
         transactions for.
     """
-    # Completely fill the status cache in parallel.
-    cls.FillCLStatusCache(CQ, changes)
-
     def SortKeyForChanges(change):
-      all_failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED,
-                                          latest_patchset_only=False)
-      failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED)
-      return (-all_failures, -failures,
+      return (-change.total_fail_count, -change.fail_count,
               os.path.basename(change.project), change.gerrit_number)
 
     # Now, sort and print the changes.
@@ -1724,7 +1722,7 @@ class ValidationPool(object):
       project = os.path.basename(change.project)
       gerrit_number = cros_patch.AddPrefix(change, change.gerrit_number)
       # We cannot print '@' in the link because it is used to separate
-      # the display text and the URL.
+      # the display text and the URL by the buildbot annotator.
       author = change.owner_email.replace('@', '-AT-')
       if (change.owner_email.endswith(constants.GOOGLE_EMAIL) or
           change.owner_email.endswith(constants.CHROMIUM_EMAIL)):
@@ -1733,18 +1731,14 @@ class ValidationPool(object):
       s = '%s | %s | %s' % (project, author, gerrit_number)
 
       # Print a count of how many times a given CL has failed the CQ.
-      all_failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED,
-                                          latest_patchset_only=False)
-      failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED)
-      if all_failures:
-        s += ' | fails:%d' % (failures,)
-        if all_failures > failures:
-          s += '(%d)' % (all_failures,)
+      if change.total_fail_count:
+        s += ' | fails:%d' % (change.fail_count,)
+        if change.total_fail_count > change.fail_count:
+          s += '(%d)' % (change.total_fail_count,)
 
       # Add a note if the latest patchset has already passed the CQ.
-      passed = cls.GetCLStatusCount(CQ, change, cls.STATUS_PASSED)
-      if passed > 0:
-        s += ' | passed:%d' % passed
+      if change.pass_count > 0:
+        s += ' | passed:%d' % change.pass_count
 
       cros_build_lib.PrintBuildbotLink(s, change.url)
 
@@ -1799,6 +1793,18 @@ class ValidationPool(object):
           raise
         else:
           applied.append(change)
+
+
+    # TODO(yjhong): Run this on only the master after the slaves
+    # switch to read CL status from the manifest (crbug.com/366277).
+
+    # Completely fill the status cache in parallel.
+    self.FillCLStatusCache(CQ, applied)
+    for change in applied:
+      change.total_fail_count = self.GetCLStatusCount(
+          CQ, change, self.STATUS_FAILED, latest_patchset_only=False)
+      change.fail_count = self.GetCLStatusCount(CQ, change, self.STATUS_FAILED)
+      change.pass_count = self.GetCLStatusCount(CQ, change, self.STATUS_PASSED)
 
     self.PrintLinksToChanges(applied)
 

@@ -118,7 +118,11 @@ class Base(cros_test_lib.MockTestCase):
       'url': '%s/%s' % (fake_url, change_id),
     }
 
-    return cros_patch.GerritPatch(patch_dict, remote, fake_url)
+    patch = cros_patch.GerritPatch(patch_dict, remote, fake_url)
+    patch.pass_count = 0
+    patch.fail_count = 1
+    patch.total_fail_count = 3
+    return patch
 
   def GetPatches(self, how_many=1, always_use_list=False, **kwargs):
     """Get a sequential list of patches.
