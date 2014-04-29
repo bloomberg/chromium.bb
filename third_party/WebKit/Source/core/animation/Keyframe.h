@@ -78,7 +78,7 @@ protected:
     Keyframe()
         : m_offset(nullValue())
         , m_composite(AnimationEffect::CompositeReplace)
-        , m_easing(LinearTimingFunction::preset())
+        , m_easing(LinearTimingFunction::shared())
     {
     }
     Keyframe(double offset, AnimationEffect::CompositeOperation composite, PassRefPtr<TimingFunction> easing)

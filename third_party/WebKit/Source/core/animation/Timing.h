@@ -68,7 +68,7 @@ struct Timing {
         , iterationDuration(std::numeric_limits<double>::quiet_NaN())
         , playbackRate(1)
         , direction(PlaybackDirectionNormal)
-        , timingFunction(LinearTimingFunction::preset())
+        , timingFunction(LinearTimingFunction::shared())
     {
     }
 

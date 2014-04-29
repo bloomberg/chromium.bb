@@ -68,7 +68,7 @@ private:
 
 class PLATFORM_EXPORT LinearTimingFunction FINAL : public TimingFunction {
 public:
-    static LinearTimingFunction* preset()
+    static LinearTimingFunction* shared()
     {
         DEFINE_STATIC_REF(LinearTimingFunction, linear, (adoptRef(new LinearTimingFunction())));
         return linear;

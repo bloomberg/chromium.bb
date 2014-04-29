@@ -260,7 +260,7 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
     ASSERT(!timing.iterationStart);
     ASSERT(timing.playbackRate == 1);
     ASSERT(!std::isinf(timing.iterationDuration));
-    ASSERT(timing.timingFunction == LinearTimingFunction::preset());
+    ASSERT(timing.timingFunction == LinearTimingFunction::shared());
 
     isPaused = animationData->isPlayStateSet() && animationData->playState() == AnimPlayStatePaused;
     return animationData->isTimingFunctionSet() ? animationData->timingFunction() : CSSAnimationData::initialAnimationTimingFunction();

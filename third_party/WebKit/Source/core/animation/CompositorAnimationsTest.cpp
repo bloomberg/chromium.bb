@@ -78,7 +78,7 @@ protected:
     {
         AnimationCompositorAnimationsTestBase::SetUp();
 
-        m_linearTimingFunction = LinearTimingFunction::preset();
+        m_linearTimingFunction = LinearTimingFunction::shared();
         m_cubicEaseTimingFunction = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
         m_cubicCustomTimingFunction = CubicBezierTimingFunction::create(1, 2, 3, 4);
         m_stepTimingFunction = StepsTimingFunction::create(1, StepsTimingFunction::StepAtEnd);
@@ -145,7 +145,7 @@ public:
         keyframe->setPropertyValue(id, value);
         keyframe->setComposite(AnimationEffect::CompositeReplace);
         keyframe->setOffset(offset);
-        keyframe->setEasing(LinearTimingFunction::preset());
+        keyframe->setEasing(LinearTimingFunction::shared());
         return keyframe;
     }
 

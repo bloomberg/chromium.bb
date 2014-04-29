@@ -70,7 +70,7 @@ public:
 
 TEST_F(TimingFunctionTest, LinearToString)
 {
-    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::preset();
+    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::shared();
     EXPECT_EQ(linearTiming->toString(), "linear");
 }
 
@@ -112,7 +112,7 @@ TEST_F(TimingFunctionTest, StepToString)
 
 TEST_F(TimingFunctionTest, BaseOperatorEq)
 {
-    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::preset();
+    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::shared();
     RefPtr<TimingFunction> cubicTiming1 = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
     RefPtr<TimingFunction> cubicTiming2 = CubicBezierTimingFunction::create(0.17, 0.67, 1, -1.73);
     RefPtr<TimingFunction> stepsTiming1 = StepsTimingFunction::preset(StepsTimingFunction::End);
@@ -129,8 +129,8 @@ TEST_F(TimingFunctionTest, BaseOperatorEq)
 
 TEST_F(TimingFunctionTest, LinearOperatorEq)
 {
-    RefPtr<TimingFunction> linearTiming1 = LinearTimingFunction::preset();
-    RefPtr<TimingFunction> linearTiming2 = LinearTimingFunction::preset();
+    RefPtr<TimingFunction> linearTiming1 = LinearTimingFunction::shared();
+    RefPtr<TimingFunction> linearTiming2 = LinearTimingFunction::shared();
     EXPECT_EQ(*linearTiming1, *linearTiming1);
     EXPECT_EQ(*linearTiming1, *linearTiming2);
 }
@@ -215,7 +215,7 @@ TEST_F(TimingFunctionTest, StepsOperatorEqReflectivity)
 
 TEST_F(TimingFunctionTest, LinearEvaluate)
 {
-    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::preset();
+    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::shared();
     EXPECT_EQ(0.2, linearTiming->evaluate(0.2, 0));
     EXPECT_EQ(0.6, linearTiming->evaluate(0.6, 0));
     EXPECT_EQ(-0.2, linearTiming->evaluate(-0.2, 0));

@@ -462,7 +462,7 @@ PassRefPtr<TimingFunction> CSSToStyleMap::animationTimingFunction(CSSValue* valu
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         switch (primitiveValue->getValueID()) {
         case CSSValueLinear:
-            return LinearTimingFunction::preset();
+            return LinearTimingFunction::shared();
             break;
         case CSSValueEase:
             return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);

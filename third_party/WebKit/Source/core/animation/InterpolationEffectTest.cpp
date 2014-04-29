@@ -59,7 +59,7 @@ TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations)
     interpolationEffect->addInterpolation(Interpolation::create(InterpolableNumber::create(10), InterpolableNumber::create(15)),
         RefPtr<TimingFunction>(), 1, 2, 1, 3);
     interpolationEffect->addInterpolation(Interpolation::create(InterpolableNumber::create(0), InterpolableNumber::create(1)),
-        LinearTimingFunction::preset(), 0, 1, 0, 1);
+        LinearTimingFunction::shared(), 0, 1, 0, 1);
     interpolationEffect->addInterpolation(Interpolation::create(InterpolableNumber::create(1), InterpolableNumber::create(6)),
         CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease), 0.5, 1.5, 0.5, 1.5);
 

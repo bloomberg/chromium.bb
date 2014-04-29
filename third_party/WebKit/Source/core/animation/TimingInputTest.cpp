@@ -139,13 +139,13 @@ TEST_F(AnimationTimingInputTest, TimingInputDirection)
 
 TEST_F(AnimationTimingInputTest, TimingInputTimingFunction)
 {
-    const RefPtr<TimingFunction> defaultTimingFunction = LinearTimingFunction::preset();
+    const RefPtr<TimingFunction> defaultTimingFunction = LinearTimingFunction::shared();
 
     EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease), *applyTimingInputString("easing", "ease").timingFunction);
     EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn), *applyTimingInputString("easing", "ease-in").timingFunction);
     EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut), *applyTimingInputString("easing", "ease-out").timingFunction);
     EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut), *applyTimingInputString("easing", "ease-in-out").timingFunction);
-    EXPECT_EQ(*LinearTimingFunction::preset(), *applyTimingInputString("easing", "linear").timingFunction);
+    EXPECT_EQ(*LinearTimingFunction::shared(), *applyTimingInputString("easing", "linear").timingFunction);
     EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::Start), *applyTimingInputString("easing", "step-start").timingFunction);
     EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::Middle), *applyTimingInputString("easing", "step-middle").timingFunction);
     EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::End), *applyTimingInputString("easing", "step-end").timingFunction);
