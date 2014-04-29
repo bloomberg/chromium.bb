@@ -155,7 +155,8 @@ ServiceWorkerDatabase::ServiceWorkerDatabase(const base::FilePath& path)
       next_avail_resource_id_(0),
       next_avail_version_id_(0),
       is_disabled_(false),
-      was_corruption_detected_(false) {
+      was_corruption_detected_(false),
+      is_initialized_(false) {
 }
 
 ServiceWorkerDatabase::~ServiceWorkerDatabase() {
