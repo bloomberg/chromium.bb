@@ -33715,6 +33715,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="745" label="BLUETOOTHSOCKET_SEND"/>
   <int value="746" label="BLUETOOTHSOCKET_GETINFO"/>
   <int value="747" label="BLUETOOTHSOCKET_GETSOCKETS"/>
+  <int value="748" label="WEBSTOREPRIVATE_SIGNINFUNCTION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

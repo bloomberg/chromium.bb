@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/webstore_private.h"
 #include "components/signin/core/browser/signin_tracker.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -21,6 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class ProfileSyncService;
+class SigninManagerBase;
 
 namespace content {
 class GpuDataManager;
@@ -302,6 +304,39 @@ class WebstorePrivateIsInIncognitoModeFunction
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+};
+
+class WebstorePrivateSignInFunction : public ChromeAsyncExtensionFunction,
+                                      public SigninManagerFactory::Observer,
+                                      public SigninTracker::Observer {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.signIn",
+                             WEBSTOREPRIVATE_SIGNINFUNCTION)
+
+  WebstorePrivateSignInFunction();
+
+ protected:
+  virtual ~WebstorePrivateSignInFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+  // SigninManagerFactory::Observer:
+  virtual void SigninManagerShutdown(SigninManagerBase* manager) OVERRIDE;
+
+  // SigninTracker::Observer:
+  virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void SigninSuccess() OVERRIDE;
+  virtual void MergeSessionComplete(const GoogleServiceAuthError& error)
+      OVERRIDE;
+
+ private:
+  // The sign-in manager for the invoking tab's Chrome Profile. Weak reference.
+  SigninManagerBase* signin_manager_;
+
+  // Tracks changes to sign-in state. Used to notify the page when an existing
+  // in-progress sign-in completes, either with success or failure.
+  scoped_ptr<SigninTracker> signin_tracker_;
 };
 
 }  // namespace extensions

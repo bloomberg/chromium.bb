@@ -67,6 +67,24 @@ void FakeSigninManager::CompletePendingSignin() {
                     GoogleSigninSucceeded(authenticated_username_, password_));
 }
 
+void FakeSigninManager::AddMergeSessionObserver(
+    MergeSessionHelper::Observer* observer) {
+  SigninManager::AddMergeSessionObserver(observer);
+  merge_session_observer_list_.AddObserver(observer);
+}
+
+void FakeSigninManager::RemoveMergeSessionObserver(
+    MergeSessionHelper::Observer* observer) {
+  SigninManager::RemoveMergeSessionObserver(observer);
+  merge_session_observer_list_.RemoveObserver(observer);
+}
+
+void FakeSigninManager::NotifyMergeSessionObservers(
+    const GoogleServiceAuthError& error) {
+  FOR_EACH_OBSERVER(MergeSessionHelper::Observer, merge_session_observer_list_,
+                    MergeSessionCompleted(GetAuthenticatedUsername(), error));
+}
+
 void FakeSigninManager::SignIn(const std::string& username,
                                const std::string& password) {
   StartSignInWithRefreshToken(

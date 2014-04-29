@@ -806,6 +806,7 @@ enum HistogramValue {
   BLUETOOTHSOCKET_SEND,
   BLUETOOTHSOCKET_GETINFO,
   BLUETOOTHSOCKET_GETSOCKETS,
+  WEBSTOREPRIVATE_SIGNINFUNCTION,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -96,3 +96,29 @@ function installAndCleanUp(installOptions, whileInstalled) {
             }));
       }));
 }
+
+function getContinueUrl(callback) {
+  chrome.test.getConfig(function(config) {
+    callback('http://www.example.com:PORT/continue'
+                 .replace(/PORT/, config.spawnedTestServer.port));
+  });
+}
+
+function expectSignInFailure(error, forced_continue_url) {
+  getContinueUrl(function(continue_url) {
+    if (forced_continue_url !== undefined)
+      continue_url = forced_continue_url;
+
+    chrome.test.runWithUserGesture(function() {
+      chrome.webstorePrivate.signIn(continue_url, callbackFail(error));
+    });
+  });
+}
+
+function expectUserIsAlreadySignedIn() {
+  getContinueUrl(function(continue_url) {
+    chrome.test.runWithUserGesture(function() {
+      chrome.webstorePrivate.signIn(continue_url, callbackPass());
+    });
+  });
+}

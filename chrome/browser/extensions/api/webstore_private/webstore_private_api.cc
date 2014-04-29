@@ -23,6 +23,7 @@
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -32,19 +33,24 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 using content::GpuDataManager;
 
@@ -59,6 +65,7 @@ namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
 namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
 namespace InstallBundle = api::webstore_private::InstallBundle;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
+namespace SignIn = api::webstore_private::SignIn;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 
 namespace {
@@ -686,6 +693,103 @@ bool WebstorePrivateIsInIncognitoModeFunction::RunImpl() {
   results_ = IsInIncognitoMode::Results::Create(
       GetProfile() != GetProfile()->GetOriginalProfile());
   return true;
+}
+
+WebstorePrivateSignInFunction::WebstorePrivateSignInFunction()
+    : signin_manager_(NULL) {}
+WebstorePrivateSignInFunction::~WebstorePrivateSignInFunction() {}
+
+bool WebstorePrivateSignInFunction::RunImpl() {
+  scoped_ptr<SignIn::Params> params = SignIn::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // This API must be called only in response to a user gesture.
+  if (!user_gesture()) {
+    error_ = "user_gesture_required";
+    SendResponse(false);
+    return false;
+  }
+
+  // The |continue_url| is required, and must be hosted on the same origin as
+  // the calling page.
+  GURL continue_url(params->continue_url);
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (!continue_url.is_valid() ||
+      continue_url.GetOrigin() !=
+          web_contents->GetLastCommittedURL().GetOrigin()) {
+    error_ = "invalid_continue_url";
+    SendResponse(false);
+    return false;
+  }
+
+  // If sign-in is disallowed, give up.
+  signin_manager_ = SigninManagerFactory::GetForProfile(GetProfile());
+  if (!signin_manager_ || !signin_manager_->IsSigninAllowed() ||
+      switches::IsEnableWebBasedSignin()) {
+    error_ = "signin_is_disallowed";
+    SendResponse(false);
+    return false;
+  }
+
+  // If the user is already signed in, there's nothing else to do.
+  if (!signin_manager_->GetAuthenticatedUsername().empty()) {
+    SendResponse(true);
+    return true;
+  }
+
+  // If an authentication is currently in progress, wait for it to complete.
+  if (signin_manager_->AuthInProgress()) {
+    SigninManagerFactory::GetInstance()->AddObserver(this);
+    signin_tracker_ =
+        SigninTrackerFactory::CreateForProfile(GetProfile(), this).Pass();
+    AddRef();  // Balanced in the sign-in observer methods below.
+    return true;
+  }
+
+  GURL signin_url =
+      signin::GetPromoURLWithContinueURL(signin::SOURCE_WEBSTORE_INSTALL,
+                                         false /* auto_close */,
+                                         false /* is_constrained */,
+                                         continue_url);
+  web_contents->GetController().LoadURL(signin_url,
+                                        content::Referrer(),
+                                        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                        std::string());
+
+  SendResponse(true);
+  return true;
+}
+
+void WebstorePrivateSignInFunction::SigninManagerShutdown(
+    SigninManagerBase* manager) {
+  if (manager == signin_manager_)
+    SigninFailed(GoogleServiceAuthError::AuthErrorNone());
+}
+
+void WebstorePrivateSignInFunction::SigninFailed(
+    const GoogleServiceAuthError& error) {
+  error_ = "signin_failed";
+  SendResponse(false);
+
+  SigninManagerFactory::GetInstance()->RemoveObserver(this);
+  Release();  // Balanced in RunImpl().
+}
+
+void WebstorePrivateSignInFunction::SigninSuccess() {
+  // Nothing to do yet. Keep waiting until MergeSessionComplete() is called.
+}
+
+void WebstorePrivateSignInFunction::MergeSessionComplete(
+    const GoogleServiceAuthError& error) {
+  if (error.state() == GoogleServiceAuthError::NONE) {
+    SendResponse(true);
+  } else {
+    error_ = "merge_session_failed";
+    SendResponse(false);
+  }
+
+  SigninManagerFactory::GetInstance()->RemoveObserver(this);
+  Release();  // Balanced in RunImpl().
 }
 
 }  // namespace extensions
