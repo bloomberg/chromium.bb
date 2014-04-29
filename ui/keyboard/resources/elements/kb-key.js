@@ -67,8 +67,11 @@ Polymer('kb-key', {
     if (!this.image) {
       this.$.key.style.backgroundImage = "none";
     } else {
+      // If no extension provided, default to svg.
+      var image =
+          this.image.split('.').length > 1 ? this.image : this.image + ".svg";
       this.$.key.style.backgroundImage =
-          "url(images/" + this.image + ".svg)";
+          "url(images/" + image + ")";
     }
   },
 

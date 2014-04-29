@@ -34,11 +34,6 @@ kb-keyboard.caps-locked kb-shift-key.dark /deep/
     background-color: rgba(0, 0, 255, 0.5);
 }
 
-kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
-kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl]  {
-  color: blue;
-}
-
 .space,
 .dark {
   font-size: 70%;
@@ -50,5 +45,5 @@ kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl]  {
 }
 
 .space {
-  color: bbbbbb;
+  color: #bbbbbb;
 }

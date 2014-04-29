@@ -40,8 +40,7 @@
       /* TODO(rsadam@): Remove when we fully switch to native shadow dom. */
       /* TODO(rsadam@): Move shift key rules to kb-shift-key. */
       kb-shift-key .key,
-      :host(kb-shift-key) .key,
-      :host([image]) .key {
+      :host(kb-shift-key) .key {
         height: 70%;
         width: auto;
       }
@@ -50,8 +49,8 @@
         height: 85%;
       }
 
-      :host([image].hide-keyboard) .key {
-        height: 100%;
+      :host([image]) .key {
+        height: 30%;
       }
 
       :host([image].search) .key {
