@@ -139,24 +139,34 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
+  StartWorkerWithCandidateProcesses(std::vector<int>(), callback);
+}
+
+void ServiceWorkerVersion::StartWorkerWithCandidateProcesses(
+    const std::vector<int>& possible_process_ids,
+    const StatusCallback& callback) {
   DCHECK(embedded_worker_);
-  if (running_status() == RUNNING) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
-    return;
-  }
-  if (running_status() == STOPPING) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
-    return;
-  }
-  if (start_callbacks_.empty()) {
-    ServiceWorkerStatusCode status = embedded_worker_->Start(
-        version_id_, scope_, script_url_);
-    if (status != SERVICE_WORKER_OK) {
-      RunSoon(base::Bind(callback, status));
+  switch (running_status()) {
+    case RUNNING:
+      RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
       return;
-    }
+    case STOPPING:
+      RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+      return;
+    case STOPPED:
+    case STARTING:
+      start_callbacks_.push_back(callback);
+      if (running_status() == STOPPED) {
+        embedded_worker_->Start(
+            version_id_,
+            scope_,
+            script_url_,
+            possible_process_ids,
+            base::Bind(&ServiceWorkerVersion::RunStartWorkerCallbacksOnError,
+                       weak_factory_.GetWeakPtr()));
+      }
+      return;
   }
-  start_callbacks_.push_back(callback);
 }
 
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
@@ -196,48 +206,39 @@ void ServiceWorkerVersion::DispatchInstallEvent(
     int active_version_id,
     const StatusCallback& callback) {
   DCHECK_EQ(NEW, status()) << status();
+  SetStatus(INSTALLING);
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(&RunTaskAfterStartWorker,
-                           weak_factory_.GetWeakPtr(), callback,
-                           base::Bind(&self::DispatchInstallEvent,
-                                      weak_factory_.GetWeakPtr(),
-                                      active_version_id, callback)));
-    return;
-  }
-
-  SetStatus(INSTALLING);
-  int request_id = install_callbacks_.Add(new StatusCallback(callback));
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_InstallEvent(request_id, active_version_id));
-  if (status != SERVICE_WORKER_OK) {
-    install_callbacks_.Remove(request_id);
-    RunSoon(base::Bind(callback, status));
+    StartWorker(
+        base::Bind(&RunTaskAfterStartWorker,
+                   weak_factory_.GetWeakPtr(),
+                   callback,
+                   base::Bind(&self::DispatchInstallEventAfterStartWorker,
+                              weak_factory_.GetWeakPtr(),
+                              active_version_id,
+                              callback)));
+  } else {
+    DispatchInstallEventAfterStartWorker(active_version_id, callback);
   }
 }
 
 void ServiceWorkerVersion::DispatchActivateEvent(
     const StatusCallback& callback) {
   DCHECK_EQ(INSTALLED, status()) << status();
+  SetStatus(ACTIVATING);
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(&RunTaskAfterStartWorker,
-                           weak_factory_.GetWeakPtr(), callback,
-                           base::Bind(&self::DispatchActivateEvent,
-                                      weak_factory_.GetWeakPtr(),
-                                      callback)));
-    return;
-  }
-
-  SetStatus(ACTIVATING);
-  int request_id = activate_callbacks_.Add(new StatusCallback(callback));
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_ActivateEvent(request_id));
-  if (status != SERVICE_WORKER_OK) {
-    activate_callbacks_.Remove(request_id);
-    RunSoon(base::Bind(callback, status));
+    StartWorker(
+        base::Bind(&RunTaskAfterStartWorker,
+                   weak_factory_.GetWeakPtr(),
+                   callback,
+                   base::Bind(&self::DispatchActivateEventAfterStartWorker,
+                              weak_factory_.GetWeakPtr(),
+                              callback)));
+  } else {
+    DispatchActivateEventAfterStartWorker(callback);
   }
 }
 
@@ -431,6 +432,39 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ServiceWorkerVersion::RunStartWorkerCallbacksOnError(
+    ServiceWorkerStatusCode status) {
+  if (status != SERVICE_WORKER_OK)
+    RunCallbacks(this, &start_callbacks_, status);
+}
+
+void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
+    int active_version_id,
+    const StatusCallback& callback) {
+  DCHECK_EQ(RUNNING, running_status())
+      << "Worker stopped too soon after it was started.";
+  int request_id = install_callbacks_.Add(new StatusCallback(callback));
+  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
+      ServiceWorkerMsg_InstallEvent(request_id, active_version_id));
+  if (status != SERVICE_WORKER_OK) {
+    install_callbacks_.Remove(request_id);
+    RunSoon(base::Bind(callback, status));
+  }
+}
+
+void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
+    const StatusCallback& callback) {
+  DCHECK_EQ(RUNNING, running_status())
+      << "Worker stopped too soon after it was started.";
+  int request_id = activate_callbacks_.Add(new StatusCallback(callback));
+  ServiceWorkerStatusCode status =
+      embedded_worker_->SendMessage(ServiceWorkerMsg_ActivateEvent(request_id));
+  if (status != SERVICE_WORKER_OK) {
+    activate_callbacks_.Remove(request_id);
+    RunSoon(base::Bind(callback, status));
+  }
 }
 
 void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {

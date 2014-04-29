@@ -7,14 +7,18 @@
 #include "base/files/file_path.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace content {
 
-ServiceWorkerContextWrapper::ServiceWorkerContextWrapper()
+ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
+    BrowserContext* browser_context)
     : observer_list_(
-          new ObserverListThreadSafe<ServiceWorkerContextObserver>()) {}
+          new ObserverListThreadSafe<ServiceWorkerContextObserver>()),
+      browser_context_(browser_context) {
+}
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
 }
@@ -24,19 +28,26 @@ void ServiceWorkerContextWrapper::Init(
     quota::QuotaManagerProxy* quota_manager_proxy) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ServiceWorkerContextWrapper::Init, this,
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::Init,
+                   this,
                    user_data_directory,
                    make_scoped_refptr(quota_manager_proxy)));
     return;
   }
   DCHECK(!context_core_);
   context_core_.reset(new ServiceWorkerContextCore(
-      user_data_directory, quota_manager_proxy, observer_list_));
+      user_data_directory,
+      quota_manager_proxy,
+      observer_list_,
+      make_scoped_ptr(new ServiceWorkerProcessManager(this))));
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    browser_context_ = NULL;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ServiceWorkerContextWrapper::Shutdown, this));
@@ -65,7 +76,6 @@ static void FinishRegistrationOnIO(
 void ServiceWorkerContextWrapper::RegisterServiceWorker(
     const GURL& pattern,
     const GURL& script_url,
-    int source_process_id,
     const ResultCallback& continuation) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -75,7 +85,6 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
                    this,
                    pattern,
                    script_url,
-                   source_process_id,
                    continuation));
     return;
   }
@@ -83,7 +92,7 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
   context()->RegisterServiceWorker(
       pattern,
       script_url,
-      source_process_id,
+      -1,
       NULL /* provider_host */,
       base::Bind(&FinishRegistrationOnIO, continuation));
 }

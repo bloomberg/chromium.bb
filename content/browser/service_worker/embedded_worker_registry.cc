@@ -4,10 +4,13 @@
 
 #include "content/browser/service_worker/embedded_worker_registry.h"
 
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 
@@ -25,20 +28,34 @@ scoped_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
   return worker.Pass();
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerRegistry::StartWorker(
-    int process_id,
-    int embedded_worker_id,
-    int64 service_worker_version_id,
-    const GURL& scope,
-    const GURL& script_url) {
-  return Send(
-      process_id,
-      new EmbeddedWorkerMsg_StartWorker(
-          embedded_worker_id, service_worker_version_id, scope, script_url));
+void EmbeddedWorkerRegistry::StartWorker(const std::vector<int>& process_ids,
+                                         int embedded_worker_id,
+                                         int64 service_worker_version_id,
+                                         const GURL& scope,
+                                         const GURL& script_url,
+                                         const StatusCallback& callback) {
+  if (!context_) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    return;
+  }
+  context_->process_manager()->AllocateWorkerProcess(
+      process_ids,
+      script_url,
+      base::Bind(&EmbeddedWorkerRegistry::StartWorkerWithProcessId,
+                 this,
+                 embedded_worker_id,
+                 base::Passed(make_scoped_ptr(new EmbeddedWorkerMsg_StartWorker(
+                     embedded_worker_id,
+                     service_worker_version_id,
+                     scope,
+                     script_url))),
+                 callback));
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(
     int process_id, int embedded_worker_id) {
+  if (context_)
+    context_->process_manager()->ReleaseWorkerProcess(process_id);
   return Send(process_id,
               new EmbeddedWorkerMsg_StopWorker(embedded_worker_id));
 }
@@ -53,6 +70,14 @@ bool EmbeddedWorkerRegistry::OnMessageReceived(const IPC::Message& message) {
     return false;
   }
   return found->second->OnMessageReceived(message);
+}
+
+void EmbeddedWorkerRegistry::Shutdown() {
+  for (WorkerInstanceMap::iterator it = worker_map_.begin();
+       it != worker_map_.end();
+       ++it) {
+    it->second->Stop();
+  }
 }
 
 void EmbeddedWorkerRegistry::OnWorkerStarted(
@@ -143,7 +168,38 @@ EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
   return found->second;
 }
 
-EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {}
+EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
+  Shutdown();
+}
+
+void EmbeddedWorkerRegistry::StartWorkerWithProcessId(
+    int embedded_worker_id,
+    scoped_ptr<EmbeddedWorkerMsg_StartWorker> message,
+    const StatusCallback& callback,
+    ServiceWorkerStatusCode status,
+    int process_id) {
+  WorkerInstanceMap::const_iterator worker =
+      worker_map_.find(embedded_worker_id);
+  if (worker == worker_map_.end()) {
+    // The Instance was destroyed before it could finish starting.  Undo what
+    // we've done so far.
+    if (context_)
+      context_->process_manager()->ReleaseWorkerProcess(process_id);
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    return;
+  }
+  worker->second->RecordProcessId(process_id, status);
+
+  if (status != SERVICE_WORKER_OK) {
+    callback.Run(status);
+    return;
+  }
+  // The ServiceWorkerDispatcherHost is supposed to be created when the process
+  // is created, and keep an entry in process_sender_map_ for its whole
+  // lifetime.
+  DCHECK(ContainsKey(process_sender_map_, process_id));
+  callback.Run(Send(process_id, message.release()));
+}
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
     int process_id, IPC::Message* message) {

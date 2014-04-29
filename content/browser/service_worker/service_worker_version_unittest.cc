@@ -33,8 +33,8 @@ static const int kRenderProcessId = 1;
 
 class MessageReceiver : public EmbeddedWorkerTestHelper {
  public:
-  MessageReceiver(ServiceWorkerContextCore* context)
-      : EmbeddedWorkerTestHelper(context, kRenderProcessId),
+  MessageReceiver()
+      : EmbeddedWorkerTestHelper(kRenderProcessId),
         current_embedded_worker_id_(0) {}
   virtual ~MessageReceiver() {}
 
@@ -117,16 +117,15 @@ class ServiceWorkerVersionTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
-    helper_.reset(new MessageReceiver(context_.get()));
+    helper_.reset(new MessageReceiver());
 
     registration_ = new ServiceWorkerRegistration(
         GURL("http://www.example.com/*"),
         GURL("http://www.example.com/service_worker.js"),
-        1L, context_->AsWeakPtr());
+        1L,
+        helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_,
-        1L, context_->AsWeakPtr());
+        registration_, 1L, helper_->context()->AsWeakPtr());
 
     // Simulate adding one process to the worker.
     int embedded_worker_id = version_->embedded_worker()->embedded_worker_id();
@@ -138,11 +137,9 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_ = 0;
     registration_ = 0;
     helper_.reset();
-    context_.reset();
   }
 
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ServiceWorkerContextCore> context_;
   scoped_ptr<MessageReceiver> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;

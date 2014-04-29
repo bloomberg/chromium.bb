@@ -63,6 +63,7 @@ void EmbeddedWorkerDispatcher::OnStartWorker(int embedded_worker_id,
                                              const GURL& service_worker_scope,
                                              const GURL& script_url) {
   DCHECK(!workers_.Lookup(embedded_worker_id));
+  RenderThread::Get()->EnsureWebKitInitialized();
   scoped_ptr<WorkerWrapper> wrapper(new WorkerWrapper(
       blink::WebEmbeddedWorker::create(
           new EmbeddedWorkerContextClient(

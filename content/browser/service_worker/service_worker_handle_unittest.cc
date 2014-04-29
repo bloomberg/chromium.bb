@@ -44,17 +44,15 @@ class ServiceWorkerHandleTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
-    helper_.reset(new EmbeddedWorkerTestHelper(context_.get(),
-                                               kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
 
     registration_ = new ServiceWorkerRegistration(
         GURL("http://www.example.com/*"),
         GURL("http://www.example.com/service_worker.js"),
-        1L, context_->AsWeakPtr());
+        1L,
+        helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_,
-        1L, context_->AsWeakPtr());
+        registration_, 1L, helper_->context()->AsWeakPtr());
 
     // Simulate adding one process to the worker.
     int embedded_worker_id = version_->embedded_worker()->embedded_worker_id();
@@ -65,13 +63,11 @@ class ServiceWorkerHandleTest : public testing::Test {
     registration_ = NULL;
     version_ = NULL;
     helper_.reset();
-    context_.reset();
   }
 
   IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_ptr<ServiceWorkerContextCore> context_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -79,8 +75,11 @@ class ServiceWorkerHandleTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
-  scoped_ptr<ServiceWorkerHandle> handle = ServiceWorkerHandle::Create(
-      context_->AsWeakPtr(), helper_.get(), 1 /* thread_id */, version_);
+  scoped_ptr<ServiceWorkerHandle> handle =
+      ServiceWorkerHandle::Create(helper_->context()->AsWeakPtr(),
+                                  helper_.get(),
+                                  1 /* thread_id */,
+                                  version_);
 
   // Start the worker, and then...
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;

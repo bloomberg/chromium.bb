@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,29 +24,34 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
-    helper_.reset(new EmbeddedWorkerTestHelper(
-        context_.get(), kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
   }
 
   virtual void TearDown() OVERRIDE {
     helper_.reset();
-    context_.reset();
   }
 
+  ServiceWorkerContextCore* context() { return helper_->context(); }
+
   EmbeddedWorkerRegistry* embedded_worker_registry() {
-    DCHECK(context_);
-    return context_->embedded_worker_registry();
+    DCHECK(context());
+    return context()->embedded_worker_registry();
   }
 
   IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
 
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ServiceWorkerContextCore> context_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
 };
+
+static void SaveStatusAndCall(ServiceWorkerStatusCode* out,
+                              const base::Closure& callback,
+                              ServiceWorkerStatusCode status) {
+  *out = status;
+  callback.Run();
+}
 
 TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   scoped_ptr<EmbeddedWorkerInstance> worker =
@@ -57,17 +63,20 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   const GURL scope("http://example.com/*");
   const GURL url("http://example.com/worker.js");
 
-  // This fails as we have no available process yet.
-  EXPECT_EQ(SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND,
-            worker->Start(service_worker_version_id, scope, url));
-  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
-
   // Simulate adding one process to the worker.
   helper_->SimulateAddProcessToWorker(embedded_worker_id, kRenderProcessId);
 
   // Start should succeed.
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            worker->Start(service_worker_version_id, scope, url));
+  ServiceWorkerStatusCode status;
+  base::RunLoop run_loop;
+  worker->Start(
+      service_worker_version_id,
+      scope,
+      url,
+      std::vector<int>(),
+      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
   base::RunLoop().RunUntilIdle();
 
@@ -90,6 +99,36 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
       EmbeddedWorkerMsg_StopWorker::ID));
 }
 
+TEST_F(EmbeddedWorkerInstanceTest, InstanceDestroyedBeforeStartFinishes) {
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+
+  const int64 service_worker_version_id = 55L;
+  const GURL scope("http://example.com/*");
+  const GURL url("http://example.com/worker.js");
+
+  ServiceWorkerStatusCode status;
+  base::RunLoop run_loop;
+  // Begin starting the worker.
+  std::vector<int> available_process;
+  available_process.push_back(kRenderProcessId);
+  worker->Start(
+      service_worker_version_id,
+      scope,
+      url,
+      available_process,
+      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+  // But destroy it before it gets a chance to complete.
+  worker.reset();
+  run_loop.Run();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
+
+  // Verify that we didn't send the message to start the worker.
+  ASSERT_FALSE(
+      ipc_sink()->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID));
+}
+
 TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
@@ -106,10 +145,16 @@ TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
   helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
 
   // Process 3 has the biggest # of references and it should be chosen.
-  EXPECT_EQ(SERVICE_WORKER_OK,
-            worker->Start(1L,
-                          GURL("http://example.com/*"),
-                          GURL("http://example.com/worker.js")));
+  ServiceWorkerStatusCode status;
+  base::RunLoop run_loop;
+  worker->Start(
+      1L,
+      GURL("http://example.com/*"),
+      GURL("http://example.com/worker.js"),
+      std::vector<int>(),
+      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
   EXPECT_EQ(3, worker->process_id());
 

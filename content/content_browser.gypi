@@ -1167,6 +1167,8 @@
     'browser/service_worker/service_worker_internals_ui.h',
     'browser/service_worker/service_worker_job_coordinator.cc',
     'browser/service_worker/service_worker_job_coordinator.h',
+    'browser/service_worker/service_worker_process_manager.cc',
+    'browser/service_worker/service_worker_process_manager.h',
     'browser/service_worker/service_worker_provider_host.cc',
     'browser/service_worker/service_worker_provider_host.h',
     'browser/service_worker/service_worker_register_job_base.h',

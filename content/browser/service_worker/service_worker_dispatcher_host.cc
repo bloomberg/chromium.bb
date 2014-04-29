@@ -44,7 +44,9 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
-      message_port_message_filter_(message_port_message_filter) {}
+      message_port_message_filter_(message_port_message_filter),
+      channel_ready_(false) {
+}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
   if (context_) {
@@ -66,6 +68,16 @@ void ServiceWorkerDispatcherHost::Init(
   context_ = context_wrapper->context()->AsWeakPtr();
   context_->embedded_worker_registry()->AddChildProcessSender(
       render_process_id_, this);
+}
+
+void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
+  BrowserMessageFilter::OnFilterAdded(channel);
+  channel_ready_ = true;
+  std::vector<IPC::Message*> messages;
+  pending_messages_.release(&messages);
+  for (size_t i = 0; i < messages.size(); ++i) {
+    BrowserMessageFilter::Send(messages[i]);
+  }
 }
 
 void ServiceWorkerDispatcherHost::OnDestruct() const {
@@ -114,6 +126,17 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   }
 
   return handled;
+}
+
+bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
+  if (channel_ready_) {
+    BrowserMessageFilter::Send(message);
+    // Don't bother passing through Send()'s result: it's not reliable.
+    return true;
+  }
+
+  pending_messages_.push_back(message);
+  return true;
 }
 
 void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(

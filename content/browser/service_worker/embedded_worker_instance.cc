@@ -11,29 +11,34 @@
 
 namespace content {
 
+namespace {
+// Functor to sort by the .second element of a struct.
+struct SecondGreater {
+  template <typename Value>
+  bool operator()(const Value& lhs, const Value& rhs) {
+    return lhs.second > rhs.second;
+  }
+};
+}  // namespace
+
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   registry_->RemoveWorker(process_id_, embedded_worker_id_);
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerInstance::Start(
-    int64 service_worker_version_id,
-    const GURL& scope,
-    const GURL& script_url) {
+void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
+                                   const GURL& scope,
+                                   const GURL& script_url,
+                                   const std::vector<int>& possible_process_ids,
+                                   const StatusCallback& callback) {
   DCHECK(status_ == STOPPED);
-  if (!ChooseProcess())
-    return SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND;
   status_ = STARTING;
-  ServiceWorkerStatusCode status =
-      registry_->StartWorker(process_id_,
-                             embedded_worker_id_,
-                             service_worker_version_id,
-                             scope,
-                             script_url);
-  if (status != SERVICE_WORKER_OK) {
-    status_ = STOPPED;
-    process_id_ = -1;
-  }
-  return status;
+  std::vector<int> ordered_process_ids = SortProcesses(possible_process_ids);
+  registry_->StartWorker(ordered_process_ids,
+                         embedded_worker_id_,
+                         service_worker_version_id,
+                         scope,
+                         script_url,
+                         callback);
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
@@ -78,6 +83,16 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       status_(STOPPED),
       process_id_(-1),
       thread_id_(-1) {
+}
+
+void EmbeddedWorkerInstance::RecordProcessId(int process_id,
+                                             ServiceWorkerStatusCode status) {
+  DCHECK_EQ(process_id_, -1);
+  if (status == SERVICE_WORKER_OK) {
+    process_id_ = process_id;
+  } else {
+    status_ = STOPPED;
+  }
 }
 
 void EmbeddedWorkerInstance::OnStarted(int thread_id) {
@@ -138,21 +153,26 @@ void EmbeddedWorkerInstance::RemoveListener(Listener* listener) {
   listener_list_.RemoveObserver(listener);
 }
 
-bool EmbeddedWorkerInstance::ChooseProcess() {
-  DCHECK_EQ(-1, process_id_);
-  // Naive implementation; chooses a process which has the biggest number of
-  // associated providers (so that hopefully likely live longer).
-  ProcessRefMap::iterator max_ref_iter = process_refs_.end();
-  for (ProcessRefMap::iterator iter = process_refs_.begin();
-       iter != process_refs_.end(); ++iter) {
-    if (max_ref_iter == process_refs_.end() ||
-        max_ref_iter->second < iter->second)
-      max_ref_iter = iter;
+std::vector<int> EmbeddedWorkerInstance::SortProcesses(
+    const std::vector<int>& possible_process_ids) const {
+  // Add the |possible_process_ids| to the existing process_refs_ since each one
+  // is likely to take a reference once the SW starts up.
+  ProcessRefMap refs_with_new_ids = process_refs_;
+  for (std::vector<int>::const_iterator it = possible_process_ids.begin();
+       it != possible_process_ids.end();
+       ++it) {
+    refs_with_new_ids[*it]++;
   }
-  if (max_ref_iter == process_refs_.end())
-    return false;
-  process_id_ = max_ref_iter->first;
-  return true;
+
+  std::vector<std::pair<int, int> > counted(refs_with_new_ids.begin(),
+                                            refs_with_new_ids.end());
+  // Sort descending by the reference count.
+  std::sort(counted.begin(), counted.end(), SecondGreater());
+
+  std::vector<int> result(counted.size());
+  for (size_t i = 0; i < counted.size(); ++i)
+    result[i] = counted[i].first;
+  return result;
 }
 
 }  // namespace content

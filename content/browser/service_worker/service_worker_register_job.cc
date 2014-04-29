@@ -43,14 +43,10 @@ ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
 
 void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,
                                            int process_id) {
-  DCHECK_NE(-1, process_id);
-  if (phase_ >= UPDATE && pending_version())
-    pending_version()->AddProcessToWorker(process_id);
-  else
-    pending_process_ids_.push_back(process_id);
-
   if (!is_promise_resolved_) {
     callbacks_.push_back(callback);
+    if (process_id != -1 && (phase_ < UPDATE || !pending_version()))
+      pending_process_ids_.push_back(process_id);
     return;
   }
   RunSoon(base::Bind(
@@ -228,15 +224,11 @@ void ServiceWorkerRegisterJob::UpdateAndContinue(
   // the worker.
   set_pending_version(new ServiceWorkerVersion(
       registration(), context_->storage()->NewVersionId(), context_));
-  for (std::vector<int>::const_iterator it = pending_process_ids_.begin();
-       it != pending_process_ids_.end();
-       ++it) {
-    pending_version()->AddProcessToWorker(*it);
-  }
 
   // TODO(michaeln): Start the worker into a paused state where the
   // script resource is downloaded but not yet evaluated.
-  pending_version()->StartWorker(
+  pending_version()->StartWorkerWithCandidateProcesses(
+      pending_process_ids_,
       base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
                  weak_factory_.GetWeakPtr()));
 }

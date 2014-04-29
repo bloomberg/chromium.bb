@@ -416,7 +416,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                idb_task_runner);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
-      new ServiceWorkerContextWrapper();
+      new ServiceWorkerContextWrapper(context);
   service_worker_context->Init(path, quota_manager->proxy());
 
   scoped_refptr<ChromeAppCacheService> appcache_service =

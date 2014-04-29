@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_INSTANCE_H_
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -33,6 +34,7 @@ struct ServiceWorkerFetchRequest;
 // AddProcessReference().
 class CONTENT_EXPORT EmbeddedWorkerInstance {
  public:
+  typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
   enum Status {
     STOPPED,
     STARTING,
@@ -62,11 +64,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   ~EmbeddedWorkerInstance();
 
-  // Starts the worker. It is invalid to call this when the worker is
-  // not in STOPPED status.
-  ServiceWorkerStatusCode Start(int64 service_worker_version_id,
-                                const GURL& scope,
-                                const GURL& script_url);
+  // Starts the worker. It is invalid to call this when the worker is not in
+  // STOPPED status. |callback| is invoked when the worker's process is created
+  // if necessary and the IPC to evaluate the worker's script is sent.
+  // Observer::OnStarted() is run when the worker is actually started.
+  void Start(int64 service_worker_version_id,
+             const GURL& scope,
+             const GURL& script_url,
+             const std::vector<int>& possible_process_ids,
+             const StatusCallback& callback);
 
   // Stops the worker. It is invalid to call this when the worker is
   // not in STARTING or RUNNING status.
@@ -105,6 +111,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   EmbeddedWorkerInstance(EmbeddedWorkerRegistry* registry,
                          int embedded_worker_id);
 
+  // Called back from EmbeddedWorkerRegistry after Start() passes control to the
+  // UI thread to acquire a reference to the process.
+  void RecordProcessId(int process_id, ServiceWorkerStatusCode status);
+
   // Called back from Registry when the worker instance has ack'ed that
   // its WorkerGlobalScope is actually started on |thread_id| in the
   // child process.
@@ -135,9 +145,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                               int line_number,
                               const GURL& source_url);
 
-  // Chooses a process to start this worker and populate process_id_.
-  // Returns false when no process is available.
-  bool ChooseProcess();
+  // Chooses a list of processes to try to start this worker in, ordered by how
+  // many clients are currently in those processes.
+  std::vector<int> SortProcesses(
+      const std::vector<int>& possible_process_ids) const;
 
   scoped_refptr<EmbeddedWorkerRegistry> registry_;
   const int embedded_worker_id_;

@@ -89,34 +89,32 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   virtual ~ServiceWorkerURLRequestJobTest() {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
-    helper_.reset(new EmbeddedWorkerTestHelper(context_.get(), kProcessID));
+    helper_.reset(new EmbeddedWorkerTestHelper(kProcessID));
 
     registration_ = new ServiceWorkerRegistration(
         GURL("http://example.com/*"),
         GURL("http://example.com/service_worker.js"),
-        1L, context_->AsWeakPtr());
+        1L,
+        helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_,
-        1L, context_->AsWeakPtr());
+        registration_, 1L, helper_->context()->AsWeakPtr());
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
-        new ServiceWorkerProviderHost(kProcessID, kProviderID,
-                                      context_->AsWeakPtr(), NULL));
+        new ServiceWorkerProviderHost(
+            kProcessID, kProviderID, helper_->context()->AsWeakPtr(), NULL));
     provider_host->SetActiveVersion(version_.get());
 
     url_request_job_factory_.SetProtocolHandler(
         "http", new MockProtocolHandler(provider_host->AsWeakPtr()));
     url_request_context_.set_job_factory(&url_request_job_factory_);
 
-    context_->AddProviderHost(provider_host.Pass());
+    helper_->context()->AddProviderHost(provider_host.Pass());
   }
 
   virtual void TearDown() OVERRIDE {
     version_ = NULL;
     registration_ = NULL;
     helper_.reset();
-    context_.reset();
   }
 
   void TestRequest() {
@@ -137,7 +135,6 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 
   TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<ServiceWorkerContextCore> context_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;

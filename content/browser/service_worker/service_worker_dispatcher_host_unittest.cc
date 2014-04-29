@@ -29,23 +29,19 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() {
-    context_wrapper_ = new ServiceWorkerContextWrapper;
-    context_wrapper_->Init(base::FilePath(), NULL);
-    helper_.reset(new EmbeddedWorkerTestHelper(context(), kRenderProcessId));
+    helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
   }
 
   virtual void TearDown() {
     helper_.reset();
-    if (context_wrapper_) {
-      context_wrapper_->Shutdown();
-      context_wrapper_ = NULL;
-    }
   }
 
-  ServiceWorkerContextCore* context() { return context_wrapper_->context(); }
+  ServiceWorkerContextCore* context() { return helper_->context(); }
+  ServiceWorkerContextWrapper* context_wrapper() {
+    return helper_->context_wrapper();
+  }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
 };
 
@@ -85,7 +81,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DisabledCausesError) {
 
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
       new TestingServiceWorkerDispatcherHost(
-          kRenderProcessId, context_wrapper_.get(), helper_.get());
+          kRenderProcessId, context_wrapper(), helper_.get());
 
   bool handled;
   dispatcher_host->OnMessageReceived(
@@ -112,7 +108,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_Enabled) {
 
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
       new TestingServiceWorkerDispatcherHost(
-          kRenderProcessId, context_wrapper_.get(), helper_.get());
+          kRenderProcessId, context_wrapper(), helper_.get());
 
   bool handled;
   dispatcher_host->OnMessageReceived(
@@ -137,10 +133,9 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
 
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
       new TestingServiceWorkerDispatcherHost(
-          kRenderProcessId, context_wrapper_.get(), helper_.get());
+          kRenderProcessId, context_wrapper(), helper_.get());
 
-  context_wrapper_->Shutdown();
-  context_wrapper_ = NULL;
+  helper_->ShutdownContext();
 
   bool handled;
   dispatcher_host->OnMessageReceived(
@@ -157,7 +152,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
 TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host =
       new TestingServiceWorkerDispatcherHost(
-          kRenderProcessId, context_wrapper_.get(), helper_.get());
+          kRenderProcessId, context_wrapper(), helper_.get());
 
   const int kProviderId = 1001;  // Test with a value != kRenderProcessId.
 

@@ -118,6 +118,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartWorker(const StatusCallback& callback);
 
   // Starts an embedded worker for this version.
+  // |potential_process_ids| is a list of processes in which to start the
+  // worker.
+  // This returns OK (success) if the worker is already running.
+  void StartWorkerWithCandidateProcesses(
+      const std::vector<int>& potential_process_ids,
+      const StatusCallback& callback);
+
+  // Starts an embedded worker for this version.
   // This returns OK (success) if the worker is already stopped.
   void StopWorker(const StatusCallback& callback);
 
@@ -211,6 +219,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class base::RefCounted<ServiceWorkerVersion>;
 
   virtual ~ServiceWorkerVersion();
+
+  void RunStartWorkerCallbacksOnError(ServiceWorkerStatusCode status);
+
+  void DispatchInstallEventAfterStartWorker(int active_version_id,
+                                            const StatusCallback& callback);
+  void DispatchActivateEventAfterStartWorker(const StatusCallback& callback);
 
   // Message handlers.
   void OnGetClientDocuments(int request_id);

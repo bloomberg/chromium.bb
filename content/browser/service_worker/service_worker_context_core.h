@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "content/browser/service_worker/service_worker_info.h"
+#include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -86,7 +87,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
       quota::QuotaManagerProxy* quota_manager_proxy,
-      ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list);
+      ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
+      scoped_ptr<ServiceWorkerProcessManager> process_manager);
   virtual ~ServiceWorkerContextCore();
 
   // ServiceWorkerVersion::Listener overrides.
@@ -106,6 +108,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                       const GURL& source_url) OVERRIDE;
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
+  ServiceWorkerProcessManager* process_manager() {
+    return process_manager_.get();
+  }
   EmbeddedWorkerRegistry* embedded_worker_registry() {
     return embedded_worker_registry_.get();
   }
@@ -149,6 +154,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Returns new context-local unique ID for ServiceWorkerHandle.
   int GetNewServiceWorkerHandleId();
 
+  // Allows tests to change how processes are created.
+  void SetProcessManagerForTest(
+      scoped_ptr<ServiceWorkerProcessManager> new_process_manager) {
+    process_manager_ = new_process_manager.Pass();
+  }
+
  private:
   typedef std::map<int64, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64, ServiceWorkerVersion*> VersionMap;
@@ -167,6 +178,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_ptr<ServiceWorkerStorage> storage_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
+  scoped_ptr<ServiceWorkerProcessManager> process_manager_;
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64, ServiceWorkerVersion*> live_versions_;
   int next_handle_id_;

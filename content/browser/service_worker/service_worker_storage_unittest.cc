@@ -72,7 +72,11 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
+    context_.reset(new ServiceWorkerContextCore(
+        base::FilePath(),
+        NULL,
+        NULL,
+        scoped_ptr<ServiceWorkerProcessManager>()));
     context_ptr_ = context_->AsWeakPtr();
     storage()->simulated_lazy_initted_ = true;
   }
