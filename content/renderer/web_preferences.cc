@@ -235,11 +235,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setAcceleratedCompositingForVideoEnabled(
       prefs.accelerated_compositing_for_video_enabled);
 
-  // Always enable composited 3D css, animations and plugins.
-  settings->setAcceleratedCompositingFor3DTransformsEnabled(true);
-  settings->setAcceleratedCompositingForAnimationEnabled(true);
-  settings->setAcceleratedCompositingForPluginsEnabled(true);
-
   // WebGL and accelerated 2D canvas are always gpu composited.
   settings->setAcceleratedCompositingForCanvasEnabled(
       prefs.experimental_webgl_enabled || prefs.accelerated_2d_canvas_enabled);
