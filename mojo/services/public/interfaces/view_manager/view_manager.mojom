@@ -23,24 +23,24 @@ interface ViewManager {
 
   // Deletes a node. This does not recurse. Children are removed from the node
   // before it is destroyed.
-  DeleteNode(uint32 node_id, uint32 change_id) => (bool success);
+  DeleteNode(uint32 node_id, int32 change_id) => (bool success);
 
   // Reparents a node. See description above class for details of |change_id|.
-  AddNode(uint32 parent, uint32 child, uint32 change_id) => (bool success);
+  AddNode(uint32 parent, uint32 child, int32 change_id) => (bool success);
 
   // Removes a view from its current parent.  See description above class for
   // details of |change_id|.
-  RemoveNodeFromParent(uint32 node_id, uint32 change_id) => (bool success);
+  RemoveNodeFromParent(uint32 node_id, int32 change_id) => (bool success);
 
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
   CreateView(uint16 view_id) => (bool success);
 
   // Deletes the view with the specified id.
-  DeleteView(uint32 view_id, uint32 change_id) => (bool success);
+  DeleteView(uint32 view_id, int32 change_id) => (bool success);
 
   // Sets the view a node is showing.
-  SetView(uint32 node_id, uint32 view_id, uint32 change_id) => (bool success);
+  SetView(uint32 node_id, uint32 view_id, int32 change_id) => (bool success);
 };
 
 [Peer=ViewManager]
@@ -55,14 +55,14 @@ interface ViewManagerClient {
   OnNodeHierarchyChanged(uint32 node,
                          uint32 new_parent,
                          uint32 old_parent,
-                         uint32 change_id);
+                         int32 change_id);
 
   // Invoked when the view associated with a node is replaced by another view.
   // 0 is used to identify a null view.
   OnNodeViewReplaced(uint32 node,
                      uint32 new_view_id,
                      uint32 old_view_id,
-                     uint32 change_id);
+                     int32 change_id);
 };
 
 }

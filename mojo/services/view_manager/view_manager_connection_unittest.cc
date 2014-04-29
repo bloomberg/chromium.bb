@@ -23,9 +23,6 @@ namespace view_manager {
 
 namespace {
 
-// TODO(sky): move ids.h into common place and include that.
-typedef uint32_t ChangeId;
-
 base::RunLoop* current_run_loop = NULL;
 
 // Sets |current_run_loop| and runs it. It is expected that someone else quits
@@ -75,7 +72,7 @@ bool CreateNode(ViewManager* view_manager, uint16_t id) {
 // Deletes a node, blocking until done.
 bool DeleteNode(ViewManager* view_manager,
                 uint32_t node_id,
-                ChangeId change_id) {
+                int32_t change_id) {
   bool result = false;
   view_manager->DeleteNode(node_id, change_id,
                            base::Bind(&BooleanCallback, &result));
@@ -87,7 +84,7 @@ bool DeleteNode(ViewManager* view_manager,
 bool AddNode(ViewManager* view_manager,
              uint32_t parent,
              uint32_t child,
-             ChangeId change_id) {
+             int32_t change_id) {
   bool result = false;
   view_manager->AddNode(parent, child, change_id,
                         base::Bind(&BooleanCallback, &result));
@@ -98,7 +95,7 @@ bool AddNode(ViewManager* view_manager,
 // Removes a node, blocking until done.
 bool RemoveNodeFromParent(ViewManager* view_manager,
                           uint32_t node_id,
-                          ChangeId change_id) {
+                          int32_t change_id) {
   bool result = false;
   view_manager->RemoveNodeFromParent(node_id, change_id,
                                      base::Bind(&BooleanCallback, &result));
@@ -120,7 +117,7 @@ bool CreateView(ViewManager* view_manager, uint16_t id) {
 bool SetView(ViewManager* view_manager,
              uint32_t node_id,
              uint32_t view_id,
-             ChangeId change_id) {
+             int32_t change_id) {
   bool result = false;
   view_manager->SetView(node_id, view_id, change_id,
                         base::Bind(&BooleanCallback, &result));
@@ -155,11 +152,11 @@ class ViewManagerClientImpl : public ViewManagerClient {
   virtual void OnNodeHierarchyChanged(uint32_t node,
                                       uint32_t new_parent,
                                       uint32_t old_parent,
-                                      ChangeId change_id) OVERRIDE {
+                                      int32_t change_id) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
             "change_id=%d node=%s new_parent=%s old_parent=%s",
-            static_cast<int>(change_id), NodeIdToString(node).c_str(),
+            change_id, NodeIdToString(node).c_str(),
             NodeIdToString(new_parent).c_str(),
             NodeIdToString(old_parent).c_str()));
     QuitIfNecessary();
@@ -167,11 +164,11 @@ class ViewManagerClientImpl : public ViewManagerClient {
   virtual void OnNodeViewReplaced(uint32_t node,
                                   uint32_t new_view_id,
                                   uint32_t old_view_id,
-                                  ChangeId change_id) OVERRIDE {
+                                  int32_t change_id) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
             "change_id=%d node=%s new_view=%s old_view=%s",
-            static_cast<int>(change_id), NodeIdToString(node).c_str(),
+            change_id, NodeIdToString(node).c_str(),
             NodeIdToString(new_view_id).c_str(),
             NodeIdToString(old_view_id).c_str()));
     QuitIfNecessary();

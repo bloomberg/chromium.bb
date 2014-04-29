@@ -49,12 +49,12 @@ class SampleApp : public Application,
   virtual void OnNodeHierarchyChanged(uint32_t node,
                                       uint32_t new_parent,
                                       uint32_t old_parent,
-                                      uint32_t change_id) OVERRIDE {
+                                      int32_t change_id) OVERRIDE {
   }
   virtual void OnNodeViewReplaced(uint32_t node,
                                   uint32_t old_view_id,
                                   uint32_t new_view_id,
-                                  uint32_t change_id) OVERRIDE {
+                                  int32_t change_id) OVERRIDE {
   }
 
  private:
