@@ -185,7 +185,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
     public void testClickAutofillPopupSuggestion()
             throws InterruptedException, ExecutionException, TimeoutException {
         loadAndFillForm(BASIC_PAGE_DATA, "J");
-        final ContentViewCore viewCore = getActivity().getActiveContentView().getContentViewCore();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
 
         assertEquals("First name did not match",
                 FIRST_NAME, DOMUtils.getNodeValue(viewCore, "fn"));

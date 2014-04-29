@@ -32,7 +32,6 @@ import org.chromium.chrome.shell.sync.SyncController;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
@@ -248,14 +247,6 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
      */
     public ChromeShellTab getActiveTab() {
         return mTabManager != null ? mTabManager.getCurrentTab() : null;
-    }
-
-    /**
-     * @return The ContentView of the active tab.
-     */
-    public ContentView getActiveContentView() {
-        ChromeShellTab tab = getActiveTab();
-        return tab != null ? tab.getContentView() : null;
     }
 
     /**

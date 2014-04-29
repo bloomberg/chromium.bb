@@ -44,7 +44,7 @@ public class AutofillTest extends ChromeShellTestBase {
         mMockAutofillCallback = new MockAutofillCallback();
         mWindowAndroid = new ActivityWindowAndroid(activity);
         final ViewAndroidDelegate viewDelegate =
-                activity.getActiveContentView().getContentViewCore().getViewAndroidDelegate();
+                activity.getActiveContentViewCore().getViewAndroidDelegate();
 
         UiUtils.runOnUiThread(getActivity(), new Runnable() {
             @Override

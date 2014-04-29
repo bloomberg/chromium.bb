@@ -84,7 +84,7 @@ public class NavigationPopupTest extends ChromeShellTestBase {
         final NavigationPopup popup = new NavigationPopup(
                 mActivity, client, true);
         popup.setWidth(300);
-        popup.setAnchorView(mActivity.getActiveContentView());
+        popup.setAnchorView(mActivity.getActiveContentViewCore().getContainerView());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -128,7 +128,7 @@ public class NavigationPopupTest extends ChromeShellTestBase {
         final NavigationPopup popup = new NavigationPopup(
                 mActivity, client, true);
         popup.setWidth(300);
-        popup.setAnchorView(mActivity.getActiveContentView());
+        popup.setAnchorView(mActivity.getActiveContentViewCore().getContainerView());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

@@ -12,7 +12,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -501,13 +500,13 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
 
         setUpAndRequestAutocomplete(url, requestFullBilling, requestShipping, requestPhoneNumbers);
 
-        ContentView view = getActivity().getActiveContentView();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
 
         assertEquals(actualId + " did not match",
-                expected, DOMUtils.getNodeValue(view.getContentViewCore(), actualId));
+                expected, DOMUtils.getNodeValue(viewCore, actualId));
         if (requestCcInfo) {
             assertEquals("cc-csc did not match",
-                    TEST_CC_CSC, DOMUtils.getNodeValue(view.getContentViewCore(), "id-opt-cc-csc"));
+                    TEST_CC_CSC, DOMUtils.getNodeValue(viewCore, "id-opt-cc-csc"));
         }
     }
 
@@ -518,8 +517,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 generatePage(requestFullBilling, requestShipping, requestPhoneNumbers),
                 requestFullBilling, requestShipping, requestPhoneNumbers);
 
-        final ContentView view = getActivity().getActiveContentView();
-        final ContentViewCore viewCore = view.getContentViewCore();
+        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
 
         assertEquals("billing name did not match",
                 TEST_NAME, DOMUtils.getNodeValue(viewCore, "id-billing-name"));
