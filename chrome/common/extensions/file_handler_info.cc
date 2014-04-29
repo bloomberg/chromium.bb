@@ -9,9 +9,7 @@ namespace extensions {
 FileHandlerInfo::FileHandlerInfo() {}
 FileHandlerInfo::~FileHandlerInfo() {}
 
-FileHandlersInfo::FileHandlersInfo(const std::vector<FileHandlerInfo>* handlers)
-    : handlers(handlers) {}
-
+FileHandlersInfo::FileHandlersInfo() {}
 FileHandlersInfo::~FileHandlersInfo() {}
 
 }  // namespace extensions

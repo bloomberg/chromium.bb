@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/extensions/file_handler_info.h"
 
 namespace web_app {
 
@@ -30,9 +31,9 @@ class WebAppShortcutCreator {
   // Creates a new shortcut based on information in |shortcut_info|.
   // A copy of the shortcut is placed in |app_data_dir|.
   // |chrome_bundle_id| is the CFBundleIdentifier of the Chrome browser bundle.
-  WebAppShortcutCreator(
-      const base::FilePath& app_data_dir,
-      const web_app::ShortcutInfo& shortcut_info);
+  WebAppShortcutCreator(const base::FilePath& app_data_dir,
+                        const web_app::ShortcutInfo& shortcut_info,
+                        const extensions::FileHandlersInfo& file_handlers_info);
 
   virtual ~WebAppShortcutCreator();
 
@@ -101,6 +102,9 @@ class WebAppShortcutCreator {
 
   // Information about the app.
   web_app::ShortcutInfo info_;
+
+  // The app's file handlers.
+  extensions::FileHandlersInfo file_handlers_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreator);
 };

@@ -162,8 +162,11 @@ void GetInfoForApp(const extensions::Extension* extension,
                    const InfoCallback& callback) {
   web_app::ShortcutInfo shortcut_info =
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile);
-  extensions::FileHandlersInfo file_handlers_info(
-      extensions::FileHandlers::GetFileHandlers(extension));
+  extensions::FileHandlersInfo file_handlers_info;
+  const std::vector<extensions::FileHandlerInfo>* file_handlers =
+      extensions::FileHandlers::GetFileHandlers(extension);
+  if (file_handlers)
+    file_handlers_info.handlers = *file_handlers;
 
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < kNumDesiredSizes; ++i) {
@@ -248,7 +251,7 @@ bool CreateShortcutsOnFileThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   return CreateShortcutsWithInfoOnFileThread(
-      reason, locations, shortcut_info, extensions::FileHandlersInfo(NULL));
+      reason, locations, shortcut_info, extensions::FileHandlersInfo());
 }
 
 }  // namespace internals

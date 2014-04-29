@@ -26,10 +26,10 @@ struct FileHandlerInfo {
 };
 
 struct FileHandlersInfo {
-  explicit FileHandlersInfo(const std::vector<FileHandlerInfo>* handlers);
+  FileHandlersInfo();
   ~FileHandlersInfo();
 
-  const std::vector<FileHandlerInfo>* handlers;
+  std::vector<FileHandlerInfo> handlers;
 };
 
 }  // namespace extensions

@@ -17,6 +17,14 @@ const char kLaunchedByChromeProcessId[] = "launched-by-chrome-process-id";
 
 const char kAppShimError[] = "app-shim-error";
 
+NSString* const kCFBundleDocumentTypesKey = @"CFBundleDocumentTypes";
+NSString* const kCFBundleTypeExtensionsKey = @"CFBundleTypeExtensions";
+NSString* const kCFBundleTypeIconFileKey = @"CFBundleTypeIconFile";
+NSString* const kCFBundleTypeNameKey = @"CFBundleTypeName";
+NSString* const kCFBundleTypeMIMETypesKey = @"CFBundleTypeMIMETypes";
+NSString* const kCFBundleTypeRoleKey = @"CFBundleTypeRole";
+NSString* const kBundleTypeRoleViewer = @"Viewer";
+
 NSString* const kCFBundleDisplayNameKey = @"CFBundleDisplayName";
 NSString* const kLSHasLocalizedDisplayNameKey = @"LSHasLocalizedDisplayName";
 NSString* const kBrowserBundleIDKey = @"CrBundleIdentifier";

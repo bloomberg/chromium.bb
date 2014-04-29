@@ -41,6 +41,15 @@ extern const char kLaunchedByChromeProcessId[];
 // launch but failed.
 extern const char kAppShimError[];
 
+// Keys for specifying the file types handled by an app.
+extern NSString* const kCFBundleDocumentTypesKey;
+extern NSString* const kCFBundleTypeExtensionsKey;
+extern NSString* const kCFBundleTypeIconFileKey;
+extern NSString* const kCFBundleTypeNameKey;
+extern NSString* const kCFBundleTypeMIMETypesKey;
+extern NSString* const kCFBundleTypeRoleKey;
+extern NSString* const kBundleTypeRoleViewer;
+
 // The display name of the bundle as shown in Finder and the Dock. For localized
 // bundles, this overrides the bundle's file name.
 extern NSString* const kCFBundleDisplayNameKey;

@@ -438,6 +438,9 @@ const char kEnableAppList[]                 = "enable-app-list";
 // Enables the <window-controls> tag in platform apps.
 const char kEnableAppWindowControls[]       = "enable-app-window-controls";
 
+// Enable OS integration for Chrome app file associations.
+const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
+
 // Show apps windows after the first paint. Windows will be shown significantly
 // later for heavy apps loading resources synchronously but it will be
 // insignificant for apps that load most of their resources asynchronously.
