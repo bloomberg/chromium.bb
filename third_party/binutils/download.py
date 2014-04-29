@@ -47,17 +47,14 @@ def GetArch():
   return subprocess.check_output(['python', DETECT_HOST_ARCH]).strip()
 
 
-def main(args):
-  if not sys.platform.startswith('linux'):
-    return 0
-
-  archdir = os.path.join(BINUTILS_DIR, 'Linux_' + GetArch())
+def FetchAndExtract(arch):
+  archdir = os.path.join(BINUTILS_DIR, 'Linux_' + arch)
   tarball = os.path.join(archdir, BINUTILS_FILE)
   outdir = os.path.join(archdir, BINUTILS_OUT)
 
   sha1file = tarball + '.sha1'
   if not os.path.exists(sha1file):
-    print "WARNING: No binutils found for your architecture (%s)!" % GetArch()
+    print "WARNING: No binutils found for your architecture (%s)!" % arch
     return 0
 
   checksum = ReadFile(sha1file)
@@ -94,6 +91,23 @@ def main(args):
 
   WriteFile(stampfile, checksum)
   return 0
+
+
+def main(args):
+  if not sys.platform.startswith('linux'):
+    return 0
+
+  arch = GetArch()
+  if arch == 'x64':
+    return FetchAndExtract(arch)
+  if arch == 'ia32':
+    ret = FetchAndExtract(arch)
+    if ret != 0:
+      return ret
+    # Fetch the x64 toolchain as well for official bots with 64-bit kernels.
+    return FetchAndExtract('x64')
+  print "Host architecture %s is not supported." % arch
+  return 1
 
 
 if __name__ == '__main__':
