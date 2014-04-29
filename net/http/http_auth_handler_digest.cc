@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
@@ -14,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_string_util.h"
 #include "net/base/net_util.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -227,7 +227,7 @@ bool HttpAuthHandlerDigest::ParseChallengeProperty(const std::string& name,
                                                    const std::string& value) {
   if (LowerCaseEqualsASCII(name, "realm")) {
     std::string realm;
-    if (!base::ConvertToUtf8AndNormalize(value, base::kCodepageLatin1, &realm))
+    if (!net::ConvertLatin1ToUtf8AndNormalize(value, &realm))
       return false;
     realm_ = realm;
     original_realm_ = value;

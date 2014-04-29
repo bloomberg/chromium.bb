@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -15,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_string_util.h"
 #include "net/http/http_content_disposition.h"
 #include "url/gurl.h"
 
@@ -77,10 +77,9 @@ std::string GetFileNameFromURL(const GURL& url,
     // encoding detection.
     base::string16 utf16_output;
     if (!referrer_charset.empty() &&
-        base::CodepageToUTF16(unescaped_url_filename,
-                              referrer_charset.c_str(),
-                              base::OnStringConversionError::FAIL,
-                              &utf16_output)) {
+        net::ConvertToUTF16(unescaped_url_filename,
+                            referrer_charset.c_str(),
+                            &utf16_output)) {
       decoded_filename = base::UTF16ToUTF8(utf16_output);
     } else {
       decoded_filename = base::WideToUTF8(

@@ -23,7 +23,7 @@ specific_include_rules = {
 
   # Within net, only used by file: requests.
   "filename_util\.cc": [
-    "+base/i18n",
+    "+base/i18n/file_util_icu.h",
   ],
   
   # Functions largely not used by the rest of net.
@@ -37,25 +37,16 @@ specific_include_rules = {
     "+base/i18n",
   ],
 
+  # Consolidated string functions that depend on icu.
+  "net_string_util_icu\.cc": [
+    "+base/i18n/i18n_constants.h",
+    "+base/i18n/icu_string_conversions.h",
+    "+third_party/icu/source/common/unicode/ucnv.h"
+  ],
+
   # Only use icu for string conversions.
-  "escape_unittest\.cc": [
-    "+base/i18n/icu_string_conversions.h",
-  ],
-  "http_auth_handler_basic\.cc": [
-    "+base/i18n/icu_string_conversions.h",
-  ],
-  "http_auth_handler_digest\.cc": [
-    "+base/i18n/icu_string_conversions.h",
-  ],
   "proxy_script_fetcher_impl\.cc": [
     "+base/i18n/icu_string_conversions.h",
-  ],
-  "x509_cert_types_mac\.cc": [
-    "+base/i18n/icu_string_conversions.h",
-  ],
-  "http_content_disposition\.cc": [
-    "+base/i18n/icu_string_conversions.h",
-    "+third_party/icu",
   ],
   "websocket_channel\.h": [
     "+base/i18n",

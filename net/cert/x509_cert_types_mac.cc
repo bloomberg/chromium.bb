@@ -10,10 +10,10 @@
 #include <Security/SecAsn1Coder.h>
 #include <Security/Security.h>
 
-#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/base/net_string_util.h"
 
 namespace net {
 
@@ -115,8 +115,7 @@ std::string DataToString(CSSM_DATA data) {
 // Converts raw CSSM_DATA in ISO-8859-1 to a std::string in UTF-8.
 std::string Latin1DataToUTF8String(CSSM_DATA data) {
   base::string16 utf16;
-  if (!CodepageToUTF16(DataToString(data), base::kCodepageLatin1,
-                       base::OnStringConversionError::FAIL, &utf16))
+  if (!ConvertLatin1ToUTF16(DataToString(data), &utf16))
     return "";
   return base::UTF16ToUTF8(utf16);
 }
@@ -138,7 +137,7 @@ bool UTF32BigEndianToUTF8(int32_t* chars, size_t length,
     chars[i] = EndianS32_BtoN(chars[i]);
 #if defined(WCHAR_T_IS_UTF32)
   return base::WideToUTF8(reinterpret_cast<const wchar_t*>(chars),
-                    length, out_string);
+                          length, out_string);
 #else
 #error This code doesn't handle 16-bit wchar_t.
 #endif

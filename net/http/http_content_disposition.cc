@@ -5,15 +5,14 @@
 #include "net/http/http_content_disposition.h"
 
 #include "base/base64.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/base/net_string_util.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
-#include "third_party/icu/source/common/unicode/ucnv.h"
 
 namespace {
 
@@ -65,32 +64,16 @@ bool DecodeBQEncoding(const std::string& part,
                       std::string* output) {
   std::string decoded;
   if (!((enc_type == B_ENCODING) ?
-        base::Base64Decode(part, &decoded) : DecodeQEncoding(part, &decoded)))
+        base::Base64Decode(part, &decoded) : DecodeQEncoding(part, &decoded))) {
     return false;
+  }
 
   if (decoded.empty()) {
     output->clear();
     return true;
   }
 
-  UErrorCode err = U_ZERO_ERROR;
-  UConverter* converter(ucnv_open(charset.c_str(), &err));
-  if (U_FAILURE(err))
-    return false;
-
-  // A single byte in a legacy encoding can be expanded to 3 bytes in UTF-8.
-  // A 'two-byte character' in a legacy encoding can be expanded to 4 bytes
-  // in UTF-8. Therefore, the expansion ratio is 3 at most. Add one for a
-  // trailing '\0'.
-  size_t output_length = decoded.length() * 3 + 1;
-  char* buf = WriteInto(output, output_length);
-  output_length = ucnv_toAlgorithmic(UCNV_UTF8, converter, buf, output_length,
-                                     decoded.data(), decoded.length(), &err);
-  ucnv_close(converter);
-  if (U_FAILURE(err))
-    return false;
-  output->resize(output_length);
-  return true;
+  return net::ConvertToUtf8(decoded, charset.c_str(), output);
 }
 
 bool DecodeWord(const std::string& encoded_word,
@@ -110,9 +93,8 @@ bool DecodeWord(const std::string& encoded_word,
     } else {
       base::string16 utf16_output;
       if (!referrer_charset.empty() &&
-          base::CodepageToUTF16(encoded_word, referrer_charset.c_str(),
-                                base::OnStringConversionError::FAIL,
-                                &utf16_output)) {
+          net::ConvertToUTF16(encoded_word, referrer_charset.c_str(),
+                              &utf16_output)) {
         *output = base::UTF16ToUTF8(utf16_output);
       } else {
         *output = base::WideToUTF8(base::SysNativeMBToWide(encoded_word));
@@ -343,7 +325,7 @@ bool DecodeExtValue(const std::string& param_value, std::string* decoded) {
   std::string unescaped = net::UnescapeURLComponent(
       value, net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
 
-  return base::ConvertToUtf8AndNormalize(unescaped, charset, decoded);
+  return net::ConvertToUtf8AndNormalize(unescaped, charset.c_str(), decoded);
 }
 
 } // namespace

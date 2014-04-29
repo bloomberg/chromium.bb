@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_string_util.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 
@@ -43,8 +43,7 @@ bool ParseRealm(const HttpAuthChallengeTokenizer& tokenizer,
     if (!LowerCaseEqualsASCII(parameters.name(), "realm"))
       continue;
 
-    if (!base::ConvertToUtf8AndNormalize(
-            parameters.value(), base::kCodepageLatin1, realm))
+    if (!net::ConvertLatin1ToUtf8AndNormalize(parameters.value(), realm))
       return false;
   }
   return parameters.valid();
