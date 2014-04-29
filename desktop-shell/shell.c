@@ -1594,7 +1594,7 @@ resize_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 
 	weston_pointer_move(pointer, x, y);
 
-	if (!shsurf)
+	if (!shsurf || !shsurf->resource)
 		return;
 
 	weston_view_from_global_fixed(shsurf->view,
