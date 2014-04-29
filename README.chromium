@@ -142,6 +142,12 @@ This directory contains the source code of ICU 52.1 for C/C++
   - patches/vscomp.patch for building with Visual Studio on Windows.
      a. do not use WINDOWS_LOCALE_API in locmap.c
      b. do not redefine stringpiece::npos
+     c. fix a Windows build failure with U_USING_ICU_NAMESPACE=0
+        upstream bug: http://bugs.icu-project.org/trac/ticket/10486 
+        fixed in ICU 53)
+     d. Explicitly use Windows 'A' API when argument is an LPSTR in wintz.c
+        upstream bug : http://bugs.icu-project.org/trac/ticket/10870
+
   - patches/data.build.patch :
       Remove unnecessary resources : invuca, unames, collator source, stringprep
   - patches/data.build.win.patch :

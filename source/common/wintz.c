@@ -285,7 +285,7 @@ uprv_detectWindowsTimeZone() {
     tmpid[0] = 0;
 
     id = GetUserGeoID(GEOCLASS_NATION);
-    errorCode = GetGeoInfo(id,GEO_ISO2,ISOcode,3,0);
+    errorCode = GetGeoInfoA(id,GEO_ISO2,ISOcode,3,0);
 
     bundle = ures_openDirect(NULL, "windowsZones", &status);
     ures_getByKey(bundle, "mapTimezones", bundle, &status);

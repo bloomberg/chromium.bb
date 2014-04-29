@@ -37,3 +37,29 @@ Index: source/common/stringpiece.cpp
 +#endif
  
  U_NAMESPACE_END
+Index: source/common/umutex.h
+===================================================================
+--- source/common/umutex.h	(revision 266014)
++++ source/common/umutex.h	(working copy)
+@@ -320,7 +320,7 @@
+ 
+ 
+ typedef struct UMutex {
+-    UInitOnce         fInitOnce;
++    icu::UInitOnce         fInitOnce;
+     CRITICAL_SECTION  fCS;
+ } UMutex;
+ 
+Index: source/common/wintz.c
+===================================================================
+--- source/common/wintz.c	(revision 266014)
++++ source/common/wintz.c	(working copy)
+@@ -285,7 +285,7 @@
+     tmpid[0] = 0;
+ 
+     id = GetUserGeoID(GEOCLASS_NATION);
+-    errorCode = GetGeoInfo(id,GEO_ISO2,ISOcode,3,0);
++    errorCode = GetGeoInfoA(id,GEO_ISO2,ISOcode,3,0);
+ 
+     bundle = ures_openDirect(NULL, "windowsZones", &status);
+     ures_getByKey(bundle, "mapTimezones", bundle, &status);
