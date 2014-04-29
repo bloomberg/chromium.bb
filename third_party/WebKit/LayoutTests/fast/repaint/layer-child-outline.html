@@ -2,8 +2,8 @@
 <head>
     <title></title>
     <script type="text/javascript">
-    if (window.testRunner)
-        testRunner.testRepaint();
+    if (window.internals)
+        window.internals.settings.setForceCompositingMode(true);
     </script>
 </head>
 <body>

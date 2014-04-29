@@ -1,6 +1,6 @@
 <script>
-    if (window.testRunner)
-        testRunner.testRepaint();
+    if (window.internals)
+        window.internals.settings.setForceCompositingMode(true);
 </script>
 <style>
     div {

@@ -3,9 +3,8 @@
 <head>
     <title></title>
     <script>
-        if (window.testRunner) {
-            testRunner.testRepaint();
-            testRunner.repaintSweepHorizontally();
+        if (window.internals) {
+            window.internals.settings.setForceCompositingMode(true);
         }
     </script>
     <style>

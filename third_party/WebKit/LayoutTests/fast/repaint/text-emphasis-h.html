@@ -1,7 +1,6 @@
 <script>
-    if (window.testRunner) {
-        testRunner.testRepaint();
-        testRunner.repaintSweepHorizontally();
+    if (window.internals) {
+        window.internals.settings.setForceCompositingMode(true);
     }
 </script>
 <body style="-webkit-font-smoothing: none; position: relative;">
