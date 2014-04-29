@@ -26,6 +26,7 @@
 namespace base {
 
 namespace {
+
 int ThreadNiceValue(ThreadPriority priority) {
   switch (priority) {
     case kThreadPriority_RealtimeAudio:
@@ -41,7 +42,8 @@ int ThreadNiceValue(ThreadPriority priority) {
       return 0;
   }
 }
-} // namespace
+
+}  // namespace
 
 // static
 void PlatformThread::SetName(const char* name) {

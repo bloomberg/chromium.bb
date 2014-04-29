@@ -261,8 +261,7 @@ TEST_F(SequenceCheckerTest, DifferentSequenceTokensDeathTestInDebug) {
   }, "");
 }
 #else
-TEST_F(SequenceCheckerTest,
-     DifferentSequenceTokensDeathTestInRelease) {
+TEST_F(SequenceCheckerTest, DifferentSequenceTokensDeathTestInRelease) {
   DifferentSequenceTokensDeathTest();
 }
 #endif  // ENABLE_SEQUENCE_CHECKER
@@ -289,8 +288,7 @@ TEST_F(SequenceCheckerTest, WorkerPoolAndSimpleThreadDeathTestInDebug) {
   }, "");
 }
 #else
-TEST_F(SequenceCheckerTest,
-     WorkerPoolAndSimpleThreadDeathTestInRelease) {
+TEST_F(SequenceCheckerTest, WorkerPoolAndSimpleThreadDeathTestInRelease) {
   WorkerPoolAndSimpleThreadDeathTest();
 }
 #endif  // ENABLE_SEQUENCE_CHECKER
@@ -323,8 +321,7 @@ TEST_F(SequenceCheckerTest, TwoDifferentWorkerPoolsDeathTestInDebug) {
   }, "");
 }
 #else
-TEST_F(SequenceCheckerTest,
-     TwoDifferentWorkerPoolsDeathTestInRelease) {
+TEST_F(SequenceCheckerTest, TwoDifferentWorkerPoolsDeathTestInRelease) {
   TwoDifferentWorkerPoolsDeathTest();
 }
 #endif  // ENABLE_SEQUENCE_CHECKER
