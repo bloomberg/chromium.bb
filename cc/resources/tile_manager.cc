@@ -1199,6 +1199,8 @@ void TileManager::OnRasterTaskCompleted(
     ++resources_releasable_;
   }
 
+  client_->NotifyTileInitialized(tile);
+
   FreeUnusedResourcesForTile(tile);
   if (tile->priority(ACTIVE_TREE).distance_to_visible == 0.f)
     did_initialize_visible_tile_ = true;

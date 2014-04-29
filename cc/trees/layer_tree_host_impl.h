@@ -225,6 +225,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE;
+  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE;
 
   // OutputSurfaceClient implementation.
   virtual void DeferredInitialize() OVERRIDE;

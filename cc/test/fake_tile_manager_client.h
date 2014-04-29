@@ -15,6 +15,7 @@ class FakeTileManagerClient : public TileManagerClient {
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE {}
+  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE {}
 };
 
 }  // namespace cc

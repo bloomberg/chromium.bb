@@ -1127,6 +1127,9 @@ void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
 }
 
 void LayerTreeHostImpl::DidInitializeVisibleTileForTesting() {
+  // Add arbitrary damage, to trigger prepare-to-draws.
+  // Here, setting damage as viewport size, used only for testing.
+  SetFullRootLayerDamage();
   DidInitializeVisibleTile();
 }
 
@@ -1202,15 +1205,25 @@ void LayerTreeHostImpl::DidModifyTilePriorities() {
 }
 
 void LayerTreeHostImpl::DidInitializeVisibleTile() {
-  // TODO(reveman): Determine tiles that changed and only damage
-  // what's necessary.
-  SetFullRootLayerDamage();
   if (client_ && !client_->IsInsideDraw())
     client_->DidInitializeVisibleTileOnImplThread();
 }
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   client_->NotifyReadyToActivate();
+}
+
+void LayerTreeHostImpl::NotifyTileInitialized(const Tile* tile) {
+  if (!active_tree_)
+    return;
+
+  LayerImpl* layer_impl =
+      active_tree_->FindActiveTreeLayerById(tile->layer_id());
+  if (layer_impl) {
+    gfx::RectF layer_damage_rect =
+        gfx::ScaleRect(tile->content_rect(), 1.f / tile->contents_scale());
+    layer_impl->AddDamageRect(layer_damage_rect);
+  }
 }
 
 void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {

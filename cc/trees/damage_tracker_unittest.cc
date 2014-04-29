@@ -268,6 +268,100 @@ TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
   EXPECT_EQ(gfx::Rect(120, 125, 1, 2).ToString(), root_damage_rect.ToString());
 }
 
+TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
+  scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithOneSurface();
+  LayerImpl* child = root->children()[0];
+
+  // CASE 1: Adding the layer damage rect should cause the corresponding damage
+  // to the surface.
+  ClearDamageForAllSurfaces(root.get());
+  child->AddDamageRect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
+  EmulateDrawingOneFrame(root.get());
+
+  // Damage position on the surface should be: position of layer damage_rect
+  // (10, 11) relative to the child (100, 100).
+  gfx::Rect root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 111, 12, 13)));
+
+  // CASE 2: The same layer damage rect twice in a row still produces the same
+  // damage.
+  ClearDamageForAllSurfaces(root.get());
+  child->AddDamageRect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
+  EmulateDrawingOneFrame(root.get());
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 111, 12, 13)));
+
+  // CASE 3: Adding a different layer damage rect should cause damage on the
+  // new damaged region, but no additional exposed old region.
+  ClearDamageForAllSurfaces(root.get());
+  child->AddDamageRect(gfx::RectF(20.f, 25.f, 1.f, 2.f));
+  EmulateDrawingOneFrame(root.get());
+
+  // Damage position on the surface should be: position of layer damage_rect
+  // (20, 25) relative to the child (100, 100).
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(120, 125, 1, 2)));
+
+  // CASE 4: Adding multiple layer damage rects should cause a unified
+  // damage on root damage rect.
+  ClearDamageForAllSurfaces(root.get());
+  child->AddDamageRect(gfx::RectF(20.f, 25.f, 1.f, 2.f));
+  child->AddDamageRect(gfx::RectF(10.f, 15.f, 3.f, 4.f));
+  EmulateDrawingOneFrame(root.get());
+
+  // Damage position on the surface should be: position of layer damage_rect
+  // (20, 25) relative to the child (100, 100).
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(120, 125, 1, 2)));
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 115, 3, 4)));
+}
+
+TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
+  scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithOneSurface();
+  LayerImpl* child = root->children()[0];
+
+  // CASE 1: Adding the layer damage rect and update rect should cause the
+  // corresponding damage to the surface.
+  ClearDamageForAllSurfaces(root.get());
+  child->AddDamageRect(gfx::RectF(5.f, 6.f, 12.f, 13.f));
+  child->SetUpdateRect(gfx::RectF(15.f, 16.f, 14.f, 10.f));
+  EmulateDrawingOneFrame(root.get());
+
+  // Damage position on the surface should be: position of unified layer
+  // damage_rect and update rect (5, 6)
+  // relative to the child (100, 100).
+  gfx::Rect root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(105, 106, 24, 20)));
+
+  // CASE 2: The same layer damage rect and update rect twice in a row still
+  // produces the same damage.
+  ClearDamageForAllSurfaces(root.get());
+  child->AddDamageRect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
+  child->SetUpdateRect(gfx::RectF(10.f, 11.f, 14.f, 15.f));
+  EmulateDrawingOneFrame(root.get());
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 111, 14, 15)));
+
+  // CASE 3: Adding a different layer damage rect and update rect should cause
+  // damage on the new damaged region, but no additional exposed old region.
+  ClearDamageForAllSurfaces(root.get());
+  child->AddDamageRect(gfx::RectF(20.f, 25.f, 2.f, 3.f));
+  child->SetUpdateRect(gfx::RectF(5.f, 10.f, 7.f, 8.f));
+  EmulateDrawingOneFrame(root.get());
+
+  // Damage position on the surface should be: position of unified layer damage
+  // rect and update rect (5, 10) relative to the child (100, 100).
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(105, 110, 17, 18)));
+}
+
 TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithOneSurface();
   LayerImpl* child = root->children()[0];

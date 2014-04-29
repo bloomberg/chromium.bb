@@ -32,6 +32,7 @@ class ResourceProvider;
 class CC_EXPORT TileManagerClient {
  public:
   virtual void NotifyReadyToActivate() = 0;
+  virtual void NotifyTileInitialized(const Tile* tile) = 0;
 
  protected:
   virtual ~TileManagerClient() {}

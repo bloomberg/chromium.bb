@@ -707,6 +707,7 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
   layer_property_changed_ = false;
 
   update_rect_ = gfx::RectF();
+  damage_rect_ = gfx::RectF();
 
   if (draw_properties_.render_surface)
     draw_properties_.render_surface->ResetPropertyChangedFlag();
@@ -1034,6 +1035,10 @@ bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
 void LayerImpl::SetUpdateRect(const gfx::RectF& update_rect) {
   update_rect_ = update_rect;
   SetNeedsPushProperties();
+}
+
+void LayerImpl::AddDamageRect(const gfx::RectF& damage_rect) {
+  damage_rect_ = gfx::UnionRects(damage_rect_, damage_rect);
 }
 
 void LayerImpl::SetContentBounds(const gfx::Size& content_bounds) {

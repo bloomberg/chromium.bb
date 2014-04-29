@@ -84,6 +84,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
+  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE {}
 
   TileVector CreateTilesWithSize(int count,
                                  TilePriority active_priority,
@@ -739,6 +740,7 @@ class TileManagerTileIteratorTest : public testing::Test,
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
+  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE {}
 
   TileManager* tile_manager() { return host_impl_.tile_manager(); }
 

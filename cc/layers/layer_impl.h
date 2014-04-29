@@ -458,6 +458,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   const gfx::RectF& update_rect() const { return update_rect_; }
 
+  void AddDamageRect(const gfx::RectF& damage_rect);
+
+  const gfx::RectF& damage_rect() const { return damage_rect_; }
+
   virtual base::DictionaryValue* LayerTreeAsJson() const;
 
   void SetStackingOrderChanged(bool stacking_order_changed);
@@ -658,6 +662,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Note that plugin layers bypass this and leave it empty.
   // Uses layer (not content) space.
   gfx::RectF update_rect_;
+
+  // This rect is in layer space.
+  gfx::RectF damage_rect_;
 
   // Manages animations for this layer.
   scoped_refptr<LayerAnimationController> layer_animation_controller_;
