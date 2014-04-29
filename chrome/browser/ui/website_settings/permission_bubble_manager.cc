@@ -7,9 +7,16 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/browser_thread.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
+
+namespace {
+
+// This is how many ms to wait to see if there's another permission request
+// we should coalesce.
+const int kPermissionsCoalesceIntervalMs = 400;
+
+}
 
 // static
 bool PermissionBubbleManager::Enabled() {
@@ -22,8 +29,12 @@ PermissionBubbleManager::PermissionBubbleManager(
   : content::WebContentsObserver(web_contents),
     bubble_showing_(false),
     view_(NULL),
-    request_url_has_loaded_(false),
-    customization_mode_(false) {}
+    customization_mode_(false) {
+  timer_.reset(new base::Timer(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kPermissionsCoalesceIntervalMs),
+      base::Bind(&PermissionBubbleManager::ShowBubble, base::Unretained(this)),
+      false));
+}
 
 PermissionBubbleManager::~PermissionBubbleManager() {
   if (view_ != NULL)
@@ -86,8 +97,9 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
   // TODO(gbillock): do we need to make default state a request property?
   accept_states_.push_back(true);
 
-  if (request->HasUserGesture())
-    ShowBubble();
+  // Start the timer when there is both a view and a request.
+  if (view_ && !timer_->IsRunning())
+    timer_->Reset();
 }
 
 void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
@@ -111,21 +123,22 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
   else
     return;
 
-  ShowBubble();
+  // Even if there are requests queued up, add a short delay before the bubble
+  // appears.
+  if (!requests_.empty() && !timer_->IsRunning())
+    timer_->Reset();
+  else
+    view_->Hide();
 }
 
-void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame(
-    int32 page_id) {
-  request_url_has_loaded_ = true;
-  // This is scheduled because while all calls to the browser have been
-  // issued at DOMContentLoaded, they may be bouncing around in scheduled
-  // callbacks finding the UI thread still. This makes sure we allow those
-  // scheduled calls to AddRequest to complete before we show the page-load
-  // permissions bubble.
-  // TODO(gbillock): make this bind safe with a weak ptr.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&PermissionBubbleManager::ShowBubble, base::Unretained(this)));
+void PermissionBubbleManager::DidFinishLoad(
+    int64 frame_id,
+    const GURL& validated_url,
+    bool is_main_frame,
+    content::RenderViewHost* render_view_host) {
+  // Allows extra time for additional requests to coalesce.
+  if (timer_->IsRunning())
+    timer_->Reset();
 }
 
 void PermissionBubbleManager::NavigationEntryCommitted(
@@ -199,8 +212,7 @@ void PermissionBubbleManager::Closing() {
 }
 
 void PermissionBubbleManager::ShowBubble() {
-  if (view_ && !bubble_showing_ && request_url_has_loaded_ &&
-      requests_.size()) {
+  if (view_ && !bubble_showing_ && requests_.size()) {
     // Note: this should appear above Show() for testing, since in that
     // case we may do in-line calling of finalization.
     bubble_showing_ = true;
@@ -225,7 +237,9 @@ void PermissionBubbleManager::FinalizeBubble() {
     requests_ = queued_requests_;
     accept_states_.resize(requests_.size(), true);
     queued_requests_.clear();
-    ShowBubble();
+    // TODO(leng):  Explore other options of showing the next bubble.  The
+    // advantage of this is that it uses the same code path as the first bubble.
+    timer_->Reset();
   } else {
     request_url_ = GURL();
   }
@@ -238,4 +252,11 @@ void PermissionBubbleManager::CancelPendingQueue() {
        requests_iter++) {
     (*requests_iter)->RequestFinished();
   }
+}
+
+void PermissionBubbleManager::SetCoalesceIntervalForTesting(int interval_ms) {
+  timer_.reset(new base::Timer(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(interval_ms),
+      base::Bind(&PermissionBubbleManager::ShowBubble, base::Unretained(this)),
+      false));
 }

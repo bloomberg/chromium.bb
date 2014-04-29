@@ -71,6 +71,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     PermissionBubbleManager* manager =
       PermissionBubbleManager::FromWebContents(web_contents());
     manager->SetView(view_.get());
+    manager->SetCoalesceIntervalForTesting(0);
 
     testing_action_ = ACCEPT;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
