@@ -17,6 +17,11 @@
         'linux/sandbox_linux.gypi',
       ],
     }],
+    [ 'OS=="mac" and OS!="ios"', {
+      'includes': [
+        'mac/sandbox_mac.gypi',
+      ],
+    }],
     [ 'OS!="win" and OS!="mac" and OS!="linux" and OS!="android"', {
       # A 'default' to accomodate the "sandbox" target.
       'targets': [

@@ -125,6 +125,7 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
+            '../sandbox/sandbox.gyp:*',
             '../third_party/ocmock/ocmock.gyp:*',
           ],
         }],
