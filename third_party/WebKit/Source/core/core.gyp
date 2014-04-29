@@ -274,6 +274,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementLookupTrie.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementLookupTrie.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLTokenizerNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InputTypeNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.cpp',

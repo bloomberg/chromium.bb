@@ -35,6 +35,8 @@ import template_expander
 import name_utilities
 
 def _symbol(entry):
+    if entry['Symbol'] is not None:
+        return entry['Symbol']
     # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
     if entry['name'].startswith('-webkit-'):
         return entry['name'].replace('-', '_')[1:]
@@ -46,6 +48,7 @@ class MakeNamesWriter(in_generator.Writer):
         'Conditional': None,  # FIXME: Add support for Conditional.
         'RuntimeEnabled': None,  # What should we do for runtime-enabled features?
         'ImplementedAs': None,
+        'Symbol': None,
     }
     default_parameters = {
         'namespace': '',

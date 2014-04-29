@@ -29,6 +29,7 @@
 #include "core/html/parser/HTMLTokenizer.h"
 
 #include "HTMLNames.h"
+#include "HTMLTokenizerNames.h"
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
@@ -38,7 +39,9 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/unicode/Unicode.h"
 
-using namespace WTF;
+// Please don't use DEFINE_STATIC_LOCAL in this file. The HTMLTokenizer is used
+// from multiple threads and DEFINE_STATIC_LOCAL isn't threadsafe.
+#undef DEFINE_STATIC_LOCAL
 
 namespace WebCore {
 
@@ -1072,11 +1075,8 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token)
     END_STATE()
 
     HTML_BEGIN_STATE(MarkupDeclarationOpenState) {
-        DEFINE_STATIC_LOCAL(String, dashDashString, ("--"));
-        DEFINE_STATIC_LOCAL(String, doctypeString, ("doctype"));
-        DEFINE_STATIC_LOCAL(String, cdataString, ("[CDATA["));
         if (cc == '-') {
-            SegmentedString::LookAheadResult result = source.lookAhead(dashDashString);
+            SegmentedString::LookAheadResult result = source.lookAhead(HTMLTokenizerNames::dashDash);
             if (result == SegmentedString::DidMatch) {
                 source.advanceAndASSERT('-');
                 source.advanceAndASSERT('-');
@@ -1085,14 +1085,14 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token)
             } else if (result == SegmentedString::NotEnoughCharacters)
                 return haveBufferedCharacterToken();
         } else if (cc == 'D' || cc == 'd') {
-            SegmentedString::LookAheadResult result = source.lookAheadIgnoringCase(doctypeString);
+            SegmentedString::LookAheadResult result = source.lookAheadIgnoringCase(HTMLTokenizerNames::doctype);
             if (result == SegmentedString::DidMatch) {
                 advanceStringAndASSERTIgnoringCase(source, "doctype");
                 HTML_SWITCH_TO(DOCTYPEState);
             } else if (result == SegmentedString::NotEnoughCharacters)
                 return haveBufferedCharacterToken();
         } else if (cc == '[' && shouldAllowCDATA()) {
-            SegmentedString::LookAheadResult result = source.lookAhead(cdataString);
+            SegmentedString::LookAheadResult result = source.lookAhead(HTMLTokenizerNames::cdata);
             if (result == SegmentedString::DidMatch) {
                 advanceStringAndASSERT(source, "[CDATA[");
                 HTML_SWITCH_TO(CDATASectionState);
@@ -1275,17 +1275,15 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token)
             m_token->setForceQuirks();
             return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
         } else {
-            DEFINE_STATIC_LOCAL(String, publicString, ("public"));
-            DEFINE_STATIC_LOCAL(String, systemString, ("system"));
             if (cc == 'P' || cc == 'p') {
-                SegmentedString::LookAheadResult result = source.lookAheadIgnoringCase(publicString);
+                SegmentedString::LookAheadResult result = source.lookAheadIgnoringCase(HTMLTokenizerNames::publicString);
                 if (result == SegmentedString::DidMatch) {
                     advanceStringAndASSERTIgnoringCase(source, "public");
                     HTML_SWITCH_TO(AfterDOCTYPEPublicKeywordState);
                 } else if (result == SegmentedString::NotEnoughCharacters)
                     return haveBufferedCharacterToken();
             } else if (cc == 'S' || cc == 's') {
-                SegmentedString::LookAheadResult result = source.lookAheadIgnoringCase(systemString);
+                SegmentedString::LookAheadResult result = source.lookAheadIgnoringCase(HTMLTokenizerNames::system);
                 if (result == SegmentedString::DidMatch) {
                     advanceStringAndASSERTIgnoringCase(source, "system");
                     HTML_SWITCH_TO(AfterDOCTYPESystemKeywordState);

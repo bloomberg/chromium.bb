@@ -604,6 +604,24 @@
           ],
         },
         {
+          'action_name': 'HTMLTokenizerNames',
+          'inputs': [
+            '<@(make_names_files)',
+            'html/parser/HTMLTokenizerNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLTokenizerNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLTokenizerNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_names.py',
+            'html/parser/HTMLTokenizerNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
+        {
           'action_name': 'InputTypeNames',
           'inputs': [
             '<@(make_names_files)',

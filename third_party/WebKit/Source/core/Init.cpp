@@ -37,6 +37,7 @@
 #include "FetchInitiatorTypeNames.h"
 #include "FontFamilyNames.h"
 #include "HTMLNames.h"
+#include "HTMLTokenizerNames.h"
 #include "InputTypeNames.h"
 #include "MathMLNames.h"
 #include "MediaFeatureNames.h"
@@ -70,14 +71,17 @@ void init()
     MathMLNames::init();
     XMLNSNames::init();
     XMLNames::init();
+
     EventNames::init();
     EventTargetNames::init();
     EventTypeNames::init();
     FetchInitiatorTypeNames::init();
     FontFamilyNames::init();
+    HTMLTokenizerNames::init();
     InputTypeNames::init();
     MediaFeatureNames::init();
     MediaTypeNames::init();
+
     WTF::StringStatics::init();
     QualifiedName::init();
     Partitions::init();
