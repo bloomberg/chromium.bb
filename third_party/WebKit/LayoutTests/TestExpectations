@@ -1062,11 +1062,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRe
 crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsManualRebaseline ]
 crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]
 crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
-crbug.com/367629 fast/images/exif-orientation-css.html [ NeedsRebaseline ]
-crbug.com/367629 fast/images/exif-orientation-image-document.html [ NeedsRebaseline ]
-crbug.com/367629 fast/images/exif-orientation.html [ NeedsRebaseline ]
-crbug.com/367629 virtual/deferred/fast/images/exif-orientation-css.html [ NeedsRebaseline ]
-crbug.com/367629 virtual/deferred/fast/images/exif-orientation-image-document.html [ NeedsRebaseline ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
 
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
