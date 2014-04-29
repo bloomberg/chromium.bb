@@ -281,9 +281,8 @@ gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewGuest::MovePluginWindows(
-    const gfx::Vector2d& scroll_offset,
     const std::vector<WebPluginGeometry>& moves) {
-  platform_view_->MovePluginWindows(scroll_offset, moves);
+  platform_view_->MovePluginWindows(moves);
 }
 
 void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {

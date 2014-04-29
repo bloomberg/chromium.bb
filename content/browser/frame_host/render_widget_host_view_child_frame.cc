@@ -141,7 +141,6 @@ void RenderWidgetHostViewChildFrame::WasHidden() {
 }
 
 void RenderWidgetHostViewChildFrame::MovePluginWindows(
-    const gfx::Vector2d& scroll_offset,
     const std::vector<WebPluginGeometry>& moves) {
 }
 

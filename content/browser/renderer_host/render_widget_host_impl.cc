@@ -1596,7 +1596,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   // in the process could dispatch other window messages which could cause the
   // view to be destroyed.
   if (view_)
-    view_->MovePluginWindows(params.scroll_offset, params.plugin_window_moves);
+    view_->MovePluginWindows(params.plugin_window_moves);
 
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,

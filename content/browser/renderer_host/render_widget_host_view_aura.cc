@@ -762,7 +762,6 @@ RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(
-    const gfx::Vector2d& scroll_offset,
     const std::vector<WebPluginGeometry>& plugin_window_moves) {
 #if defined(OS_WIN)
   // We need to clip the rectangle to the tab's viewport, otherwise we will draw
@@ -775,13 +774,12 @@ void RenderWidgetHostViewAura::MovePluginWindows(
   gfx::Rect view_bounds = window_->GetBoundsInRootWindow();
   std::vector<WebPluginGeometry> moves = plugin_window_moves;
 
-  gfx::Rect view_port(scroll_offset.x(), scroll_offset.y(), view_bounds.width(),
-                      view_bounds.height());
+  gfx::Rect view_port(view_bounds.size());
 
   for (size_t i = 0; i < moves.size(); ++i) {
     gfx::Rect clip(moves[i].clip_rect);
     gfx::Vector2d view_port_offset(
-        moves[i].window_rect.OffsetFromOrigin() + scroll_offset);
+        moves[i].window_rect.OffsetFromOrigin());
     clip.Offset(view_port_offset);
     clip.Intersect(view_port);
     clip.Offset(-view_port_offset);
