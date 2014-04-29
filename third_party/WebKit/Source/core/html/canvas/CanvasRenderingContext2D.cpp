@@ -167,8 +167,8 @@ void CanvasRenderingContext2D::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_stateStack);
     visitor->trace(m_fetchedFonts);
-    CanvasRenderingContext::trace(visitor);
 #endif
+    CanvasRenderingContext::trace(visitor);
 }
 
 void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)
