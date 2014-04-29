@@ -9,7 +9,7 @@
 #   http://www.iana.org/assignments/charset-reg/CP51932
 #   Table 3-64 in CJKV Information Processing 2/e.
 
-# Download the following two files, run it in source/data/mappings directory 
+# Download the following two files, run it in source/data/mappings directory
 # and save the result to euc-jp-html5.ucm
 #   http://encoding.spec.whatwg.org/index-jis0208.txt
 #   http://encoding.spec.whatwg.org/index-jis0212.txt
@@ -23,8 +23,6 @@ cat <<PREAMBLE
 # *
 # *   Generated per the algorithm for EUC-JP
 # *   described at http://encoding.spec.whatwg.org/#euc-jp.
-# *   Added the 34 decoding only (EUC-JP to Unicode) entries from euc-jp-2007.ucm
-# *   for the backward compatibility.
 # *
 # ***************************************************************************
 <code_set_name>               "euc-jp-html5"
@@ -55,11 +53,12 @@ function ascii {
 }
 
 
-function fullwidth_ascii {
+# Map 0x8E 0x[A1-DF] to U+FF61 to U+FF9F
+function half_width_kana {
   for i in $(seq 0xA1 0xDF)
   do
     # 65377 = 0xFF61, 161 = 0xA1
-    printf '<U%04X> \\x%02X |0\n' $(($i + 65377 - 161))  $i
+    printf '<U%04X> \\x8E\\x%02X |0\n' $(($i + 65377 - 161))  $i
   done
 }
 
@@ -94,34 +93,9 @@ function jis212 {
   index-jis0212.txt
 }
 
-# Add the uni-directional mapping entries (EUC-JP to Unicode) that
-# are only present in euc-jp-2007.ucm. There are 34 of them. They're added
-# for the backward compatibility with the old behavior of Chrome.
-# See https://www.w3.org/Bugs/Public/show_bug.cgi?id=25266
-# Here are the break-downs:
-# 1. 0x8E0xE0 to 0x8E0xE2
-#   00A2 00A3 00AC
-# 2. JIS X 0212 extra (0x8F 0xF3 0xhh)
-#   2160 2161 2162 2163 2164 2165 2166 2167 2168 2169 2170 2171
-#   2172 2173 2174 2175 2176 2177 2178 2179 221A 2220 2229 222A 222B 2235 2252
-#   2261 22A5 3231
-# 3. JIS X 0208 extra : 0xFC 0xFB => FFE2
-
-function decode_only_extra {
-  decode_only_list=$(
-  for i in $(grep '|3' euc-jp-2007.ucm  | sed 's/^<U\(....\)>.*$/\1/')
-  do
-    grep 0x${i} index-jis0212.txt > /dev/null  || echo $i
-  done)
-
-  for u in $decode_only_list
-  do
-    grep $u euc-jp-2007.ucm | grep '|3'
-  done
-}
-
 function unsorted_table {
   ascii
+  half_width_kana
   jis208
   jis212
   decode_only_extra
