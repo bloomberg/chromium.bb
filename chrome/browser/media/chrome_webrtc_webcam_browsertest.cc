@@ -32,6 +32,17 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
+
+ protected:
+  std::string GetUserMediaAndGetStreamSize(content::WebContents* tab,
+                                           const std::string& constraints) {
+    GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints);
+    StartDetectingVideo(tab, "local-view");
+    WaitForVideoToPlay(tab);
+    std::string actual_stream_size = GetStreamSize(tab, "local-view");
+    CloseLastLocalStream(tab);
+    return actual_stream_size;
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
@@ -47,36 +58,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
     return;
   }
 
-  GetUserMediaWithSpecificConstraintsAndAccept(tab,
-                                               kAudioVideoCallConstraintsVGA);
-  StartDetectingVideo(tab, "local-view");
-  WaitForVideoToPlay(tab);
-  EXPECT_EQ("640x480", GetStreamSize(tab, "local-view"));
-  CloseLastLocalStream(tab);
-  GetUserMediaWithSpecificConstraintsAndAccept(tab,
-                                               kAudioVideoCallConstraintsQVGA);
-  StartDetectingVideo(tab, "local-view");
-  WaitForVideoToPlay(tab);
-  EXPECT_EQ("320x240", GetStreamSize(tab, "local-view"));
-  CloseLastLocalStream(tab);
-  GetUserMediaWithSpecificConstraintsAndAccept(tab,
-                                               kAudioVideoCallConstraints360p);
-  StartDetectingVideo(tab, "local-view");
-  WaitForVideoToPlay(tab);
-  EXPECT_EQ("640x360", GetStreamSize(tab, "local-view"));
-  CloseLastLocalStream(tab);
-
-  // Broken on all platforms for C920 webcams: see http://crbug.com/360512.
-//  GetUserMediaWithSpecificConstraintsAndAccept(tab,
-//                                              kAudioVideoCallConstraints720p);
-//  StartDetectingVideo(tab, "local-view");
-//  WaitForVideoToPlay(tab);
-//  EXPECT_EQ("1280x720", GetStreamSize(tab, "local-view"));
-//  CloseLastLocalStream(tab);
-//  GetUserMediaWithSpecificConstraintsAndAccept(tab,
-//                                             kAudioVideoCallConstraints1080p);
-//  StartDetectingVideo(tab, "local-view");
-//  WaitForVideoToPlay(tab);
-//  EXPECT_EQ("1920x1080", GetStreamSize(tab, "local-view"));
-//  CloseLastLocalStream(tab);
+  EXPECT_EQ("640x480",
+            GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraintsVGA));
+  EXPECT_EQ("320x240",
+            GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraintsQVGA));
+  EXPECT_EQ("640x360",
+            GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraints360p));
+  EXPECT_EQ("1280x720",
+            GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraints720p));
+  EXPECT_EQ("1920x1080",
+            GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraints1080p));
 }
