@@ -378,8 +378,8 @@ void LocationBarView::Init() {
   open_pdf_in_reader_view_ = new OpenPDFInReaderView();
   AddChildView(open_pdf_in_reader_view_);
 
-  manage_passwords_icon_view_ = new ManagePasswordsIconView(delegate_);
-  manage_passwords_icon_view_->SetState(ManagePasswordsIcon::INACTIVE_STATE);
+  manage_passwords_icon_view_ =
+      new ManagePasswordsIconView(delegate_, command_updater());
   AddChildView(manage_passwords_icon_view_);
 
   translate_icon_view_ = new TranslateIconView(command_updater());

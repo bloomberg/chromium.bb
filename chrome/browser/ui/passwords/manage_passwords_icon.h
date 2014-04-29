@@ -42,8 +42,9 @@ class ManagePasswordsIcon {
   ManagePasswordsIcon();
   ~ManagePasswordsIcon();
 
-  // Called from SetState() iff the icon's state has changed.
-  virtual void SetStateInternal(State state) = 0;
+  // Called from SetState() iff the icon's state has changed in order to do
+  // whatever platform-specific UI work is necessary given the new state.
+  virtual void UpdateVisibleUI() = 0;
 
  private:
   State state_;
