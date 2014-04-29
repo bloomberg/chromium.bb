@@ -31,6 +31,10 @@ from utils import threading_utils
 
 ALGO = hashlib.sha1
 
+# Tests here assume ALGO is used for default namespaces, check this assumption.
+assert isolateserver.get_hash_algo('default') is ALGO
+assert isolateserver.get_hash_algo('default-gzip') is ALGO
+
 
 class TestCase(auto_stub.TestCase):
   """Mocks out url_open() calls and sys.stdout/stderr."""
@@ -119,11 +123,17 @@ class FakeItem(isolateserver.Item):
 
 
 class MockedStorageApi(isolateserver.StorageApi):
-  def __init__(self, missing_hashes, push_side_effect=None):
+  def __init__(
+      self, missing_hashes, push_side_effect=None, namespace='default'):
     self.missing_hashes = missing_hashes
     self.push_side_effect = push_side_effect
     self.push_calls = []
     self.contains_calls = []
+    self._namespace = namespace
+
+  @property
+  def namespace(self):
+    return self._namespace
 
   def push(self, item, push_state, content=None):
     content = ''.join(item.content() if content is None else content)
@@ -181,7 +191,7 @@ class StorageTest(TestCase):
 
     storage_api = MockedStorageApi(
         {item.digest: push_state for item, push_state in missing.iteritems()})
-    storage = isolateserver.Storage(storage_api, use_zip=False, hash_algo=ALGO)
+    storage = isolateserver.Storage(storage_api)
 
     # 'get_missing_items' is a generator yielding pairs, materialize its
     # result in a dict.
@@ -191,8 +201,10 @@ class StorageTest(TestCase):
   def test_async_push(self):
     for use_zip in (False, True):
       item = FakeItem('1234567')
-      storage_api = MockedStorageApi({item.digest: 'push_state'})
-      storage = isolateserver.Storage(storage_api, use_zip, ALGO)
+      storage_api = MockedStorageApi(
+          {item.digest: 'push_state'},
+          namespace='default-gzip' if use_zip else 'default')
+      storage = isolateserver.Storage(storage_api)
       channel = threading_utils.TaskChannel()
       storage.async_push(channel, item, self.get_push_state(storage, item))
       # Wait for push to finish.
@@ -214,8 +226,10 @@ class StorageTest(TestCase):
     for use_zip in (False, True):
       item = FakeItem('')
       self.mock(item, 'content', faulty_generator)
-      storage_api = MockedStorageApi({item.digest: 'push_state'})
-      storage = isolateserver.Storage(storage_api, use_zip, ALGO)
+      storage_api = MockedStorageApi(
+          {item.digest: 'push_state'},
+          namespace='default-gzip' if use_zip else 'default')
+      storage = isolateserver.Storage(storage_api)
       channel = threading_utils.TaskChannel()
       storage.async_push(channel, item, self.get_push_state(storage, item))
       with self.assertRaises(FakeException):
@@ -244,8 +258,10 @@ class StorageTest(TestCase):
         item = FakeItem(chunk)
         self.mock(item, 'content', source)
         storage_api = MockedStorageApi(
-            {item.digest: 'push_state'}, push_side_effect)
-        storage = isolateserver.Storage(storage_api, use_zip, ALGO)
+            {item.digest: 'push_state'},
+            push_side_effect,
+            namespace='default-gzip' if use_zip else 'default')
+        storage = isolateserver.Storage(storage_api)
         channel = threading_utils.TaskChannel()
         storage.async_push(channel, item, self.get_push_state(storage, item))
         with self.assertRaises(IOError):
@@ -295,7 +311,7 @@ class StorageTest(TestCase):
     self.mock(isolateserver, 'file_read', mocked_file_read)
 
     storage_api = MockedStorageApi(missing_hashes)
-    storage = isolateserver.Storage(storage_api, use_zip=False, hash_algo=ALGO)
+    storage = isolateserver.Storage(storage_api)
     def mock_get_storage(base_url, namespace):
       self.assertEqual('base_url', base_url)
       self.assertEqual('some-namespace', namespace)
@@ -1087,13 +1103,17 @@ class SymlinkTest(unittest.TestCase):
       self.assertEqual((u'out/foo/bar.txt', []), actual)
 
 
-def get_storage(_isolate_server, _namespace):
+def get_storage(_isolate_server, namespace):
   class StorageFake(object):
     def __enter__(self, *_):
       return self
 
     def __exit__(self, *_):
       pass
+
+    @property
+    def hash_algo(self):  # pylint: disable=R0201
+      return isolateserver.get_hash_algo(namespace)
 
     @staticmethod
     def upload_items(items):

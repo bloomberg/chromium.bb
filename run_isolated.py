@@ -344,7 +344,7 @@ class DiskCache(isolateserver.LocalCache):
   """
   STATE_FILE = 'state.json'
 
-  def __init__(self, cache_dir, policies, algo):
+  def __init__(self, cache_dir, policies, hash_algo):
     """
     Arguments:
       cache_dir: directory where to place the cache.
@@ -352,9 +352,9 @@ class DiskCache(isolateserver.LocalCache):
       algo: hashing algorithm used.
     """
     super(DiskCache, self).__init__()
-    self.algo = algo
     self.cache_dir = cache_dir
     self.policies = policies
+    self.hash_algo = hash_algo
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
 
     # All protected methods (starting with '_') except _path should be called
@@ -493,7 +493,7 @@ class DiskCache(isolateserver.LocalCache):
         previous.remove(filename)
         continue
       # An untracked file.
-      if not isolateserver.is_valid_hash(filename, self.algo):
+      if not isolateserver.is_valid_hash(filename, self.hash_algo):
         logging.warning('Removing unknown file %s from cache', filename)
         try_remove(self._path(filename))
         continue
@@ -638,7 +638,7 @@ def process_command(command, out_dir):
   return [c.replace('${ISOLATED_OUTDIR}', out_dir) for c in command]
 
 
-def run_tha_test(isolated_hash, storage, cache, algo, extra_args):
+def run_tha_test(isolated_hash, storage, cache, extra_args):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable from there.
 
@@ -655,7 +655,6 @@ def run_tha_test(isolated_hash, storage, cache, algo, extra_args):
     cache: an isolateserver.LocalCache to keep from retrieving the same objects
            constantly by caching the objects retrieved. Can be on-disk or
            in-memory.
-    algo: an hashlib class to hash content. Usually hashlib.sha1.
     extra_args: optional arguments to add to the command stated in the .isolate
                 file.
   """
@@ -668,7 +667,6 @@ def run_tha_test(isolated_hash, storage, cache, algo, extra_args):
           isolated_hash=isolated_hash,
           storage=storage,
           cache=cache,
-          algo=algo,
           outdir=run_dir,
           require_command=True)
     except isolateserver.ConfigError as e:
@@ -707,9 +705,18 @@ def run_tha_test(isolated_hash, storage, cache, algo, extra_args):
     if os.listdir(out_dir):
       with tools.Profiler('ArchiveOutput'):
         results = isolateserver.archive_files_to_storage(
-            storage, algo, [out_dir], None)
+            storage, [out_dir], None)
       # TODO(maruel): Implement side-channel to publish this information.
-      print('run_isolated output: %s' % results[0][0])
+      output_data = {
+        'hash': results[0][0],
+        'namespace': storage.namespace,
+        'storage': storage.location,
+      }
+      sys.stdout.flush()
+      sys.stderr.flush()
+      print(
+          '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
+          tools.format_json(output_data, dense=True))
 
   finally:
     try:
@@ -792,15 +799,17 @@ def main(args):
   options.cache = os.path.abspath(options.cache)
   policies = CachePolicies(
       options.max_cache_size, options.min_free_space, options.max_items)
-  algo = isolateserver.get_hash_algo(options.namespace)
 
   try:
-    # |options.cache| may not exist until DiskCache() instance is created.
-    cache = DiskCache(options.cache, policies, algo)
+    # |options.cache| path may not exist until DiskCache() instance is created.
+    cache = DiskCache(
+        options.cache, policies, isolateserver.get_hash_algo(options.namespace))
     remote = options.isolate_server or options.indir
     with isolateserver.get_storage(remote, options.namespace) as storage:
+      # Hashing schemes used by |storage| and |cache| MUST match.
+      assert storage.hash_algo == cache.hash_algo
       return run_tha_test(
-          options.isolated or options.hash, storage, cache, algo, args)
+          options.isolated or options.hash, storage, cache, args)
   except Exception as e:
     # Make sure any exception is logged.
     tools.report_error(e)

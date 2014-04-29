@@ -4,6 +4,7 @@
 
 """Various utility functions and classes not specific to any single area."""
 
+import cStringIO
 import json
 import logging
 import logging.handlers
@@ -141,6 +142,16 @@ def write_json(filepath_or_handle, data, dense):
   else:
     with open(filepath_or_handle, 'wb') as f:
       json.dump(data, f, **kwargs)
+
+
+def format_json(data, dense):
+  """Returns a string with json encoded data.
+
+  If dense is True, the json is packed. Otherwise, it is human readable.
+  """
+  buf = cStringIO.StringIO()
+  write_json(buf, data, dense)
+  return buf.getvalue()
 
 
 def report_error(error):

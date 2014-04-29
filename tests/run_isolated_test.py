@@ -3,6 +3,8 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+# pylint: disable=R0201
+
 import StringIO
 import functools
 import hashlib
@@ -43,6 +45,10 @@ class StorageFake(object):
 
   def __exit__(self, *_):
     pass
+
+  @property
+  def hash_algo(self):
+    return ALGO
 
   def async_fetch(self, channel, _priority, digest, _size, sink):
     sink([self._files[digest]])
@@ -246,7 +252,6 @@ class RunIsolatedTest(auto_stub.TestCase):
         isolated_hash,
         StorageFake(files),
         run_isolated.isolateserver.MemoryCache(),
-        run_isolated.isolateserver.get_hash_algo('default-deflate'),
         [])
     self.assertEqual(0, ret)
     return subprocess_call, make_tree_call
@@ -417,7 +422,6 @@ class RunIsolatedTest(auto_stub.TestCase):
         isolated_hash,
         store,
         run_isolated.isolateserver.MemoryCache(),
-        run_isolated.isolateserver.get_hash_algo('default-store'),
         [])
     self.assertEqual(0, ret)
 
@@ -441,9 +445,14 @@ class RunIsolatedTest(auto_stub.TestCase):
     uploaded_hash = ALGO(uploaded).hexdigest()
     hashes.add(uploaded_hash)
     self.assertEqual(hashes, set(os.listdir(path)))
-    self.assertEqual(
-        'run_isolated output: %s\n' % uploaded_hash, sys.stdout.getvalue())
 
+    expected = ''.join([
+      '[run_isolated_out_hack]',
+      '{"hash":"%s","namespace":"default-store","storage":"%s"}' % (
+          uploaded_hash, path),
+      '[/run_isolated_out_hack]'
+    ]) + '\n'
+    self.assertEqual(expected, sys.stdout.getvalue())
 
 if __name__ == '__main__':
   logging.basicConfig(
