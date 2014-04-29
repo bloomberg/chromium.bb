@@ -56,7 +56,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
     return container_.get() != NULL;
   }
 
-  // Reloads the content of the keyboard.
+  // Reloads the content of the keyboard. No-op if the keyboard content is not
+  // loaded yet.
   void Reload();
 
   // Hides virtual keyboard and notifies observer bounds change.

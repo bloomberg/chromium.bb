@@ -50,6 +50,10 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
   virtual void MoveContents(content::WebContents* source,
                             const gfx::Rect& pos) OVERRIDE {
     aura::Window* keyboard = proxy_->GetKeyboardWindow();
+    // keyboard window must have been added to keyboard container window at this
+    // point. Otherwise, wrong keyboard bounds is used and may cause problem as
+    // described in crbug.com/367788.
+    DCHECK(keyboard->parent());
     gfx::Rect bounds = keyboard->bounds();
     int new_height = pos.height();
     bounds.set_y(bounds.y() + bounds.height() - new_height);

@@ -316,9 +316,8 @@ void KeyboardController::OnWindowHierarchyChanged(
 }
 
 void KeyboardController::Reload() {
-  // Makes sure the keyboard window is initialized.
-  proxy_->GetKeyboardWindow();
-  proxy_->ReloadKeyboardIfNeeded();
+  if (proxy_->HasKeyboardWindow())
+    proxy_->ReloadKeyboardIfNeeded();
 }
 
 void KeyboardController::OnTextInputStateChanged(
