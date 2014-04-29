@@ -34,10 +34,11 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
                                   const blink::WebInputEvent* event) OVERRIDE;
   virtual void OnSetFocus(int instance_id, bool focused) OVERRIDE;
   virtual void OnTakeFocus(bool reverse) OVERRIDE;
-  virtual void SetDamageBuffer(
-      const BrowserPluginHostMsg_ResizeGuest_Params& params) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void OnImeCancelComposition() OVERRIDE;
+  virtual void OnResizeGuest(
+      int instance_id,
+      const BrowserPluginHostMsg_ResizeGuest_Params& params) OVERRIDE;
 
   // Overridden from WebContentsObserver.
   virtual void WasHidden() OVERRIDE;
@@ -47,8 +48,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   // ready/rendered.
   void WaitForUpdateRectMsg();
   void ResetUpdateRectCount();
-  // Waits until a guest receives a damage buffer of the specified |size|.
-  void WaitForDamageBufferWithSize(const gfx::Size& size);
   // Waits for focus to reach this guest.
   void WaitForFocus();
   // Waits for blur to reach this guest.
@@ -67,6 +66,8 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitForViewSize(const gfx::Size& view_size);
   // Waits until IME cancellation is observed.
   void WaitForImeCancel();
+  // Waits until we have seen a resize guest of size |view_size|.
+  void WaitForResizeGuest(const gfx::Size& view_size);
 
   void set_guest_hang_timeout(const base::TimeDelta& timeout) {
     guest_hang_timeout_ = timeout;
@@ -81,23 +82,18 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   virtual void SendMessageToEmbedder(IPC::Message* msg) OVERRIDE;
 
   int update_rect_count_;
-  int damage_buffer_call_count_;
   bool exit_observed_;
   bool focus_observed_;
   bool blur_observed_;
   bool advance_focus_observed_;
   bool was_hidden_observed_;
-  bool set_damage_buffer_observed_;
   bool input_observed_;
   bool load_stop_observed_;
   bool ime_cancel_observed_;
   gfx::Size last_view_size_observed_;
   gfx::Size expected_auto_view_size_;
-
-  // For WaitForDamageBufferWithSize().
-  bool waiting_for_damage_buffer_with_size_;
-  gfx::Size expected_damage_buffer_size_;
-  gfx::Size last_damage_buffer_size_;
+  gfx::Size last_size_observed_in_resize_;
+  gfx::Size expected_view_size_in_resize_;
 
   scoped_refptr<MessageLoopRunner> send_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> crash_message_loop_runner_;
@@ -105,11 +101,11 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   scoped_refptr<MessageLoopRunner> blur_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> advance_focus_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> was_hidden_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> damage_buffer_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> input_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> load_stop_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> auto_view_size_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> ime_cancel_message_loop_runner_;
+  scoped_refptr<MessageLoopRunner> resize_guest_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginGuest);
 };

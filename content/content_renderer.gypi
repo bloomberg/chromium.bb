@@ -93,8 +93,6 @@
     'renderer/android/synchronous_compositor_factory.h',
     'renderer/browser_plugin/browser_plugin.cc',
     'renderer/browser_plugin/browser_plugin.h',
-    'renderer/browser_plugin/browser_plugin_backing_store.cc',
-    'renderer/browser_plugin/browser_plugin_backing_store.h',
     'renderer/browser_plugin/browser_plugin_bindings.cc',
     'renderer/browser_plugin/browser_plugin_bindings.h',
     'renderer/browser_plugin/browser_plugin_manager_factory.h',

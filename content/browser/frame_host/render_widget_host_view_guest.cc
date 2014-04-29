@@ -167,9 +167,6 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
   if (!guest_)
     return;
 
-  // If accelerated surface buffers are getting swapped then we're not using
-  // the software path.
-  guest_->clear_damage_buffer();
   FrameMsg_BuffersSwapped_Params guest_params;
   guest_params.size = params.size;
   guest_params.mailbox = params.mailbox;
@@ -191,8 +188,6 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
   if (!guest_)
     return;
-
-  guest_->clear_damage_buffer();
 
   if (!guest_->attached()) {
     // If the guest doesn't have an embedder then there's nothing to give the

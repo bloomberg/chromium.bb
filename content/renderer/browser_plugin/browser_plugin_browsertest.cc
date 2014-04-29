@@ -192,11 +192,7 @@ MockBrowserPlugin* BrowserPluginTest::GetCurrentPluginWithAttachParams(
 }
 
 // This test verifies that an initial resize occurs when we instantiate the
-// browser plugin. This test also verifies that the browser plugin is waiting
-// for a BrowserPluginMsg_UpdateRect in response. We issue an UpdateRect, and
-// we observe an UpdateRect_ACK, with the |pending_damage_buffer_| reset,
-// indiciating that the BrowserPlugin is not waiting for any more UpdateRects to
-// satisfy its resize request.
+// browser plugin.
 TEST_F(BrowserPluginTest, InitialResize) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   // Verify that the information in Attach is correct.
@@ -206,22 +202,6 @@ TEST_F(BrowserPluginTest, InitialResize) {
   EXPECT_EQ(640, params.resize_guest_params.view_rect.width());
   EXPECT_EQ(480, params.resize_guest_params.view_rect.height());
   ASSERT_TRUE(browser_plugin);
-  // Now the browser plugin is expecting a UpdateRect resize.
-  int instance_id = browser_plugin->guest_instance_id();
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
-
-  // Send the BrowserPlugin an UpdateRect equal to its container size with
-  // the same damage buffer. That should clear |pending_damage_buffer_|.
-  BrowserPluginMsg_UpdateRect_Params update_rect_params;
-  update_rect_params.damage_buffer_sequence_id =
-      browser_plugin->damage_buffer_sequence_id_;
-  update_rect_params.view_size = gfx::Size(640, 480);
-  update_rect_params.scale_factor = 1.0f;
-  update_rect_params.is_resize_ack = true;
-  update_rect_params.needs_ack = true;
-  BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
-  browser_plugin->OnMessageReceived(msg);
-  EXPECT_FALSE(browser_plugin->pending_damage_buffer_.get());
 }
 
 // This test verifies that all attributes (present at the time of writing) are
@@ -305,24 +285,16 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
   int instance_id = browser_plugin->guest_instance_id();
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
-  // Send an UpdateRect to the BrowserPlugin to make it use the pending damage
-  // buffer.
+  // Send an UpdateRect to the BrowserPlugin to make sure the browser sees a
+  // resize related (SetAutoSize) message.
   {
     // We send a stale UpdateRect to the BrowserPlugin.
     BrowserPluginMsg_UpdateRect_Params update_rect_params;
     update_rect_params.view_size = gfx::Size(640, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
-    update_rect_params.needs_ack = true;
-    // By sending |damage_buffer_sequence_id| back to BrowserPlugin on
-    // UpdateRect, then the BrowserPlugin knows that the browser process has
-    // received and has begun to use the |pending_damage_buffer_|.
-    update_rect_params.damage_buffer_sequence_id =
-        browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
-    EXPECT_EQ(NULL, browser_plugin->pending_damage_buffer_.get());
   }
 
   browser_plugin_manager()->sink().ClearMessages();
@@ -360,9 +332,6 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
   EXPECT_EQ(641, params.view_rect.width());
   EXPECT_EQ(480, params.view_rect.height());
-  // This indicates that the BrowserPlugin has sent out a previous resize
-  // request but has not yet received an UpdateRect for that request.
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
 
   {
     // We send a stale UpdateRect to the BrowserPlugin.
@@ -370,14 +339,8 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(641, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
-    update_rect_params.needs_ack = true;
-    update_rect_params.damage_buffer_sequence_id =
-        browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
-    // This tells us that the BrowserPlugin is still expecting another
-    // UpdateRect with the most recent size.
-    EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   }
   // Send the BrowserPlugin another UpdateRect, but this time with a size
   // that matches the size of the container.
@@ -386,14 +349,8 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(643, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
-    update_rect_params.needs_ack = true;
-    update_rect_params.damage_buffer_sequence_id =
-        browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
-    // The BrowserPlugin has finally received an UpdateRect that satisifes
-    // its current size, and so it is happy.
-    EXPECT_FALSE(browser_plugin->pending_damage_buffer_.get());
   }
 }
 
@@ -594,9 +551,6 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   EXPECT_EQ(1337, params.auto_size_params.max_size.width());
   EXPECT_EQ(1338, params.auto_size_params.max_size.height());
 
-  // Verify that we are waiting for the browser process to grab the new
-  // damage buffer.
-  EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   // Disable autosize. AutoSize state will not be sent to the guest until
   // the guest has responded to the last resize request.
   ExecuteJavaScript(kDisableAutoSize);
@@ -607,32 +561,28 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
       BrowserPluginHostMsg_SetAutoSize::ID);
   EXPECT_FALSE(auto_size_msg);
 
-  // Send the BrowserPlugin an UpdateRect equal to its |max_size| with
-  // the same damage buffer.
+  // Send the BrowserPlugin an UpdateRect equal to its |max_size|.
   BrowserPluginMsg_UpdateRect_Params update_rect_params;
-  update_rect_params.damage_buffer_sequence_id =
-      browser_plugin->damage_buffer_sequence_id_;
   update_rect_params.view_size = gfx::Size(1337, 1338);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
-  update_rect_params.needs_ack = true;
   BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
 
   // Verify that the autosize state has been updated.
   {
     const IPC::Message* auto_size_msg =
-    browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_UpdateRect_ACK::ID);
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_SetAutoSize::ID);
     ASSERT_TRUE(auto_size_msg);
 
     int instance_id = 0;
     BrowserPluginHostMsg_AutoSize_Params auto_size_params;
     BrowserPluginHostMsg_ResizeGuest_Params resize_params;
-    BrowserPluginHostMsg_UpdateRect_ACK::Read(auto_size_msg,
-                                              &instance_id,
-                                              &auto_size_params,
-                                              &resize_params);
+    BrowserPluginHostMsg_SetAutoSize::Read(auto_size_msg,
+                                           &instance_id,
+                                           &auto_size_params,
+                                           &resize_params);
     EXPECT_FALSE(auto_size_params.enable);
     // These value are not populated (as an optimization) if autosize is
     // disabled.

@@ -25,7 +25,6 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
@@ -33,9 +32,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
@@ -47,7 +44,6 @@
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/surface/transport_dib.h"
 #include "webkit/common/resource_type.h"
 
 #if defined(OS_MACOSX)
@@ -198,9 +194,6 @@ BrowserPluginGuest::BrowserPluginGuest(
     : WebContentsObserver(web_contents),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
-      damage_buffer_sequence_id_(0),
-      damage_buffer_size_(0),
-      damage_buffer_scale_factor_(1.0f),
       guest_device_scale_factor_(1.0f),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
@@ -401,7 +394,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateGeometry, OnUpdateGeometry)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -776,41 +768,6 @@ WebContentsImpl* BrowserPluginGuest::GetWebContents() {
   return static_cast<WebContentsImpl*>(web_contents());
 }
 
-base::SharedMemory* BrowserPluginGuest::GetDamageBufferFromEmbedder(
-    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  if (!attached()) {
-    LOG(WARNING) << "Attempting to map a damage buffer prior to attachment.";
-    return NULL;
-  }
-#if defined(OS_WIN)
-  base::ProcessHandle handle =
-      embedder_web_contents_->GetRenderProcessHost()->GetHandle();
-  scoped_ptr<base::SharedMemory> shared_buf(
-      new base::SharedMemory(params.damage_buffer_handle, false, handle));
-#elif defined(OS_POSIX)
-  scoped_ptr<base::SharedMemory> shared_buf(
-      new base::SharedMemory(params.damage_buffer_handle, false));
-#endif
-  if (!shared_buf->Map(params.damage_buffer_size)) {
-    LOG(WARNING) << "Unable to map the embedder's damage buffer.";
-    return NULL;
-  }
-  return shared_buf.release();
-}
-
-void BrowserPluginGuest::SetDamageBuffer(
-    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  damage_buffer_.reset(GetDamageBufferFromEmbedder(params));
-  // Sanity check: Verify that we've correctly shared the damage buffer memory
-  // between the embedder and browser processes.
-  DCHECK(!damage_buffer_ ||
-      *static_cast<unsigned int*>(damage_buffer_->memory()) == 0xdeadbeef);
-  damage_buffer_sequence_id_ = params.damage_buffer_sequence_id;
-  damage_buffer_size_ = params.damage_buffer_size;
-  damage_view_size_ = params.view_rect.size();
-  damage_buffer_scale_factor_ = params.scale_factor;
-}
-
 gfx::Point BrowserPluginGuest::GetScreenCoordinates(
     const gfx::Point& relative_position) const {
   gfx::Point screen_pos(relative_position);
@@ -941,7 +898,7 @@ void BrowserPluginGuest::RenderViewReady() {
   if (auto_size_enabled_)
     rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
   else
-    rvh->DisableAutoResize(damage_view_size_);
+    rvh->DisableAutoResize(full_size_);
 
   Send(new ViewMsg_SetName(routing_id(), name_));
   OnSetContentsOpaque(instance_id_, guest_opaque_);
@@ -997,7 +954,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_SetVisibility::ID:
     case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
     case BrowserPluginHostMsg_UpdateGeometry::ID:
-    case BrowserPluginHostMsg_UpdateRect_ACK::ID:
       return true;
     default:
       return false;
@@ -1320,10 +1276,8 @@ void BrowserPluginGuest::OnResizeGuest(
     delegate_->SizeChanged(last_seen_view_size_, params.view_rect.size());
     last_seen_auto_size_enabled_ = false;
   }
-  // Invalid damage buffer means we are in HW compositing mode,
-  // so just resize the WebContents and repaint if needed.
-  if (base::SharedMemory::IsHandleValid(params.damage_buffer_handle))
-    SetDamageBuffer(params);
+  // Just resize the WebContents and repaint if needed.
+  full_size_ = params.view_rect.size();
   if (!params.view_rect.size().IsEmpty())
     GetWebContents()->GetView()->SizeContents(params.view_rect.size());
   if (params.repaint)
@@ -1370,10 +1324,9 @@ void BrowserPluginGuest::OnSetSize(
     GetWebContents()->GetRenderViewHost()->EnableAutoResize(
         min_auto_size_, max_auto_size_);
     // TODO(fsamuel): If we're changing autosize parameters, then we force
-    // the guest to completely repaint itself, because BrowserPlugin has
-    // allocated a new damage buffer and expects a full frame of pixels.
-    // Ideally, we shouldn't need to do this because we shouldn't need to
-    // allocate a new damage buffer unless |max_auto_size_| has changed.
+    // the guest to completely repaint itself.
+    // Ideally, we shouldn't need to do this unless |max_auto_size_| has
+    // changed.
     // However, even in that case, layout may not change and so we may
     // not get a full frame worth of pixels.
     Send(new ViewMsg_Repaint(routing_id(), max_auto_size_));
@@ -1423,13 +1376,6 @@ void BrowserPluginGuest::OnUnlockMouseAck(int instance_id) {
   if (mouse_locked_)
     Send(new ViewMsg_MouseLockLost(routing_id()));
   mouse_locked_ = false;
-}
-
-void BrowserPluginGuest::OnUpdateRectACK(
-    int instance_id,
-    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
-  OnSetSize(instance_id_, auto_size_params, resize_guest_params);
 }
 
 void BrowserPluginGuest::OnCopyFromCompositingSurfaceAck(
@@ -1530,7 +1476,6 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.scale_factor = params.scale_factor;
   relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
       params.flags);
-  relay_params.needs_ack = false;
 
   bool size_changed = last_seen_view_size_ != params.view_size;
   gfx::Size old_size = last_seen_view_size_;
@@ -1542,7 +1487,6 @@ void BrowserPluginGuest::OnUpdateRect(
   }
   last_seen_auto_size_enabled_ = auto_size_enabled_;
 
-  relay_params.damage_buffer_sequence_id = 0;
   SendMessageToEmbedder(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
 }

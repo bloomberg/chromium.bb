@@ -10,11 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#if defined(OS_WIN)
-#include "base/memory/shared_memory.h"
-#endif
 #include "base/values.h"
-#include "content/renderer/browser_plugin/browser_plugin_backing_store.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
@@ -240,15 +236,7 @@ class CONTENT_EXPORT BrowserPlugin :
   void TriggerEvent(const std::string& event_name,
                     std::map<std::string, base::Value*>* props);
 
-  // Creates and maps a shared damage buffer.
-  virtual base::SharedMemory* CreateDamageBuffer(
-      const size_t size,
-      base::SharedMemoryHandle* shared_memory_handle);
-  // Swaps out the |current_damage_buffer_| with the |pending_damage_buffer_|.
-  void SwapDamageBuffers();
-
-  // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state and
-  // allocates a new |pending_damage_buffer_| if in software rendering mode.
+  // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state.
   void PopulateResizeGuestParameters(
       BrowserPluginHostMsg_ResizeGuest_Params* params,
       const gfx::Rect& view_size,
@@ -260,7 +248,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Populates both AutoSize and ResizeGuest parameters based on the current
   // autosize state.
-  void GetDamageBufferWithSizeParams(
+  void GetSizeParams(
       BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
       BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
       bool needs_repaint);
@@ -268,15 +256,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Informs the guest of an updated autosize state.
   void UpdateGuestAutoSizeState(bool auto_size_enabled);
 
-  // Indicates whether a damage buffer was used by the guest process for the
-  // provided |params|.
-  static bool UsesDamageBuffer(
-      const BrowserPluginMsg_UpdateRect_Params& params);
-
-  // Indicates whether the |pending_damage_buffer_| was used to copy over pixels
-  // given the provided |params|.
-  bool UsesPendingDamageBuffer(
-      const BrowserPluginMsg_UpdateRect_Params& params);
 
   // IPC message handlers.
   // Please keep in alphabetical order.
@@ -313,10 +292,6 @@ class CONTENT_EXPORT BrowserPlugin :
   int render_view_routing_id_;
   blink::WebPluginContainer* container_;
   scoped_ptr<BrowserPluginBindings> bindings_;
-  scoped_ptr<BrowserPluginBackingStore> backing_store_;
-  scoped_ptr<base::SharedMemory> current_damage_buffer_;
-  scoped_ptr<base::SharedMemory> pending_damage_buffer_;
-  uint32 damage_buffer_sequence_id_;
   bool paint_ack_received_;
   gfx::Rect plugin_rect_;
   float last_device_scale_factor_;
@@ -351,7 +326,6 @@ class CONTENT_EXPORT BrowserPlugin :
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 
   // Used for HW compositing.
-  bool compositing_enabled_;
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
   // Used to identify the plugin to WebBindings.

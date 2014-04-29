@@ -21,11 +21,9 @@
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/drop_data_builder.h"
-#include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
 #include "content/renderer/v8_value_converter_impl.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebDOMCustomEvent.h"
@@ -37,6 +35,7 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined (OS_WIN)
@@ -71,7 +70,6 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
-      damage_buffer_sequence_id_(0),
       paint_ack_received_(true),
       last_device_scale_factor_(1.0f),
       sad_guest_(NULL),
@@ -86,7 +84,6 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       before_first_navigation_(true),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
-      compositing_enabled_(false),
       embedder_frame_url_(frame->document().url()),
       weak_ptr_factory_(this) {
 }
@@ -331,18 +328,16 @@ void BrowserPlugin::PopulateAutoSizeParameters(
 void BrowserPlugin::UpdateGuestAutoSizeState(bool auto_size_enabled) {
   // If we haven't yet heard back from the guest about the last resize request,
   // then we don't issue another request until we do in
-  // BrowserPlugin::UpdateRect.
+  // BrowserPlugin::OnUpdateRect.
   if (!HasGuestInstanceID() || !paint_ack_received_)
     return;
 
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
   if (auto_size_enabled) {
-    GetDamageBufferWithSizeParams(&auto_size_params,
-                                  &resize_guest_params,
-                                  true);
+    GetSizeParams(&auto_size_params, &resize_guest_params, true);
   } else {
-    GetDamageBufferWithSizeParams(NULL, &resize_guest_params, true);
+    GetSizeParams(NULL, &resize_guest_params, true);
   }
   paint_ack_received_ = false;
   browser_plugin_manager()->Send(
@@ -350,19 +345,6 @@ void BrowserPlugin::UpdateGuestAutoSizeState(bool auto_size_enabled) {
                                            guest_instance_id_,
                                            auto_size_params,
                                            resize_guest_params));
-}
-
-// static
-bool BrowserPlugin::UsesDamageBuffer(
-    const BrowserPluginMsg_UpdateRect_Params& params) {
-  return params.damage_buffer_sequence_id != 0 || params.needs_ack;
-}
-
-bool BrowserPlugin::UsesPendingDamageBuffer(
-    const BrowserPluginMsg_UpdateRect_Params& params) {
-  if (!pending_damage_buffer_)
-    return false;
-  return damage_buffer_sequence_id_ == params.damage_buffer_sequence_id;
 }
 
 void BrowserPlugin::OnInstanceIDAllocated(int guest_instance_id) {
@@ -403,9 +385,9 @@ void BrowserPlugin::Attach(int guest_instance_id,
   attach_params.persist_storage = persist_storage_;
   attach_params.src = GetSrcAttribute();
   attach_params.embedder_frame_url = embedder_frame_url_;
-  GetDamageBufferWithSizeParams(&attach_params.auto_size_params,
-                                &attach_params.resize_guest_params,
-                                false);
+  GetSizeParams(&attach_params.auto_size_params,
+                &attach_params.resize_guest_params,
+                false);
 
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Attach(render_view_routing_id_,
@@ -469,7 +451,7 @@ void BrowserPlugin::OnCopyFromCompositingSurface(int guest_instance_id,
                                                  int request_id,
                                                  gfx::Rect source_rect,
                                                  gfx::Size dest_size) {
-  if (!compositing_enabled_) {
+  if (!compositing_helper_) {
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
             render_view_routing_id_,
@@ -494,10 +476,6 @@ void BrowserPlugin::OnGuestGone(int guest_instance_id) {
   // Turn off compositing so we can display the sad graphic. Changes to
   // compositing state will show up at a later time after a layout and commit.
   EnableCompositing(false);
-  if (compositing_helper_) {
-    compositing_helper_->OnContainerDestroy();
-    compositing_helper_ = NULL;
-  }
 
   // Queue up showing the sad graphic to give content embedders an opportunity
   // to fire their listeners and potentially overlay the webview with custom
@@ -546,30 +524,16 @@ void BrowserPlugin::OnUpdatedName(int guest_instance_id,
 void BrowserPlugin::OnUpdateRect(
     int guest_instance_id,
     const BrowserPluginMsg_UpdateRect_Params& params) {
+  // Note that there is no need to send ACK for this message.
   // If the guest has updated pixels then it is no longer crashed.
   guest_crashed_ = false;
 
-  bool use_new_damage_buffer = !backing_store_;
-  BrowserPluginHostMsg_AutoSize_Params auto_size_params;
-  BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
-  // If we have a pending damage buffer, and the guest has begun to use the
-  // damage buffer then we know the guest will no longer use the current
-  // damage buffer. At this point, we drop the current damage buffer, and
-  // mark the pending damage buffer as the current damage buffer.
-  if (UsesPendingDamageBuffer(params)) {
-    SwapDamageBuffers();
-    use_new_damage_buffer = true;
-  }
-
   bool auto_size = GetAutoSizeAttribute();
   // We receive a resize ACK in regular mode, but not in autosize.
-  // In SW, |paint_ack_received_| is reset in SwapDamageBuffers().
-  // In HW mode, we need to do it here so we can continue sending
+  // In Compositing mode, we need to do it here so we can continue sending
   // resize messages when needed.
-  if (params.is_resize_ack ||
-      (!params.needs_ack && (auto_size || is_auto_size_state_dirty_))) {
+  if (params.is_resize_ack || (auto_size || is_auto_size_state_dirty_))
     paint_ack_received_ = true;
-  }
 
   bool was_auto_size_state_dirty = auto_size && is_auto_size_state_dirty_;
   is_auto_size_state_dirty_ = false;
@@ -578,92 +542,26 @@ void BrowserPlugin::OnUpdateRect(
                       height() != params.view_size.height())) ||
       (auto_size && was_auto_size_state_dirty) ||
       GetDeviceScaleFactor() != params.scale_factor) {
-    // We are HW accelerated, render widget does not expect an ack,
-    // but we still need to update the size.
-    if (!params.needs_ack) {
-      UpdateGuestAutoSizeState(auto_size);
-      return;
-    }
-
-    if (!paint_ack_received_) {
-      // The guest has not yet responded to the last resize request, and
-      // so we don't want to do anything at this point other than ACK the guest.
-      if (auto_size)
-        PopulateAutoSizeParameters(&auto_size_params, auto_size);
-    } else {
-      // If we have no pending damage buffer, then the guest has not caught up
-      // with the BrowserPlugin container. We now tell the guest about the new
-      // container size.
-      if (auto_size) {
-        GetDamageBufferWithSizeParams(&auto_size_params,
-                                      &resize_guest_params,
-                                      was_auto_size_state_dirty);
-      } else {
-        GetDamageBufferWithSizeParams(NULL,
-                                      &resize_guest_params,
-                                      was_auto_size_state_dirty);
-      }
-    }
-    browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
-        render_view_routing_id_,
-        guest_instance_id_,
-        auto_size_params,
-        resize_guest_params));
+    UpdateGuestAutoSizeState(auto_size);
     return;
   }
 
-  if (auto_size && (params.view_size != last_view_size_)) {
-    if (backing_store_)
-      backing_store_->Clear(SK_ColorWHITE);
+  if (auto_size && (params.view_size != last_view_size_))
     last_view_size_ = params.view_size;
-  }
 
-  if (UsesDamageBuffer(params)) {
-
-    // If we are seeing damage buffers, HW compositing should be turned off.
-    EnableCompositing(false);
-
-    // If we are now using a new damage buffer, then that means that the guest
-    // has updated its size state in response to a resize request. We change
-    // the backing store's size to accomodate the new damage buffer size.
-    if (use_new_damage_buffer) {
-      int backing_store_width = auto_size ? GetAdjustedMaxWidth() : width();
-      int backing_store_height = auto_size ? GetAdjustedMaxHeight(): height();
-      backing_store_.reset(
-          new BrowserPluginBackingStore(
-              gfx::Size(backing_store_width, backing_store_height),
-              params.scale_factor));
-    }
-
-    // If we just transitioned from the compositing path to the software path
-    // then we might not yet have a damage buffer.
-    if (current_damage_buffer_) {
-      // Update the backing store.
-      if (!params.scroll_rect.IsEmpty()) {
-        backing_store_->ScrollBackingStore(params.scroll_delta,
-                                          params.scroll_rect,
-                                          params.view_size);
-      }
-      backing_store_->PaintToBackingStore(params.bitmap_rect,
-                                          params.copy_rects,
-                                          current_damage_buffer_->memory());
-      // Invalidate the container.
-      // If the BrowserPlugin is scheduled to be deleted, then container_ will
-      // be NULL so we shouldn't attempt to access it.
-      if (container_)
-        container_->invalidate();
-    }
-  }
+  BrowserPluginHostMsg_AutoSize_Params auto_size_params;
+  BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
 
   // BrowserPluginHostMsg_UpdateRect_ACK is used by both the compositing and
   // software paths to piggyback updated autosize parameters.
   if (auto_size)
     PopulateAutoSizeParameters(&auto_size_params, auto_size);
-  browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
-      render_view_routing_id_,
-      guest_instance_id_,
-      auto_size_params,
-      resize_guest_params));
+
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_SetAutoSize(render_view_routing_id_,
+                                           guest_instance_id_,
+                                           auto_size_params,
+                                           resize_guest_params));
 }
 
 void BrowserPlugin::ParseSizeContraintsChanged() {
@@ -741,9 +639,6 @@ bool BrowserPlugin::CanRemovePartitionAttribute(std::string* error_message) {
 }
 
 void BrowserPlugin::ShowSadGraphic() {
-  // We won't paint the contents of the current backing store again so we might
-  // as well toss it out and save memory.
-  backing_store_.reset();
   // If the BrowserPlugin is scheduled to be deleted, then container_ will be
   // NULL so we shouldn't attempt to access it.
   if (container_)
@@ -864,39 +759,26 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
 }
 
 void BrowserPlugin::EnableCompositing(bool enable) {
-  if (compositing_enabled_ == enable)
+  bool enabled = !!compositing_helper_;
+  if (enabled == enable)
     return;
 
-  compositing_enabled_ = enable;
   if (enable) {
-    // No need to keep the backing store and damage buffer around if we're now
-    // compositing.
-    backing_store_.reset();
-    current_damage_buffer_.reset();
+    DCHECK(!compositing_helper_.get());
     if (!compositing_helper_.get()) {
       compositing_helper_ =
           ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
               weak_ptr_factory_.GetWeakPtr());
     }
-  } else {
-    if (paint_ack_received_) {
-      // We're switching back to the software path. We create a new damage
-      // buffer that can accommodate the current size of the container.
-      BrowserPluginHostMsg_ResizeGuest_Params params;
-      // Request a full repaint from the guest even if its size is not actually
-      // changing.
-      PopulateResizeGuestParameters(&params,
-                                    plugin_rect(),
-                                    true /* needs_repaint */);
-      paint_ack_received_ = false;
-      browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
-          render_view_routing_id_,
-          guest_instance_id_,
-          params));
-    }
   }
   compositing_helper_->EnableCompositing(enable);
   compositing_helper_->SetContentsOpaque(!GetAllowTransparencyAttribute());
+
+  if (!enable) {
+    DCHECK(compositing_helper_.get());
+    compositing_helper_->OnContainerDestroy();
+    compositing_helper_ = NULL;
+  }
 }
 
 void BrowserPlugin::destroy() {
@@ -971,13 +853,6 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(guest_crashed_ ? SK_ColorBLACK : SK_ColorWHITE);
   canvas->drawRect(image_data_rect, paint);
-  // Stay a solid color if we have never set a non-empty src, or we don't have a
-  // backing store.
-  if (!backing_store_.get() || !HasGuestInstanceID())
-    return;
-  float inverse_scale_factor =  1.0f / backing_store_->GetScaleFactor();
-  canvas->scale(inverse_scale_factor, inverse_scale_factor);
-  canvas->drawBitmap(backing_store_->GetBitmap(), 0, 0);
 }
 
 // static
@@ -1038,11 +913,6 @@ void BrowserPlugin::updateGeometry(
       params));
 }
 
-void BrowserPlugin::SwapDamageBuffers() {
-  current_damage_buffer_.reset(pending_damage_buffer_.release());
-  paint_ack_received_ = true;
-}
-
 void BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
     const gfx::Rect& view_rect,
@@ -1055,30 +925,9 @@ void BrowserPlugin::PopulateResizeGuestParameters(
     params->repaint = true;
     last_device_scale_factor_ = params->scale_factor;
   }
-
-  // In HW compositing mode, we do not need a damage buffer.
-  if (compositing_enabled_)
-    return;
-
-  const size_t stride = skia::PlatformCanvasStrideForWidth(view_rect.width());
-  // Make sure the size of the damage buffer is at least four bytes so that we
-  // can fit in a magic word to verify that the memory is shared correctly.
-  size_t size =
-      std::max(sizeof(unsigned int),
-               static_cast<size_t>(view_rect.height() *
-                                   stride *
-                                   GetDeviceScaleFactor() *
-                                   GetDeviceScaleFactor()));
-
-  params->damage_buffer_size = size;
-  pending_damage_buffer_.reset(
-      CreateDamageBuffer(size, &params->damage_buffer_handle));
-  if (!pending_damage_buffer_)
-    NOTREACHED();
-  params->damage_buffer_sequence_id = ++damage_buffer_sequence_id_;
 }
 
-void BrowserPlugin::GetDamageBufferWithSizeParams(
+void BrowserPlugin::GetSizeParams(
     BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
     BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
     bool needs_repaint) {
@@ -1095,47 +944,6 @@ void BrowserPlugin::GetDamageBufferWithSizeParams(
   gfx::Rect view_rect = gfx::Rect(plugin_rect_.origin(), view_size);
   PopulateResizeGuestParameters(resize_guest_params, view_rect, needs_repaint);
 }
-
-#if defined(OS_POSIX)
-base::SharedMemory* BrowserPlugin::CreateDamageBuffer(
-    const size_t size,
-    base::SharedMemoryHandle* damage_buffer_handle) {
-  scoped_ptr<base::SharedMemory> shared_buf(
-      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(
-          size).release());
-
-  if (shared_buf) {
-    if (shared_buf->Map(size)) {
-      // Insert the magic word.
-      *static_cast<unsigned int*>(shared_buf->memory()) = 0xdeadbeef;
-      shared_buf->ShareToProcess(base::GetCurrentProcessHandle(),
-                                 damage_buffer_handle);
-      return shared_buf.release();
-    }
-  }
-  NOTREACHED();
-  return NULL;
-}
-#elif defined(OS_WIN)
-base::SharedMemory* BrowserPlugin::CreateDamageBuffer(
-    const size_t size,
-    base::SharedMemoryHandle* damage_buffer_handle) {
-  scoped_ptr<base::SharedMemory> shared_buf(new base::SharedMemory());
-
-  if (!shared_buf->CreateAndMapAnonymous(size)) {
-    NOTREACHED() << "Buffer allocation failed";
-    return NULL;
-  }
-
-  // Insert the magic word.
-  *static_cast<unsigned int*>(shared_buf->memory()) = 0xdeadbeef;
-  if (shared_buf->ShareToProcess(base::GetCurrentProcessHandle(),
-                                 damage_buffer_handle))
-    return shared_buf.release();
-  NOTREACHED();
-  return NULL;
-}
-#endif
 
 void BrowserPlugin::updateFocus(bool focused) {
   plugin_focused_ = focused;

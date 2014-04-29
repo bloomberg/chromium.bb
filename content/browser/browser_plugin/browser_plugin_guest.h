@@ -22,8 +22,6 @@
 #include <queue>
 
 #include "base/compiler_specific.h"
-#include "base/id_map.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/common/edit_command.h"
@@ -44,18 +42,12 @@
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
-struct FrameHostMsg_BuffersSwappedACK_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
-struct ViewHostMsg_CreateWindow_Params;
 #if defined(OS_MACOSX)
 struct ViewHostMsg_ShowPopup_Params;
 #endif
 struct ViewHostMsg_UpdateRect_Params;
-
-namespace cc {
-class CompositorFrameAck;
-}
 
 namespace blink {
 class WebInputEvent;
@@ -65,16 +57,9 @@ namespace gfx {
 class Range;
 }
 
-namespace gpu {
-struct Mailbox;
-}
-
 namespace content {
 
 class BrowserPluginHostFactory;
-class BrowserPluginEmbedder;
-class BrowserPluginGuestManager;
-class RenderProcessHost;
 class RenderWidgetHostView;
 class SiteInstance;
 class WebCursor;
@@ -149,7 +134,6 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }
-  void clear_damage_buffer() { damage_buffer_.reset(); }
   bool is_in_destruction() { return is_in_destruction_; }
 
   BrowserPluginGuest* opener() const { return opener_.get(); }
@@ -237,10 +221,6 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents();
-
-  // Overridden in tests.
-  virtual void SetDamageBuffer(
-      const BrowserPluginHostMsg_ResizeGuest_Params& params);
 
   gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
 
@@ -339,15 +319,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // BrowserPluginGuest.
   BrowserPluginGuest* CreateNewGuestWindow(const OpenURLParams& params);
 
-  base::SharedMemory* damage_buffer() const { return damage_buffer_.get(); }
-  const gfx::Size& damage_view_size() const { return damage_view_size_; }
-  float damage_buffer_scale_factor() const {
-    return damage_buffer_scale_factor_;
-  }
-  // Returns the damage buffer corresponding to the handle in resize |params|.
-  base::SharedMemory* GetDamageBufferFromEmbedder(
-      const BrowserPluginHostMsg_ResizeGuest_Params& params);
-
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
   void RequestNewWindowPermission(WindowOpenDisposition disposition,
@@ -382,7 +353,7 @@ class CONTENT_EXPORT BrowserPluginGuest
       int instance_id,
       const FrameHostMsg_ReclaimCompositorResources_Params& params);
 
-  // Overriden in tests.
+  // Overridden in tests.
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
                                   const blink::WebInputEvent* event);
@@ -392,11 +363,11 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnLockMouseAck(int instance_id, bool succeeded);
   void OnNavigateGuest(int instance_id, const std::string& src);
   void OnPluginDestroyed(int instance_id);
-  // Grab the new damage buffer from the embedder, and resize the guest's
-  // web contents.
-  void OnResizeGuest(int instance_id,
-                     const BrowserPluginHostMsg_ResizeGuest_Params& params);
-  // Overriden in tests.
+  // Resizes the guest's web contents.
+  // Overridden in tests.
+  virtual void OnResizeGuest(
+      int instance_id, const BrowserPluginHostMsg_ResizeGuest_Params& params);
+  // Overridden in tests.
   virtual void OnSetFocus(int instance_id, bool focused);
   // Sets the name of the guest so that other guests in the same partition can
   // access it.
@@ -429,10 +400,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
   void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);
-  void OnUpdateRectACK(
-      int instance_id,
-      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
-      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
 
   void OnTextInputTypeChanged(ui::TextInputType type,
                               ui::TextInputMode input_mode,
@@ -470,7 +437,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
-  // Overriden in tests.
+  // Overridden in tests.
   virtual void OnTakeFocus(bool reverse);
   void OnUpdateFrameName(int frame_id,
                          bool is_top_level,
@@ -496,12 +463,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.
   int instance_id_;
-  scoped_ptr<base::SharedMemory> damage_buffer_;
-  // An identifier that uniquely identifies a damage buffer.
-  uint32 damage_buffer_sequence_id_;
-  size_t damage_buffer_size_;
-  gfx::Size damage_view_size_;
-  float damage_buffer_scale_factor_;
   float guest_device_scale_factor_;
   gfx::Rect guest_window_rect_;
   gfx::Rect guest_screen_rect_;
@@ -516,6 +477,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
+  gfx::Size full_size_;
 
   // Each copy-request is identified by a unique number. The unique number is
   // used to keep track of the right callback.

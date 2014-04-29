@@ -7,11 +7,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/values.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
@@ -49,13 +46,6 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // Indicates whether the parameters have been populated or not.
   IPC_STRUCT_MEMBER(bool, size_changed)
-  // The sequence number used to uniquely identify the damage buffer for the
-  // current container size.
-  IPC_STRUCT_MEMBER(uint32, damage_buffer_sequence_id)
-  // The handle to use to map the damage buffer in the browser process.
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, damage_buffer_handle)
-  // The size of the damage buffer.
-  IPC_STRUCT_MEMBER(size_t, damage_buffer_size)
   // The new rect of the guest view area.
   IPC_STRUCT_MEMBER(gfx::Rect, view_rect)
   // Indicates the scale factor of the embedder WebView.
@@ -87,27 +77,6 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_Attach_ACK_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
-  // The sequence number of the damage buffer used by the browser process.
-  IPC_STRUCT_MEMBER(uint32, damage_buffer_sequence_id)
-
-  // The position and size of the bitmap.
-  IPC_STRUCT_MEMBER(gfx::Rect, bitmap_rect)
-
-  // The scroll delta.  Only one of the delta components can be non-zero, and if
-  // they are both zero, then it means there is no scrolling and the scroll_rect
-  // is ignored.
-  IPC_STRUCT_MEMBER(gfx::Vector2d, scroll_delta)
-
-  // The rectangular region to scroll.
-  IPC_STRUCT_MEMBER(gfx::Rect, scroll_rect)
-
-  // The scroll offset of the render view.
-  IPC_STRUCT_MEMBER(gfx::Point, scroll_offset)
-
-  // The regions of the bitmap (in view coords) that contain updated pixels.
-  // In the case of scrolling, this includes the scroll damage rect.
-  IPC_STRUCT_MEMBER(std::vector<gfx::Rect>, copy_rects)
-
   // The size of the RenderView when this message was generated.  This is
   // included so the host knows how large the view is from the perspective of
   // the renderer process.  This is necessary in case a resize operation is in
@@ -121,10 +90,6 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
 
   // Is this UpdateRect an ACK to a resize request?
   IPC_STRUCT_MEMBER(bool, is_resize_ack)
-
-  // Used in HW accelerated case to switch between sending an UpdateRect_ACK
-  // with the new size or just resizing.
-  IPC_STRUCT_MEMBER(bool, needs_ack)
 IPC_STRUCT_END()
 
 // Browser plugin messages
@@ -201,15 +166,6 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,
                     int /* instance_id */,
                     gfx::Rect /* guest_window_rect */,
                     IPC::WebInputEventPointer /* event */)
-
-// An ACK to the guest process letting it know that the embedder has handled
-// the previous frame and is ready for the next frame. If the guest sent the
-// embedder a bitmap that does not match the size of the BrowserPlugin's
-// container, the BrowserPlugin requests a new size as well.
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
-    int /* instance_id */,
-    BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
-    BrowserPluginHostMsg_ResizeGuest_Params /* resize_guest_params */)
 
 // A BrowserPlugin sends this to BrowserPluginEmbedder (browser process) when it
 // wants to navigate to a given src URL. If a guest WebContents already exists,
