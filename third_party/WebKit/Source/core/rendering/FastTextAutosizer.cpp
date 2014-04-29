@@ -910,8 +910,8 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
     if (parent->isListItem())
         return parent;
 
-    if (parent->isEmpty())
-        return parent->isText() ? parent : 0;
+    if (parent->isText())
+        return parent;
 
     ++depth;
     const RenderObject* child = (firstOrLast == First) ? parent->firstChild() : parent->lastChild();
@@ -919,8 +919,7 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
         // Note: At this point clusters may not have been created for these blocks so we cannot rely
         //       on m_clusters. Instead, we use a best-guess about whether the block will become a cluster.
         if (!classifyBlock(child, INDEPENDENT)) {
-            const RenderObject* leaf = findTextLeaf(child, depth, firstOrLast);
-            if (leaf)
+            if (const RenderObject* leaf = findTextLeaf(child, depth, firstOrLast))
                 return leaf;
         }
         child = (firstOrLast == First) ? child->nextSibling() : child->previousSibling();

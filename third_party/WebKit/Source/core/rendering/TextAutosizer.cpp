@@ -797,8 +797,8 @@ const RenderBlock* TextAutosizer::findDeepestBlockContainingAllText(const Render
 
 const RenderObject* TextAutosizer::findFirstTextLeafNotInCluster(const RenderObject* parent, size_t& depth, TraversalDirection direction)
 {
-    if (parent->isEmpty())
-        return parent->isText() ? parent : 0;
+    if (parent->isText())
+        return parent;
 
     ++depth;
     const RenderObject* child = (direction == FirstToLast) ? parent->firstChild() : parent->lastChild();

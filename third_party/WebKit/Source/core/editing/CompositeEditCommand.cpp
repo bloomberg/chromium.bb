@@ -66,6 +66,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderText.h"
 
 using namespace std;
@@ -853,7 +854,7 @@ PassRefPtr<Node> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* cont
     // append the placeholder to make sure it follows
     // any unrendered blocks
     RenderBlock* block = toRenderBlock(renderer);
-    if (block->height() == 0 || (block->isListItem() && block->isEmpty()))
+    if (block->height() == 0 || (block->isListItem() && toRenderListItem(block)->isEmpty()))
         return appendBlockPlaceholder(container);
 
     return nullptr;
