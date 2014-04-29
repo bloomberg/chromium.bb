@@ -207,16 +207,50 @@ class SamePasswordFormsChecker : public MultiClientStatusChangeChecker {
 
   virtual bool IsExitConditionSatisfied() OVERRIDE;
   virtual std::string GetDebugMessage() const OVERRIDE;
+
+ private:
+  bool in_progress_;
+  bool needs_recheck_;
 };
 
 SamePasswordFormsChecker::SamePasswordFormsChecker()
     : MultiClientStatusChangeChecker(
-        sync_datatype_helper::test()->GetSyncServices()) {}
+        sync_datatype_helper::test()->GetSyncServices()),
+      in_progress_(false),
+      needs_recheck_(false) {}
 
 SamePasswordFormsChecker::~SamePasswordFormsChecker() {}
 
+// This method needs protection against re-entrancy.
+//
+// This function indirectly calls GetLogins(), which starts a RunLoop on the UI
+// thread.  This can be a problem, since the next task to execute could very
+// well contain a ProfileSyncService::OnStateChanged() event, which would
+// trigger another call to this here function, and start another layer of
+// nested RunLoops.  That makes the StatusChangeChecker's Quit() method
+// ineffective.
+//
+// The work-around is to not allow re-entrancy.  But we can't just drop
+// IsExitConditionSatisifed() calls if one is already in progress.  Instead, we
+// set a flag to ask the current execution of IsExitConditionSatisfied() to be
+// re-run.  This ensures that the return value is always based on the most
+// up-to-date state.
 bool SamePasswordFormsChecker::IsExitConditionSatisfied() {
-  return AllProfilesContainSamePasswordForms();
+  if (in_progress_) {
+    LOG(WARNING) << "Setting flag and returning early to prevent nesting.";
+    needs_recheck_ = true;
+    return false;
+  }
+
+  // Keep retrying until we get a good reading.
+  bool result = false;
+  in_progress_ = true;
+  do {
+    needs_recheck_ = false;
+    result = AllProfilesContainSamePasswordForms();
+  } while (needs_recheck_);
+  in_progress_ = false;
+  return result;
 }
 
 std::string SamePasswordFormsChecker::GetDebugMessage() const {

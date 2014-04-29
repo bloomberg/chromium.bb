@@ -21,13 +21,15 @@ class MultipleClientPasswordsSyncTest : public SyncTest {
   MultipleClientPasswordsSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientPasswordsSyncTest() {}
 
+  virtual bool TestUsesSelfNotifications() OVERRIDE {
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientPasswordsSyncTest);
 };
 
-// This test was flaky on the Mac buildbot and also appears to be flaky
-// in local Linux (debug) builds. See crbug.com/363247.
-IN_PROC_BROWSER_TEST_F(MultipleClientPasswordsSyncTest, DISABLED_Sanity) {
+IN_PROC_BROWSER_TEST_F(MultipleClientPasswordsSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (int i = 0; i < num_clients(); ++i) {
