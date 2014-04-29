@@ -53,7 +53,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageContext
 
  private:
   friend class content::BlobStorageHost;
-  friend class BlobDataHandle::BlobDataHandleShared;
+  friend class BlobDataHandle;
   friend class ViewBlobInternalsJob;
 
   enum EntryFlags {

@@ -28,42 +28,23 @@ class BlobStorageContext;
 class WEBKIT_STORAGE_BROWSER_EXPORT BlobDataHandle
     : public base::SupportsUserData::Data {
  public:
-  BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.
   virtual ~BlobDataHandle();  // Maybe be deleted on any thread.
   BlobData* data() const;  // May only be accessed on the IO thread.
 
-  std::string uuid() const;  // May be accessed on any thread.
-
  private:
-  class BlobDataHandleShared
-      : public base::RefCountedThreadSafe<BlobDataHandleShared> {
-   public:
-    BlobDataHandleShared(BlobData* blob_data,
-                         BlobStorageContext* context,
-                         base::SequencedTaskRunner* task_runner);
-
-    BlobData* data() const;
-    const std::string& uuid() const;
-
-   private:
-    friend class base::DeleteHelper<BlobDataHandleShared>;
-    friend class base::RefCountedThreadSafe<BlobDataHandleShared>;
-    friend class BlobDataHandle;
-
-    virtual ~BlobDataHandleShared();
-
-    scoped_refptr<BlobData> blob_data_;
-    base::WeakPtr<BlobStorageContext> context_;
-
-    DISALLOW_COPY_AND_ASSIGN(BlobDataHandleShared);
-  };
-
   friend class BlobStorageContext;
   BlobDataHandle(BlobData* blob_data, BlobStorageContext* context,
                  base::SequencedTaskRunner* task_runner);
 
+  static void DeleteHelper(
+      base::WeakPtr<BlobStorageContext> context,
+      BlobData* blob_data);
+
+  BlobData* blob_data_;  // Intentionally a raw ptr to a non-thread-safe ref.
+  base::WeakPtr<BlobStorageContext> context_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  scoped_refptr<BlobDataHandleShared> shared_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobDataHandle);
 };
 
 }  // namespace webkit_blob

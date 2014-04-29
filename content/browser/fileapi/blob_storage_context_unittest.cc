@@ -41,7 +41,6 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  fake_io_message_loop.RunUntilIdle();
 
   // Make sure its still there after inc/dec.
   EXPECT_TRUE(host.IncrementBlobRefCount(kId));
@@ -49,7 +48,6 @@ TEST(BlobStorageContextTest, IncrementDecrementRef) {
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  fake_io_message_loop.RunUntilIdle();
 
   // Make sure it goes away in the end.
   EXPECT_TRUE(host.DecrementBlobRefCount(kId));
@@ -84,7 +82,6 @@ TEST(BlobStorageContextTest, BlobDataHandle) {
   // Should disappear after dropping both handles.
   blob_data_handle.reset();
   another_handle.reset();
-  fake_io_message_loop.RunUntilIdle();
   blob_data_handle = context.GetBlobDataFromUUID(kId);
   EXPECT_FALSE(blob_data_handle);
 }
@@ -153,7 +150,6 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   ASSERT_TRUE(blob_data_handle.get());
   EXPECT_EQ(kId, blob_data_handle->data()->uuid());
   blob_data_handle.reset();
-  fake_io_message_loop.RunUntilIdle();
 
   // The url registration should keep the blob alive even after
   // explicit references are dropped.
@@ -161,7 +157,6 @@ TEST(BlobStorageContextTest, PublicBlobUrls) {
   blob_data_handle = context.GetBlobDataFromPublicURL(kUrl);
   EXPECT_TRUE(blob_data_handle);
   blob_data_handle.reset();
-  fake_io_message_loop.RunUntilIdle();
 
   // Finally get rid of the url registration and the blob.
   EXPECT_TRUE(host.RevokePublicBlobURL(kUrl));
