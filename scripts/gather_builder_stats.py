@@ -24,10 +24,12 @@ from chromite.lib import table
 # Useful config targets.
 CQ_MASTER = constants.CQ_MASTER
 PRE_CQ_GROUP = constants.PRE_CQ_GROUP
+PFQ_MASTER = 'x86-generic-chromium-pfq'
 
 # Bot types
 CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
+PFQ = constants.PFQ_TYPE
 
 # Number of parallel processes used when uploading/downloading GS files.
 MAX_PARALLEL = 40
@@ -43,6 +45,7 @@ NICE_DATETIME_FORMAT = cbuildbot_metadata.NICE_DATETIME_FORMAT
 # Spreadsheet keys
 # CQ master and slaves both use the same spreadsheet
 CQ_SS_KEY = '0AsXDKtaHikmcdElQWVFuT21aMlFXVTN5bVhfQ2ptVFE'
+PFQ_SS_KEY = '0AhFPeDq6pmwxdDdrYXk3cnJJV05jN3Zja0s5VjFfNlE'
 
 
 class GatherStatsError(Exception):
@@ -265,6 +268,30 @@ class SpreadsheetMasterTable(StatsTable):
       List of column names for slave builders.
     """
     return self._slaves[:]
+
+
+class PFQMasterTable(SpreadsheetMasterTable):
+  """Stats table for the CQ Master."""
+  SS_KEY = PFQ_SS_KEY
+
+  WATERFALL = 'chromeos'
+  # Must match up with name in waterfall.
+  TARGET = 'x86-generic nightly chromium PFQ'
+
+  WORKSHEET_NAME = 'PFQMasterData'
+
+  # Bump this number whenever this class adds new data columns, or changes
+  # the values of existing data columns.
+  SHEETS_VERSION = 1
+
+  # These columns are in addition to those inherited from
+  # SpreadsheetMasterTable
+  COLUMNS = ()
+
+  def __init__(self):
+    super(PFQMasterTable, self).__init__(PFQMasterTable.TARGET,
+                                         PFQMasterTable.WATERFALL,
+                                         list(PFQMasterTable.COLUMNS))
 
 
 class CQMasterTable(SpreadsheetMasterTable):
@@ -726,6 +753,16 @@ class CQMasterStats(StatsManager):
   )
 
 
+class PFQMasterStats(StatsManager):
+  """Manager stats gathering for the PFQ Master."""
+  TABLE_CLASS = PFQMasterTable
+  BOT_TYPE = PFQ
+  GET_SHEETS_VERSION = True
+
+  def __init__(self, **kwargs):
+    super(PFQMasterStats, self).__init__(PFQ_MASTER, **kwargs)
+
+
 # TODO(mtennant): Add Sheets support for PreCQ by creating a PreCQTable
 # class modeled after CQMasterTable and then adding it as TABLE_CLASS here.
 # TODO(mtennant): Add Graphite support for PreCQ by CARBON_FUNCS_BY_VERSION
@@ -1083,6 +1120,8 @@ def GetParser():
   mode = parser.add_mutually_exclusive_group(required=True)
   mode.add_argument('--cq-master', action='store_true', default=False,
                     help='Gather stats for the CQ master.')
+  mode.add_argument('--pfq-master', action='store_true', default=False,
+                    help='Gather stats for the PFQ master.')
   mode.add_argument('--pre-cq', action='store_true', default=False,
                     help='Gather stats for the Pre-CQ.')
   mode.add_argument('--cq-slaves', action='store_true', default=False,
@@ -1166,6 +1205,12 @@ def main(argv):
         CLStats(
             options.email,
             ss_key=options.ss_key or CQ_SS_KEY,
+            no_sheets_version_filter=options.no_sheets_version_filter))
+
+  if options.pfq_master:
+    stats_managers.append(
+        PFQMasterStats(
+            ss_key=options.ss_key or PFQ_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))
 
   if options.pre_cq:
