@@ -398,6 +398,8 @@
             'src/common/dwarf_line_to_module.h',
             'src/common/language.cc',
             'src/common/language.h',
+            'src/common/linux/crc32.cc',
+            'src/common/linux/crc32.h',
             'src/common/linux/dump_symbols.cc',
             'src/common/linux/dump_symbols.h',
             'src/common/linux/elf_symbols_to_module.cc',
