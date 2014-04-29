@@ -103,13 +103,10 @@ class SafeBrowsingDatabase {
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase() = 0;
 
-  // Returns false if |url| is not in the browse database.  If it
-  // returns true, then either |matching_list| is the name of the matching
-  // list, or |prefix_hits| and |full_hits| contains the matching hash
-  // prefixes.  This function is safe to call from threads other than
-  // the creation thread.
+  // Returns false if |url| is not in the browse database.  If it returns true,
+  // then |prefix_hits| and |full_hits| contains the matching hash prefixes.
+  // This function is safe to call from threads other than the creation thread.
   virtual bool ContainsBrowseUrl(const GURL& url,
-                                 std::string* matching_list,
                                  std::vector<SBPrefix>* prefix_hits,
                                  std::vector<SBFullHashResult>* full_hits,
                                  base::Time last_update) = 0;
@@ -301,7 +298,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual void Init(const base::FilePath& filename) OVERRIDE;
   virtual bool ResetDatabase() OVERRIDE;
   virtual bool ContainsBrowseUrl(const GURL& url,
-                                 std::string* matching_list,
                                  std::vector<SBPrefix>* prefix_hits,
                                  std::vector<SBFullHashResult>* full_hits,
                                  base::Time last_update) OVERRIDE;

@@ -661,15 +661,12 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
   return true;
 }
 
-// TODO(lzheng): Remove matching_list, it is not used anywhere.
 bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
     const GURL& url,
-    std::string* matching_list,
     std::vector<SBPrefix>* prefix_hits,
     std::vector<SBFullHashResult>* full_hits,
     base::Time last_update) {
   // Clear the results first.
-  matching_list->clear();
   prefix_hits->clear();
   full_hits->clear();
 

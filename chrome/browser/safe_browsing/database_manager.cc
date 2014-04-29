@@ -358,12 +358,11 @@ bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
     return false;
   }
 
-  std::string list;
   std::vector<SBPrefix> prefix_hits;
   std::vector<SBFullHashResult> full_hits;
 
   bool prefix_match =
-      database_->ContainsBrowseUrl(url, &list, &prefix_hits, &full_hits,
+      database_->ContainsBrowseUrl(url, &prefix_hits, &full_hits,
           sb_service_->protocol_manager()->last_update());
 
   UMA_HISTOGRAM_TIMES("SB2.FilterCheck", base::TimeTicks::Now() - start);
