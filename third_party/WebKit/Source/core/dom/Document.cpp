@@ -1602,6 +1602,8 @@ bool Document::needsFullRenderTreeUpdate() const
     // FIXME: The childNeedsDistributionRecalc bit means either self or children, we should fix that.
     if (childNeedsDistributionRecalc())
         return true;
+    if (DocumentAnimations::needsOutdatedAnimationPlayerUpdate(*this))
+        return true;
     return false;
 }
 
@@ -1805,6 +1807,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
+    DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(*this);
     updateDistributionIfNeeded();
     updateUseShadowTreesIfNeeded();
     updateStyleInvalidationIfNeeded();
