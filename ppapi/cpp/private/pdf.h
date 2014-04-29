@@ -26,12 +26,6 @@ class PDF {
                                 PP_ResourceString string_id);
   static ImageData GetResourceImage(const InstanceHandle& instance,
                                     PP_ResourceImage image_id);
-  // TODO(raymes): Remove this version when the PDF code is changed to use
-  // PP_BrowserFont_Trusted_Description.
-  static PP_Resource GetFontFileWithFallback(
-      const InstanceHandle& instance,
-      const PP_FontDescription_Dev* description,
-      PP_PrivateFontCharset charset);
   static PP_Resource GetFontFileWithFallback(
       const InstanceHandle& instance,
       const PP_BrowserFont_Trusted_Description* description,
