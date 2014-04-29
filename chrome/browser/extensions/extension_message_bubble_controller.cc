@@ -29,6 +29,11 @@ ExtensionMessageBubbleController::Delegate::Delegate() {
 ExtensionMessageBubbleController::Delegate::~Delegate() {
 }
 
+void ExtensionMessageBubbleController::Delegate::RestrictToSingleExtension(
+    const std::string& extension_id) {
+  NOTIMPLEMENTED();  // Derived classes that need this should implement.
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleController
 

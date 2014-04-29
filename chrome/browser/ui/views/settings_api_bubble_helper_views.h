@@ -28,6 +28,13 @@ void MaybeShowExtensionControlledSearchNotification(
     content::WebContents* web_contents,
     const AutocompleteMatch& match);
 
+// Shows a bubble notifying the user that the new tab page is controlled by an
+// extension. This bubble is shown only the first time the new tab page is shown
+// after the controlling extension takes effect.
+void MaybeShowExtensionControlledNewTabPage(
+    Browser* browser,
+    content::WebContents* web_contents);
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_UI_VIEWS_SETTINGS_API_BUBBLE_HELPER_VIEWS_H_

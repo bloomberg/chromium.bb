@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/ntp_overridden_bubble_controller.h"
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -132,6 +133,31 @@ class TestSettingsApiBubbleController : public SettingsApiBubbleController,
   }
 };
 
+// A test class for the NtpOverriddenBubbleController.
+class TestNtpOverriddenBubbleController
+    : public NtpOverriddenBubbleController,
+      public TestDelegate {
+ public:
+  explicit TestNtpOverriddenBubbleController(Profile* profile)
+      : NtpOverriddenBubbleController(profile) {
+  }
+
+  virtual void OnBubbleAction() OVERRIDE {
+    ++action_button_callback_count_;
+    NtpOverriddenBubbleController::OnBubbleAction();
+  }
+
+  virtual void OnBubbleDismiss() OVERRIDE {
+    ++dismiss_button_callback_count_;
+    NtpOverriddenBubbleController::OnBubbleDismiss();
+  }
+
+  virtual void OnLinkClicked() OVERRIDE {
+    ++link_click_callback_count_;
+    NtpOverriddenBubbleController::OnLinkClicked();
+  }
+};
+
 // A fake bubble used for testing the controller. Takes an action that specifies
 // what should happen when the bubble is "shown" (the bubble is actually not
 // shown, the corresponding action is taken immediately).
@@ -240,6 +266,23 @@ class ExtensionMessageBubbleTest : public testing::Test {
                                      "startup_pages",
                                      extensions::ListBuilder().Append(
                                          "http://www.google.com"))));
+    builder.SetLocation(location);
+    builder.SetID(id);
+    service_->AddExtension(builder.Build().get());
+  }
+
+  void LoadExtensionOverridingNtp(const std::string& index,
+                                  const std::string& id,
+                                  Manifest::Location location) {
+    extensions::ExtensionBuilder builder;
+    builder.SetManifest(extensions::DictionaryBuilder()
+                            .Set("name", std::string("Extension " + index))
+                            .Set("version", "1.0")
+                            .Set("manifest_version", 2)
+                            .Set("chrome_url_overrides",
+                                 extensions::DictionaryBuilder().Set(
+                                     "newtab", "Default.html")));
+
     builder.SetLocation(location);
     builder.SetID(id);
     service_->AddExtension(builder.Build().get());
@@ -580,6 +623,104 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
     service_->UninstallExtension(kId2, false, NULL);
     service_->UninstallExtension(kId3, false, NULL);
   }
+}
+
+// The feature this is meant to test is only implemented on Windows.
+#if defined(OS_WIN)
+#define MAYBE_NtpOverriddenControllerTest NtpOverriddenControllerTest
+#else
+#define MAYBE_NtpOverriddenControllerTest DISABLED_NtpOverriddenControllerTest
+#endif
+
+TEST_F(ExtensionMessageBubbleTest, MAYBE_NtpOverriddenControllerTest) {
+  Init();
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  // Load two extensions overriding new tab page and one overriding something
+  // unrelated (to check for interference). Extension 2 should still win
+  // on the new tab page setting.
+  LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED);
+  LoadExtensionOverridingNtp("2", kId2, Manifest::UNPACKED);
+  LoadExtensionOverridingStart("3", kId3, Manifest::UNPACKED);
+
+  scoped_ptr<TestNtpOverriddenBubbleController> controller(
+      new TestNtpOverriddenBubbleController(profile()));
+
+  // The list will contain one enabled unpacked extension (ext 2).
+  EXPECT_TRUE(controller->ShouldShow(kId2));
+  std::vector<base::string16> override_extensions =
+      controller->GetExtensionList();
+  ASSERT_EQ(1U, override_extensions.size());
+  EXPECT_TRUE(base::ASCIIToUTF16("Extension 2") ==
+              override_extensions[0].c_str());
+  EXPECT_EQ(0U, controller->link_click_count());
+  EXPECT_EQ(0U, controller->dismiss_click_count());
+  EXPECT_EQ(0U, controller->action_click_count());
+
+  // Simulate showing the bubble and dismissing it.
+  FakeExtensionMessageBubble bubble;
+  bubble.set_action_on_show(
+      FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
+  EXPECT_TRUE(controller->ShouldShow(kId2));
+  controller->Show(&bubble);
+  EXPECT_EQ(0U, controller->link_click_count());
+  EXPECT_EQ(0U, controller->action_click_count());
+  EXPECT_EQ(1U, controller->dismiss_click_count());
+  // No extension should have become disabled.
+  EXPECT_TRUE(service_->GetExtensionById(kId1, false) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(kId2, false) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(kId3, false) != NULL);
+  // Only extension 2 should have been acknowledged.
+  EXPECT_FALSE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId1));
+  EXPECT_TRUE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId2));
+  EXPECT_FALSE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId3));
+  // Clean up after ourselves.
+  prefs->SetNtpOverriddenBubbleBeenAcknowledged(kId2, false);
+
+  // Simulate clicking the learn more link to dismiss it.
+  bubble.set_action_on_show(
+      FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
+  controller.reset(new TestNtpOverriddenBubbleController(profile()));
+  EXPECT_TRUE(controller->ShouldShow(kId2));
+  controller->Show(&bubble);
+  EXPECT_EQ(1U, controller->link_click_count());
+  EXPECT_EQ(0U, controller->action_click_count());
+  EXPECT_EQ(0U, controller->dismiss_click_count());
+  // No extension should have become disabled.
+  EXPECT_TRUE(service_->GetExtensionById(kId1, false) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(kId2, false) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(kId3, false) != NULL);
+  // Only extension 2 should have been acknowledged.
+  EXPECT_FALSE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId1));
+  EXPECT_TRUE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId2));
+  EXPECT_FALSE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId3));
+  // Clean up after ourselves.
+  prefs->SetNtpOverriddenBubbleBeenAcknowledged(kId2, false);
+
+  // Do it again, but now opt to disable the extension.
+  bubble.set_action_on_show(
+      FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
+  controller.reset(new TestNtpOverriddenBubbleController(profile()));
+  EXPECT_TRUE(controller->ShouldShow(kId2));
+  override_extensions = controller->GetExtensionList();
+  EXPECT_EQ(1U, override_extensions.size());
+  controller->Show(&bubble);  // Simulate showing the bubble.
+  EXPECT_EQ(0U, controller->link_click_count());
+  EXPECT_EQ(1U, controller->action_click_count());
+  EXPECT_EQ(0U, controller->dismiss_click_count());
+  // Only extension 2 should have become disabled.
+  EXPECT_TRUE(service_->GetExtensionById(kId1, false) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(kId2, false) == NULL);
+  EXPECT_TRUE(service_->GetExtensionById(kId3, false) != NULL);
+  // No extension should have been acknowledged (it got disabled).
+  EXPECT_FALSE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId1));
+  EXPECT_FALSE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId2));
+  EXPECT_FALSE(prefs->HasNtpOverriddenBubbleBeenAcknowledged(kId3));
+
+  // Clean up after ourselves.
+  service_->UninstallExtension(kId1, false, NULL);
+  service_->UninstallExtension(kId2, false, NULL);
+  service_->UninstallExtension(kId3, false, NULL);
 }
 
 }  // namespace extensions

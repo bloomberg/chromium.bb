@@ -829,6 +829,8 @@
         'browser/extensions/menu_manager_factory.h',
         'browser/extensions/navigation_observer.cc',
         'browser/extensions/navigation_observer.h',
+        'browser/extensions/ntp_overridden_bubble_controller.cc',
+        'browser/extensions/ntp_overridden_bubble_controller.h',
         'browser/extensions/pack_extension_job.cc',
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/page_action_controller.cc',

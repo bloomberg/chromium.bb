@@ -53,6 +53,10 @@ class ExtensionMessageBubbleController {
     // Whether to show a list of extensions in the bubble.
     virtual bool ShouldShowExtensionList() const = 0;
 
+    // In some cases, we want the delegate only to handle a single extension
+    // and this sets which extension.
+    virtual void RestrictToSingleExtension(const std::string& extension_id);
+
     // Record, through UMA, how many extensions were found.
     virtual void LogExtensionCount(size_t count) = 0;
     virtual void LogAction(BubbleAction action) = 0;

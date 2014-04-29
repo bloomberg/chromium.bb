@@ -5222,6 +5222,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Is this the search page you were expecting?
         </message>
       </if>
+      <if expr="use_titlecase">
+        <message name="IDS_EXTENSIONS_NTP_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="In Title Case: Title of a bubble warning users that an extension has overridden their new tab page setting">
+         Is This the New Tab Page You Were Expecting?
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_EXTENSIONS_NTP_CONTROLLED_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their new tab page setting">
+          Is this the new tab page you were expecting?
+        </message>
+      </if>
 
       <message name="IDS_EXTENSIONS_SETTINGS_API_FIRST_LINE_SEARCH_ENGINE" desc="Text displayed in the Settings API bubble as first line when an extension has changed the search engine.">
         An extension has changed what page is shown when you search from the Omnibox.
@@ -5238,6 +5248,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_HOME_AND_SEARCH" desc="Second line in the Settings API bubble. Only shown if the secondary change by the extension was both the home page and the search engine. See IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE for reason for triple quotes.">
         ''' It also controls what page is shown when you click the Home button or search from the Omnibox. '''
+      </message>
+
+      <message name="IDS_EXTENSIONS_NTP_CONTROLLED_FIRST_LINE" desc="Text displayed in the Settings API bubble as first line when an extension has changed the new tab page.">
+        An extension has changed what page is shown when you open a new tab.
       </message>
 
       <message name="IDS_EXTENSIONS_SETTINGS_API_THIRD_LINE_CONFIRMATION" desc="Third line in the Settings API bubble, always appended after the first (and optional second) line to make one paragraph. See IDS_EXTENSIONS_SETTINGS_API_SECOND_LINE_SEARCH_ENGINE for reason for triple quotes.">
