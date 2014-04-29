@@ -62,13 +62,7 @@ var KEY_ASPECT_RATIO_LANDSCAPE = 1.46;
  * The ratio between the height and width of the compact keyboard.
  * @type {number}
  */
-var DEFAULT_KEYBOARD_ASPECT_RATIO = 0.3;
-
-/**
- * The ratio between the height and width of the a11y keyboard.
- * @type {number}
- */
-var DEFAULT_A11Y_KEYBOARD_ASPECT_RATIO = 0.41;
+var DEFAULT_KEYBOARD_ASPECT_RATIO = 0.41;
 
 /**
  * The default weight of a key.

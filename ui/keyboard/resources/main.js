@@ -205,14 +205,9 @@
    * @return {Array.<String, number>} The bounds of the keyboard container.
    */
   function getKeyboardBounds_() {
-    var keyboard = $('keyboard');
-    var ratio = DEFAULT_KEYBOARD_ASPECT_RATIO;
-    if (keyboard.config && keyboard.config.a11ymode) {
-      ratio = DEFAULT_A11Y_KEYBOARD_ASPECT_RATIO;
-    }
     return {
       "width": screen.width,
-      "height": screen.height * ratio
+      "height": screen.height * DEFAULT_KEYBOARD_ASPECT_RATIO
     };
   }
 
