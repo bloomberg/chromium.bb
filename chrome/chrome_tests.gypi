@@ -1967,6 +1967,15 @@
             'browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc',
           ],
         }],
+        ['remoting==1', {
+          'dependencies': [
+            '../remoting/remoting.gyp:remoting_webapp',
+          ]
+        }, {
+          'sources/': [
+            ['exclude', '^test/remoting'],
+          ],
+        }],
       ],  # conditions
     },  # target browser_tests
     {
