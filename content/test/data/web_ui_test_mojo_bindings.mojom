@@ -18,6 +18,7 @@ struct EchoArgs {
   double double_inf;
   double double_nan;
   string name;
+  string[] string_array;
 };
 
 [Peer=RendererTarget]

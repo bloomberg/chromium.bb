@@ -229,6 +229,10 @@ define("mojo/public/js/bindings/codec", [
     return val;
   };
 
+  Decoder.prototype.decodeStruct = function(cls) {
+    return cls.decode(this);
+  };
+
   Decoder.prototype.decodeStructPointer = function(cls) {
     return cls.decode(this.decodeAndCreateDecoder());
   };
@@ -356,6 +360,10 @@ define("mojo/public/js/bindings/codec", [
     for (var i = 0; i < numberOfElements; ++i) {
       cls.encode(this, val[i]);
     }
+  };
+
+  Encoder.prototype.encodeStruct = function(cls, val) {
+    return cls.encode(this, val);
   };
 
   Encoder.prototype.encodeStructPointer = function(cls, val) {
@@ -488,6 +496,10 @@ define("mojo/public/js/bindings/codec", [
     return decoder.readInt8();
   };
 
+  Int8.encode = function(encoder, val) {
+    encoder.writeInt8(val);
+  };
+
   Uint8.encode = function(encoder, val) {
     encoder.writeUint8(val);
   };
@@ -583,8 +595,19 @@ define("mojo/public/js/bindings/codec", [
     encoder.writeUint64(val);
   };
 
-  // TODO(abarth): Add missing types:
-  // * String
+  function String() {
+  };
+
+  String.encodedSize = 8;
+
+  String.decode = function(decoder) {
+    return decoder.decodeStringPointer();
+  };
+
+  String.encode = function(encoder, val) {
+    encoder.encodeStringPointer(val);
+  };
+
 
   function Float() {
   }
@@ -634,11 +657,11 @@ define("mojo/public/js/bindings/codec", [
   ArrayOf.prototype.encodedSize = 8;
 
   ArrayOf.prototype.decode = function(decoder) {
-    return decoder.decodeArrayPointer(self.cls);
+    return decoder.decodeArrayPointer(this.cls);
   };
 
   ArrayOf.prototype.encode = function(encoder, val) {
-    encoder.encodeArrayPointer(self.cls, val);
+    encoder.encodeArrayPointer(this.cls, val);
   };
 
   function Handle() {
@@ -676,6 +699,7 @@ define("mojo/public/js/bindings/codec", [
   exports.Uint64 = Uint64;
   exports.Float = Float;
   exports.Double = Double;
+  exports.String = String;
   exports.PointerTo = PointerTo;
   exports.ArrayOf = ArrayOf;
   exports.Handle = Handle;

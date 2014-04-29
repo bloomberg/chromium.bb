@@ -153,6 +153,11 @@ class EchoBrowserTargetImpl : public BrowserTargetImpl {
     builder.set_double_inf(kExpectedDoubleInf);
     builder.set_double_nan(kExpectedDoubleNan);
     builder.set_name("coming");
+    mojo::Array<mojo::String>::Builder string_array(3);
+    string_array[0] = "one";
+    string_array[1] = "two";
+    string_array[2] = "three";
+    builder.set_string_array(string_array.Finish());
     client_->Echo(builder.Finish());
   }
 
@@ -177,6 +182,9 @@ class EchoBrowserTargetImpl : public BrowserTargetImpl {
     EXPECT_EQ(kExpectedDoubleInf, arg1.double_inf());
     EXPECT_NAN(arg1.double_nan());
     EXPECT_EQ(std::string("coming"), arg1.name().To<std::string>());
+    EXPECT_EQ(std::string("one"), arg1.string_array()[0].To<std::string>());
+    EXPECT_EQ(std::string("two"), arg1.string_array()[1].To<std::string>());
+    EXPECT_EQ(std::string("three"), arg1.string_array()[2].To<std::string>());
 
     EXPECT_EQ(-1, arg2.si64());
     EXPECT_EQ(-1, arg2.si32());

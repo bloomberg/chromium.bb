@@ -55,7 +55,7 @@ def JavaScriptPayloadSize(packed):
   return offset + pad;
 
 
-_kind_to_javascript_type = {
+_kind_to_codec_type = {
   mojom.BOOL:         "codec.Uint8",
   mojom.INT8:         "codec.Int8",
   mojom.UINT8:        "codec.Uint8",
@@ -76,86 +76,44 @@ _kind_to_javascript_type = {
 }
 
 
-def GetJavaScriptType(kind):
+def CodecType(kind):
   if kind in mojom.PRIMITIVES:
-    return _kind_to_javascript_type[kind]
+    return _kind_to_codec_type[kind]
   if isinstance(kind, mojom.Struct):
-    return "new codec.PointerTo(%s)" % GetJavaScriptType(kind.name)
+    return "new codec.PointerTo(%s)" % CodecType(kind.name)
   if isinstance(kind, mojom.Array):
-    return "new codec.ArrayOf(%s)" % GetJavaScriptType(kind.kind)
+    return "new codec.ArrayOf(%s)" % CodecType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return GetJavaScriptType(mojom.MSGPIPE)
+    return CodecType(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
-    return _kind_to_javascript_type[mojom.INT32]
+    return _kind_to_codec_type[mojom.INT32]
   return kind
-
-
-_kind_to_javascript_decode_snippet = {
-  mojom.BOOL:         "readUint8() & 1",
-  mojom.INT8:         "readInt8()",
-  mojom.UINT8:        "readUint8()",
-  mojom.INT16:        "readInt16()",
-  mojom.UINT16:       "readUint16()",
-  mojom.INT32:        "readInt32()",
-  mojom.UINT32:       "readUint32()",
-  mojom.FLOAT:        "readFloat()",
-  mojom.HANDLE:       "decodeHandle()",
-  mojom.DCPIPE:       "decodeHandle()",
-  mojom.DPPIPE:       "decodeHandle()",
-  mojom.MSGPIPE:      "decodeHandle()",
-  mojom.SHAREDBUFFER: "decodeHandle()",
-  mojom.INT64:        "readInt64()",
-  mojom.UINT64:       "readUint64()",
-  mojom.DOUBLE:       "readDouble()",
-  mojom.STRING:       "decodeStringPointer()",
-}
 
 
 def JavaScriptDecodeSnippet(kind):
   if kind in mojom.PRIMITIVES:
-    return _kind_to_javascript_decode_snippet[kind]
+    return "decodeStruct(%s)" % CodecType(kind);
   if isinstance(kind, mojom.Struct):
-    return "decodeStructPointer(%s)" % GetJavaScriptType(kind.name);
+    return "decodeStructPointer(%s)" % CodecType(kind.name);
   if isinstance(kind, mojom.Array):
-    return "decodeArrayPointer(%s)" % GetJavaScriptType(kind.kind);
+    return "decodeArrayPointer(%s)" % CodecType(kind.kind);
   if isinstance(kind, mojom.Interface):
     return JavaScriptDecodeSnippet(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
-    return _kind_to_javascript_decode_snippet[mojom.INT32]
-
-
-_kind_to_javascript_encode_snippet = {
-  mojom.BOOL:         "writeUint8(1 & ",
-  mojom.INT8:         "writeInt8(",
-  mojom.UINT8:        "writeUint8(",
-  mojom.INT16:        "writeInt16(",
-  mojom.UINT16:       "writeUint16(",
-  mojom.INT32:        "writeInt32(",
-  mojom.UINT32:       "writeUint32(",
-  mojom.FLOAT:        "writeFloat(",
-  mojom.HANDLE:       "encodeHandle(",
-  mojom.DCPIPE:       "encodeHandle(",
-  mojom.DPPIPE:       "encodeHandle(",
-  mojom.MSGPIPE:      "encodeHandle(",
-  mojom.SHAREDBUFFER: "encodeHandle(",
-  mojom.INT64:        "writeInt64(",
-  mojom.UINT64:       "writeUint64(",
-  mojom.DOUBLE:       "writeDouble(",
-  mojom.STRING:       "encodeStringPointer(",
-}
+    return JavaScriptDecodeSnippet(mojom.INT32)
 
 
 def JavaScriptEncodeSnippet(kind):
   if kind in mojom.PRIMITIVES:
-    return _kind_to_javascript_encode_snippet[kind]
+    return "encodeStruct(%s, " % CodecType(kind);
   if isinstance(kind, mojom.Struct):
-    return "encodeStructPointer(%s, " % GetJavaScriptType(kind.name);
+    return "encodeStructPointer(%s, " % CodecType(kind.name);
   if isinstance(kind, mojom.Array):
-    return "encodeArrayPointer(%s, " % GetJavaScriptType(kind.kind);
+    return "encodeArrayPointer(%s, " % CodecType(kind.kind);
   if isinstance(kind, mojom.Interface):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
-    return _kind_to_javascript_encode_snippet[mojom.INT32]
+    return JavaScriptEncodeSnippet(mojom.INT32)
 
 def TranslateConstants(token, module):
   if isinstance(token, mojom.Constant):
