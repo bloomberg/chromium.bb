@@ -77,28 +77,23 @@ bool ReadInteger(XmlReader* reader, uint64* result) {
   return base::StringToUint64(value, result);
 }
 
-std::string ReadPlatformFileAsString(const base::PlatformFile file) {
+std::string ReadFileAsString(base::File file) {
   std::string result;
-  if (file == base::kInvalidPlatformFileValue)
+  if (!file.IsValid())
     return result;
 
   // A "reasonable" artificial limit.
   // TODO(vandebo): Add a UMA to figure out what common values are.
   const int64 kMaxLibraryFileSize = 150 * 1024 * 1024;
-  base::PlatformFileInfo file_info;
-  if (!base::GetPlatformFileInfo(file, &file_info) ||
-      file_info.size > kMaxLibraryFileSize) {
-    base::ClosePlatformFile(file);
+  base::File::Info file_info;
+  if (!file.GetInfo(&file_info) || file_info.size > kMaxLibraryFileSize)
     return result;
-  }
 
   result.resize(file_info.size);
-  int bytes_read =
-      base::ReadPlatformFile(file, 0, string_as_array(&result), file_info.size);
+  int bytes_read = file.Read(0, string_as_array(&result), file_info.size);
   if (bytes_read != file_info.size)
     result.clear();
 
-  base::ClosePlatformFile(file);
   return result;
 }
 

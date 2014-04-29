@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 
 class XmlReader;
 
@@ -32,7 +32,7 @@ bool ReadString(XmlReader* reader, std::string* result);
 bool ReadInteger(XmlReader* reader, uint64* result);
 
 // Read in the contents of the given library xml |file| and return as a string.
-std::string ReadPlatformFileAsString(const base::PlatformFile file);
+std::string ReadFileAsString(base::File file);
 
 }  // namespace iapps
 

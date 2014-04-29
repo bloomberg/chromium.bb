@@ -945,9 +945,8 @@ void ChromeContentUtilityClient::OnParseITunesPrefXml(
 void ChromeContentUtilityClient::OnParseIPhotoLibraryXmlFile(
     const IPC::PlatformFileForTransit& iphoto_library_file) {
   iphoto::IPhotoLibraryParser parser;
-  base::PlatformFile file =
-      IPC::PlatformFileForTransitToPlatformFile(iphoto_library_file);
-  bool result = parser.Parse(iapps::ReadPlatformFileAsString(file));
+  base::File file = IPC::PlatformFileForTransitToFile(iphoto_library_file);
+  bool result = parser.Parse(iapps::ReadFileAsString(file.Pass()));
   Send(new ChromeUtilityHostMsg_GotIPhotoLibrary(result, parser.library()));
   ReleaseProcessIfNeeded();
 }
@@ -957,9 +956,8 @@ void ChromeContentUtilityClient::OnParseIPhotoLibraryXmlFile(
 void ChromeContentUtilityClient::OnParseITunesLibraryXmlFile(
     const IPC::PlatformFileForTransit& itunes_library_file) {
   itunes::ITunesLibraryParser parser;
-  base::PlatformFile file =
-      IPC::PlatformFileForTransitToPlatformFile(itunes_library_file);
-  bool result = parser.Parse(iapps::ReadPlatformFileAsString(file));
+  base::File file = IPC::PlatformFileForTransitToFile(itunes_library_file);
+  bool result = parser.Parse(iapps::ReadFileAsString(file.Pass()));
   Send(new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
   ReleaseProcessIfNeeded();
 }
