@@ -134,19 +134,22 @@ bool RecordInfo::IsTreeShared() {
 }
 
 // A GC mixin is a class that inherits from a GC mixin base and has
-// has not yet been "mixed in" with another GC base class.
+// not yet been "mixed in" with another GC base class.
 bool RecordInfo::IsGCMixin() {
   if (!IsGCDerived() || base_paths_->begin() == base_paths_->end())
     return false;
-  // Get the last element of the first path.
-  CXXBasePaths::paths_iterator it = base_paths_->begin();
-  const CXXBasePathElement& elem = (*it)[it->size() - 1];
-  CXXRecordDecl* base = elem.Base->getType()->getAsCXXRecordDecl();
-  // If it is not a mixin base we are done.
-  if (!Config::IsGCMixinBase(base->getName()))
-    return false;
-  // This is a mixin if there are no other paths to GC bases.
-  return ++it == base_paths_->end();
+  for (CXXBasePaths::paths_iterator it = base_paths_->begin();
+       it != base_paths_->end();
+       ++it) {
+      // Get the last element of the path.
+      const CXXBasePathElement& elem = (*it)[it->size() - 1];
+      CXXRecordDecl* base = elem.Base->getType()->getAsCXXRecordDecl();
+      // If it is not a mixin base we are done.
+      if (!Config::IsGCMixinBase(base->getName()))
+          return false;
+  }
+  // This is a mixin if all GC bases are mixins.
+  return true;
 }
 
 // Test if a record is allocated on the managed heap.
