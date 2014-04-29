@@ -415,6 +415,7 @@ class PackageBuilder(object):
       options.verbose = True
       options.sync_sources = True
       options.clobber = True
+      options.emit_signatures = '-'
     self._options = options
     if not targets:
       if self._options.ignore_dependencies:
