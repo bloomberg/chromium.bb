@@ -25,10 +25,14 @@ namespace test {
 // these sizable reference files by default.
 bool HasReferenceFilesInCheckout();
 
+// Verifies both the YUV and Y4M version of the reference file exists.
+bool HasYuvAndY4mFile(const base::FilePath::CharType* reference_file);
+
 // Retrieves the reference files dir, to which file names can be appended.
 base::FilePath GetReferenceFilesDir();
 
 extern const base::FilePath::CharType kReferenceFileName360p[];
+extern const base::FilePath::CharType kReferenceFileName720p[];
 extern const base::FilePath::CharType kYuvFileExtension[];
 extern const base::FilePath::CharType kY4mFileExtension[];
 

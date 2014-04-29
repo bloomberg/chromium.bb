@@ -21,7 +21,7 @@ class WebContents;
 // getUserMedia. We use inheritance here because it makes the test code look
 // as clean as it can be.
 class WebRtcTestBase : public InProcessBrowserTest {
- protected:
+ public:
   // Typical constraints.
   static const char kAudioVideoCallConstraints[];
   static const char kAudioOnlyCallConstraints[];
@@ -35,6 +35,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kFailedWithPermissionDeniedError[];
   static const char kFailedWithPermissionDismissedError[];
 
+ protected:
   WebRtcTestBase();
   virtual ~WebRtcTestBase();
 

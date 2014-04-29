@@ -53,7 +53,7 @@ static const base::FilePath::CharType kArgbToI420ConverterExecutable[] =
 
 static const char kHomeEnvName[] =
 #if defined(OS_WIN)
-    "HOMEPATH";
+    "USERPROFILE";
 #else
     "HOME";
 #endif
@@ -67,14 +67,28 @@ static const base::FilePath::CharType kStatsFileName[] =
     FILE_PATH_LITERAL("stats.txt");
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
-static const char kCapturingWebrtcHtmlPage[] =
-    "/webrtc/webrtc_video_quality_test.html";
-static const int k360pWidth = 640;
-static const int k360pHeight = 360;
 
 // If you change the port number, don't forget to modify video_extraction.js
 // too!
 static const char kPyWebSocketPortNumber[] = "12221";
+
+static const struct VideoQualityTestConfig {
+  const char* test_name;
+  int width;
+  int height;
+  const char* capture_page;
+  const base::FilePath::CharType* reference_video;
+  const char* constraints;
+} kVideoConfigurations[] = {
+  { "360p", 640, 360,
+    "/webrtc/webrtc_video_quality_test.html",
+    test::kReferenceFileName360p,
+    WebRtcTestBase::kAudioVideoCallConstraints360p },
+  { "720p", 1280, 720,
+    "/webrtc/webrtc_video_quality_test_hd.html",
+    test::kReferenceFileName720p,
+    WebRtcTestBase::kAudioVideoCallConstraints720p },
+};
 
 // Test the video quality of the WebRTC output.
 //
@@ -99,11 +113,14 @@ static const char kPyWebSocketPortNumber[] = "12221";
 // frame_analyzer. Both tools can be found under third_party/webrtc/tools. The
 // test also runs a stand alone Python implementation of a WebSocket server
 // (pywebsocket) and a barcode_decoder script.
-class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
+class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
+    public testing::WithParamInterface<VideoQualityTestConfig> {
  public:
   WebRtcVideoQualityBrowserTest()
       : pywebsocket_server_(0),
-        environment_(base::Environment::Create()) {}
+        environment_(base::Environment::Create()) {
+    test_config_ = GetParam();
+  }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
@@ -114,7 +131,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
     // Set up the command line option with the expected file name. We will check
     // its existence in HasAllRequiredResources().
     webrtc_reference_video_y4m_ = test::GetReferenceFilesDir()
-        .Append(test::kReferenceFileName360p)
+        .Append(test_config_.reference_video)
         .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
                                    webrtc_reference_video_y4m_);
@@ -220,6 +237,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
   // |width| x |height|.
   // All measurements calculated are printed as perf parsable numbers to stdout.
   bool CompareVideosAndPrintResult(
+      const char* test_label,
       int width,
       int height,
       const base::FilePath& captured_video_filename,
@@ -248,7 +266,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
     EXPECT_TRUE(GetPythonCommand(&compare_command));
 
     compare_command.AppendArgPath(path_to_compare_script);
-    compare_command.AppendArg("--label=360p");
+    compare_command.AppendArg(base::StringPrintf("--label=%s", test_label));
     compare_command.AppendArg("--ref_video");
     compare_command.AppendArgPath(reference_video_filename);
     compare_command.AppendArg("--test_video");
@@ -279,7 +297,9 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
     return base::FilePath(native_home_dir).Append(kWorkingDirName);
   }
 
+ protected:
   test::PeerConnectionServerRunner peerconnection_server_;
+  VideoQualityTestConfig test_config_;
 
  private:
   base::FilePath GetSourceDir() {
@@ -299,8 +319,14 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
   base::FilePath webrtc_reference_video_y4m_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
-                       MANUAL_TestVGAVideoQuality) {
+INSTANTIATE_TEST_CASE_P(
+    WebRtcVideoQualityBrowserTests,
+    WebRtcVideoQualityBrowserTest,
+    testing::ValuesIn(kVideoConfigurations));
+
+IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
+                       MANUAL_TestVideoQuality) {
+
 #if defined(OS_WIN)
   // Fails on XP. http://crbug.com/353078
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -310,7 +336,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
   ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
       "This is a long-running test; you must specify "
       "--ui-test-action-max-timeout to have a value of at least 150000.";
-
   ASSERT_TRUE(HasAllRequiredResources());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(StartPyWebSocketServer());
@@ -319,11 +344,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
   content::WebContents* left_tab =
       OpenPageAndGetUserMediaInNewTabWithConstraints(
           embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage),
-          kAudioVideoCallConstraints360p);
+          test_config_.constraints);
   content::WebContents* right_tab =
       OpenPageAndGetUserMediaInNewTabWithConstraints(
-          embedded_test_server()->GetURL(kCapturingWebrtcHtmlPage),
-          kAudioVideoCallConstraints360p);
+          embedded_test_server()->GetURL(test_config_.capture_page),
+          test_config_.constraints);
 
   EstablishCall(left_tab, right_tab);
 
@@ -353,13 +378,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
   chrome::CloseWebContents(browser(), right_tab, false);
 
   RunARGBtoI420Converter(
-      k360pWidth, k360pHeight, GetWorkingDir().Append(kCapturedYuvFileName));
+      test_config_.width, test_config_.height,
+      GetWorkingDir().Append(kCapturedYuvFileName));
   ASSERT_TRUE(CompareVideosAndPrintResult(
-      k360pWidth,
-      k360pHeight,
+      test_config_.test_name,
+      test_config_.width,
+      test_config_.height,
       GetWorkingDir().Append(kCapturedYuvFileName),
       test::GetReferenceFilesDir()
-          .Append(test::kReferenceFileName360p)
+          .Append(test_config_.reference_video)
           .AddExtension(test::kYuvFileExtension),
       GetWorkingDir().Append(kStatsFileName)));
 }

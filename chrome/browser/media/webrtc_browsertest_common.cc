@@ -23,6 +23,8 @@ const base::FilePath::CharType kReferenceFilesDirName[] =
     FILE_PATH_LITERAL("webrtc/resources");
 const base::FilePath::CharType kReferenceFileName360p[] =
     FILE_PATH_LITERAL("reference_video_640x360_30fps");
+const base::FilePath::CharType kReferenceFileName720p[] =
+    FILE_PATH_LITERAL("reference_video_1280x720_30fps");
 const base::FilePath::CharType kYuvFileExtension[] = FILE_PATH_LITERAL("yuv");
 const base::FilePath::CharType kY4mFileExtension[] = FILE_PATH_LITERAL("y4m");
 
@@ -53,8 +55,13 @@ bool HasReferenceFilesInCheckout() {
         kAdviseOnGclientSolution;
     return false;
   }
+  return HasYuvAndY4mFile(test::kReferenceFileName360p) &&
+      HasYuvAndY4mFile(test::kReferenceFileName720p);
+}
+
+bool HasYuvAndY4mFile(const base::FilePath::CharType* reference_file) {
   base::FilePath webrtc_reference_video_yuv = GetReferenceFilesDir()
-      .Append(kReferenceFileName360p).AddExtension(kYuvFileExtension);
+      .Append(reference_file).AddExtension(kYuvFileExtension);
   if (!base::PathExists(webrtc_reference_video_yuv)) {
     LOG(ERROR)
         << "Missing YUV reference video to be used for quality"
@@ -64,7 +71,7 @@ bool HasReferenceFilesInCheckout() {
   }
 
   base::FilePath webrtc_reference_video_y4m = GetReferenceFilesDir()
-      .Append(kReferenceFileName360p).AddExtension(kY4mFileExtension);
+      .Append(reference_file).AddExtension(kY4mFileExtension);
   if (!base::PathExists(webrtc_reference_video_y4m)) {
     LOG(ERROR)
         << "Missing Y4M reference video to be used for quality"

@@ -14,7 +14,7 @@ import threading
 
 _NUMBER_OF_WRITER_THREADS = 10
 
-_HOME_ENV_NAME = 'HOMEPATH' if 'win32' == sys.platform else 'HOME'
+_HOME_ENV_NAME = 'USERPROFILE' if 'win32' == sys.platform else 'HOME'
 _WORKING_DIR = os.path.join(os.environ[_HOME_ENV_NAME], 'webrtc_video_quality')
 
 # I couldn't think of other way to handle this but through a global variable
