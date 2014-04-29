@@ -4,6 +4,7 @@
 import os
 
 from telemetry import test as test_module
+from telemetry.core import exceptions
 from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import page_test
