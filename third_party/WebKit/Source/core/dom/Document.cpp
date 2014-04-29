@@ -1640,6 +1640,8 @@ bool Document::hasPendingForcedStyleRecalc() const
 
 void Document::updateDistributionIfNeeded()
 {
+    ScriptForbiddenScope forbidScript;
+
     if (!childNeedsDistributionRecalc())
         return;
     TRACE_EVENT0("webkit", "Document::updateDistributionIfNeeded");
@@ -1648,6 +1650,8 @@ void Document::updateDistributionIfNeeded()
 
 void Document::updateStyleInvalidationIfNeeded()
 {
+    ScriptForbiddenScope forbidScript;
+
     if (!isActive())
         return;
     if (!childNeedsStyleInvalidation())
@@ -1660,6 +1664,8 @@ void Document::updateStyleInvalidationIfNeeded()
 
 void Document::updateDistributionForNodeIfNeeded(Node* node)
 {
+    ScriptForbiddenScope forbidScript;
+
     if (node->inDocument()) {
         updateDistributionIfNeeded();
         return;
@@ -2097,6 +2103,8 @@ void Document::unscheduleUseShadowTreeUpdate(SVGUseElement& element)
 
 void Document::updateUseShadowTreesIfNeeded()
 {
+    ScriptForbiddenScope forbidScript;
+
     if (m_useElementsNeedingUpdate.isEmpty())
         return;
 
