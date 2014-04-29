@@ -13,44 +13,56 @@
 
 namespace webkit_blob {
 
-BlobDataHandle::BlobDataHandle(BlobData* blob_data, BlobStorageContext* context,
-                               base::SequencedTaskRunner* task_runner)
+BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
+    BlobData* blob_data,
+    BlobStorageContext* context,
+    base::SequencedTaskRunner* task_runner)
     : blob_data_(blob_data),
-      context_(context->AsWeakPtr()),
-      io_task_runner_(task_runner) {
-  // Ensures the uuid remains registered and the underlying data is not deleted.
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+      context_(context->AsWeakPtr()) {
   context_->IncrementBlobRefCount(blob_data->uuid());
-  blob_data_->AddRef();
+}
+
+BlobData* BlobDataHandle::BlobDataHandleShared::data() const {
+  return blob_data_;
+}
+
+const std::string& BlobDataHandle::BlobDataHandleShared::uuid() const {
+  return blob_data_->uuid();
+}
+
+BlobDataHandle::BlobDataHandleShared::~BlobDataHandleShared() {
+  if (context_.get())
+    context_->DecrementBlobRefCount(blob_data_->uuid());
+}
+
+BlobDataHandle::BlobDataHandle(BlobData* blob_data,
+                               BlobStorageContext* context,
+                               base::SequencedTaskRunner* task_runner)
+    : io_task_runner_(task_runner),
+      shared_(new BlobDataHandleShared(blob_data, context, task_runner)) {
+  DCHECK(io_task_runner_);
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+}
+
+BlobDataHandle::BlobDataHandle(const BlobDataHandle& other) {
+  io_task_runner_ = other.io_task_runner_;
+  shared_ = other.shared_;
 }
 
 BlobDataHandle::~BlobDataHandle() {
-  if (io_task_runner_->RunsTasksOnCurrentThread()) {
-    // Note: Do not test context_ or alter the blob_data_ refcount
-    // on the wrong thread.
-    if (context_.get())
-      context_->DecrementBlobRefCount(blob_data_->uuid());
-    blob_data_->Release();
-    return;
-  }
-
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DeleteHelper, context_, base::Unretained(blob_data_)));
+  BlobDataHandleShared* raw = shared_.get();
+  raw->AddRef();
+  shared_ = 0;
+  io_task_runner_->ReleaseSoon(FROM_HERE, raw);
 }
 
 BlobData* BlobDataHandle::data() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  return blob_data_;
+  return shared_->data();
 }
 
-// static
-void BlobDataHandle::DeleteHelper(
-    base::WeakPtr<BlobStorageContext> context,
-    BlobData* blob_data) {
-  if (context.get())
-    context->DecrementBlobRefCount(blob_data->uuid());
-  blob_data->Release();
+std::string BlobDataHandle::uuid() const {
+  return shared_->uuid();
 }
 
 }  // namespace webkit_blob
