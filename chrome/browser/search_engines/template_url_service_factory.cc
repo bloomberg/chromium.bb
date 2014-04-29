@@ -10,6 +10,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -51,6 +52,7 @@ KeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
 
 void TemplateURLServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  DefaultSearchManager::RegisterProfilePrefs(registry);
   registry->RegisterStringPref(prefs::kSyncedDefaultSearchProviderGUID,
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

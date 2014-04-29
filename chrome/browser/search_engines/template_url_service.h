@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -775,6 +776,10 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Stores a list of callbacks to be run after TemplateURLService has loaded.
   base::CallbackList<void(void)> on_loaded_callbacks_;
+
+  // Helper class to manage the default search engine. This will be NULL when
+  // using the testing-specific constructor.
+  scoped_ptr<DefaultSearchManager> default_search_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

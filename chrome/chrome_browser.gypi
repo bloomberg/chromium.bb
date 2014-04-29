@@ -1957,6 +1957,8 @@
         'browser/search/suggestions/suggestions_service_factory.h',
         'browser/search/suggestions/suggestions_source.cc',
         'browser/search/suggestions/suggestions_source.h',
+        'browser/search_engines/default_search_manager.cc',
+        'browser/search_engines/default_search_manager.h',
         'browser/search_engines/default_search_policy_handler.cc',
         'browser/search_engines/default_search_policy_handler.h',
         'browser/search_engines/search_engine_type.h',
