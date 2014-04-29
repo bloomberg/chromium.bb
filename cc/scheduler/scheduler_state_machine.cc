@@ -502,6 +502,11 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!HasInitializedOutputSurface())
     return false;
 
+  // SwapAck throttle the BeginMainFrames
+  // TODO(brianderson): Remove this restriction to improve throughput.
+  if (pending_swaps_ >= max_pending_swaps_)
+    return false;
+
   if (skip_begin_main_frame_to_reduce_latency_)
     return false;
 
