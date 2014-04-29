@@ -3663,16 +3663,19 @@
           'caption': '''Least recently used users who have not logged in within last 3 months are removed until there is enough free space''',
         },
       ],
-      'supported_on': ['chrome_os:32-'],
+      'supported_on': ['chrome_os:32-35'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': 'remove-lru',
       'id': 246,
-      'caption': '''Selects the strategy used to free up disk space during automatic clean-up''',
-      'desc': '''Controls the automatic clean-up behavior on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices. Automatic clean-up is triggered when the amount of free disk space reaches a critical level to recover some disk space.
+      'caption': '''Selects the strategy used to free up disk space during automatic clean-up (deprecated)''',
+      'desc': '''This policy is deprecated. <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will always use the 'RemoveLRU' clean-up strategy.
+
+      Controls the automatic clean-up behavior on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices. Automatic clean-up is triggered when the amount of free disk space reaches a critical level to recover some disk space.
 
       If this policy is set to 'RemoveLRU', the automatic clean-up will keep removing users from the device in least-recently-logged-in order until there is enough free space.
 

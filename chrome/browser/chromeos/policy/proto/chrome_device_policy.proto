@@ -561,8 +561,7 @@ message LoginScreenPowerManagementProto {
 }
 
 message AutoCleanupSettigsProto {
-  // Configures strategy for automatic clean-up process that is run when device
-  // runs out of free disk space. One of "remove-lru", "remove-lru-if-dormant".
+  // Deprecated.  There is only one disk-full cleanup strategy: LRU.
   optional string clean_up_strategy = 1;
 }
 
