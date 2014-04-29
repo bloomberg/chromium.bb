@@ -14,12 +14,11 @@ namespace sandbox {
 // The implicitly defined sets form a partition of the sets of
 // system calls.
 
-// TODO(jln) we need to restrict the first parameter!
 bool SyscallSets::IsKill(int sysno) {
   switch (sysno) {
     case __NR_kill:
-    case __NR_tkill:
     case __NR_tgkill:
+    case __NR_tkill:  // Deprecated.
       return true;
     default:
       return false;

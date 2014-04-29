@@ -5,6 +5,8 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_
 
+#include <unistd.h>
+
 #include "build/build_config.h"
 #include "sandbox/linux/sandbox_export.h"
 
@@ -54,6 +56,11 @@ SANDBOX_EXPORT ErrorCode RestrictFcntlCommands(SandboxBPF* sandbox);
 // sendto(2), recvfrom(2), shutdown(2), sendmsg(2) and recvmsg(2).
 SANDBOX_EXPORT ErrorCode RestrictSocketcallCommand(SandboxBPF* sandbox);
 #endif
+
+// Restrict |sysno| (which must be kill, tkill or tgkill) by allowing tgkill or
+// kill iff the first parameter is |target_pid|, crashing otherwise or if
+// |sysno| is tkill.
+ErrorCode RestrictKillTarget(pid_t target_pid, SandboxBPF* sandbox, int sysno);
 
 }  // namespace sandbox.
 

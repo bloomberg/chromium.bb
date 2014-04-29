@@ -211,4 +211,20 @@ ErrorCode RestrictSocketcallCommand(SandboxBPF* sandbox) {
 }
 #endif
 
+ErrorCode RestrictKillTarget(pid_t target_pid, SandboxBPF* sandbox, int sysno) {
+  switch (sysno) {
+    case __NR_kill:
+    case __NR_tgkill:
+      return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                           target_pid,
+                           ErrorCode(ErrorCode::ERR_ALLOWED),
+                           sandbox->Trap(SIGSYSKillFailure, NULL));
+    case __NR_tkill:
+      return sandbox->Trap(SIGSYSKillFailure, NULL);
+    default:
+      NOTREACHED();
+      return sandbox->Trap(CrashSIGSYS_Handler, NULL);
+  }
+}
+
 }  // namespace sandbox.

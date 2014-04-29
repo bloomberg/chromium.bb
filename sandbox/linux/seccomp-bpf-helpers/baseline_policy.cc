@@ -6,8 +6,10 @@
 
 #include <errno.h>
 #include <sys/mman.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -42,7 +44,6 @@ bool IsBaselinePolicyAllowed(int sysno) {
 #if defined(__arm__)
          SyscallSets::IsArmPrivate(sysno) ||
 #endif
-         SyscallSets::IsKill(sysno) ||
          SyscallSets::IsAllowedOperationOnFd(sysno);
 }
 
@@ -63,6 +64,7 @@ bool IsBaselinePolicyWatched(int sysno) {
          SyscallSets::IsInotify(sysno) ||
          SyscallSets::IsKernelModule(sysno) ||
          SyscallSets::IsKeyManagement(sysno) ||
+         SyscallSets::IsKill(sysno) ||
          SyscallSets::IsMessageQueue(sysno) ||
          SyscallSets::IsMisc(sysno) ||
 #if defined(__x86_64__)
@@ -80,7 +82,9 @@ bool IsBaselinePolicyWatched(int sysno) {
 }
 
 // |fs_denied_errno| is the errno return for denied filesystem access.
-ErrorCode EvaluateSyscallImpl(int fs_denied_errno, SandboxBPF* sandbox,
+ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
+                              pid_t current_pid,
+                              SandboxBPF* sandbox,
                               int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
@@ -125,6 +129,10 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno, SandboxBPF* sandbox,
     return RestrictFcntlCommands(sandbox);
 #endif
 
+  if (SyscallSets::IsKill(sysno)) {
+    return RestrictKillTarget(current_pid, sandbox, sysno);
+  }
+
   if (SyscallSets::IsFileSystem(sysno) ||
       SyscallSets::IsCurrentDirectory(sysno)) {
     return ErrorCode(fs_denied_errno);
@@ -151,6 +159,7 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno, SandboxBPF* sandbox,
     // be denied gracefully right away.
     return sandbox->Trap(CrashSIGSYS_Handler, NULL);
   }
+
   // In any other case crash the program with our SIGSYS handler.
   return sandbox->Trap(CrashSIGSYS_Handler, NULL);
 }
@@ -160,16 +169,24 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno, SandboxBPF* sandbox,
 // Unfortunately C++03 doesn't allow delegated constructors.
 // Call other constructor when C++11 lands.
 BaselinePolicy::BaselinePolicy()
-    : fs_denied_errno_(EPERM) {}
+    : fs_denied_errno_(EPERM), current_pid_(syscall(__NR_getpid)) {}
 
 BaselinePolicy::BaselinePolicy(int fs_denied_errno)
-    : fs_denied_errno_(fs_denied_errno) {}
+    : fs_denied_errno_(fs_denied_errno), current_pid_(syscall(__NR_getpid)) {}
 
-BaselinePolicy::~BaselinePolicy() {}
+BaselinePolicy::~BaselinePolicy() {
+  // Make sure that this policy is created, used and destroyed by a single
+  // process.
+  DCHECK_EQ(syscall(__NR_getpid), current_pid_);
+}
 
 ErrorCode BaselinePolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                           int sysno) const {
-  return EvaluateSyscallImpl(fs_denied_errno_, sandbox, sysno);
+  // Make sure that this policy is used in the creating process.
+  if (1 == sysno) {
+    DCHECK_EQ(syscall(__NR_getpid), current_pid_);
+  }
+  return EvaluateSyscallImpl(fs_denied_errno_, current_pid_, sandbox, sysno);
 }
 
 }  // namespace sandbox.

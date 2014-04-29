@@ -17,6 +17,7 @@
 #define SECCOMP_MESSAGE_CLONE_CONTENT "clone() failure"
 #define SECCOMP_MESSAGE_PRCTL_CONTENT "prctl() failure"
 #define SECCOMP_MESSAGE_IOCTL_CONTENT "ioctl() failure"
+#define SECCOMP_MESSAGE_KILL_CONTENT "(tg)kill() failure"
 
 namespace {
 
@@ -142,6 +143,22 @@ intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args,
   *addr = '\0';
   // Hit the NULL page if this fails.
   addr = reinterpret_cast<volatile char*>(request & 0xFFF);
+  *addr = '\0';
+  for (;;)
+    _exit(1);
+}
+
+intptr_t SIGSYSKillFailure(const struct arch_seccomp_data& args,
+                           void* /* aux */) {
+   static const char kSeccompKillError[] =
+      __FILE__":**CRASHING**:" SECCOMP_MESSAGE_KILL_CONTENT "\n";
+  WriteToStdErr(kSeccompKillError, sizeof(kSeccompKillError) - 1);
+  // Make "request" volatile so that we can see it on the stack in a minidump.
+  volatile uint64_t pid = args.args[0];
+  volatile char* addr = reinterpret_cast<volatile char*>(pid & 0xFFF);
+  *addr = '\0';
+  // Hit the NULL page if this fails.
+  addr = reinterpret_cast<volatile char*>(pid & 0xFFF);
   *addr = '\0';
   for (;;)
     _exit(1);
