@@ -2,50 +2,30 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body {
-  margin: 10px 8px;
+.content > span {
+  max-width: 416px;
 }
 
 .icon {
-  -webkit-margin-end: 3px;
-  -webkit-margin-start: 6px;
-}
-
-html[dir='ltr'] .icon {
-  -webkit-transform: scaleX(-1);
+  -webkit-margin-after: 10px;
+  -webkit-margin-before: 4px;
+  -webkit-margin-start: 25px;
+  content: -webkit-image-set(
+      url('../../../browser/resources/ntp4/images/incognito_icon.png') 1x,
+      url('../../../browser/resources/ntp4/images/2x/incognito_icon.png') 2x);
   float: right;
+  height: 128px;
+  width: 128px;
 }
 
 html[dir='rtl'] .icon {
   float: left;
 }
 
-.content {
-  background-color: #eee;
-  border-radius: 5px;
-  color: black;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 66px;
-  max-width: 600px;
-  padding: 10px;
-}
-
-.extensions-message {
-  -webkit-padding-start: 39px;
-  margin-top: 15px;
-  position: relative;
-}
-
-.extension-icon {
-  content: -webkit-image-set(
-      url('../../../app/theme/default_100_percent/extensions_section.png') 1x,
-      url('../../../app/theme/default_200_percent/extensions_section.png') 2x);
-  display: inline-block;
-  left: 0;
-  margin-top: -15px;
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 30px;
+@media (max-width:400px) {
+  .icon {
+    -webkit-margin-start: 15px;
+    height: 96px;
+    width: 96px;
+  }
 }

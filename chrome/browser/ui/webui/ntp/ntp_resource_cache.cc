@@ -291,14 +291,19 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   base::DictionaryValue localized_strings;
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-  int new_tab_message_ids = IDS_NEW_TAB_OTR_MESSAGE;
+  int new_tab_description_ids = IDS_NEW_TAB_OTR_DESCRIPTION;
+  int new_tab_heading_ids = IDS_NEW_TAB_OTR_HEADING;
+  int new_tab_link_ids = IDS_NEW_TAB_OTR_LEARN_MORE_LINK;
+  int new_tab_warning_ids = IDS_NEW_TAB_OTR_MESSAGE_WARNING;
   int new_tab_html_idr = IDR_INCOGNITO_TAB_HTML;
   const char* new_tab_link = kLearnMoreIncognitoUrl;
 
   // TODO(altimofeev): consider implementation without 'if def' usage.
 #if defined(OS_CHROMEOS)
   if (profile_->IsGuestSession()) {
-    new_tab_message_ids = IDS_NEW_TAB_GUEST_SESSION_MESSAGE;
+    new_tab_description_ids = IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION;
+    new_tab_heading_ids = IDS_NEW_TAB_GUEST_SESSION_HEADING;
+    new_tab_link_ids = IDS_NEW_TAB_GUEST_SESSION_LEARN_MORE_LINK;
     new_tab_html_idr = IDR_GUEST_SESSION_TAB_HTML;
     new_tab_link = kLearnMoreGuestSessionUrl;
 
@@ -322,13 +327,25 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   }
 #endif
 
-  localized_strings.SetString("content",
-      l10n_util::GetStringFUTF16(new_tab_message_ids,
-                                 GetUrlWithLang(GURL(new_tab_link))));
-  localized_strings.SetString("extensionsmessage",
-      l10n_util::GetStringFUTF16(
-          IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
-          base::ASCIIToUTF16(chrome::kChromeUIExtensionsURL)));
+  if (profile_->IsGuestSession()) {
+    localized_strings.SetString("guestTabDescription",
+        l10n_util::GetStringUTF16(new_tab_description_ids));
+    localized_strings.SetString("guestTabHeading",
+        l10n_util::GetStringUTF16(new_tab_heading_ids));
+  } else {
+    localized_strings.SetString("incognitoTabDescription",
+        l10n_util::GetStringUTF16(new_tab_description_ids));
+    localized_strings.SetString("incognitoTabHeading",
+        l10n_util::GetStringUTF16(new_tab_heading_ids));
+    localized_strings.SetString("incognitoTabWarning",
+        l10n_util::GetStringUTF16(new_tab_warning_ids));
+  }
+
+  localized_strings.SetString("learnMore",
+      l10n_util::GetStringUTF16(new_tab_link_ids));
+  localized_strings.SetString("learnMoreLink",
+      GetUrlWithLang(GURL(new_tab_link)));
+
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
   localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
@@ -350,9 +367,18 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   const char* new_tab_link = kLearnMoreGuestSessionUrl;
-  localized_strings.SetString("content",
-      l10n_util::GetStringFUTF16(IDS_NEW_TAB_GUEST_SESSION_MESSAGE,
-                                 GetUrlWithLang(GURL(new_tab_link))));
+  int guest_tab_description_ids = IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION;
+  int guest_tab_heading_ids = IDS_NEW_TAB_GUEST_SESSION_HEADING;
+  int guest_tab_link_ids = IDS_NEW_TAB_GUEST_SESSION_LEARN_MORE_LINK;
+
+  localized_strings.SetString("guestTabDescription",
+      l10n_util::GetStringUTF16(guest_tab_description_ids));
+  localized_strings.SetString("guestTabHeading",
+      l10n_util::GetStringUTF16(guest_tab_heading_ids));
+  localized_strings.SetString("learnMore",
+      l10n_util::GetStringUTF16(guest_tab_link_ids));
+  localized_strings.SetString("learnMoreLink",
+      GetUrlWithLang(GURL(new_tab_link)));
 
   webui::SetFontAndTextDirection(&localized_strings);
 

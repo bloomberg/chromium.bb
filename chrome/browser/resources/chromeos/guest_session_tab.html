@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
-<link rel="stylesheet" href="../ntp4/incognito_tab.css">
+<link rel="stylesheet" href="../ntp4/incognito_and_guest_tab.css">
 <link rel="stylesheet" href="login/enterprise_info.css">
 <script>
 // Until themes can clear the cache, force-reload the theme stylesheet.
@@ -21,8 +21,12 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
   <a id="enterprise-info-hint-link" i18n-content="learnMore"
       i18n-values=".href:enterpriseInfoHintLink"></a>
 </div>
-<div class="content" >
-  <span i18n-values=".innerHTML:content"></span>
+<div class="content">
+  <h1 i18n-content="guestTabHeading"></h1>
+  <p>
+    <span i18n-content="guestTabDescription"></span>
+    <a i18n-content="learnMore" i18n-values=".href:learnMoreLink"></a>
+  </p>
 </div>
 </body>
 <script>

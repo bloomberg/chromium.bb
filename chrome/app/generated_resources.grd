@@ -11091,29 +11091,40 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL" desc="URL of help center page explaining what the 'Other Sessions' menu is.">
           http://support.google.com/chrome/bin/answer.py?answer=185277&amp;hl=[GRITLANGCODE]
         </message>
-        <message name="IDS_NEW_TAB_OTR_MESSAGE"
+        <message name="IDS_NEW_TAB_OTR_HEADING"
+                 desc="Heading used when a person opens an OTR window">
+          You’ve gone incognito
+        </message>
+        <message name="IDS_NEW_TAB_OTR_DESCRIPTION"
                  desc="Used when a person opens an OTR window">
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
-          Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, governments and other sophisticated attackers, or the websites you visit.
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
+          Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history after you’ve closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
+        </message>
+        <message name="IDS_NEW_TAB_OTR_LEARN_MORE_LINK"
+                 desc="OTR window link text to learn more">
+          Learn more about incognito browsing
+        </message>
+        <message name="IDS_NEW_TAB_OTR_MESSAGE_WARNING"
+                 desc="OTR window warning message">
+          Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
+        </message>
+        <message name="IDS_NEW_TAB_GUEST_SESSION_HEADING"
+              desc="Heading used when a person enters Guest Session">
+          You’re browsing as a Guest
+        </message>
+        <message name="IDS_NEW_TAB_GUEST_SESSION_LEARN_MORE_LINK"
+              desc="Guest Session link text to learn more">
+          Learn more about Guest browsing
         </message>
         <if expr="chromeos">
-          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+          <message name="IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION"
               desc="Used when a person enters Guest Session">
-              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
-            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
+            Pages you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won’t be preserved.
           </message>
         </if>
         <if expr="not chromeos">
-          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+          <message name="IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION"
               desc="Used when a person enters Guest Session">
-              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
-            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
+            Pages you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
           </message>
         </if>
         <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
