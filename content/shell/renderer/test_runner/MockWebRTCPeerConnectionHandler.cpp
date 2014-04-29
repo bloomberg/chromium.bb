@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 using namespace blink;
+using namespace content;
 
 namespace WebTestRunner {
 

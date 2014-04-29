@@ -7,11 +7,11 @@
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 
+using namespace WebTestRunner;
 using namespace blink;
-using namespace content;
 using namespace std;
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 class HostMethodTask : public WebMethodTask<MockColorChooser> {
@@ -56,4 +56,4 @@ void MockColorChooser::invokeDidEndChooser()
     m_client->didEndChooser();
 }
 
-}
+}  // namespace content

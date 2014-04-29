@@ -10,13 +10,13 @@ class WebMediaConstraints;
 class WebString;
 }
 
-namespace WebTestRunner {
+namespace content {
 
 class MockConstraints {
 public:
     static bool verifyConstraints(const blink::WebMediaConstraints&, blink::WebString* failedConstraint = 0);
 };
 
-}
+}  // content
 
 #endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCONSTRAINTS_H_

@@ -8,13 +8,11 @@
 #include <vector>
 
 namespace blink {
-
 class WebString;
 struct WebTextCheckingResult;
-
 }
 
-namespace WebTestRunner {
+namespace content {
 
 // A mock implementation of a grammar-checker used for WebKit tests. This class
 // only implements the minimal functionarities required by WebKit tests, i.e.
@@ -26,6 +24,6 @@ public:
     static bool checkGrammarOfString(const blink::WebString&, std::vector<blink::WebTextCheckingResult>*);
 };
 
-}
+}  // namespace content
 
-#endif // MockSpellCheck_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKGRAMMARCHECK_H_

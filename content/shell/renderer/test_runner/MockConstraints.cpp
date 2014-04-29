@@ -9,7 +9,7 @@
 
 using namespace blink;
 
-namespace WebTestRunner {
+namespace content {
 
 namespace {
 
@@ -56,4 +56,4 @@ bool MockConstraints::verifyConstraints(const WebMediaConstraints& constraints, 
     return true;
 }
 
-}
+}  // namespace content

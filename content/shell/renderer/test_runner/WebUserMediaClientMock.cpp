@@ -20,6 +20,8 @@
 
 using namespace blink;
 
+using content::MockConstraints;
+
 namespace WebTestRunner {
 
 class UserMediaRequestTask : public WebMethodTask<WebUserMediaClientMock> {
