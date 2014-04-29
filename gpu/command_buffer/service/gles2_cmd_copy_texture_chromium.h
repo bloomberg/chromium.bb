@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
 
+#include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
@@ -48,20 +50,22 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
 
  private:
   struct ProgramInfo {
-    ProgramInfo() : program(0u), matrix_handle(0u), sampler_locations(0u) {}
+    ProgramInfo() : program(0u), matrix_handle(0u), sampler_handle(0u) {}
 
     GLuint program;
     GLuint matrix_handle;
-    GLuint sampler_locations;
+    GLuint sampler_handle;
   };
 
   bool initialized_;
+  typedef std::vector<GLuint> ShaderVector;
+  ShaderVector vertex_shaders_;
+  ShaderVector fragment_shaders_;
   typedef std::pair<int, int> ProgramMapKey;
   typedef base::hash_map<ProgramMapKey, ProgramInfo> ProgramMap;
   ProgramMap programs_;
   GLuint buffer_id_;
   GLuint framebuffer_;
-  GLuint vertex_shader_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyTextureCHROMIUMResourceManager);
 };
@@ -69,5 +73,3 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
 }  // namespace gpu.
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_
-
-

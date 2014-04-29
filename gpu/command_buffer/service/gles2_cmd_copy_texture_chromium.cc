@@ -4,15 +4,19 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 
-#include <string.h>
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
-#define SHADER(src)            \
-  "#ifdef GL_ES\n"             \
-  "precision mediump float;\n" \
+#define SHADER(src)                     \
+  "#ifdef GL_ES\n"                      \
+  "precision mediump float;\n"          \
+  "#define TexCoordPrecision mediump\n" \
+  "#else\n"                             \
+  "#define TexCoordPrecision\n"         \
   "#endif\n" #src
 #define SHADER_2D(src)              \
   "#define SamplerType sampler2D\n" \
@@ -21,135 +25,133 @@
   "#extension GL_OES_EGL_image_external : require\n" \
   "#define SamplerType samplerExternalOES\n"         \
   "#define TextureLookup texture2D\n" SHADER(src)
-#define SHADERS(src) \
-  { SHADER_2D(src), SHADER_EXTERNAL_OES(src) }
+#define FRAGMENT_SHADERS(src) \
+  SHADER_2D(src), SHADER_EXTERNAL_OES(src)
 
 namespace {
 
-const GLfloat kQuadVertices[] = { -1.0f, -1.0f, 0.0f, 1.0f,
-                                   1.0f, -1.0f, 0.0f, 1.0f,
-                                   1.0f,  1.0f, 0.0f, 1.0f,
-                                  -1.0f,  1.0f, 0.0f, 1.0f };
-
-enum ShaderId {
-  SHADER_COPY_TEXTURE,
-  SHADER_COPY_TEXTURE_FLIP_Y,
-  SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA,
-  SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA,
-  SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_FLIP_Y,
-  SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_FLIP_Y,
-  NUM_SHADERS,
+enum VertexShaderId {
+  VERTEX_SHADER_COPY_TEXTURE,
+  VERTEX_SHADER_COPY_TEXTURE_FLIP_Y,
+  NUM_VERTEX_SHADERS,
 };
 
-enum SamplerId {
-  SAMPLER_TEXTURE_2D,
-  SAMPLER_TEXTURE_EXTERNAL_OES,
-  NUM_SAMPLERS,
+enum FragmentShaderId {
+  FRAGMENT_SHADER_COPY_TEXTURE_2D,
+  FRAGMENT_SHADER_COPY_TEXTURE_EXTERNAL_OES,
+  FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_2D,
+  FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_EXTERNAL_OES,
+  FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_2D,
+  FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_EXTERNAL_OES,
+  NUM_FRAGMENT_SHADERS,
 };
 
-const char* vertex_shader_source =
+const char* vertex_shader_source[NUM_VERTEX_SHADERS] = {
+  // VERTEX_SHADER_COPY_TEXTURE
   SHADER(
     uniform mat4 u_matrix;
     attribute vec4 a_position;
-    varying vec2 v_uv;
+    varying TexCoordPrecision vec2 v_uv;
     void main(void) {
       gl_Position = u_matrix * a_position;
-      v_uv = a_position.xy * 0.5 + vec2(0.5, 0.5);
-    });
+      v_uv = a_position.xy * vec2(0.5, 0.5) + vec2(0.5, 0.5);
+    }),
+  // VERTEX_SHADER_COPY_TEXTURE_FLIP_Y
+  SHADER(
+    uniform mat4 u_matrix;
+    attribute vec4 a_position;
+    varying TexCoordPrecision vec2 v_uv;
+    void main(void) {
+      gl_Position = u_matrix * a_position;
+      v_uv = a_position.xy * vec2(0.5, -0.5) + vec2(0.5, 0.5);
+    }),
+};
 
-const char* fragment_shader_source[NUM_SHADERS][NUM_SAMPLERS] = {
-  // SHADER_COPY_TEXTURE
-  SHADERS(
-    uniform SamplerType u_texSampler;
-    varying vec2 v_uv;
+const char* fragment_shader_source[NUM_FRAGMENT_SHADERS] = {
+  // FRAGMENT_SHADER_COPY_TEXTURE_*
+  FRAGMENT_SHADERS(
+    uniform SamplerType u_sampler;
+    varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_FragColor = TextureLookup(u_texSampler, v_uv.st);
+      gl_FragColor = TextureLookup(u_sampler, v_uv.st);
     }),
-  // SHADER_COPY_TEXTURE_FLIP_Y
-  SHADERS(
-    uniform SamplerType u_texSampler;
-    varying vec2 v_uv;
+  // FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_*
+  FRAGMENT_SHADERS(
+    uniform SamplerType u_sampler;
+    varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_FragColor = TextureLookup(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));
-    }),
-  // SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA
-  SHADERS(
-    uniform SamplerType u_texSampler;
-    varying vec2 v_uv;
-    void main(void) {
-      gl_FragColor = TextureLookup(u_texSampler, v_uv.st);
+      gl_FragColor = TextureLookup(u_sampler, v_uv.st);
       gl_FragColor.rgb *= gl_FragColor.a;
     }),
-  // SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA
-  SHADERS(
-    uniform SamplerType u_texSampler;
-    varying vec2 v_uv;
+  // FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_*
+  FRAGMENT_SHADERS(
+    uniform SamplerType u_sampler;
+    varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_FragColor = TextureLookup(u_texSampler, v_uv.st);
-      if (gl_FragColor.a > 0.0)
-        gl_FragColor.rgb /= gl_FragColor.a;
-    }),
-  // SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_FLIP_Y
-  SHADERS(
-    uniform SamplerType u_texSampler;
-    varying vec2 v_uv;
-    void main(void) {
-      gl_FragColor = TextureLookup(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));
-      gl_FragColor.rgb *= gl_FragColor.a;
-    }),
-  // SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_FLIP_Y
-  SHADERS(
-    uniform SamplerType u_texSampler;
-    varying vec2 v_uv;
-    void main(void) {
-      gl_FragColor = TextureLookup(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));
+      gl_FragColor = TextureLookup(u_sampler, v_uv.st);
       if (gl_FragColor.a > 0.0)
         gl_FragColor.rgb /= gl_FragColor.a;
     }),
 };
 
-// Returns the correct shader id to evaluate the copy operation for
-// the CHROMIUM_flipy and premultiply alpha pixel store settings.
-ShaderId GetShaderId(bool flip_y,
-                     bool premultiply_alpha,
-                     bool unpremultiply_alpha) {
-  // If both pre-multiply and unpremultiply are requested, then perform no
-  // alpha manipulation.
-  if (premultiply_alpha && unpremultiply_alpha) {
-    premultiply_alpha = false;
-    unpremultiply_alpha = false;
-  }
-
-  // bit 0: Flip_y
-  // bit 1: Premult
-  // bit 2: Unpremult
-  static ShaderId shader_ids[] = {
-      SHADER_COPY_TEXTURE,
-      SHADER_COPY_TEXTURE_FLIP_Y,                      // F
-      SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA,           //   P
-      SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_FLIP_Y,    // F P
-      SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA,         //     U
-      SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_FLIP_Y,  // F   U
-      SHADER_COPY_TEXTURE,                             //   P U
-      SHADER_COPY_TEXTURE_FLIP_Y,                      // F P U
+// Returns the correct vertex shader id to evaluate the copy operation for
+// the CHROMIUM_flipy setting.
+VertexShaderId GetVertexShaderId(bool flip_y) {
+  // bit 0: flip y
+  static VertexShaderId shader_ids[] = {
+      VERTEX_SHADER_COPY_TEXTURE,
+      VERTEX_SHADER_COPY_TEXTURE_FLIP_Y,
   };
 
-  unsigned index = (flip_y              ? (1 << 0) : 0) |
-                   (premultiply_alpha   ? (1 << 1) : 0) |
-                   (unpremultiply_alpha ? (1 << 2) : 0);
+  unsigned index = flip_y ? 1 : 0;
   return shader_ids[index];
 }
 
-SamplerId GetSamplerId(GLenum source_target) {
-  switch (source_target) {
+// Returns the correct fragment shader id to evaluate the copy operation for
+// the premultiply alpha pixel store settings and target.
+FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
+                                     bool unpremultiply_alpha,
+                                     GLenum target) {
+  enum {
+    SAMPLER_2D,
+    SAMPLER_EXTERNAL_OES,
+    NUM_SAMPLERS
+  };
+
+  // bit 0: premultiply alpha
+  // bit 1: unpremultiply alpha
+  static FragmentShaderId shader_ids[][NUM_SAMPLERS] = {
+      {
+       FRAGMENT_SHADER_COPY_TEXTURE_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_EXTERNAL_OES,
+      },
+      {
+       FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_EXTERNAL_OES,
+      },
+      {
+       FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_EXTERNAL_OES,
+      },
+      {
+       FRAGMENT_SHADER_COPY_TEXTURE_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_EXTERNAL_OES,
+      }};
+
+  unsigned index = (premultiply_alpha   ? (1 << 0) : 0) |
+                   (unpremultiply_alpha ? (1 << 1) : 0);
+
+  switch (target) {
     case GL_TEXTURE_2D:
-      return SAMPLER_TEXTURE_2D;
+      return shader_ids[index][SAMPLER_2D];
     case GL_TEXTURE_EXTERNAL_OES:
-      return SAMPLER_TEXTURE_EXTERNAL_OES;
+      return shader_ids[index][SAMPLER_EXTERNAL_OES];
+    default:
+      break;
   }
 
   NOTREACHED();
-  return SAMPLER_TEXTURE_2D;
+  return shader_ids[index][SAMPLER_2D];
 }
 
 void CompileShader(GLuint shader, const char* shader_source) {
@@ -163,13 +165,21 @@ void CompileShader(GLuint shader, const char* shader_source) {
 #endif
 }
 
+void DeleteShader(GLuint shader) {
+  if (shader)
+    glDeleteShader(shader);
+}
+
 }  // namespace
 
 namespace gpu {
 
 CopyTextureCHROMIUMResourceManager::CopyTextureCHROMIUMResourceManager()
-    : initialized_(false), buffer_id_(0), framebuffer_(0), vertex_shader_(0) {
-}
+    : initialized_(false),
+      vertex_shaders_(NUM_VERTEX_SHADERS, 0u),
+      fragment_shaders_(NUM_FRAGMENT_SHADERS, 0u),
+      buffer_id_(0u),
+      framebuffer_(0u) {}
 
 CopyTextureCHROMIUMResourceManager::~CopyTextureCHROMIUMResourceManager() {}
 
@@ -182,13 +192,14 @@ void CopyTextureCHROMIUMResourceManager::Initialize(
   // Initialize all of the GPU resources required to perform the copy.
   glGenBuffersARB(1, &buffer_id_);
   glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(kQuadVertices), kQuadVertices,
-               GL_STATIC_DRAW);
+  const GLfloat kQuadVertices[] = {-1.0f, -1.0f,
+                                    1.0f, -1.0f,
+                                    1.0f,  1.0f,
+                                   -1.0f,  1.0f};
+  glBufferData(
+      GL_ARRAY_BUFFER, sizeof(kQuadVertices), kQuadVertices, GL_STATIC_DRAW);
 
   glGenFramebuffersEXT(1, &framebuffer_);
-
-  vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
-  CompileShader(vertex_shader_, vertex_shader_source);
 
   decoder->RestoreBufferBindings();
 
@@ -201,7 +212,10 @@ void CopyTextureCHROMIUMResourceManager::Destroy() {
 
   glDeleteFramebuffersEXT(1, &framebuffer_);
 
-  glDeleteShader(vertex_shader_);
+  std::for_each(vertex_shaders_.begin(), vertex_shaders_.end(), DeleteShader);
+  std::for_each(
+      fragment_shaders_.begin(), fragment_shaders_.end(), DeleteShader);
+
   for (ProgramMap::const_iterator it = programs_.begin(); it != programs_.end();
        ++it) {
     const ProgramInfo& info = it->second;
@@ -253,19 +267,30 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     return;
   }
 
-  ShaderId shader_id =
-      GetShaderId(flip_y, premultiply_alpha, unpremultiply_alpha);
-  SamplerId sampler_id = GetSamplerId(source_target);
+  VertexShaderId vertex_shader_id = GetVertexShaderId(flip_y);
+  DCHECK_LT(static_cast<size_t>(vertex_shader_id), vertex_shaders_.size());
+  GLuint* vertex_shader = &vertex_shaders_[vertex_shader_id];
+  if (!*vertex_shader) {
+    *vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    CompileShader(*vertex_shader, vertex_shader_source[vertex_shader_id]);
+  }
 
-  ProgramMapKey key(shader_id, sampler_id);
+  FragmentShaderId fragment_shader_id = GetFragmentShaderId(
+      premultiply_alpha, unpremultiply_alpha, source_target);
+  DCHECK_LT(static_cast<size_t>(fragment_shader_id), fragment_shaders_.size());
+  GLuint* fragment_shader = &fragment_shaders_[fragment_shader_id];
+  if (!*fragment_shader) {
+    *fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    CompileShader(*fragment_shader, fragment_shader_source[fragment_shader_id]);
+  }
+
+  ProgramMapKey key(vertex_shader_id, fragment_shader_id);
   ProgramInfo* info = &programs_[key];
   // Create program if necessary.
   if (!info->program) {
-    GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
-    CompileShader(shader, fragment_shader_source[shader_id][sampler_id]);
     info->program = glCreateProgram();
-    glAttachShader(info->program, vertex_shader_);
-    glAttachShader(info->program, shader);
+    glAttachShader(info->program, *vertex_shader);
+    glAttachShader(info->program, *fragment_shader);
     glBindAttribLocation(info->program, kVertexPositionAttrib, "a_position");
     glLinkProgram(info->program);
 #ifndef NDEBUG
@@ -274,10 +299,8 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     if (!linked)
       DLOG(ERROR) << "CopyTextureCHROMIUM: program link failure.";
 #endif
-    info->sampler_locations =
-        glGetUniformLocation(info->program, "u_texSampler");
     info->matrix_handle = glGetUniformLocation(info->program, "u_matrix");
-    glDeleteShader(shader);
+    info->sampler_handle = glGetUniformLocation(info->program, "u_sampler");
   }
   glUseProgram(info->program);
 
@@ -315,10 +338,9 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     glEnableVertexAttribArray(kVertexPositionAttrib);
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
-    glVertexAttribPointer(kVertexPositionAttrib, 4, GL_FLOAT, GL_FALSE,
-                          4 * sizeof(GLfloat), 0);
+    glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glUniform1i(info->sampler_locations, 0);
+    glUniform1i(info->sampler_handle, 0);
 
     glBindTexture(source_target, source_id);
     glTexParameterf(source_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -349,5 +371,4 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
   decoder->RestoreGlobalState();
 }
 
-}  // namespace
-
+}  // namespace gpu
