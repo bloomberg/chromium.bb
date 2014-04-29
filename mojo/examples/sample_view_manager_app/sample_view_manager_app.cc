@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
-#include "mojo/services/public/cpp/view_manager/view_manager.h"
-#include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 #if defined(WIN32)
 #if !defined(CDECL)
@@ -27,28 +26,43 @@
 namespace mojo {
 namespace examples {
 
-class SampleApp : public Application {
+class SampleApp : public Application,
+                  public services::view_manager::ViewManagerClient {
  public:
-  explicit SampleApp(MojoHandle shell_handle)
-      : Application(shell_handle) {
-    view_manager_.reset(new services::view_manager::ViewManager(shell()));
-    node_1_.reset(
-        new services::view_manager::ViewTreeNode(view_manager_.get()));
-    node_11_.reset(
-      new services::view_manager::ViewTreeNode(view_manager_.get()));
-    node_1_->AddChild(node_11_.get());
+  explicit SampleApp(MojoHandle shell_handle) : Application(shell_handle) {
+    InterfacePipe<services::view_manager::ViewManager, AnyInterface>
+        view_manager_pipe;
+    AllocationScope scope;
+    shell()->Connect("mojo:mojo_view_manager",
+                     view_manager_pipe.handle_to_peer.Pass());
+    view_manager_.reset(view_manager_pipe.handle_to_self.Pass(), this);
+    view_manager_->CreateNode(1, base::Bind(&SampleApp::OnCreatedView,
+                                            base::Unretained(this)));
   }
 
   virtual ~SampleApp() {
   }
 
- private:
-  // SampleApp creates a ViewManager and a trivial node hierarchy.
-  scoped_ptr<services::view_manager::ViewManager> view_manager_;
-  scoped_ptr<services::view_manager::ViewTreeNode> node_1_;
-  scoped_ptr<services::view_manager::ViewTreeNode> node_11_;
+  // ViewManagerClient::
+  virtual void OnConnectionEstablished(uint16_t connection_id) OVERRIDE {
+  }
+  virtual void OnNodeHierarchyChanged(uint32_t node,
+                                      uint32_t new_parent,
+                                      uint32_t old_parent,
+                                      uint32_t change_id) OVERRIDE {
+  }
+  virtual void OnNodeViewReplaced(uint32_t node,
+                                  uint32_t old_view_id,
+                                  uint32_t new_view_id,
+                                  uint32_t change_id) OVERRIDE {
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(SampleApp);
+ private:
+  void OnCreatedView(bool success) {
+    DCHECK(success);
+  }
+
+  RemotePtr<services::view_manager::ViewManager> view_manager_;
 };
 
 }  // namespace examples
@@ -56,7 +70,8 @@ class SampleApp : public Application {
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
-  base::MessageLoop loop;
+  mojo::Environment env;
+  mojo::RunLoop loop;
 
   mojo::examples::SampleApp app(shell_handle);
   loop.Run();

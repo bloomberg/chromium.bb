@@ -70,7 +70,7 @@ uint32_t CreateViewId(uint16_t connection_id, uint16_t view_id) {
 
 // Creates a node with the specified id. Returns true on success. Blocks until
 // we get back result from server.
-bool CreateNode(IViewManager* view_manager, uint16_t id) {
+bool CreateNode(ViewManager* view_manager, uint16_t id) {
   bool result = false;
   view_manager->CreateNode(id, base::Bind(&BooleanCallback, &result));
   DoRunLoop();
@@ -80,7 +80,7 @@ bool CreateNode(IViewManager* view_manager, uint16_t id) {
 // TODO(sky): make a macro for these functions, they are all the same.
 
 // Deletes a node, blocking until done.
-bool DeleteNode(IViewManager* view_manager,
+bool DeleteNode(ViewManager* view_manager,
                 uint32_t node_id,
                 ChangeId change_id) {
   bool result = false;
@@ -91,7 +91,7 @@ bool DeleteNode(IViewManager* view_manager,
 }
 
 // Adds a node, blocking until done.
-bool AddNode(IViewManager* view_manager,
+bool AddNode(ViewManager* view_manager,
              uint32_t parent,
              uint32_t child,
              ChangeId change_id) {
@@ -103,7 +103,7 @@ bool AddNode(IViewManager* view_manager,
 }
 
 // Removes a node, blocking until done.
-bool RemoveNodeFromParent(IViewManager* view_manager,
+bool RemoveNodeFromParent(ViewManager* view_manager,
                           uint32_t node_id,
                           ChangeId change_id) {
   bool result = false;
@@ -115,7 +115,7 @@ bool RemoveNodeFromParent(IViewManager* view_manager,
 
 // Creates a view with the specified id. Returns true on success. Blocks until
 // we get back result from server.
-bool CreateView(IViewManager* view_manager, uint16_t id) {
+bool CreateView(ViewManager* view_manager, uint16_t id) {
   bool result = false;
   view_manager->CreateView(id, base::Bind(&BooleanCallback, &result));
   DoRunLoop();
@@ -124,7 +124,7 @@ bool CreateView(IViewManager* view_manager, uint16_t id) {
 
 // Sets a view on the specified node. Returns true on success. Blocks until we
 // get back result from server.
-bool SetView(IViewManager* view_manager,
+bool SetView(ViewManager* view_manager,
              uint32_t node_id,
              uint32_t view_id,
              ChangeId change_id) {
@@ -139,7 +139,7 @@ bool SetView(IViewManager* view_manager,
 
 typedef std::vector<std::string> Changes;
 
-class ViewManagerClientImpl : public IViewManagerClient {
+class ViewManagerClientImpl : public ViewManagerClient {
  public:
   ViewManagerClientImpl() : id_(0), quit_count_(0) {}
 
@@ -164,7 +164,7 @@ class ViewManagerClientImpl : public IViewManagerClient {
   }
 
  private:
-  // IViewManagerClient overrides:
+  // ViewManagerClient overrides:
   virtual void OnConnectionEstablished(uint16_t connection_id) OVERRIDE {
     id_ = connection_id;
     if (current_run_loop)
@@ -219,7 +219,7 @@ class ViewManagerConnectionTest : public testing::Test {
 
     test_helper_.Init();
 
-    InterfacePipe<IViewManager, AnyInterface> pipe;
+    InterfacePipe<ViewManager, AnyInterface> pipe;
     test_helper_.shell()->Connect("mojo:mojo_view_manager",
                                   pipe.handle_to_peer.Pass());
     view_manager_.reset(pipe.handle_to_self.Pass(), &client_);
@@ -231,7 +231,7 @@ class ViewManagerConnectionTest : public testing::Test {
   // Creates a second connection to the viewmanager.
   void EstablishSecondConnection() {
     AllocationScope allocation_scope;
-    InterfacePipe<IViewManager, AnyInterface> pipe;
+    InterfacePipe<ViewManager, AnyInterface> pipe;
     test_helper_.shell()->Connect("mojo:mojo_view_manager",
                                   pipe.handle_to_peer.Pass());
     view_manager2_.reset(pipe.handle_to_self.Pass(), &client2_);
@@ -247,10 +247,10 @@ class ViewManagerConnectionTest : public testing::Test {
   shell::ShellTestHelper test_helper_;
 
   ViewManagerClientImpl client_;
-  RemotePtr<IViewManager> view_manager_;
+  RemotePtr<ViewManager> view_manager_;
 
   ViewManagerClientImpl client2_;
-  RemotePtr<IViewManager> view_manager2_;
+  RemotePtr<ViewManager> view_manager2_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnectionTest);
 };
