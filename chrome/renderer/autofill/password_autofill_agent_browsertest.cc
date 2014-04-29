@@ -180,6 +180,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_autofill_->OnMessageReceived(msg);
   }
 
+  void SendVisiblePasswordForms() {
+    password_autofill_->SendPasswordForms(GetMainFrame(),
+                                          true /* only_visible */);
+  }
+
   virtual void SetUp() {
     ChromeRenderViewTest::SetUp();
 
@@ -1045,6 +1050,48 @@ TEST_F(PasswordAutofillAgentTest, AcceptSuggestion) {
   EXPECT_TRUE(password_autofill_->AcceptSuggestion(
       username_element_, kBobUsername, kCarolPassword));
   CheckTextFieldsDOMState(kBobUsername, true, kCarolPassword, true);
+}
+
+// Tests that logging is off by default.
+TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_NoMessage) {
+  render_thread_->sink().ClearMessages();
+  SendVisiblePasswordForms();
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_RecordSavePasswordProgress::ID);
+  EXPECT_FALSE(message);
+}
+
+// Test that logging can be turned on by a message.
+TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Activated) {
+  // Turn the logging on.
+  AutofillMsg_ChangeLoggingState msg_activate(0, true);
+  // Up-cast to access OnMessageReceived, which is private in the agent.
+  EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_)
+                  ->OnMessageReceived(msg_activate));
+
+  render_thread_->sink().ClearMessages();
+  SendVisiblePasswordForms();
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_RecordSavePasswordProgress::ID);
+  EXPECT_TRUE(message);
+}
+
+// Test that logging can be turned off by a message.
+TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Deactivated) {
+  // Turn the logging on and then off.
+  AutofillMsg_ChangeLoggingState msg_activate(0, /*active=*/true);
+  // Up-cast to access OnMessageReceived, which is private in the agent.
+  EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_)
+                  ->OnMessageReceived(msg_activate));
+  AutofillMsg_ChangeLoggingState msg_deactivate(0, /*active=*/false);
+  EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_)
+                  ->OnMessageReceived(msg_deactivate));
+
+  render_thread_->sink().ClearMessages();
+  SendVisiblePasswordForms();
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_RecordSavePasswordProgress::ID);
+  EXPECT_FALSE(message);
 }
 
 }  // namespace autofill
