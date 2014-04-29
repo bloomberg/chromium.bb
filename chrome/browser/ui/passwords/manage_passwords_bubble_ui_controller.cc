@@ -170,8 +170,6 @@ void ManagePasswordsBubbleUIController::UpdateIconAndBubbleState(
 
   if (manage_passwords_bubble_needs_showing_) {
     DCHECK(state == ManagePasswordsIcon::PENDING_STATE);
-    // TODO(mkwst): Replace this with execution of a browser command once we
-    // can pipe a CommandUpdater down here.
     icon->ShowBubbleWithoutUserInteraction();
     manage_passwords_bubble_needs_showing_ = false;
   }

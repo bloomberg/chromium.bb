@@ -562,11 +562,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TRANSLATE_PAGE:
       Translate(browser_);
       break;
-    case IDC_MANAGE_PASSWORDS_FOR_PAGE:
-      ManagePasswordsForPage(browser_);
-      break;
-
-    // Page encoding commands
     case IDC_ENCODING_AUTO_DETECT:
       browser_->ToggleEncodingAutoDetect();
       break;
@@ -926,7 +921,6 @@ void BrowserCommandController::InitCommandState() {
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR, true);
-  command_updater_.UpdateCommandEnabled(IDC_MANAGE_PASSWORDS_FOR_PAGE, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_AUTO_DETECT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF8, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF16LE, true);

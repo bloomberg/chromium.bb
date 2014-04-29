@@ -14,5 +14,5 @@ void ManagePasswordsIconMock::ShowBubbleWithoutUserInteraction() {
   ++bubble_shown_count_;
 }
 
-void ManagePasswordsIconMock::UpdateVisibleUI() {
+void ManagePasswordsIconMock::SetStateInternal(ManagePasswordsIcon::State) {
 }
