@@ -910,9 +910,10 @@ class CLStats(StatsManager):
     good_patch_rejections = {k: len(filter(was_rejected, v))
                              for k, v in submitted_patches.items()}
     good_patch_rejection_breakdown = []
-    for x in range(max(good_patch_rejections.values()) + 1):
-      good_patch_rejection_breakdown.append(
-          (x, good_patch_rejections.values().count(x)))
+    if good_patch_rejections:
+      for x in range(max(good_patch_rejections.values()) + 1):
+        good_patch_rejection_breakdown.append(
+            (x, good_patch_rejections.values().count(x)))
 
     patch_handle_times =  [v[-1].timestamp - v[0].timestamp
                            for v in submitted_patches.values()]
