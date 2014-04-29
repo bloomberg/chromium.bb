@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "jwk.h"
+
 #include <algorithm>
 #include <functional>
 #include <map>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/platform_crypto.h"
@@ -299,18 +303,14 @@ bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
 }
 
 // Writes a secret/symmetric key to a JWK dictionary.
-void WriteSecretKey(const blink::WebArrayBuffer& raw_key,
+void WriteSecretKey(const std::vector<uint8>& raw_key,
                     base::DictionaryValue* jwk_dict) {
   DCHECK(jwk_dict);
   jwk_dict->SetString("kty", "oct");
   // For a secret/symmetric key, the only extra JWK field is 'k', containing the
   // base64url encoding of the raw key.
-  DCHECK(!raw_key.isNull());
-  DCHECK(raw_key.data());
-  DCHECK(raw_key.byteLength());
-  unsigned int key_length_bytes = raw_key.byteLength();
-  const base::StringPiece key_str(static_cast<const char*>(raw_key.data()),
-                                  key_length_bytes);
+  const base::StringPiece key_str(
+      reinterpret_cast<const char*>(Uint8VectorStart(raw_key)), raw_key.size());
   jwk_dict->SetString("k", Base64EncodeUrlSafe(key_str));
 }
 
@@ -791,14 +791,14 @@ Status ImportKeyJwk(const CryptoData& key_data,
 }
 
 Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                    blink::WebArrayBuffer* buffer) {
+                    std::vector<uint8>* buffer) {
   DCHECK(key.extractable());
   base::DictionaryValue jwk_dict;
   Status status = Status::OperationError();
 
   switch (key.type()) {
     case blink::WebCryptoKeyTypeSecret: {
-      blink::WebArrayBuffer exported_key;
+      std::vector<uint8> exported_key;
       status = ExportKey(blink::WebCryptoKeyFormatRaw, key, &exported_key);
       if (status.IsError())
         return status;
@@ -835,8 +835,7 @@ Status ExportKeyJwk(const blink::WebCryptoKey& key,
 
   std::string json;
   base::JSONWriter::Write(&jwk_dict, &json);
-  *buffer = CreateArrayBuffer(reinterpret_cast<const uint8*>(json.data()),
-                              json.size());
+  buffer->assign(json.data(), json.data() + json.size());
   return Status::Success();
 }
 

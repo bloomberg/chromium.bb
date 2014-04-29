@@ -22,25 +22,10 @@ const uint8* Uint8VectorStart(const std::vector<uint8>& data) {
   return &data[0];
 }
 
-void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned int new_size) {
-  DCHECK_LE(new_size, buffer->byteLength());
-
-  if (new_size == buffer->byteLength())
-    return;
-
-  blink::WebArrayBuffer new_buffer = blink::WebArrayBuffer::create(new_size, 1);
-  DCHECK(!new_buffer.isNull());
-  memcpy(new_buffer.data(), buffer->data(), new_size);
-  *buffer = new_buffer;
-}
-
-blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
-                                        unsigned int data_size) {
-  blink::WebArrayBuffer buffer = blink::WebArrayBuffer::create(data_size, 1);
-  DCHECK(!buffer.isNull());
-  if (data_size)  // data_size == 0 might mean the data pointer is invalid
-    memcpy(buffer.data(), data, data_size);
-  return buffer;
+uint8* Uint8VectorStart(std::vector<uint8>* data) {
+  if (data->empty())
+    return NULL;
+  return &(*data)[0];
 }
 
 // This function decodes unpadded 'base64url' encoded data, as described in

@@ -5,6 +5,9 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_JWK_H_
 #define CONTENT_CHILD_WEBCRYPTO_JWK_H_
 
+#include <vector>
+
+#include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -22,8 +25,7 @@ Status ImportKeyJwk(const CryptoData& key_data,
                     blink::WebCryptoKeyUsageMask usage_mask,
                     blink::WebCryptoKey* key);
 
-Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                    blink::WebArrayBuffer* buffer);
+Status ExportKeyJwk(const blink::WebCryptoKey& key, std::vector<uint8>* buffer);
 
 }  // namespace webcrypto
 

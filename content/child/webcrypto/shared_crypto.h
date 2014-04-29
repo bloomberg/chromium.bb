@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_SHARED_CRYPTO_H_
 #define CONTENT_CHILD_WEBCRYPTO_SHARED_CRYPTO_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -37,7 +39,9 @@ CONTENT_EXPORT void Init();
 //                |
 //                v
 //          WebCryptoImpl     (Implements the blink::WebCrypto interface for
-//                |            asynchronous completions)
+//                |            asynchronous completions; posts tasks to
+//                |            the webcrypto worker pool to fulfill the request
+//                             using the synchronous methods of shared_crypto.h)
 //                |
 //                |      [shared_crypto_unittest.cc]
 //                |           /
@@ -67,7 +71,7 @@ CONTENT_EXPORT void Init();
 //  * Inferring default parameters when not specified
 //  * Validating key exportability
 //  * Validating algorithm with key.algorithm
-//  * Converting the blink key to a more specific platform::{PublicKey,
+//  * Converting the Blink key to a more specific platform::{PublicKey,
 //    PrivateKey, SymKey} and making sure it was the right type.
 //  * Validating alogorithm specific parameters (for instance, was the iv for
 //    AES-CBC 16 bytes).
@@ -76,16 +80,16 @@ CONTENT_EXPORT void Init();
 CONTENT_EXPORT Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                               const blink::WebCryptoKey& key,
                               const CryptoData& data,
-                              blink::WebArrayBuffer* buffer);
+                              std::vector<uint8>* buffer);
 
 CONTENT_EXPORT Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                               const blink::WebCryptoKey& key,
                               const CryptoData& data,
-                              blink::WebArrayBuffer* buffer);
+                              std::vector<uint8>* buffer);
 
 CONTENT_EXPORT Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                              const CryptoData& data,
-                             blink::WebArrayBuffer* buffer);
+                             std::vector<uint8>* buffer);
 
 CONTENT_EXPORT scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm);
@@ -112,12 +116,12 @@ CONTENT_EXPORT Status ImportKey(blink::WebCryptoKeyFormat format,
 
 CONTENT_EXPORT Status ExportKey(blink::WebCryptoKeyFormat format,
                                 const blink::WebCryptoKey& key,
-                                blink::WebArrayBuffer* buffer);
+                                std::vector<uint8>* buffer);
 
 CONTENT_EXPORT Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                            const blink::WebCryptoKey& key,
                            const CryptoData& data,
-                           blink::WebArrayBuffer* buffer);
+                           std::vector<uint8>* buffer);
 
 CONTENT_EXPORT Status
     VerifySignature(const blink::WebCryptoAlgorithm& algorithm,
@@ -131,7 +135,7 @@ CONTENT_EXPORT Status
             const blink::WebCryptoKey& wrapping_key,
             const blink::WebCryptoKey& key_to_wrap,
             const blink::WebCryptoAlgorithm& wrapping_algorithm,
-            blink::WebArrayBuffer* buffer);
+            std::vector<uint8>* buffer);
 
 CONTENT_EXPORT Status
     UnwrapKey(blink::WebCryptoKeyFormat format,
@@ -143,17 +147,18 @@ CONTENT_EXPORT Status
               blink::WebCryptoKeyUsageMask usage_mask,
               blink::WebCryptoKey* key);
 
-CONTENT_EXPORT Status
-    SerializeKeyForClone(const blink::WebCryptoKey& key,
-                         blink::WebVector<unsigned char>* data);
+// Called on the target Blink thread.
+CONTENT_EXPORT bool SerializeKeyForClone(const blink::WebCryptoKey& key,
+                                         blink::WebVector<uint8>* key_data);
 
-CONTENT_EXPORT Status
-    DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
-                           blink::WebCryptoKeyType type,
-                           bool extractable,
-                           blink::WebCryptoKeyUsageMask usage_mask,
-                           const CryptoData& key_data,
-                           blink::WebCryptoKey* key);
+// Called on the target Blink thread.
+CONTENT_EXPORT bool DeserializeKeyForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm,
+    blink::WebCryptoKeyType type,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    const CryptoData& key_data,
+    blink::WebCryptoKey* key);
 
 }  // namespace webcrypto
 
