@@ -5002,6 +5002,91 @@ RenderBlockFlow* RenderBlock::createAnonymousColumnSpanWithParentRenderer(const 
     return newBox;
 }
 
+static bool recalcNormalFlowChildOverflowIfNeeded(RenderObject* renderer)
+{
+    if (renderer->isOutOfFlowPositioned() || !renderer->needsOverflowRecalcAfterStyleChange())
+        return false;
+
+    ASSERT(renderer->isRenderBlock());
+    return toRenderBlock(renderer)->recalcOverflowAfterStyleChange();
+}
+
+bool RenderBlock::recalcChildOverflowAfterStyleChange()
+{
+    ASSERT(childNeedsOverflowRecalcAfterStyleChange());
+    setChildNeedsOverflowRecalcAfterStyleChange(false);
+
+    bool childrenOverflowChanged = false;
+
+    if (childrenInline()) {
+        ListHashSet<RootInlineBox*> lineBoxes;
+        for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+            RenderObject* renderer = walker.current();
+            if (recalcNormalFlowChildOverflowIfNeeded(renderer)) {
+                childrenOverflowChanged = true;
+                if (InlineBox* inlineBoxWrapper = toRenderBlock(renderer)->inlineBoxWrapper())
+                    lineBoxes.add(&inlineBoxWrapper->root());
+            }
+        }
+
+        // FIXME: Glyph overflow will get lost in this case, but not really a big deal.
+        GlyphOverflowAndFallbackFontsMap textBoxDataMap;
+        for (ListHashSet<RootInlineBox*>::const_iterator it = lineBoxes.begin(); it != lineBoxes.end(); ++it) {
+            RootInlineBox* box = *it;
+            box->computeOverflow(box->lineTop(), box->lineBottom(), textBoxDataMap);
+        }
+    } else {
+        for (RenderBox* box = firstChildBox(); box; box = box->nextSiblingBox()) {
+            if (recalcNormalFlowChildOverflowIfNeeded(box))
+                childrenOverflowChanged = true;
+        }
+    }
+
+    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    if (!positionedDescendants)
+        return childrenOverflowChanged;
+
+    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
+    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
+        RenderBox* box = *it;
+
+        if (!box->needsOverflowRecalcAfterStyleChange())
+            continue;
+        RenderBlock* block = toRenderBlock(box);
+        if (!block->recalcOverflowAfterStyleChange() || box->style()->position() == FixedPosition)
+            continue;
+
+        childrenOverflowChanged = true;
+    }
+    return childrenOverflowChanged;
+}
+
+bool RenderBlock::recalcOverflowAfterStyleChange()
+{
+    ASSERT(needsOverflowRecalcAfterStyleChange());
+
+    bool childrenOverflowChanged = false;
+    if (childNeedsOverflowRecalcAfterStyleChange())
+        childrenOverflowChanged = recalcChildOverflowAfterStyleChange();
+
+    if (!selfNeedsOverflowRecalcAfterStyleChange() && !childrenOverflowChanged)
+        return false;
+
+    setSelfNeedsOverflowRecalcAfterStyleChange(false);
+    // If the current block needs layout, overflow will be recalculated during
+    // layout time anyway. We can safely exit here.
+    if (needsLayout())
+        return false;
+
+    LayoutUnit oldClientAfterEdge = hasRenderOverflow() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
+    computeOverflow(oldClientAfterEdge, true);
+
+    if (hasOverflowClip())
+        layer()->scrollableArea()->updateAfterOverflowRecalc();
+
+    return !hasOverflowClip();
+}
+
 #ifndef NDEBUG
 void RenderBlock::checkPositionedObjectsNeedLayout()
 {

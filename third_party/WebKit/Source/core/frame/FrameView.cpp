@@ -616,6 +616,19 @@ void FrameView::updateAcceleratedCompositingSettings()
         renderView->compositor()->updateAcceleratedCompositingSettings();
 }
 
+void FrameView::recalcOverflowAfterStyleChange()
+{
+    RenderView* renderView = this->renderView();
+    ASSERT(renderView);
+    if (!renderView->needsOverflowRecalcAfterStyleChange())
+        return;
+
+    renderView->recalcOverflowAfterStyleChange();
+
+    // FIXME: We should adjust frame scrollbar here, but that will make many
+    // tests flake in debug build.
+}
+
 void FrameView::updateCompositingLayersAfterStyleChange()
 {
     RenderView* renderView = this->renderView();

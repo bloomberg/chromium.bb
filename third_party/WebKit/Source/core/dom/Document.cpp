@@ -1889,6 +1889,7 @@ void Document::updateStyle(StyleRecalcChange change)
 
     ensureStyleResolver().printStats();
 
+    view()->recalcOverflowAfterStyleChange();
     view()->updateCompositingLayersAfterStyleChange();
 
     clearChildNeedsStyleRecalc();

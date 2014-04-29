@@ -105,7 +105,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
                 layer()->clipper().clearClipRectsIncludingDescendants();
         }
 
-        if (diff.needsFullLayout() || diff.needsSimplifiedLayout()) {
+        if (diff.needsFullLayout()) {
             // When a layout hint happens, we go ahead and do a repaint of the layer, since the layer could
             // end up being destroyed.
             if (hasLayer()) {

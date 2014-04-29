@@ -54,16 +54,6 @@ public:
         m_repaintType = NoRepaint;
     }
 
-    // Only overflow needs to be recomputed.
-    bool needsSimplifiedLayout() const { return m_layoutType & SimplifiedLayout; }
-    void setNeedsSimplifiedLayout()
-    {
-        if (!needsFullLayout())
-            m_layoutType |= SimplifiedLayout;
-        // FIXME: This is temporary to keep the StyleDifferenceLegacy behavior.
-        m_repaintType = NoRepaint;
-    }
-
     bool needsFullLayout() const { return m_layoutType == FullLayout; }
     void setNeedsFullLayout()
     {
@@ -85,10 +75,9 @@ private:
     enum LayoutType {
         NoLayout = 0,
         PositionedMovement = 1 << 0,
-        SimplifiedLayout = 1 << 1,
-        FullLayout = 1 << 2
+        FullLayout = 1 << 1
     };
-    unsigned m_layoutType : 3;
+    unsigned m_layoutType : 2;
 };
 
 } // namespace WebCore

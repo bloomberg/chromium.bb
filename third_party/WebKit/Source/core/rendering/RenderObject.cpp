@@ -1862,24 +1862,18 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
 {
     // FIXME: The calls to hasDirectReasonsForCompositing are using state that may not be up to date.
     DisableCompositingQueryAsserts disabler;
-    // If transform changed, and the layer does not paint into its own separate backing, then we need to do a layout.
-    // FIXME: The comment above is what the code does, but it is technically not following spec. This means we will
-    // not to layout for 3d transforms, but we should be invoking a simplified relayout. Is it possible we are avoiding
-    // doing this for some performance reason at this time?
-    if (contextSensitiveProperties & ContextSensitivePropertyTransform) {
+
+    if (contextSensitiveProperties & ContextSensitivePropertyTransform && isSVG())
+        diff.setNeedsFullLayout();
+
+    // If transform changed, and the layer does not paint into its own separate backing, then we need to repaint.
+    if (contextSensitiveProperties & ContextSensitivePropertyTransform  && !diff.needsLayout()) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
-        // FIXME: when transforms are taken into account for overflow, we will need to do a layout.
-        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing())) {
-            // We need to set at least SimplifiedLayout, but if PositionedMovementOnly is already set
-            // then we actually need SimplifiedLayoutAndPositionedMovement.
-            if (!hasLayer())
-                diff.setNeedsFullLayout(); // FIXME: Do this for now since SimplifiedLayout cannot handle updating floating objects lists.
-            else
-                diff.setNeedsSimplifiedLayout();
-        } else {
+        if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
+            diff.setNeedsRepaintLayer();
+        else
             diff.setNeedsRecompositeLayer();
-        }
     }
 
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to repaint (also
@@ -1958,6 +1952,20 @@ inline bool RenderObject::hasImmediateNonWhitespaceTextChildOrPropertiesDependen
     return false;
 }
 
+void RenderObject::markContainingBlocksForOverflowRecalc()
+{
+    for (RenderBlock* container = containingBlock(); container && !container->childNeedsOverflowRecalcAfterStyleChange(); container = container->containingBlock())
+        container->setChildNeedsOverflowRecalcAfterStyleChange(true);
+}
+
+void RenderObject::setNeedsOverflowRecalcAfterStyleChange()
+{
+    bool neededRecalc = needsOverflowRecalcAfterStyleChange();
+    setSelfNeedsOverflowRecalcAfterStyleChange(true);
+    if (!neededRecalc)
+        markContainingBlocksForOverflowRecalc();
+}
+
 void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 {
     ASSERT(style);
@@ -2005,14 +2013,17 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     StyleDifference updatedDiff = adjustStyleDifference(diff, contextSensitiveProperties);
 
     if (!diff.needsFullLayout()) {
-        if (updatedDiff.needsFullLayout()) {
+        if (updatedDiff.needsFullLayout())
             setNeedsLayoutAndPrefWidthsRecalc();
-        } else {
-            if (updatedDiff.needsPositionedMovementLayout())
-                setNeedsPositionedMovementLayout();
-            if (updatedDiff.needsSimplifiedLayout())
-                setNeedsSimplifiedNormalFlowLayout();
-        }
+        else if (updatedDiff.needsPositionedMovementLayout())
+            setNeedsPositionedMovementLayout();
+    }
+
+    if (contextSensitiveProperties & ContextSensitivePropertyTransform && !needsLayout()) {
+        if (RenderBlock* container = containingBlock())
+            container->setNeedsOverflowRecalcAfterStyleChange();
+        if (isBox())
+            toRenderBox(this)->updateLayerTransform();
     }
 
     if (updatedDiff.needsRepaint()) {
@@ -2146,7 +2157,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     if (!m_parent)
         return;
 
-    if (diff.needsFullLayout() || diff.needsSimplifiedLayout()) {
+    if (diff.needsFullLayout()) {
         RenderCounter::rendererStyleChanged(*this, oldStyle, m_style.get());
 
         // If the object already needs layout, then setNeedsLayout won't do
@@ -2157,12 +2168,13 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         if (needsLayout() && oldStyle->position() != m_style->position())
             markContainingBlocksForLayout();
 
+        // Ditto.
+        if (needsOverflowRecalcAfterStyleChange() && oldStyle->position() != m_style->position())
+            markContainingBlocksForOverflowRecalc();
+
         if (diff.needsFullLayout())
             setNeedsLayoutAndPrefWidthsRecalc();
-        else
-            setNeedsSimplifiedNormalFlowLayout();
-    }
-    if (diff.needsPositionedMovementLayout())
+    } else if (diff.needsPositionedMovementLayout())
         setNeedsPositionedMovementLayout();
 
     // Don't check for repaint here; we need to wait until the layer has been
