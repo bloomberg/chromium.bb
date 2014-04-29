@@ -123,38 +123,3 @@ class SmoothnessPolymer(test.Test):
   """
   test = smoothness.Smoothness
   page_set = 'page_sets/polymer.py'
-
-
-class SmoothnessFastPathPolymer(test.Test):
-  """Measures rendering statistics for the Polymer cases without GPU
-  rasterization using bleeding edge rendering fast paths.
-  """
-  tag = 'fast_path'
-  test = smoothness.Smoothness
-  page_set = 'page_sets/polymer.py'
-  def CustomizeBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForFastPath(options)
-
-
-class SmoothnessGpuRasterizationPolymer(test.Test):
-  """Measures rendering statistics for the Polymer cases with GPU rasterization
-  """
-  tag = 'gpu_rasterization'
-  test = smoothness.Smoothness
-  page_set = 'page_sets/polymer.py'
-  def CustomizeBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
-
-
-class SmoothnessFastPathGpuRasterizationPolymer(
-    SmoothnessGpuRasterizationPolymer):
-  """Measures rendering statistics for the Polymer cases with GPU rasterization
-  using bleeding edge rendering fast paths.
-  """
-  tag = 'fast_path_gpu_rasterization'
-  test = smoothness.Smoothness
-  page_set = 'page_sets/polymer.py'
-  def CustomizeBrowserOptions(self, options):
-    super(SmoothnessFastPathGpuRasterizationPolymer, self). \
-        CustomizeBrowserOptions(options)
-    silk_flags.CustomizeBrowserOptionsForFastPath(options)

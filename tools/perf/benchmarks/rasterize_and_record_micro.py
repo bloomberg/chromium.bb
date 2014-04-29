@@ -63,12 +63,3 @@ class RasterizeAndRecordMicroFastPathGpuRasterizationKeySilkCases(test.Test):
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
-
-
-@test.Disabled('mac', 'win')
-class RasterizeAndRecordMicroPolymer(test.Test):
-  """Measures rasterize and record performance on the Polymer cases.
-
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  test = rasterize_and_record_micro.RasterizeAndRecordMicro
-  page_set = 'page_sets/polymer.py'
