@@ -41,12 +41,11 @@ class RobohornetPro(test.Test):
   test = _RobohornetProMeasurement
 
   def CreatePageSet(self, options):
-    return page_set.PageSet.FromDict({
-        'archive_data_file': '../page_sets/data/robohornet_pro.json',
-        # Measurement require use of real Date.now() for measurement.
-        'make_javascript_deterministic': False,
-        'pages': [
-          { 'url':
-            'http://ie.microsoft.com/testdrive/performance/robohornetpro/' }
-          ]
-        }, os.path.abspath(__file__))
+    ps = page_set.PageSet(
+      archive_data_file='../page_sets/data/robohornet_pro.json',
+      # Measurement require use of real Date.now() for measurement.
+      make_javascript_deterministic=False,
+      file_path=os.path.abspath(__file__))
+    ps.AddPageWithDefaultRunNavigate(
+      'http://ie.microsoft.com/testdrive/performance/robohornetpro/')
+    return ps

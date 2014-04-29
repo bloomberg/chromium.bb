@@ -73,6 +73,6 @@ class Spaceport(test.Test):
   def CreatePageSet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')
-    return page_set.PageSet.FromDict(
-        {'pages': [{'url': 'file://index.html'}]},
-        spaceport_dir)
+    ps = page_set.PageSet(file_path=spaceport_dir)
+    ps.AddPageWithDefaultRunNavigate('file://index.html')
+    return ps

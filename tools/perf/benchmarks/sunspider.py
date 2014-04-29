@@ -56,9 +56,9 @@ class Sunspider(test.Test):
   test = _SunspiderMeasurement
 
   def CreatePageSet(self, options):
-    return page_set.PageSet.FromDict(
-        {
-          'archive_data_file': '../page_sets/data/sunspider.json',
-          'make_javascript_deterministic': False,
-          'pages': [{ 'url': _URL }],
-        }, os.path.abspath(__file__))
+    ps = page_set.PageSet(
+      archive_data_file='../page_sets/data/sunspider.json',
+      make_javascript_deterministic=False,
+      file_path=os.path.abspath(__file__))
+    ps.AddPageWithDefaultRunNavigate(_URL)
+    return ps

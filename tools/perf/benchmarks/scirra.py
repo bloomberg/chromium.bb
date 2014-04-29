@@ -54,13 +54,15 @@ class ScirraBenchmark(test.Test):
   """WebGL and Canvas2D rendering benchmark suite."""
   test = _ScirraMeasurement
   def CreatePageSet(self, options):
-    return page_set.PageSet.FromDict({
-        'archive_data_file': '../page_sets/data/scirra.json',
-        'make_javascript_deterministic': False,
-        'pages': [
-            { 'url': 'http://www.scirra.com/labs/renderperf3/'},
-            { 'url': 'http://www.scirra.com/demos/c2/renderperfgl/'},
-            { 'url': 'http://www.scirra.com/demos/c2/renderperf2d/'}
-          ]
-        }, os.path.abspath(__file__))
+    ps = page_set.PageSet(
+        archive_data_file='../page_sets/data/scirra.json',
+        make_javascript_deterministic=False,
+        file_path=os.path.abspath(__file__))
+    for url in ('http://www.scirra.com/labs/renderperf3/',
+                'http://www.scirra.com/demos/c2/renderperfgl/',
+                'http://www.scirra.com/demos/c2/renderperf2d/'):
+      ps.AddPageWithDefaultRunNavigate(url)
+    return ps
+
+
 
