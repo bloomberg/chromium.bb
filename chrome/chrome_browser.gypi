@@ -3466,6 +3466,8 @@
           'sources' : [
             'browser/local_discovery/privet_traffic_detector.cc',
             'browser/local_discovery/privet_traffic_detector.h',
+            'browser/local_discovery/service_discovery_client_mdns.cc',
+            'browser/local_discovery/service_discovery_client_mdns.h',
             'browser/local_discovery/service_discovery_client_utility.cc',
             'browser/local_discovery/service_discovery_client_utility.h',
             'browser/local_discovery/service_discovery_host_client.cc',
