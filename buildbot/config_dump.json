@@ -30026,7 +30026,7 @@
                 "hw_tests": [
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+                    "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
                 "hwqual": true,
                 "images": [
@@ -30117,7 +30117,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
         "hwqual": true,
         "images": [
