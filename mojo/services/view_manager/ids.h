@@ -11,6 +11,8 @@ namespace mojo {
 namespace services {
 namespace view_manager {
 
+typedef uint32_t ChangeId;
+
 // Adds a bit of type safety to node ids.
 struct MOJO_VIEW_MANAGER_EXPORT NodeId {
   NodeId(uint16_t connection_id, uint16_t node_id)

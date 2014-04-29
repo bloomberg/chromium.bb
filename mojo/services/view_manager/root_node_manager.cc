@@ -19,7 +19,7 @@ const uint16_t kRootId = 1;
 
 RootNodeManager::ScopedChange::ScopedChange(ViewManagerConnection* connection,
                                             RootNodeManager* root,
-                                            int32_t change_id)
+                                            ChangeId change_id)
     : root_(root) {
   root_->PrepareForChange(connection, change_id);
 }
@@ -73,7 +73,7 @@ void RootNodeManager::NotifyNodeHierarchyChanged(const NodeId& node,
                                                  const NodeId& old_parent) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    const int32_t change_id = (change_ && i->first == change_->connection_id) ?
+    const ChangeId change_id = (change_ && i->first == change_->connection_id) ?
         change_->change_id : 0;
     i->second->NotifyNodeHierarchyChanged(
         node, new_parent, old_parent, change_id);
@@ -86,7 +86,7 @@ void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    const int32_t change_id = (change_ && i->first == change_->connection_id) ?
+    const ChangeId change_id = (change_ && i->first == change_->connection_id) ?
         change_->change_id : 0;
     i->second->NotifyNodeViewReplaced(node, new_view_id, old_view_id,
                                       change_id);
@@ -94,7 +94,7 @@ void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
 }
 
 void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
-                                       int32_t change_id) {
+                                       ChangeId change_id) {
   DCHECK(!change_.get());  // Should only ever have one change in flight.
   change_.reset(new Change(connection->id(), change_id));
 }

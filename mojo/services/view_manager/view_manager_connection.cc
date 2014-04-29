@@ -66,7 +66,7 @@ void ViewManagerConnection::NotifyNodeHierarchyChanged(
     const NodeId& node,
     const NodeId& new_parent,
     const NodeId& old_parent,
-    int32_t change_id) {
+    ChangeId change_id) {
   client()->OnNodeHierarchyChanged(NodeIdToTransportId(node),
                                    NodeIdToTransportId(new_parent),
                                    NodeIdToTransportId(old_parent),
@@ -76,7 +76,7 @@ void ViewManagerConnection::NotifyNodeHierarchyChanged(
 void ViewManagerConnection::NotifyNodeViewReplaced(const NodeId& node,
                                                    const ViewId& new_view_id,
                                                    const ViewId& old_view_id,
-                                                   int32_t change_id) {
+                                                   ChangeId change_id) {
   client()->OnNodeViewReplaced(NodeIdToTransportId(node),
                                ViewIdToTransportId(new_view_id),
                                ViewIdToTransportId(old_view_id),
@@ -85,7 +85,7 @@ void ViewManagerConnection::NotifyNodeViewReplaced(const NodeId& node,
 
 bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
                                            const NodeId& node_id,
-                                           int32_t change_id) {
+                                           ChangeId change_id) {
   DCHECK_EQ(node_id.connection_id, id_);
   Node* node = GetNode(node_id);
   if (!node)
@@ -104,7 +104,7 @@ bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
 
 bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
                                            const ViewId& view_id,
-                                           int32_t change_id) {
+                                           ChangeId change_id) {
   DCHECK_EQ(view_id.connection_id, id_);
   View* view = GetView(view_id);
   if (!view)
@@ -119,7 +119,7 @@ bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
 
 bool ViewManagerConnection::SetViewImpl(const NodeId& node_id,
                                         const ViewId& view_id,
-                                        int32_t change_id) {
+                                        ChangeId change_id) {
   Node* node = GetNode(node_id);
   if (!node)
     return false;
@@ -145,7 +145,7 @@ void ViewManagerConnection::CreateNode(
 
 void ViewManagerConnection::DeleteNode(
     uint32_t transport_node_id,
-    int32_t change_id,
+    ChangeId change_id,
     const mojo::Callback<void(bool)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
   ViewManagerConnection* connection = context()->GetConnection(
@@ -157,7 +157,7 @@ void ViewManagerConnection::DeleteNode(
 void ViewManagerConnection::AddNode(
     uint32_t parent_id,
     uint32_t child_id,
-    int32_t change_id,
+    ChangeId change_id,
     const Callback<void(bool)>& callback) {
   Node* parent = GetNode(NodeIdFromTransportId(parent_id));
   Node* child = GetNode(NodeIdFromTransportId(child_id));
@@ -171,7 +171,7 @@ void ViewManagerConnection::AddNode(
 
 void ViewManagerConnection::RemoveNodeFromParent(
       uint32_t node_id,
-      int32_t change_id,
+      ChangeId change_id,
       const Callback<void(bool)>& callback) {
   Node* node = GetNode(NodeIdFromTransportId(node_id));
   const bool success = (node && node->GetParent());
@@ -195,7 +195,7 @@ void ViewManagerConnection::CreateView(
 
 void ViewManagerConnection::DeleteView(
     uint32_t transport_view_id,
-    int32_t change_id,
+    ChangeId change_id,
     const mojo::Callback<void(bool)>& callback) {
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
   ViewManagerConnection* connection = context()->GetConnection(
@@ -207,7 +207,7 @@ void ViewManagerConnection::DeleteView(
 void ViewManagerConnection::SetView(
     uint32_t transport_node_id,
     uint32_t transport_view_id,
-    int32_t change_id,
+    ChangeId change_id,
     const mojo::Callback<void(bool)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
   callback.Run(SetViewImpl(node_id, ViewIdFromTransportId(transport_view_id),

@@ -32,7 +32,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
    public:
     ScopedChange(ViewManagerConnection* connection,
                  RootNodeManager* root,
-                 int32_t change_id);
+                 ChangeId change_id);
     ~ScopedChange();
 
    private:
@@ -71,13 +71,13 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
  private:
   // Tracks a change.
   struct Change {
-    Change(int32_t connection_id, int32_t change_id)
+    Change(int32_t connection_id, ChangeId change_id)
         : connection_id(connection_id),
           change_id(change_id) {
     }
 
     int32_t connection_id;
-    int32_t change_id;
+    ChangeId change_id;
   };
 
   typedef std::map<uint16_t, ViewManagerConnection*> ConnectionMap;
@@ -88,7 +88,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   // Changes should never nest, meaning each PrepareForChange() must be
   // balanced with a call to FinishChange() with no PrepareForChange()
   // in between.
-  void PrepareForChange(ViewManagerConnection* connection, int32_t change_id);
+  void PrepareForChange(ViewManagerConnection* connection, ChangeId change_id);
 
   // Balances a call to PrepareForChange().
   void FinishChange();
