@@ -164,17 +164,14 @@ void WebDragData::addItem(const Item& item)
 WebString WebDragData::filesystemId() const
 {
     ASSERT(!isNull());
-    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(m_private.get());
-    if (filesystem)
-        return filesystem->filesystemId();
-    return WebString();
+    return m_private.get()->filesystemId();
 }
 
 void WebDragData::setFilesystemId(const WebString& filesystemId)
 {
     // The ID is an opaque string, given by and validated by chromium port.
     ensureMutable();
-    DraggedIsolatedFileSystem::provideTo(*m_private.get(), DraggedIsolatedFileSystem::supplementName(), DraggedIsolatedFileSystem::create(filesystemId));
+    DraggedIsolatedFileSystem::provideTo(*m_private.get(), DraggedIsolatedFileSystem::supplementName(), DraggedIsolatedFileSystem::create(*m_private.get(), filesystemId));
 }
 
 } // namespace blink

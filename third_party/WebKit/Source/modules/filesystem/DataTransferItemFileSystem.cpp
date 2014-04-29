@@ -60,14 +60,11 @@ PassRefPtrWillBeRawPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(Execu
         return nullptr;
     ASSERT(file->isFile());
 
-    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(item.clipboard()->dataObject().get());
-    DOMFileSystem* domFileSystem = filesystem ? filesystem->getDOMFileSystem(executionContext) : 0;
-    if (!filesystem) {
+    DOMFileSystem* domFileSystem = DraggedIsolatedFileSystem::getDOMFileSystem(item.clipboard()->dataObject().get(), executionContext);
+    if (!domFileSystem) {
         // IsolatedFileSystem may not be enabled.
         return nullptr;
     }
-
-    ASSERT(domFileSystem);
 
     // The dropped entries are mapped as top-level entries in the isolated filesystem.
     String virtualPath = DOMFilePath::append("/", toFile(file)->name());

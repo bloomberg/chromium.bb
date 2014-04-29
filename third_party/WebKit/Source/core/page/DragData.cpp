@@ -33,7 +33,6 @@
 #include "core/dom/Range.h"
 #include "core/editing/markup.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/FileMetadata.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/weborigin/KURL.h"
@@ -163,10 +162,7 @@ PassRefPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame, PassRefPtrW
 
 String DragData::droppedFileSystemId() const
 {
-    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(m_platformDragData);
-    if (!filesystem)
-        return String();
-    return filesystem->filesystemId();
+    return m_platformDragData->filesystemId();
 }
 
 } // namespace WebCore

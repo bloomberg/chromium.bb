@@ -9,6 +9,5 @@ include_rules = [
 
 # core/ should not depend on modules/ at all, but there are a number of pieces
 # of code that do. Please don't add to this list of exceptions.
-    "!modules/filesystem/DraggedIsolatedFileSystem.h",
     "!modules/webaudio/MediaElementAudioSourceNode.h",
 ]

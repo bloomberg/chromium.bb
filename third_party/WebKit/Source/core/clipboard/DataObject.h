@@ -87,6 +87,10 @@ public:
     Vector<String> filenames() const;
     void addFilename(const String& filename, const String& displayName);
 
+    // Used for dragging in filesystem from the desktop.
+    void setFilesystemId(const String& fileSystemId) { m_filesystemId = fileSystemId; }
+    const String& filesystemId() const { ASSERT(!m_filesystemId.isEmpty()); return m_filesystemId; }
+
     // Used to handle files (images) being dragged out.
     void addSharedBuffer(const String& name, PassRefPtr<SharedBuffer>);
 
@@ -107,6 +111,7 @@ private:
 
     // State of Shift/Ctrl/Alt/Meta keys.
     int m_modifierKeyState;
+    String m_filesystemId;
 };
 
 } // namespace WebCore
