@@ -1742,6 +1742,9 @@ common_surface_resize(struct wl_resource *resource,
 	if (shsurf->state.fullscreen)
 		return;
 
+	if (shsurf->grabbed)
+		return;
+
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
 	    seat->pointer->focus == NULL)
