@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Change inspected iframe's "src" attribute.</title>
+<title>Test search in sources.</title>
 <script src="../inspector-test.js"></script>
 <script src="../isolated-filesystem-test.js"></script>
 <script src="../workspace-test.js"></script>
@@ -153,6 +153,13 @@ function test()
         function testSeveralQueriesFileJS_SEARCH_HTML(next)
         {
             var query = "file:js " + "search" + " " + "Test" + "Unique" + " file:search file:html";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testFileSEARCH_NOT_JS_NOT_CSS(next)
+        {
+            var query = "searchTest" + "UniqueString" + " file:search -file:js -file:css";
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, next);
         },
