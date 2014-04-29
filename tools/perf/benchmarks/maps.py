@@ -11,7 +11,10 @@ import re
 from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
-from telemetry.page import page_set
+from telemetry.page import page as page_module
+from telemetry.page import page_set as page_set_module
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
 
 
 class _MapsMeasurement(page_measurement.PageMeasurement):
@@ -24,6 +27,18 @@ class _MapsMeasurement(page_measurement.PageMeasurement):
     results.Add('total_time', 'ms', total)
     results.Add('render_mean_time', 'ms', render)
 
+class MapsPage(page_module.Page):
+  def __init__(self, page_set, base_dir):
+    super(MapsPage, self).__init__(
+      url='http://localhost:10020/tracker.html',
+      page_set=page_set,
+      base_dir=base_dir)
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.Run(NavigateAction())
+    action_runner.Run(WaitAction({'javascript': 'window.testDone'}))
+
+
 @test.Disabled
 class MapsBenchmark(test.Test):
   """Basic Google Maps benchmarks."""
@@ -32,21 +47,12 @@ class MapsBenchmark(test.Test):
   def CreatePageSet(self, options):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets')
-    page_set_dict = {
-      'archive_data_file': 'data/maps.json',
-      'make_javascript_deterministic': False,
-      'pages': [
-        {
-          'url': 'http://localhost:10020/tracker.html',
-          'navigate_steps' : [
-            { 'action': 'navigate' },
-            { 'action': 'wait', 'javascript': 'window.testDone' }
-          ]
-        }
-      ]
-    }
-
-    return page_set.PageSet.FromDict(page_set_dict, page_set_path)
+    ps = page_set_module.PageSet(
+      archive_data_file='data/maps.json',
+      make_javascript_deterministic=False,
+      file_path=page_set_path)
+    ps.AddPage(MapsPage(ps, ps.base_dir))
+    return ps
 
 class MapsNoVsync(MapsBenchmark):
   """Runs the Google Maps benchmark with Vsync disabled"""
