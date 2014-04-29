@@ -173,7 +173,8 @@ bool WebRtcAudioCapturer::Initialize() {
 
   // Verify that the reported input channel configuration is supported.
   if (channel_layout != media::CHANNEL_LAYOUT_MONO &&
-      channel_layout != media::CHANNEL_LAYOUT_STEREO) {
+      channel_layout != media::CHANNEL_LAYOUT_STEREO &&
+      channel_layout != media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
     DLOG(ERROR) << channel_layout
                 << " is not a supported input channel configuration.";
     return false;

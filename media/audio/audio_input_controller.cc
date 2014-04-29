@@ -11,7 +11,7 @@
 #include "media/base/user_input_monitor.h"
 
 namespace {
-const int kMaxInputChannels = 2;
+const int kMaxInputChannels = 3;
 
 // TODO(henrika): remove usage of timers and add support for proper
 // notification of when the input device is removed.  This was originally added

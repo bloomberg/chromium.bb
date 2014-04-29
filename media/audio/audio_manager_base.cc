@@ -28,7 +28,7 @@ static const int kDefaultMaxOutputStreams = 16;
 // for all platforms.
 static const int kDefaultMaxInputStreams = 16;
 
-static const int kMaxInputChannels = 2;
+static const int kMaxInputChannels = 3;
 
 const char AudioManagerBase::kDefaultDeviceName[] = "Default";
 const char AudioManagerBase::kDefaultDeviceId[] = "default";
