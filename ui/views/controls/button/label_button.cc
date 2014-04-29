@@ -165,7 +165,10 @@ void LabelButton::SetStyle(ButtonStyle style) {
   if (style == STYLE_BUTTON)
     set_min_size(gfx::Size(70, 33));
 
-  OnNativeThemeChanged(GetNativeTheme());
+  ResetColorsFromNativeTheme();
+  UpdateThemedBorder(scoped_ptr<Border>(new LabelButtonBorder(style_)));
+  // Invalidate the layout to pickup the new insets from the border.
+  InvalidateLayout();
 }
 
 void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
@@ -374,9 +377,6 @@ void LabelButton::ChildPreferredSizeChanged(View* child) {
 
 void LabelButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   ResetColorsFromNativeTheme();
-  UpdateThemedBorder(scoped_ptr<Border>(new LabelButtonBorder(style_)));
-  // Invalidate the layout to pickup the new insets from the border.
-  InvalidateLayout();
 }
 
 ui::NativeTheme::Part LabelButton::GetThemePart() const {
