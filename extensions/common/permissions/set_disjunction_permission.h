@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_SET_DISJUNCTION_PERMISSION_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_SET_DISJUNCTION_PERMISSION_H_
 
-#include <algorithm>
 #include <set>
 #include <string>
 
@@ -52,10 +51,8 @@ class SetDisjunctionPermission : public APIPermission {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
-    return std::includes(data_set_.begin(),
-                         data_set_.end(),
-                         perm->data_set_.begin(),
-                         perm->data_set_.end());
+    return base::STLIncludes<std::set<PermissionDataType> >(
+        data_set_, perm->data_set_);
   }
 
   virtual bool Equal(const APIPermission* rhs) const OVERRIDE {
@@ -76,12 +73,8 @@ class SetDisjunctionPermission : public APIPermission {
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
     scoped_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
-    std::set_difference(data_set_.begin(),
-                        data_set_.end(),
-                        perm->data_set_.begin(),
-                        perm->data_set_.end(),
-                        std::inserter<std::set<PermissionDataType> >(
-                            result->data_set_, result->data_set_.begin()));
+    result->data_set_ = base::STLSetDifference<std::set<PermissionDataType> >(
+        data_set_, perm->data_set_);
     return result->data_set_.empty() ? NULL : result.release();
   }
 
@@ -90,12 +83,8 @@ class SetDisjunctionPermission : public APIPermission {
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
     scoped_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
-    std::set_union(data_set_.begin(),
-                   data_set_.end(),
-                   perm->data_set_.begin(),
-                   perm->data_set_.end(),
-                   std::inserter<std::set<PermissionDataType> >(
-                       result->data_set_, result->data_set_.begin()));
+    result->data_set_ = base::STLSetUnion<std::set<PermissionDataType> >(
+        data_set_, perm->data_set_);
     return result.release();
   }
 
@@ -104,12 +93,8 @@ class SetDisjunctionPermission : public APIPermission {
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
     scoped_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
-    std::set_intersection(data_set_.begin(),
-                          data_set_.end(),
-                          perm->data_set_.begin(),
-                          perm->data_set_.end(),
-                          std::inserter<std::set<PermissionDataType> >(
-                              result->data_set_, result->data_set_.begin()));
+    result->data_set_ = base::STLSetIntersection<std::set<PermissionDataType> >(
+        data_set_, perm->data_set_);
     return result->data_set_.empty() ? NULL : result.release();
   }
 
