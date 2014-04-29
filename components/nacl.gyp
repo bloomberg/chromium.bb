@@ -257,7 +257,6 @@
                 'nacl/loader/nonsfi/elf_loader.h',
                 'nacl/loader/nonsfi/irt_basic.cc',
                 'nacl/loader/nonsfi/irt_clock.cc',
-                'nacl/loader/nonsfi/irt_exception_handling.cc',
                 'nacl/loader/nonsfi/irt_fdio.cc',
                 'nacl/loader/nonsfi/irt_futex.cc',
                 'nacl/loader/nonsfi/irt_interfaces.cc',

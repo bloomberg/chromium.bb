@@ -123,12 +123,6 @@ class NaClBrowserTestPnacl : public NaClBrowserTestBase {
   virtual bool IsAPnaclTest() OVERRIDE;
 };
 
-class NaClBrowserTestPnaclNonSfi : public NaClBrowserTestBase {
- public:
-  virtual base::FilePath::StringType Variant() OVERRIDE;
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-};
-
 // Class used to test that when --disable-pnacl is specified the PNaCl mime
 // type is not available.
 class NaClBrowserTestPnaclDisabled : public NaClBrowserTestBase {
