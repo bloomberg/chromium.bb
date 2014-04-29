@@ -5876,24 +5876,6 @@
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_301900
-   Memcheck:Unaddressable
-   fun:_Z7GrCrashPKc
-   fun:_ZN19GrInOrderDrawBuffer6onDrawERKN12GrDrawTarget8DrawInfoE
-   fun:_ZN12GrDrawTarget20drawIndexedInstancesE15GrPrimitiveTypeiiiPK6SkRect
-   fun:_ZN19GrInOrderDrawBuffer10onDrawRectERK6SkRectPK8SkMatrixPS1_S5_
-   fun:_ZN12GrDrawTarget8drawRectERK6SkRectPK8SkMatrixPS1_S5_
-   ...
-   fun:_ZN13SkGPipeReader8playbackEPKvmjPm
-   fun:_ZN22DeferredPipeController8playbackEb
-   fun:_ZN14DeferredDevice20flushPendingCommandsE12PlaybackMode
-   fun:_ZN14DeferredDevice14onAccessBitmapEv
-   fun:_ZN12SkBaseDevice12accessBitmapEb
-   fun:_ZN12SkBaseDevice10readPixelsEP8SkBitmapiiN8SkCanvas10Config8888E
-   fun:_ZN8SkCanvas10readPixelsEP8SkBitmapiiNS_10Config8888E
-   fun:_ZN7WebCore15GraphicsContext10readPixelsEP8SkBitmapiiN8SkCanvas10Config8888E
-}
-{
    bug_309468
    Memcheck:Leak
    fun:_Znw*
