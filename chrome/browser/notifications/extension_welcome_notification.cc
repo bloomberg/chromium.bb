@@ -91,7 +91,7 @@ class NotificationCallbacks
     message_center::MessageCenter* message_center =
         delegate_->GetMessageCenter();
     message_center->DisableNotificationsByNotifier(notifier_id_);
-    message_center->RemoveNotification(welcome_notification_id_, true);
+    message_center->RemoveNotification(welcome_notification_id_, false);
     message_center->GetNotifierSettingsProvider()->SetNotifierEnabled(
         notifier, false);
   }
