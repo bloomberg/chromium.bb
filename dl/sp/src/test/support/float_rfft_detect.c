@@ -24,11 +24,11 @@ const char* UsageMessage() {
 
 void FinishedMessage() {
   printf("Tests finished. (Detected %s).\n",
-         HasArmNeon() ? "NEON" : "Non-NEON");
+         omxSP_HasArmNeon() ? "NEON" : "Non-NEON");
 }
 
 void SetThresholds(struct TestInfo* info) {
-  if (HasArmNeon()) {
+  if (omxSP_HasArmNeon()) {
     info->forward_threshold_ = FLOAT_RFFT_FORWARD_THRESHOLD_NEON;
     info->inverse_threshold_ = FLOAT_RFFT_INVERSE_THRESHOLD_NEON;
   } else {

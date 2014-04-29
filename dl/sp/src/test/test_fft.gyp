@@ -134,7 +134,7 @@
     {
       # Test utilities
       'target_name': 'test_utilities',
-      'type' : '<(component)',
+      'type' : 'static_library',
       'dependencies!' : [
         'test_utilities'
       ],
@@ -143,6 +143,7 @@
         'compare.c',
         'gensig.c',
         'test_util.c',
+        'test_util_fft.c',
       ],
     },
     {
