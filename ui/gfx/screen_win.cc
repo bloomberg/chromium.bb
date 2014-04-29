@@ -65,7 +65,8 @@ bool ScreenWin::IsDIPEnabled() {
 gfx::Point ScreenWin::GetCursorScreenPoint() {
   POINT pt;
   GetCursorPos(&pt);
-  return gfx::Point(pt);
+  gfx::Point cursor_pos_pixels(pt);
+  return gfx::win::ScreenToDIPPoint(cursor_pos_pixels);
 }
 
 gfx::NativeWindow ScreenWin::GetWindowUnderCursor() {

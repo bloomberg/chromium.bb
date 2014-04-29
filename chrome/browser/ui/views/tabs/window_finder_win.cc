@@ -8,6 +8,7 @@
 #include "base/win/windows_version.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #include "ui/views/win/hwnd_util.h"
 
@@ -126,16 +127,16 @@ class TopMostFinder : public BaseWindowFinder {
                 const std::set<HWND>& ignore)
       : BaseWindowFinder(ignore),
         target_(window),
-        screen_loc_(screen_loc),
         is_top_most_(false),
         tmp_region_(CreateRectRgn(0, 0, 0, 0)) {
+    screen_loc_ = gfx::win::DIPToScreenPoint(screen_loc);
     EnumWindows(WindowCallbackProc, as_lparam());
   }
 
   // The window we're looking for.
   HWND target_;
 
-  // Location of window to find.
+  // Location of window to find in pixel coordinates.
   gfx::Point screen_loc_;
 
   // Is target_ the top most window? This is initially false but set to true
@@ -165,7 +166,8 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
     if (finder.result_ &&
         ((base::win::OSInfo::GetInstance()->version() >=
           base::win::VERSION_WIN8) ||
-         TopMostFinder::IsTopMostWindowAtPoint(finder.result_, screen_loc,
+         TopMostFinder::IsTopMostWindowAtPoint(finder.result_,
+                                               screen_loc,
                                                ignore))) {
       return views::DesktopWindowTreeHostWin::GetContentWindowForHWND(
           finder.result_);
@@ -188,12 +190,12 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
   LocalProcessWindowFinder(const gfx::Point& screen_loc,
                            const std::set<HWND>& ignore)
       : BaseWindowFinder(ignore),
-        screen_loc_(screen_loc),
         result_(NULL) {
+    screen_loc_ = gfx::win::DIPToScreenPoint(screen_loc);
     EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, as_lparam());
   }
 
-  // Position of the mouse.
+  // Position of the mouse in pixel coordinates.
   gfx::Point screen_loc_;
 
   // The resulting window. This is initially null but set to true in
