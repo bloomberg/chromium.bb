@@ -12,7 +12,7 @@ class _PicaMeasurement(page_measurement.PageMeasurement):
         '--enable-experimental-web-platform-features')
 
   def MeasurePage(self, _, tab, results):
-    result = int(tab.EvaluateJavaScript('__pica_load_time'))
+    result = int(tab.EvaluateJavaScript('__polymer_ready_time'))
     results.Add('Total', 'ms', result)
 
 
