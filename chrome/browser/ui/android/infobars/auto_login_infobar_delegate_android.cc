@@ -68,6 +68,7 @@ bool AutoLoginInfoBarDelegateAndroid::Accept() {
                                reinterpret_cast<intptr_t>(this));
   // Do not close the infobar on accept, it will be closed as part
   // of the log in callback.
+  RecordHistogramAction(ACCEPTED);
   return false;
 }
 
@@ -78,6 +79,7 @@ bool AutoLoginInfoBarDelegateAndroid::Cancel() {
   DCHECK(delegate.obj());
   Java_AutoLoginDelegate_cancelLogIn(env, delegate.obj(),
                                      reinterpret_cast<intptr_t>(this));
+  RecordHistogramAction(REJECTED);
   return true;
 }
 

@@ -38,10 +38,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   static bool Create(content::WebContents* web_contents, const Params& params);
 
  protected:
-  AutoLoginInfoBarDelegate(const Params& params, Profile* profile);
-  virtual ~AutoLoginInfoBarDelegate();
-
- private:
   // Enum values used for UMA histograms.
   enum Actions {
     SHOWN,       // The infobar was shown to the user.
@@ -53,6 +49,12 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     HISTOGRAM_BOUNDING_VALUE
   };
 
+  AutoLoginInfoBarDelegate(const Params& params, Profile* profile);
+  virtual ~AutoLoginInfoBarDelegate();
+
+  void RecordHistogramAction(Actions action);
+
+ private:
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
@@ -65,8 +67,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // SigninManagerBase::Observer:
   virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
-
-  void RecordHistogramAction(Actions action);
 
   const Params params_;
 

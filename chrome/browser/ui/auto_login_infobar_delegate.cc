@@ -179,6 +179,11 @@ AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
     RecordHistogramAction(IGNORED);
 }
 
+void AutoLoginInfoBarDelegate::RecordHistogramAction(Actions action) {
+  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Regular", action,
+                            HISTOGRAM_BOUNDING_VALUE);
+}
+
 void AutoLoginInfoBarDelegate::InfoBarDismissed() {
   RecordHistogramAction(DISMISSED);
   button_pressed_ = true;
@@ -232,9 +237,4 @@ bool AutoLoginInfoBarDelegate::Cancel() {
 
 void AutoLoginInfoBarDelegate::GoogleSignedOut(const std::string& username) {
   infobar()->RemoveSelf();
-}
-
-void AutoLoginInfoBarDelegate::RecordHistogramAction(Actions action) {
-  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Regular", action,
-                            HISTOGRAM_BOUNDING_VALUE);
 }
