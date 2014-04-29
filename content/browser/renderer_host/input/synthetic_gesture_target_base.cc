@@ -14,6 +14,7 @@
 
 using blink::WebInputEvent;
 using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 
@@ -52,14 +53,29 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
   if (WebInputEvent::isTouchEventType(event.type)) {
     const WebTouchEvent& web_touch =
         static_cast<const WebTouchEvent&>(event);
+
+    // Check that all touch pointers are within the content bounds.
+    if (web_touch.type == WebInputEvent::TouchStart) {
+      for (unsigned i = 0; i < web_touch.touchesLength; i++)
+        CHECK(web_touch.touches[i].state != WebTouchPoint::StatePressed ||
+              PointIsWithinContents(web_touch.touches[i].position.x,
+                                    web_touch.touches[i].position.y))
+            << "Touch coordinates are not within content bounds on TouchStart.";
+    }
+
     DispatchWebTouchEventToPlatform(web_touch, latency_info);
   } else if (event.type == WebInputEvent::MouseWheel) {
     const WebMouseWheelEvent& web_wheel =
         static_cast<const WebMouseWheelEvent&>(event);
+    CHECK(PointIsWithinContents(web_wheel.x, web_wheel.y))
+        << "Mouse wheel position is not within content bounds.";
     DispatchWebMouseWheelEventToPlatform(web_wheel, latency_info);
   } else if (WebInputEvent::isMouseEventType(event.type)) {
     const WebMouseEvent& web_mouse =
         static_cast<const WebMouseEvent&>(event);
+    CHECK(event.type != WebInputEvent::MouseDown ||
+          PointIsWithinContents(web_mouse.x, web_mouse.y))
+        << "Mouse pointer is not within content bounds on MouseDown.";
     DispatchWebMouseEventToPlatform(web_mouse, latency_info);
   } else {
     NOTREACHED();
@@ -72,7 +88,7 @@ void SyntheticGestureTargetBase::DispatchWebTouchEventToPlatform(
   // We assume that platforms supporting touch have their own implementation of
   // SyntheticGestureTarget to route the events through their respective input
   // stack.
-  CHECK(false);
+  CHECK(false) << "Touch events not supported for this browser.";
 }
 
 void SyntheticGestureTargetBase::DispatchWebMouseWheelEventToPlatform(
@@ -103,6 +119,12 @@ base::TimeDelta SyntheticGestureTargetBase::PointerAssumedStoppedTime()
 
 int SyntheticGestureTargetBase::GetTouchSlopInDips() const {
   return kTouchSlopInDips;
+}
+
+bool SyntheticGestureTargetBase::PointIsWithinContents(int x, int y) const {
+  gfx::Rect bounds = host_->GetView()->GetViewBounds();
+  bounds -= bounds.OffsetFromOrigin();  // Translate the bounds to (0,0).
+  return bounds.Contains(x, y);
 }
 
 }  // namespace content

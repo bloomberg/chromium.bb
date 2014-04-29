@@ -56,6 +56,8 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
   RenderWidgetHostImpl* render_widget_host() const { return host_; }
 
  private:
+  bool PointIsWithinContents(int x, int y) const;
+
   RenderWidgetHostImpl* host_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetBase);
