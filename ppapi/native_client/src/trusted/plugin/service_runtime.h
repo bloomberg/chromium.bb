@@ -153,8 +153,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
 
   virtual void StartupInitializationComplete();
 
-  virtual bool EnumerateManifestKeys(std::set<nacl::string>* out_keys);
-
   virtual bool OpenManifestEntry(nacl::string url_key,
                                  struct NaClFileInfo *info);
 

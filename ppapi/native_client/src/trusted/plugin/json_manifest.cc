@@ -609,20 +609,6 @@ bool JsonManifest::GetProgramURL(nacl::string* full_url,
   return ResolveURL(nexe_url, full_url, error_info);
 }
 
-bool JsonManifest::GetFileKeys(std::set<nacl::string>* keys) const {
-  if (!dictionary_.isMember(kFilesKey)) {
-    // trivial success: no keys when there is no "files" section.
-    return true;
-  }
-  const Json::Value& files = dictionary_[kFilesKey];
-  CHECK(files.isObject());
-  Json::Value::Members members = files.getMemberNames();
-  for (size_t i = 0; i < members.size(); ++i) {
-    keys->insert(members[i]);
-  }
-  return true;
-}
-
 bool JsonManifest::ResolveKey(const nacl::string& key,
                               nacl::string* full_url,
                               PP_PNaClOptions* pnacl_options,

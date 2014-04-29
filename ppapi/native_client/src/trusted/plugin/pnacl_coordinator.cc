@@ -56,13 +56,6 @@ class PnaclManifest : public Manifest {
     return false;
   }
 
-  virtual bool GetFileKeys(std::set<nacl::string>* keys) const {
-    // Does not support enumeration.
-    PLUGIN_PRINTF(("PnaclManifest does not support key enumeration\n"));
-    UNREFERENCED_PARAMETER(keys);
-    return false;
-  }
-
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
                           PP_PNaClOptions* pnacl_options,

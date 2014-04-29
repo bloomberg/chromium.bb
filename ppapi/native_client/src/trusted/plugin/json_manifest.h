@@ -54,12 +54,6 @@ class JsonManifest : public Manifest {
                              bool* uses_nonsfi_mode,
                              ErrorInfo* error_info) const;
 
-  // Gets the file names from the "files" section of the manifest.  No
-  // checking that the keys' values are proper ISA dictionaries -- it
-  // is assumed that other consistency checks take care of that, and
-  // that the keys are appropriate for use with ResolveKey.
-  virtual bool GetFileKeys(std::set<nacl::string>* keys) const;
-
   // Resolves a key from the "files" section to a fully resolved URL,
   // i.e., relative URL values are fully expanded relative to the
   // manifest's URL (via ResolveURL).

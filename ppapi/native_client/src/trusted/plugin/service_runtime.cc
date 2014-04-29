@@ -184,11 +184,6 @@ void PluginReverseInterface::PostMessage_MainThreadContinuation(
   plugin_->PostMessage(std::string("DEBUG_POSTMESSAGE:") + p->message);
 }
 
-bool PluginReverseInterface::EnumerateManifestKeys(
-    std::set<nacl::string>* out_keys) {
-  return manifest_->GetFileKeys(out_keys);
-}
-
 // TODO(bsy): OpenManifestEntry should use the manifest to ResolveKey
 // and invoke StreamAsFile with a completion callback that invokes
 // GetPOSIXFileDesc.
