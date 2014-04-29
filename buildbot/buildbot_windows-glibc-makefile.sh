@@ -77,44 +77,49 @@ echo @@@BUILD_STEP compile_toolchain@@@
   rm "${TOOL_TOOLCHAIN}/tmp"
 )
 
-if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
-  rm -rf "${OUT_TOOLCHAIN}"
-  mkdir -p "${OUT_TOOLCHAINLOC}"
-  mv "tools/${TOOL_TOOLCHAIN}" "${OUT_TOOLCHAIN}"
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
+  GSD_BUCKET=nativeclient-archive2
+  UPLOAD_REV=${BUILDBOT_GOT_REVISION}
+  UPLOAD_LOC=x86_toolchain/r${UPLOAD_REV}
 else
-  (
-    cd tools
-    echo @@@BUILD_STEP canonicalize timestamps@@@
-    ./canonicalize_timestamps.sh "${TOOL_TOOLCHAIN}"
-    echo @@@BUILD_STEP tar_toolchain@@@
-    tar Scf toolchain.tar "${TOOL_TOOLCHAIN}"
-    xz -k -9 toolchain.tar
-    bzip2 -k -9 toolchain.tar
-    gzip -n -9 toolchain.tar
-    for i in gz bz2 xz ; do
-      chmod a+x toolchain.tar.$i
-      echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \
-        > toolchain.tar.$i.sha1hash
-    done
-  )
-
-  echo @@@BUILD_STEP archive_build@@@
-  for suffix in gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash ; do
-    ${NATIVE_PYTHON} ${GSUTIL} cp -a public-read \
-      tools/toolchain.tar.$suffix \
-      gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_win_x86.tar.$suffix
-  done
-  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
-
-  echo @@@BUILD_STEP archive_extract_package@@@
-  ${NATIVE_PYTHON} build/package_version/package_version.py archive \
-      --archive-package=nacl_x86_glibc --extract \
-      tools/toolchain.tar.bz2,toolchain/win_x86@https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_win_x86.tar.bz2
-
-  echo @@@BUILD_STEP upload_package_info@@@
-  ${NATIVE_PYTHON} build/package_version/package_version.py --annotate \
-      upload --upload-package=nacl_x86_glibc --revision=${BUILDBOT_GOT_REVISION}
+  GSD_BUCKET=nativeclient-trybot/packages
+  UPLOAD_REV=${BUILDBOT_BUILDERNAME}/${BUILDBOT_BUILDNUMBER}
+  UPLOAD_LOC=x86_toolchain/${UPLOAD_REV}
 fi
+
+(
+  cd tools
+  echo @@@BUILD_STEP canonicalize timestamps@@@
+  ./canonicalize_timestamps.sh "${TOOL_TOOLCHAIN}"
+  echo @@@BUILD_STEP tar_toolchain@@@
+  tar Scf toolchain.tar "${TOOL_TOOLCHAIN}"
+  xz -k -9 toolchain.tar
+  bzip2 -k -9 toolchain.tar
+  gzip -n -9 toolchain.tar
+  for i in gz bz2 xz ; do
+    chmod a+x toolchain.tar.$i
+    echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \
+      > toolchain.tar.$i.sha1hash
+  done
+)
+
+echo @@@BUILD_STEP archive_build@@@
+for suffix in gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash ; do
+  ${NATIVE_PYTHON} ${GSUTIL} cp -a public-read \
+    tools/toolchain.tar.$suffix \
+    gs://${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.$suffix
+done
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/${UPLOAD_LOC}/@@@
+
+echo @@@BUILD_STEP archive_extract_package@@@
+${NATIVE_PYTHON} build/package_version/package_version.py archive \
+    --archive-package=nacl_x86_glibc --extract \
+    tools/toolchain.tar.bz2,toolchain/win_x86@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_win_x86.tar.bz2
+
+echo @@@BUILD_STEP upload_package_info@@@
+${NATIVE_PYTHON} build/package_version/package_version.py \
+    --cloud-bucket=${GSD_BUCKET} --annotate \
+    upload --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
   echo @@@BUILD_STEP sync backports@@@

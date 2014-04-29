@@ -96,17 +96,7 @@ echo @@@BUILD_STEP compile_toolchain@@@
   rmdir linux
 )
 
-if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
-  echo @@@BUILD_STEP glibc_tests64@@@
-  (
-    cd tools
-    make glibc-check
-  )
-
-  rm -rf "${OUT_TOOLCHAIN}"
-  mkdir -p "${OUT_TOOLCHAINLOC}"
-  mv "tools/${TOOL_TOOLCHAIN}" "${OUT_TOOLCHAIN}"
-else
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP tar_glibc@@@
   (
     cd tools
@@ -125,59 +115,70 @@ else
     tools/glibc.tgz \
     gs://nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/@@@
-
-  (
-    cd tools
-    echo @@@BUILD_STEP sparsify_toolchain@@@
-    cp --archive --sparse=always "${TOOL_TOOLCHAIN}" "${TOOL_TOOLCHAIN}_sparse"
-    rm -rf "${TOOL_TOOLCHAIN}"
-    mv "${TOOL_TOOLCHAIN}_sparse" "${TOOL_TOOLCHAIN}"
-    echo @@@BUILD_STEP canonicalize timestamps@@@
-    ./canonicalize_timestamps.sh "${TOOL_TOOLCHAIN}"
-    echo @@@BUILD_STEP tar_toolchain@@@
-    tar Scf toolchain.tar "${TOOL_TOOLCHAIN}"
-    xz -k -9 toolchain.tar
-    bzip2 -k -9 toolchain.tar
-    gzip -n -9 toolchain.tar
-    for i in gz bz2 xz ; do
-      chmod a+r toolchain.tar.$i
-      echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \
-        > toolchain.tar.$i.sha1hash
-    done
-  )
-
-  echo @@@BUILD_STEP archive_build@@@
-  for suffix in gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash ; do
-    $GSUTIL cp -a public-read \
-      tools/toolchain.tar.$suffix \
-      gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.$suffix
-  done
-  for patch in \
-      tools/nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
-      tools/SRC/*.patch* ; do
-    filename="${patch#tools/}"
-    filename="${filename#SRC/}"
-    $GSUTIL cp -a public-read \
-      $patch \
-      gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/$filename
-  done
-  echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
-
-  echo @@@BUILD_STEP archive_extract_package@@@
-  python build/package_version/package_version.py archive \
-      --archive-package=nacl_x86_glibc --extract \
-      tools/toolchain.tar.bz2,toolchain/linux_x86@https://storage.googleapis.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.bz2
-
-  echo @@@BUILD_STEP upload_package_info@@@
-  python build/package_version/package_version.py --annotate \
-      upload --upload-package=nacl_x86_glibc --revision=${BUILDBOT_GOT_REVISION}
-
-  echo @@@BUILD_STEP glibc_tests64@@@
-  (
-    cd tools
-    make glibc-check
-  )
 fi
+
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
+  GSD_BUCKET=nativeclient-archive2
+  UPLOAD_REV=${BUILDBOT_GOT_REVISION}
+  UPLOAD_LOC=x86_toolchain/r${UPLOAD_REV}
+else
+  GSD_BUCKET=nativeclient-trybot/packages
+  UPLOAD_REV=${BUILDBOT_BUILDERNAME}/${BUILDBOT_BUILDNUMBER}
+  UPLOAD_LOC=x86_toolchain/${UPLOAD_REV}
+fi
+
+(
+  cd tools
+  echo @@@BUILD_STEP sparsify_toolchain@@@
+  cp --archive --sparse=always "${TOOL_TOOLCHAIN}" "${TOOL_TOOLCHAIN}_sparse"
+  rm -rf "${TOOL_TOOLCHAIN}"
+  mv "${TOOL_TOOLCHAIN}_sparse" "${TOOL_TOOLCHAIN}"
+  echo @@@BUILD_STEP canonicalize timestamps@@@
+  ./canonicalize_timestamps.sh "${TOOL_TOOLCHAIN}"
+  echo @@@BUILD_STEP tar_toolchain@@@
+  tar Scf toolchain.tar "${TOOL_TOOLCHAIN}"
+  xz -k -9 toolchain.tar
+  bzip2 -k -9 toolchain.tar
+  gzip -n -9 toolchain.tar
+  for i in gz bz2 xz ; do
+    chmod a+r toolchain.tar.$i
+    echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \
+      > toolchain.tar.$i.sha1hash
+  done
+)
+
+echo @@@BUILD_STEP archive_build@@@
+for suffix in gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash ; do
+  $GSUTIL cp -a public-read \
+    tools/toolchain.tar.$suffix \
+    gs://${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_linux_x86.tar.$suffix
+done
+for patch in \
+    tools/nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
+    tools/SRC/*.patch* ; do
+  filename="${patch#tools/}"
+  filename="${filename#SRC/}"
+  $GSUTIL cp -a public-read \
+    $patch \
+    gs://${GSD_BUCKET}/${UPLOAD_LOC}/$filename
+done
+echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GSD_BUCKET}/${UPLOAD_LOC}/@@@
+
+echo @@@BUILD_STEP archive_extract_package@@@
+python build/package_version/package_version.py archive \
+    --archive-package=nacl_x86_glibc --extract \
+    tools/toolchain.tar.bz2,toolchain/linux_x86@https://storage.googleapis.com/${GSD_BUCKET}/${UPLOAD_LOC}/toolchain_linux_x86.tar.bz2
+
+echo @@@BUILD_STEP upload_package_info@@@
+python build/package_version/package_version.py \
+    --cloud-bucket=${GSD_BUCKET} --annotate \
+    upload --upload-package=nacl_x86_glibc --revision=${UPLOAD_REV}
+
+echo @@@BUILD_STEP glibc_tests64@@@
+(
+  cd tools
+  make glibc-check
+)
 
 # The script should exit nonzero if any test run fails.
 # But that should not short-circuit the script due to the 'set -e' behavior.
