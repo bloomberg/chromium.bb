@@ -37,7 +37,6 @@ void Run(Context* context) {
     ScopedMessagePipeHandle no_handle;
     context->service_manager()->Connect(GURL(*it), no_handle.Pass());
   }
-  // TODO(davemoore): Currently we leak |service_manager|.
 }
 
 }  // namespace shell

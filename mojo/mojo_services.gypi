@@ -216,14 +216,14 @@
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
+            '../base/base.gyp:run_all_unittests',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../ui/aura/aura.gyp:aura',
             'mojo_environment_chromium',
-            'mojo_run_all_unittests',
             'mojo_shell_client',
+            'mojo_shell_test_support',
             'mojo_system_impl',
-            'mojo_view_manager',
             'mojo_view_manager_bindings',
           ],
           'sources': [

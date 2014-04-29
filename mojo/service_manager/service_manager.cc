@@ -58,12 +58,57 @@ class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
   ServiceManager* const manager_;
   const GURL url_;
   RemotePtr<ShellClient> shell_client_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };
 
+class ServiceManager::TestAPI::TestShellConnection
+    : public Shell,
+      public ErrorHandler {
+ public:
+  explicit TestShellConnection(ServiceManager* manager) : manager_(manager) {
+    InterfacePipe<Shell> pipe;
+    shell_client_.reset(pipe.handle_to_peer.Pass(), this, this);
+    shell_handle_ = pipe.handle_to_self.Pass();
+  }
+  virtual ~TestShellConnection() {}
+
+  ScopedShellHandle GetShellHandle() {
+    return shell_handle_.Pass();
+  }
+
+  // Shell:
+  virtual void Connect(const String& url,
+                       ScopedMessagePipeHandle client_pipe) OVERRIDE {
+    manager_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
+  }
+
+  virtual void OnError() OVERRIDE {
+  }
+
+ private:
+  ServiceManager* manager_;
+  RemotePtr<ShellClient> shell_client_;
+  ScopedShellHandle shell_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestShellConnection);
+};
+
 // static
+ServiceManager::TestAPI::TestAPI(ServiceManager* manager) : manager_(manager) {
+}
+
+ServiceManager::TestAPI::~TestAPI() {
+}
+
 bool ServiceManager::TestAPI::HasCreatedInstance() {
   return has_created_instance;
+}
+
+ScopedShellHandle ServiceManager::TestAPI::GetShellHandle() {
+  if (!shell_connection_.get())
+    shell_connection_.reset(new TestShellConnection(manager_));
+  return shell_connection_->GetShellHandle().Pass();
 }
 
 bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {

@@ -4,10 +4,13 @@
 
 #include "mojo/shell/context.h"
 
-#include "base/command_line.h"
 #include "build/build_config.h"
+#include "base/command_line.h"
+#include "base/lazy_instance.h"
+#include "base/memory/scoped_vector.h"
 #include "mojo/embedder/embedder.h"
 #include "mojo/gles2/gles2_support_impl.h"
+#include "mojo/public/cpp/shell/application.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/native_viewport/native_viewport_service.h"
@@ -22,8 +25,62 @@
 #include "mojo/shell/dbus_service_loader_linux.h"
 #endif  // defined(OS_LINUX)
 
+#if defined(USE_AURA)
+#include "mojo/services/view_manager/root_node_manager.h"
+#include "mojo/services/view_manager/view_manager_connection.h"
+#endif
+
 namespace mojo {
 namespace shell {
+namespace {
+
+// Used to ensure we only init once.
+class Setup {
+ public:
+  Setup() {
+    embedder::Init();
+    gles2::GLES2SupportImpl::Init();
+  }
+
+  ~Setup() {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Setup);
+};
+
+static base::LazyInstance<Setup> setup = LAZY_INSTANCE_INITIALIZER;
+
+#if defined(USE_AURA)
+class ViewManagerLoader : public ServiceLoader {
+ public:
+  ViewManagerLoader() {}
+  virtual ~ViewManagerLoader() {}
+
+ private:
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedShellHandle shell_handle) OVERRIDE {
+    scoped_ptr<Application> app(new Application(shell_handle.Pass()));
+    app->AddServiceConnector(
+        new ServiceConnector<services::view_manager::ViewManagerConnection,
+                             services::view_manager::RootNodeManager>(
+                                 &root_node_manager_));
+    apps_.push_back(app.release());
+  }
+
+  virtual void OnServiceError(ServiceManager* manager,
+                              const GURL& url) OVERRIDE {
+  }
+
+  services::view_manager::RootNodeManager root_node_manager_;
+  ScopedVector<Application> apps_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewManagerLoader);
+};
+#endif
+
+}  // namespace
 
 class Context::NativeViewportServiceLoader : public ServiceLoader {
  public:
@@ -54,9 +111,7 @@ Context::Context()
               task_runners_.cache_runner(),
               scoped_ptr<net::NetworkDelegate>(new NetworkDelegate()),
               storage_.profile_path()) {
-  embedder::Init();
-  gles2::GLES2SupportImpl::Init();
-
+  setup.Get();
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory;
   if (cmdline->HasSwitch(switches::kEnableMultiprocess))
@@ -70,6 +125,12 @@ Context::Context()
   service_manager_.SetLoaderForURL(
       scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
       GURL("mojo:mojo_native_viewport_service"));
+#if defined(USE_AURA)
+  // TODO(sky): need a better way to find this. It shouldn't be linked in.
+  service_manager_.SetLoaderForURL(
+      scoped_ptr<ServiceLoader>(new ViewManagerLoader()),
+      GURL("mojo:mojo_view_manager"));
+#endif
 
 #if defined(OS_LINUX)
   service_manager_.SetLoaderForScheme(

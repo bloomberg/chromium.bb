@@ -438,6 +438,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_static',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_external_service_bindings',
@@ -501,6 +502,30 @@
             '../dbus/dbus.gyp:dbus',
           ],
         }],
+        ['use_aura==1', {
+          'dependencies': [
+            # These are only necessary as long as we hard code use of ViewManager.
+            '../skia/skia.gyp:skia',
+            'mojo_shell_client',
+            'mojo_view_manager',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'mojo_shell_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_static',
+        '../url/url.gyp:url_lib',
+        'mojo_service_manager',
+        'mojo_shell_lib',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'shell/shell_test_helper.cc',
+        'shell/shell_test_helper.h',
       ],
     },
     {

@@ -16,27 +16,32 @@
 #include "mojo/service_manager/service_manager_export.h"
 #include "url/gurl.h"
 
-namespace content {
-  class MojoTest;
-}
-
 namespace mojo {
 
 class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
  public:
   // API for testing.
   class MOJO_SERVICE_MANAGER_EXPORT TestAPI {
-   private:
-    friend class ServiceManagerTest;
-    friend class content::MojoTest;
+   public:
+    explicit TestAPI(ServiceManager* manager);
+    ~TestAPI();
 
-    explicit TestAPI(ServiceManager* manager) : manager_(manager) {}
+    // Returns a handle to the shell.
+    ScopedShellHandle GetShellHandle();
+
     // Returns true if the shared instance has been created.
     static bool HasCreatedInstance();
     // Returns true if there is a ServiceFactory for this URL.
     bool HasFactoryForURL(const GURL& url) const;
 
+   private:
+    class TestShellConnection;
+
     ServiceManager* manager_;
+
+    scoped_ptr<TestShellConnection> shell_connection_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
   // Interface class for debugging only.

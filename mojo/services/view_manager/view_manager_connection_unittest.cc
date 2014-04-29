@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/view_manager_connection.h"
-
 #include <string>
 #include <vector>
 
@@ -14,7 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
-#include "mojo/services/view_manager/root_node_manager.h"
+#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -24,6 +23,17 @@ namespace view_manager {
 namespace {
 
 base::RunLoop* current_run_loop = NULL;
+
+// TODO(sky): remove and include a common header.
+typedef uint32_t ChangeId;
+
+uint16_t FirstIdFromTransportId(uint32_t id) {
+  return static_cast<uint16_t>((id >> 16) & 0xFFFF);
+}
+
+uint16_t SecondIdFromTransportId(uint32_t id) {
+  return static_cast<uint16_t>(id & 0xFFFF);
+}
 
 // Sets |current_run_loop| and runs it. It is expected that someone else quits
 // the loop.
@@ -50,12 +60,12 @@ void BooleanCallback(bool* result_cache, bool result) {
 
 // Creates an id used for transport from the specified parameters.
 uint32_t CreateNodeId(uint16_t connection_id, uint16_t node_id) {
-  return NodeIdToTransportId(NodeId(connection_id, node_id));
+  return (connection_id << 16) | node_id;
 }
 
 // Creates an id used for transport from the specified parameters.
 uint32_t CreateViewId(uint16_t connection_id, uint16_t view_id) {
-  return ViewIdToTransportId(ViewId(connection_id, view_id));
+  return (connection_id << 16) | view_id;
 }
 
 // Creates a node with the specified id. Returns true on success. Blocks until
@@ -133,8 +143,6 @@ class ViewManagerClientImpl : public ViewManagerClient {
  public:
   ViewManagerClientImpl() : id_(0), quit_count_(0) {}
 
-  void set_quit_count(int count) { quit_count_ = count; }
-
   uint16_t id() const { return id_; }
 
   Changes GetAndClearChanges() {
@@ -143,11 +151,24 @@ class ViewManagerClientImpl : public ViewManagerClient {
     return changes;
   }
 
+  void WaitForId() {
+    if (id_ == 0)
+      DoRunLoop();
+  }
+
+  void DoRunLoopUntilChangesCount(size_t count) {
+    if (changes_.size() >= count)
+      return;
+    quit_count_ = count - changes_.size();
+    DoRunLoop();
+  }
+
  private:
   // ViewManagerClient overrides:
   virtual void OnConnectionEstablished(uint16_t connection_id) OVERRIDE {
     id_ = connection_id;
-    current_run_loop->Quit();
+    if (current_run_loop)
+      current_run_loop->Quit();
   }
   virtual void OnNodeHierarchyChanged(uint32_t node,
                                       uint32_t new_parent,
@@ -182,7 +203,7 @@ class ViewManagerClientImpl : public ViewManagerClient {
   uint16_t id_;
 
   // Used to determine when/if to quit the run loop.
-  int quit_count_;
+  size_t quit_count_;
 
   Changes changes_;
 
@@ -191,47 +212,45 @@ class ViewManagerClientImpl : public ViewManagerClient {
 
 class ViewManagerConnectionTest : public testing::Test {
  public:
-  ViewManagerConnectionTest() : service_factory_(&root_node_manager_) {}
+  ViewManagerConnectionTest() {}
 
   virtual void SetUp() OVERRIDE {
-    InterfacePipe<ViewManagerClient, ViewManager> pipe;
-    view_manager_.reset(pipe.handle_to_peer.Pass(), &client_);
-    connection_.Initialize(
-        &service_factory_,
-        ScopedMessagePipeHandle::From(pipe.handle_to_self.Pass()));
-    // Wait for the id.
-    DoRunLoop();
+    AllocationScope allocation_scope;
+
+    test_helper_.Init();
+
+    InterfacePipe<ViewManager, AnyInterface> pipe;
+    test_helper_.shell()->Connect("mojo:mojo_view_manager",
+                                  pipe.handle_to_peer.Pass());
+    view_manager_.reset(pipe.handle_to_self.Pass(), &client_);
+
+    client_.WaitForId();
   }
 
  protected:
   // Creates a second connection to the viewmanager.
   void EstablishSecondConnection() {
-    connection2_.reset(new ViewManagerConnection);
-    InterfacePipe<ViewManagerClient, ViewManager> pipe;
-    view_manager2_.reset(pipe.handle_to_peer.Pass(), &client2_);
-    connection2_->Initialize(
-        &service_factory_,
-        ScopedMessagePipeHandle::From(pipe.handle_to_self.Pass()));
-    // Wait for the id.
-    DoRunLoop();
+    AllocationScope allocation_scope;
+    InterfacePipe<ViewManager, AnyInterface> pipe;
+    test_helper_.shell()->Connect("mojo:mojo_view_manager",
+                                  pipe.handle_to_peer.Pass());
+    view_manager2_.reset(pipe.handle_to_self.Pass(), &client2_);
+
+    client2_.WaitForId();
   }
 
   void DestroySecondConnection() {
-    connection2_.reset();
     view_manager2_.reset();
   }
 
-  Environment env_;
   base::MessageLoop loop_;
-  RootNodeManager root_node_manager_;
-  ServiceConnector<ViewManagerConnection, RootNodeManager> service_factory_;
-  ViewManagerConnection connection_;
+  shell::ShellTestHelper test_helper_;
+
   ViewManagerClientImpl client_;
   RemotePtr<ViewManager> view_manager_;
 
   ViewManagerClientImpl client2_;
   RemotePtr<ViewManager> view_manager2_;
-  scoped_ptr<ViewManagerConnection> connection2_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnectionTest);
 };
@@ -317,12 +336,8 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotifyMultipleConnections) {
 
   // Second client should also have received the change.
   {
+    client2_.DoRunLoopUntilChangesCount(1);
     Changes changes(client2_.GetAndClearChanges());
-    if (changes.empty()) {
-      client2_.set_quit_count(1);
-      DoRunLoop();
-      changes = client2_.GetAndClearChanges();
-    }
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("change_id=0 node=1,2 new_parent=1,1 old_parent=null",
               changes[0]);
@@ -500,10 +515,12 @@ TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
                         CreateNodeId(client_.id(), 1),
                         CreateViewId(client2_.id(), 51),
                         22));
+    client_.DoRunLoopUntilChangesCount(1);
     Changes changes(client_.GetAndClearChanges());
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("change_id=0 node=1,1 new_view=2,51 old_view=null", changes[0]);
 
+    client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("change_id=22 node=1,1 new_view=2,51 old_view=null", changes[0]);
@@ -512,8 +529,7 @@ TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
   // Shutdown the second connection and verify view is removed.
   {
     DestroySecondConnection();
-    client_.set_quit_count(1);
-    DoRunLoop();
+    client_.DoRunLoopUntilChangesCount(1);
 
     Changes changes(client_.GetAndClearChanges());
     ASSERT_EQ(1u, changes.size());
