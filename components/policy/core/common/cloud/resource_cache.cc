@@ -19,25 +19,27 @@ namespace {
 
 // Verifies that |value| is not empty and encodes it into base64url format,
 // which is safe to use as a file name on all platforms.
-bool Base64Encode(const std::string& value, std::string* encoded) {
+bool Base64UrlEncode(const std::string& value, std::string* encoded) {
   DCHECK(!value.empty());
   if (value.empty())
     return false;
   base::Base64Encode(value, encoded);
   base::ReplaceChars(*encoded, "+", "-", encoded);
   base::ReplaceChars(*encoded, "/", "_", encoded);
+  // Note: this encoding keeps the padding chars, though the "Baset64 with safe
+  // URL alphabet" encoding trims them. See Base64UrlDecode below.
   return true;
 }
 
 // Decodes all elements of |input| from base64url format and stores the decoded
 // elements in |output|.
-bool Base64Encode(const std::set<std::string>& input,
-                  std::set<std::string>* output) {
+bool Base64UrlEncode(const std::set<std::string>& input,
+                     std::set<std::string>* output) {
   output->clear();
   for (std::set<std::string>::const_iterator it = input.begin();
        it != input.end(); ++it) {
     std::string encoded;
-    if (!Base64Encode(*it, &encoded)) {
+    if (!Base64UrlEncode(*it, &encoded)) {
       output->clear();
       return false;
     }
@@ -48,7 +50,7 @@ bool Base64Encode(const std::set<std::string>& input,
 
 // Decodes |encoded| from base64url format and verifies that the result is not
 // emtpy.
-bool Base64Decode(const std::string& encoded, std::string* value) {
+bool Base64UrlDecode(const std::string& encoded, std::string* value) {
   std::string buffer;
   base::ReplaceChars(encoded, "-", "+", &buffer);
   base::ReplaceChars(buffer, "_", "/", &buffer);
@@ -120,7 +122,7 @@ void ResourceCache::LoadAllSubkeys(
     // Only read from |subkey_path| if it is not a symlink and its name is
     // a base64-encoded string.
     if (!base::IsLink(path) &&
-        Base64Decode(encoded_subkey, &subkey) &&
+        Base64UrlDecode(encoded_subkey, &subkey) &&
         base::ReadFileToString(path, &data)) {
       (*contents)[subkey].swap(data);
     }
@@ -159,7 +161,7 @@ void ResourceCache::FilterSubkeys(const std::string& key,
     std::string subkey;
     // Delete files with invalid names, and files whose subkey doesn't pass the
     // filter.
-    if (!Base64Decode(subkey_path.BaseName().MaybeAsASCII(), &subkey) ||
+    if (!Base64UrlDecode(subkey_path.BaseName().MaybeAsASCII(), &subkey) ||
         test.Run(subkey)) {
       base::DeleteFile(subkey_path, true);
     }
@@ -174,7 +176,7 @@ void ResourceCache::FilterSubkeys(const std::string& key,
 void ResourceCache::PurgeOtherKeys(const std::set<std::string>& keys_to_keep) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   std::set<std::string> encoded_keys_to_keep;
-  if (!Base64Encode(keys_to_keep, &encoded_keys_to_keep))
+  if (!Base64UrlEncode(keys_to_keep, &encoded_keys_to_keep))
     return;
 
   base::FileEnumerator enumerator(
@@ -196,7 +198,7 @@ void ResourceCache::PurgeOtherSubkeys(
     return;
 
   std::set<std::string> encoded_subkeys_to_keep;
-  if (!Base64Encode(subkeys_to_keep, &encoded_subkeys_to_keep))
+  if (!Base64UrlEncode(subkeys_to_keep, &encoded_subkeys_to_keep))
     return;
 
   base::FileEnumerator enumerator(key_path, false, base::FileEnumerator::FILES);
@@ -216,7 +218,7 @@ bool ResourceCache::VerifyKeyPath(const std::string& key,
                                   bool allow_create,
                                   base::FilePath* path) {
   std::string encoded;
-  if (!Base64Encode(key, &encoded))
+  if (!Base64UrlEncode(key, &encoded))
     return false;
   *path = cache_dir_.AppendASCII(encoded);
   return allow_create ? base::CreateDirectory(*path) :
@@ -230,7 +232,7 @@ bool ResourceCache::VerifyKeyPathAndGetSubkeyPath(const std::string& key,
   base::FilePath key_path;
   std::string encoded;
   if (!VerifyKeyPath(key, allow_create_key, &key_path) ||
-      !Base64Encode(subkey, &encoded)) {
+      !Base64UrlEncode(subkey, &encoded)) {
     return false;
   }
   *path = key_path.AppendASCII(encoded);

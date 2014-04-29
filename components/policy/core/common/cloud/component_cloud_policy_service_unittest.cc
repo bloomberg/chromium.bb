@@ -165,11 +165,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
     // Also initialize the refresh scheduler, so that calls to
     // core()->RefreshSoon() trigger a FetchPolicy() call on the mock |client_|.
-    // Expect the initial refresh now, if the store doesn't have policy (if it
-    // does then the CloudPolicyRefreshScheduler won't start refreshing until
-    // invalidations are available, or a timeout elapses).
-    if (!store_.has_policy())
-      EXPECT_CALL(*client_, FetchPolicy());
+    EXPECT_CALL(*client_, FetchPolicy());
     core_.StartRefreshScheduler();
     RunUntilIdle();
     Mock::VerifyAndClearExpectations(client_);
@@ -492,7 +488,7 @@ TEST_F(ComponentCloudPolicyServiceTest, SignInAfterStartup) {
 }
 
 TEST_F(ComponentCloudPolicyServiceTest, SignOut) {
-  // Initialize everthing and serve policy for a component.
+  // Initialize everything and serve policy for a component.
   PopulateCache();
   LoadStore();
   InitializeRegistry();

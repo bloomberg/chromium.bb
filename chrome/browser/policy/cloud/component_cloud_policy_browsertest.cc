@@ -54,6 +54,8 @@ namespace em = enterprise_management;
 
 namespace policy {
 
+namespace {
+
 const char kDMToken[] = "dmtoken";
 const char kDeviceID[] = "deviceid";
 
@@ -84,8 +86,9 @@ const char kTestPolicy2[] =
 
 const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
 
+#if !defined(OS_CHROMEOS)
 // Same encoding as ResourceCache does for its keys.
-bool Base64Encode(const std::string& value, std::string* encoded) {
+bool Base64UrlEncode(const std::string& value, std::string* encoded) {
   if (value.empty())
     return false;
   base::Base64Encode(value, encoded);
@@ -93,6 +96,9 @@ bool Base64Encode(const std::string& value, std::string* encoded) {
   base::ReplaceChars(*encoded, "/", "_", encoded);
   return true;
 }
+#endif
+
+}  // namespace
 
 class ComponentCloudPolicyTest : public ExtensionBrowserTest {
  protected:
@@ -294,9 +300,9 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
 
   // Verify that the policy cache exists.
   std::string cache_key;
-  ASSERT_TRUE(Base64Encode("extension-policy", &cache_key));
+  ASSERT_TRUE(Base64UrlEncode("extension-policy", &cache_key));
   std::string cache_subkey;
-  ASSERT_TRUE(Base64Encode(kTestExtension, &cache_subkey));
+  ASSERT_TRUE(Base64UrlEncode(kTestExtension, &cache_subkey));
   base::FilePath cache_path = browser()->profile()->GetPath()
       .Append(FILE_PATH_LITERAL("Policy"))
       .Append(FILE_PATH_LITERAL("Components"))

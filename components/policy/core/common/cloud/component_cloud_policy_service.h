@@ -121,7 +121,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
 
   void InitializeIfReady();
   void OnBackendInitialized(scoped_ptr<PolicyBundle> initial_policy);
-  void SetCurrentSchema();
+  void ReloadSchema();
   void OnPolicyUpdated(scoped_ptr<PolicyBundle> policy);
 
   Delegate* delegate_;

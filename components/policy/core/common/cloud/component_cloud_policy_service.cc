@@ -35,13 +35,6 @@ bool NotInSchemaMap(const scoped_refptr<SchemaMap> schema_map,
   return schema_map->GetSchema(PolicyNamespace(domain, component_id)) == NULL;
 }
 
-bool ToPolicyNamespaceKey(const PolicyNamespace& ns, PolicyNamespaceKey* key) {
-  if (!ComponentCloudPolicyStore::GetPolicyType(ns.domain, &key->first))
-    return false;
-  key->second = ns.component_id;
-  return true;
-}
-
 bool ToPolicyNamespace(const PolicyNamespaceKey& key, PolicyNamespace* ns) {
   if (!ComponentCloudPolicyStore::GetPolicyDomain(key.first, &ns->domain))
     return false;
@@ -293,7 +286,7 @@ void ComponentCloudPolicyService::OnSchemaRegistryUpdated(
   if (!loaded_initial_policy_)
     return;
 
-  SetCurrentSchema();
+  ReloadSchema();
 }
 
 void ComponentCloudPolicyService::OnCoreConnected(CloudPolicyCore* core) {
@@ -302,13 +295,13 @@ void ComponentCloudPolicyService::OnCoreConnected(CloudPolicyCore* core) {
 
   core_->client()->AddObserver(this);
 
+  // Register the supported policy domains at the client.
+  core_->client()->AddNamespaceToFetch(
+      PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType, ""));
+
   // Immediately load any PolicyFetchResponses that the client may already
   // have.
   OnPolicyFetched(core_->client());
-
-  // Register the current namespaces at the client.
-  current_schema_map_ = new SchemaMap();
-  SetCurrentSchema();
 }
 
 void ComponentCloudPolicyService::OnCoreDisconnecting(CloudPolicyCore* core) {
@@ -318,15 +311,8 @@ void ComponentCloudPolicyService::OnCoreDisconnecting(CloudPolicyCore* core) {
   core_->client()->RemoveObserver(this);
 
   // Remove all the namespaces from the client.
-  scoped_refptr<SchemaMap> empty = new SchemaMap();
-  PolicyNamespaceList removed;
-  PolicyNamespaceList added;
-  empty->GetChanges(current_schema_map_, &removed, &added);
-  for (size_t i = 0; i < removed.size(); ++i) {
-    PolicyNamespaceKey key;
-    if (ToPolicyNamespaceKey(removed[i], &key))
-      core_->client()->RemoveNamespaceToFetch(key);
-  }
+  core_->client()->RemoveNamespaceToFetch(
+      PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType, ""));
 }
 
 void ComponentCloudPolicyService::OnRefreshSchedulerStarted(
@@ -454,20 +440,18 @@ void ComponentCloudPolicyService::OnBackendInitialized(
   // We're now ready to serve the initial policy; notify the policy observers.
   OnPolicyUpdated(initial_policy.Pass());
 
+  // Send the current schema to the backend, in case it has changed while the
+  // backend was initializing.
+  ReloadSchema();
+
   // Start observing the core and tracking the state of the client.
   core_->AddObserver(this);
 
-  if (core_->client()) {
+  if (core_->client())
     OnCoreConnected(core_);
-  } else {
-    // Send the current schema to the backend, in case it has changed while the
-    // backend was initializing. OnCoreConnected() also does this if a client is
-    // already connected.
-    SetCurrentSchema();
-  }
 }
 
-void ComponentCloudPolicyService::SetCurrentSchema() {
+void ComponentCloudPolicyService::ReloadSchema() {
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<PolicyNamespaceList> removed(new PolicyNamespaceList);
@@ -478,26 +462,12 @@ void ComponentCloudPolicyService::SetCurrentSchema() {
 
   current_schema_map_ = new_schema_map;
 
-  if (core_->client()) {
-    for (size_t i = 0; i < removed->size(); ++i) {
-      PolicyNamespaceKey key;
-      if (ToPolicyNamespaceKey((*removed)[i], &key))
-        core_->client()->RemoveNamespaceToFetch(key);
-    }
+  // Schedule a policy refresh if a new managed component was added.
+  if (core_->client() && !added.empty())
+    core_->RefreshSoon();
 
-    bool added_namespaces_to_client = false;
-    for (size_t i = 0; i < added.size(); ++i) {
-      PolicyNamespaceKey key;
-      if (ToPolicyNamespaceKey(added[i], &key)) {
-        core_->client()->AddNamespaceToFetch(key);
-        added_namespaces_to_client = true;
-      }
-    }
-
-    if (added_namespaces_to_client)
-      core_->RefreshSoon();
-  }
-
+  // Send the updated SchemaMap and a list of removed components to the
+  // backend.
   backend_task_runner_->PostTask(FROM_HERE,
                                  base::Bind(&Backend::OnSchemasUpdated,
                                             base::Unretained(backend_.get()),
