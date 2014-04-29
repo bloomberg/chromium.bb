@@ -72,7 +72,7 @@ pp::Instance* ModulePpapi::CreateInstance(PP_Instance pp_instance) {
   MODULE_PRINTF(("ModulePpapi::CreateInstance (pp_instance=%" NACL_PRId32
                  ")\n",
                  pp_instance));
-  Plugin* plugin = Plugin::New(pp_instance);
+  Plugin* plugin = new Plugin(pp_instance);
   MODULE_PRINTF(("ModulePpapi::CreateInstance (return %p)\n",
                  static_cast<void* >(plugin)));
   return plugin;

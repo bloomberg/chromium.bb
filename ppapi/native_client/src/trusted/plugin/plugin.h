@@ -52,8 +52,7 @@ class Manifest;
 
 class Plugin : public pp::Instance {
  public:
-  // Factory method for creation.
-  static Plugin* New(PP_Instance instance);
+  explicit Plugin(PP_Instance instance);
 
   // ----- Methods inherited from pp::Instance:
 
@@ -166,7 +165,6 @@ class Plugin : public pp::Instance {
   bool DocumentCanRequest(const std::string& url);
 
   Manifest const* manifest() const { return manifest_.get(); }
-  const pp::URLUtil_Dev* url_util() const { return url_util_; }
 
   // set_exit_status may be called off the main thread.
   void set_exit_status(int exit_status);
@@ -176,9 +174,6 @@ class Plugin : public pp::Instance {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
-  // Prevent construction and destruction from outside the class:
-  // must use factory New() method instead.
-  explicit Plugin(PP_Instance instance);
   // The browser will invoke the destructor via the pp::Instance
   // pointer to this object, not from base's Delete().
   ~Plugin();
@@ -274,8 +269,7 @@ class Plugin : public pp::Instance {
   // On success, |true| is returned and |manifest_| is updated to
   // contain a Manifest that is used by SelectNexeURLFromManifest.
   // On failure, |false| is returned, and |manifest_| is unchanged.
-  bool SetManifestObject(const nacl::string& manifest_json,
-                         ErrorInfo* error_info);
+  bool SetManifestObject(const nacl::string& manifest_json);
 
   // Logs timing information to a UMA histogram, and also logs the same timing
   // information divided by the size of the nexe to another histogram.
@@ -314,8 +308,6 @@ class Plugin : public pp::Instance {
 
   // The manifest dictionary.  Used for looking up resources to be loaded.
   nacl::scoped_ptr<Manifest> manifest_;
-  // URL processing interface for use in looking up resources in manifests.
-  const pp::URLUtil_Dev* url_util_;
 
   // Keep track of the FileDownloaders created to fetch urls.
   std::set<FileDownloader*> url_downloaders_;
