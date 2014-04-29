@@ -7,11 +7,8 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
-#include "net/quic/crypto/quic_decrypter.h"
-#include "net/quic/crypto/quic_encrypter.h"
 
 namespace net {
 
@@ -22,17 +19,14 @@ class QuicRandom;
 // thread-safe.
 class NET_EXPORT_PRIVATE CryptoSecretBoxer {
  public:
-  // Initializes |encrypter_| and |decrypter_| data members.
-  CryptoSecretBoxer();
-  ~CryptoSecretBoxer();
+  CryptoSecretBoxer() {}
 
   // GetKeySize returns the number of bytes in a key.
   static size_t GetKeySize();
 
   // SetKey sets the key for this object. This must be done before |Box| or
-  // |Unbox| are called. |key| must be |GetKeySize()| bytes long. Returns false
-  // if |encrypter_| or |decrypter_|'s SetKey method fails.
-  bool SetKey(base::StringPiece key);
+  // |Unbox| are called. |key| must be |GetKeySize()| bytes long.
+  void SetKey(base::StringPiece key);
 
   // Box encrypts |plaintext| using a random nonce generated from |rand| and
   // returns the resulting ciphertext. Since an authenticator and nonce are
@@ -49,8 +43,7 @@ class NET_EXPORT_PRIVATE CryptoSecretBoxer {
              base::StringPiece* out) const;
 
  private:
-  scoped_ptr<QuicEncrypter> encrypter_;
-  scoped_ptr<QuicDecrypter> decrypter_;
+  std::string key_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptoSecretBoxer);
 };

@@ -5,7 +5,10 @@
 #include "net/quic/crypto/crypto_secret_boxer.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
 
 using base::StringPiece;
@@ -29,33 +32,21 @@ static const size_t kKeySize = 16;
 //   It's not terrible, but it's not a "forget about it" margin.
 static const size_t kBoxNonceSize = 12;
 
-CryptoSecretBoxer::CryptoSecretBoxer()
-    : encrypter_(QuicEncrypter::Create(kAESG)),
-      decrypter_(QuicDecrypter::Create(kAESG)) {
-}
-
-CryptoSecretBoxer::~CryptoSecretBoxer() {}
-
 // static
 size_t CryptoSecretBoxer::GetKeySize() { return kKeySize; }
 
-bool CryptoSecretBoxer::SetKey(StringPiece key) {
-  DCHECK_EQ(static_cast<size_t>(kKeySize), key.size());
-  string key_string = key.as_string();
-  if (!encrypter_->SetKey(key_string)) {
-    DLOG(DFATAL) << "CryptoSecretBoxer's encrypter_->SetKey failed.";
-    return false;
-  }
-  if (!decrypter_->SetKey(key_string)) {
-    DLOG(DFATAL) << "CryptoSecretBoxer's decrypter_->SetKey failed.";
-    return false;
-  }
-  return true;
+void CryptoSecretBoxer::SetKey(StringPiece key) {
+  DCHECK_EQ(kKeySize, key.size());
+  key_ = key.as_string();
 }
 
 string CryptoSecretBoxer::Box(QuicRandom* rand, StringPiece plaintext) const {
-  DCHECK_EQ(kKeySize, encrypter_->GetKeySize());
-  size_t ciphertext_size = encrypter_->GetCiphertextSize(plaintext.length());
+  scoped_ptr<QuicEncrypter> encrypter(QuicEncrypter::Create(kAESG));
+  if (!encrypter->SetKey(key_)) {
+    DLOG(DFATAL) << "CryptoSecretBoxer's encrypter->SetKey failed.";
+    return string();
+  }
+  size_t ciphertext_size = encrypter->GetCiphertextSize(plaintext.length());
 
   string ret;
   const size_t len = kBoxNonceSize + ciphertext_size;
@@ -66,9 +57,9 @@ string CryptoSecretBoxer::Box(QuicRandom* rand, StringPiece plaintext) const {
   rand->RandBytes(data, kBoxNonceSize);
   memcpy(data + kBoxNonceSize, plaintext.data(), plaintext.size());
 
-  if (!encrypter_->Encrypt(StringPiece(data, kBoxNonceSize), StringPiece(),
-                           plaintext, reinterpret_cast<unsigned char*>(
-                                          data + kBoxNonceSize))) {
+  if (!encrypter->Encrypt(StringPiece(data, kBoxNonceSize), StringPiece(),
+                          plaintext, reinterpret_cast<unsigned char*>(
+                                         data + kBoxNonceSize))) {
     DLOG(DFATAL) << "CryptoSecretBoxer's Encrypt failed.";
     return string();
   }
@@ -91,9 +82,14 @@ bool CryptoSecretBoxer::Unbox(StringPiece ciphertext,
   out_storage->resize(len);
   char* data = const_cast<char*>(out_storage->data());
 
-  if (!decrypter_->Decrypt(StringPiece(nonce, kBoxNonceSize), StringPiece(),
-                           ciphertext, reinterpret_cast<unsigned char*>(data),
-                           &len)) {
+  scoped_ptr<QuicDecrypter> decrypter(QuicDecrypter::Create(kAESG));
+  if (!decrypter->SetKey(key_)) {
+    DLOG(DFATAL) << "CryptoSecretBoxer's decrypter->SetKey failed.";
+    return false;
+  }
+  if (!decrypter->Decrypt(StringPiece(nonce, kBoxNonceSize), StringPiece(),
+                          ciphertext, reinterpret_cast<unsigned char*>(data),
+                          &len)) {
     return false;
   }
 
