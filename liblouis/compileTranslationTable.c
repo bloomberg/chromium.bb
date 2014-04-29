@@ -5222,11 +5222,12 @@ void logWidecharBuf(int level, const char *msg, widechar *wbuf, int wlen)
   char *logMessage = malloc(logBufSize);
   char *p = logMessage;
   char *formatString;
+  int i = 0;
   if (sizeof(widechar) == 2)
     formatString = "0x%04X ";
   else
     formatString = "0x%08X ";
-  for (int i = 0; i < strlen(msg); i++)
+  for (i = 0; i < strlen(msg); i++)
     logMessage[i] = msg[i];
   p += strlen(msg);
   for (int i = 0; i < wlen; i++)
