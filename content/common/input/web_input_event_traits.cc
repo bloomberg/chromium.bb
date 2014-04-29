@@ -344,6 +344,7 @@ bool WebInputEventTraits::IgnoresAckDisposition(const WebInputEvent& event) {
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureShowPress:
+    case WebInputEvent::GestureTap:
     case WebInputEvent::GestureTapUnconfirmed:
     case WebInputEvent::GestureTapDown:
     case WebInputEvent::GestureTapCancel:
