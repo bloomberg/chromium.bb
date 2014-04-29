@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<head>
+<script src="../../resources/run-after-display.js"></script>
+<style>
+.composited {
+-webkit-transform: translatez(0);
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+}
+
+.behind {
+  position: absolute;
+  z-index: 0;
+  top: 50px;
+  left: 50px;
+  background-color: blue;
+}
+
+.middle {
+  position: absolute;
+  z-index: 1;
+  top: 20px;
+  left: 100px;
+  background-color: cyan;
+}
+
+.top {
+  position: absolute;
+  z-index: 2;
+  top: 130px;
+  left: 130px;
+  background-color: cyan;
+}
+
+.inner {
+  position:absolute;
+  top:10px;
+  left: 10px;
+  height: 50px; width: 50px;
+  background-color: lightslategray;
+  z-index: 3;
+}
+
+</style>
+<script>
+    if (window.internals)
+        internals.settings.setLayerSquashingEnabled(true);
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    function runTest()
+    {
+        runAfterDisplay(executeTestCases);
+    }
+
+    function executeTestCases()
+    {
+        document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document);
+
+        document.querySelector("#top").style.overflow = 'hidden';
+        document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document);
+
+        document.getElementById('testResults').style.display = "block";
+
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+</script>
+</head>
+<body onload="runTest()">
+  <div class="composited box behind"></div>
+
+  <div class="box middle">
+  </div>
+
+  <div id="top" class="box top">
+    <div class="inner">
+    </div>
+  </div>
+
+  <div id="testResults" style="display:none">
+    CASE 1, original layer tree
+    <pre id="Case1"></pre>
+
+    CASE 2, layer tree with overflow:hidden on the parent of a composited box. Parent is no longer squashed.
+    <pre id="Case2"></pre>
+  </div>
+</body>

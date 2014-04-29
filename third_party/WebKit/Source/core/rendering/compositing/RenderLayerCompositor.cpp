@@ -710,6 +710,11 @@ bool RenderLayerCompositor::canSquashIntoCurrentSquashingOwner(const RenderLayer
     if (layer->renderer()->clippingContainer() != squashingLayer.renderer()->clippingContainer())
         return false;
 
+    // FIXME: this seems to be overly aggressive. clipsCompositingDescendants() should suffice. However, it does not fix all testcases,
+    // in particular crbug.com/366101.
+    if (layer->renderer()->hasClipOrOverflowClip())
+        return false;
+
     if (layer->scrollsWithRespectTo(&squashingLayer))
         return false;
 
