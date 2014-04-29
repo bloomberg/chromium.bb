@@ -159,14 +159,14 @@
           # standalone. Applications must link with openmax_dl.
           'target_name': 'openmax_dl_armv7',
           'type': 'static_library',
+          'includes': [
+            '../../../build/android/cpufeatures.gypi',
+          ],
           'include_dirs': [
             '../',
           ],
           'cflags!': [
             '-mfpu=neon',
-          ],
-          'dependencies': [
-            '<(android_ndk_root)/android_tools_ndk.gyp:cpu_features',
           ],
           'link_settings' : {
             'libraries': [
