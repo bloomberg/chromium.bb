@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(rtenhove) clean up frame buffer size calculations so that we aren't
-// constantly adding and subtracting header sizes; this is ugly and error-
-// prone.
-
 #include "net/spdy/spdy_framer.h"
 
 #include "base/lazy_instance.h"
@@ -80,9 +76,9 @@ const size_t SpdyFramer::kControlFrameBufferSize = 18;
   } while (false)
 #endif
 
-SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(int version,
-                                                      uint32 wire) {
-  if (version < 3) {
+SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(
+    SpdyMajorVersion version, uint32 wire) {
+  if (version < SPDY3) {
     ConvertFlagsAndIdForSpdy2(&wire);
   }
   return SettingsFlagsAndId(ntohl(wire) >> 24, ntohl(wire) & 0x00ffffff);
@@ -93,9 +89,10 @@ SettingsFlagsAndId::SettingsFlagsAndId(uint8 flags, uint32 id)
   LOG_IF(DFATAL, id > (1u << 24)) << "SPDY setting ID too large: " << id;
 }
 
-uint32 SettingsFlagsAndId::GetWireFormat(int version) const {
+uint32 SettingsFlagsAndId::GetWireFormat(SpdyMajorVersion version)
+    const {
   uint32 wire = htonl(id_ & 0x00ffffff) | htonl(flags_ << 24);
-  if (version < 3) {
+  if (version < SPDY3) {
     ConvertFlagsAndIdForSpdy2(&wire);
   }
   return wire;
@@ -126,6 +123,7 @@ bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
 SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : current_frame_buffer_(new char[kControlFrameBufferSize]),
       enable_compression_(true),
+      hpack_encoder_(ObtainHpackHuffmanTable()),
       hpack_decoder_(ObtainHpackHuffmanTable()),
       visitor_(NULL),
       debug_visitor_(NULL),
@@ -166,22 +164,12 @@ void SpdyFramer::Reset() {
 }
 
 size_t SpdyFramer::GetDataFrameMinimumSize() const {
-  // Size, in bytes, of the data frame header. Future versions of SPDY
-  // will likely vary this, so we allow for the flexibility of a function call
-  // for this value as opposed to a constant.
-  return 8;
+  return SpdyConstants::GetDataFrameMinimumSize();
 }
 
 // Size, in bytes, of the control frame header.
 size_t SpdyFramer::GetControlFrameHeaderSize() const {
-  switch (protocol_version()) {
-    case SPDY2:
-    case SPDY3:
-    case SPDY4:
-      return 8;
-  }
-  LOG(DFATAL) << "Unhandled SPDY version.";
-  return 0;
+  return SpdyConstants::GetControlFrameHeaderSize(protocol_version());
 }
 
 size_t SpdyFramer::GetSynStreamMinimumSize() const {
@@ -263,7 +251,7 @@ size_t SpdyFramer::GetGoAwayMinimumSize() const {
   size += 4;
 
   // 3. SPDY 3+ GOAWAY frames also contain a status (4 bytes)
-  if (protocol_version() >= 3) {
+  if (protocol_version() >= SPDY3) {
     size += 4;
   }
 
@@ -302,14 +290,14 @@ size_t SpdyFramer::GetWindowUpdateSize() const {
 }
 
 size_t SpdyFramer::GetBlockedSize() const {
-  DCHECK_LE(4, protocol_version());
+  DCHECK_LT(SPDY3, protocol_version());
   // Size, in bytes, of a BLOCKED frame.
   // The BLOCKED frame has no payload beyond the control frame header.
   return GetControlFrameHeaderSize();
 }
 
 size_t SpdyFramer::GetPushPromiseMinimumSize() const {
-  DCHECK_LE(4, protocol_version());
+  DCHECK_LT(SPDY3, protocol_version());
   // Size, in bytes, of a PUSH_PROMISE frame, sans the embedded header block.
   // Calculated as frame prefix + 4 (promised stream id).
   return GetControlFrameHeaderSize() + 4;
@@ -326,17 +314,15 @@ size_t SpdyFramer::GetFrameMinimumSize() const {
 }
 
 size_t SpdyFramer::GetFrameMaximumSize() const {
-  if (protocol_version() <= SPDY3) {
-    // 24-bit length field plus eight-byte frame header.
-    return ((1<<24) - 1) + 8;
-  } else {
-    // 14-bit length field.
-    return (1<<14) - 1;
-  }
+  return SpdyConstants::GetFrameMaximumSize(protocol_version());
 }
 
 size_t SpdyFramer::GetDataFrameMaximumPayload() const {
   return GetFrameMaximumSize() - GetDataFrameMinimumSize();
+}
+
+size_t SpdyFramer::GetPrefixLength(SpdyFrameType type) const {
+  return SpdyConstants::GetPrefixLength(type, protocol_version());
 }
 
 const char* SpdyFramer::StateToString(int state) {
@@ -438,6 +424,10 @@ const char* SpdyFramer::StatusCodeToString(int status_code) {
       return "INVALID_CREDENTIALS";
     case RST_STREAM_FRAME_TOO_LARGE:
       return "FRAME_TOO_LARGE";
+    case RST_STREAM_CONNECT_ERROR:
+      return "CONNECT_ERROR";
+    case RST_STREAM_ENHANCE_YOUR_CALM:
+      return "ENHANCE_YOUR_CALM";
   }
   return "UNKNOWN_STATUS";
 }
@@ -572,15 +562,20 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
         break;
       }
 
-      case SPDY_IGNORE_REMAINING_PAYLOAD:
-        // control frame has too-large payload
-        // intentional fallthrough
+      case SPDY_IGNORE_REMAINING_PAYLOAD: {
+        size_t bytes_read = ProcessIgnoredControlFramePayload(/*data,*/ len);
+        len -= bytes_read;
+        data += bytes_read;
+        break;
+      }
+
       case SPDY_FORWARD_STREAM_FRAME: {
         size_t bytes_read = ProcessDataFramePayload(data, len);
         len -= bytes_read;
         data += bytes_read;
         break;
       }
+
       default:
         LOG(DFATAL) << "Invalid value for " << display_protocol_
                     << " framer state: " << state_;
@@ -639,8 +634,22 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     DCHECK(successful_read);
     is_control_frame = (version & kControlFlagMask) != 0;
     version &= ~kControlFlagMask;  // Only valid for control frames.
-
     if (is_control_frame) {
+      // We check version before we check validity: version can never be
+      // 'invalid', it can only be unsupported.
+      if (version < SpdyConstants::SerializeMajorVersion(SPDY_MIN_VERSION) ||
+          version > SpdyConstants::SerializeMajorVersion(SPDY_MAX_VERSION) ||
+          SpdyConstants::ParseMajorVersion(version) != protocol_version()) {
+        // Version does not match the version the framer was initialized with.
+        DVLOG(1) << "Unsupported SPDY version "
+                 << version
+                 << " (expected " << protocol_version() << ")";
+        set_error(SPDY_UNSUPPORTED_VERSION);
+        return 0;
+      } else {
+        // Convert version from wire format to SpdyMajorVersion.
+        version = SpdyConstants::ParseMajorVersion(version);
+      }
       // We check control_frame_type_field's validity in
       // ProcessControlFrameHeader().
       successful_read = reader->ReadUInt16(&control_frame_type_field);
@@ -756,12 +765,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
         CHANGE_STATE(SPDY_AUTO_RESET);
       }
     }
-  } else if (version != protocol_version()) {
-    // We check version before we check validity: version can never be
-    // 'invalid', it can only be unsupported.
-    DVLOG(1) << "Unsupported SPDY version " << version
-             << " (expected " << protocol_version() << ")";
-    set_error(SPDY_UNSUPPORTED_VERSION);
   } else {
     ProcessControlFrameHeader(control_frame_type_field);
   }
@@ -927,7 +930,8 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
       }
       break;
     case CONTINUATION:
-      if (current_frame_length_ < GetContinuationMinimumSize()) {
+      if (current_frame_length_ < GetContinuationMinimumSize() ||
+          protocol_version() <= SPDY3) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ & ~HEADERS_FLAG_END_HEADERS) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -1043,10 +1047,11 @@ size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
   return bytes_to_read;
 }
 
-size_t SpdyFramer::GetSerializedLength(const int spdy_version,
-                                       const SpdyHeaderBlock* headers) {
+size_t SpdyFramer::GetSerializedLength(
+    const SpdyMajorVersion spdy_version,
+    const SpdyHeaderBlock* headers) {
   const size_t num_name_value_pairs_size
-      = (spdy_version < 3) ? sizeof(uint16) : sizeof(uint32);
+      = (spdy_version < SPDY3) ? sizeof(uint16) : sizeof(uint32);
   const size_t length_of_name_size = num_name_value_pairs_size;
   const size_t length_of_value_size = num_name_value_pairs_size;
 
@@ -1063,16 +1068,16 @@ size_t SpdyFramer::GetSerializedLength(const int spdy_version,
 }
 
 void SpdyFramer::WriteHeaderBlock(SpdyFrameBuilder* frame,
-                                  const int spdy_version,
+                                  const SpdyMajorVersion spdy_version,
                                   const SpdyHeaderBlock* headers) {
-  if (spdy_version < 3) {
+  if (spdy_version < SPDY3) {
     frame->WriteUInt16(headers->size());  // Number of headers.
   } else {
     frame->WriteUInt32(headers->size());  // Number of headers.
   }
   SpdyHeaderBlock::const_iterator it;
   for (it = headers->begin(); it != headers->end(); ++it) {
-    if (spdy_version < 3) {
+    if (spdy_version < SPDY3) {
       frame->WriteString(it->first);
       frame->WriteString(it->second);
     } else {
@@ -1597,7 +1602,8 @@ void SpdyFramer::DeliverHpackBlockAsSpdy3Block() {
     return;
   }
   SpdyFrameBuilder builder(
-      GetSerializedLength(protocol_version(), &block));
+      GetSerializedLength(protocol_version(), &block),
+      SPDY3);
 
   SerializeNameValueBlockWithoutCompression(&builder, block);
   scoped_ptr<SpdyFrame> frame(builder.take());
@@ -1750,15 +1756,19 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
         uint32 status_raw = GOAWAY_OK;
         successful_read = reader.ReadUInt32(&status_raw);
         DCHECK(successful_read);
-        // We've read an unsigned integer, so it's enough to only check
-        // upper bound to ensure the value is in valid range.
-        if (status_raw < GOAWAY_NUM_STATUS_CODES) {
-          status = static_cast<SpdyGoAwayStatus>(status_raw);
+        if (SpdyConstants::IsValidGoAwayStatus(protocol_version(),
+                                               status_raw)) {
+          status = SpdyConstants::ParseGoAwayStatus(protocol_version(),
+                                                    status_raw);
         } else {
-          // TODO(hkhalil): Probably best to OnError here, depending on
-          // our interpretation of the spec. Keeping with existing liberal
-          // behavior for now.
           DCHECK(false);
+          // Throw an error for SPDY4+, keep liberal behavior
+          // for earlier versions.
+          if (protocol_version() > SPDY3) {
+            DLOG(WARNING) << "Invalid GO_AWAY status " << status_raw;
+            set_error(SPDY_INVALID_CONTROL_FRAME);
+            return 0;
+          }
         }
       }
       // Finished parsing the GOAWAY header, call frame handler.
@@ -1816,15 +1826,17 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
       uint32 status_raw = status;
       bool successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);
-      // We've read an unsigned integer, so it's enough to only check
-      // upper bound to ensure the value is in valid range.
-      if (status_raw > RST_STREAM_INVALID &&
-          status_raw < RST_STREAM_NUM_STATUS_CODES) {
+      if (SpdyConstants::IsValidRstStreamStatus(protocol_version(),
+                                                status_raw)) {
         status = static_cast<SpdyRstStreamStatus>(status_raw);
       } else {
-        // TODO(hkhalil): Probably best to OnError here, depending on
-        // our interpretation of the spec. Keeping with existing liberal
-        // behavior for now.
+        // Throw an error for SPDY4+, keep liberal behavior
+        // for earlier versions.
+        if (protocol_version() > SPDY3) {
+          DLOG(WARNING) << "Invalid RST_STREAM status " << status_raw;
+          set_error(SPDY_INVALID_CONTROL_FRAME);
+          return 0;
+        }
       }
       // Finished parsing the RST_STREAM header, call frame handler.
       visitor_->OnRstStream(current_frame_stream_id_, status);
@@ -1855,11 +1867,11 @@ size_t SpdyFramer::ProcessFramePaddingLength(const char* data, size_t len) {
     DCHECK_EQ(remaining_padding_payload_length_, 0u);
     bool pad_low = false;
     bool pad_high = false;
-    if (current_frame_flags_ & net::DATA_FLAG_PAD_LOW) {
+    if (current_frame_flags_ & DATA_FLAG_PAD_LOW) {
       pad_low = true;
       ++remaining_padding_length_fields_;
     }
-    if (current_frame_flags_ & net::DATA_FLAG_PAD_HIGH) {
+    if (current_frame_flags_ & DATA_FLAG_PAD_HIGH) {
       pad_high = true;
       ++remaining_padding_length_fields_;
     }
@@ -1909,15 +1921,15 @@ size_t SpdyFramer::ProcessFramePadding(const char* data, size_t len) {
     len -= amount_to_discard;
     remaining_padding_payload_length_ -= amount_to_discard;
     remaining_data_length_ -= amount_to_discard;
-
-    // If the FIN flag is set, and there is no more data in this data
-    // frame, inform the visitor of EOF via a 0-length data frame.
-    if (!remaining_data_length_ && current_frame_flags_ & DATA_FLAG_FIN) {
-      visitor_->OnStreamFrameData(current_frame_stream_id_, NULL, 0, true);
-    }
   }
 
   if (remaining_data_length_ == 0) {
+    // If the FIN flag is set, and there is no more data in this data frame,
+    // inform the visitor of EOF via a 0-length data frame.
+    if (current_frame_flags_ & DATA_FLAG_FIN) {
+      visitor_->OnStreamFrameData(current_frame_stream_id_, NULL, 0, true);
+    }
+
     CHANGE_STATE(SPDY_AUTO_RESET);
   }
   return original_len - len;
@@ -1938,16 +1950,25 @@ size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
     data += amount_to_forward;
     len -= amount_to_forward;
     remaining_data_length_ -= amount_to_forward;
-
-    // If the FIN flag is set, and there is no more data in this data
-    // frame, inform the visitor of EOF via a 0-length data frame.
-    if (!remaining_data_length_ && current_frame_flags_ & DATA_FLAG_FIN) {
-      visitor_->OnStreamFrameData(current_frame_stream_id_, NULL, 0, true);
-    }
   }
 
   if (remaining_data_length_ == remaining_padding_payload_length_) {
     CHANGE_STATE(SPDY_CONSUME_PADDING);
+  }
+  return original_len - len;
+}
+
+size_t SpdyFramer::ProcessIgnoredControlFramePayload(/*const char* data,*/
+                                                     size_t len) {
+  size_t original_len = len;
+  if (remaining_data_length_ > 0) {
+    size_t amount_to_ignore = std::min(remaining_data_length_, len);
+    len -= amount_to_ignore;
+    remaining_data_length_ -= amount_to_ignore;
+  }
+
+  if (remaining_data_length_ == 0) {
+    CHANGE_STATE(SPDY_AUTO_RESET);
   }
   return original_len - len;
 }
@@ -2008,72 +2029,88 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
   return reader.GetBytesConsumed();
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeData(const SpdyDataIR& datair) const {
+SpdySerializedFrame* SpdyFramer::SerializeData(
+    const SpdyDataIR& data_ir) const {
   uint8 flags = DATA_FLAG_NONE;
-  if (datair.fin()) {
+  if (data_ir.fin()) {
     flags = DATA_FLAG_FIN;
   }
 
   if (protocol_version() > SPDY3) {
     int num_padding_fields = 0;
-    if (datair.pad_low()) {
+    if (data_ir.pad_low()) {
       flags |= DATA_FLAG_PAD_LOW;
       ++num_padding_fields;
     }
-    if (datair.pad_high()) {
+    if (data_ir.pad_high()) {
       flags |= DATA_FLAG_PAD_HIGH;
       ++num_padding_fields;
     }
 
     const size_t size_with_padding = num_padding_fields +
-        datair.data().length() + datair.padding_payload_len() +
+        data_ir.data().length() + data_ir.padding_payload_len() +
         GetDataFrameMinimumSize();
-    SpdyFrameBuilder builder(size_with_padding);
-    builder.WriteDataFrameHeader(*this, datair.stream_id(), flags);
-    if (datair.pad_high()) {
-      builder.WriteUInt8(datair.padding_payload_len() >> 8);
+    SpdyFrameBuilder builder(size_with_padding, protocol_version());
+    builder.WriteDataFrameHeader(*this, data_ir.stream_id(), flags);
+    if (data_ir.pad_high()) {
+      builder.WriteUInt8(data_ir.padding_payload_len() >> 8);
     }
-    if (datair.pad_low()) {
-      builder.WriteUInt8(datair.padding_payload_len() & 0xff);
+    if (data_ir.pad_low()) {
+      builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
     }
-    builder.WriteBytes(datair.data().data(), datair.data().length());
-    if (datair.padding_payload_len() > 0) {
-      string padding = string(datair.padding_payload_len(), '0');
+    builder.WriteBytes(data_ir.data().data(), data_ir.data().length());
+    if (data_ir.padding_payload_len() > 0) {
+      string padding = string(data_ir.padding_payload_len(), '0');
       builder.WriteBytes(padding.data(), padding.length());
     }
     DCHECK_EQ(size_with_padding, builder.length());
     return builder.take();
   } else {
-    const size_t size = GetDataFrameMinimumSize() + datair.data().length();
-    SpdyFrameBuilder builder(size);
-    builder.WriteDataFrameHeader(*this, datair.stream_id(), flags);
-    builder.WriteBytes(datair.data().data(), datair.data().length());
+    const size_t size = GetDataFrameMinimumSize() + data_ir.data().length();
+    SpdyFrameBuilder builder(size, protocol_version());
+    builder.WriteDataFrameHeader(*this, data_ir.stream_id(), flags);
+    builder.WriteBytes(data_ir.data().data(), data_ir.data().length());
     DCHECK_EQ(size, builder.length());
     return builder.take();
   }
 }
 
-SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeader(
-    const SpdyDataIR& data) const {
-  const size_t kSize = GetDataFrameMinimumSize();
-
+SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
+    const SpdyDataIR& data_ir) const {
   uint8 flags = DATA_FLAG_NONE;
-  if (data.fin()) {
+  if (data_ir.fin()) {
     flags = DATA_FLAG_FIN;
   }
+
+  size_t frame_size = GetDataFrameMinimumSize();
+  size_t num_padding_fields = 0;
   if (protocol_version() > SPDY3) {
-    if (data.pad_low()) {
+    if (data_ir.pad_low()) {
       flags |= DATA_FLAG_PAD_LOW;
+      ++num_padding_fields;
     }
-    if (data.pad_high()) {
+    if (data_ir.pad_high()) {
       flags |= DATA_FLAG_PAD_HIGH;
+      ++num_padding_fields;
     }
+    frame_size += num_padding_fields;
   }
 
-  SpdyFrameBuilder builder(kSize);
-  builder.WriteDataFrameHeader(*this, data.stream_id(), flags);
-  builder.OverwriteLength(*this, data.data().length());
-  DCHECK_EQ(kSize, builder.length());
+  SpdyFrameBuilder builder(frame_size, protocol_version());
+  builder.WriteDataFrameHeader(*this, data_ir.stream_id(), flags);
+  if (protocol_version() > SPDY3) {
+    if (data_ir.pad_high()) {
+      builder.WriteUInt8(data_ir.padding_payload_len() >> 8);
+    }
+    if (data_ir.pad_low()) {
+      builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
+    }
+    builder.OverwriteLength(*this,  num_padding_fields +
+        data_ir.data().length() + data_ir.padding_payload_len());
+  } else {
+    builder.OverwriteLength(*this, data_ir.data().length());
+  }
+  DCHECK_EQ(frame_size, builder.length());
   return builder.take();
 }
 
@@ -2106,14 +2143,19 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
 
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
-    hpack_encoder_.EncodeHeaderSet(syn_stream.name_value_block(),
-                                   &hpack_encoding);
+    if (enable_compression_) {
+      hpack_encoder_.EncodeHeaderSet(
+          syn_stream.name_value_block(), &hpack_encoding);
+    } else {
+      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+          syn_stream.name_value_block(), &hpack_encoding);
+    }
     size += hpack_encoding.size();
   } else {
     size += GetSerializedLength(syn_stream.name_value_block());
   }
 
-  SpdyFrameBuilder builder(size);
+  SpdyFrameBuilder builder(size, protocol_version());
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, SYN_STREAM, flags);
     builder.WriteUInt32(syn_stream.stream_id());
@@ -2121,10 +2163,10 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
     builder.WriteUInt8(priority << ((protocol_version() <= SPDY2) ? 6 : 5));
     builder.WriteUInt8(0);  // Unused byte where credential slot used to be.
   } else {
-    builder.WriteFramePrefix(*this,
-                             HEADERS,
-                             flags,
-                             syn_stream.stream_id());
+    builder.BeginNewFrame(*this,
+                          HEADERS,
+                          flags,
+                          syn_stream.stream_id());
     builder.WriteUInt32(priority);
   }
   DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
@@ -2166,22 +2208,27 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
 
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
-    hpack_encoder_.EncodeHeaderSet(syn_reply.name_value_block(),
-                                   &hpack_encoding);
+    if (enable_compression_) {
+      hpack_encoder_.EncodeHeaderSet(
+          syn_reply.name_value_block(), &hpack_encoding);
+    } else {
+      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+          syn_reply.name_value_block(), &hpack_encoding);
+    }
     size += hpack_encoding.size();
   } else {
     size += GetSerializedLength(syn_reply.name_value_block());
   }
 
-  SpdyFrameBuilder builder(size);
+  SpdyFrameBuilder builder(size, protocol_version());
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, SYN_REPLY, flags);
     builder.WriteUInt32(syn_reply.stream_id());
   } else {
-    builder.WriteFramePrefix(*this,
-                             HEADERS,
-                             flags,
-                             syn_reply.stream_id());
+    builder.BeginNewFrame(*this,
+                          HEADERS,
+                          flags,
+                          syn_reply.stream_id());
   }
   if (protocol_version() < SPDY3) {
     builder.WriteUInt16(0);  // Unused.
@@ -2218,14 +2265,14 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   if (protocol_version() > SPDY3) {
     expected_length += rst_stream.description().size();
   }
-  SpdyFrameBuilder builder(expected_length);
+  SpdyFrameBuilder builder(expected_length, protocol_version());
 
   // Serialize the RST_STREAM frame.
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, RST_STREAM, 0);
     builder.WriteUInt32(rst_stream.stream_id());
   } else {
-    builder.WriteFramePrefix(*this, RST_STREAM, 0, rst_stream.stream_id());
+    builder.BeginNewFrame(*this, RST_STREAM, 0, rst_stream.stream_id());
   }
 
   builder.WriteUInt32(rst_stream.status());
@@ -2259,11 +2306,11 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   // Size, in bytes, of this SETTINGS frame.
   const size_t size = GetSettingsMinimumSize() +
                       (values->size() * setting_size);
-  SpdyFrameBuilder builder(size);
+  SpdyFrameBuilder builder(size, protocol_version());
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, SETTINGS, flags);
   } else {
-    builder.WriteFramePrefix(*this, SETTINGS, flags, 0);
+    builder.BeginNewFrame(*this, SETTINGS, flags, 0);
   }
 
   // If this is an ACK, payload should be empty.
@@ -2301,15 +2348,8 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::SerializeBlocked(const SpdyBlockedIR& blocked) const {
-  DCHECK_LT(SPDY3, protocol_version());
-  SpdyFrameBuilder builder(GetBlockedSize());
-  builder.WriteFramePrefix(*this, BLOCKED, kNoFlags, blocked.stream_id());
-  return builder.take();
-}
-
 SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
-  SpdyFrameBuilder builder(GetPingSize());
+  SpdyFrameBuilder builder(GetPingSize(), protocol_version());
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, PING, kNoFlags);
     builder.WriteUInt32(static_cast<uint32>(ping.id()));
@@ -2318,7 +2358,7 @@ SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
     if (ping.is_ack()) {
       flags |= PING_FLAG_ACK;
     }
-    builder.WriteFramePrefix(*this, PING, flags, 0);
+    builder.BeginNewFrame(*this, PING, flags, 0);
     builder.WriteUInt64(ping.id());
   }
   DCHECK_EQ(GetPingSize(), builder.length());
@@ -2333,13 +2373,13 @@ SpdySerializedFrame* SpdyFramer::SerializeGoAway(
   if (protocol_version() > SPDY3) {
     expected_length += goaway.description().size();
   }
-  SpdyFrameBuilder builder(expected_length);
+  SpdyFrameBuilder builder(expected_length, protocol_version());
 
   // Serialize the GOAWAY frame.
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, GOAWAY, kNoFlags);
   } else {
-    builder.WriteFramePrefix(*this, GOAWAY, 0, 0);
+    builder.BeginNewFrame(*this, GOAWAY, 0, 0);
   }
 
   // GOAWAY frames specify the last good stream id for all SPDY versions.
@@ -2367,6 +2407,9 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
     flags |= CONTROL_FLAG_FIN;
   }
   if (protocol_version() > SPDY3) {
+    // TODO(mlavan): If we overflow into a CONTINUATION frame, this will
+    // get overwritten below, so we should probably just get rid of the
+    // end_headers field.
     if (headers.end_headers()) {
       flags |= HEADERS_FLAG_END_HEADERS;
     }
@@ -2389,21 +2432,32 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
 
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
-    hpack_encoder_.EncodeHeaderSet(headers.name_value_block(), &hpack_encoding);
+    if (enable_compression_) {
+      hpack_encoder_.EncodeHeaderSet(
+          headers.name_value_block(), &hpack_encoding);
+    } else {
+      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+          headers.name_value_block(), &hpack_encoding);
+    }
     size += hpack_encoding.size();
+    if (size > GetControlFrameBufferMaxSize()) {
+      size += GetNumberRequiredContinuationFrames(size) *
+              GetContinuationMinimumSize();
+      flags &= ~HEADERS_FLAG_END_HEADERS;
+    }
   } else {
     size += GetSerializedLength(headers.name_value_block());
   }
 
-  SpdyFrameBuilder builder(size);
+  SpdyFrameBuilder builder(size, protocol_version());
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, HEADERS, flags);
     builder.WriteUInt32(headers.stream_id());
   } else {
-    builder.WriteFramePrefix(*this,
-                             HEADERS,
-                             flags,
-                             headers.stream_id());
+    builder.BeginNewFrame(*this,
+                          HEADERS,
+                          flags,
+                          headers.stream_id());
     if (headers.has_priority()) {
       builder.WriteUInt32(priority);
     }
@@ -2414,7 +2468,10 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
   if (protocol_version() > SPDY3) {
-    builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
+    WritePayloadWithContinuation(&builder,
+                                 hpack_encoding,
+                                 headers.stream_id(),
+                                 HEADERS);
   } else {
     SerializeNameValueBlock(&builder, headers);
   }
@@ -2435,18 +2492,25 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
 
 SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
     const SpdyWindowUpdateIR& window_update) const {
-  SpdyFrameBuilder builder(GetWindowUpdateSize());
+  SpdyFrameBuilder builder(GetWindowUpdateSize(), protocol_version());
   if (protocol_version() <= SPDY3) {
     builder.WriteControlFrameHeader(*this, WINDOW_UPDATE, kNoFlags);
     builder.WriteUInt32(window_update.stream_id());
   } else {
-    builder.WriteFramePrefix(*this,
-                             WINDOW_UPDATE,
-                             kNoFlags,
-                             window_update.stream_id());
+    builder.BeginNewFrame(*this,
+                          WINDOW_UPDATE,
+                          kNoFlags,
+                          window_update.stream_id());
   }
   builder.WriteUInt32(window_update.delta());
   DCHECK_EQ(GetWindowUpdateSize(), builder.length());
+  return builder.take();
+}
+
+SpdyFrame* SpdyFramer::SerializeBlocked(const SpdyBlockedIR& blocked) const {
+  DCHECK_LT(SPDY3, protocol_version());
+  SpdyFrameBuilder builder(GetBlockedSize(), protocol_version());
+  builder.BeginNewFrame(*this, BLOCKED, kNoFlags, blocked.stream_id());
   return builder.take();
 }
 
@@ -2454,6 +2518,9 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
     const SpdyPushPromiseIR& push_promise) {
   DCHECK_LT(SPDY3, protocol_version());
   uint8 flags = 0;
+  // TODO(mlavan): If we overflow into a CONTINUATION frame, this will
+  // get overwritten below, so we should probably just get rid of the
+  // end_push_promise field.
   if (push_promise.end_push_promise()) {
     flags |= PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
   }
@@ -2462,21 +2529,36 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
 
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
-    hpack_encoder_.EncodeHeaderSet(push_promise.name_value_block(),
-                                   &hpack_encoding);
+    if (enable_compression_) {
+      hpack_encoder_.EncodeHeaderSet(
+          push_promise.name_value_block(), &hpack_encoding);
+    } else {
+      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+          push_promise.name_value_block(), &hpack_encoding);
+    }
     size += hpack_encoding.size();
+    if (size > GetControlFrameBufferMaxSize()) {
+      size += GetNumberRequiredContinuationFrames(size) *
+              GetContinuationMinimumSize();
+      flags &= ~PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
+    }
   } else {
     size += GetSerializedLength(push_promise.name_value_block());
   }
 
-  SpdyFrameBuilder builder(size);
-  builder.WriteFramePrefix(*this, PUSH_PROMISE, flags,
-      push_promise.stream_id());
+  SpdyFrameBuilder builder(size, protocol_version());
+  builder.BeginNewFrame(*this,
+                        PUSH_PROMISE,
+                        flags,
+                        push_promise.stream_id());
   builder.WriteUInt32(push_promise.promised_stream_id());
   DCHECK_EQ(GetPushPromiseMinimumSize(), builder.length());
 
   if (protocol_version() > SPDY3) {
-    builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
+    WritePayloadWithContinuation(&builder,
+                                 hpack_encoding,
+                                 push_promise.stream_id(),
+                                 PUSH_PROMISE);
   } else {
     SerializeNameValueBlock(&builder, push_promise);
   }
@@ -2507,12 +2589,17 @@ SpdyFrame* SpdyFramer::SerializeContinuation(
   // The size of this frame, including variable-length name-value block.
   size_t size = GetContinuationMinimumSize();
   string hpack_encoding;
-  hpack_encoder_.EncodeHeaderSet(continuation.name_value_block(),
-                                 &hpack_encoding);
+  if (enable_compression_) {
+    hpack_encoder_.EncodeHeaderSet(
+        continuation.name_value_block(), &hpack_encoding);
+  } else {
+    hpack_encoder_.EncodeHeaderSetWithoutCompression(
+        continuation.name_value_block(), &hpack_encoding);
+  }
   size += hpack_encoding.size();
 
-  SpdyFrameBuilder builder(size);
-  builder.WriteFramePrefix(*this, CONTINUATION, flags,
+  SpdyFrameBuilder builder(size, protocol_version());
+  builder.BeginNewFrame(*this, CONTINUATION, flags,
       continuation.stream_id());
   DCHECK_EQ(GetContinuationMinimumSize(), builder.length());
 
@@ -2600,6 +2687,69 @@ size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers) {
   // Since we'll be performing lots of flushes when compressing the data,
   // zlib's lower bounds may be insufficient.
   return 2 * deflateBound(compressor, uncompressed_length);
+}
+
+size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
+  const size_t kMaxControlFrameSize = GetControlFrameBufferMaxSize();
+  DCHECK_GT(protocol_version(), SPDY3);
+  DCHECK_GT(size, kMaxControlFrameSize);
+  size_t overflow = size - kMaxControlFrameSize;
+  return overflow / (kMaxControlFrameSize - GetContinuationMinimumSize()) + 1;
+}
+
+void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
+                                              const string& hpack_encoding,
+                                              SpdyStreamId stream_id,
+                                              SpdyFrameType type) {
+  const size_t kMaxControlFrameSize = GetControlFrameBufferMaxSize();
+
+    // In addition to the prefix, fixed_field_size includes the size of
+    // any fields that come before the variable-length name/value block.
+    size_t fixed_field_size = 0;
+    uint8 end_flag = 0;
+    uint8 flags = 0;
+    if (type == HEADERS) {
+      fixed_field_size = GetHeadersMinimumSize();
+      end_flag = HEADERS_FLAG_END_HEADERS;
+    } else if (type == PUSH_PROMISE) {
+      fixed_field_size = GetPushPromiseMinimumSize();
+      end_flag = PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
+    } else {
+      DLOG(FATAL) << "CONTINUATION frames cannot be used with frame type "
+                  << FrameTypeToString(type);
+    }
+
+    // Write as much of the payload as possible into the initial frame.
+    size_t bytes_remaining = hpack_encoding.size() -
+        std::min(hpack_encoding.size(),
+                 kMaxControlFrameSize - fixed_field_size);
+    builder->WriteBytes(&hpack_encoding[0],
+                        hpack_encoding.size() - bytes_remaining);
+
+    if (bytes_remaining > 0) {
+      builder->OverwriteLength(*this,
+          kMaxControlFrameSize - GetControlFrameHeaderSize());
+    }
+
+    // Tack on CONTINUATION frames for the overflow.
+    while (bytes_remaining > 0) {
+      size_t bytes_to_write = std::min(bytes_remaining,
+                                       kMaxControlFrameSize -
+                                       GetContinuationMinimumSize());
+      // Write CONTINUATION frame prefix.
+      if (bytes_remaining == bytes_to_write) {
+        flags |= end_flag;
+      }
+      builder->BeginNewFrame(*this,
+                             CONTINUATION,
+                             flags,
+                             stream_id);
+      // Write payload fragment.
+      builder->WriteBytes(&hpack_encoding[hpack_encoding.size() -
+                                          bytes_remaining],
+                          bytes_to_write);
+      bytes_remaining -= bytes_to_write;
+    }
 }
 
 // The following compression setting are based on Brian Olson's analysis. See
@@ -2789,7 +2939,7 @@ void SpdyFramer::SerializeNameValueBlock(
   // First build an uncompressed version to be fed into the compressor.
   const size_t uncompressed_len = GetSerializedLength(
       protocol_version(), &(frame.name_value_block()));
-  SpdyFrameBuilder uncompressed_builder(uncompressed_len);
+  SpdyFrameBuilder uncompressed_builder(uncompressed_len, protocol_version());
   SerializeNameValueBlockWithoutCompression(&uncompressed_builder,
                                             frame.name_value_block());
   scoped_ptr<SpdyFrame> uncompressed_payload(uncompressed_builder.take());

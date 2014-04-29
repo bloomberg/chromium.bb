@@ -10,19 +10,6 @@
 
 namespace net {
 
-TEST(SpdyFrameBuilderTestVersionAgnostic, GetWritableBuffer) {
-  const size_t builder_size = 10;
-  SpdyFrameBuilder builder(builder_size);
-  char* writable_buffer = builder.GetWritableBuffer(builder_size);
-  memset(writable_buffer, ~1, builder_size);
-  EXPECT_TRUE(builder.Seek(builder_size));
-  scoped_ptr<SpdyFrame> frame(builder.take());
-  char expected[builder_size];
-  memset(expected, ~1, builder_size);
-  EXPECT_EQ(base::StringPiece(expected, builder_size),
-            base::StringPiece(frame->data(), builder_size));
-}
-
 class SpdyFrameBuilderTest : public ::testing::TestWithParam<SpdyMajorVersion> {
  protected:
   virtual void SetUp() {
@@ -38,6 +25,19 @@ INSTANTIATE_TEST_CASE_P(SpdyFrameBuilderTests,
                         SpdyFrameBuilderTest,
                         ::testing::Values(SPDY2, SPDY3, SPDY4));
 
+TEST_P(SpdyFrameBuilderTest, GetWritableBuffer) {
+  const size_t builder_size = 10;
+  SpdyFrameBuilder builder(builder_size, spdy_version_);
+  char* writable_buffer = builder.GetWritableBuffer(builder_size);
+  memset(writable_buffer, ~1, builder_size);
+  EXPECT_TRUE(builder.Seek(builder_size));
+  scoped_ptr<SpdyFrame> frame(builder.take());
+  char expected[builder_size];
+  memset(expected, ~1, builder_size);
+  EXPECT_EQ(base::StringPiece(expected, builder_size),
+            base::StringPiece(frame->data(), builder_size));
+}
+
 TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   // Create an empty SETTINGS frame both via framer and manually via builder.
   // The one created via builder is initially given the incorrect length, but
@@ -45,12 +45,12 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   SpdyFramer framer(spdy_version_);
   SpdySettingsIR settings_ir;
   scoped_ptr<SpdyFrame> expected(framer.SerializeSettings(settings_ir));
-  SpdyFrameBuilder builder(expected->size() + 1);
-  if (spdy_version_ < 4) {
+  SpdyFrameBuilder builder(expected->size() + 1, spdy_version_);
+  if (spdy_version_ <= SPDY3) {
     builder.WriteControlFrameHeader(framer, SETTINGS, 0);
     builder.WriteUInt32(0);  // Write the number of settings.
   } else {
-    builder.WriteFramePrefix(framer, SETTINGS, 0, 0);
+    builder.BeginNewFrame(framer, SETTINGS, 0, 0);
   }
   EXPECT_TRUE(builder.GetWritableBuffer(1) != NULL);
   builder.RewriteLength(framer);
@@ -63,14 +63,14 @@ TEST_P(SpdyFrameBuilderTest, OverwriteFlags) {
   // Create a HEADERS frame both via framer and manually via builder with
   // different flags set, then make them match using OverwriteFlags().
   SpdyFramer framer(spdy_version_);
-  if (spdy_version_ < SPDY4) {
+  if (spdy_version_ <= SPDY3) {
     return;
   }
   SpdyHeadersIR headers_ir(1);
   headers_ir.set_end_headers(false);
   scoped_ptr<SpdyFrame> expected(framer.SerializeHeaders(headers_ir));
-  SpdyFrameBuilder builder(expected->size());
-  builder.WriteFramePrefix(framer, HEADERS, HEADERS_FLAG_END_HEADERS, 1);
+  SpdyFrameBuilder builder(expected->size(), spdy_version_);
+  builder.BeginNewFrame(framer, HEADERS, HEADERS_FLAG_END_HEADERS, 1);
   builder.OverwriteFlags(framer, 0);
   scoped_ptr<SpdyFrame> built(builder.take());
   EXPECT_EQ(base::StringPiece(expected->data(), expected->size()),

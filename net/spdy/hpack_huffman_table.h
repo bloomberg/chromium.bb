@@ -77,6 +77,9 @@ class NET_EXPORT_PRIVATE HpackHuffmanTable {
   // context.
   void EncodeString(base::StringPiece in, HpackOutputStream* out) const;
 
+  // Returns the encoded size of the input string.
+  size_t EncodedSize(base::StringPiece in) const;
+
   // Decodes symbols from |in| into |out|. It is the caller's responsibility
   // to ensure |out| has a reserved a sufficient buffer to hold decoded output.
   // DecodeString() halts when |in| runs out of input, in which case true is

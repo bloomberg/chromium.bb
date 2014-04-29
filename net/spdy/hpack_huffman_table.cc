@@ -248,6 +248,20 @@ void HpackHuffmanTable::EncodeString(StringPiece in,
   }
 }
 
+size_t HpackHuffmanTable::EncodedSize(StringPiece in) const {
+  size_t bit_count = 0;
+  for (size_t i = 0; i != in.size(); i++) {
+    uint16 symbol_id = static_cast<uint8>(in[i]);
+    CHECK_GT(code_by_id_.size(), symbol_id);
+
+    bit_count += length_by_id_[symbol_id];
+  }
+  if (bit_count % 8 != 0) {
+    bit_count += 8 - bit_count % 8;
+  }
+  return bit_count / 8;
+}
+
 bool HpackHuffmanTable::DecodeString(HpackInputStream* in,
                                      size_t out_capacity,
                                      string* out) const {

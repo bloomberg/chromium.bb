@@ -10,72 +10,79 @@
 
 namespace net {
 
-namespace {
+using base::StringPiece;
 
-const uint32 kReferencedMask = 0x80000000;
-const uint32 kTouchCountMask = 0x7fffffff;
+const size_t HpackEntry::kSizeOverhead = 32;
 
-}  // namespace
-
-const uint32 HpackEntry::kSizeOverhead = 32;
-
-const uint32 HpackEntry::kUntouched = 0x7fffffff;
-
-HpackEntry::HpackEntry() : referenced_and_touch_count_(kUntouched) {}
-
-HpackEntry::HpackEntry(base::StringPiece name, base::StringPiece value)
-    : name_(name.as_string()),
-      value_(value.as_string()),
-      referenced_and_touch_count_(kUntouched) {}
-
-bool HpackEntry::IsReferenced() const {
-  return ((referenced_and_touch_count_ & kReferencedMask) != 0);
+bool HpackEntry::Comparator::operator() (
+    const HpackEntry* lhs, const HpackEntry* rhs) const {
+  int result = lhs->name().compare(rhs->name());
+  if (result != 0)
+    return result < 0;
+  result = lhs->value().compare(rhs->value());
+  if (result != 0)
+    return result < 0;
+  DCHECK(lhs == rhs || lhs->Index() != rhs->Index());
+  return lhs->Index() < rhs->Index();
 }
 
-uint32 HpackEntry::TouchCount() const {
-  return referenced_and_touch_count_ & kTouchCountMask;
+HpackEntry::HpackEntry(StringPiece name,
+                       StringPiece value,
+                       bool is_static,
+                       size_t insertion_index,
+                       const size_t* total_table_insertions_or_current_size)
+    : name_(name.data(), name.size()),
+      value_(value.data(), value.size()),
+      is_static_(is_static),
+      state_(0),
+      insertion_index_(insertion_index),
+      total_insertions_or_size_(total_table_insertions_or_current_size) {
+  CHECK_NE(total_table_insertions_or_current_size,
+           static_cast<const size_t*>(NULL));
 }
 
+HpackEntry::HpackEntry(StringPiece name, StringPiece value)
+    : name_(name.data(), name.size()),
+      value_(value.data(), value.size()),
+      is_static_(false),
+      state_(0),
+      insertion_index_(0),
+      total_insertions_or_size_(NULL) {
+}
+
+HpackEntry::HpackEntry()
+    : is_static_(false),
+      state_(0),
+      insertion_index_(0),
+      total_insertions_or_size_(NULL) {
+}
+
+HpackEntry::~HpackEntry() {}
+
+size_t HpackEntry::Index() const {
+  if (total_insertions_or_size_ == NULL) {
+    // This is a lookup instance.
+    return 0;
+  } else if (IsStatic()) {
+    return 1 + insertion_index_ + *total_insertions_or_size_;
+  } else {
+    return *total_insertions_or_size_ - insertion_index_;
+  }
+}
+
+// static
+size_t HpackEntry::Size(StringPiece name, StringPiece value) {
+  return name.size() + value.size() + kSizeOverhead;
+}
 size_t HpackEntry::Size() const {
-  return name_.size() + value_.size() + kSizeOverhead;
+  return Size(name(), value());
 }
 
 std::string HpackEntry::GetDebugString() const {
-  const char* is_referenced_str = (IsReferenced() ? "true" : "false");
-  std::string touch_count_str = "(untouched)";
-  if (TouchCount() != kUntouched)
-    touch_count_str = base::IntToString(TouchCount());
-  return "{ name: \"" + name_ + "\", value: \"" + value_ +
-      "\", referenced: " + is_referenced_str + ", touch_count: " +
-      touch_count_str + " }";
-}
-
-bool HpackEntry::Equals(const HpackEntry& other) const {
-  return
-      StringPiecesEqualConstantTime(name_, other.name_) &&
-      StringPiecesEqualConstantTime(value_, other.value_) &&
-      (referenced_and_touch_count_ == other.referenced_and_touch_count_);
-}
-
-void HpackEntry::SetReferenced(bool referenced) {
-  referenced_and_touch_count_ &= kTouchCountMask;
-  if (referenced)
-    referenced_and_touch_count_ |= kReferencedMask;
-}
-
-void HpackEntry::AddTouches(uint32 additional_touch_count) {
-  uint32 new_touch_count = TouchCount();
-  if (new_touch_count == kUntouched)
-    new_touch_count = 0;
-  new_touch_count += additional_touch_count;
-  DCHECK_LT(new_touch_count, kUntouched);
-  referenced_and_touch_count_ &= kReferencedMask;
-  referenced_and_touch_count_ |= new_touch_count;
-}
-
-void HpackEntry::ClearTouches() {
-  referenced_and_touch_count_ &= kReferencedMask;
-  referenced_and_touch_count_ |= kUntouched;
+  return "{ name: \"" + name_ +
+      "\", value: \"" + value_ +
+      "\", " + (IsStatic() ? "static" : "dynamic") +
+      ", state: " + base::IntToString(state_) + " }";
 }
 
 }  // namespace net

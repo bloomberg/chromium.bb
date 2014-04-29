@@ -28,14 +28,15 @@ namespace net {
 
 // The major versions of SPDY. Major version differences indicate
 // framer-layer incompatibility, as opposed to minor version numbers
-// which indicate application-layer incompatibility. It is guaranteed
-// that the enum value SPDYn maps to the integer n.
+// which indicate application-layer incompatibility. Do not rely on
+// the mapping from enum value SPDYn to the integer n.
 enum SpdyMajorVersion {
   SPDY2 = 2,
   SPDY_MIN_VERSION = SPDY2,
   SPDY3 = 3,
   SPDY4 = 4,
-  SPDY_MAX_VERSION = SPDY4
+  SPDY5 = 5,
+  SPDY_MAX_VERSION = SPDY5
 };
 
 // A SPDY stream id is a 31 bit entity.
@@ -360,6 +361,7 @@ enum SpdyRstStreamStatus {
   RST_STREAM_INVALID = 0,
   RST_STREAM_PROTOCOL_ERROR = 1,
   RST_STREAM_INVALID_STREAM = 2,
+  RST_STREAM_STREAM_CLOSED = 2,  // Equivalent to INVALID_STREAM
   RST_STREAM_REFUSED_STREAM = 3,
   RST_STREAM_UNSUPPORTED_VERSION = 4,
   RST_STREAM_CANCEL = 5,
@@ -368,17 +370,33 @@ enum SpdyRstStreamStatus {
   RST_STREAM_STREAM_IN_USE = 8,
   RST_STREAM_STREAM_ALREADY_CLOSED = 9,
   RST_STREAM_INVALID_CREDENTIALS = 10,
+  // FRAME_TOO_LARGE (defined by SPDY versions 3.1 and below), and
+  // FRAME_SIZE_ERROR (defined by HTTP/2) are mapped to the same internal
+  // reset status.
   RST_STREAM_FRAME_TOO_LARGE = 11,
-  RST_STREAM_NUM_STATUS_CODES = 12
+  RST_STREAM_FRAME_SIZE_ERROR = 11,
+  RST_STREAM_SETTINGS_TIMEOUT = 12,
+  RST_STREAM_CONNECT_ERROR = 13,
+  RST_STREAM_ENHANCE_YOUR_CALM = 14,
+  RST_STREAM_NUM_STATUS_CODES = 15
 };
 
 // Status codes for GOAWAY frames.
 enum SpdyGoAwayStatus {
-  GOAWAY_INVALID = -1,
   GOAWAY_OK = 0,
+  GOAWAY_NO_ERROR = GOAWAY_OK,
   GOAWAY_PROTOCOL_ERROR = 1,
   GOAWAY_INTERNAL_ERROR = 2,
-  GOAWAY_NUM_STATUS_CODES = 3  // Must be last.
+  GOAWAY_FLOW_CONTROL_ERROR = 3,
+  GOAWAY_SETTINGS_TIMEOUT = 4,
+  GOAWAY_STREAM_CLOSED = 5,
+  GOAWAY_FRAME_SIZE_ERROR = 6,
+  GOAWAY_REFUSED_STREAM = 7,
+  GOAWAY_CANCEL = 8,
+  GOAWAY_COMPRESSION_ERROR = 9,
+  GOAWAY_CONNECT_ERROR = 10,
+  GOAWAY_ENHANCE_YOUR_CALM = 11,
+  GOAWAY_INADEQUATE_SECURITY = 12
 };
 
 // A SPDY priority is a number between 0 and 7 (inclusive).
@@ -426,6 +444,62 @@ class NET_EXPORT_PRIVATE SpdyConstants {
   // given protocol version.
   // Returns -1 on failure (I.E. Invalid setting id for the given version).
   static int SerializeSettingId(SpdyMajorVersion version, SpdySettingsIds id);
+
+  // Returns true if a given on-the-wire enumeration of a RST_STREAM status code
+  // is valid for a given protocol version, false otherwise.
+  static bool IsValidRstStreamStatus(SpdyMajorVersion version,
+                                     int rst_stream_status_field);
+
+  // Parses a RST_STREAM status code from an on-the-wire enumeration of a given
+  // protocol version.
+  // Behavior is undefined for invalid RST_STREAM status code fields; consumers
+  // should first use IsValidRstStreamStatus() to verify validity of RST_STREAM
+  // status code fields..
+  static SpdyRstStreamStatus ParseRstStreamStatus(SpdyMajorVersion version,
+                                                  int rst_stream_status_field);
+
+  // Serializes a given RST_STREAM status code to the on-the-wire enumeration
+  // value for the given protocol version.
+  // Returns -1 on failure (I.E. Invalid RST_STREAM status code for the given
+  // version).
+  static int SerializeRstStreamStatus(SpdyMajorVersion version,
+                                      SpdyRstStreamStatus rst_stream_status);
+
+  // Returns true if a given on-the-wire enumeration of a GOAWAY status code is
+  // valid for the given protocol version, false otherwise.
+  static bool IsValidGoAwayStatus(SpdyMajorVersion version,
+                                  int goaway_status_field);
+
+  // Parses a GOAWAY status from an on-the-wire enumeration of a given protocol
+  // version.
+  // Behavior is undefined for invalid GOAWAY status fields; consumers should
+  // first use IsValidGoAwayStatus() to verify validity of GOAWAY status fields.
+  static SpdyGoAwayStatus ParseGoAwayStatus(SpdyMajorVersion version,
+                                            int goaway_status_field);
+
+  // Serializes a given GOAWAY status to the on-the-wire enumeration value for
+  // the given protocol version.
+  // Returns -1 on failure (I.E. Invalid GOAWAY status for the given version).
+  static int SerializeGoAwayStatus(SpdyMajorVersion version,
+                                   SpdyGoAwayStatus status);
+
+  // Size, in bytes, of the data frame header. Future versions of SPDY
+  // will likely vary this, so we allow for the flexibility of a function call
+  // for this value as opposed to a constant.
+  static size_t GetDataFrameMinimumSize();
+
+  // Size, in bytes, of the control frame header.
+  static size_t GetControlFrameHeaderSize(SpdyMajorVersion version);
+
+  static size_t GetPrefixLength(SpdyFrameType type, SpdyMajorVersion version);
+
+  static size_t GetFrameMaximumSize(SpdyMajorVersion version);
+
+  static SpdyMajorVersion ParseMajorVersion(int version_number);
+
+  static int SerializeMajorVersion(SpdyMajorVersion version);
+
+  static std::string GetVersionString(SpdyMajorVersion version);
 };
 
 class SpdyFrame;
@@ -636,8 +710,6 @@ class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
     return status_;
   }
   void set_status(SpdyRstStreamStatus status) {
-    DCHECK_NE(status, RST_STREAM_INVALID);
-    DCHECK_LT(status, RST_STREAM_NUM_STATUS_CODES);
     status_ = status;
   }
 

@@ -40689,6 +40689,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="29" label="GoAway Frame Corrupt"/>
   <int value="30" label="RstStream Frame Corrupt"/>
   <int value="31" label="Unexpected Frame (Expected Continuation)"/>
+<!-- More SpdyRstStreamStatus -->
+
+  <int value="32" label="Timeout waiting for settings acknowledgement"/>
+  <int value="33"
+      label="Connection established in response to CONNECT request was
+             abnormally closed"/>
+  <int value="34" label="Peer exhibiting suspect behavior."/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">

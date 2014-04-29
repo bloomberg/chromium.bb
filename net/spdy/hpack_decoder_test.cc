@@ -23,18 +23,6 @@ namespace test {
 using base::StringPiece;
 using std::string;
 
-class HpackEncodingContextPeer {
- public:
-  explicit HpackEncodingContextPeer(const HpackEncodingContext& context)
-      : context_(context) {}
-  const HpackHeaderTable& header_table() {
-    return context_.header_table_;
-  }
-
- private:
-  const HpackEncodingContext& context_;
-};
-
 class HpackDecoderPeer {
  public:
   explicit HpackDecoderPeer(HpackDecoder* decoder)
@@ -46,8 +34,8 @@ class HpackDecoderPeer {
   bool DecodeNextName(HpackInputStream* in, StringPiece* out) {
     return decoder_->DecodeNextName(in, out);
   }
-  HpackEncodingContextPeer context_peer() {
-    return HpackEncodingContextPeer(decoder_->context_);
+  const HpackHeaderTable& header_table() {
+    return decoder_->header_table_;
   }
   void set_cookie_name(string name) {
     decoder_->cookie_name_ = name;
@@ -88,8 +76,7 @@ class HpackDecoderTest : public ::testing::Test {
  protected:
   HpackDecoderTest()
       : decoder_(ObtainHpackHuffmanTable()),
-        decoder_peer_(&decoder_),
-        context_peer_(decoder_peer_.context_peer()) {}
+        decoder_peer_(&decoder_) {}
 
   bool DecodeHeaderBlock(StringPiece str) {
     return decoder_.HandleControlFrameHeadersData(0, str.data(), str.size()) &&
@@ -109,7 +96,6 @@ class HpackDecoderTest : public ::testing::Test {
 
   HpackDecoder decoder_;
   test::HpackDecoderPeer decoder_peer_;
-  test::HpackEncodingContextPeer context_peer_;
 };
 
 TEST_F(HpackDecoderTest, HandleControlFrameHeadersData) {
@@ -257,36 +243,36 @@ TEST_F(HpackDecoderTest, InvalidIndexedHeader) {
 
 TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
   EXPECT_EQ(kDefaultHeaderTableSizeSetting,
-            context_peer_.header_table().max_size());
+            decoder_peer_.header_table().max_size());
   {
     // Maximum-size update with size 126. Succeeds.
     EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x80\x7e", 2)));
-    EXPECT_EQ(126u, context_peer_.header_table().max_size());
+    EXPECT_EQ(126u, decoder_peer_.header_table().max_size());
   }
   string input;
   {
     // Maximum-size update with kDefaultHeaderTableSizeSetting. Succeeds.
-    HpackOutputStream output_stream(kuint32max);
+    HpackOutputStream output_stream;
     output_stream.AppendBits(0x80, 8);  // Context update.
     output_stream.AppendBits(0x00, 1);  // Size update.
-    output_stream.AppendUint32ForTest(kDefaultHeaderTableSizeSetting);
+    output_stream.AppendUint32(kDefaultHeaderTableSizeSetting);
 
     output_stream.TakeString(&input);
     EXPECT_TRUE(DecodeHeaderBlock(StringPiece(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
-              context_peer_.header_table().max_size());
+              decoder_peer_.header_table().max_size());
   }
   {
     // Maximum-size update with kDefaultHeaderTableSizeSetting + 1. Fails.
-    HpackOutputStream output_stream(kuint32max);
+    HpackOutputStream output_stream;
     output_stream.AppendBits(0x80, 8);  // Context update.
     output_stream.AppendBits(0x00, 1);  // Size update.
-    output_stream.AppendUint32ForTest(kDefaultHeaderTableSizeSetting + 1);
+    output_stream.AppendUint32(kDefaultHeaderTableSizeSetting + 1);
 
     output_stream.TakeString(&input);
     EXPECT_FALSE(DecodeHeaderBlock(StringPiece(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
-              context_peer_.header_table().max_size());
+              decoder_peer_.header_table().max_size());
   }
 }
 
@@ -356,7 +342,7 @@ TEST_F(HpackDecoderTest, LiteralHeaderInvalidIndices) {
 
 // Round-tripping the header set from E.2.1 should work.
 TEST_F(HpackDecoderTest, BasicE21) {
-  HpackEncoder encoder;
+  HpackEncoder encoder(ObtainHpackHuffmanTable());
 
   std::map<string, string> expected_header_set;
   expected_header_set[":method"] = "GET";

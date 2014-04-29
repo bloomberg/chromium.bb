@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
-#include "net/spdy/hpack_encoding_context.h"
+#include "net/spdy/hpack_header_table.h"
 #include "net/spdy/hpack_input_stream.h"
 #include "net/spdy/spdy_protocol.h"
 
@@ -38,8 +38,9 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   ~HpackDecoder();
 
   // Called upon acknowledgement of SETTINGS_HEADER_TABLE_SIZE.
-  // See HpackEncodingContext::ApplyHeaderTableSizeSetting().
-  void ApplyHeaderTableSizeSetting(uint32 max_size);
+  void ApplyHeaderTableSizeSetting(size_t size_setting) {
+    header_table_.SetSettingsHeaderTableSize(size_setting);
+  }
 
   // Called as headers data arrives. Returns false if an error occurred.
   // TODO(jgraettinger): A future version of this method will incrementally
@@ -82,7 +83,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
                                   base::StringPiece value);
 
   const uint32 max_string_literal_size_;
-  HpackEncodingContext context_;
+  HpackHeaderTable header_table_;
 
   // Incrementally reconstructed cookie value. Name is also kept to preserve
   // input casing.
@@ -97,7 +98,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // Huffman table to be applied to decoded Huffman literals,
   // and scratch space for storing those decoded literals.
   const HpackHuffmanTable& huffman_table_;
-  std::string huffman_key_buffer_, huffman_value_buffer_;
+  std::string key_buffer_, value_buffer_;
 
   // Handlers for decoding HPACK opcodes and header representations
   // (or parts thereof). These methods return true on success and

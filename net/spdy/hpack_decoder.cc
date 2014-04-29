@@ -15,15 +15,19 @@ namespace net {
 using base::StringPiece;
 using std::string;
 
+namespace {
+
+const uint8 kNoState = 0;
+// Set on entries added to the reference set during this decoding.
+const uint8 kReferencedThisEncoding = 1;
+
+}  // namespace
+
 HpackDecoder::HpackDecoder(const HpackHuffmanTable& table)
     : max_string_literal_size_(kDefaultMaxStringLiteralSize),
       huffman_table_(table) {}
 
 HpackDecoder::~HpackDecoder() {}
-
-void HpackDecoder::ApplyHeaderTableSizeSetting(uint32 max_size) {
-  context_.ApplyHeaderTableSizeSetting(max_size);
-}
 
 bool HpackDecoder::HandleControlFrameHeadersData(SpdyStreamId id,
                                                  const char* headers_data,
@@ -50,13 +54,19 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
   headers_block_buffer_.clear();
 
   // Emit everything in the reference set that hasn't already been emitted.
-  for (size_t i = 1; i <= context_.GetMutableEntryCount(); ++i) {
-    if (context_.IsReferencedAt(i) &&
-        (context_.GetTouchCountAt(i) == HpackEncodingContext::kUntouched)) {
-      HandleHeaderRepresentation(context_.GetNameAt(i).as_string(),
-                                 context_.GetValueAt(i).as_string());
+  // Also clear entry state for the next decoded headers block.
+  // TODO(jgraettinger): We may need to revisit the order in which headers
+  // are emitted (b/14051713).
+  for (HpackEntry::OrderedSet::const_iterator it =
+          header_table_.reference_set().begin();
+       it != header_table_.reference_set().end(); ++it) {
+    HpackEntry* entry = *it;
+
+    if (entry->state() == kNoState) {
+      HandleHeaderRepresentation(entry->name(), entry->value());
+    } else {
+      entry->set_state(kNoState);
     }
-    context_.ClearTouchesAt(i);
   }
   // Emit the Cookie header, if any crumbles were encountered.
   if (!cookie_name_.empty()) {
@@ -117,14 +127,19 @@ bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream) {
 
 bool HpackDecoder::DecodeNextContextUpdate(HpackInputStream* input_stream) {
   if (input_stream->MatchPrefixAndConsume(kEncodingContextEmptyReferenceSet)) {
-    return context_.ProcessContextUpdateEmptyReferenceSet();
+    header_table_.ClearReferenceSet();
+    return true;
   }
   if (input_stream->MatchPrefixAndConsume(kEncodingContextNewMaximumSize)) {
     uint32 size = 0;
     if (!input_stream->DecodeNextUint32(&size)) {
       return false;
     }
-    return context_.ProcessContextUpdateNewMaximumSize(size);
+    if (size > header_table_.settings_size_bound()) {
+      return false;
+    }
+    header_table_.SetMaxSize(size);
+    return true;
   }
   // Unrecognized encoding context update.
   return false;
@@ -138,26 +153,26 @@ bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream) {
   // If index == 0, |kEncodingContextOpcode| would have matched.
   CHECK_NE(index, 0u);
 
-  if (index > context_.GetEntryCount())
+  HpackEntry* entry = header_table_.GetByIndex(index);
+  if (entry == NULL)
     return false;
 
-  bool emitted = false;
-  // The index will be put into the reference set.
-  if (!context_.IsReferencedAt(index)) {
-    HandleHeaderRepresentation(context_.GetNameAt(index).as_string(),
-                               context_.GetValueAt(index).as_string());
-    emitted = true;
-  }
+  if (entry->IsStatic()) {
+    HandleHeaderRepresentation(entry->name(), entry->value());
 
-  uint32 new_index = 0;
-  std::vector<uint32> removed_referenced_indices;
-  if (!context_.ProcessIndexedHeader(
-      index, &new_index, &removed_referenced_indices)) {
-    return false;
+    HpackEntry* new_entry = header_table_.TryAddEntry(
+        entry->name(), entry->value());
+    if (new_entry) {
+      header_table_.Toggle(new_entry);
+      new_entry->set_state(kReferencedThisEncoding);
+    }
+  } else {
+    entry->set_state(kNoState);
+    if (header_table_.Toggle(entry)) {
+      HandleHeaderRepresentation(entry->name(), entry->value());
+      entry->set_state(kReferencedThisEncoding);
+    }
   }
-  if (emitted && new_index > 0)
-    context_.AddTouchesAt(new_index, 0);
-
   return true;
 }
 
@@ -176,16 +191,11 @@ bool HpackDecoder::DecodeNextLiteralHeader(HpackInputStream* input_stream,
   if (!should_index)
     return true;
 
-  uint32 new_index = 0;
-  std::vector<uint32> removed_referenced_indices;
-  if (!context_.ProcessLiteralHeaderWithIncrementalIndexing(
-      name, value, &new_index, &removed_referenced_indices)) {
-    return false;
+  HpackEntry* new_entry = header_table_.TryAddEntry(name, value);
+  if (new_entry) {
+    header_table_.Toggle(new_entry);
+    new_entry->set_state(kReferencedThisEncoding);
   }
-
-  if (new_index > 0)
-    context_.AddTouchesAt(new_index, 0);
-
   return true;
 }
 
@@ -198,11 +208,16 @@ bool HpackDecoder::DecodeNextName(
   if (index_or_zero == 0)
     return DecodeNextStringLiteral(input_stream, true, next_name);
 
-  uint32 index = index_or_zero;
-  if (index > context_.GetEntryCount())
+  const HpackEntry* entry = header_table_.GetByIndex(index_or_zero);
+  if (entry == NULL) {
     return false;
-
-  *next_name = context_.GetNameAt(index_or_zero);
+  } else if (entry->IsStatic()) {
+    *next_name = entry->name();
+  } else {
+    // |entry| could be evicted as part of this insertion. Preemptively copy.
+    key_buffer_.assign(entry->name());
+    *next_name = key_buffer_;
+  }
   return true;
 }
 
@@ -210,7 +225,7 @@ bool HpackDecoder::DecodeNextStringLiteral(HpackInputStream* input_stream,
                                            bool is_key,
                                            StringPiece* output) {
   if (input_stream->MatchPrefixAndConsume(kStringLiteralHuffmanEncoded)) {
-    string* buffer = is_key ? &huffman_key_buffer_ : &huffman_value_buffer_;
+    string* buffer = is_key ? &key_buffer_ : &value_buffer_;
     bool result = input_stream->DecodeNextHuffmanString(huffman_table_, buffer);
     *output = StringPiece(*buffer);
     return result;

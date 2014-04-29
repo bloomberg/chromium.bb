@@ -4135,9 +4135,12 @@ TEST(MapRstStreamStatusToProtocolError, MapsValues) {
   CHECK_EQ(STATUS_CODE_PROTOCOL_ERROR,
            MapRstStreamStatusToProtocolError(
                RST_STREAM_PROTOCOL_ERROR));
-  CHECK_EQ(STATUS_CODE_FRAME_TOO_LARGE,
+  CHECK_EQ(STATUS_CODE_FRAME_SIZE_ERROR,
            MapRstStreamStatusToProtocolError(
-               RST_STREAM_FRAME_TOO_LARGE));
+               RST_STREAM_FRAME_SIZE_ERROR));
+  CHECK_EQ(STATUS_CODE_ENHANCE_YOUR_CALM,
+           MapRstStreamStatusToProtocolError(
+               RST_STREAM_ENHANCE_YOUR_CALM));
 }
 
 }  // namespace net

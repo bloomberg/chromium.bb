@@ -83,13 +83,16 @@ void CompareCharArraysWithHexError(
       << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
 }
 
-void SetFrameFlags(SpdyFrame* frame, uint8 flags, int spdy_version) {
+void SetFrameFlags(SpdyFrame* frame,
+                   uint8 flags,
+                   SpdyMajorVersion spdy_version) {
   switch (spdy_version) {
-    case 2:
-    case 3:
+    case SPDY2:
+    case SPDY3:
       frame->data()[4] = flags;
       break;
-    case 4:
+    case SPDY4:
+    case SPDY5:
       frame->data()[3] = flags;
       break;
     default:
@@ -97,10 +100,12 @@ void SetFrameFlags(SpdyFrame* frame, uint8 flags, int spdy_version) {
   }
 }
 
-void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version) {
+void SetFrameLength(SpdyFrame* frame,
+                    size_t length,
+                    SpdyMajorVersion spdy_version) {
   switch (spdy_version) {
-    case 2:
-    case 3:
+    case SPDY2:
+    case SPDY3:
       CHECK_EQ(0u, length & ~kLengthMask);
       {
         int32 wire_length = base::HostToNet32(length);
@@ -109,7 +114,8 @@ void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version) {
         memcpy(frame->data() + 5, reinterpret_cast<char*>(&wire_length) + 1, 3);
       }
       break;
-    case 4:
+    case SPDY4:
+    case SPDY5:
       CHECK_GT(1u<<14, length);
       {
         int32 wire_length = base::HostToNet16(static_cast<uint16>(length));

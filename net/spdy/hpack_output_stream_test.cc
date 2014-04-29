@@ -18,27 +18,27 @@ using std::string;
 // Make sure that AppendBits() appends bits starting from the most
 // significant bit, and that it can handle crossing a byte boundary.
 TEST(HpackOutputStreamTest, AppendBits) {
-  HpackOutputStream output_stream(kuint32max);
+  HpackOutputStream output_stream;
   string expected_str;
 
-  output_stream.AppendBitsForTest(0x1, 1);
+  output_stream.AppendBits(0x1, 1);
   expected_str.append(1, 0x00);
   *expected_str.rbegin() |= (0x1 << 7);
 
-  output_stream.AppendBitsForTest(0x0, 1);
+  output_stream.AppendBits(0x0, 1);
 
-  output_stream.AppendBitsForTest(0x3, 2);
+  output_stream.AppendBits(0x3, 2);
   *expected_str.rbegin() |= (0x3 << 4);
 
-  output_stream.AppendBitsForTest(0x0, 2);
+  output_stream.AppendBits(0x0, 2);
 
   // Byte-crossing append.
-  output_stream.AppendBitsForTest(0x7, 3);
+  output_stream.AppendBits(0x7, 3);
   *expected_str.rbegin() |= (0x7 >> 1);
   expected_str.append(1, 0x00);
   *expected_str.rbegin() |= (0x7 << 7);
 
-  output_stream.AppendBitsForTest(0x0, 7);
+  output_stream.AppendBits(0x0, 7);
 
   string str;
   output_stream.TakeString(&str);
@@ -48,11 +48,11 @@ TEST(HpackOutputStreamTest, AppendBits) {
 // Utility function to return I as a string encoded with an N-bit
 // prefix.
 string EncodeUint32(uint8 N, uint32 I) {
-  HpackOutputStream output_stream(kuint32max);
+  HpackOutputStream output_stream;
   if (N < 8) {
-    output_stream.AppendBitsForTest(0x00, 8 - N);
+    output_stream.AppendBits(0x00, 8 - N);
   }
-  output_stream.AppendUint32ForTest(I);
+  output_stream.AppendUint32(I);
   string str;
   output_stream.TakeString(&str);
   return str;
@@ -236,71 +236,23 @@ TEST(HpackOutputStreamTest, SixByteIntegersOneToSevenBitPrefixes) {
 // Test that encoding an integer with an N-bit prefix preserves the
 // upper (8-N) bits of the first byte.
 TEST(HpackOutputStreamTest, AppendUint32PreservesUpperBits) {
-  HpackOutputStream output_stream(kuint32max);
-  output_stream.AppendBitsForTest(0x7f, 7);
-  output_stream.AppendUint32ForTest(0x01);
+  HpackOutputStream output_stream;
+  output_stream.AppendBits(0x7f, 7);
+  output_stream.AppendUint32(0x01);
   string str;
   output_stream.TakeString(&str);
   EXPECT_EQ(string("\xff\x00", 2), str);
 }
 
-// Test that encoding a string literal without huffman encoding
-// encodes the size first with a 7-bit prefix and then the bytes of
-// the string.
-TEST(HpackOutputStreamTest, AppendStringLiteralNoHuffmanEncoding) {
-  HpackOutputStream output_stream(kuint32max);
+TEST(HpackOutputStreamTest, AppendBytes) {
+  HpackOutputStream output_stream;
 
-  string literal(0x7f, 'x');
-  EXPECT_TRUE(output_stream.AppendStringLiteralForTest(literal));
+  output_stream.AppendBytes("buffer1");
+  output_stream.AppendBytes("buffer2");
 
   string str;
   output_stream.TakeString(&str);
-  EXPECT_EQ(string("\x7f\x00", 2) + literal, str);
-}
-
-// Test that trying to encode a too-long string literal will fail.
-TEST(HpackOutputStreamTest, AppendStringLiteralTooLong) {
-  HpackOutputStream output_stream(kuint32max - 1);
-
-  EXPECT_FALSE(output_stream.AppendStringLiteralForTest(
-      base::StringPiece(NULL, kuint32max)));
-}
-
-// Test that encoding an indexed header simply encodes the index.
-TEST(HpackOutputStreamTest, AppendIndexedHeader) {
-  HpackOutputStream output_stream(kuint32max);
-  output_stream.AppendIndexedHeader(0xffffffff);
-
-  string str;
-  output_stream.TakeString(&str);
-  EXPECT_EQ("\xff\x80\xff\xff\xff\x0f", str);
-}
-
-// Test that encoding a literal header without indexing with a name
-// encodes both the name and value as string literals.
-TEST(HpackOutputStreamTest, AppendLiteralHeaderNoIndexingWithName) {
-  HpackOutputStream output_stream(kuint32max);
-  EXPECT_TRUE(
-      output_stream.AppendLiteralHeaderNoIndexingWithName("name", "value"));
-
-  string str;
-  output_stream.TakeString(&str);
-  EXPECT_EQ("\x40\x04name\x05value", str);
-}
-
-// Test that trying to encode a header with a too-long header name or
-// value will fail.
-TEST(HpackOutputStreamTest, AppendLiteralHeaderNoIndexingWithNameTooLong) {
-  {
-    HpackOutputStream output_stream(10);
-    EXPECT_FALSE(output_stream.AppendLiteralHeaderNoIndexingWithName(
-        "name", "too-long value"));
-  }
-  {
-    HpackOutputStream output_stream(10);
-    EXPECT_FALSE(output_stream.AppendLiteralHeaderNoIndexingWithName(
-        "too-long name", "value"));
-  }
+  EXPECT_EQ("buffer1buffer2", str);
 }
 
 }  // namespace

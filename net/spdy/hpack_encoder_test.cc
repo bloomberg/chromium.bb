@@ -18,18 +18,56 @@ using testing::ElementsAre;
 
 namespace test {
 
+class HpackHeaderTablePeer {
+ public:
+  explicit HpackHeaderTablePeer(HpackHeaderTable* table)
+      : table_(table) {}
+
+  HpackHeaderTable::EntryTable* dynamic_entries() {
+    return &table_->dynamic_entries_;
+  }
+
+ private:
+  HpackHeaderTable* table_;
+};
+
 class HpackEncoderPeer {
  public:
-  explicit HpackEncoderPeer(HpackEncoder* encoder)
-      : encoder_(encoder) {}
+  typedef HpackEncoder::Representation Representation;
+  typedef HpackEncoder::Representations Representations;
 
-  void set_max_string_literal_size(uint32 size) {
-    encoder_->max_string_literal_size_ = size;
+  explicit HpackEncoderPeer(HpackEncoder* encoder)
+    : encoder_(encoder) {}
+
+  HpackHeaderTable* table() {
+    return &encoder_->header_table_;
+  }
+  HpackHeaderTablePeer table_peer() {
+    return HpackHeaderTablePeer(table());
+  }
+  bool allow_huffman_compression() {
+    return encoder_->allow_huffman_compression_;
+  }
+  void set_allow_huffman_compression(bool allow) {
+    encoder_->allow_huffman_compression_ = allow;
+  }
+  void EmitString(StringPiece str) {
+    encoder_->EmitString(str);
+  }
+  void TakeString(string* out) {
+    encoder_->output_stream_.TakeString(out);
   }
   static void CookieToCrumbs(StringPiece cookie,
                              std::vector<StringPiece>* out) {
-    HpackEncoder::CookieToCrumbs(cookie, out);
+    Representations tmp;
+    HpackEncoder::CookieToCrumbs(make_pair("", cookie), &tmp);
+
+    out->clear();
+    for (size_t i = 0; i != tmp.size(); ++i) {
+      out->push_back(tmp[i].second);
+    }
   }
+
  private:
   HpackEncoder* encoder_;
 };
@@ -38,13 +76,332 @@ class HpackEncoderPeer {
 
 namespace {
 
-TEST(HpackEncoderTest, CookieToCrumbs) {
+using std::map;
+using testing::ElementsAre;
+
+class HpackEncoderTest : public ::testing::Test {
+ protected:
+  typedef test::HpackEncoderPeer::Representations Representations;
+
+  HpackEncoderTest()
+      : encoder_(ObtainHpackHuffmanTable()),
+        peer_(&encoder_) {}
+
+  virtual void SetUp() {
+    static_ = peer_.table()->GetByIndex(1);
+    // Populate dynamic entries into the table fixture. For simplicity each
+    // entry has name.size() + value.size() == 10.
+    key_1_ = peer_.table()->TryAddEntry("key1", "value1");
+    key_2_ = peer_.table()->TryAddEntry("key2", "value2");
+    cookie_a_ = peer_.table()->TryAddEntry("cookie", "a=bb");
+    cookie_c_ = peer_.table()->TryAddEntry("cookie", "c=dd");
+
+    // No further insertions may occur without evictions.
+    peer_.table()->SetMaxSize(peer_.table()->size());
+
+    // Disable Huffman coding by default. Most tests don't care about it.
+    peer_.set_allow_huffman_compression(false);
+  }
+
+  void ExpectIndex(size_t index) {
+    expected_.AppendPrefix(kIndexedOpcode);
+    expected_.AppendUint32(index);
+  }
+  void ExpectIndexedLiteral(HpackEntry* key_entry, StringPiece value) {
+    expected_.AppendPrefix(kLiteralIncrementalIndexOpcode);
+    expected_.AppendUint32(key_entry->Index());
+    expected_.AppendPrefix(kStringLiteralIdentityEncoded);
+    expected_.AppendUint32(value.size());
+    expected_.AppendBytes(value);
+  }
+  void ExpectIndexedLiteral(StringPiece name, StringPiece value) {
+    expected_.AppendPrefix(kLiteralIncrementalIndexOpcode);
+    expected_.AppendUint32(0);
+    expected_.AppendPrefix(kStringLiteralIdentityEncoded);
+    expected_.AppendUint32(name.size());
+    expected_.AppendBytes(name);
+    expected_.AppendPrefix(kStringLiteralIdentityEncoded);
+    expected_.AppendUint32(value.size());
+    expected_.AppendBytes(value);
+  }
+  void ExpectNonIndexedLiteral(StringPiece name, StringPiece value) {
+    expected_.AppendPrefix(kLiteralNoIndexOpcode);
+    expected_.AppendUint32(0);
+    expected_.AppendPrefix(kStringLiteralIdentityEncoded);
+    expected_.AppendUint32(name.size());
+    expected_.AppendBytes(name);
+    expected_.AppendPrefix(kStringLiteralIdentityEncoded);
+    expected_.AppendUint32(value.size());
+    expected_.AppendBytes(value);
+  }
+  void CompareWithExpectedEncoding(const map<string, string>& header_set) {
+    string expected_out, actual_out;
+    expected_.TakeString(&expected_out);
+    EXPECT_TRUE(encoder_.EncodeHeaderSet(header_set, &actual_out));
+    EXPECT_EQ(expected_out, actual_out);
+  }
+
+  HpackEncoder encoder_;
+  test::HpackEncoderPeer peer_;
+
+  HpackEntry* static_;
+  HpackEntry* key_1_;
+  HpackEntry* key_2_;
+  HpackEntry* cookie_a_;
+  HpackEntry* cookie_c_;
+
+  HpackOutputStream expected_;
+};
+
+TEST_F(HpackEncoderTest, SingleDynamicIndex) {
+  ExpectIndex(key_2_->Index());
+
+  map<string, string> headers;
+  headers[key_2_->name()] = key_2_->value();
+  CompareWithExpectedEncoding(headers);
+
+  // |key_2_| was added to the reference set.
+  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(key_2_));
+}
+
+TEST_F(HpackEncoderTest, SingleStaticIndex) {
+  ExpectIndex(static_->Index());
+
+  map<string, string> headers;
+  headers[static_->name()] = static_->value();
+  CompareWithExpectedEncoding(headers);
+
+  // A new entry copying |static_| was inserted and added to the reference set.
+  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
+  EXPECT_NE(static_, new_entry);
+  EXPECT_EQ(static_->name(), new_entry->name());
+  EXPECT_EQ(static_->value(), new_entry->value());
+  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(new_entry));
+}
+
+TEST_F(HpackEncoderTest, SingleStaticIndexTooLarge) {
+  peer_.table()->SetMaxSize(1);  // Also evicts all fixtures.
+  ExpectIndex(static_->Index());
+
+  map<string, string> headers;
+  headers[static_->name()] = static_->value();
+  CompareWithExpectedEncoding(headers);
+
+  EXPECT_EQ(0u, peer_.table_peer().dynamic_entries()->size());
+  EXPECT_EQ(0u, peer_.table()->reference_set().size());
+}
+
+TEST_F(HpackEncoderTest, SingleLiteralWithIndexName) {
+  ExpectIndexedLiteral(key_2_, "value3");
+
+  map<string, string> headers;
+  headers[key_2_->name()] = "value3";
+  CompareWithExpectedEncoding(headers);
+
+  // A new entry was inserted and added to the reference set.
+  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
+  EXPECT_EQ(new_entry->name(), key_2_->name());
+  EXPECT_EQ(new_entry->value(), "value3");
+  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(new_entry));
+}
+
+TEST_F(HpackEncoderTest, SingleLiteralWithLiteralName) {
+  ExpectIndexedLiteral("key3", "value3");
+
+  map<string, string> headers;
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+
+  // A new entry was inserted and added to the reference set.
+  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
+  EXPECT_EQ(new_entry->name(), "key3");
+  EXPECT_EQ(new_entry->value(), "value3");
+  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(new_entry));
+}
+
+TEST_F(HpackEncoderTest, SingleLiteralTooLarge) {
+  peer_.table()->SetMaxSize(1);  // Also evicts all fixtures.
+
+  ExpectIndexedLiteral("key3", "value3");
+
+  // A header overflowing the header table is still emitted.
+  // The header table is empty.
+  map<string, string> headers;
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+
+  EXPECT_EQ(0u, peer_.table_peer().dynamic_entries()->size());
+  EXPECT_EQ(0u, peer_.table()->reference_set().size());
+}
+
+TEST_F(HpackEncoderTest, SingleInReferenceSet) {
+  peer_.table()->Toggle(key_2_);
+
+  // Nothing is emitted.
+  map<string, string> headers;
+  headers[key_2_->name()] = key_2_->value();
+  CompareWithExpectedEncoding(headers);
+}
+
+TEST_F(HpackEncoderTest, ExplicitToggleOff) {
+  peer_.table()->Toggle(key_1_);
+  peer_.table()->Toggle(key_2_);
+
+  // |key_1_| is explicitly toggled off.
+  ExpectIndex(key_1_->Index());
+
+  map<string, string> headers;
+  headers[key_2_->name()] = key_2_->value();
+  CompareWithExpectedEncoding(headers);
+}
+
+TEST_F(HpackEncoderTest, ImplicitToggleOff) {
+  peer_.table()->Toggle(key_1_);
+  peer_.table()->Toggle(key_2_);
+
+  // |key_1_| is evicted. No explicit toggle required.
+  ExpectIndexedLiteral("key3", "value3");
+
+  map<string, string> headers;
+  headers[key_2_->name()] = key_2_->value();
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+}
+
+TEST_F(HpackEncoderTest, ExplicitDoubleToggle) {
+  peer_.table()->Toggle(key_1_);
+
+  // |key_1_| is double-toggled prior to being evicted.
+  ExpectIndex(key_1_->Index());
+  ExpectIndex(key_1_->Index());
+  ExpectIndexedLiteral("key3", "value3");
+
+  map<string, string> headers;
+  headers[key_1_->name()] = key_1_->value();
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+}
+
+TEST_F(HpackEncoderTest, EmitThanEvict) {
+  // |key_1_| is toggled and placed into the reference set,
+  // and then immediately evicted by "key3".
+  ExpectIndex(key_1_->Index());
+  ExpectIndexedLiteral("key3", "value3");
+
+  map<string, string> headers;
+  headers[key_1_->name()] = key_1_->value();
+  headers["key3"] = "value3";
+  CompareWithExpectedEncoding(headers);
+}
+
+TEST_F(HpackEncoderTest, CookieHeaderIsCrumbled) {
+  peer_.table()->Toggle(cookie_a_);
+
+  // |cookie_a_| is already in the reference set. |cookie_c_| is
+  // toggled, and "e=ff" is emitted with an indexed name.
+  ExpectIndex(cookie_c_->Index());
+  ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
+
+  map<string, string> headers;
+  headers["cookie"] = "e=ff; a=bb; c=dd";
+  CompareWithExpectedEncoding(headers);
+}
+
+TEST_F(HpackEncoderTest, StringsDynamicallySelectHuffmanCoding) {
+  peer_.set_allow_huffman_compression(true);
+
+  // Compactable string. Uses Huffman coding.
+  peer_.EmitString("feedbeef");
+  expected_.AppendPrefix(kStringLiteralHuffmanEncoded);
+  expected_.AppendUint32(5);
+  expected_.AppendBytes("\xC4G\v\xC4q");
+
+  // Non-compactable. Uses identity coding.
+  peer_.EmitString("@@@@@@");
+  expected_.AppendPrefix(kStringLiteralIdentityEncoded);
+  expected_.AppendUint32(6);
+  expected_.AppendBytes("@@@@@@");
+
+  string expected_out, actual_out;
+  expected_.TakeString(&expected_out);
+  peer_.TakeString(&actual_out);
+  EXPECT_EQ(expected_out, actual_out);
+}
+
+TEST_F(HpackEncoderTest, EncodingWithoutCompression) {
+  // Implementation should internally disable.
+  peer_.set_allow_huffman_compression(true);
+
+  ExpectNonIndexedLiteral(":path", "/index.html");
+  ExpectNonIndexedLiteral("cookie", "foo=bar; baz=bing");
+  ExpectNonIndexedLiteral("hello", "goodbye");
+
+  map<string, string> headers;
+  headers[":path"] = "/index.html";
+  headers["cookie"] = "foo=bar; baz=bing";
+  headers["hello"] = "goodbye";
+
+  string expected_out, actual_out;
+  expected_.TakeString(&expected_out);
+  encoder_.EncodeHeaderSetWithoutCompression(headers, &actual_out);
+  EXPECT_EQ(expected_out, actual_out);
+}
+
+TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
+  // Pass 1: key_1_ and cookie_a_ are toggled on.
+  {
+    map<string, string> headers;
+    headers["key1"] = "value1";
+    headers["cookie"] = "a=bb";
+
+    ExpectIndex(cookie_a_->Index());
+    ExpectIndex(key_1_->Index());
+    CompareWithExpectedEncoding(headers);
+  }
+  // Pass 2: |key_1_| is double-toggled and evicted.
+  // |key_2_| & |cookie_c_| are toggled on.
+  // |cookie_a_| is toggled off.
+  // A new cookie entry is added.
+  {
+    map<string, string> headers;
+    headers["key1"] = "value1";
+    headers["key2"] = "value2";
+    headers["cookie"] = "c=dd; e=ff";
+
+    ExpectIndex(cookie_c_->Index());  // Toggle on.
+    ExpectIndex(key_1_->Index());  // Double-toggle before eviction.
+    ExpectIndex(key_1_->Index());
+    ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
+    ExpectIndex(key_2_->Index() + 1);  // Toggle on. Add 1 to reflect insertion.
+    ExpectIndex(cookie_a_->Index() + 1);  // Toggle off.
+    CompareWithExpectedEncoding(headers);
+  }
+  // Pass 3: |key_2_| is evicted and implicitly toggled off.
+  // |cookie_c_| is explicitly toggled off.
+  // "key1" is re-inserted.
+  {
+    map<string, string> headers;
+    headers["key1"] = "value1";
+    headers["key3"] = "value3";
+    headers["cookie"] = "e=ff";
+
+    ExpectIndexedLiteral("key1", "value1");
+    ExpectIndexedLiteral("key3", "value3");
+    ExpectIndex(cookie_c_->Index() + 2);  // Toggle off. Add 1 for insertion.
+
+    CompareWithExpectedEncoding(headers);
+  }
+}
+
+TEST_F(HpackEncoderTest, CookieToCrumbs) {
   test::HpackEncoderPeer peer(NULL);
   std::vector<StringPiece> out;
 
   // A space after ';' is consumed. All other spaces remain.
-  // ';' at begin and end of string produce empty crumbs.
-  peer.CookieToCrumbs(" foo=1;bar=2 ; baz=3;  bing=4;", &out);
+  // ';' at beginning and end of string produce empty crumbs.
+  // See section 8.1.3.4 "Compressing the Cookie Header Field" in the HTTP/2
+  // specification at http://tools.ietf.org/html/draft-ietf-httpbis-http2-11
+  peer.CookieToCrumbs(" foo=1;bar=2 ; baz=3;  bing=4; ", &out);
   EXPECT_THAT(out, ElementsAre(" foo=1", "bar=2 ", "baz=3", " bing=4", ""));
 
   peer.CookieToCrumbs(";;foo = bar ;; ;baz =bing", &out);
@@ -58,58 +415,9 @@ TEST(HpackEncoderTest, CookieToCrumbs) {
 
   peer.CookieToCrumbs("", &out);
   EXPECT_THAT(out, ElementsAre(""));
-}
 
-// Test that EncoderHeaderSet() simply encodes everything as literals
-// without indexing.
-TEST(HpackEncoderTest, Basic) {
-  HpackEncoder encoder;
-
-  std::map<string, string> header_set1;
-  header_set1["name1"] = "value1";
-  header_set1["name2"] = "value2";
-
-  string encoded_header_set1;
-  EXPECT_TRUE(encoder.EncodeHeaderSet(header_set1, &encoded_header_set1));
-  EXPECT_EQ("\x40\x05name1\x06value1"
-            "\x40\x05name2\x06value2", encoded_header_set1);
-
-  std::map<string, string> header_set2;
-  header_set2["name2"] = "different-value";
-  header_set2["name3"] = "value3";
-
-  string encoded_header_set2;
-  EXPECT_TRUE(encoder.EncodeHeaderSet(header_set2, &encoded_header_set2));
-  EXPECT_EQ("\x40\x05name2\x0f" "different-value"
-            "\x40\x05name3\x06value3", encoded_header_set2);
-}
-
-TEST(HpackEncoderTest, CookieCrumbling) {
-  HpackEncoder encoder;
-
-  std::map<string, string> header_set;
-  header_set["Cookie"] = "key1=value1; key2=value2";
-
-  string encoded_header_set;
-  EXPECT_TRUE(encoder.EncodeHeaderSet(header_set, &encoded_header_set));
-  EXPECT_EQ("\x40\x06""Cookie\x0bkey1=value1"
-            "\x40\x06""Cookie\x0bkey2=value2", encoded_header_set);
-}
-
-// Test that trying to encode a header set with a too-long header
-// field will fail.
-TEST(HpackEncoderTest, HeaderTooLarge) {
-  HpackEncoder encoder;
-  test::HpackEncoderPeer(&encoder).set_max_string_literal_size(10);
-
-  std::map<string, string> header_set;
-  header_set["name1"] = "too-long value";
-  header_set["name2"] = "value2";
-
-  // TODO(akalin): Verify that the encoder did not attempt to encode
-  // the second header field.
-  string encoded_header_set;
-  EXPECT_FALSE(encoder.EncodeHeaderSet(header_set, &encoded_header_set));
+  peer.CookieToCrumbs("foo;bar; baz;bing;", &out);
+  EXPECT_THAT(out, ElementsAre("foo", "bar", "baz", "bing", ""));
 }
 
 }  // namespace

@@ -6,95 +6,102 @@
 #define NET_SPDY_HPACK_ENTRY_H_
 
 #include <cstddef>
-#include <deque>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
-namespace net {
-
 // All section references below are to
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
 
+namespace net {
+
 // A structure for an entry in the header table (3.1.2) and the
-// reference set (3.1.3). This structure also keeps track of how many
-// times the entry has been 'touched', which is useful for both
-// encoding and decoding.
+// reference set (3.1.3).
 class NET_EXPORT_PRIVATE HpackEntry {
  public:
   // The constant amount added to name().size() and value().size() to
   // get the size of an HpackEntry as defined in 3.3.1.
-  static const uint32 kSizeOverhead;
+  static const size_t kSizeOverhead;
 
-  // The constant returned by touch_count() if an entry hasn't been
-  // touched (which is distinct from an entry having a touch count of
-  // 0).
+  // Implements a total ordering of HpackEntry on name(), value(), then Index()
+  // ascending. Note that Index() may change over the lifetime of an HpackEntry,
+  // but the relative Index() order of two entries will not. This comparator is
+  // composed with the 'lookup' HpackEntry constructor to allow for efficient
+  // lower-bounding of matching entries.
+  struct NET_EXPORT_PRIVATE Comparator {
+    bool operator() (const HpackEntry* lhs, const HpackEntry* rhs) const;
+  };
+  typedef std::set<HpackEntry*, Comparator> OrderedSet;
+
+  // Creates an entry. Preconditions:
+  // - |is_static| captures whether this entry is a member of the static
+  //   or dynamic header table.
+  // - |insertion_index| is this entry's index in the total set of entries ever
+  //   inserted into the header table (including static entries).
+  // - |total_table_insertions_or_current_size| references an externally-
+  //   updated count of either the total number of header insertions (if
+  //   !|is_static|), or the current size of the header table (if |is_static|).
   //
-  // TODO(akalin): The distinction between untouched and having a
-  // touch count of 0 is confusing. Think of a better way to represent
-  // this state.
-  static const uint32 kUntouched;
+  // The combination of |is_static|, |insertion_index|, and
+  // |total_table_insertions_or_current_size| allows an HpackEntry to determine
+  // its current table index in O(1) time.
+  HpackEntry(base::StringPiece name,
+             base::StringPiece value,
+             bool is_static,
+             size_t insertion_index,
+             const size_t* total_table_insertions_or_current_size);
+
+  // Create a 'lookup' entry (only) suitable for querying a HpackEntrySet. The
+  // instance Index() always returns 0, and will lower-bound all entries
+  // matching |name| & |value| in an OrderedSet.
+  HpackEntry(base::StringPiece name, base::StringPiece value);
 
   // Creates an entry with empty name a value. Only defined so that
   // entries can be stored in STL containers.
   HpackEntry();
 
-  // Creates an entry with a copy is made of the given name and value.
-  //
-  // TODO(akalin): Add option to not make a copy (for static table
-  // entries).
-  HpackEntry(base::StringPiece name, base::StringPiece value);
+  ~HpackEntry();
 
-  // Copy constructor and assignment operator welcome.
+  const std::string& name() const { return name_; }
+  const std::string& value() const { return value_; }
 
-  // The name() and value() StringPieces have the same lifetime as
-  // this entry.
+  // Returns whether this entry is a member of the static (as opposed to
+  // dynamic) table.
+  bool IsStatic() const { return is_static_; }
 
-  base::StringPiece name() const { return base::StringPiece(name_); }
-  base::StringPiece value() const { return base::StringPiece(value_); }
+  // Returns and sets the state of the entry, or zero if never set.
+  // The semantics of |state| are specific to the encoder or decoder.
+  uint8 state() const { return state_; }
+  void set_state(uint8 state) { state_ = state; }
 
-  // Returns whether or not this entry is in the reference set.
-  bool IsReferenced() const;
+  // Returns the entry's current index in the header table.
+  size_t Index() const;
 
-  // Returns how many touches this entry has, or kUntouched if this
-  // entry hasn't been touched at all. The meaning of the touch count
-  // is defined by whatever is calling
-  // AddTouchCount()/ClearTouchCount() (i.e., the encoder or decoder).
-  uint32 TouchCount() const;
-
-  // Returns the size of an entry as defined in 3.3.1. The returned
-  // value may not necessarily fit in 32 bits.
+  // Returns the size of an entry as defined in 3.3.1.
+  static size_t Size(base::StringPiece name, base::StringPiece value);
   size_t Size() const;
 
   std::string GetDebugString() const;
 
-  // Returns whether this entry has the same name, value, referenced
-  // state, and touch count as the given one.
-  bool Equals(const HpackEntry& other) const;
-
-  void SetReferenced(bool referenced);
-
-  // Adds the given number of touches to this entry (see
-  // TouchCount()). The total number of touches must not exceed 2^31 -
-  // 2. It is guaranteed that this entry's touch count will not equal
-  // kUntouched after this function is called (even if touch_count ==
-  // 0).
-  void AddTouches(uint32 additional_touch_count);
-
-  // Sets the touch count of this entry to kUntouched.
-  void ClearTouches();
-
  private:
+  // TODO(jgraettinger): Reduce copies, possibly via SpdyPinnableBufferPiece.
   std::string name_;
   std::string value_;
 
-  // The high bit stores 'referenced' and the rest stores the touch
-  // count.
-  uint32 referenced_and_touch_count_;
+  bool is_static_;
+  uint8 state_;
+
+  // The entry's index in the total set of entries ever inserted into the header
+  // table.
+  size_t insertion_index_;
+
+  // If |is_static_|, references the current size of the headers table.
+  // Else, references the total number of header insertions which have occurred.
+  const size_t* total_insertions_or_size_;
 };
 
 }  // namespace net

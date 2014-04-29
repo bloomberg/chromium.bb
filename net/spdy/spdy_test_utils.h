@@ -23,9 +23,13 @@ void CompareCharArraysWithHexError(
     const unsigned char* expected,
     const int expected_len);
 
-void SetFrameFlags(SpdyFrame* frame, uint8 flags, int spdy_version);
+void SetFrameFlags(SpdyFrame* frame,
+                   uint8 flags,
+                   SpdyMajorVersion spdy_version);
 
-void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version);
+void SetFrameLength(SpdyFrame* frame,
+                    size_t length,
+                    SpdyMajorVersion spdy_version);
 
 }  // namespace test
 

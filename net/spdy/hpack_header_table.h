@@ -7,59 +7,127 @@
 
 #include <cstddef>
 #include <deque>
-#include <vector>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/spdy/hpack_entry.h"
 
-namespace net {
-
 // All section references below are to
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
 
+namespace net {
+
+namespace test {
+class HpackHeaderTablePeer;
+}  // namespace test
+
 // A data structure for both the header table (described in 3.1.2) and
-// the reference set (3.1.3). This structure also keeps track of how
-// many times a header has been 'touched', which is useful for both
-// encoding and decoding.
+// the reference set (3.1.3).
 class NET_EXPORT_PRIVATE HpackHeaderTable {
  public:
+  friend class test::HpackHeaderTablePeer;
+
+  // HpackHeaderTable takes advantage of the deque property that references
+  // remain valid, so long as insertions & deletions are at the head & tail.
+  // If this changes (eg we start to drop entries from the middle of the table),
+  // this needs to be a std::list, in which case |index_| can be trivially
+  // extended to map to list iterators.
+  typedef std::deque<HpackEntry> EntryTable;
+
   HpackHeaderTable();
 
   ~HpackHeaderTable();
 
-  uint32 size() const { return size_; }
-  uint32 max_size() const { return max_size_; }
+  // Last-aknowledged value of SETTINGS_HEADER_TABLE_SIZE.
+  size_t settings_size_bound() { return settings_size_bound_; }
 
-  // Returns the total number of entries.
-  uint32 GetEntryCount() const;
+  // Current and maximum estimated byte size of the table, as described in
+  // 3.3.1. Notably, this is /not/ the number of entries in the table.
+  size_t size() const { return size_; }
+  size_t max_size() const { return max_size_; }
 
-  // The given index must be >= 1 and <= GetEntryCount().
-  const HpackEntry& GetEntry(uint32 index) const;
+  const HpackEntry::OrderedSet& reference_set() {
+    return reference_set_;
+  }
 
-  // The given index must be >= 1 and <= GetEntryCount().
-  HpackEntry* GetMutableEntry(uint32 index);
+  // Returns the entry matching the index, or NULL.
+  HpackEntry* GetByIndex(size_t index);
+
+  // Returns the lowest-value entry having |name|, or NULL.
+  HpackEntry* GetByName(base::StringPiece name);
+
+  // Returns the lowest-index matching entry, or NULL.
+  HpackEntry* GetByNameAndValue(base::StringPiece name,
+                                base::StringPiece value);
 
   // Sets the maximum size of the header table, evicting entries if
   // necessary as described in 3.3.2.
-  void SetMaxSize(uint32 max_size);
+  void SetMaxSize(size_t max_size);
 
-  // The given entry must not be one from the header table, since it
-  // may get evicted. Tries to add the given entry to the header
-  // table, evicting entries if necessary as described in 3.3.3. index
-  // will be filled in with the index of the added entry, or 0 if the
-  // entry could not be added. removed_referenced_indices will be
-  // filled in with the indices of any removed entries that were in
-  // the reference set.
-  void TryAddEntry(const HpackEntry& entry,
-                   uint32* index,
-                   std::vector<uint32>* removed_referenced_indices);
+  // Sets the SETTINGS_HEADER_TABLE_SIZE bound of the table. Will call
+  // SetMaxSize() as needed to preserve max_size() <= settings_size_bound().
+  void SetSettingsHeaderTableSize(size_t settings_size);
+
+  // Determine the set of entries which would be evicted by the insertion
+  // of |name| & |value| into the table, as per section 3.3.3. No eviction
+  // actually occurs. The set is returned via range [begin_out, end_out).
+  void EvictionSet(base::StringPiece name, base::StringPiece value,
+                   EntryTable::iterator* begin_out,
+                   EntryTable::iterator* end_out);
+
+  // Adds an entry for the representation, evicting entries as needed. |name|
+  // and |value| must not be owned by an entry which could be evicted. The
+  // added HpackEntry is returned, or NULL is returned if all entries were
+  // evicted and the empty table is of insufficent size for the representation.
+  HpackEntry* TryAddEntry(base::StringPiece name, base::StringPiece value);
+
+  // Toggles the presence of a dynamic entry in the reference set. Returns
+  // true if the entry was added, or false if removed. It is an error to
+  // Toggle(entry) if |entry->state()| != 0.
+  bool Toggle(HpackEntry* entry);
+
+  // Removes all entries from the reference set. Sets the state of each removed
+  // entry to zero.
+  void ClearReferenceSet();
+
+  void DebugLogTableState() const;
 
  private:
-  std::deque<HpackEntry> entries_;
-  uint32 size_;
-  uint32 max_size_;
+  // Returns number of evictions required to enter |name| & |value|.
+  size_t EvictionCountForEntry(base::StringPiece name,
+                               base::StringPiece value) const;
+
+  // Returns number of evictions required to reclaim |reclaim_size| table size.
+  size_t EvictionCountToReclaim(size_t reclaim_size) const;
+
+  // Evicts |count| oldest entries from the table.
+  void Evict(size_t count);
+
+  EntryTable dynamic_entries_;
+  EntryTable static_entries_;
+
+  // Full table index, over |dynamic_entries_| and |static_entries_|.
+  HpackEntry::OrderedSet index_;
+  // The reference set is strictly a subset of |dynamic_entries_|.
+  HpackEntry::OrderedSet reference_set_;
+
+  // Last acknowledged value for SETTINGS_HEADER_TABLE_SIZE.
+  size_t settings_size_bound_;
+
+  // Estimated current and maximum byte size of the table.
+  // |max_size_| <= |settings_header_table_size_|
+  size_t size_;
+  size_t max_size_;
+
+  // Total number of table insertions which have occurred. Referenced by
+  // dynamic HpackEntry instances for determination of table index.
+  size_t total_insertions_;
+
+  // Current number of dynamic entries. Referenced by static HpackEntry
+  // instances for determination of table index.
+  size_t dynamic_entries_count_;
 
   DISALLOW_COPY_AND_ASSIGN(HpackHeaderTable);
 };

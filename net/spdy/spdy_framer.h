@@ -56,14 +56,15 @@ typedef std::map<std::string, std::string> SpdyHeaderBlock;
 // Conveniently handles converstion to/from wire format.
 class NET_EXPORT_PRIVATE SettingsFlagsAndId {
  public:
-  static SettingsFlagsAndId FromWireFormat(int version, uint32 wire);
+  static SettingsFlagsAndId FromWireFormat(SpdyMajorVersion version,
+                                           uint32 wire);
 
   SettingsFlagsAndId() : flags_(0), id_(0) {}
 
   // TODO(hkhalil): restrict to enums instead of free-form ints.
   SettingsFlagsAndId(uint8 flags, uint32 id);
 
-  uint32 GetWireFormat(int version) const;
+  uint32 GetWireFormat(SpdyMajorVersion version) const;
 
   uint32 id() const { return id_; }
   uint8 flags() const { return flags_; }
@@ -320,13 +321,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Serializes a SpdyHeaderBlock.
   static void WriteHeaderBlock(SpdyFrameBuilder* frame,
-                               const int spdy_version,
+                               const SpdyMajorVersion spdy_version,
                                const SpdyHeaderBlock* headers);
 
   // Retrieve serialized length of SpdyHeaderBlock.
   // TODO(hkhalil): Remove, or move to quic code.
-  static size_t GetSerializedLength(const int spdy_version,
-                                    const SpdyHeaderBlock* headers);
+  static size_t GetSerializedLength(
+      const SpdyMajorVersion spdy_version,
+      const SpdyHeaderBlock* headers);
 
   // Create a new Framer, provided a SPDY version.
   explicit SpdyFramer(SpdyMajorVersion version);
@@ -371,8 +373,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Serialize a data frame.
   SpdySerializedFrame* SerializeData(const SpdyDataIR& data) const;
-  // Serializes just the data frame header, excluding actual data payload.
-  SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
+  // Serializes the data frame header and optionally padding length fields,
+  // excluding actual data payload and padding.
+  SpdySerializedFrame* SerializeDataFrameHeaderWithPaddingLengthField(
+      const SpdyDataIR& data) const;
 
   // Serializes a SYN_STREAM frame.
   SpdySerializedFrame* SerializeSynStream(const SpdySynStreamIR& syn_stream);
@@ -485,6 +489,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Returns the maximum payload size of a DATA frame.
   size_t GetDataFrameMaximumPayload() const;
 
+  // Returns the prefix length for the given frame type.
+  size_t GetPrefixLength(SpdyFrameType type) const;
+
   // For debugging.
   static const char* StateToString(int state);
   static const char* ErrorCodeToString(int error_code);
@@ -497,7 +504,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   SpdyStreamId expect_continuation() const { return expect_continuation_; }
 
-  SpdyPriority GetLowestPriority() const { return spdy_version_ < 3 ? 3 : 7; }
+  SpdyPriority GetLowestPriority() const {
+    return spdy_version_ < SPDY3 ? 3 : 7;
+  }
+
   SpdyPriority GetHighestPriority() const { return 0; }
 
   // Deliver the given control frame's compressed headers block to the visitor
@@ -509,6 +519,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
       size_t len);
 
  protected:
+  // TODO(jgraettinger): Switch to test peer pattern.
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, BasicCompression);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameSizesAreValidated);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, HeaderCompression);
@@ -525,6 +536,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                            ReadLargeSettingsFrameInSmallChunks);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameAtMaxSizeLimit);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameTooLarge);
+  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
+                           TooLargeHeadersFrameUsesContinuation);
+  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
+                           TooLargePushPromiseFrameUsesContinuation);
   friend class net::HttpNetworkLayer;  // This is temporary for the server.
   friend class net::HttpNetworkTransactionTest;
   friend class net::HttpProxyClientSocketPoolTest;
@@ -555,6 +570,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessGoAwayFramePayload(const char* data, size_t len);
   size_t ProcessRstStreamFramePayload(const char* data, size_t len);
   size_t ProcessSettingsFramePayload(const char* data, size_t len);
+  size_t ProcessIgnoredControlFramePayload(/*const char* data,*/ size_t len);
 
   // TODO(jgraettinger): To be removed with migration to
   // SpdyHeadersHandlerInterface.
@@ -575,6 +591,13 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Get (and lazily initialize) the ZLib state.
   z_stream* GetHeaderCompressor();
   z_stream* GetHeaderDecompressor();
+
+  size_t GetNumberRequiredContinuationFrames(size_t size);
+
+  void WritePayloadWithContinuation(SpdyFrameBuilder* builder,
+                                    const std::string& hpack_encoding,
+                                    SpdyStreamId stream_id,
+                                    SpdyFrameType type);
 
  private:
   // Deliver the given control frame's uncompressed headers block to the

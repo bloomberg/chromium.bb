@@ -49,6 +49,7 @@ bool SpdyConstants::IsValidFrameType(SpdyMajorVersion version,
 
       return true;
     case SPDY4:
+    case SPDY5:
       // DATA is the first valid frame.
       if (frame_type_field < SerializeFrameType(version, DATA)) {
         return false;
@@ -91,6 +92,7 @@ SpdyFrameType SpdyConstants::ParseFrameType(SpdyMajorVersion version,
       }
       break;
     case SPDY4:
+    case SPDY5:
       switch (frame_type_field) {
         case 0:
           return DATA;
@@ -148,6 +150,7 @@ int SpdyConstants::SerializeFrameType(SpdyMajorVersion version,
           return -1;
       }
     case SPDY4:
+    case SPDY5:
       switch (frame_type) {
         case DATA:
           return 0;
@@ -199,6 +202,7 @@ bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
 
       return true;
     case SPDY4:
+    case SPDY5:
       // HEADER_TABLE_SIZE is the first valid setting id.
       if (setting_id_field <
           SerializeSettingId(version, SETTINGS_HEADER_TABLE_SIZE)) {
@@ -241,6 +245,7 @@ SpdySettingsIds SpdyConstants::ParseSettingId(SpdyMajorVersion version,
       }
       break;
     case SPDY4:
+    case SPDY5:
       switch (setting_id_field) {
         case 1:
           return SETTINGS_HEADER_TABLE_SIZE;
@@ -283,6 +288,7 @@ int SpdyConstants::SerializeSettingId(SpdyMajorVersion version,
           return -1;
       }
     case SPDY4:
+    case SPDY5:
       switch (id) {
         case SETTINGS_HEADER_TABLE_SIZE:
           return 1;
@@ -299,6 +305,405 @@ int SpdyConstants::SerializeSettingId(SpdyMajorVersion version,
   }
   LOG(DFATAL) << "Unhandled SPDY version " << version;
   return -1;
+}
+
+bool SpdyConstants::IsValidRstStreamStatus(SpdyMajorVersion version,
+                                           int rst_stream_status_field) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      // PROTOCOL_ERROR is the valid first status code.
+      if (rst_stream_status_field <
+          SerializeRstStreamStatus(version, RST_STREAM_PROTOCOL_ERROR)) {
+        return false;
+      }
+
+      // FRAME_TOO_LARGE is the valid last status code.
+      if (rst_stream_status_field >
+          SerializeRstStreamStatus(version, RST_STREAM_FRAME_TOO_LARGE)) {
+        return false;
+      }
+
+      return true;
+    case SPDY4:
+    case SPDY5:
+      // NO_ERROR is the first valid status code.
+      if (rst_stream_status_field <
+          SerializeRstStreamStatus(version, RST_STREAM_PROTOCOL_ERROR)) {
+        return false;
+      }
+
+      // TODO(hkhalil): Omit COMPRESSION_ERROR and SETTINGS_TIMEOUT
+      /*
+      // This works because GOAWAY and RST_STREAM share a namespace.
+      if (rst_stream_status_field ==
+          SerializeGoAwayStatus(version, GOAWAY_COMPRESSION_ERROR) ||
+          rst_stream_status_field ==
+          SerializeGoAwayStatus(version, GOAWAY_SETTINGS_TIMEOUT)) {
+        return false;
+      }
+      */
+
+      // ENHANCE_YOUR_CALM is the last valid status code.
+      if (rst_stream_status_field >
+          SerializeRstStreamStatus(version, RST_STREAM_ENHANCE_YOUR_CALM)) {
+        return false;
+      }
+
+      return true;
+  }
+  LOG(DFATAL) << "Unhandled SPDY version " << version;
+  return false;
+}
+
+SpdyRstStreamStatus SpdyConstants::ParseRstStreamStatus(
+    SpdyMajorVersion version,
+    int rst_stream_status_field) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      switch (rst_stream_status_field) {
+        case 1:
+          return RST_STREAM_PROTOCOL_ERROR;
+        case 2:
+          return RST_STREAM_INVALID_STREAM;
+        case 3:
+          return RST_STREAM_REFUSED_STREAM;
+        case 4:
+          return RST_STREAM_UNSUPPORTED_VERSION;
+        case 5:
+          return RST_STREAM_CANCEL;
+        case 6:
+          return RST_STREAM_INTERNAL_ERROR;
+        case 7:
+          return RST_STREAM_FLOW_CONTROL_ERROR;
+        case 8:
+          return RST_STREAM_STREAM_IN_USE;
+        case 9:
+          return RST_STREAM_STREAM_ALREADY_CLOSED;
+        case 10:
+          return RST_STREAM_INVALID_CREDENTIALS;
+        case 11:
+          return RST_STREAM_FRAME_TOO_LARGE;
+      }
+      break;
+    case SPDY4:
+    case SPDY5:
+      switch (rst_stream_status_field) {
+        case 1:
+          return RST_STREAM_PROTOCOL_ERROR;
+        case 2:
+          return RST_STREAM_INTERNAL_ERROR;
+        case 3:
+          return RST_STREAM_FLOW_CONTROL_ERROR;
+        case 5:
+          return RST_STREAM_STREAM_CLOSED;
+        case 6:
+          return RST_STREAM_FRAME_SIZE_ERROR;
+        case 7:
+          return RST_STREAM_REFUSED_STREAM;
+        case 8:
+          return RST_STREAM_CANCEL;
+        case 10:
+          return RST_STREAM_CONNECT_ERROR;
+        case 11:
+          return RST_STREAM_ENHANCE_YOUR_CALM;
+      }
+      break;
+  }
+
+  LOG(DFATAL) << "Invalid RST_STREAM status " << rst_stream_status_field;
+  return RST_STREAM_PROTOCOL_ERROR;
+}
+
+int SpdyConstants::SerializeRstStreamStatus(
+    SpdyMajorVersion version,
+    SpdyRstStreamStatus rst_stream_status) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      switch (rst_stream_status) {
+        case RST_STREAM_PROTOCOL_ERROR:
+          return 1;
+        case RST_STREAM_INVALID_STREAM:
+          return 2;
+        case RST_STREAM_REFUSED_STREAM:
+          return 3;
+        case RST_STREAM_UNSUPPORTED_VERSION:
+          return 4;
+        case RST_STREAM_CANCEL:
+          return 5;
+        case RST_STREAM_INTERNAL_ERROR:
+          return 6;
+        case RST_STREAM_FLOW_CONTROL_ERROR:
+          return 7;
+        case RST_STREAM_STREAM_IN_USE:
+          return 8;
+        case RST_STREAM_STREAM_ALREADY_CLOSED:
+          return 9;
+        case RST_STREAM_INVALID_CREDENTIALS:
+          return 10;
+        case RST_STREAM_FRAME_TOO_LARGE:
+          return 11;
+        default:
+          LOG(DFATAL) << "Unhandled RST_STREAM status "
+                      << rst_stream_status;
+          return -1;
+      }
+    case SPDY4:
+    case SPDY5:
+      switch (rst_stream_status) {
+        case RST_STREAM_PROTOCOL_ERROR:
+          return 1;
+        case RST_STREAM_INTERNAL_ERROR:
+          return 2;
+        case RST_STREAM_FLOW_CONTROL_ERROR:
+          return 3;
+        case RST_STREAM_STREAM_CLOSED:
+          return 5;
+        case RST_STREAM_FRAME_SIZE_ERROR:
+          return 6;
+        case RST_STREAM_REFUSED_STREAM:
+          return 7;
+        case RST_STREAM_CANCEL:
+          return 8;
+        case RST_STREAM_CONNECT_ERROR:
+          return 10;
+        case RST_STREAM_ENHANCE_YOUR_CALM:
+          return 11;
+        default:
+          LOG(DFATAL) << "Unhandled RST_STREAM status "
+                      << rst_stream_status;
+          return -1;
+      }
+  }
+  LOG(DFATAL) << "Unhandled SPDY version " << version;
+  return -1;
+}
+
+bool SpdyConstants::IsValidGoAwayStatus(SpdyMajorVersion version,
+                                        int goaway_status_field) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      // GOAWAY_OK is the first valid status.
+      if (goaway_status_field < SerializeGoAwayStatus(version, GOAWAY_OK)) {
+        return false;
+      }
+
+      // GOAWAY_INTERNAL_ERROR is the last valid status.
+      if (goaway_status_field > SerializeGoAwayStatus(version,
+                                                      GOAWAY_INTERNAL_ERROR)) {
+        return false;
+      }
+
+      return true;
+    case SPDY4:
+    case SPDY5:
+      // GOAWAY_NO_ERROR is the first valid status.
+      if (goaway_status_field < SerializeGoAwayStatus(version,
+                                                      GOAWAY_NO_ERROR)) {
+        return false;
+      }
+
+      // GOAWAY_INADEQUATE_SECURITY is the last valid status.
+      if (goaway_status_field >
+          SerializeGoAwayStatus(version, GOAWAY_INADEQUATE_SECURITY)) {
+        return false;
+      }
+
+      return true;
+  }
+  LOG(DFATAL) << "Unknown SpdyMajorVersion " << version;
+  return false;
+}
+
+SpdyGoAwayStatus SpdyConstants::ParseGoAwayStatus(SpdyMajorVersion version,
+                                                  int goaway_status_field) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      switch (goaway_status_field) {
+        case 0:
+          return GOAWAY_OK;
+        case 1:
+          return GOAWAY_PROTOCOL_ERROR;
+        case 2:
+          return GOAWAY_INTERNAL_ERROR;
+      }
+      break;
+    case SPDY4:
+    case SPDY5:
+      switch (goaway_status_field) {
+        case 0:
+          return GOAWAY_NO_ERROR;
+        case 1:
+          return GOAWAY_PROTOCOL_ERROR;
+        case 2:
+          return GOAWAY_INTERNAL_ERROR;
+        case 3:
+          return GOAWAY_FLOW_CONTROL_ERROR;
+        case 4:
+          return GOAWAY_SETTINGS_TIMEOUT;
+        case 5:
+          return GOAWAY_STREAM_CLOSED;
+        case 6:
+          return GOAWAY_FRAME_SIZE_ERROR;
+        case 7:
+          return GOAWAY_REFUSED_STREAM;
+        case 8:
+          return GOAWAY_CANCEL;
+        case 9:
+          return GOAWAY_COMPRESSION_ERROR;
+        case 10:
+          return GOAWAY_CONNECT_ERROR;
+        case 11:
+          return GOAWAY_ENHANCE_YOUR_CALM;
+        case 12:
+          return GOAWAY_INADEQUATE_SECURITY;
+      }
+      break;
+  }
+
+  LOG(DFATAL) << "Unhandled GOAWAY status " << goaway_status_field;
+  return GOAWAY_PROTOCOL_ERROR;
+}
+
+SpdyMajorVersion SpdyConstants::ParseMajorVersion(int version_number) {
+  switch (version_number) {
+    case 2:
+      return SPDY2;
+    case 3:
+      return SPDY3;
+    case 4:
+      return SPDY4;
+    case 5:
+      return SPDY5;
+    default:
+      LOG(DFATAL) << "Unsupported SPDY version number: " << version_number;
+      return SPDY3;
+  }
+}
+
+int SpdyConstants::SerializeMajorVersion(SpdyMajorVersion version) {
+  switch (version) {
+    case SPDY2:
+      return 2;
+    case SPDY3:
+      return 3;
+    case SPDY4:
+      return 4;
+    case SPDY5:
+      return 5;
+    default:
+      LOG(DFATAL) << "Unsupported SPDY major version: " << version;
+      return -1;
+  }
+}
+
+std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
+  switch (version) {
+    case SPDY2:
+      return "spdy/2";
+    case SPDY3:
+      return "spdy/3";
+    case SPDY4:
+      return "spdy/4";
+    case SPDY5:
+      return "spdy/5";
+    default:
+      LOG(DFATAL) << "Unsupported SPDY major version: " << version;
+      return "spdy/3";
+  }
+}
+
+int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion version,
+                                         SpdyGoAwayStatus status) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      switch (status) {
+        case GOAWAY_OK:
+          return 0;
+        case GOAWAY_PROTOCOL_ERROR:
+          return 1;
+        case GOAWAY_INTERNAL_ERROR:
+          return 2;
+        default:
+          LOG(DFATAL) << "Serializing unhandled GOAWAY status " << status;
+          return -1;
+      }
+    case SPDY4:
+    case SPDY5:
+      switch (status) {
+        case GOAWAY_NO_ERROR:
+          return 0;
+        case GOAWAY_PROTOCOL_ERROR:
+          return 1;
+        case GOAWAY_INTERNAL_ERROR:
+          return 2;
+        case GOAWAY_FLOW_CONTROL_ERROR:
+          return 3;
+        case GOAWAY_SETTINGS_TIMEOUT:
+          return 4;
+        case GOAWAY_STREAM_CLOSED:
+          return 5;
+        case GOAWAY_FRAME_SIZE_ERROR:
+          return 6;
+        case GOAWAY_REFUSED_STREAM:
+          return 7;
+        case GOAWAY_CANCEL:
+          return 8;
+        case GOAWAY_COMPRESSION_ERROR:
+          return 9;
+        case GOAWAY_CONNECT_ERROR:
+          return 10;
+        case GOAWAY_ENHANCE_YOUR_CALM:
+          return 11;
+        case GOAWAY_INADEQUATE_SECURITY:
+          return 12;
+        default:
+          LOG(DFATAL) << "Serializing unhandled GOAWAY status " << status;
+          return -1;
+      }
+  }
+  LOG(DFATAL) << "Unknown SpdyMajorVersion " << version;
+  return -1;
+}
+
+size_t SpdyConstants::GetDataFrameMinimumSize() {
+  return 8;
+}
+
+size_t SpdyConstants::GetControlFrameHeaderSize(SpdyMajorVersion version) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+    case SPDY4:
+    case SPDY5:
+      return 8;
+  }
+  LOG(DFATAL) << "Unhandled SPDY version.";
+  return 0;
+}
+
+size_t SpdyConstants::GetPrefixLength(SpdyFrameType type,
+                                      SpdyMajorVersion version) {
+  if (type != DATA) {
+     return GetControlFrameHeaderSize(version);
+  } else {
+     return GetDataFrameMinimumSize();
+  }
+}
+
+size_t SpdyConstants::GetFrameMaximumSize(SpdyMajorVersion version) {
+  if (version < SPDY4) {
+    // 24-bit length field plus eight-byte frame header.
+    return ((1<<24) - 1) + 8;
+  } else {
+    // 14-bit length field.
+    return (1<<14) - 1;
+  }
 }
 
 void SpdyDataIR::Visit(SpdyFrameVisitor* visitor) const {
