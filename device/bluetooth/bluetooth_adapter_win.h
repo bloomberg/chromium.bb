@@ -72,6 +72,13 @@ class BluetoothAdapterWin : public BluetoothAdapter,
       const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices)
           OVERRIDE;
 
+  const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner() const {
+    return ui_task_runner_;
+  }
+  const scoped_refptr<BluetoothSocketThreadWin>& socket_thread() const {
+    return socket_thread_;
+  }
+
  protected:
   // BluetoothAdapter:
   virtual void RemovePairingDelegateInternal(

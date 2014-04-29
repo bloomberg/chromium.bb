@@ -16,6 +16,7 @@
 #include <windows.h>
 #include <iphlpapi.h>
 #include <winsock2.h>
+#include <ws2bth.h>
 #pragma comment(lib, "iphlpapi.lib")
 #elif defined(OS_POSIX)
 #include <fcntl.h>
@@ -524,12 +525,26 @@ bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
       return false;
     const struct sockaddr_in6* addr =
         reinterpret_cast<const struct sockaddr_in6*>(sock_addr);
-    *address = reinterpret_cast<const unsigned char*>(&addr->sin6_addr);
+    *address = reinterpret_cast<const uint8*>(&addr->sin6_addr);
     *address_len = kIPv6AddressSize;
     if (port)
       *port = base::NetToHost16(addr->sin6_port);
     return true;
   }
+
+#if defined(OS_WIN)
+  if (sock_addr->sa_family == AF_BTH) {
+    if (sock_addr_len < static_cast<socklen_t>(sizeof(SOCKADDR_BTH)))
+      return false;
+    const SOCKADDR_BTH* addr =
+        reinterpret_cast<const SOCKADDR_BTH*>(sock_addr);
+    *address = reinterpret_cast<const uint8*>(&addr->btAddr);
+    *address_len = kBluetoothAddressSize;
+    if (port)
+      *port = addr->port;
+    return true;
+  }
+#endif
 
   return false;  // Unrecognized |sa_family|.
 }

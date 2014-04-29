@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "device/bluetooth/bluetooth_socket.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_log.h"
 #include "net/socket/tcp_socket.h"
 
@@ -34,17 +35,32 @@ class BluetoothSocketThreadWin;
 // separated thread.
 class BluetoothSocketWin : public BluetoothSocket {
  public:
+  typedef base::Callback<void(scoped_refptr<BluetoothSocketWin>,
+                              const net::IPEndPoint&)> OnNewConnectionCallback;
+
   static scoped_refptr<BluetoothSocketWin> CreateBluetoothSocket(
-      const BluetoothServiceRecord& service_record,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<BluetoothSocketThreadWin> socket_thread,
       net::NetLog* net_log,
       const net::NetLog::Source& source);
 
-  // Connect to the peer device and calls |success_callback| when the
+  // Starts a service with the given uuid, name and rfcomm_channel.
+  // |success_callback| is invoked when the underlying socket is created
+  // and the service is published successfully. Otherwise, |error_callback| is
+  // called with an error message. |new_connection_callback| is invoked when
+  // an incoming connection is accepted by the underlying socket.
+  void StartService(
+      const BluetoothUUID& uuid,
+      const std::string& name,
+      int rfcomm_channel,
+      const base::Closure& success_callback,
+      const ErrorCompletionCallback& error_callback,
+      const OnNewConnectionCallback& new_connection_callback);
+
   // connection has been established successfully. If an error occurs, calls
   // |error_callback| with a system error message.
-  void Connect(const base::Closure& success_callback,
+  void Connect(const BluetoothServiceRecord& service_record,
+               const base::Closure& success_callback,
                const ErrorCompletionCallback& error_callback);
 
   // Overriden from BluetoothSocket:
@@ -65,6 +81,8 @@ class BluetoothSocketWin : public BluetoothSocket {
   virtual ~BluetoothSocketWin();
 
  private:
+  struct ServiceRegData;
+
   struct WriteRequest {
     scoped_refptr<net::IOBuffer> buffer;
     int buffer_size;
@@ -111,6 +129,17 @@ class BluetoothSocketWin : public BluetoothSocket {
       const ReceiveErrorCompletionCallback& error_callback,
       int send_result);
 
+  void DoStartService(const BluetoothUUID& uuid,
+      const std::string& name,
+      int rfcomm_channel,
+      const base::Closure& success_callback,
+      const ErrorCompletionCallback& error_callback,
+      const OnNewConnectionCallback& new_connection_callback);
+  void DoAccept();
+  void OnAcceptOnSocketThread(int accept_result);
+  void OnAcceptOnUI(scoped_ptr<net::TCPSocket> accept_socket,
+                    const net::IPEndPoint& peer_address);
+
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothSocketThreadWin> socket_thread_;
   net::NetLog* net_log_;
@@ -124,6 +153,11 @@ class BluetoothSocketWin : public BluetoothSocket {
   // being written.
   std::queue<linked_ptr<WriteRequest> > write_queue_;
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
+
+  scoped_ptr<ServiceRegData> service_reg_data_;
+  scoped_ptr<net::TCPSocket> accept_socket_;
+  net::IPEndPoint accept_address_;
+  OnNewConnectionCallback on_new_connection_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothSocketWin);
 };

@@ -64,6 +64,28 @@ class TCPSocketTest : public PlatformTest {
     *address = IPEndPoint(ip_number, port);
   }
 
+  void TestAcceptAsync() {
+    TestCompletionCallback accept_callback;
+    scoped_ptr<TCPSocket> accepted_socket;
+    IPEndPoint accepted_address;
+    ASSERT_EQ(ERR_IO_PENDING,
+              socket_.Accept(&accepted_socket, &accepted_address,
+                             accept_callback.callback()));
+
+    TestCompletionCallback connect_callback;
+    TCPClientSocket connecting_socket(local_address_list(),
+                                      NULL, NetLog::Source());
+    connecting_socket.Connect(connect_callback.callback());
+
+    EXPECT_EQ(OK, connect_callback.WaitForResult());
+    EXPECT_EQ(OK, accept_callback.WaitForResult());
+
+    EXPECT_TRUE(accepted_socket.get());
+
+    // Both sockets should be on the loopback network interface.
+    EXPECT_EQ(accepted_address.address(), local_address_.address());
+  }
+
   AddressList local_address_list() const {
     return AddressList(local_address_);
   }
@@ -103,27 +125,28 @@ TEST_F(TCPSocketTest, Accept) {
 // Test Accept() callback.
 TEST_F(TCPSocketTest, AcceptAsync) {
   ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
-
-  TestCompletionCallback accept_callback;
-  scoped_ptr<TCPSocket> accepted_socket;
-  IPEndPoint accepted_address;
-  ASSERT_EQ(ERR_IO_PENDING,
-            socket_.Accept(&accepted_socket, &accepted_address,
-                           accept_callback.callback()));
-
-  TestCompletionCallback connect_callback;
-  TCPClientSocket connecting_socket(local_address_list(),
-                                    NULL, NetLog::Source());
-  connecting_socket.Connect(connect_callback.callback());
-
-  EXPECT_EQ(OK, connect_callback.WaitForResult());
-  EXPECT_EQ(OK, accept_callback.WaitForResult());
-
-  EXPECT_TRUE(accepted_socket.get());
-
-  // Both sockets should be on the loopback network interface.
-  EXPECT_EQ(accepted_address.address(), local_address_.address());
+  TestAcceptAsync();
 }
+
+#if defined(OS_WIN)
+// Test Accept() for AdoptListenSocket.
+TEST_F(TCPSocketTest, AcceptForAdoptedListenSocket) {
+  // Create a socket to be used with AdoptListenSocket.
+  SOCKET existing_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  ASSERT_EQ(OK, socket_.AdoptListenSocket(existing_socket));
+
+  IPEndPoint address;
+  ParseAddress("127.0.0.1", 0, &address);
+  SockaddrStorage storage;
+  ASSERT_TRUE(address.ToSockAddr(storage.addr, &storage.addr_len));
+  ASSERT_EQ(0, bind(existing_socket, storage.addr, storage.addr_len));
+
+  ASSERT_EQ(OK, socket_.Listen(kListenBacklog));
+  ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
+
+  TestAcceptAsync();
+}
+#endif
 
 // Accept two connections simultaneously.
 TEST_F(TCPSocketTest, Accept2Connections) {

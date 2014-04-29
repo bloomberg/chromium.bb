@@ -58,9 +58,9 @@ void BluetoothProfile::Register(const BluetoothUUID& uuid,
     profile = CreateBluetoothProfileMac(uuid, options);
   callback.Run(profile);
 #elif defined(OS_WIN)
-  BluetoothProfile* profile = NULL;
-  profile = new BluetoothProfileWin(uuid, options.name);
-  callback.Run(profile);
+  BluetoothProfileWin* profile = NULL;
+  profile = new BluetoothProfileWin();
+  profile->Init(uuid, options, callback);
 #else
   callback.Run(NULL);
 #endif

@@ -31,8 +31,13 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   virtual ~TCPSocketWin();
 
   int Open(AddressFamily family);
-  // Takes ownership of |socket|.
+
+  // Both AdoptConnectedSocket and AdoptListenSocket take ownership of an
+  // existing socket. AdoptConnectedSocket takes an already connected
+  // socket. AdoptListenSocket takes a socket that is intended to accept
+  // connection. In some sense, AdoptListenSocket is more similar to Open.
   int AdoptConnectedSocket(SOCKET socket, const IPEndPoint& peer_address);
+  int AdoptListenSocket(SOCKET socket);
 
   int Bind(const IPEndPoint& address);
 

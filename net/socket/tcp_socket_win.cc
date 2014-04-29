@@ -322,6 +322,24 @@ int TCPSocketWin::AdoptConnectedSocket(SOCKET socket,
   return OK;
 }
 
+int TCPSocketWin::AdoptListenSocket(SOCKET socket) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(socket_, INVALID_SOCKET);
+
+  socket_ = socket;
+
+  if (SetNonBlocking(socket_)) {
+    int result = MapSystemError(WSAGetLastError());
+    Close();
+    return result;
+  }
+
+  // |core_| is not needed for sockets that are used to accept connections.
+  // The operation here is more like Open but with an existing socket.
+
+  return OK;
+}
+
 int TCPSocketWin::Bind(const IPEndPoint& address) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(socket_, INVALID_SOCKET);
