@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/file_util_proxy.h"
+#include "base/files/file_proxy.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
@@ -20,12 +20,12 @@ namespace {
 
 void DidCreateTemporaryFile(
     const CreateTemporaryFileStreamCallback& callback,
+    scoped_ptr<base::FileProxy> file_proxy,
     base::File::Error error_code,
-    base::PassPlatformFile file_handle,
     const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error_code != base::File::FILE_OK) {
+  if (!file_proxy->IsValid()) {
     callback.Run(error_code, scoped_ptr<net::FileStream>(), NULL);
     return;
   }
@@ -38,9 +38,8 @@ void DidCreateTemporaryFile(
           BrowserThread::GetMessageLoopProxyForThread(
               BrowserThread::FILE).get());
 
-  scoped_ptr<net::FileStream> file_stream(new net::FileStream(
-      file_handle.ReleaseValue(),
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC));
+  scoped_ptr<net::FileStream> file_stream(
+      new net::FileStream(file_proxy->TakeFile()));
 
   callback.Run(error_code, file_stream.Pass(), deletable_file);
 }
@@ -51,10 +50,12 @@ void CreateTemporaryFileStream(
     const CreateTemporaryFileStreamCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  base::FileUtilProxy::CreateTemporary(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
-      base::PLATFORM_FILE_ASYNC,
-      base::Bind(&DidCreateTemporaryFile, callback));
+  scoped_ptr<base::FileProxy> file_proxy(new base::FileProxy(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get()));
+  base::FileProxy* proxy = file_proxy.get();
+  proxy->CreateTemporary(
+      base::File::FLAG_ASYNC,
+      base::Bind(&DidCreateTemporaryFile, callback, Passed(&file_proxy)));
 }
 
 }  // namespace content
