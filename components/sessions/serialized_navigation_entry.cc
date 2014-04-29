@@ -150,10 +150,6 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
 
   navigation.http_status_code_ = sync_data.http_status_code();
 
-  // We shouldn't sync session data for managed users down at the moment.
-  DCHECK(!sync_data.has_blocked_state());
-  DCHECK_EQ(0, sync_data.content_pack_categories_size());
-
   navigation.Sanitize();
 
   navigation.is_restored_ = true;
