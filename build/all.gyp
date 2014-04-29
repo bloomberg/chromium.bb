@@ -748,11 +748,6 @@
             '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
             '../ui/events/events.gyp:events_unittests',
             '../ui/ui_unittests.gyp:ui_unittests',
-            # Required by ui_unittests.
-            # TODO(wangxianzhu): It'd better let ui_unittests depend on it, but
-            # this would cause circular gyp dependency which needs refactoring the
-            # gyps to resolve.
-            '../chrome/chrome_resources.gyp:packed_resources',
           ],
           'conditions': [
             ['"<(gtest_target_type)"=="shared_library"', {
