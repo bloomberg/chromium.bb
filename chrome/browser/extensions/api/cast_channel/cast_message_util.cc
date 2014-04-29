@@ -107,17 +107,18 @@ std::string CastMessageToString(const CastMessage& message_proto) {
 std::string AuthMessageToString(const DeviceAuthMessage& message) {
   std::string out("{");
   if (message.has_challenge()) {
-    out += "\n  challenge = {},";
+    out += "challenge: {}, ";
   }
   if (message.has_response()) {
-    out += "\n  response = {";
-    out += "\n    signature = " + message.response().signature();
-    out += "\n,   certificate = " +
-        message.response().client_auth_certificate();
-    out += "\n  }";
+    out += "response: {signature: (";
+    out += base::UintToString(message.response().signature().length());
+    out += " bytes), certificate: (";
+    out += base::UintToString(
+        message.response().client_auth_certificate().length());
+    out += " bytes)}";
   }
   if (message.has_error()) {
-    out += "\n  error = {";
+    out += ", error: {";
     out += base::IntToString(message.error().error_type());
     out += "}";
   }
