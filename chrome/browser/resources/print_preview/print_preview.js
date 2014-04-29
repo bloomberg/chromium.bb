@@ -1012,6 +1012,7 @@ cr.define('print_preview', function() {
 
 <include src="previewarea/margin_control.js"/>
 <include src="previewarea/margin_control_container.js"/>
+<include src="../pdf/pdf_scripting_api.js" />
 <include src="previewarea/preview_area.js"/>
 <include src="preview_generator.js"/>
 
