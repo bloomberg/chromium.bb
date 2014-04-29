@@ -1,15 +1,15 @@
 # DEPS files look like -*- Python -*-
 
 vars = {
-  "chrome_rev": "254462",
+  "chrome_rev": "266471",
   # NOTE!  These four should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   # (This is not essential for Breakpad, because we do not use its code
   # in the build that goes into Chromium.  But might as well update it too.)
   "gtest_rev": "643",
-  "gyp_rev": "1857",
-  "lss_rev": "24",
-  "breakpad_rev": "1271",
+  "gyp_rev": "1895",
+  "lss_rev": "26",
+  "breakpad_rev": "1318",
 
   "lcov_rev": "149720",
   "tools_rev": "13077",
@@ -135,7 +135,7 @@ hooks = [
   {
     "name": "clang",
     "pattern": ".",
-    "action": ["python", "tools/clang/scripts/update.py", "--mac-only"],
+    "action": ["python", "tools/clang/scripts/update.py", "--if-needed"],
   },
   # Run GYP, do this last to make sure all the tools are present first.
   {
