@@ -1,4 +1,0 @@
-# Flaky on Linux tsan bots. crbug.com/349634 and crbug.com/358390
-WebRtcBrowserTest.EstablishAudioVideoCallAndMeasureOutputLevel
-WebRtcBrowserTests/WebRtcBrowserTest.EstablishAudioVideoCallAndVerifyMutingWorks/0
-WebRtcBrowserTests/WebRtcBrowserTest.EstablishAudioVideoCallAndVerifyMutingWorks/1
