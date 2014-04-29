@@ -34,6 +34,8 @@
 #include "WebCommon.h"
 
 #include <algorithm>
+#include <limits>
+#include <stdlib.h>
 
 namespace blink {
 
@@ -153,6 +155,7 @@ public:
 private:
     void initialize(size_t size)
     {
+        validateSize(size);
         m_size = size;
         if (!m_size)
             m_ptr = 0;
@@ -166,6 +169,7 @@ private:
     template <typename U>
     void initializeFrom(const U* values, size_t size)
     {
+        validateSize(size);
         m_size = size;
         if (!m_size)
             m_ptr = 0;
@@ -174,6 +178,12 @@ private:
             for (size_t i = 0; i < m_size; ++i)
                 new (&m_ptr[i]) T(values[i]);
         }
+    }
+
+    void validateSize(size_t size)
+    {
+        if (std::numeric_limits<size_t>::max() / sizeof(T) < size)
+            abort();
     }
 
     void destroy()
