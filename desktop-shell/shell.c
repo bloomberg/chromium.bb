@@ -170,6 +170,10 @@ struct shell_surface {
 	bool state_changed;
 	bool state_requested;
 
+	struct {
+		int left, right, top, bottom;
+	} margin;
+
 	int focus_count;
 };
 
@@ -189,6 +193,7 @@ struct shell_touch_grab {
 struct weston_move_grab {
 	struct shell_grab base;
 	wl_fixed_t dx, dy;
+	int client_initiated;
 };
 
 struct weston_touch_move_grab {
@@ -247,6 +252,10 @@ shell_fade_startup(struct desktop_shell *shell);
 
 static struct shell_seat *
 get_shell_seat(struct weston_seat *seat);
+
+static int
+get_output_panel_height(struct desktop_shell *shell,
+			struct weston_output *output);
 
 static void
 shell_surface_update_child_surface_layers(struct shell_surface *shsurf);
@@ -1462,22 +1471,47 @@ noop_grab_focus(struct weston_pointer_grab *grab)
 }
 
 static void
+constrain_position(struct weston_move_grab *move, int *cx, int *cy)
+{
+	struct shell_surface *shsurf = move->base.shsurf;
+	struct weston_pointer *pointer = move->base.grab.pointer;
+	int x, y, panel_height, bottom, left, right;
+	const int safety = 50;
+
+	x = wl_fixed_to_int(pointer->x + move->dx);
+	y = wl_fixed_to_int(pointer->y + move->dy);
+
+	panel_height = get_output_panel_height(shsurf->shell,
+					       shsurf->surface->output);
+	bottom = y + shsurf->surface->height - shsurf->margin.bottom;
+	if (bottom - panel_height < safety)
+		y = panel_height + safety -
+			shsurf->surface->height + shsurf->margin.bottom;
+
+	if (move->client_initiated &&
+	    y + shsurf->margin.top < panel_height)
+		y = panel_height - shsurf->margin.top;
+
+	*cx = x;
+	*cy = y;
+}
+
+static void
 move_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 		 wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_move_grab *move = (struct weston_move_grab *) grab;
 	struct weston_pointer *pointer = grab->pointer;
 	struct shell_surface *shsurf = move->base.shsurf;
-	int dx, dy;
+	int cx, cy;
 
 	weston_pointer_move(pointer, x, y);
-	dx = wl_fixed_to_int(pointer->x + move->dx);
-	dy = wl_fixed_to_int(pointer->y + move->dy);
-
 	if (!shsurf)
 		return;
 
-	weston_view_set_position(shsurf->view, dx, dy);
+	constrain_position(move, &cx, &cy);
+
+	weston_view_set_position(shsurf->view, cx, cy);
 
 	weston_compositor_schedule_repaint(shsurf->surface->compositor);
 }
@@ -1516,7 +1550,8 @@ static const struct weston_pointer_grab_interface move_grab_interface = {
 };
 
 static int
-surface_move(struct shell_surface *shsurf, struct weston_seat *seat)
+surface_move(struct shell_surface *shsurf, struct weston_seat *seat,
+	     int client_initiated)
 {
 	struct weston_move_grab *move;
 
@@ -1534,6 +1569,7 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *seat)
 			seat->pointer->grab_x;
 	move->dy = wl_fixed_from_double(shsurf->view->geometry.y) -
 			seat->pointer->grab_y;
+	move->client_initiated = client_initiated;
 
 	shell_grab_start(&move->base, &move_grab_interface, shsurf,
 			 seat->pointer, DESKTOP_SHELL_CURSOR_MOVE);
@@ -1558,7 +1594,7 @@ common_surface_move(struct wl_resource *resource,
 	    seat->pointer->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->pointer->focus->surface);
 		if ((surface == shsurf->surface) &&
-		    (surface_move(shsurf, seat) < 0))
+		    (surface_move(shsurf, seat, 1) < 0))
 			wl_resource_post_no_memory(resource);
 	} else if (seat->touch &&
 		   seat->touch->focus &&
@@ -1804,7 +1840,7 @@ busy_cursor_grab_button(struct weston_pointer_grab *base,
 
 	if (shsurf && button == BTN_LEFT && state) {
 		activate(shsurf->shell, shsurf->surface, seat);
-		surface_move(shsurf, seat);
+		surface_move(shsurf, seat, 0);
 	} else if (shsurf && button == BTN_RIGHT && state) {
 		activate(shsurf->shell, shsurf->surface, seat);
 		surface_rotate(shsurf, seat);
@@ -2780,6 +2816,12 @@ set_xwayland(struct shell_surface *shsurf, int x, int y, uint32_t flags)
 	shsurf->state_changed = true;
 }
 
+static int
+shell_interface_move(struct shell_surface *shsurf, struct weston_seat *ws)
+{
+	return surface_move(shsurf, ws, 1);
+}
+
 static const struct weston_pointer_grab_interface popup_grab_interface;
 
 static void
@@ -3298,8 +3340,12 @@ xdg_surface_set_margin(struct wl_client *client,
 			     int32_t top,
 			     int32_t bottom)
 {
-	/* Do nothing, Weston doesn't try to constrain or place
-	 * surfaces in any special manner... */
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	shsurf->margin.left = left;
+	shsurf->margin.right = right;
+	shsurf->margin.top = top;
+	shsurf->margin.bottom = bottom;
 }
 
 static void
@@ -4017,7 +4063,7 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 	    shsurf->state.maximized)
 		return;
 
-	surface_move(shsurf, (struct weston_seat *) seat);
+	surface_move(shsurf, (struct weston_seat *) seat, 0);
 }
 
 static void
@@ -6024,7 +6070,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.set_transient = set_transient;
 	ec->shell_interface.set_fullscreen = set_fullscreen;
 	ec->shell_interface.set_xwayland = set_xwayland;
-	ec->shell_interface.move = surface_move;
+	ec->shell_interface.move = shell_interface_move;
 	ec->shell_interface.resize = surface_resize;
 	ec->shell_interface.set_title = set_title;
 
