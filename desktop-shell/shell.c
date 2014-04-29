@@ -364,6 +364,9 @@ shell_touch_grab_start(struct shell_touch_grab *grab,
 {
 	struct desktop_shell *shell = shsurf->shell;
 
+	if (touch->seat->pointer)
+		popup_grab_end(touch->seat->pointer);
+
 	grab->grab.interface = interface;
 	grab->shsurf = shsurf;
 	grab->shsurf_destroy_listener.notify = destroy_shell_grab_shsurf;
