@@ -348,7 +348,7 @@
             ],
           },
         }],
-        ['use_aura==0', {
+        ['use_aura==0 and toolkit_views==0', {
           'sources!': [
             'nine_image_painter.cc',
             'nine_image_painter.h',
