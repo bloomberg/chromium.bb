@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_H_
 
+#include <set>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,7 +37,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   explicit ServiceWorkerDatabase(const base::FilePath& path);
   ~ServiceWorkerDatabase();
 
-  struct RegistrationData {
+  struct CONTENT_EXPORT RegistrationData {
     // These values are immutable for the life of a registration.
     int64 registration_id;
     GURL scope;
@@ -58,10 +61,40 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     ~RegistrationData();
   };
 
+  struct ResourceRecord {
+    int64 resource_id;
+    GURL url;
+  };
+
   // For use during initialization.
   bool GetNextAvailableIds(int64* next_avail_registration_id,
                            int64* next_avail_version_id,
                            int64* next_avail_resource_id);
+  bool GetOriginsWithRegistrations(std::set<GURL>* origins);
+
+  // For use when first handling a request in an origin with registrations.
+  bool GetRegistrationsForOrigin(const GURL& origin,
+                                 std::vector<RegistrationData>* registrations);
+
+  // Saving, retrieving, and updating registration data.
+  // (will bump next_avail_xxxx_ids as needed)
+  // (resource ids will be added/removed from the uncommitted/purgeable
+  // lists as needed)
+
+  bool ReadRegistration(int64 registration_id,
+                        const GURL& origin,
+                        RegistrationData* registration,
+                        std::vector<ResourceRecord>* resources);
+  bool WriteRegistration(const RegistrationData& registration,
+                         const std::vector<ResourceRecord>& resources);
+
+  bool UpdateVersionToActive(int64 registration_id,
+                             const GURL& origin);
+  bool UpdateLastCheckTime(int64 registration_id,
+                           const GURL& origin,
+                           const base::Time& time);
+  bool DeleteRegistration(int64 registration_id,
+                          const GURL& origin);
 
   bool is_disabled() const { return is_disabled_; }
   bool was_corruption_detected() const { return was_corruption_detected_; }
@@ -73,16 +106,26 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // does not exist and |create_if_needed| is false.
   bool LazyOpen(bool create_if_needed);
 
-  // Populates the database with initial data, namely, database schema version
-  // and next available IDs.
-  bool PopulateInitialData();
-
   bool ReadNextAvailableId(const char* id_key,
                            int64* next_avail_id);
+  bool ReadRegistrationData(int64 registration_id,
+                            const GURL& origin,
+                            RegistrationData* registration);
+  bool ReadDatabaseVersion(int64* db_version);
+
+  // Write a batch into the database.
+  // NOTE: You must call this when you want to put something into the database
+  // because this initializes the database if needed.
   bool WriteBatch(leveldb::WriteBatch* batch);
 
+  // Bumps the next available id if |used_id| is greater than or equal to the
+  // cached one.
+  void BumpNextRegistrationIdIfNeeded(int64 used_id,
+                                      leveldb::WriteBatch* batch);
+  void BumpNextVersionIdIfNeeded(int64 used_id,
+                                 leveldb::WriteBatch* batch);
+
   bool IsOpen();
-  bool IsEmpty();
 
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
@@ -91,12 +134,20 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   scoped_ptr<leveldb::Env> env_;
   scoped_ptr<leveldb::DB> db_;
 
+  int64 next_avail_registration_id_;
+  int64 next_avail_resource_id_;
+  int64 next_avail_version_id_;
+
   // True if a database error has occurred (e.g. cannot read data).
   // If true, all database accesses will fail.
   bool is_disabled_;
 
   // True if a database corruption was detected.
   bool was_corruption_detected_;
+
+  // True if a database was initialized, that is, the schema version was written
+  // in the database.
+  bool is_initialized_;
 
   base::SequenceChecker sequence_checker_;
 

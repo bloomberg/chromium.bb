@@ -23,6 +23,7 @@
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
+    'browser/service_worker/service_worker_proto.gyp:database_proto',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
   ],
   'export_dependent_settings': [

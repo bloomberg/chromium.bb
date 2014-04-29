@@ -350,6 +350,7 @@
       'target_name': 'content_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
+        'browser/service_worker/service_worker_proto.gyp:database_proto',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
         'content.gyp:content_browser',
         'content.gyp:content_common',
