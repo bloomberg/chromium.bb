@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
@@ -29,6 +30,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   virtual void SetUp() OVERRIDE {
     wm_state_.reset(new wm::WMState);
     AuraTestBase::SetUp();
+    new wm::DefaultActivationClient(root_window());
     aura::client::ActivationClient* activation_client =
         aura::client::GetActivationClient(root_window());
     shadow_controller_.reset(new ShadowController(activation_client));

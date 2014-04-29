@@ -14,7 +14,6 @@ namespace aura {
 class Window;
 class WindowTreeHost;
 namespace client {
-class DefaultActivationClient;
 class DefaultCaptureClient;
 class FocusClient;
 }
@@ -51,7 +50,6 @@ class WMTestHelper : public aura::client::WindowTreeClient {
   scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<wm::InputMethodEventFilter> input_method_filter_;
-  scoped_ptr<aura::client::DefaultActivationClient> activation_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WMTestHelper);

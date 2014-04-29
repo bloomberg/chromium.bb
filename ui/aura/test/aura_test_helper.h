@@ -22,7 +22,6 @@ class ScopedAnimationDurationScaleMode;
 namespace aura {
 class TestScreen;
 namespace client {
-class DefaultActivationClient;
 class DefaultCaptureClient;
 class FocusClient;
 }
@@ -60,7 +59,6 @@ class AuraTestHelper {
   bool owns_host_;
   scoped_ptr<WindowTreeHost> host_;
   scoped_ptr<TestWindowTreeClient> stacking_client_;
-  scoped_ptr<client::DefaultActivationClient> activation_client_;
   scoped_ptr<client::DefaultCaptureClient> capture_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
   scoped_ptr<client::FocusClient> focus_client_;

@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
@@ -28,6 +29,7 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
+    new wm::DefaultActivationClient(root_window());
     widget_.reset(new views::Widget);
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.remove_standard_frame = true;
