@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/renderer/media/video_frame_compositor.h"
 #include "media/base/video_frame.h"
@@ -17,6 +18,7 @@ class VideoFrameCompositorTest : public testing::Test,
  public:
   VideoFrameCompositorTest()
       : compositor_(new VideoFrameCompositor(
+            message_loop_.message_loop_proxy(),
             base::Bind(&VideoFrameCompositorTest::NaturalSizeChanged,
                        base::Unretained(this)),
             base::Bind(&VideoFrameCompositorTest::OpacityChanged,
@@ -25,14 +27,20 @@ class VideoFrameCompositorTest : public testing::Test,
         natural_size_changed_count_(0),
         opacity_changed_count_(0),
         opaque_(false) {
-    compositor_->SetVideoFrameProviderClient(this);
+    provider()->SetVideoFrameProviderClient(this);
   }
 
   virtual ~VideoFrameCompositorTest() {
-    compositor_->SetVideoFrameProviderClient(NULL);
+    provider()->SetVideoFrameProviderClient(NULL);
+    compositor_.reset();
+    message_loop_.RunUntilIdle();
   }
 
+  base::MessageLoop* message_loop() { return &message_loop_; }
   VideoFrameCompositor* compositor() { return compositor_.get(); }
+  cc::VideoFrameProvider* provider() {
+    return compositor_->GetVideoFrameProvider();
+  }
   int did_receive_frame_count() { return did_receive_frame_count_; }
   int natural_size_changed_count() { return natural_size_changed_count_; }
   gfx::Size natural_size() { return natural_size_; }
@@ -58,6 +66,7 @@ class VideoFrameCompositorTest : public testing::Test,
     opaque_ = opaque;
   }
 
+  base::MessageLoop message_loop_;
   scoped_ptr<VideoFrameCompositor> compositor_;
   int did_receive_frame_count_;
   int natural_size_changed_count_;
@@ -69,17 +78,21 @@ class VideoFrameCompositorTest : public testing::Test,
 };
 
 TEST_F(VideoFrameCompositorTest, InitialValues) {
+  EXPECT_TRUE(compositor()->GetVideoFrameProvider());
   EXPECT_FALSE(compositor()->GetCurrentFrame());
+  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
 }
 
 TEST_F(VideoFrameCompositorTest, UpdateCurrentFrame) {
   scoped_refptr<VideoFrame> expected = VideoFrame::CreateEOSFrame();
 
-  // Should notify compositor synchronously.
-  EXPECT_EQ(0, did_receive_frame_count());
   compositor()->UpdateCurrentFrame(expected);
   scoped_refptr<VideoFrame> actual = compositor()->GetCurrentFrame();
   EXPECT_EQ(expected, actual);
+
+  // Should notify compositor asynchronously.
+  EXPECT_EQ(0, did_receive_frame_count());
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(1, did_receive_frame_count());
 }
 
@@ -157,6 +170,40 @@ TEST_F(VideoFrameCompositorTest, OpacityChanged) {
   compositor()->UpdateCurrentFrame(opaque_frame);
   EXPECT_TRUE(opaque());
   EXPECT_EQ(2, opacity_changed_count());
+}
+
+TEST_F(VideoFrameCompositorTest, GetFramesDroppedBeforeCompositorWasNotified) {
+  scoped_refptr<VideoFrame> frame = VideoFrame::CreateEOSFrame();
+
+  compositor()->UpdateCurrentFrame(frame);
+  EXPECT_EQ(0, did_receive_frame_count());
+  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
+
+  // Should not increment if we finished notifying the compositor.
+  //
+  // This covers the normal scenario where the compositor is getting
+  // notifications in a timely manner.
+  message_loop()->RunUntilIdle();
+  compositor()->UpdateCurrentFrame(frame);
+  EXPECT_EQ(1, did_receive_frame_count());
+  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
+
+  // Should increment if we didn't notify the compositor.
+  //
+  // This covers the scenario where the compositor is falling behind.
+  // Consider it dropped.
+  message_loop()->RunUntilIdle();
+  compositor()->UpdateCurrentFrame(frame);
+  compositor()->UpdateCurrentFrame(frame);
+  EXPECT_EQ(2, did_receive_frame_count());
+  EXPECT_EQ(1u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
+
+  // Shouldn't overflow.
+  compositor()->SetFramesDroppedBeforeCompositorWasNotifiedForTesting(
+      kuint32max);
+  compositor()->UpdateCurrentFrame(frame);
+  EXPECT_EQ(kuint32max,
+            compositor()->GetFramesDroppedBeforeCompositorWasNotified());
 }
 
 }  // namespace content

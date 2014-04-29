@@ -171,14 +171,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       supports_save_(true),
       starting_(false),
       chunk_demuxer_(NULL),
-      // Threaded compositing isn't enabled universally yet.
-      compositor_task_runner_(
-          RenderThreadImpl::current()->compositor_message_loop_proxy()
-              ? RenderThreadImpl::current()->compositor_message_loop_proxy()
-              : base::MessageLoopProxy::current()),
-      compositor_(new VideoFrameCompositor(
+      compositor_(  // Threaded compositing isn't enabled universally yet.
+          (RenderThreadImpl::current()->compositor_message_loop_proxy()
+               ? RenderThreadImpl::current()->compositor_message_loop_proxy()
+               : base::MessageLoopProxy::current()),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged)),
       text_track_index_(0),
       web_cdm_(NULL) {
   media_log_->AddEvent(
@@ -233,8 +231,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   pipeline_.Stop(
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
   waiter.Wait();
-
-  compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_);
 
   // Let V8 know we are not using extra resources anymore.
   if (incremented_externally_allocated_memory_) {
@@ -564,7 +560,7 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   //   - We haven't reached HAVE_CURRENT_DATA and need to paint black
   //   - We're painting to a canvas
   // See http://crbug.com/341225 http://crbug.com/342621 for details.
-  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_.GetCurrentFrame();
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
   gfx::Rect gfx_rect(rect);
@@ -598,7 +594,14 @@ unsigned WebMediaPlayerImpl::droppedFrameCount() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   media::PipelineStatistics stats = pipeline_.GetStatistics();
-  return stats.video_frames_dropped;
+
+  unsigned frames_dropped = stats.video_frames_dropped;
+
+  frames_dropped += const_cast<VideoFrameCompositor&>(compositor_)
+                        .GetFramesDroppedBeforeCompositorWasNotified();
+
+  DCHECK_LE(frames_dropped, stats.video_frames_decoded);
+  return frames_dropped;
 }
 
 unsigned WebMediaPlayerImpl::audioDecodedByteCount() const {
@@ -623,7 +626,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_.GetCurrentFrame();
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
 
@@ -988,8 +991,8 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
 
   if (hasVideo()) {
     DCHECK(!video_weblayer_);
-    video_weblayer_.reset(
-        new webkit::WebLayerImpl(cc::VideoLayer::Create(compositor_)));
+    video_weblayer_.reset(new webkit::WebLayerImpl(
+        cc::VideoLayer::Create(compositor_.GetVideoFrameProvider())));
     video_weblayer_->setOpaque(opaque_);
     client_->setWebLayer(video_weblayer_.get());
   }
@@ -1306,11 +1309,7 @@ void WebMediaPlayerImpl::OnOpacityChanged(bool opaque) {
 
 void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoFrameCompositor::UpdateCurrentFrame,
-                 base::Unretained(compositor_),
-                 frame));
+  compositor_.UpdateCurrentFrame(frame);
 }
 
 void WebMediaPlayerImpl::SetDecryptorReadyCB(

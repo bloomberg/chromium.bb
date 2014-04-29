@@ -332,8 +332,7 @@ class WebMediaPlayerImpl
   std::string init_data_type_;
 
   // Video rendering members.
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  VideoFrameCompositor* compositor_;  // Deleted on |compositor_task_runner_|.
+  VideoFrameCompositor compositor_;
   media::SkCanvasVideoRenderer skcanvas_video_renderer_;
 
   // The compositor layer for displaying the video content when using composited
