@@ -29,8 +29,11 @@
  */
 
 partial interface Element {
+    AnimationPlayer animate(AnimationEffect? effect, Dictionary timingInput);
+    AnimationPlayer animate(AnimationEffect? effect, double duration);
+    AnimationPlayer animate(AnimationEffect? effect);
     [MeasureAs=ElementAnimateKeyframeListEffectObjectTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes, Dictionary timingInput);
-    [MeasureAs=ElementAnimateKeyframeListEffectDoubleTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes, double timingInput);
+    [MeasureAs=ElementAnimateKeyframeListEffectDoubleTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes, double duration);
     [MeasureAs=ElementAnimateKeyframeListEffectNoTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes);
 };
 

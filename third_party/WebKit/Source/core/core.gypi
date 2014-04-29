@@ -3,6 +3,7 @@
         # Files for which bindings (.cpp and .h files) will be generated
         'core_idl_files': [
             'animation/Animation.idl',
+            'animation/AnimationEffect.idl',
             'animation/AnimationPlayer.idl',
             'animation/TimedItem.idl',
             'animation/Timeline.idl',

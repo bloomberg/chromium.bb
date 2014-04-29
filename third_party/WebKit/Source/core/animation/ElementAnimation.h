@@ -61,17 +61,29 @@ public:
 
     static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary, ExceptionState& exceptionState)
     {
-        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector, exceptionState), TimingInput::convert(timingInputDictionary));
+        RefPtrWillBeRawPtr<AnimationEffect> effect = EffectInput::convert(&element, keyframeDictionaryVector, exceptionState);
+        if (exceptionState.hadException())
+            return 0;
+        ASSERT(effect);
+        return animateInternal(element, effect.release(), TimingInput::convert(timingInputDictionary));
     }
 
     static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState& exceptionState)
     {
-        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector, exceptionState), TimingInput::convert(duration));
+        RefPtrWillBeRawPtr<AnimationEffect> effect = EffectInput::convert(&element, keyframeDictionaryVector, exceptionState);
+        if (exceptionState.hadException())
+            return 0;
+        ASSERT(effect);
+        return animateInternal(element, effect.release(), TimingInput::convert(duration));
     }
 
     static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
     {
-        return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector, exceptionState), Timing());
+        RefPtrWillBeRawPtr<AnimationEffect> effect = EffectInput::convert(&element, keyframeDictionaryVector, exceptionState);
+        if (exceptionState.hadException())
+            return 0;
+        ASSERT(effect);
+        return animateInternal(element, effect.release(), Timing());
     }
 
 private:
