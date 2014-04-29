@@ -99,10 +99,19 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
     info->handler_.AddMIMEType(filter);
   }
 
+  std::string mime_types_handler;
+  if (extension->manifest()->GetString(keys::kMimeTypesHandler,
+                                       &mime_types_handler)) {
+    info->handler_.set_handler_url(mime_types_handler);
+  }
+
   extension->SetManifestData(keys::kMimeTypesHandler, info.release());
   return true;
 }
 
 const std::vector<std::string> MimeTypesHandlerParser::Keys() const {
-  return SingleKey(keys::kMIMETypes);
+  std::vector<std::string> keys;
+  keys.push_back(keys::kMIMETypes);
+  keys.push_back(keys::kMimeTypesHandler);
+  return keys;
 }

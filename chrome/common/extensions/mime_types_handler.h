@@ -34,6 +34,13 @@ class MimeTypesHandler {
   // Tests if the handler has registered a filter for the MIME type.
   bool CanHandleMIMEType(const std::string& mime_type) const;
 
+  // Set the URL that will be used to handle MIME type requests.
+  void set_handler_url(const std::string& handler_url) {
+    handler_url_ = handler_url;
+  }
+  // The URL that will be used to handle MIME type requests.
+  const std::string handler_url() const { return handler_url_; }
+
  private:
   // The id for the extension this action belongs to (as defined in the
   // extension manifest).
@@ -41,6 +48,8 @@ class MimeTypesHandler {
 
   // A list of MIME type filters.
   std::set<std::string> mime_type_set_;
+
+  std::string handler_url_;
 };
 
 class MimeTypesHandlerParser : public extensions::ManifestHandler {
