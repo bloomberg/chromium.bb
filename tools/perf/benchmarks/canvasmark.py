@@ -15,6 +15,7 @@ from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
+
 class _CanvasMarkMeasurement(page_measurement.PageMeasurement):
 
   def WillNavigateToPage(self, page, tab):
@@ -49,12 +50,10 @@ class CanvasMark(test.Test):
   test = _CanvasMarkMeasurement
 
   def CreatePageSet(self, options):
-    return page_set.PageSet.FromDict({
-        'archive_data_file': '../page_sets/data/canvasmark.json',
-        'make_javascript_deterministic': False,
-        'pages': [
-          { 'url':
-            'http://www.kevs3d.co.uk/dev/canvasmark/?auto=true'}
-          ]
-        }, os.path.abspath(__file__))
-
+    ps = page_set.PageSet(
+      file_path=os.path.abspath(__file__),
+      archive_data_file='../page_sets/data/canvasmark.json',
+      make_javascript_deterministic=False)
+    ps.AddPageWithDefaultRunNavigate(
+      'http://www.kevs3d.co.uk/dev/canvasmark/?auto=true')
+    return ps
