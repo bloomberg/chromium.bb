@@ -1135,3 +1135,5 @@ crbug.com/367846 svg/transforms/animated-path-inside-transformed-html.xhtml [ Pa
 crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
 
 crbug.com/169282 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsRebaseline ]
+
+crbug.com/367817 fast/frames/location-observe-callback-crash.html [ Pass Failure ]
