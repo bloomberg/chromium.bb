@@ -7,7 +7,6 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -15,11 +14,11 @@ namespace WebCore {
 class ExecutionContext;
 class ScriptPromise;
 
-class PushManager FINAL : public RefCountedWillBeGarbageCollectedFinalized<PushManager>, public ScriptWrappable {
+class PushManager FINAL : public GarbageCollectedFinalized<PushManager>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<PushManager> create()
+    static PushManager* create()
     {
-        return adoptRefWillBeNoop(new PushManager());
+        return new PushManager();
     }
     virtual ~PushManager();
 

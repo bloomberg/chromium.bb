@@ -5,7 +5,7 @@
 [
     NoInterfaceObject,
     RuntimeEnabled=PushMessaging,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface PushManager {
     [CallWith=ExecutionContext, ImplementedAs=registerPushMessaging] Promise register(DOMString senderId);
 };

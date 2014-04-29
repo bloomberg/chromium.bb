@@ -28,7 +28,7 @@ private:
     NavigatorPushManager();
     static const char* supplementName();
 
-    RefPtrWillBeMember<PushManager> m_pushManager;
+    PersistentWillBeMember<PushManager> m_pushManager;
 };
 
 } // namespace WebCore
