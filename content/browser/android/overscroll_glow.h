@@ -43,13 +43,13 @@ class OverscrollGlow {
   void Disable();
 
   // Effect layers will be attached to |overscrolling_layer| if necessary.
-  // |overscroll| is the accumulated overscroll for the current gesture, in
-  // device pixels.  |velocity| is the instantaneous velocity of the overscroll,
-  // in device pixels / second.
+  // |accumulated_overscroll| and |overscroll_delta| are in device pixels, while
+  // |velocity| is in device pixels / second.
   // Returns true if the effect still needs animation ticks.
   bool OnOverscrolled(cc::Layer* overscrolling_layer,
                       base::TimeTicks current_time,
-                      gfx::Vector2dF overscroll,
+                      gfx::Vector2dF accumulated_overscroll,
+                      gfx::Vector2dF overscroll_delta,
                       gfx::Vector2dF velocity);
 
   // Returns true if the effect still needs animation ticks.
@@ -77,12 +77,11 @@ class OverscrollGlow {
   bool NeedsAnimate() const;
   void UpdateLayerAttachment(cc::Layer* parent);
   void Detach();
-  void Pull(base::TimeTicks current_time,
-            gfx::Vector2dF added_overscroll);
+  void Pull(base::TimeTicks current_time, gfx::Vector2dF overscroll_delta);
   void Absorb(base::TimeTicks current_time,
               gfx::Vector2dF velocity,
-              gfx::Vector2dF overscroll,
-              gfx::Vector2dF old_overscroll);
+              bool x_overscroll_started,
+              bool y_overscroll_started);
   void Release(base::TimeTicks current_time);
   void ReleaseAxis(Axis axis, base::TimeTicks current_time);
 
@@ -91,8 +90,6 @@ class OverscrollGlow {
   scoped_ptr<EdgeEffect> edge_effects_[EdgeEffect::EDGE_COUNT];
 
   DisplayParameters display_params_;
-  gfx::Vector2dF old_overscroll_;
-  gfx::Vector2dF old_velocity_;
   bool enabled_;
   bool initialized_;
 

@@ -124,7 +124,8 @@ void OverscrollGlow::Disable() {
 
 bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
                                     base::TimeTicks current_time,
-                                    gfx::Vector2dF overscroll,
+                                    gfx::Vector2dF accumulated_overscroll,
+                                    gfx::Vector2dF overscroll_delta,
                                     gfx::Vector2dF velocity) {
   DCHECK(overscrolling_layer);
 
@@ -137,10 +138,8 @@ bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
     return false;
 
   // Ignore sufficiently small values that won't meaningfuly affect animation.
-  overscroll = ZeroSmallComponents(overscroll);
-  velocity = ZeroSmallComponents(velocity);
-
-  if (overscroll.IsZero()) {
+  overscroll_delta = ZeroSmallComponents(overscroll_delta);
+  if (overscroll_delta.IsZero()) {
     if (initialized_) {
       Release(current_time);
       UpdateLayerAttachment(overscrolling_layer);
@@ -151,28 +150,22 @@ bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
   if (!InitializeIfNecessary())
     return false;
 
-  if (!velocity.IsZero()) {
-    // Release effects if scrolling has changed directions.
-    if (velocity.x() * old_velocity_.x() < 0)
-      ReleaseAxis(AXIS_X, current_time);
-    if (velocity.y() * old_velocity_.y() < 0)
-      ReleaseAxis(AXIS_Y, current_time);
+  gfx::Vector2dF old_overscroll = accumulated_overscroll - overscroll_delta;
+  bool x_overscroll_started =
+      !IsApproxZero(overscroll_delta.x()) && IsApproxZero(old_overscroll.x());
+  bool y_overscroll_started =
+      !IsApproxZero(overscroll_delta.y()) && IsApproxZero(old_overscroll.y());
 
-    Absorb(current_time, velocity, overscroll, old_overscroll_);
-  } else {
-    // Release effects when overscroll accumulation violates monotonicity.
-    if (overscroll.x() * old_overscroll_.x() < 0 ||
-        std::abs(overscroll.x()) < std::abs(old_overscroll_.x()))
-      ReleaseAxis(AXIS_X, current_time);
-    if (overscroll.y() * old_overscroll_.y() < 0 ||
-        std::abs(overscroll.y()) < std::abs(old_overscroll_.y()))
-      ReleaseAxis(AXIS_Y, current_time);
+  if (x_overscroll_started)
+    ReleaseAxis(AXIS_X, current_time);
+  if (y_overscroll_started)
+    ReleaseAxis(AXIS_Y, current_time);
 
-    Pull(current_time, overscroll - old_overscroll_);
-  }
-
-  old_velocity_ = velocity;
-  old_overscroll_ = overscroll;
+  velocity = ZeroSmallComponents(velocity);
+  if (!velocity.IsZero())
+    Absorb(current_time, velocity, x_overscroll_started, y_overscroll_started);
+  else
+    Pull(current_time, overscroll_delta);
 
   UpdateLayerAttachment(overscrolling_layer);
   return NeedsAnimate();
@@ -274,10 +267,10 @@ void OverscrollGlow::Pull(base::TimeTicks current_time,
                          1.f / display_params_.size.width(),
                          1.f / display_params_.size.height());
   float edge_overscroll_pull[EdgeEffect::EDGE_COUNT] = {
-    min(overscroll_pull.y(), 0.f),  // Top
-    min(overscroll_pull.x(), 0.f),  // Left
-    max(overscroll_pull.y(), 0.f),  // Bottom
-    max(overscroll_pull.x(), 0.f)   // Right
+      min(overscroll_pull.y(), 0.f),  // Top
+      min(overscroll_pull.x(), 0.f),  // Left
+      max(overscroll_pull.y(), 0.f),  // Bottom
+      max(overscroll_pull.x(), 0.f)   // Right
   };
 
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
@@ -291,18 +284,18 @@ void OverscrollGlow::Pull(base::TimeTicks current_time,
 
 void OverscrollGlow::Absorb(base::TimeTicks current_time,
                             gfx::Vector2dF velocity,
-                            gfx::Vector2dF overscroll,
-                            gfx::Vector2dF old_overscroll) {
+                            bool x_overscroll_started,
+                            bool y_overscroll_started) {
   DCHECK(enabled_ && initialized_);
-  if (overscroll.IsZero() || velocity.IsZero())
+  if (velocity.IsZero())
     return;
 
   // Only trigger on initial overscroll at a non-zero velocity
   const float overscroll_velocities[EdgeEffect::EDGE_COUNT] = {
-    old_overscroll.y() >= 0 && overscroll.y() < 0 ? min(velocity.y(), 0.f) : 0,
-    old_overscroll.x() >= 0 && overscroll.x() < 0 ? min(velocity.x(), 0.f) : 0,
-    old_overscroll.y() <= 0 && overscroll.y() > 0 ? max(velocity.y(), 0.f) : 0,
-    old_overscroll.x() <= 0 && overscroll.x() > 0 ? max(velocity.x(), 0.f) : 0
+      y_overscroll_started ? min(velocity.y(), 0.f) : 0,  // Top
+      x_overscroll_started ? min(velocity.x(), 0.f) : 0,  // Left
+      y_overscroll_started ? max(velocity.y(), 0.f) : 0,  // Bottom
+      x_overscroll_started ? max(velocity.x(), 0.f) : 0   // Right
   };
 
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
@@ -316,10 +309,8 @@ void OverscrollGlow::Absorb(base::TimeTicks current_time,
 
 void OverscrollGlow::Release(base::TimeTicks current_time) {
   DCHECK(initialized_);
-  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
+  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i)
     edge_effects_[i]->Release(current_time);
-  }
-  old_overscroll_ = old_velocity_ = gfx::Vector2dF();
 }
 
 void OverscrollGlow::ReleaseAxis(Axis axis, base::TimeTicks current_time) {
@@ -328,14 +319,10 @@ void OverscrollGlow::ReleaseAxis(Axis axis, base::TimeTicks current_time) {
     case AXIS_X:
       edge_effects_[EdgeEffect::EDGE_LEFT]->Release(current_time);
       edge_effects_[EdgeEffect::EDGE_RIGHT]->Release(current_time);
-      old_overscroll_.set_x(0);
-      old_velocity_.set_x(0);
       break;
     case AXIS_Y:
       edge_effects_[EdgeEffect::EDGE_TOP]->Release(current_time);
       edge_effects_[EdgeEffect::EDGE_BOTTOM]->Release(current_time);
-      old_overscroll_.set_y(0);
-      old_velocity_.set_y(0);
       break;
   };
 }

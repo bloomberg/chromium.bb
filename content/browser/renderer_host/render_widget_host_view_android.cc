@@ -46,6 +46,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -214,6 +215,7 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
                         OnDidChangeBodyBackgroundColor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidOverscroll, OnDidOverscroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrame,
                         OnSetNeedsBeginFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
@@ -512,6 +514,25 @@ void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
   cached_background_color_ = color;
   if (content_view_core_)
     content_view_core_->OnBackgroundColorChanged(color);
+}
+
+void RenderWidgetHostViewAndroid::OnDidOverscroll(
+    const DidOverscrollParams& params) {
+  if (!content_view_core_ || !layer_ || !is_showing_)
+    return;
+
+  const float device_scale_factor = content_view_core_->GetDpiScale();
+  if (overscroll_effect_->OnOverscrolled(
+          content_view_core_->GetLayer(),
+          base::TimeTicks::Now(),
+          gfx::ScaleVector2d(params.accumulated_overscroll,
+                             device_scale_factor),
+          gfx::ScaleVector2d(params.latest_overscroll_delta,
+                             device_scale_factor),
+          gfx::ScaleVector2d(params.current_fling_velocity,
+                             device_scale_factor))) {
+    content_view_core_->SetNeedsAnimate();
+  }
 }
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(
@@ -1295,22 +1316,6 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
   return cached_background_color_;
-}
-
-void RenderWidgetHostViewAndroid::OnOverscrolled(
-    gfx::Vector2dF accumulated_overscroll,
-    gfx::Vector2dF current_fling_velocity) {
-  if (!content_view_core_ || !layer_ || !is_showing_)
-    return;
-
-  const float device_scale_factor = content_view_core_->GetDpiScale();
-  if (overscroll_effect_->OnOverscrolled(
-          content_view_core_->GetLayer(),
-          base::TimeTicks::Now(),
-          gfx::ScaleVector2d(accumulated_overscroll, device_scale_factor),
-          gfx::ScaleVector2d(current_fling_velocity, device_scale_factor))) {
-    content_view_core_->SetNeedsAnimate();
-  }
 }
 
 void RenderWidgetHostViewAndroid::DidStopFlinging() {

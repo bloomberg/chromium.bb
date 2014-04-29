@@ -73,10 +73,7 @@ void InputEventFilter::DidOverscroll(int routing_id,
   if (!overscroll_notifications_enabled_)
     return;
 
-  // TODO(jdduke): Use |params| as the sole message argument, crbug/354444.
-  SendMessage(ViewHostMsg_DidOverscroll(routing_id,
-                                        params.accumulated_overscroll,
-                                        params.current_fling_velocity));
+  SendMessage(ViewHostMsg_DidOverscroll(routing_id, params));
 }
 
 void InputEventFilter::DidStopFlinging(int routing_id) {

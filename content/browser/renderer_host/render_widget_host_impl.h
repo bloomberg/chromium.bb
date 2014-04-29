@@ -628,8 +628,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
 #endif
   bool OnSwapCompositorFrame(const IPC::Message& message);
-  void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
-                      gfx::Vector2dF current_fling_velocity);
   void OnFlingingStopped();
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnUpdateIsDelayed();
