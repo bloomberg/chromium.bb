@@ -633,11 +633,11 @@ mode-buildbot-tc-x8632-mac() {
   FAIL_FAST=false
   export PNACL_TOOLCHAIN_DIR=mac_x86/pnacl_newlib
   export PNACL_TOOLCHAIN_LABEL=pnacl_mac_x86
-  # We can't test ARM because we do not have QEMU for Mac.
-  # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
   tc-build-all toolchain/mac_x86 pnacl_newlib \
       ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
-  HOST_ARCH=x86_32 tc-tests-fast "x86-32"
+  # We can't test ARM because we do not have QEMU for Mac.
+  HOST_ARCH=x86_64 tc-tests-fast "x86-32"
+  HOST_ARCH=x86_64 tc-tests-fast "x86-64"
 
   echo "@@@BUILD_STEP test unsandboxed mode@@@"
   # Test translation to an unsandboxed executable.
