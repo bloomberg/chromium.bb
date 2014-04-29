@@ -13,6 +13,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 
 namespace syncer {
 
@@ -102,6 +103,14 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry {
 
   // The set of enabled directory types.
   ModelTypeSet enabled_directory_types_;
+
+  // The set of observers of per-type debug info.
+  //
+  // Each of the DirectoryTypeDebugInfoEmitters needs such a list.  There's
+  // a lot of them, and their lifetimes are unpredictable, so it makes the
+  // book-keeping easier if we just store the list here.  That way it's
+  // guaranteed to live as long as this sync backend.
+  ObserverList<TypeDebugInfoObserver> type_debug_info_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeRegistry);
 };

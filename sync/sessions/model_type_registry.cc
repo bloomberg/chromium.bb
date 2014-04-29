@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "sync/engine/directory_commit_contributor.h"
-#include "sync/engine/directory_type_debug_info_emitter.h"
 #include "sync/engine/directory_update_handler.h"
 #include "sync/engine/non_blocking_type_processor_core.h"
 #include "sync/internal_api/public/non_blocking_type_processor.h"
+#include "sync/sessions/directory_type_debug_info_emitter.h"
 
 namespace syncer {
 
@@ -57,12 +57,13 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
     DCHECK(worker_it != workers_map_.end());
     scoped_refptr<ModelSafeWorker> worker = worker_it->second;
 
+    DirectoryTypeDebugInfoEmitter* emitter =
+        new DirectoryTypeDebugInfoEmitter(directory_, type,
+                                          &type_debug_info_observers_);
     DirectoryCommitContributor* committer =
         new DirectoryCommitContributor(directory_, type);
     DirectoryUpdateHandler* updater =
         new DirectoryUpdateHandler(directory_, type, worker);
-    DirectoryTypeDebugInfoEmitter* emitter =
-        new DirectoryTypeDebugInfoEmitter(directory_, type);
 
     // These containers take ownership of their contents.
     directory_commit_contributors_.push_back(committer);
