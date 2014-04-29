@@ -4497,6 +4497,20 @@ menu_button_handler(struct widget *widget,
 }
 
 static void
+menu_touch_up_handler(struct widget *widget,
+					  struct input *input,
+					  uint32_t serial,
+					  uint32_t time,
+					  int32_t id,
+					  void *data)
+{
+	struct menu *menu = data;
+
+	input_ungrab(input);
+	menu_destroy(menu);
+}
+
+static void
 menu_redraw_handler(struct widget *widget, void *data)
 {
 	cairo_t *cr;
@@ -4595,6 +4609,7 @@ window_show_menu(struct display *display,
 	widget_set_leave_handler(menu->widget, menu_leave_handler);
 	widget_set_motion_handler(menu->widget, menu_motion_handler);
 	widget_set_button_handler(menu->widget, menu_button_handler);
+	widget_set_touch_up_handler(menu->widget, menu_touch_up_handler);
 
 	input_grab(input, menu->widget, 0);
 	frame_resize_inside(menu->frame, 200, count * 20);
