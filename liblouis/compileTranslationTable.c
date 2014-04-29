@@ -5171,7 +5171,7 @@ static void defaultLogCallback(int level, const char *message)
 static logcallback logCallbackFunction = defaultLogCallback;
 void EXPORT_CALL lou_registerLogCallback(logcallback callback)
 {
-  if (callback == 0)
+  if (callback == NULL)
     logCallbackFunction = defaultLogCallback;
   else
     logCallbackFunction = callback;
@@ -5189,7 +5189,7 @@ void EXPORT_CALL lou_log(logLevels level, const char *format, ...)
       return;
   if (level < logLevel)
       return;
-  if (logCallbackFunction != 0)
+  if (logCallbackFunction != NULL)
     {
       char *s;
       size_t len;
