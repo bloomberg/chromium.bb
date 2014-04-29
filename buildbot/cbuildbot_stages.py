@@ -4367,7 +4367,9 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
       final_status: Final status string for this run.
     """
     self._run.attrs.metadata.UpdateWithDict(
-        self.GetReportMetadata(final_status=final_status))
+        self.GetReportMetadata(final_status=final_status,
+                               sync_instance=self._sync_instance,
+                               completion_instance=self._completion_instance))
     self.UploadMetadata()
 
   def _UploadArchiveIndex(self, builder_run):
