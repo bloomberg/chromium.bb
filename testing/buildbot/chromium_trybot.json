@@ -57,5 +57,14 @@
     "test": "sandbox_linux_unittests",
     "platforms": ["linux"],
     "args": ["--test-launcher-print-test-stdio=always"]
+  },
+  {
+    "test": "views_unittests",
+    "platforms": ["win"]
+  },
+  {
+    "test": "views_unittests",
+    "platforms": ["linux"],
+    "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
   }
 ]
