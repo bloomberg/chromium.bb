@@ -248,8 +248,9 @@ class Popen(subprocess.Popen):
             'to learn how to fix this error; you need to rebase your cygwin '
             'dlls')
       # Popen() can throw OSError when cwd or args[0] doesn't exist.
-      raise OSError('%s or %s probably doesn\'t exist' %
-                    (kwargs.get('cwd'), args[0]))
+      raise OSError('Execution failed with error: %s.\n'
+                    'Check that %s or %s exist and have execution permission.'
+                    % (str(e), kwargs.get('cwd'), args[0]))
 
   def _tee_threads(self, input):  # pylint: disable=W0622
     """Does I/O for a process's pipes using threads.
