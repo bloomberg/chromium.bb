@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
@@ -82,6 +83,29 @@ void GenerateIPCMessage(
       *message, filter.get(), &msg_is_ok);
 }
 
+// On Windows, ResourceMsg_SetDataBuffer supplies a HANDLE which is not
+// automatically released.
+//
+// See ResourceDispatcher::ReleaseResourcesInDataMessage.
+//
+// TODO(davidben): It would be nice if the behavior for base::SharedMemoryHandle
+// were more like it is in POSIX where the received fds are tracked in a
+// ref-counted core that closes them if not extracted.
+void ReleaseHandlesInMessage(const IPC::Message& message) {
+  if (message.type() == ResourceMsg_SetDataBuffer::ID) {
+    PickleIterator iter(message);
+    int request_id;
+    CHECK(message.ReadInt(&iter, &request_id));
+    base::SharedMemoryHandle shm_handle;
+    if (IPC::ParamTraits<base::SharedMemoryHandle>::Read(&message,
+                                                         &iter,
+                                                         &shm_handle)) {
+      if (base::SharedMemory::IsHandleValid(shm_handle))
+        base::SharedMemory::CloseHandle(shm_handle);
+    }
+  }
+}
+
 }  // namespace
 
 static int RequestIDForMessage(const IPC::Message& msg) {
@@ -133,6 +157,13 @@ static void KickOffRequest() {
 // We may want to move this to a shared space if it is useful for something else
 class ResourceIPCAccumulator {
  public:
+  ~ResourceIPCAccumulator() {
+    for (size_t i = 0; i < messages_.size(); i++) {
+      ReleaseHandlesInMessage(messages_[i]);
+    }
+  }
+
+  // On Windows, takes ownership of SharedMemoryHandles in |msg|.
   void AddMessage(const IPC::Message& msg) {
     messages_.push_back(msg);
   }
@@ -140,7 +171,8 @@ class ResourceIPCAccumulator {
   // This groups the messages by their request ID. The groups will be in order
   // that the first message for each request ID was received, and the messages
   // within the groups will be in the order that they appeared.
-  // Note that this clears messages_.
+  // Note that this clears messages_. The caller takes ownership of any
+  // SharedMemoryHandles in messages placed into |msgs|.
   typedef std::vector< std::vector<IPC::Message> > ClassifiedMessages;
   void GetClassifiedMessages(ClassifiedMessages* msgs);
 
@@ -173,36 +205,39 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
   }
 }
 
-// This class forwards the incoming messages to the ResourceDispatcherHostTest.
 // This is used to emulate different sub-processes, since this filter will
-// have a different ID than the original. For the test, we want all the incoming
-// messages to go to the same place, which is why this forwards.
-class ForwardingFilter : public ResourceMessageFilter {
+// have a different ID than the original.
+class TestFilter : public ResourceMessageFilter {
  public:
-  explicit ForwardingFilter(IPC::Sender* dest,
-                            ResourceContext* resource_context)
-    : ResourceMessageFilter(
-        ChildProcessHostImpl::GenerateChildProcessUniqueId(),
-        PROCESS_TYPE_RENDERER, NULL, NULL, NULL, NULL,
-        base::Bind(&ForwardingFilter::GetContexts,
-                   base::Unretained(this))),
-      dest_(dest),
-      resource_context_(resource_context) {
+  explicit TestFilter(ResourceContext* resource_context)
+      : ResourceMessageFilter(
+            ChildProcessHostImpl::GenerateChildProcessUniqueId(),
+            PROCESS_TYPE_RENDERER, NULL, NULL, NULL, NULL,
+            base::Bind(&TestFilter::GetContexts, base::Unretained(this))),
+        resource_context_(resource_context),
+        canceled_(false),
+        received_after_canceled_(0) {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
     set_peer_pid_for_testing(base::GetCurrentProcId());
   }
 
+  void set_canceled(bool canceled) { canceled_ = canceled; }
+  int received_after_canceled() const { return received_after_canceled_; }
+
   // ResourceMessageFilter override
   virtual bool Send(IPC::Message* msg) OVERRIDE {
-    if (!dest_)
-      return false;
-    return dest_->Send(msg);
+    // No messages should be received when the process has been canceled.
+    if (canceled_)
+      received_after_canceled_++;
+    ReleaseHandlesInMessage(*msg);
+    delete msg;
+    return true;
   }
 
   ResourceContext* resource_context() { return resource_context_; }
 
  protected:
-  virtual ~ForwardingFilter() {}
+  virtual ~TestFilter() {}
 
  private:
   void GetContexts(const ResourceHostMsg_Request& request,
@@ -212,8 +247,34 @@ class ForwardingFilter : public ResourceMessageFilter {
     *request_context = resource_context_->GetRequestContext();
   }
 
-  IPC::Sender* dest_;
   ResourceContext* resource_context_;
+  bool canceled_;
+  int received_after_canceled_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFilter);
+};
+
+
+// This class forwards the incoming messages to the ResourceDispatcherHostTest.
+// For the test, we want all the incoming messages to go to the same place,
+// which is why this forwards.
+class ForwardingFilter : public TestFilter {
+ public:
+  explicit ForwardingFilter(IPC::Sender* dest,
+                            ResourceContext* resource_context)
+      : TestFilter(resource_context),
+        dest_(dest) {
+  }
+
+  // TestFilter override
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
+    return dest_->Send(msg);
+  }
+
+ private:
+  virtual ~ForwardingFilter() {}
+
+  IPC::Sender* dest_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingFilter);
 };
@@ -622,6 +683,7 @@ class ResourceDispatcherHostTest : public testing::Test,
       wait_for_request_complete_loop_->Quit();
     }
 
+    // Do not release handles in it yet; the accumulator owns them now.
     delete msg;
     return true;
   }
@@ -1420,32 +1482,6 @@ TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
   CheckRequestCompleteErrorCode(msgs[0][0], net::ERR_ACCESS_DENIED);
 }
 
-// The host delegate acts as a second one so we can have some requests
-// pending and some canceled.
-class TestFilter : public ForwardingFilter {
- public:
-  explicit TestFilter(ResourceContext* resource_context)
-      : ForwardingFilter(NULL, resource_context),
-        has_canceled_(false),
-        received_after_canceled_(0) {
-  }
-
-  // ForwardingFilter override
-  virtual bool Send(IPC::Message* msg) OVERRIDE {
-    // no messages should be received when the process has been canceled
-    if (has_canceled_)
-      received_after_canceled_++;
-    delete msg;
-    return true;
-  }
-
-  bool has_canceled_;
-  int received_after_canceled_;
-
- private:
-  virtual ~TestFilter() {}
-};
-
 // Tests CancelRequestsForProcess
 TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   scoped_refptr<TestFilter> test_filter = new TestFilter(
@@ -1492,7 +1528,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
   // Cancel the requests to the test process.
   host_.CancelRequestsForProcess(filter_->child_id());
-  test_filter->has_canceled_ = true;
+  test_filter->set_canceled(true);
 
   // The requests should all be cancelled, except request 4, which is detached.
   EXPECT_EQ(1, host_.pending_requests());
@@ -1507,7 +1543,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   EXPECT_EQ(0, host_.pending_requests());
 
   // The test delegate should not have gotten any messages after being canceled.
-  ASSERT_EQ(0, test_filter->received_after_canceled_);
+  ASSERT_EQ(0, test_filter->received_after_canceled());
 
   // There should be two results.
   ResourceIPCAccumulator::ClassifiedMessages msgs;

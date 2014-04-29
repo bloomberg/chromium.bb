@@ -447,15 +447,6 @@ KERNEL32.dll!DuplicateHandle*
 base.dll!base::`anonymous namespace'::ThreadFunc
 KERNEL32.dll!BaseThreadInitThunk
 
-HANDLE LEAK
-name=http://crbug.com/366246
-system call NtDuplicateObject
-KERNELBASE.dll!DuplicateHandle
-KERNEL32.dll!DuplicateHandle
-base.dll!base::SharedMemory::ShareToProcessCommon
-content.dll!content::ResourceBuffer::ShareToProcess
-content.dll!content::AsyncResourceHandler::OnReadCompleted
-
 UNADDRESSABLE ACCESS
 name=http://crbug.com/42043-uninit
 ...
