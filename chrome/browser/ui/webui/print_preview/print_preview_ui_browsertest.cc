@@ -87,7 +87,13 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
 }
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest, TaskManagerNewPrintPreview) {
+// Disable the test for mac, see http://crbug/367665.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#define MAYBE_TaskManagerNewPrintPreview DISABLED_TaskManagerNewPrintPreview
+#else
+#define MAYBE_TaskManagerNewPrintPreview TaskManagerNewPrintPreview
+#endif
+IN_PROC_BROWSER_TEST_F(PrintPreviewTest, MAYBE_TaskManagerNewPrintPreview) {
   chrome::ShowTaskManager(browser());  // Show task manager BEFORE print dialog.
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
