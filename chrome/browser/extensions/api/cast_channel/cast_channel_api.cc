@@ -280,6 +280,8 @@ bool CastChannelOpenFunction::Prepare() {
       connect_info_.reset(new ConnectInfo);
       if (!ParseChannelUrl(GURL(cast_url), connect_info_.get())) {
         connect_info_.reset();
+        SetError("Invalid Cast URL " + cast_url);
+        return false;
       }
       break;
     case base::Value::TYPE_DICTIONARY:
@@ -288,12 +290,17 @@ bool CastChannelOpenFunction::Prepare() {
     default:
       break;
   }
-  if (connect_info_.get()) {
-    channel_auth_ = connect_info_->auth;
-    ip_endpoint_.reset(ParseConnectInfo(*connect_info_));
-    return ip_endpoint_.get() != NULL;
+  if (!connect_info_.get()) {
+    SetError("Invalid connect_info");
+    return false;
   }
-  return false;
+  channel_auth_ = connect_info_->auth;
+  ip_endpoint_.reset(ParseConnectInfo(*connect_info_));
+  if (!ip_endpoint_.get()) {
+    SetError("Invalid connect_info");
+    return false;
+  }
+  return true;
 }
 
 void CastChannelOpenFunction::AsyncWorkStart() {
@@ -319,6 +326,26 @@ CastChannelSendFunction::~CastChannelSendFunction() { }
 bool CastChannelSendFunction::Prepare() {
   params_ = Send::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+  if (params_->message.namespace_.empty()) {
+    SetError("message_info.namespace_ is required");
+    return false;
+  }
+  if (params_->message.source_id.empty()) {
+    SetError("message_info.source_id is required");
+    return false;
+  }
+  if (params_->message.destination_id.empty()) {
+    SetError("message_info.destination_id is required");
+    return false;
+  }
+  switch (params_->message.data->GetType()) {
+    case base::Value::TYPE_STRING:
+    case base::Value::TYPE_BINARY:
+      break;
+    default:
+      SetError("Invalid type of message_info.data");
+      return false;
+  }
   return true;
 }
 

@@ -137,12 +137,12 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   // corresponding details, and returns true. Returns false if |url| is not a
   // valid Cast URL.
   static bool ParseChannelUrl(const GURL& url,
-                              api::cast_channel::ConnectInfo* connect_info);
+                              cast_channel::ConnectInfo* connect_info);
 
   // Validates that |connect_info| represents a valid IP end point and returns a
   // new IPEndPoint if so.  Otherwise returns NULL.
   static net::IPEndPoint* ParseConnectInfo(
-      const api::cast_channel::ConnectInfo& connect_info);
+      const cast_channel::ConnectInfo& connect_info);
 
   void OnOpen(int result);
 
@@ -150,12 +150,18 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   // The id of the newly opened socket.
   int new_channel_id_;
   CastChannelAPI* api_;
-  scoped_ptr<api::cast_channel::ConnectInfo> connect_info_;
+  scoped_ptr<cast_channel::ConnectInfo> connect_info_;
   scoped_ptr<net::IPEndPoint> ip_endpoint_;
-  api::cast_channel::ChannelAuthType channel_auth_;
+  cast_channel::ChannelAuthType channel_auth_;
 
   FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseChannelUrl);
   FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseConnectInfo);
+  FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestPrepareValidUrl);
+  FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestPrepareInvalidUrl);
+  FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest,
+                           TestPrepareValidConnectInfo);
+  FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest,
+                           TestPrepareInvalidConnectInfo);
   DISALLOW_COPY_AND_ASSIGN(CastChannelOpenFunction);
 };
 
@@ -177,6 +183,10 @@ class CastChannelSendFunction : public CastChannelAsyncApiFunction {
 
   scoped_ptr<cast_channel::Send::Params> params_;
 
+  FRIEND_TEST_ALL_PREFIXES(CastChannelSendFunctionTest,
+                           TestPrepareValidMessageInfo);
+  FRIEND_TEST_ALL_PREFIXES(CastChannelSendFunctionTest,
+                           TestPrepareInvalidMessageInfo);
   DISALLOW_COPY_AND_ASSIGN(CastChannelSendFunction);
 };
 
