@@ -44,6 +44,9 @@ namespace {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
+  if (!window)
+    return NULL;
+
   Profile* profile = NULL;
   if (window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
       window->type() == ui::wm::WINDOW_TYPE_POPUP) {
