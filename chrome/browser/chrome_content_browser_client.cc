@@ -1150,6 +1150,17 @@ bool ChromeContentBrowserClient::ShouldAllowOpenURL(
             extension, url.path()))
       return false;
   }
+
+  // Do not allow chrome://chrome-signin navigate to other chrome:// URLs, since
+  // the signin page may host untrusted web content.
+  if (from_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL &&
+      url.SchemeIs(content::kChromeUIScheme) &&
+      url.host() != chrome::kChromeUIChromeSigninHost) {
+    VLOG(1) << "Blocked navigation to " << url.spec() << " from "
+            << chrome::kChromeUIChromeSigninURL;
+    return false;
+  }
+
   return true;
 }
 

@@ -18,6 +18,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -126,6 +127,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
   FooWebUIProvider& foo_provider() { return foo_provider_; }
 
   void WaitUntilUIReady() {
+    content::DOMMessageQueue message_queue;
     ASSERT_TRUE(content::ExecuteScript(
         browser()->tab_strip_model()->GetActiveWebContents(),
         "if (!inline.login.getAuthExtHost())"
@@ -139,11 +141,10 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
         "else"
         "  inline.login.getAuthExtHost().addEventListener('ready', handler);"));
 
-    content::DOMMessageQueue message_queue;
     std::string message;
-    // TODO(guohui): this timeouts on trybot sometimes.
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    EXPECT_EQ("\"ready\"", message);
+    do {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    } while (message != "\"ready\"");
   }
 
  private:
@@ -185,10 +186,17 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
   ui_test_utils::NavigateToURL(browser(), url);
 }
 
+// Flaky on CrOS, http://crbug.com/364759.
+#if defined(OS_CHROMEOS)
+#define MAYBE_TopFrameNavigationDisallowed DISABLED_TopFrameNavigationDisallowed
+#else
+#define MAYBE_TopFrameNavigationDisallowed TopFrameNavigationDisallowed
+#endif
+
 // Make sure that the gaia iframe cannot trigger top-frame navigation.
 // TODO(guohui): flaky on trybot crbug/364759.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
-    DISABLED_TopFrameNavigationDisallowed) {
+    MAYBE_TopFrameNavigationDisallowed) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   // Loads into gaia iframe a web page that attempts to deframe on load.
   GURL deframe_url(embedded_test_server()->GetURL("/login/deframe.html"));
@@ -204,4 +212,30 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
 
   content::NavigationController& controller = contents->GetController();
   EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+}
+
+// Flaky on CrOS, http://crbug.com/364759.
+#if defined(OS_CHROMEOS)
+#define MAYBE_NavigationToOtherChromeURLDisallowed \
+    DISABLED_NavigationToOtherChromeURLDisallowed
+#else
+#define MAYBE_NavigationToOtherChromeURLDisallowed \
+    NavigationToOtherChromeURLDisallowed
+#endif
+
+IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
+    MAYBE_NavigationToOtherChromeURLDisallowed) {
+  ui_test_utils::NavigateToURL(
+      browser(), signin::GetPromoURL(signin::SOURCE_START_PAGE, false));
+  WaitUntilUIReady();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(
+      contents, "window.location.href = 'chrome://foo'"));
+
+  content::TestNavigationObserver navigation_observer(contents, 1);
+  navigation_observer.Wait();
+
+  EXPECT_EQ(GURL("about:blank"), contents->GetVisibleURL());
 }
