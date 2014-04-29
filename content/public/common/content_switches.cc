@@ -351,10 +351,6 @@ const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 // Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 
-// Enables browser plugin for all types of pages.
-const char kEnableBrowserPluginForAllViewTypes[] =
-    "enable-browser-plugin-for-all-view-types";
-
 // Enable the creation of compositing layers for fixed position
 // elements. Three options are needed to support four possible scenarios:
 //  1. Default (disabled)

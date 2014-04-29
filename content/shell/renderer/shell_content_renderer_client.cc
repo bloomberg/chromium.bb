@@ -118,13 +118,6 @@ bool ShellContentRendererClient::OverrideCreatePlugin(
     WebLocalFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
-  std::string mime_type = params.mimeType.utf8();
-  if (mime_type == content::kBrowserPluginMimeType) {
-    // Allow browser plugin in content_shell only if it is forced by flag.
-    // Returning true here disables the plugin.
-    return !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserPluginForAllViewTypes);
-  }
   return false;
 }
 
@@ -203,13 +196,7 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
 
 bool ShellContentRendererClient::AllowBrowserPlugin(
     blink::WebPluginContainer* container) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserPluginForAllViewTypes)) {
-    // Allow BrowserPlugin if forced by command line flag. This is generally
-    // true for tests.
-    return true;
-  }
-  return ContentRendererClient::AllowBrowserPlugin(container);
+  return true;
 }
 
 }  // namespace content

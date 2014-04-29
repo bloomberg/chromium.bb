@@ -840,9 +840,7 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
   /// TODO(fsamuel): In the future, certain types of GuestViews won't require
   // extension bindings. At that point, we should clear |extension_id| instead
   // of exiting early.
-  if (!service->GetExtensionById(extension_id, false) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserPluginForAllViewTypes)) {
+  if (!service->GetExtensionById(extension_id, false)) {
     NOTREACHED();
     return;
   }

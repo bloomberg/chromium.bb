@@ -245,11 +245,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     ContentBrowserTest::TearDown();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // Enable browser plugin in content_shell for running test.
-    command_line->AppendSwitch(switches::kEnableBrowserPluginForAllViewTypes);
-  }
-
   static void SimulateSpaceKeyPress(WebContents* web_contents) {
     SimulateKeyPress(web_contents,
                      ui::VKEY_SPACE,

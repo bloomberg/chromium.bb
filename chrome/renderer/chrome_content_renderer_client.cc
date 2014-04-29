@@ -474,9 +474,6 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     WebPlugin** plugin) {
   std::string orig_mime_type = params.mimeType.utf8();
   if (orig_mime_type == content::kBrowserPluginMimeType) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserPluginForAllViewTypes))
-      return false;
     WebDocument document = frame->document();
     const Extension* extension =
         GetExtensionByOrigin(document.securityOrigin());
@@ -1372,10 +1369,6 @@ ChromeContentRendererClient::OverrideSpeechSynthesizer(
 
 bool ChromeContentRendererClient::AllowBrowserPlugin(
     blink::WebPluginContainer* container) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserPluginForAllViewTypes))
-    return true;
-
   // If this |BrowserPlugin| <object> in the |container| is not inside a
   // <webview>/<adview> shadowHost, we disable instantiating this plugin. This
   // is to discourage and prevent developers from accidentally attaching

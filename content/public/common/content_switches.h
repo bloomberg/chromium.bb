@@ -108,7 +108,6 @@ CONTENT_EXPORT extern const char kEnableLayerSquashing[];
 CONTENT_EXPORT extern const char kEnableContainerCulling[];
 extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
-CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableCompositingForTransition[];
 CONTENT_EXPORT extern const char kEnableDeferredImageDecoding[];
