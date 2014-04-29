@@ -75,6 +75,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Document*, unsigned long identifier);
 };
 
+class InspectorParseHtmlEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(Document*, unsigned startLine);
+};
+
 } // namespace WebCore
 
 

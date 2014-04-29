@@ -39,6 +39,7 @@
 #include "core/html/parser/HTMLScriptRunner.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
@@ -496,6 +497,8 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     ASSERT(!isStopped());
 
     // FIXME: Pass in current input length.
+    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "beginData", InspectorParseHtmlEvent::beginData(document(), lineNumber().zeroBasedInt()));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willWriteHTML(document(), lineNumber().zeroBasedInt());
 
     double startTime = currentTime();
@@ -513,6 +516,8 @@ void HTMLDocumentParser::pumpPendingSpeculations()
         }
     }
 
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endLine", lineNumber().zeroBasedInt());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didWriteHTML(cookie, lineNumber().zeroBasedInt());
 }
 
@@ -563,6 +568,8 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
     // FIXME: m_input.current().length() is only accurate if we
     // end up parsing the whole buffer in this pump.  We should pass how
     // much we parsed as part of didWriteHTML instead of willWriteHTML.
+    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "beginData", InspectorParseHtmlEvent::beginData(document(), m_input.current().currentLine().zeroBasedInt()));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willWriteHTML(document(), m_input.current().currentLine().zeroBasedInt());
 
     m_xssAuditor.init(document(), &m_xssAuditorDelegate);
@@ -612,6 +619,8 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
         m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
     }
 
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endLine", m_input.current().currentLine().zeroBasedInt());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didWriteHTML(cookie, m_input.current().currentLine().zeroBasedInt());
 }
 

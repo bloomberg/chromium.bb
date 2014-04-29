@@ -180,4 +180,12 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorWebSocketEvent::data(D
     return TracedValue::fromJSONValue(data);
 }
 
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::beginData(Document* document, unsigned startLine)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("startLine", startLine);
+    data->setString("frame", toHexString(document->frame()));
+    return TracedValue::fromJSONValue(data);
+}
+
 }
