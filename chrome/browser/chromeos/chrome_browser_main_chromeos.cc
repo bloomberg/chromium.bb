@@ -30,6 +30,8 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/events/event_rewriter_controller.h"
+#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/extension_system_event_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -721,6 +723,9 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
   event_rewriter_.reset(new EventRewriter());
 #endif
+  keyboard_event_rewriters_.reset(new EventRewriterController());
+  keyboard_event_rewriters_->AddEventRewriter(
+      scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
@@ -744,6 +749,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // initialized.
   power_button_observer_.reset(new PowerButtonObserver);
   data_promo_notification_.reset(new DataPromoNotification()),
+  keyboard_event_rewriters_->Init();
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -789,6 +795,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (!KioskModeSettings::Get()->IsKioskModeEnabled())
     ScreenLocker::ShutDownClass();
 
+  keyboard_event_rewriters_.reset();
 #if defined(USE_X11)
   event_rewriter_.reset();
 

@@ -21,7 +21,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -134,7 +133,6 @@ namespace chromeos {
 EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
       keyboard_for_testing_(NULL),
-      keyboard_driven_event_rewriter_(new KeyboardDrivenEventRewriter),
       pref_service_for_testing_(NULL) {
   ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
   if (base::SysInfo::IsRunningOnChromeOS()) {
@@ -341,13 +339,6 @@ void EventRewriter::Rewrite(XEvent* event) {
   // crbug.com/136465.
   if (event->xkey.send_event)
     return;
-
-  // Keyboard driven rewriting happen first. Skip further processing if event is
-  // changed.
-  if (keyboard_driven_event_rewriter_->RewriteIfKeyboardDrivenOnLoginScreen(
-          event)) {
-    return;
-  }
 
   RewriteModifiers(event);
   RewriteNumPadKeys(event);

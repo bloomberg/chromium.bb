@@ -308,6 +308,8 @@
         'browser/chromeos/enrollment_dialog_view.h',
         'browser/chromeos/events/event_rewriter.cc',
         'browser/chromeos/events/event_rewriter.h',
+        'browser/chromeos/events/event_rewriter_controller.cc',
+        'browser/chromeos/events/event_rewriter_controller.h',
         'browser/chromeos/events/keyboard_driven_event_rewriter.cc',
         'browser/chromeos/events/keyboard_driven_event_rewriter.h',
         'browser/chromeos/events/system_key_event_listener.cc',

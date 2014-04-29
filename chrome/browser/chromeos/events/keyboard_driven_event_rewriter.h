@@ -5,30 +5,33 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_
 #define CHROME_BROWSER_CHROMEOS_EVENTS_KEYBOARD_DRIVEN_EVENT_REWRITER_H_
 
-#include "base/basictypes.h"
-
-typedef union _XEvent XEvent;
+#include "ui/events/event_rewriter.h"
 
 namespace chromeos {
 
 // KeyboardDrivenEventRewriter removes the modifier flags from
 // Shift+<Arrow keys|Enter|F6> key events. This mapping only happens
 // on login screen and only when the keyboard driven oobe is enabled.
-class KeyboardDrivenEventRewriter {
+class KeyboardDrivenEventRewriter : public ui::EventRewriter {
  public:
   KeyboardDrivenEventRewriter();
-  ~KeyboardDrivenEventRewriter();
+  virtual ~KeyboardDrivenEventRewriter();
 
-  // Calls RewriteEvent to modify |event| if it is on login screen and the
-  // keyboard driven flag is enabled. Returns true if the event is changed
-  // and no further changes should happen.
-  bool RewriteIfKeyboardDrivenOnLoginScreen(XEvent* event);
+  // Calls Rewrite for testing.
+  ui::EventRewriteStatus RewriteForTesting(const ui::Event& event,
+                                           scoped_ptr<ui::Event>* new_event);
 
-  // Calls RewriteEvent for testing.
-  bool RewriteForTesting(XEvent* event);
+  // EventRewriter overrides:
+  virtual ui::EventRewriteStatus RewriteEvent(
+      const ui::Event& event,
+      scoped_ptr<ui::Event>* new_event) OVERRIDE;
+  virtual ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& last_event,
+      scoped_ptr<ui::Event>* new_event) OVERRIDE;
 
  private:
-  bool RewriteEvent(XEvent* event);
+  ui::EventRewriteStatus Rewrite(const ui::Event& event,
+                                 scoped_ptr<ui::Event>* new_event);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenEventRewriter);
 };

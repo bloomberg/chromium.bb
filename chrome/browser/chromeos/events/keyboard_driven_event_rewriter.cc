@@ -4,10 +4,9 @@
 
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 
-#include <X11/Xlib.h>
-
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
 namespace chromeos {
@@ -34,23 +33,40 @@ KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() {}
 
 KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {}
 
-bool KeyboardDrivenEventRewriter::RewriteIfKeyboardDrivenOnLoginScreen(
-    XEvent* event) {
+ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteForTesting(
+    const ui::Event& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  return Rewrite(event, rewritten_event);
+}
+
+ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteEvent(
+    const ui::Event& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
   if (!ShouldStripModifiersForArrowKeysAndEnter())
-    return false;
+    return ui::EVENT_REWRITE_CONTINUE;
 
-  return RewriteEvent(event);
+  return Rewrite(event, rewritten_event);
 }
 
-bool KeyboardDrivenEventRewriter::RewriteForTesting(XEvent* event) {
-  return RewriteEvent(event);
+ui::EventRewriteStatus KeyboardDrivenEventRewriter::NextDispatchEvent(
+    const ui::Event& last_event,
+    scoped_ptr<ui::Event>* new_event) {
+  NOTREACHED();
+  return ui::EVENT_REWRITE_CONTINUE;
 }
 
-bool KeyboardDrivenEventRewriter::RewriteEvent(XEvent* event) {
-  int flags = ui::EventFlagsFromNative(event);
+ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
+    const ui::Event& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  int flags = event.flags();
   if ((flags & kModifierMask) != kModifierMask)
-    return false;
-  ui::KeyboardCode key_code = ui::KeyboardCodeFromNative(event);
+    return ui::EVENT_REWRITE_CONTINUE;
+
+  DCHECK(event.type() == ui::ET_KEY_PRESSED ||
+         event.type() == ui::ET_KEY_RELEASED)
+      << "Unexpected event type " << event.type();
+  const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
+  ui::KeyboardCode key_code = key_event.key_code();
 
   if (key_code != ui::VKEY_LEFT &&
       key_code != ui::VKEY_RIGHT &&
@@ -58,12 +74,13 @@ bool KeyboardDrivenEventRewriter::RewriteEvent(XEvent* event) {
       key_code != ui::VKEY_DOWN &&
       key_code != ui::VKEY_RETURN &&
       key_code != ui::VKEY_F6) {
-    return false;
+    return ui::EVENT_REWRITE_CONTINUE;
   }
 
-  XKeyEvent* xkey = &(event->xkey);
-  xkey->state &= ~(ControlMask | Mod1Mask | ShiftMask);
-  return true;
+  rewritten_event->reset(new ui::KeyEvent(key_event));
+  (*rewritten_event)->set_flags(
+      flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN));
+  return ui::EVENT_REWRITE_REWRITTEN;
 }
 
 }  // namespace chromeos

@@ -22,7 +22,6 @@ class PrefService;
 typedef union _XEvent XEvent;
 
 namespace chromeos {
-class KeyboardDrivenEventRewriter;
 namespace input_method {
 class ImeKeyboard;
 }
@@ -192,9 +191,6 @@ class EventRewriter : public DeviceHierarchyObserver,
   std::set<int> pressed_device_ids_;
 
   input_method::ImeKeyboard* keyboard_for_testing_;
-
-  scoped_ptr<KeyboardDrivenEventRewriter>
-      keyboard_driven_event_rewriter_;
 
   const PrefService* pref_service_for_testing_;
 
