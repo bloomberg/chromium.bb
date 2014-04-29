@@ -62,6 +62,10 @@
 #define CPU_TYPE_ARM (static_cast<cpu_type_t>(12))
 #endif //  CPU_TYPE_ARM
 
+#ifndef CPU_TYPE_ARM64
+#define CPU_TYPE_ARM64 (static_cast<cpu_type_t>(16777228))
+#endif  // CPU_TYPE_ARM64
+
 using dwarf2reader::ByteReader;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::DwarfLineToModule;
@@ -328,6 +332,9 @@ bool DumpSymbols::ReadCFI(google_breakpad::Module *module,
       break;
     case CPU_TYPE_ARM:
       register_names = DwarfCFIToModule::RegisterNames::ARM();
+      break;
+    case CPU_TYPE_ARM64:
+      register_names = DwarfCFIToModule::RegisterNames::ARM64();
       break;
     default: {
       const NXArchInfo *arch = google_breakpad::BreakpadGetArchInfoFromCpuType(

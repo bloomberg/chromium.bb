@@ -90,6 +90,11 @@ using google_breakpad::StabsToModule;
 #endif
 using google_breakpad::scoped_ptr;
 
+// Define AARCH64 ELF architecture if host machine does not include this define.
+#ifndef EM_AARCH64
+#define EM_AARCH64      183
+#endif
+
 //
 // FDWrapper
 //
@@ -292,6 +297,9 @@ bool DwarfCFIRegisterNames(const typename ElfClass::Ehdr* elf_header,
       return true;
     case EM_ARM:
       *register_names = DwarfCFIToModule::RegisterNames::ARM();
+      return true;
+    case EM_AARCH64:
+      *register_names = DwarfCFIToModule::RegisterNames::ARM64();
       return true;
     case EM_MIPS:
       *register_names = DwarfCFIToModule::RegisterNames::MIPS();
@@ -754,6 +762,7 @@ const char* ElfArchitecture(const typename ElfClass::Ehdr* elf_header) {
   switch (arch) {
     case EM_386:        return "x86";
     case EM_ARM:        return "arm";
+    case EM_AARCH64:    return "arm64";
     case EM_MIPS:       return "mips";
     case EM_PPC64:      return "ppc64";
     case EM_PPC:        return "ppc";

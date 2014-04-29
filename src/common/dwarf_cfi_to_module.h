@@ -108,7 +108,10 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
 
     // ARM.
     static vector<string> ARM();
-    
+
+    // ARM64, aka AARCH64.
+    static vector<string> ARM64();
+
     // MIPS.
     static vector<string> MIPS();
 
@@ -185,7 +188,7 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
   // A set of strings used by this CFI. Before storing a string in one of
   // our data structures, insert it into this set, and then use the string
   // from the set.
-  // 
+  //
   // Because std::string uses reference counting internally, simply using
   // strings from this set, even if passed by value, assigned, or held
   // directly in structures and containers (map<string, ...>, for example),
