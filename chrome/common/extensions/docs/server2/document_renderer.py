@@ -26,7 +26,15 @@ class DocumentRenderer(object):
     self._ref_resolver = ref_resolver
 
   def _RenderLinks(self, document, path):
-    ''' Replaces all $(ref:...) references in |document| with html links
+    ''' Replaces all $(ref:...) references in |document| with html links.
+
+        References have two forms:
+
+          $(ref:api.node) - Replaces the reference with a link to node on the
+                            API page. The title is set to the name of the node.
+
+          $(ref:api.node Title) - Same as the previous form, but title is set
+                                  to "Title".
     '''
     START_REF = '$(ref:'
     END_REF = ')'

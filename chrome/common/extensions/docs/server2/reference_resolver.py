@@ -47,20 +47,8 @@ def _MakeKey(namespace, ref):
 
 class ReferenceResolver(object):
   """Resolves references to $ref's by searching through the APIs to find the
-  correct node.
-
-  $ref's have two forms:
-
-    $ref:api.node - Replaces the $ref with a link to node on the API page. The
-                    title is set to the name of the node.
-
-    $ref:[api.node The Title] - Same as the previous form but title is set to
-                                "The Title".
+  correct node. See document_renderer.py for more information on $ref syntax.
   """
-
-  # Matches after a $ref: that doesn't have []s.
-  _bare_ref = re.compile('\w+(\.\w+)*')
-
   def __init__(self, api_models, object_store):
     self._api_models = api_models
     self._object_store = object_store
@@ -68,7 +56,7 @@ class ReferenceResolver(object):
   def _GetRefLink(self, ref, api_list, namespace):
     # Check nodes within each API the ref might refer to.
     parts = ref.split('.')
-    for i, part in enumerate(parts):
+    for i in xrange(1, len(parts)):
       api_name = '.'.join(parts[:i])
       if api_name not in api_list:
         continue
@@ -156,50 +144,3 @@ class ReferenceResolver(object):
       'text': title or ref,
       'name': ref
     }
-
-  # TODO(ahernandez.miralles): This function is no longer needed,
-  # and uses a deprecated style of ref
-  def ResolveAllLinks(self, text, relative_to='', namespace=None):
-    """This method will resolve all $ref links in |text| using namespace
-    |namespace| if not None. Any links that cannot be resolved will be replaced
-    using the default link format that |SafeGetLink| uses.
-    The links will be generated relative to |relative_to|.
-    """
-    if text is None or '$ref:' not in text:
-      return text
-
-    # requestPath should be of the form (apps|extensions)/...../page.html.
-    # link_prefix should  that the target will point to
-    # (apps|extensions)/target.html. Note multiplying a string by a negative
-    # number gives the empty string.
-    link_prefix = '../' * (relative_to.count('/') - 1)
-    split_text = text.split('$ref:')
-    # |split_text| is an array of text chunks that all start with the
-    # argument to '$ref:'.
-    formatted_text = [split_text[0]]
-    for ref_and_rest in split_text[1:]:
-      title = None
-      if ref_and_rest.startswith('[') and ']' in ref_and_rest:
-        # Text was '$ref:[foo.bar maybe title] other stuff'.
-        ref_with_title, rest = ref_and_rest[1:].split(']', 1)
-        ref_with_title = ref_with_title.split(None, 1)
-        if len(ref_with_title) == 1:
-          # Text was '$ref:[foo.bar] other stuff'.
-          ref = ref_with_title[0]
-        else:
-          # Text was '$ref:[foo.bar title] other stuff'.
-          ref, title = ref_with_title
-      else:
-        # Text was '$ref:foo.bar other stuff'.
-        match = self._bare_ref.match(ref_and_rest)
-        if match is None:
-          ref = ''
-          rest = ref_and_rest
-        else:
-          ref = match.group()
-          rest = ref_and_rest[match.end():]
-
-      ref_dict = self.SafeGetLink(ref, namespace=namespace, title=title)
-      formatted_text.append('<a href="%s%s">%s</a>%s' %
-          (link_prefix, ref_dict['href'], ref_dict['text'], rest))
-    return ''.join(formatted_text)
