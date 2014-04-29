@@ -94,60 +94,31 @@ bool IsMediaRequestWhitelistedForExtension(
       extension->id() == "nnckehldicaciogcbchegobnafnjkcne";
 }
 
-// This is a short-term solution to allow testing of the the Screen Capture API
-// with Google Hangouts in M27.
-// TODO(sergeyu): Remove this whitelist as soon as possible.
-bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
-#if defined(OFFICIAL_BUILD)
-  if (// Google Hangouts.
-      (origin.SchemeIs("https") &&
-       EndsWith(origin.spec(), ".talkgadget.google.com/", true)) ||
-      origin.spec() == "https://talkgadget.google.com/" ||
-      origin.spec() == "https://plus.google.com/" ||
-      origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
-      origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
-      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/" ||
-      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/" ||
-      origin.spec() == "chrome-extension://gfdkimpbcpahaombhbimeihdjnejgicl/") {
-    return true;
-  }
-  // Check against hashed origins.
-  // TODO(hshi): remove this when trusted tester becomes public.
-  const std::string origin_hash = base::SHA1HashString(origin.spec());
-  DCHECK_EQ(origin_hash.length(), base::kSHA1Length);
-  const std::string hexencoded_origin_hash =
-      base::HexEncode(origin_hash.data(), origin_hash.length());
+bool IsBuiltInExtension(const GURL& origin) {
   return
-      hexencoded_origin_hash == "3C2705BC432E7C51CA8553FDC5BEE873FF2468EE";
-#else
-  return false;
-#endif
+      // Feedback Extension.
+      origin.spec() == "chrome-extension://gfdkimpbcpahaombhbimeihdjnejgicl/";
 }
 
-#if defined(OS_CHROMEOS)
 // Returns true of the security origin is associated with casting.
 bool IsOriginForCasting(const GURL& origin) {
 #if defined(OFFICIAL_BUILD)
   // Whitelisted tab casting extensions.
-  if (origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
-      origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
-      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/" ||
-      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/") {
-    return true;
-  }
-  // Check against hashed origins.
-  // TODO(hshi): remove this when trusted tester becomes public.
-  const std::string origin_hash = base::SHA1HashString(origin.spec());
-  DCHECK_EQ(origin_hash.length(), base::kSHA1Length);
-  const std::string hexencoded_origin_hash =
-      base::HexEncode(origin_hash.data(), origin_hash.length());
   return
-      hexencoded_origin_hash == "3C2705BC432E7C51CA8553FDC5BEE873FF2468EE";
+      // Dev
+      origin.spec() == "chrome-extension://enhhojjnijigcajfphajepfemndkmdlo/" ||
+      // Canary
+      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/" ||
+      // Beta (internal)
+      origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
+      // Google Cast Beta
+      origin.spec() == "chrome-extension://dliochdbjfkdbacpmhlcpmleaejidimm/" ||
+      // Google Cast Stable
+      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/";
 #else
   return false;
 #endif
 }
-#endif
 
 // Helper to get title of the calling application shown in the screen capture
 // notification.
@@ -462,7 +433,8 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   const bool screen_capture_enabled =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUserMediaScreenCapturing) ||
-      IsOriginWhitelistedForScreenCapture(request.security_origin);
+      IsOriginForCasting(request.security_origin) ||
+      IsBuiltInExtension(request.security_origin);
 
   const bool origin_is_secure =
       request.security_origin.SchemeIsSecure() ||
