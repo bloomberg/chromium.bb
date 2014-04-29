@@ -1387,8 +1387,13 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     builders_to_link = failing or inflight or []
     for builder in builders_to_link:
       if statuses[builder].dashboard_url:
-        cros_build_lib.PrintBuildbotLink(builder,
-                                         statuses[builder].dashboard_url)
+        text = builder
+        if statuses[builder].message:
+          # The message includes the reason of failure.
+          text = statuses[builder].message.message
+
+        cros_build_lib.PrintBuildbotLink(text, statuses[builder].dashboard_url)
+
     for builder in no_stat:
       cros_build_lib.PrintBuildbotStepText('%s did not start.' % builder)
 

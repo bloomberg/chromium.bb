@@ -719,7 +719,8 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
 
     failing = {'a'}
     inflight = {}
-    status = manifest_version.BuilderStatus('failed', 'message', 'url')
+    status = manifest_version.BuilderStatus('failed',
+        validation_pool.ValidationFailedMessage('message', [], True), 'url')
     statuses = {'a' : status}
     no_stat = set()
     stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses)

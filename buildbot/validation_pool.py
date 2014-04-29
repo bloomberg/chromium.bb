@@ -2437,7 +2437,7 @@ class ValidationPool(object):
       details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
     if not details:
       details = ['cbuildbot failed']
-    details.append('in %s' % (self.build_log,))
+
     msg = '%s: %s' % (self._builder_name, ' '.join(details))
     return ValidationFailedMessage(msg, tracebacks, internal)
 
