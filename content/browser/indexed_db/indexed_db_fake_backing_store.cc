@@ -13,6 +13,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(NULL,
                             GURL("http://localhost:81"),
                             base::FilePath(),
+                            NULL,
                             scoped_ptr<LevelDBDatabase>(),
                             scoped_ptr<LevelDBComparator>(),
                             NULL) {}
@@ -23,6 +24,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     : IndexedDBBackingStore(factory,
                             GURL("http://localhost:81"),
                             base::FilePath(),
+                            NULL,
                             scoped_ptr<LevelDBDatabase>(),
                             scoped_ptr<LevelDBComparator>(),
                             task_runner) {}

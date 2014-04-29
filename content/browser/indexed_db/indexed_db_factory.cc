@@ -340,6 +340,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     backing_store = IndexedDBBackingStore::Open(this,
                                                 origin_url,
                                                 data_directory,
+                                                request_context,
                                                 data_loss,
                                                 data_loss_message,
                                                 disk_full,

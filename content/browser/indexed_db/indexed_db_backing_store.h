@@ -18,6 +18,7 @@
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
@@ -31,6 +32,14 @@
 
 namespace base {
 class TaskRunner;
+}
+
+namespace fileapi {
+class FileWriterDelegate;
+}
+
+namespace net {
+class URLRequestContext;
 }
 
 namespace content {
@@ -76,6 +85,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBFactory* indexed_db_factory,
       const GURL& origin_url,
       const base::FilePath& path_base,
+      net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full,
@@ -85,6 +95,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBFactory* indexed_db_factory,
       const GURL& origin_url,
       const base::FilePath& path_base,
+      net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full,
@@ -158,6 +169,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
     std::string primary_key_;
     int64 version_;
     DISALLOW_COPY_AND_ASSIGN(RecordIdentifier);
+  };
+
+  class BlobWriteCallback : public base::RefCounted<BlobWriteCallback> {
+   public:
+    virtual void Run(bool succeeded) = 0;
+   protected:
+    virtual ~BlobWriteCallback() {}
+    friend class base::RefCounted<BlobWriteCallback>;
   };
 
   virtual leveldb::Status GetRecord(
@@ -241,6 +260,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   // Public for IndexedDBActiveBlobRegistry::ReleaseBlobRef.
   virtual void ReportBlobUnused(int64 database_id, int64 blob_key);
+
+  base::FilePath GetBlobFileName(int64 database_id, int64 key);
 
   class Cursor {
    public:
@@ -354,6 +375,53 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     LevelDBTransaction* transaction() { return transaction_; }
 
+    // This holds a BlobEntryKey and the encoded IndexedDBBlobInfo vector stored
+    // under that key.
+    typedef std::vector<std::pair<BlobEntryKey, std::string> >
+        BlobEntryKeyValuePairVec;
+
+    class WriteDescriptor {
+     public:
+      WriteDescriptor(const GURL& url, int64_t key);
+      WriteDescriptor(const base::FilePath& path, int64_t key);
+
+      bool is_file() const { return is_file_; }
+      const GURL& url() const {
+        DCHECK(!is_file_);
+        return url_;
+      }
+      const base::FilePath& file_path() const {
+        DCHECK(is_file_);
+        return file_path_;
+      }
+      int64_t key() const { return key_; }
+
+     private:
+      bool is_file_;
+      GURL url_;
+      base::FilePath file_path_;
+      int64_t key_;
+    };
+
+    class ChainedBlobWriter : public base::RefCounted<ChainedBlobWriter> {
+     public:
+      virtual void set_delegate(
+          scoped_ptr<fileapi::FileWriterDelegate> delegate) = 0;
+
+      // TODO(ericu): Add a reason in the event of failure.
+      virtual void ReportWriteCompletion(bool succeeded,
+                                         int64 bytes_written) = 0;
+
+      virtual void Abort() = 0;
+
+     protected:
+      virtual ~ChainedBlobWriter() {}
+      friend class base::RefCounted<ChainedBlobWriter>;
+    };
+    class ChainedBlobWriterImpl;
+
+    typedef std::vector<WriteDescriptor> WriteDescriptorVec;
+
    private:
     class BlobChangeRecord {
      public:
@@ -371,29 +439,44 @@ class CONTENT_EXPORT IndexedDBBackingStore
       std::vector<IndexedDBBlobInfo> blob_info_;
       ScopedVector<webkit_blob::BlobDataHandle> handles_;
     };
+    class BlobWriteCallbackWrapper;
     typedef std::map<std::string, BlobChangeRecord*> BlobChangeMap;
+
+    // The callback will be called eventually on success or failure.
+    void WriteNewBlobs(BlobEntryKeyValuePairVec& new_blob_entries,
+                       WriteDescriptorVec& new_files_to_write,
+                       scoped_refptr<BlobWriteCallback> callback);
 
     IndexedDBBackingStore* backing_store_;
     scoped_refptr<LevelDBTransaction> transaction_;
     BlobChangeMap blob_change_map_;
     int64 database_id_;
+    scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
   };
 
  protected:
   IndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
                         const GURL& origin_url,
                         const base::FilePath& blob_path,
+                        net::URLRequestContext* request_context,
                         scoped_ptr<LevelDBDatabase> db,
                         scoped_ptr<LevelDBComparator> comparator,
                         base::TaskRunner* task_runner);
   virtual ~IndexedDBBackingStore();
   friend class base::RefCounted<IndexedDBBackingStore>;
 
+  virtual bool WriteBlobFile(
+      int64 database_id,
+      const Transaction::WriteDescriptor& descriptor,
+      Transaction::ChainedBlobWriter* chained_blob_writer);
+  virtual bool RemoveBlobFile(int64 database_id, int64 key);
+
  private:
   static scoped_refptr<IndexedDBBackingStore> Create(
       IndexedDBFactory* indexed_db_factory,
       const GURL& origin_url,
       const base::FilePath& blob_path,
+      net::URLRequestContext* request_context,
       scoped_ptr<LevelDBDatabase> db,
       scoped_ptr<LevelDBComparator> comparator,
       base::TaskRunner* task_runner);
@@ -414,6 +497,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                              int64 object_store_id,
                              IndexedDBObjectStoreMetadata::IndexMap* map)
       WARN_UNUSED_RESULT;
+  bool RemoveBlobDirectory(int64 database_id);
 
   IndexedDBFactory* indexed_db_factory_;
   const GURL origin_url_;
@@ -426,6 +510,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // this is redundant but necessary for backwards compatibility; the suffix
   // provides for future flexibility.
   const std::string origin_identifier_;
+
+  net::URLRequestContext* request_context_;
   base::TaskRunner* task_runner_;
   std::set<int> child_process_ids_granted_;
 

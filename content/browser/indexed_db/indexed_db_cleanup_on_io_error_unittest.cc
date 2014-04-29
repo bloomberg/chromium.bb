@@ -29,6 +29,10 @@ namespace content {
 class IndexedDBFactory;
 }
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace {
 
 class BustedLevelDBDatabase : public LevelDBDatabase {
@@ -75,6 +79,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath path = temp_directory.path();
+  net::URLRequestContext* request_context = NULL;
   MockLevelDBFactory mock_leveldb_factory;
   blink::WebIDBDataLoss data_loss =
       blink::WebIDBDataLossNone;
@@ -85,6 +90,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
       IndexedDBBackingStore::Open(factory,
                                   origin,
                                   path,
+                                  request_context,
                                   &data_loss,
                                   &data_loss_message,
                                   &disk_full,
@@ -128,6 +134,7 @@ class MockErrorLevelDBFactory : public LevelDBFactory {
 TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   content::IndexedDBFactory* factory = NULL;
   const GURL origin("http://localhost:81");
+  net::URLRequestContext* request_context = NULL;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath path = temp_directory.path();
@@ -142,6 +149,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
       IndexedDBBackingStore::Open(factory,
                                   origin,
                                   path,
+                                  request_context,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
@@ -154,6 +162,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
       IndexedDBBackingStore::Open(factory,
                                   origin,
                                   path,
+                                  request_context,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
@@ -165,6 +174,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
       IndexedDBBackingStore::Open(factory,
                                   origin,
                                   path,
+                                  request_context,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
@@ -177,6 +187,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
       IndexedDBBackingStore::Open(factory,
                                   origin,
                                   path,
+                                  request_context,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
