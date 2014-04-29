@@ -1082,10 +1082,10 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <!-- Windows firewall rule strings. -->
       <if expr="is_win">
         <message name="IDS_INBOUND_MDNS_RULE_NAME" desc="The name of the firewall rule allowing inbound mDNS traffic.">
-          Google Chrome (mDNS-In).
+          Google Chrome (mDNS-In)
         </message>
         <message name="IDS_INBOUND_MDNS_RULE_NAME_CANARY" desc="The name of the firewall rule allowing inbound mDNS traffic for canary.">
-          Google Chrome Canary (mDNS-In).
+          Google Chrome Canary (mDNS-In)
         </message>
         <message name="IDS_INBOUND_MDNS_RULE_DESCRIPTION" desc="The description of the firewall rule allowing inbound mDNS traffic.">
           Inbound rule for Google Chrome to allow mDNS traffic.
