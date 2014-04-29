@@ -269,6 +269,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TextfieldReadOnlyBackground,
     kColorId_TextfieldSelectionColor,
     kColorId_TextfieldSelectionBackgroundFocused,
+    // Tooltip
+    kColorId_TooltipBackground,
     // Tree
     kColorId_TreeBackground,
     kColorId_TreeText,
