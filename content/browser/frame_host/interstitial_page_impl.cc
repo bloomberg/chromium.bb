@@ -357,7 +357,18 @@ void InterstitialPageImpl::NavigationEntryCommitted(
   OnNavigatingAwayOrTabClosing();
 }
 
+void InterstitialPageImpl::WebContentsWillBeDestroyed() {
+  OnNavigatingAwayOrTabClosing();
+}
+
 void InterstitialPageImpl::WebContentsDestroyed(WebContents* web_contents) {
+  // WebContentsImpl will only call WebContentsWillBeDestroyed for interstitial
+  // pages that it knows about, pages that called
+  // WebContentsImpl::AttachInterstitialPage. But it's possible to have an
+  // interstitial page that never progressed that far. In that case, ensure that
+  // this interstitial page is destroyed. (And if it was attached, and
+  // OnNavigatingAwayOrTabClosing was called, it's safe to call
+  // OnNavigatingAwayOrTabClosing twice.)
   OnNavigatingAwayOrTabClosing();
 }
 
