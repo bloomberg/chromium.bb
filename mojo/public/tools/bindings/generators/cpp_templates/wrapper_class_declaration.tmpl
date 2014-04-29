@@ -13,23 +13,31 @@ class {{struct.name}} {
 
   template <typename U>
   {{struct.name}}(const U& u, mojo::Buffer* buf = mojo::Buffer::current()) {
+    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION({{struct.name}}, U);
     *this = mojo::TypeConverter<{{struct.name}},U>::ConvertFrom(u, buf);
   }
 
   template <typename U>
   {{struct.name}}& operator=(const U& u) {
+    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION({{struct.name}}, U);
     *this = mojo::TypeConverter<{{struct.name}},U>::ConvertFrom(u, mojo::Buffer::current());
     return *this;
   }
 
   template <typename U>
   operator U() const {
+    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION({{struct.name}}, U);
     return To<U>();
   }
 
   template <typename U>
   U To() const {
     return mojo::TypeConverter<{{struct.name}},U>::ConvertTo(*this);
+  }
+
+  template <typename U>
+  static {{struct.name}} From(const U& u, mojo::Buffer* buf = mojo::Buffer::current()) {
+    return mojo::TypeConverter<{{struct.name}},U>::ConvertFrom(u, buf);
   }
 
   bool is_null() const { return !data_; }

@@ -31,23 +31,31 @@ class Array {
 
   template <typename U>
   Array(const U& u, Buffer* buf = Buffer::current()) {
+    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(Array<T>, U);
     *this = TypeConverter<Array<T>,U>::ConvertFrom(u, buf);
   }
 
   template <typename U>
   Array& operator=(const U& u) {
+    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(Array<T>, U);
     *this = TypeConverter<Array<T>,U>::ConvertFrom(u, Buffer::current());
     return *this;
   }
 
   template <typename U>
   operator U() const {
+    MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(Array<T>, U);
     return To<U>();
   }
 
   template <typename U>
   U To() const {
     return TypeConverter<Array<T>,U>::ConvertTo(*this);
+  }
+
+  template <typename U>
+  static Array From(const U& u, Buffer* buf = Buffer::current()) {
+    return TypeConverter<Array<T>,U>::ConvertFrom(u, buf);
   }
 
   bool is_null() const { return !data_; }
@@ -105,6 +113,8 @@ class TypeConverter<String, std::string> {
  public:
   static String ConvertFrom(const std::string& input, Buffer* buf);
   static std::string ConvertTo(const String& input);
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <size_t N>
@@ -115,6 +125,8 @@ class TypeConverter<String, char[N]> {
     memcpy(&result[0], input, N - 1);
     return result.Finish();
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 // Appease MSVC.
@@ -124,6 +136,8 @@ class TypeConverter<String, const char[N]> {
   static String ConvertFrom(const char input[N], Buffer* buf) {
     return TypeConverter<String, char[N]>::ConvertFrom(input, buf);
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
@@ -132,10 +146,12 @@ class TypeConverter<String, const char*> {
   static String ConvertFrom(const char* input, Buffer* buf);
   // NOTE: |ConvertTo| explicitly not implemented since String is not null
   // terminated (and may have embedded null bytes).
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <typename T, typename E>
-class TypeConverter<Array<T>, std::vector<E> > {
+class GenericArrayTypeConverter {
  public:
   static Array<T> ConvertFrom(const std::vector<E>& input, Buffer* buf) {
     typename Array<T>::Builder result(input.size(), buf);
@@ -152,6 +168,29 @@ class TypeConverter<Array<T>, std::vector<E> > {
     }
     return result;
   }
+};
+
+
+// Implicit conversion is not enabled by default.
+// If you would like to enable that for certain array types, you need to do
+// specializations and specify MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() yourself.
+//
+// EXAMPLE:
+//
+// namespace mojo {
+// template <>
+// class TypeConverter<Array<X>, std::vector<Y> >
+//     : public GenericArrayTypeConverter<X, Y> {
+//  public:
+//   MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+// };
+// }
+//
+// Please see the comments of MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() for more
+// details.
+template <typename T, typename E>
+class TypeConverter<Array<T>, std::vector<E> >
+    : public GenericArrayTypeConverter<T, E> {
 };
 
 }  // namespace mojo

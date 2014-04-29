@@ -19,6 +19,8 @@ class TypeConverter<CommandBufferState, gpu::CommandBuffer::State> {
   static CommandBufferState ConvertFrom(const gpu::CommandBuffer::State& input,
                                         Buffer* buffer);
   static gpu::CommandBuffer::State ConvertTo(const CommandBufferState& input);
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo

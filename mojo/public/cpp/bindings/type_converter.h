@@ -44,25 +44,67 @@ namespace mojo {
 //
 // With the above TypeConverter defined, it is possible to write code like this:
 //
-//   void SomeFunction(const gfx::Point& pt);
-//
 //   void AcceptPoint(const geometry::Point& input) {
 //     // With an explicit cast using the .To<> method.
 //     gfx::Point pt = input.To<gfx::Point>();
 //
-//     // With an implicit copy conversion:
+//     mojo::AllocationScope scope;
+//     // With an explicit cast using the static From() method.
+//     geometry::Point output = geometry::Point::From(pt);
+//   }
+//
+// More "direct" conversions can be enabled by adding the following macro to the
+// TypeConverter specialization:
+//  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+//
+// To be exact, this amcro enables:
+// - converting constructor:
+//   T(const U& u, mojo::Buffer* buf = mojo::Buffer::current());
+// - assignment operator:
+//   T& operator=(const U& u);
+// - conversion operator:
+//   operator U() const;
+//
+// If the macro is added to TypeConverter<geometry::Point, gfx::Point>, for
+// example, it is possible to write code like this:
+//
+//   void SomeFunction(const gfx::Point& pt);
+//
+//   void AcceptPoint(const geometry::Point& input) {
+//     // Using the conversion operator.
 //     SomeFunction(input);
 //
 //     mojo::AllocationScope scope;
-//     // With an implicit copy conversion:
-//     geometry::Point output = pt;
+//     // Using the converting constructor.
+//     geometry::Point output_1(pt);
+//
+//     geometry::Point output_2;
+//     // Using the assignment operator.
+//     output_2 = pt;
 //   }
 //
+// Although this macro is convenient, it makes conversions less obvious. Users
+// may do conversions excessively without paying attention to the cost. So
+// please use it wisely.
 template <typename T, typename U> class TypeConverter {
   // static T ConvertFrom(const U& input, Buffer* buf);
   // static U ConvertTo(const T& input);
+
+  // Maybe:
+  // MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo
+
+#define MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() \
+    typedef void AllowImplicitTypeConversion
+
+// Fails compilation if MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION() is not specified
+// in TypeConverter<T, U>.
+#define MOJO_INTERNAL_CHECK_ALLOW_IMPLICIT_TYPE_CONVERSION(T, U) \
+    do { \
+      typedef typename mojo::TypeConverter<T, U>::AllowImplicitTypeConversion \
+          FailedIfNotAllowed; \
+    } while (false)
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_TYPE_CONVERTER_H_

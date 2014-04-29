@@ -21,6 +21,8 @@ class TypeConverter<sample::Bar, int32_t> {
            static_cast<int32_t>(bar.beta()) << 8 |
            static_cast<int32_t>(bar.gamma());
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo

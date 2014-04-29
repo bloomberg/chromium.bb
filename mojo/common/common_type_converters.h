@@ -18,6 +18,8 @@ class MOJO_COMMON_EXPORT TypeConverter<String, base::StringPiece> {
  public:
   static String ConvertFrom(const base::StringPiece& input, Buffer* buf);
   static base::StringPiece ConvertTo(const String& input);
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
@@ -25,6 +27,8 @@ class MOJO_COMMON_EXPORT TypeConverter<String, base::string16> {
  public:
   static String ConvertFrom(const base::string16& input, Buffer* buf);
   static base::string16 ConvertTo(const String& input);
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo

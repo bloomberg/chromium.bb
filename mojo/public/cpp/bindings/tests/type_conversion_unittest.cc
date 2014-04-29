@@ -22,6 +22,23 @@ struct RedmondNamedRegion {
   std::vector<RedmondRect> rects;
 };
 
+bool AreEqualRectArrays(const Array<test_structs::Rect>& rects1,
+                        const Array<test_structs::Rect>& rects2) {
+  if (rects1.size() != rects2.size())
+    return false;
+
+  for (size_t i = 0; i < rects1.size(); ++i) {
+    if (rects1[i].x() != rects2[i].x() ||
+        rects1[i].y() != rects2[i].y() ||
+        rects1[i].width() != rects2[i].width() ||
+        rects1[i].height() != rects2[i].height()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 template <>
@@ -43,6 +60,15 @@ class TypeConverter<test_structs::Rect, RedmondRect> {
     rect.bottom = input.y() + input.height();
     return rect;
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+};
+
+template <>
+class TypeConverter<Array<test_structs::Rect>, std::vector<RedmondRect> >
+    : public GenericArrayTypeConverter<test_structs::Rect, RedmondRect> {
+ public:
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
@@ -61,6 +87,8 @@ class TypeConverter<test_structs::NamedRegion, RedmondNamedRegion> {
     region.rects = input.rects().To<std::vector<RedmondRect> >();
     return region;
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 namespace test {
@@ -180,25 +208,16 @@ TEST_F(TypeConversionTest, CustomTypeConverter_Array) {
   // assignment operator. We will also test conversion constructor.
   Array<test_structs::Rect> rects2;
   rects2 = redmond_rects;
-
-  EXPECT_EQ(rects.size(), rects2.size());
-  for (size_t i = 0; i < rects.size(); ++i) {
-    EXPECT_EQ(rects[i].x(), rects2[i].x());
-    EXPECT_EQ(rects[i].y(), rects2[i].y());
-    EXPECT_EQ(rects[i].width(), rects2[i].width());
-    EXPECT_EQ(rects[i].height(), rects2[i].height());
-  }
+  EXPECT_TRUE(AreEqualRectArrays(rects, rects2));
 
   // Test conversion constructor.
   Array<test_structs::Rect> rects3(redmond_rects);
+  EXPECT_TRUE(AreEqualRectArrays(rects, rects3));
 
-  EXPECT_EQ(rects.size(), rects3.size());
-  for (size_t i = 0; i < rects.size(); ++i) {
-    EXPECT_EQ(rects[i].x(), rects3[i].x());
-    EXPECT_EQ(rects[i].y(), rects3[i].y());
-    EXPECT_EQ(rects[i].width(), rects3[i].width());
-    EXPECT_EQ(rects[i].height(), rects3[i].height());
-  }
+  // Test explicit conversion using From().
+  Array<test_structs::Rect> rects4
+      = Array<test_structs::Rect>::From(redmond_rects);
+  EXPECT_TRUE(AreEqualRectArrays(rects, rects4));
 }
 
 TEST_F(TypeConversionTest, CustomTypeConverter_Nested) {

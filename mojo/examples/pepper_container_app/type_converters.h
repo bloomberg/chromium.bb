@@ -27,6 +27,8 @@ class TypeConverter<Point, PP_Point> {
     return PP_MakePoint(static_cast<int32_t>(input.x()),
                         static_cast<int32_t>(input.y()));
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
@@ -43,6 +45,8 @@ class TypeConverter<Size, PP_Size> {
     return PP_MakeSize(static_cast<int32_t>(input.width()),
                        static_cast<int32_t>(input.height()));
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template <>
@@ -60,6 +64,8 @@ class TypeConverter<Rect, PP_Rect> {
                      input.size().To<PP_Size>() };
     return rect;
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo

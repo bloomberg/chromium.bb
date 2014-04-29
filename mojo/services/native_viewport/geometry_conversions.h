@@ -22,6 +22,8 @@ public:
   static gfx::Point ConvertTo(const Point& input) {
     return gfx::Point(input.x(), input.y());
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template<>
@@ -36,6 +38,8 @@ public:
   static gfx::Size ConvertTo(const Size& input) {
     return gfx::Size(input.width(), input.height());
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 template<>
@@ -51,6 +55,8 @@ class TypeConverter<Rect, gfx::Rect> {
     return gfx::Rect(input.position().x(), input.position().y(),
                      input.size().width(), input.size().height());
   }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
 };
 
 }  // namespace mojo
