@@ -76,25 +76,6 @@ class TestPackageInfo(unittest.TestCase):
     self.assertEqual(len(package2.GetArchiveList()), 2)
     self.assertEqual(package1, package2)
 
-  def test_PackageLoadArchiveList(self):
-    # Check if we can successfully load a list of archive.
-    arch_name1 = 'archive_item1.tar'
-    arch_name2 = 'archive_item2.tar'
-    arch_hash1 = 'archive_item_hash1'
-    arch_hash2 = 'archive_item_hash2'
-
-    mast_package = package_info.PackageInfo()
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name1, arch_hash1))
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name2, arch_hash2))
-    archive_list = mast_package.GetArchiveList()
-
-    constructed_package = package_info.PackageInfo(archive_list)
-    loaded_package = package_info.PackageInfo()
-    loaded_package.LoadPackageFile(archive_list)
-
-    self.assertEqual(mast_package, constructed_package)
-    self.assertEqual(mast_package, loaded_package)
-
   def test_PackageLoadJsonList(self):
     # Check if we can successfully load a list of archive.
     arch_name1 = 'archive_item1.tar'
@@ -105,11 +86,11 @@ class TestPackageInfo(unittest.TestCase):
     mast_package = package_info.PackageInfo()
     mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name1, arch_hash1))
     mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name2, arch_hash2))
-    json_list = mast_package.DumpPackageJson()
+    json_data = mast_package.DumpPackageJson()
 
-    constructed_package = package_info.PackageInfo(json_list)
+    constructed_package = package_info.PackageInfo(json_data)
     loaded_package = package_info.PackageInfo()
-    loaded_package.LoadPackageFile(json_list)
+    loaded_package.LoadPackageFile(json_data)
 
     self.assertEqual(mast_package, constructed_package)
     self.assertEqual(mast_package, loaded_package)

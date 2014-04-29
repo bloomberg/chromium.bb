@@ -16,11 +16,22 @@ import pynacl.gsd_storage
 
 import archive_info
 
+PACKAGE_KEY_ARCHIVES = 'archives'
+PACKAGE_KEY_VERSION = 'version'
+
+CURRENT_PACKAGE_VERSION = 1
+
 
 def ReadPackageFile(package_file):
   """Returns a PackageInfoTuple representation of a json package file."""
   with open(package_file, 'rt') as f:
-    return json.load(f)
+    json_value = json.load(f)
+
+    # TODO(dyen): Support old format temporarily when it was a list of archives.
+    if isinstance(json_value, list):
+      return { PACKAGE_KEY_ARCHIVES: json_value, PACKAGE_KEY_VERSION: 0 }
+    else:
+      return json_value
 
 
 def GetFileBaseName(filename):
@@ -69,7 +80,8 @@ def DownloadPackageInfoFiles(local_package_file, remote_package_file,
     raise IOError('Could not download package file: %s.' %
                   remote_package_file)
 
-  archive_list = ReadPackageFile(local_package_file)
+  package_data = ReadPackageFile(local_package_file)
+  archive_list = package_data[PACKAGE_KEY_ARCHIVES]
   local_package_name = GetLocalPackageName(local_package_file)
   remote_package_name = GetRemotePackageName(remote_package_file)
 
@@ -107,7 +119,8 @@ def UploadPackageInfoFiles(storage, package_target, package_name,
   Returns:
     The URL where the root package file is located.
   """
-  archive_list = ReadPackageFile(local_package_file)
+  package_data = ReadPackageFile(local_package_file)
+  archive_list = package_data[PACKAGE_KEY_ARCHIVES]
   local_package_name = GetLocalPackageName(local_package_file)
   remote_package_name = GetRemotePackageName(remote_package_file)
 
@@ -145,6 +158,7 @@ class PackageInfo(object):
   """
   def __init__(self, package_file=None, skip_missing=False):
     self._archive_list = []
+    self._package_version = CURRENT_PACKAGE_VERSION
 
     if package_file is not None:
       self.LoadPackageFile(package_file, skip_missing)
@@ -152,36 +166,49 @@ class PackageInfo(object):
   def __eq__(self, other):
     if type(self) != type(other):
       return False
+    elif self.GetPackageVersion() != other.GetPackageVersion():
+      return False
 
     archives1 = [archive.GetArchiveData() for archive in self.GetArchiveList()]
     archives2 = [archive.GetArchiveData() for archive in other.GetArchiveList()]
     return set(archives1) == set(archives2)
 
   def __repr__(self):
-    return "PackageInfo(archive_list=" + str(self.GetArchiveList()) + ")"
+    return 'PackageInfo(%s)' % self.DumpPackageJson()
 
   def LoadPackageFile(self, package_file, skip_missing=False):
     """Loads a package file into this object.
 
     Args:
-      package_file: Filename or list of archives in json format.
+      package_file: Filename or json dictionary.
     """
     archive_names = None
     self._archive_list = []
 
-    if isinstance(package_file, list):
-      if package_file:
-        if isinstance(package_file[0], archive_info.ArchiveInfo):
+    # TODO(dyen): Support old format temporarily when it was a list of archives.
+    if isinstance(package_file, list) or isinstance(package_file, dict):
+      if isinstance(package_file, list):
+        self._package_version = 0
+        archive_list = package_file
+      else:
+        self._package_version = package_file[PACKAGE_KEY_VERSION]
+        archive_list = package_file[PACKAGE_KEY_ARCHIVES]
+
+      if archive_list:
+        if isinstance(archive_list[0], archive_info.ArchiveInfo):
           # Setting a list of ArchiveInfo objects, no need to interpret JSON.
-          self._archive_list = package_file
+          self._archive_list = archive_list
         else:
           # Assume to be JSON.
-          for archive_json in package_file:
+          for archive_json in archive_list:
             archive = archive_info.ArchiveInfo(archive_info_file=archive_json)
             self._archive_list.append(archive)
 
     elif isinstance(package_file, basestring):
-      archive_names = ReadPackageFile(package_file)
+      package_data = ReadPackageFile(package_file)
+      self._package_version = package_data[PACKAGE_KEY_VERSION]
+      archive_names = package_data[PACKAGE_KEY_ARCHIVES]
+
       package_name = GetLocalPackageName(package_file)
       archive_dir = os.path.join(os.path.dirname(package_file), package_name)
       for archive in archive_names:
@@ -210,23 +237,32 @@ class PackageInfo(object):
     archive_dir = os.path.join(os.path.dirname(package_file), package_name)
     pynacl.file_tools.MakeDirectoryIfAbsent(archive_dir)
 
-    package_json = []
+    archive_list = []
 
     for archive in self.GetArchiveList():
       archive_data = archive.GetArchiveData()
-      package_json.append(archive_data.name)
+      archive_list.append(archive_data.name)
 
       archive_file = archive_data.name + '.json'
       archive_path = os.path.join(archive_dir, archive_file)
       archive.SaveArchiveInfoFile(archive_path)
+
+    package_json = {
+        PACKAGE_KEY_ARCHIVES: archive_list,
+        PACKAGE_KEY_VERSION: self._package_version
+        }
 
     with open(package_file, 'wt') as f:
       json.dump(package_json, f, sort_keys=True,
                 indent=2, separators=(',', ': '))
 
   def DumpPackageJson(self):
-    """Returns a list representation of the JSON of this object."""
-    return [archive.DumpArchiveJson() for archive in self.GetArchiveList()]
+    """Returns a dictionary representation of the JSON of this object."""
+    archives = [archive.DumpArchiveJson() for archive in self.GetArchiveList()]
+    return {
+        PACKAGE_KEY_ARCHIVES: archives,
+        PACKAGE_KEY_VERSION: self._package_version
+        }
 
   def ClearArchiveList(self):
     """Clears this object so it represents no archives."""
@@ -240,3 +276,7 @@ class PackageInfo(object):
     """Returns the sorted list of ARCHIVE_INFOs this object represents."""
     return sorted(self._archive_list,
                   key=lambda archive : archive.GetArchiveData().name)
+
+  def GetPackageVersion(self):
+    """Returns the version of this package."""
+    return self._package_version
