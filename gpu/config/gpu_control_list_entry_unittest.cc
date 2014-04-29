@@ -743,6 +743,45 @@ TEST_F(GpuControlListEntryTest, MachineModelName) {
   gpu_info.machine_model_name = "Nexus";
   EXPECT_FALSE(entry->Contains(
       GpuControlList::kOsAndroid, "4.1", gpu_info));
+
+  gpu_info.machine_model_name = "";
+  EXPECT_FALSE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, MachineModelNameException) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "exceptions": [
+          {
+            "os": {
+              "type": "android"
+            },
+            "machine_model_name": ["Nexus 4"]
+          }
+        ],
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
+  GPUInfo gpu_info;
+
+  gpu_info.machine_model_name = "Nexus 4";
+  EXPECT_FALSE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsLinux, "4.1", gpu_info));
+
+  gpu_info.machine_model_name = "";
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsLinux, "4.1", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, MachineModelVersion) {
@@ -768,6 +807,46 @@ TEST_F(GpuControlListEntryTest, MachineModelVersion) {
   gpu_info.machine_model_name = "MacBookPro";
   gpu_info.machine_model_version = "7.1";
   EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsMacosx, "10.6", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, MachineModelVersionException) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "os": {
+          "type": "macosx"
+        },
+        "machine_model_name": ["MacBookPro"],
+        "exceptions": [
+          {
+            "machine_model_version": {
+              "op": ">",
+              "value": "7.1"
+            }
+          }
+        ],
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
+
+  GPUInfo gpu_info;
+  gpu_info.machine_model_name = "MacBookPro";
+  gpu_info.machine_model_version = "7.0";
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsMacosx, "10.6", gpu_info));
+
+  gpu_info.machine_model_version = "7.2";
+  EXPECT_FALSE(entry->Contains(
+      GpuControlList::kOsMacosx, "10.6", gpu_info));
+
+  gpu_info.machine_model_version = "";
   EXPECT_TRUE(entry->Contains(
       GpuControlList::kOsMacosx, "10.6", gpu_info));
 }

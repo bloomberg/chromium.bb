@@ -1121,8 +1121,9 @@ bool GpuControlList::GpuControlListEntry::Contains(
       (gpu_info.performance_stats.overall == 0.0 ||
        !perf_overall_info_->Contains(gpu_info.performance_stats.overall)))
     return false;
-  if (!machine_model_name_list_.empty() &&
-      !gpu_info.machine_model_name.empty()) {
+  if (!machine_model_name_list_.empty()) {
+    if (gpu_info.machine_model_name.empty())
+      return false;
     bool found_match = false;
     for (size_t ii = 0; ii < machine_model_name_list_.size(); ++ii) {
       if (machine_model_name_list_[ii] == gpu_info.machine_model_name) {
@@ -1134,8 +1135,8 @@ bool GpuControlList::GpuControlListEntry::Contains(
       return false;
   }
   if (machine_model_version_info_.get() != NULL &&
-      !gpu_info.machine_model_version.empty() &&
-      !machine_model_version_info_->Contains(gpu_info.machine_model_version))
+      (gpu_info.machine_model_version.empty() ||
+       !machine_model_version_info_->Contains(gpu_info.machine_model_version)))
     return false;
   if (gpu_count_info_.get() != NULL &&
       !gpu_count_info_->Contains(gpu_info.secondary_gpus.size() + 1))
