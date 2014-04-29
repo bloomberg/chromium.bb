@@ -92,6 +92,8 @@ INSTANTIATE_TEST_CASE_P(
                        "translation_of_shill_ethernet.onc"),
         std::make_pair("shill_ethernet_with_eap.json",
                        "translation_of_shill_ethernet_with_eap.onc"),
+        std::make_pair("shill_ethernet_with_ipconfig.json",
+                       "translation_of_shill_ethernet_with_ipconfig.onc"),
         std::make_pair("shill_wifi_clientcert.json",
                        "translation_of_shill_wifi_clientcert.onc"),
         std::make_pair("shill_wifi_wpa1.json",

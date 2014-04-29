@@ -132,6 +132,7 @@ const char kGateway[] = "Gateway";
 const char kIPAddress[] = "IPAddress";
 const char kIPv4[] = "IPv4";
 const char kIPv6[] = "IPv6";
+const char kNameServers[] = "NameServers";
 const char kRoutingPrefix[] = "RoutingPrefix";
 const char kType[] = "Type";
 }  // namespace ipconfig

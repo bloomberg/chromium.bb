@@ -142,6 +142,7 @@ ONC_EXPORT extern const char kGateway[];
 ONC_EXPORT extern const char kIPAddress[];
 ONC_EXPORT extern const char kIPv4[];
 ONC_EXPORT extern const char kIPv6[];
+ONC_EXPORT extern const char kNameServers[];
 ONC_EXPORT extern const char kRoutingPrefix[];
 ONC_EXPORT extern const char kType[];
 }  // namespace ipconfig

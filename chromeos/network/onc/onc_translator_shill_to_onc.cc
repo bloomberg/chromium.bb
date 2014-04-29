@@ -66,6 +66,7 @@ class ShillToONCTranslator {
   void TranslateWiFiWithState();
   void TranslateCellularWithState();
   void TranslateNetworkWithState();
+  void TranslateIPConfig();
 
   // Creates an ONC object from |dictionary| according to the signature
   // associated to |onc_field_name| and adds it to |onc_object_| at
@@ -131,6 +132,8 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateWiFiWithState();
   } else if (onc_signature_ == &kCellularWithStateSignature) {
     TranslateCellularWithState();
+  } else if (onc_signature_ == &kIPConfigSignature) {
+    TranslateIPConfig();
   } else {
     CopyPropertiesAccordingToSignature();
   }
@@ -254,10 +257,10 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         shill::kCellularApnProperty, &dictionary)) {
     TranslateAndAddNestedObject(::onc::cellular::kAPN, *dictionary);
   }
-  const base::ListValue* list = NULL;
+  const base::ListValue* shill_apns = NULL;
   if (shill_dictionary_->GetListWithoutPathExpansion(
-          shill::kCellularApnListProperty, &list)) {
-    TranslateAndAddListOfObjects(::onc::cellular::kAPNList, *list);
+          shill::kCellularApnListProperty, &shill_apns)) {
+    TranslateAndAddListOfObjects(::onc::cellular::kAPNList, *shill_apns);
   }
 }
 
@@ -299,6 +302,33 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     onc_object_->SetStringWithoutPathExpansion(
         ::onc::network_config::kConnectionState, onc_state);
   }
+
+  // Shill's Service has an IPConfig property (note the singular, and not a
+  // IPConfigs property). However, we require the caller of the translation to
+  // patch the Shill dictionary before passing it to the translator.
+  const base::ListValue* shill_ipconfigs = NULL;
+  if (shill_dictionary_->GetListWithoutPathExpansion(shill::kIPConfigsProperty,
+                                                     &shill_ipconfigs)) {
+    TranslateAndAddListOfObjects(::onc::network_config::kIPConfigs,
+                                 *shill_ipconfigs);
+  }
+}
+
+void ShillToONCTranslator::TranslateIPConfig() {
+  CopyPropertiesAccordingToSignature();
+  std::string shill_ip_method;
+  shill_dictionary_->GetStringWithoutPathExpansion(shill::kMethodProperty,
+                                                   &shill_ip_method);
+  if (shill_ip_method != shill::kTypeIPv4 &&
+      shill_ip_method != shill::kTypeIPv6) {
+    LOG(ERROR) << "Unhandled IPConfig Method value " << shill_ip_method;
+    return;
+  }
+
+  std::string type = ::onc::ipconfig::kIPv4;
+  if (shill_ip_method == shill::kTypeIPv6)
+    type = ::onc::ipconfig::kIPv6;
+  onc_object_->SetStringWithoutPathExpansion(::onc::ipconfig::kType, type);
 }
 
 void ShillToONCTranslator::TranslateAndAddNestedObject(
@@ -345,14 +375,13 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
         *field_signature->value_signature->onc_array_entry_signature);
     scoped_ptr<base::DictionaryValue> nested_object =
         nested_translator.CreateTranslatedONCObject();
+    // If the nested object couldn't be parsed, simply omit it.
     if (nested_object->empty())
-      // The nested object couldn't be parsed, so simply omit it.
       continue;
     result->Append(nested_object.release());
   }
+  // If there are no entries in the list, there is no need to expose this field.
   if (result->empty())
-    // There are no entries in the list, so there is no need to expose this
-    // field.
     return;
   onc_object_->SetWithoutPathExpansion(onc_field_name, result.release());
 }

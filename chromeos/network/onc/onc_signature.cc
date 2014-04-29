@@ -163,11 +163,11 @@ const OncFieldSignature ethernet_fields[] = {
     { ::onc::ethernet::kEAP, &kEAPSignature},
     {NULL}};
 
-// Not supported, yet.
+// Not supported for policy but for reading network state.
 const OncFieldSignature ipconfig_fields[] = {
     { ::onc::ipconfig::kGateway, &kStringSignature},
     { ::onc::ipconfig::kIPAddress, &kStringSignature},
-    { ::onc::network_config::kNameServers, &kStringSignature},
+    { ::onc::ipconfig::kNameServers, &kStringListSignature},
     { ::onc::ipconfig::kRoutingPrefix, &kIntegerSignature},
     { ::onc::network_config::kSearchDomains, &kStringListSignature},
     { ::onc::ipconfig::kType, &kStringSignature},
@@ -261,7 +261,7 @@ const OncFieldSignature network_configuration_fields[] = {
     { ::onc::kRecommended, &kRecommendedSignature},
     { ::onc::network_config::kEthernet, &kEthernetSignature},
     { ::onc::network_config::kGUID, &kStringSignature},
-    // Not supported, yet.
+    // Not supported for policy but for reading network state.
     { ::onc::network_config::kIPConfigs, &kIPConfigListSignature},
     { ::onc::network_config::kName, &kStringSignature},
     // Not supported, yet.
