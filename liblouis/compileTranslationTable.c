@@ -5230,7 +5230,7 @@ void logWidecharBuf(int level, const char *msg, widechar *wbuf, int wlen)
   for (i = 0; i < strlen(msg); i++)
     logMessage[i] = msg[i];
   p += strlen(msg);
-  for (int i = 0; i < wlen; i++)
+  for (i = 0; i < wlen; i++)
     {
       p += sprintf(p, formatString, wbuf[i]);
     }
