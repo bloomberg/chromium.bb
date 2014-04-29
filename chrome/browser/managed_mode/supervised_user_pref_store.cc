@@ -40,6 +40,10 @@ ManagedUserSettingsPrefMappingEntry kManagedUserSettingsPrefMapping[] = {
     prefs::kForceSafeSearch,
   },
   {
+    managed_users::kSigninAllowed,
+    prefs::kSigninAllowed,
+  },
+  {
     managed_users::kUserName,
     prefs::kProfileName,
   },
