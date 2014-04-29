@@ -115,8 +115,10 @@ MetadataCache.EVICTION_THRESHOLD_MARGIN = 500;
  */
 MetadataCache.createFull = function(volumeManager) {
   var cache = new MetadataCache();
-  cache.providers_.push(new FilesystemProvider());
+  // DriveProvider should be prior to FileSystemProvider, because it covers
+  // FileSystemProvider for files in Drive.
   cache.providers_.push(new DriveProvider(volumeManager));
+  cache.providers_.push(new FilesystemProvider());
   cache.providers_.push(new ContentProvider());
   return cache;
 };
@@ -681,7 +683,7 @@ FilesystemProvider.prototype.fetch = function(
   function onMetadata(entry, metadata) {
     callback({
       filesystem: {
-        size: entry.isFile ? (metadata.size || 0) : -1,
+        size: (entry.isFile ? (metadata.size || 0) : -1),
         modificationTime: metadata.modificationTime
       }
     });
@@ -735,7 +737,7 @@ DriveProvider.prototype.supportsEntry = function(entry) {
  */
 DriveProvider.prototype.providesType = function(type) {
   return type === 'drive' || type === 'thumbnail' ||
-      type === 'streaming' || type === 'media';
+      type === 'streaming' || type === 'media' || type === 'filesystem';
 };
 
 /**
@@ -836,6 +838,11 @@ DriveProvider.prototype.convert_ = function(data, entry) {
     contentMimeType: data.contentMimeType || '',
     sharedWithMe: data.sharedWithMe,
     shared: data.shared
+  };
+
+  result.filesystem = {
+    size: (entry.isFile ? (data.fileSize || 0) : -1),
+    modificationTime: new Date(data.lastModifiedTime)
   };
 
   if ('thumbnailUrl' in data) {

@@ -54,6 +54,11 @@ void FillDriveEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
   properties->shared_with_me.reset(new bool(shared_with_me));
   properties->shared.reset(new bool(entry_proto.shared()));
 
+  const drive::PlatformFileInfoProto& file_info = entry_proto.file_info();
+  properties->file_size.reset(new double(file_info.size()));
+  properties->last_modified_time.reset(new double(
+      base::Time::FromInternalValue(file_info.last_modified()).ToJsTime()));
+
   if (!entry_proto.has_file_specific_info())
     return;
 
