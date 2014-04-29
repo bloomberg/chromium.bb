@@ -369,9 +369,10 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   // Tap textfield
   touch_editable->Reset();
   generator.GestureTapAt(gfx::Point(bounds.x() + 50, bounds.y() + 40));
-  // Tap Down and Tap acks are sent synchronously.
-  touch_editable->WaitForSelectionChangeCallback();
+  // Tap Down acks are sent synchronously, while Tap acks are asynchronous.
   touch_editable->Reset();
+  touch_editable->WaitForGestureAck();
+  touch_editable->WaitForSelectionChangeCallback();
 
   // Check if cursor handle is showing.
   EXPECT_NE(ui::TEXT_INPUT_TYPE_NONE, GetTextInputType(touch_editable));

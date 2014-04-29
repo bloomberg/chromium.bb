@@ -1306,6 +1306,15 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private void onTapEventNotConsumed(int x, int y) {
+        for (mGestureStateListenersIterator.rewind();
+                mGestureStateListenersIterator.hasNext();) {
+            mGestureStateListenersIterator.next().onUnhandledTapEvent(x, y);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private void onDoubleTapEventAck() {
         temporarilyHideTextHandles();
     }
