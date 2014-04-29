@@ -72,7 +72,7 @@ public:
     virtual ~VTTCue();
 
     const String& vertical() const;
-    void setVertical(const String&, ExceptionState&);
+    void setVertical(const String&);
 
     bool snapToLines() const { return m_snapToLines; }
     void setSnapToLines(bool);
@@ -87,7 +87,7 @@ public:
     void setSize(int, ExceptionState&);
 
     const String& align() const;
-    void setAlign(const String&, ExceptionState&);
+    void setAlign(const String&);
 
     const String& text() const { return m_text; }
     void setText(const String&);

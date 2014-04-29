@@ -27,18 +27,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum DirectionSetting { "" /* horizontal */, "rl", "lr" };
+enum AlignSetting { "start", "middle", "end", "left", "right" };
+
 [
     Constructor(double startTime, double endTime, DOMString text),
     ConstructorCallWith=Document,
     SetWrapperReferenceFrom=owner,
 ] interface VTTCue : TextTrackCue {
     [RuntimeEnabled=WebVTTRegions] attribute DOMString regionId;
-    [RaisesException=Setter] attribute DOMString vertical;
+    attribute DirectionSetting vertical;
     attribute boolean snapToLines;
     [RaisesException=Setter] attribute long line;
     [RaisesException=Setter] attribute long position;
     [RaisesException=Setter] attribute long size;
-    [RaisesException=Setter] attribute DOMString align;
+    attribute AlignSetting align;
     attribute DOMString text;
     DocumentFragment getCueAsHTML();
 };

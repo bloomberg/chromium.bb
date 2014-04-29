@@ -264,14 +264,8 @@ const String& VTTCue::vertical() const
     }
 }
 
-void VTTCue::setVertical(const String& value, ExceptionState& exceptionState)
+void VTTCue::setVertical(const String& value)
 {
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-vertical
-    // On setting, the text track cue writing direction must be set to the value given
-    // in the first cell of the row in the table above whose second cell is a
-    // case-sensitive match for the new value, if any. If none of the values match, then
-    // the user agent must instead throw a SyntaxError exception.
-
     WritingDirection direction = m_writingDirection;
     if (value == horizontalKeyword())
         direction = Horizontal;
@@ -280,7 +274,7 @@ void VTTCue::setVertical(const String& value, ExceptionState& exceptionState)
     else if (value == verticalGrowingRightKeyword())
         direction = VerticalGrowingRight;
     else
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid. Only 'rl', 'lr', and the empty string are accepted.");
+        ASSERT_NOT_REACHED();
 
     if (direction == m_writingDirection)
         return;
@@ -373,14 +367,8 @@ const String& VTTCue::align() const
     }
 }
 
-void VTTCue::setAlign(const String& value, ExceptionState& exceptionState)
+void VTTCue::setAlign(const String& value)
 {
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-align
-    // On setting, the text track cue alignment must be set to the value given in the
-    // first cell of the row in the table above whose second cell is a case-sensitive
-    // match for the new value, if any. If none of the values match, then the user
-    // agent must instead throw a SyntaxError exception.
-
     CueAlignment alignment = m_cueAlignment;
     if (value == startKeyword())
         alignment = Start;
@@ -393,7 +381,7 @@ void VTTCue::setAlign(const String& value, ExceptionState& exceptionState)
     else if (value == rightKeyword())
         alignment = Right;
     else
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid. Only 'start', 'middle', 'end', 'left', and 'right' are accepted.");
+        ASSERT_NOT_REACHED();
 
     if (alignment == m_cueAlignment)
         return;

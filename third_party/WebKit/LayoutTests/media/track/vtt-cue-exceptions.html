@@ -14,15 +14,11 @@
             shouldThrow("cue." + property + " = 101;");
         }
 
-        shouldThrow("cue.vertical = 'Invalid!';");
-
         cue.snapToLines = false;
         testPercentage("line");
 
         testPercentage("position");
         testPercentage("size");
-
-        shouldThrow("cue.align = 'Invalid!';");
     </script>
 </body>
 </html>
