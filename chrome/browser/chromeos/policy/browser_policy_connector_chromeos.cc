@@ -84,8 +84,10 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
     : device_cloud_policy_manager_(NULL),
       global_user_cloud_policy_provider_(NULL),
       weak_ptr_factory_(this) {
-  if (g_testing_install_attributes)
+  if (g_testing_install_attributes) {
     install_attributes_.reset(g_testing_install_attributes);
+    g_testing_install_attributes = NULL;
+  }
 
   // SystemSaltGetter or DBusThreadManager may be uninitialized on unit tests.
 
@@ -95,7 +97,7 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
       chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
-    if (!g_testing_install_attributes) {
+    if (!install_attributes_) {
       install_attributes_.reset(
           new EnterpriseInstallAttributes(cryptohome_client));
     }
@@ -241,6 +243,13 @@ void BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
     EnterpriseInstallAttributes* attributes) {
   DCHECK(!g_testing_install_attributes);
   g_testing_install_attributes = attributes;
+}
+
+void BrowserPolicyConnectorChromeOS::RemoveInstallAttributesForTesting() {
+  if (g_testing_install_attributes) {
+    delete g_testing_install_attributes;
+    g_testing_install_attributes = NULL;
+  }
 }
 
 // static

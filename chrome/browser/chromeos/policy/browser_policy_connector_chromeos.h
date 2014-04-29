@@ -92,9 +92,11 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   }
 
   // Sets the install attributes for testing. Must be called before the browser
-  // is created. Takes ownership of |attributes|.
+  // is created. RemoveInstallAttributesForTesting must be called after the test
+  // to free the attributes.
   static void SetInstallAttributesForTesting(
       EnterpriseInstallAttributes* attributes);
+  static void RemoveInstallAttributesForTesting();
 
   // Registers device refresh rate pref.
   static void RegisterPrefs(PrefRegistrySimple* registry);
