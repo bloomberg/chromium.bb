@@ -41,12 +41,12 @@ def main(args):
         # TODO(iannucci): Detect unclean workdir then stash+pop if we need to
         # teleport to a conflicting portion of history?
         run('checkout', '--track', opts.upstream, '-b', opts.branch_name)
-
     get_or_create_merge_base(opts.branch_name)
   except subprocess2.CalledProcessError as cpe:
     sys.stdout.write(cpe.stdout)
     sys.stderr.write(cpe.stderr)
     return 1
+  sys.stderr.write('Switched to branch %s.' % opts.branch_name)
 
 
 if __name__ == '__main__':  # pragma: no cover

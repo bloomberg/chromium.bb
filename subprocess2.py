@@ -510,5 +510,5 @@ def check_output(args, **kwargs):
   """
   kwargs.setdefault('stdin', VOID)
   if 'stdout' in kwargs:
-    raise ValueError('stdout argument not allowed, it will be overridden.')
+    raise ValueError('stdout argument not allowed, it would be overridden.')
   return check_call_out(args, stdout=PIPE, **kwargs)[0]
