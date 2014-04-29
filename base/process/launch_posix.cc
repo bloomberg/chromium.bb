@@ -435,8 +435,9 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 #define PR_SET_NO_NEW_PRIVS 38
 #endif
     if (!options.allow_new_privs) {
-      if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-        DCHECK_EQ(EINVAL, errno);
+      if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) && errno != EINVAL) {
+        // Only log if the error is not EINVAL (i.e. not supported).
+        RAW_LOG(FATAL, "prctl(PR_SET_NO_NEW_PRIVS) failed");
       }
     }
 #endif
