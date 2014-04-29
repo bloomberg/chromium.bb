@@ -3458,10 +3458,10 @@ void RenderBlock::adjustStartEdgeForWritingModeIncludingColumns(LayoutRect& rect
         rect.setX(expandedLogicalHeight - rect.maxX());
 }
 
-void RenderBlock::adjustForColumns(LayoutSize& offset, const LayoutPoint& point) const
+LayoutSize RenderBlock::columnOffset(const LayoutPoint& point) const
 {
     if (!hasColumns())
-        return;
+        return LayoutSize();
 
     ColumnInfo* colInfo = columnInfo();
 
@@ -3482,21 +3482,19 @@ void RenderBlock::adjustForColumns(LayoutSize& offset, const LayoutPoint& point)
         if (isHorizontalWritingMode()) {
             if (point.y() >= sliceRect.y() && point.y() < sliceRect.maxY()) {
                 if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                    offset.expand(columnRectAt(colInfo, i).x() - logicalLeft, -logicalOffset);
-                else
-                    offset.expand(0, columnRectAt(colInfo, i).y() - logicalOffset - borderBefore() - paddingBefore());
-                return;
+                    return LayoutSize(columnRectAt(colInfo, i).x() - logicalLeft, -logicalOffset);
+                return LayoutSize(0, columnRectAt(colInfo, i).y() - logicalOffset - borderBefore() - paddingBefore());
             }
         } else {
             if (point.x() >= sliceRect.x() && point.x() < sliceRect.maxX()) {
                 if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                    offset.expand(-logicalOffset, columnRectAt(colInfo, i).y() - logicalLeft);
-                else
-                    offset.expand(columnRectAt(colInfo, i).x() - logicalOffset - borderBefore() - paddingBefore(), 0);
-                return;
+                    return LayoutSize(-logicalOffset, columnRectAt(colInfo, i).y() - logicalLeft);
+                return LayoutSize(columnRectAt(colInfo, i).x() - logicalOffset - borderBefore() - paddingBefore(), 0);
             }
         }
     }
+
+    return LayoutSize();
 }
 
 void RenderBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const

@@ -246,7 +246,7 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
         return LayoutPoint();
 
     LayoutPoint referencePoint = startPoint;
-    referencePoint.move(parent()->offsetForColumns(referencePoint));
+    referencePoint.move(parent()->columnOffset(referencePoint));
 
     // If the offsetParent of the element is null, or is the HTML body element,
     // return the distance between the canvas origin and the left border edge
@@ -270,7 +270,7 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
                 if (!isOutOfFlowPositioned()) {
                     if (current->isBox() && !current->isTableRow())
                         referencePoint.moveBy(toRenderBox(current)->topLeftLocation());
-                    referencePoint.move(current->parent()->offsetForColumns(referencePoint));
+                    referencePoint.move(current->parent()->columnOffset(referencePoint));
                 }
             }
 

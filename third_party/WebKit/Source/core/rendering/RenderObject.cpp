@@ -2298,10 +2298,7 @@ void RenderObject::mapLocalToContainer(const RenderLayerModelObject* repaintCont
         mode &= ~ApplyContainerFlip;
     }
 
-    LayoutSize columnOffset;
-    o->adjustForColumns(columnOffset, roundedLayoutPoint(transformState.mappedPoint()));
-    if (!columnOffset.isZero())
-        transformState.move(columnOffset);
+    transformState.move(o->columnOffset(roundedLayoutPoint(transformState.mappedPoint())));
 
     if (o->hasOverflowClip())
         transformState.move(-toRenderBox(o)->scrolledContentOffset());
@@ -2390,9 +2387,7 @@ LayoutSize RenderObject::offsetFromContainer(RenderObject* o, const LayoutPoint&
 {
     ASSERT(o == container());
 
-    LayoutSize offset;
-
-    o->adjustForColumns(offset, point);
+    LayoutSize offset = o->columnOffset(point);
 
     if (o->hasOverflowClip())
         offset -= toRenderBox(o)->scrolledContentOffset();

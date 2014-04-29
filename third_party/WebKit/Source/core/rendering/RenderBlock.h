@@ -181,7 +181,7 @@ public:
     void clearTruncation();
 
     void adjustRectForColumns(LayoutRect&) const;
-    virtual void adjustForColumns(LayoutSize&, const LayoutPoint&) const OVERRIDE FINAL;
+    virtual LayoutSize columnOffset(const LayoutPoint&) const OVERRIDE FINAL;
     void adjustForColumnRect(LayoutSize& offset, const LayoutPoint& locationInContainer) const;
 
     void addContinuationWithOutline(RenderInline*);

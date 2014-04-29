@@ -981,13 +981,10 @@ bool RenderLayer::updateLayerPosition()
         if (hasCompositedLayerMapping()) {
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
-            LayoutSize columnOffset;
             if (!parent()->renderer()->hasColumns() && parent()->renderer()->isDocumentElement() && renderer()->view()->hasColumns())
-                renderer()->view()->adjustForColumns(columnOffset, localPoint);
+                localPoint += renderer()->view()->columnOffset(localPoint);
             else
-                parent()->renderer()->adjustForColumns(columnOffset, localPoint);
-
-            localPoint += columnOffset;
+                localPoint += parent()->renderer()->columnOffset(localPoint);
         }
 
         if (parent()->renderer()->hasOverflowClip()) {
