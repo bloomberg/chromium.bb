@@ -365,7 +365,7 @@
                 'nacl/loader/nonsfi/nonsfi_sandbox_sigsys_unittest.cc',
               ],
               'dependencies': [
-                'nacl.gyp:nacl_loader',
+                'nacl.gyp:nacl_linux',
                 '../sandbox/sandbox.gyp:sandbox_linux_test_utils',
               ],
             }],

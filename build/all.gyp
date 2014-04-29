@@ -385,6 +385,11 @@
             '../ash/ash.gyp:ash_unittests',
           ],
         }],
+        ['disable_nacl==0', {
+          'dependencies': [
+            '../components/nacl.gyp:nacl_loader_unittests',
+          ],
+        }],
       ],
     }, # target_name: chromium_builder_tests
     {
