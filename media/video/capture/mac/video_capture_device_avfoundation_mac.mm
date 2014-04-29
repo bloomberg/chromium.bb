@@ -175,39 +175,12 @@
   frameHeight_ = height;
   frameRate_ = frameRate;
 
-  // Identify the sessionPreset that corresponds to the desired resolution.
-  NSString* sessionPreset;
-  if (width == 1280 && height == 720 && [captureSession_ canSetSessionPreset:
-          AVFoundationGlue::AVCaptureSessionPreset1280x720()]) {
-    sessionPreset = AVFoundationGlue::AVCaptureSessionPreset1280x720();
-  } else if (width == 640 && height == 480 && [captureSession_
-          canSetSessionPreset:
-              AVFoundationGlue::AVCaptureSessionPreset640x480()]) {
-    sessionPreset = AVFoundationGlue::AVCaptureSessionPreset640x480();
-  } else if (width == 320 && height == 240 && [captureSession_
-          canSetSessionPreset:
-              AVFoundationGlue::AVCaptureSessionPreset320x240()]) {
-    sessionPreset = AVFoundationGlue::AVCaptureSessionPreset320x240();
-  } else {
-    DLOG(ERROR) << "Unsupported resolution (" << width << "x" << height << ")";
-    return NO;
-  }
-  [captureSession_ setSessionPreset:sessionPreset];
-
-  // Check that our capture Device can be used with the current preset.
-  if (![captureDevice_ supportsAVCaptureSessionPreset:
-          [captureSession_ sessionPreset]]){
-    DLOG(ERROR) << "Video capture device does not support current preset";
-    return NO;
-  }
-
-  // Despite all Mac documentation detailing that setting the sessionPreset is
-  // enough, that is not the case for, at least, the MacBook Air built-in
-  // FaceTime HD Camera, and the capture output has to be configured as well.
-  // The reason for this mismatch is probably because most of the AVFoundation
-  // docs are written for iOS and not for MacOsX.
-  // AVVideoScalingModeKey() refers to letterboxing yes/no and preserve aspect
-  // ratio yes/no when scaling. Currently we set cropping and preservation.
+  // The capture output has to be configured, despite Mac documentation
+  // detailing that setting the sessionPreset would be enough. The reason for
+  // this mismatch is probably because most of the AVFoundation docs are written
+  // for iOS and not for MacOsX. AVVideoScalingModeKey() refers to letterboxing
+  // yes/no and preserve aspect ratio yes/no when scaling. Currently we set
+  // cropping and preservation.
   NSDictionary* videoSettingsDictionary = @{
     (id)kCVPixelBufferWidthKey : @(width),
     (id)kCVPixelBufferHeightKey : @(height),

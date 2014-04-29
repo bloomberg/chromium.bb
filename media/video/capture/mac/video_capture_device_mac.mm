@@ -190,7 +190,8 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   // QTKit API can scale captured frame to any size requested, which would lead
   // to undesired aspect ratio changes. Try to open the camera with a known
   // supported format and let the client crop/pad the captured frames.
-  GetBestMatchSupportedResolution(&width, &height);
+  if (!AVFoundationGlue::IsAVFoundationSupported())
+    GetBestMatchSupportedResolution(&width, &height);
 
   client_ = client.Pass();
   NSString* deviceId =

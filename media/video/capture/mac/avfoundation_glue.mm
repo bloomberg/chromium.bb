@@ -45,9 +45,6 @@ class AVFoundationInternal {
         {&AVCaptureSessionDidStopRunningNotification_,
          "AVCaptureSessionDidStopRunningNotification"},
         {&AVCaptureSessionErrorKey_, "AVCaptureSessionErrorKey"},
-        {&AVCaptureSessionPreset320x240_, "AVCaptureSessionPreset320x240"},
-        {&AVCaptureSessionPreset640x480_, "AVCaptureSessionPreset640x480"},
-        {&AVCaptureSessionPreset1280x720_, "AVCaptureSessionPreset1280x720"},
         {&AVVideoScalingModeKey_, "AVVideoScalingModeKey"},
         {&AVVideoScalingModeResizeAspectFill_,
          "AVVideoScalingModeResizeAspectFill"},
@@ -80,15 +77,6 @@ class AVFoundationInternal {
   NSString* AVCaptureSessionErrorKey() const {
     return AVCaptureSessionErrorKey_;
   }
-  NSString* AVCaptureSessionPreset320x240() const {
-    return AVCaptureSessionPreset320x240_;
-  }
-  NSString* AVCaptureSessionPreset640x480() const {
-    return AVCaptureSessionPreset640x480_;
-  }
-  NSString* AVCaptureSessionPreset1280x720() const {
-    return AVCaptureSessionPreset1280x720_;
-  }
   NSString* AVVideoScalingModeKey() const { return AVVideoScalingModeKey_; }
   NSString* AVVideoScalingModeResizeAspectFill() const {
     return AVVideoScalingModeResizeAspectFill_;
@@ -106,9 +94,6 @@ class AVFoundationInternal {
   NSString* AVCaptureSessionRuntimeErrorNotification_;
   NSString* AVCaptureSessionDidStopRunningNotification_;
   NSString* AVCaptureSessionErrorKey_;
-  NSString* AVCaptureSessionPreset320x240_;
-  NSString* AVCaptureSessionPreset640x480_;
-  NSString* AVCaptureSessionPreset1280x720_;
   NSString* AVVideoScalingModeKey_;
   NSString* AVVideoScalingModeResizeAspectFill_;
 
@@ -171,18 +156,6 @@ NSString* AVFoundationGlue::AVCaptureSessionDidStopRunningNotification() {
 
 NSString* AVFoundationGlue::AVCaptureSessionErrorKey() {
   return g_avfoundation_handle.Get().AVCaptureSessionErrorKey();
-}
-
-NSString* AVFoundationGlue::AVCaptureSessionPreset320x240() {
-  return g_avfoundation_handle.Get().AVCaptureSessionPreset320x240();
-}
-
-NSString* AVFoundationGlue::AVCaptureSessionPreset640x480() {
-  return g_avfoundation_handle.Get().AVCaptureSessionPreset640x480();
-}
-
-NSString* AVFoundationGlue::AVCaptureSessionPreset1280x720() {
-  return g_avfoundation_handle.Get().AVCaptureSessionPreset1280x720();
 }
 
 NSString* AVFoundationGlue::AVVideoScalingModeKey() {
