@@ -25,7 +25,7 @@ using std::string;
 namespace vttdemux {
 
 typedef long long mkvtime_t;  // NOLINT
-typedef long long mkvpos_t;   // NOLINT
+typedef long long mkvpos_t;  // NOLINT
 typedef std::auto_ptr<mkvparser::Segment> segment_ptr_t;
 
 // WebVTT metadata tracks have a type (encoded in the CodecID for the track).
@@ -286,7 +286,7 @@ FrameParser::~FrameParser() {}
 
 int FrameParser::GetChar(char* c) {
   if (pos_ >= pos_end_)  // end-of-stream
-    return 1;            // per the semantics of libwebvtt::Reader::GetChar
+    return 1;  // per the semantics of libwebvtt::Reader::GetChar
 
   const mkvparser::Cluster* const cluster = block_group_->GetCluster();
   const mkvparser::Segment* const segment = cluster->m_pSegment;
@@ -321,7 +321,7 @@ ChapterAtomParser::~ChapterAtomParser() {}
 
 int ChapterAtomParser::GetChar(char* c) {
   if (str_ >= str_end_)  // end-of-stream
-    return 1;            // per the semantics of libwebvtt::Reader::GetChar
+    return 1;  // per the semantics of libwebvtt::Reader::GetChar
 
   *c = *str_++;  // consume this character in the stream
   return 0;
@@ -637,7 +637,7 @@ bool vttdemux::WriteChaptersFile(const metadata_map_t& m,
   const int edition_count = chapters->GetEditionCount();
 
   if (edition_count <= 0)  // weird
-    return true;           // nothing to do
+    return true;  // nothing to do
 
   if (edition_count > 1) {
     // TODO(matthewjheaney): figure what to do here
@@ -795,7 +795,7 @@ bool vttdemux::ProcessCluster(const metadata_map_t& m,
   const mkvparser::BlockEntry* block_entry;
 
   long result = c->GetFirst(block_entry);  // NOLINT
-  if (result < 0) {                        // error
+  if (result < 0) {
     printf("bad cluster (unable to get first block)\n");
     return false;
   }
@@ -826,7 +826,7 @@ bool vttdemux::ProcessBlockEntry(const metadata_map_t& m,
   const iter_t i = m.find(static_cast<metadata_map_t::key_type>(tn));
 
   if (i == m.end())  // not a metadata track
-    return true;     // nothing else to do
+    return true;  // nothing else to do
 
   if (block_entry->GetKind() != mkvparser::BlockEntry::kBlockGroup)
     return false;  // weird

@@ -141,7 +141,7 @@ int Parser::Init() {
   if (e < 0)  // error
     return e;
 
-  if (e > 0)   // EOF
+  if (e > 0)  // EOF
     return 0;  // weird but valid
 
   if (!line.empty()) {
@@ -162,7 +162,7 @@ int Parser::Init() {
   if (e < 0)  // error
     return e;
 
-  if (e > 0)   // EOF
+  if (e > 0)  // EOF
     return 0;  // weird but we allow it
 
   if (!line.empty())
@@ -515,7 +515,7 @@ int Parser::ParseSettings(const std::string& line, std::string::size_type idx,
       const char c = line[idx];
 
       if (c == kNUL)  // end-of-line
-        return 0;     // success
+        return 0;  // success
 
       if (c != kSPACE && c != kTAB)
         break;
@@ -559,7 +559,7 @@ int Parser::ParseSettings(const std::string& line, std::string::size_type idx,
         break;
 
       if (c == ':')  // suspicious when part of VALUE
-        return -1;   // TODO(matthewjheaney): verify this behavior
+        return -1;  // TODO(matthewjheaney): verify this behavior
 
       s.value.push_back(c);
 

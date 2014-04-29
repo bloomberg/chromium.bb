@@ -2690,7 +2690,7 @@ int Segment::TestFrame(uint64 track_number, uint64 frame_timestamp_ns,
   // so this indicates a bug somewhere in our algorithm.
 
   if (frame_timecode < last_cluster_timecode)  // should never happen
-    return -1;                                 // error
+    return -1;
 
   // If the frame has a timestamp significantly larger than the last
   // cluster (in Matroska, cluster-relative timestamps are serialized
