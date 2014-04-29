@@ -112,6 +112,7 @@ class ChromiumUrlRequest extends UrlRequest implements HttpUrlRequest {
                 mSize = mOffset;
             }
         }
+        mListener.onResponseStarted(this);
     }
 
     @Override

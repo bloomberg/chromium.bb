@@ -90,6 +90,12 @@ public class CronetSampleActivity extends Activity {
         }
 
         @Override
+        public void onResponseStarted(HttpUrlRequest request) {
+            Log.i(TAG, "****** Response Started, content length is "
+                    + request.getContentLength());
+        }
+
+        @Override
         public void onRequestComplete(HttpUrlRequest request) {
             Log.i(TAG, "****** Request Complete, status code is "
                     + getHttpStatusCode());
