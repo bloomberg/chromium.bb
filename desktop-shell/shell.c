@@ -4420,6 +4420,8 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	struct weston_surface *old_es;
 	struct shell_surface *shsurf;
 
+	lower_fullscreen_layer(shell);
+
 	main_surface = weston_surface_get_main_surface(es);
 
 	weston_surface_activate(es, seat);
