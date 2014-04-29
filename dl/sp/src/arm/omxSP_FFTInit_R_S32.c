@@ -25,12 +25,12 @@
  * Initialize the real forward-FFT specification information struct.
  */
 
+#include <stdint.h>
+
 #include "dl/api/arm/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"
 #include "dl/sp/api/omxSP.h"
-
-
 
 /**
  * Function: omxSP_FFTInit_R_S32
@@ -95,7 +95,7 @@ OMXResult omxSP_FFTInit_R_S32(
         (sizeof(ARMsFFTSpec_R_SC32) + (OMX_S8*) pFFTSpec);
         
     /* Align to 32 byte boundary */
-    pTmp = ((OMX_U32)pTwiddle)&31;              /* (OMX_U32)pTwiddle % 32 */
+    pTmp = ((uintptr_t)pTwiddle)&31;              /* (uintptr_t)pTwiddle % 32 */
     if(pTmp != 0)
         pTwiddle = (OMX_SC32*) ((OMX_S8*)pTwiddle + (32-pTmp));                
         

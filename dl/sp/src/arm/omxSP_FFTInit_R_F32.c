@@ -11,6 +11,8 @@
  *  instead of S32.
  */
 
+#include <stdint.h>
+ 
 #include "dl/api/arm/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"
@@ -77,14 +79,14 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
   pTwiddle = (OMX_FC32 *) (sizeof(ARMsFFTSpec_R_SC32) + (OMX_S8*) pFFTSpec);
 
   /* Align to 32 byte boundary */
-  pTmp = ((OMX_U32)pTwiddle) & 31;
+  pTmp = ((uintptr_t)pTwiddle) & 31;
   if (pTmp)
     pTwiddle = (OMX_FC32*) ((OMX_S8*)pTwiddle + (32 - pTmp));
 
   pBuf = (OMX_F32*) (sizeof(OMX_FC32)*(5*N/8) + (OMX_S8*) pTwiddle);
 
   /* Align to 32 byte boundary */
-  pTmp = ((OMX_U32)pBuf)&31;                 /* (OMX_U32)pBuf % 32 */
+  pTmp = ((uintptr_t)pBuf)&31;                 /* (uintptr_t)pBuf % 32 */
   if (pTmp)
     pBuf = (OMX_F32*) ((OMX_S8*)pBuf + (32 - pTmp));
 

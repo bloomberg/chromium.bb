@@ -36,7 +36,7 @@ typedef struct VComplex {
 } VC;
 
 /* out = a * b */
-static inline void VC_MUL(VC *out, VC *a, VC *b) {
+static __inline void VC_MUL(VC *out, VC *a, VC *b) {
   out->real = _mm_sub_ps(_mm_mul_ps(a->real, b->real),
       _mm_mul_ps(a->imag, b->imag));
   out->imag = _mm_add_ps(_mm_mul_ps(a->real, b->imag),

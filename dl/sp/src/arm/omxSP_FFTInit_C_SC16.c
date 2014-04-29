@@ -25,11 +25,12 @@
  * Initializes the specification structures required
  */
 
+ #include <stdint.h>
+ 
 #include "dl/api/arm/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"
 #include "dl/sp/api/omxSP.h"
-
 
 /**
  * Function: omxSP_FFTInit_C_SC16
@@ -90,7 +91,7 @@ OMXResult omxSP_FFTInit_C_SC16(
         (sizeof(ARMsFFTSpec_SC16) + (OMX_S8*) pFFTSpec);
 
     /* Align to 32 byte boundary */
-    pTmp = ((OMX_U32)pTwiddle)&31;              /* (OMX_U32)pTwiddle % 32 */
+    pTmp = ((uintptr_t)pTwiddle)&31;              /* (uintptr_t)pTwiddle % 32 */
     if(pTmp != 0)
         pTwiddle = (OMX_SC16*) ((OMX_S8*)pTwiddle + (32-pTmp));
 
@@ -98,7 +99,7 @@ OMXResult omxSP_FFTInit_C_SC16(
         (sizeof(OMX_SC16) * (3*N/4) + (OMX_S8*) pTwiddle);
 
     /* Align to 32 byte boundary */
-    pTmp = ((OMX_U32)pBuf)&31;                 /* (OMX_U32)pBuf % 32 */
+    pTmp = ((uintptr_t)pBuf)&31;                 /* (uintptr_t)pBuf % 32 */
     if(pTmp != 0)
         pBuf = (OMX_SC16*) ((OMX_S8*)pBuf + (32-pTmp));
 

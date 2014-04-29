@@ -20,6 +20,8 @@
  * (c) Copyright 2007-2008 ARM Limited. All Rights Reserved.
  */
 
+#include <stdint.h> 
+
 #include "dl/api/arm/armOMX.h"
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/armSP.h"
@@ -74,7 +76,7 @@ OMXResult omxSP_FFTInit_R_S16(OMXFFTSpec_R_S16* pFFTSpec, OMX_INT order) {
   pTwiddle = (OMX_SC16*) (sizeof(ARMsFFTSpec_R_SC16) + (OMX_S8*)pFFTSpec);
 
   /* Align to 32 byte boundary */
-  pTmp = ((OMX_U32)pTwiddle)&31;  /* (OMX_U32)pTwiddle % 32 */
+  pTmp = ((uintptr_t)pTwiddle)&31;  /* (uintptr_t)pTwiddle % 32 */
   if(pTmp != 0) {
     pTwiddle = (OMX_SC16*) ((OMX_S8*)pTwiddle + (32 - pTmp));
   }

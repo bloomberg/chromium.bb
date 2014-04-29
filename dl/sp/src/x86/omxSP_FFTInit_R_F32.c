@@ -11,6 +11,8 @@
  *  instead of S32.
  */
 
+#include <stdint.h>
+
 #include "dl/api/omxtypes.h"
 #include "dl/sp/api/omxSP.h"
 #include "dl/sp/api/x86SP.h"
@@ -64,14 +66,14 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32 *pFFTSpec, OMX_INT order)
   pTwiddle = (OMX_F32*) (sizeof(X86FFTSpec_R_FC32) + (OMX_S8*) pFFTSpec);
 
   // Align to 32 byte boundary.
-  pTmp = ((OMX_U32)pTwiddle) & 31;
+  pTmp = ((uintptr_t)pTwiddle) & 31;
   if (pTmp)
     pTwiddle = (OMX_F32*) ((OMX_S8*)pTwiddle + (32 - pTmp));
 
   pBuf = (OMX_F32*) (sizeof(OMX_F32) * (N << 1) + (OMX_S8*) pTwiddle);
 
   // Align to 32 byte boundary.
-  pTmp = ((OMX_U32)pBuf) & 31;
+  pTmp = ((uintptr_t)pBuf) & 31;
   if (pTmp)
     pBuf = (OMX_F32*) ((OMX_S8*)pBuf + (32 - pTmp));
 
