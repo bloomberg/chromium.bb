@@ -41,7 +41,7 @@ namespace WebCore {
 
     class ScriptCallArgumentHandler {
     public:
-        ScriptCallArgumentHandler(NewScriptState* scriptState) : m_scriptState(scriptState) { }
+        ScriptCallArgumentHandler(ScriptState* scriptState) : m_scriptState(scriptState) { }
 
         void appendArgument(const ScriptObject&);
         void appendArgument(const ScriptValue&);
@@ -56,7 +56,7 @@ namespace WebCore {
         void appendArgument(const Vector<ScriptValue>&);
 
     protected:
-        RefPtr<NewScriptState> m_scriptState;
+        RefPtr<ScriptState> m_scriptState;
         Vector<ScriptValue> m_arguments;
     };
 

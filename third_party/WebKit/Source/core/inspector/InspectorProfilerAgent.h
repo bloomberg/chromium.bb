@@ -44,7 +44,7 @@ class InjectedScriptManager;
 class InspectorFrontend;
 class InspectorOverlay;
 class InstrumentingAgents;
-class NewScriptState;
+class ScriptState;
 class ScriptCallStack;
 class ScriptProfile;
 
@@ -57,7 +57,7 @@ public:
     static PassOwnPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
 
-    void consoleProfile(const String& title, NewScriptState*);
+    void consoleProfile(const String& title, ScriptState*);
     void consoleProfileEnd(const String& title);
 
     virtual void enable(ErrorString*) OVERRIDE;

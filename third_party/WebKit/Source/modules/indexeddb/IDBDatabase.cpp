@@ -176,7 +176,7 @@ PassRefPtr<DOMStringList> IDBDatabase::objectStoreNames() const
     return objectStoreNames.release();
 }
 
-ScriptValue IDBDatabase::version(NewScriptState* scriptState) const
+ScriptValue IDBDatabase::version(ScriptState* scriptState) const
 {
     int64_t intVersion = m_metadata.intVersion;
     if (intVersion == IDBDatabaseMetadata::NoIntVersion)

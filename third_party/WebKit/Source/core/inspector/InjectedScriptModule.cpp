@@ -43,7 +43,7 @@ InjectedScriptModule::InjectedScriptModule(const String& name)
 {
 }
 
-void InjectedScriptModule::ensureInjected(InjectedScriptManager* injectedScriptManager, NewScriptState* scriptState)
+void InjectedScriptModule::ensureInjected(InjectedScriptManager* injectedScriptManager, ScriptState* scriptState)
 {
     InjectedScript injectedScript = injectedScriptManager->injectedScriptFor(scriptState);
     ASSERT(!injectedScript.isEmpty());
@@ -56,7 +56,7 @@ void InjectedScriptModule::ensureInjected(InjectedScriptManager* injectedScriptM
     bool hadException = false;
     ScriptValue resultValue = injectedScript.callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);
-    NewScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(scriptState);
     if (hadException || resultValue.isEmpty() || !resultValue.isObject()) {
         ScriptFunctionCall function(injectedScript.injectedScriptObject(), "injectModule");
         function.appendArgument(name());

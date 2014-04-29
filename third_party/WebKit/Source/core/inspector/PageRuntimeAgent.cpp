@@ -32,8 +32,8 @@
 #include "core/inspector/PageRuntimeAgent.h"
 
 #include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScript.h"
@@ -90,10 +90,10 @@ void PageRuntimeAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
         m_frontend->executionContextsCleared();
     }
     String frameId = m_pageAgent->frameId(frame);
-    addExecutionContextToFrontend(NewScriptState::forMainWorld(frame), true, "", frameId);
+    addExecutionContextToFrontend(ScriptState::forMainWorld(frame), true, "", frameId);
 }
 
-void PageRuntimeAgent::didCreateIsolatedContext(LocalFrame* frame, NewScriptState* scriptState, SecurityOrigin* origin)
+void PageRuntimeAgent::didCreateIsolatedContext(LocalFrame* frame, ScriptState* scriptState, SecurityOrigin* origin)
 {
     if (!m_enabled)
         return;
@@ -105,7 +105,7 @@ void PageRuntimeAgent::didCreateIsolatedContext(LocalFrame* frame, NewScriptStat
 InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {
-        NewScriptState* scriptState = NewScriptState::forMainWorld(m_inspectedPage->mainFrame());
+        ScriptState* scriptState = ScriptState::forMainWorld(m_inspectedPage->mainFrame());
         InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
         if (result.isEmpty())
             *errorString = "Internal error: main world execution context not found.";
@@ -129,13 +129,13 @@ void PageRuntimeAgent::unmuteConsole()
 
 void PageRuntimeAgent::reportExecutionContextCreation()
 {
-    Vector<std::pair<NewScriptState*, SecurityOrigin*> > isolatedContexts;
+    Vector<std::pair<ScriptState*, SecurityOrigin*> > isolatedContexts;
     for (LocalFrame* frame = m_inspectedPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
             continue;
         String frameId = m_pageAgent->frameId(frame);
 
-        NewScriptState* scriptState = NewScriptState::forMainWorld(frame);
+        ScriptState* scriptState = ScriptState::forMainWorld(frame);
         addExecutionContextToFrontend(scriptState, true, "", frameId);
         frame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
@@ -148,9 +148,9 @@ void PageRuntimeAgent::reportExecutionContextCreation()
 
 void PageRuntimeAgent::frameWindowDiscarded(DOMWindow* window)
 {
-    Vector<RefPtr<NewScriptState> > scriptStatesToRemove;
+    Vector<RefPtr<ScriptState> > scriptStatesToRemove;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
-        RefPtr<NewScriptState> scriptState = it->key;
+        RefPtr<ScriptState> scriptState = it->key;
         if (scriptState->contextIsEmpty() || window == scriptState->domWindow()) {
             scriptStatesToRemove.append(scriptState);
             m_frontend->executionContextDestroyed(it->value);

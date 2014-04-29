@@ -49,7 +49,7 @@ InjectedScriptCanvasModule::InjectedScriptCanvasModule()
 {
 }
 
-InjectedScriptCanvasModule InjectedScriptCanvasModule::moduleForState(InjectedScriptManager* injectedScriptManager, NewScriptState* scriptState)
+InjectedScriptCanvasModule InjectedScriptCanvasModule::moduleForState(InjectedScriptManager* injectedScriptManager, ScriptState* scriptState)
 {
     InjectedScriptCanvasModule result;
     result.ensureInjected(injectedScriptManager, scriptState);

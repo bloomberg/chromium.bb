@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/inspector/InspectorFrontendHost.h"
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
@@ -195,7 +195,7 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
         return;
 
     ASSERT(m_frontendPage);
-    NewScriptState* frontendScriptState = NewScriptState::forMainWorld(m_frontendPage->mainFrame());
+    ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->mainFrame());
     ScriptObject frontendApiObject;
     if (!ScriptGlobalObject::get(frontendScriptState, "InspectorFrontendAPI", frontendApiObject)) {
         ASSERT_NOT_REACHED();

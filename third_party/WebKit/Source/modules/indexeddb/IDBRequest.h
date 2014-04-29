@@ -29,7 +29,7 @@
 #ifndef IDBRequest_h
 #define IDBRequest_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -165,7 +165,7 @@ private:
     void checkForReferenceCycle();
 #endif
 
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     RefPtrWillBeMember<IDBAny> m_source;
     RefPtrWillBeMember<IDBAny> m_result;
     RefPtrWillBeMember<DOMError> m_error;

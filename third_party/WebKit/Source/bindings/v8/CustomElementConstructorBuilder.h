@@ -59,7 +59,7 @@ struct WrapperTypeInfo;
 class CustomElementConstructorBuilder {
     WTF_MAKE_NONCOPYABLE(CustomElementConstructorBuilder);
 public:
-    CustomElementConstructorBuilder(NewScriptState*, const Dictionary* options);
+    CustomElementConstructorBuilder(ScriptState*, const Dictionary* options);
 
     // The builder accumulates state and may run script at specific
     // points. These methods must be called in order. When one fails
@@ -81,7 +81,7 @@ private:
     bool prototypeIsValid(const AtomicString& type, ExceptionState&) const;
     v8::Handle<v8::Function> retrieveCallback(v8::Isolate*, const char* name);
 
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     const Dictionary* m_options;
     v8::Handle<v8::Object> m_prototype;
     const WrapperTypeInfo* m_wrapperType;

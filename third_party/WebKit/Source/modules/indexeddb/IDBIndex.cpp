@@ -60,7 +60,7 @@ IDBIndex::~IDBIndex()
 {
 }
 
-ScriptValue IDBIndex::keyPath(NewScriptState* scriptState) const
+ScriptValue IDBIndex::keyPath(ScriptState* scriptState) const
 {
     return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
 }

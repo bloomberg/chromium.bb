@@ -32,8 +32,8 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/CallbackPromiseAdapter.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -73,7 +73,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
 {
     RegistrationOptionList options(dictionary);
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(executionContext)));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext)));
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -114,7 +114,7 @@ private:
 ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(executionContext)));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext)));
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {

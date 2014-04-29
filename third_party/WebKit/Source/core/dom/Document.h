@@ -986,8 +986,8 @@ public:
 
     PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
-    ScriptValue registerElement(WebCore::NewScriptState*, const AtomicString& name, ExceptionState&);
-    ScriptValue registerElement(WebCore::NewScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionState&);
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
 
     void setImportsController(HTMLImportsController*);
@@ -1132,8 +1132,8 @@ private:
     virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL; // Same as completeURL() for the same reason as above.
 
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
-    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, NewScriptState*) OVERRIDE FINAL;
-    void internalAddMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, NewScriptState*);
+    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) OVERRIDE FINAL;
+    void internalAddMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);
 
     virtual double timerAlignmentInterval() const OVERRIDE FINAL;
 

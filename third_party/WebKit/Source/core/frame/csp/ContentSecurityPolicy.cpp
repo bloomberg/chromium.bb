@@ -237,8 +237,8 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies, ContentSecurityPolic
     return true;
 }
 
-template<bool (CSPDirectiveList::*allowed)(NewScriptState* scriptState, ContentSecurityPolicy::ReportingStatus) const>
-bool isAllowedByAllWithState(const CSPDirectiveListVector& policies, NewScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus)
+template<bool (CSPDirectiveList::*allowed)(ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus) const>
+bool isAllowedByAllWithState(const CSPDirectiveListVector& policies, ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus)
 {
     for (size_t i = 0; i < policies.size(); ++i) {
         if (!(policies[i].get()->*allowed)(scriptState, reportingStatus))
@@ -358,7 +358,7 @@ bool ContentSecurityPolicy::allowInlineStyle(const String& contextURL, const WTF
     return isAllowedByAllWithContext<&CSPDirectiveList::allowInlineStyle>(m_policies, contextURL, contextLine, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowEval(NewScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowEval(ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return isAllowedByAllWithState<&CSPDirectiveList::allowEval>(m_policies, scriptState, reportingStatus);
 }

@@ -26,8 +26,8 @@
 #ifndef V8PerIsolateData_h
 #define V8PerIsolateData_h
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "gin/public/gin_embedders.h"
@@ -114,7 +114,7 @@ private:
     OwnPtr<StringCache> m_stringCache;
     OwnPtr<V8HiddenValue> m_hiddenValue;
     ScopedPersistent<v8::Value> m_liveRoot;
-    RefPtr<NewScriptState> m_regexScriptState;
+    RefPtr<ScriptState> m_regexScriptState;
 
     const char* m_previousSamplingState;
 

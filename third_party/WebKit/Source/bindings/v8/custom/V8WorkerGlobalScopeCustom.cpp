@@ -61,7 +61,7 @@ void setTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     if (!script)
         return;
 
-    NewScriptState* scriptState = NewScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     OwnPtr<ScheduledAction> action;
     if (function->IsString()) {
         if (ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy()) {

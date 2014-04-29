@@ -199,7 +199,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
                                                [Default=Undefined] optional float webkitForce);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
-    [CallWith=NewScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor registerElement(DOMString name, optional Dictionary options);
+    [CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor registerElement(DOMString name, optional Dictionary options);
     [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
     [CustomElementCallbacks, PerWorldBindings, LogActivity, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);

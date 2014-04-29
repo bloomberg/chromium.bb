@@ -32,8 +32,8 @@
 #define V8WindowShell_h
 
 #include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"
@@ -106,7 +106,7 @@ private:
 
     LocalFrame* m_frame;
     v8::Isolate* m_isolate;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     RefPtr<DOMWrapperWorld> m_world;
     ScopedPersistent<v8::Object> m_global;
     ScopedPersistent<v8::Object> m_document;

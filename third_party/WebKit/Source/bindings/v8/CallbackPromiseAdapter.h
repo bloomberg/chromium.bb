@@ -56,7 +56,7 @@ namespace WebCore {
 //        // immediately after calling onSuccess/onError. You can use the
 //        // ScriptPromise from the resolver to schedule a task that executes
 //        // after resolving:
-//        NewScriptState::Scope scope(resolver->scriptState());
+//        ScriptState::Scope scope(resolver->scriptState());
 //        resolver->promise().then(...);
 //    }
 //

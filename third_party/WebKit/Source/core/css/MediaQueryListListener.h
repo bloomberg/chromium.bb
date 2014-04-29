@@ -20,7 +20,7 @@
 #ifndef MediaQueryListListener_h
 #define MediaQueryListListener_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -48,7 +48,7 @@ public:
 private:
     explicit MediaQueryListListener(const ScriptValue&);
 
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     ScriptValue m_function;
 };
 

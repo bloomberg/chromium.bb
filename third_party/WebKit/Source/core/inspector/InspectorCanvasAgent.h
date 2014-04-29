@@ -34,7 +34,7 @@
 
 #include "InspectorFrontend.h"
 #include "InspectorTypeBuilder.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
@@ -88,7 +88,7 @@ public:
 private:
     InspectorCanvasAgent(InspectorPageAgent*, InjectedScriptManager*);
 
-    InjectedScriptCanvasModule injectedScriptCanvasModule(ErrorString*, NewScriptState*);
+    InjectedScriptCanvasModule injectedScriptCanvasModule(ErrorString*, ScriptState*);
     InjectedScriptCanvasModule injectedScriptCanvasModule(ErrorString*, const ScriptObject&);
     InjectedScriptCanvasModule injectedScriptCanvasModule(ErrorString*, const String&);
 

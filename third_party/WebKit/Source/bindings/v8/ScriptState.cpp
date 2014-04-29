@@ -3,30 +3,30 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 
 #include "bindings/v8/V8Binding.h"
 #include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
-PassRefPtr<NewScriptState> NewScriptState::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+PassRefPtr<ScriptState> ScriptState::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
 {
-    RefPtr<NewScriptState> scriptState = adoptRef(new NewScriptState(context, world));
-    // This ref() is for keeping this NewScriptState alive as long as the v8::Context is alive.
+    RefPtr<ScriptState> scriptState = adoptRef(new ScriptState(context, world));
+    // This ref() is for keeping this ScriptState alive as long as the v8::Context is alive.
     // This is deref()ed in the weak callback of the v8::Context.
     scriptState->ref();
     return scriptState;
 }
 
-static void weakCallback(const v8::WeakCallbackData<v8::Context, NewScriptState>& data)
+static void weakCallback(const v8::WeakCallbackData<v8::Context, ScriptState>& data)
 {
     data.GetValue()->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
     data.GetParameter()->clearContext();
     data.GetParameter()->deref();
 }
 
-NewScriptState::NewScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+ScriptState::ScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
     : m_isolate(context->GetIsolate())
     , m_context(m_isolate, context)
     , m_world(world)
@@ -37,41 +37,41 @@ NewScriptState::NewScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWr
     context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
 }
 
-NewScriptState::~NewScriptState()
+ScriptState::~ScriptState()
 {
     ASSERT(!m_perContextData);
     ASSERT(m_context.isEmpty());
 }
 
-bool NewScriptState::evalEnabled() const
+bool ScriptState::evalEnabled() const
 {
     v8::HandleScope handleScope(m_isolate);
     return context()->IsCodeGenerationFromStringsAllowed();
 }
 
-void NewScriptState::setEvalEnabled(bool enabled)
+void ScriptState::setEvalEnabled(bool enabled)
 {
     v8::HandleScope handleScope(m_isolate);
     return context()->AllowCodeGenerationFromStrings(enabled);
 }
 
-ExecutionContext* NewScriptState::executionContext() const
+ExecutionContext* ScriptState::executionContext() const
 {
     v8::HandleScope scope(m_isolate);
     return toExecutionContext(context());
 }
 
-DOMWindow* NewScriptState::domWindow() const
+DOMWindow* ScriptState::domWindow() const
 {
     v8::HandleScope scope(m_isolate);
     return toDOMWindow(context());
 }
 
-NewScriptState* NewScriptState::forMainWorld(LocalFrame* frame)
+ScriptState* ScriptState::forMainWorld(LocalFrame* frame)
 {
     v8::Isolate* isolate = toIsolate(frame);
     v8::HandleScope handleScope(isolate);
-    return NewScriptState::from(toV8Context(isolate, frame, DOMWrapperWorld::mainWorld()));
+    return ScriptState::from(toV8Context(isolate, frame, DOMWrapperWorld::mainWorld()));
 }
 
 }

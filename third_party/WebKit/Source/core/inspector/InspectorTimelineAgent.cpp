@@ -767,7 +767,7 @@ void InspectorTimelineAgent::consoleTime(ExecutionContext* context, const String
     m_recordStack.last().skipWhenUnbalanced = true;
 }
 
-void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const String& message, NewScriptState*)
+void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const String& message, ScriptState*)
 {
     if (m_recordStack.last().type != TimelineRecordType::ConsoleTime)
         return;
@@ -778,7 +778,7 @@ void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const Str
     didCompleteCurrentRecord(TimelineRecordType::ConsoleTime);
 }
 
-void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const String& title, NewScriptState* scriptState)
+void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
     if (!m_state->getBoolean(TimelineAgentState::enabled))
         return;
@@ -794,7 +794,7 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForExecutionContext(context));
 }
 
-void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, NewScriptState* scriptState)
+void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
     if (!m_state->getBoolean(TimelineAgentState::enabled))
         return;

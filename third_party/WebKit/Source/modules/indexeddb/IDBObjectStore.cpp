@@ -29,7 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/IDBBindingUtilities.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -61,7 +61,7 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
     ScriptWrappable::init(this);
 }
 
-ScriptValue IDBObjectStore::keyPath(NewScriptState* scriptState) const
+ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
 {
     return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
 }
@@ -311,7 +311,7 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator FINAL : public EventListener {
 public:
-    static PassRefPtr<IndexPopulator> create(NewScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    static PassRefPtr<IndexPopulator> create(ScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
     {
         return adoptRef(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
     }
@@ -322,7 +322,7 @@ public:
     }
 
 private:
-    IndexPopulator(NewScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    IndexPopulator(ScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
         : EventListener(CPPEventListenerType)
         , m_scriptState(scriptState)
         , m_database(database)
@@ -370,7 +370,7 @@ private:
 
     }
 
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     RefPtr<IDBDatabase> m_database;
     const int64_t m_transactionId;
     const int64_t m_objectStoreId;
@@ -378,7 +378,7 @@ private:
 };
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(NewScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
 {
     bool unique = false;
     options.get("unique", unique);
@@ -389,7 +389,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(NewScriptState* scriptState, co
     return createIndex(scriptState, name, keyPath, unique, multiEntry, exceptionState);
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(NewScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& exceptionState)
+PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::createIndex");
     if (!m_transaction->isVersionChange()) {

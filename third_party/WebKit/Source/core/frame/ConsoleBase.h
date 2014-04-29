@@ -30,7 +30,7 @@
 #ifndef ConsoleBase_h
 #define ConsoleBase_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -47,28 +47,28 @@ class ScriptArguments;
 
 class ConsoleBase : public RefCountedWillBeGarbageCollectedFinalized<ConsoleBase> {
 public:
-    void debug(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void error(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void info(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void log(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void clear(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void warn(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void dir(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void dirxml(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void table(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void trace(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void assertCondition(NewScriptState*, PassRefPtr<ScriptArguments>, bool condition);
-    void count(NewScriptState*, PassRefPtr<ScriptArguments>);
+    void debug(ScriptState*, PassRefPtr<ScriptArguments>);
+    void error(ScriptState*, PassRefPtr<ScriptArguments>);
+    void info(ScriptState*, PassRefPtr<ScriptArguments>);
+    void log(ScriptState*, PassRefPtr<ScriptArguments>);
+    void clear(ScriptState*, PassRefPtr<ScriptArguments>);
+    void warn(ScriptState*, PassRefPtr<ScriptArguments>);
+    void dir(ScriptState*, PassRefPtr<ScriptArguments>);
+    void dirxml(ScriptState*, PassRefPtr<ScriptArguments>);
+    void table(ScriptState*, PassRefPtr<ScriptArguments>);
+    void trace(ScriptState*, PassRefPtr<ScriptArguments>);
+    void assertCondition(ScriptState*, PassRefPtr<ScriptArguments>, bool condition);
+    void count(ScriptState*, PassRefPtr<ScriptArguments>);
     void markTimeline(const String&);
-    void profile(NewScriptState*, const String&);
-    void profileEnd(NewScriptState*, const String&);
+    void profile(ScriptState*, const String&);
+    void profileEnd(ScriptState*, const String&);
     void time(const String&);
-    void timeEnd(NewScriptState*, const String&);
+    void timeEnd(ScriptState*, const String&);
     void timeStamp(const String&);
-    void timeline(NewScriptState*, const String&);
-    void timelineEnd(NewScriptState*, const String&);
-    void group(NewScriptState*, PassRefPtr<ScriptArguments>);
-    void groupCollapsed(NewScriptState*, PassRefPtr<ScriptArguments>);
+    void timeline(ScriptState*, const String&);
+    void timelineEnd(ScriptState*, const String&);
+    void group(ScriptState*, PassRefPtr<ScriptArguments>);
+    void groupCollapsed(ScriptState*, PassRefPtr<ScriptArguments>);
     void groupEnd();
 
     virtual void trace(Visitor*) = 0;
@@ -80,7 +80,7 @@ protected:
     virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) = 0;
 
 private:
-    void internalAddMessage(MessageType, MessageLevel, NewScriptState*, PassRefPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
+    void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
 };
 
 } // namespace WebCore

@@ -33,7 +33,7 @@ private:
     {{v8_class}}(v8::Handle<v8::Function>, ExecutionContext*);
 
     ScopedPersistent<v8::Function> m_callback;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
 };
 
 }

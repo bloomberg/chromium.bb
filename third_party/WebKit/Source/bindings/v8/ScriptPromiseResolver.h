@@ -31,8 +31,8 @@
 #ifndef ScriptPromiseResolver_h
 #define ScriptPromiseResolver_h
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "wtf/RefPtr.h"
@@ -134,7 +134,7 @@ public:
     // Used by ToV8Value<ScriptPromiseResolver, v8::Isolate*>.
     static v8::Handle<v8::Object> getCreationContext(v8::Isolate* isolate)
     {
-        return NewScriptState::current(isolate)->context()->Global();
+        return ScriptState::current(isolate)->context()->Global();
     }
 
 private:

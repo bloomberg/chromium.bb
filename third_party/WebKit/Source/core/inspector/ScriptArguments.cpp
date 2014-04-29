@@ -36,12 +36,12 @@
 
 namespace WebCore {
 
-PassRefPtr<ScriptArguments> ScriptArguments::create(NewScriptState* scriptState, Vector<ScriptValue>& arguments)
+PassRefPtr<ScriptArguments> ScriptArguments::create(ScriptState* scriptState, Vector<ScriptValue>& arguments)
 {
     return adoptRef(new ScriptArguments(scriptState, arguments));
 }
 
-ScriptArguments::ScriptArguments(NewScriptState* scriptState, Vector<ScriptValue>& arguments)
+ScriptArguments::ScriptArguments(ScriptState* scriptState, Vector<ScriptValue>& arguments)
     : m_scriptState(scriptState)
 {
     m_arguments.swap(arguments);
@@ -63,7 +63,7 @@ bool ScriptArguments::getFirstArgumentAsString(String& result, bool checkForNull
         return false;
 
     const ScriptValue& value = argumentAt(0);
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     if (checkForNullOrUndefined && (value.isNull() || value.isUndefined()))
         return false;
 

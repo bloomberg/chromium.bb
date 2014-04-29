@@ -32,7 +32,7 @@
 #define ConsoleMessage_h
 
 #include "InspectorFrontend.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
@@ -51,9 +51,9 @@ class ConsoleMessage {
     WTF_MAKE_NONCOPYABLE(ConsoleMessage); WTF_MAKE_FAST_ALLOCATED;
 public:
     ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message);
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, const String& url, unsigned line, unsigned column, NewScriptState*, unsigned long requestIdentifier);
+    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, const String& url, unsigned line, unsigned column, ScriptState*, unsigned long requestIdentifier);
     ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>, unsigned long requestIdentifier);
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptArguments>, NewScriptState*, unsigned long requestIdentifier);
+    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptArguments>, ScriptState*, unsigned long requestIdentifier);
     ~ConsoleMessage();
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);
@@ -66,13 +66,13 @@ public:
     unsigned argumentCount();
 
 private:
-    void autogenerateMetadata(bool canGenerateCallStack, NewScriptState* = 0);
+    void autogenerateMetadata(bool canGenerateCallStack, ScriptState* = 0);
 
     MessageSource m_source;
     MessageType m_type;
     MessageLevel m_level;
     String m_message;
-    NewScriptStateProtectingContext m_scriptState;
+    ScriptStateProtectingContext m_scriptState;
     RefPtr<ScriptArguments> m_arguments;
     RefPtr<ScriptCallStack> m_callStack;
     String m_url;

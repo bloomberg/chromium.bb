@@ -165,7 +165,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, callStack, requestIdentifier)));
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, NewScriptState* scriptState, ScriptArguments* arguments, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* scriptState, ScriptArguments* arguments, unsigned long requestIdentifier)
 {
     if (type == ClearMessageType) {
         ErrorString error;
@@ -175,7 +175,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, arguments, scriptState, requestIdentifier)));
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, NewScriptState* scriptState, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* scriptState, unsigned long requestIdentifier)
 {
     if (type == ClearMessageType) {
         ErrorString error;
@@ -204,7 +204,7 @@ void InspectorConsoleAgent::consoleTime(ExecutionContext*, const String& title)
     m_times.add(title, monotonicallyIncreasingTime());
 }
 
-void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& title, NewScriptState* scriptState)
+void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& title, ScriptState* scriptState)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions
@@ -223,17 +223,17 @@ void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& titl
     addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, String(), 0, 0, scriptState);
 }
 
-void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, NewScriptState* scriptState)
+void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
     m_timelineAgent->consoleTimeline(context, title, scriptState);
 }
 
-void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, NewScriptState* scriptState)
+void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
     m_timelineAgent->consoleTimelineEnd(context, title, scriptState);
 }
 
-void InspectorConsoleAgent::consoleCount(NewScriptState*, PassRefPtr<ScriptArguments> arguments)
+void InspectorConsoleAgent::consoleCount(ScriptState*, PassRefPtr<ScriptArguments> arguments)
 {
     RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole());
     const ScriptCallFrame& lastCaller = callStack->at(0);
@@ -318,7 +318,7 @@ void InspectorConsoleAgent::addConsoleMessage(PassOwnPtr<ConsoleMessage> console
 class InspectableHeapObject FINAL : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableHeapObject(int heapObjectId) : m_heapObjectId(heapObjectId) { }
-    virtual ScriptValue get(NewScriptState*) OVERRIDE
+    virtual ScriptValue get(ScriptState*) OVERRIDE
     {
         return ScriptProfiler::objectByHeapObjectId(m_heapObjectId);
     }

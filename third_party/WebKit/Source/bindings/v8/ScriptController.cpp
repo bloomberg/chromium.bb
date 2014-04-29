@@ -440,7 +440,7 @@ void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
     v8::V8::SetCaptureStackTraceForUncaughtExceptions(value, ScriptCallStack::maxCallStackSizeToCapture, stackTraceOptions);
 }
 
-void ScriptController::collectIsolatedContexts(Vector<std::pair<NewScriptState*, SecurityOrigin*> >& result)
+void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >& result)
 {
     v8::HandleScope handleScope(m_isolate);
     for (IsolatedWorldMap::iterator it = m_isolatedWorlds.begin(); it != m_isolatedWorlds.end(); ++it) {
@@ -451,8 +451,8 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<NewScriptState*,
         v8::Local<v8::Context> v8Context = isolatedWorldShell->context();
         if (v8Context.IsEmpty())
             continue;
-        NewScriptState* scriptState = NewScriptState::from(v8Context);
-        result.append(std::pair<NewScriptState*, SecurityOrigin*>(scriptState, origin));
+        ScriptState* scriptState = ScriptState::from(v8Context);
+        result.append(std::pair<ScriptState*, SecurityOrigin*>(scriptState, origin));
     }
 }
 

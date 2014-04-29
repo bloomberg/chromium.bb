@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8PerContextData.h"
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "wtf/StringExtras.h"
@@ -71,7 +71,7 @@ PassOwnPtr<V8PerContextData> V8PerContextData::create(v8::Handle<v8::Context> co
 
 V8PerContextData* V8PerContextData::from(v8::Handle<v8::Context> context)
 {
-    return NewScriptState::from(context)->perContextData();
+    return ScriptState::from(context)->perContextData();
 }
 
 v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const WrapperTypeInfo* type)

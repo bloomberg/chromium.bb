@@ -13,7 +13,7 @@ namespace WebCore {
 
 class Client;
 class ExecutionContext;
-class NewScriptState;
+class ScriptState;
 class ScriptPromise;
 
 class ServiceWorkerClients FINAL : public RefCounted<ServiceWorkerClients>, public ScriptWrappable {

@@ -88,7 +88,7 @@ ScriptPromise StorageQuota::queryInfo(ExecutionContext* executionContext, String
 {
     ASSERT(executionContext);
 
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(executionContext)));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext)));
     ScriptPromise promise = resolver->promise();
 
     SecurityOrigin* securityOrigin = executionContext->securityOrigin();

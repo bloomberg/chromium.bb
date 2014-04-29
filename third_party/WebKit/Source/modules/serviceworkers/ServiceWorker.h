@@ -48,7 +48,7 @@ class WebServiceWorker;
 
 namespace WebCore {
 
-class NewScriptState;
+class ScriptState;
 class ScriptPromiseResolverWithContext;
 
 class ServiceWorker

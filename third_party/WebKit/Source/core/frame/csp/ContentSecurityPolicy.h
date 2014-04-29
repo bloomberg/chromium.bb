@@ -26,7 +26,7 @@
 #ifndef ContentSecurityPolicy_h
 #define ContentSecurityPolicy_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
@@ -107,7 +107,7 @@ public:
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
-    bool allowEval(NewScriptState* = 0, ReportingStatus = SendReport) const;
+    bool allowEval(ScriptState* = 0, ReportingStatus = SendReport) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
 
     bool allowScriptFromSource(const KURL&, ReportingStatus = SendReport) const;

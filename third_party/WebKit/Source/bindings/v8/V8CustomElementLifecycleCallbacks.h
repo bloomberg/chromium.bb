@@ -31,8 +31,8 @@
 #ifndef V8CustomElementLifecycleCallbacks_h
 #define V8CustomElementLifecycleCallbacks_h
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "wtf/PassOwnPtr.h"
@@ -67,7 +67,7 @@ private:
     V8PerContextData* creationContextData();
 
     CustomElementDefinition* m_owner;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_prototype;
     ScopedPersistent<v8::Function> m_created;
     ScopedPersistent<v8::Function> m_attached;

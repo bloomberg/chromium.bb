@@ -33,8 +33,8 @@
 
 #include "EventTargetNames.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
 #include "platform/NotImplemented.h"
@@ -130,7 +130,7 @@ const AtomicString& ServiceWorker::state() const
 
 PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolverWithContext* resolver, WebType* worker)
 {
-    NewScriptState::Scope scope(resolver->scriptState());
+    ScriptState::Scope scope(resolver->scriptState());
     RefPtr<ServiceWorker> serviceWorker = create(resolver->scriptState()->executionContext(), adoptPtr(worker));
     serviceWorker->waitOnPromise(resolver->promise());
     return serviceWorker;

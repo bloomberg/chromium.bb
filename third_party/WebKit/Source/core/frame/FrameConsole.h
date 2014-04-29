@@ -29,7 +29,7 @@
 #ifndef FrameConsole_h
 #define FrameConsole_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "wtf/Forward.h"
@@ -46,7 +46,7 @@ public:
     static PassOwnPtr<FrameConsole> create(LocalFrame& frame) { return adoptPtr(new FrameConsole(frame)); }
 
     void addMessage(MessageSource, MessageLevel, const String& message);
-    void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, unsigned columnNumber = 0, PassRefPtr<ScriptCallStack> = nullptr, NewScriptState* = 0, unsigned long requestIdentifier = 0);
+    void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, unsigned columnNumber = 0, PassRefPtr<ScriptCallStack> = nullptr, ScriptState* = 0, unsigned long requestIdentifier = 0);
     void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>);
     static String formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack>);
 

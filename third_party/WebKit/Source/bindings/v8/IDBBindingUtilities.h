@@ -26,7 +26,7 @@
 #ifndef IDBBindingUtilities_h
 #define IDBBindingUtilities_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include <v8.h>
 #include "wtf/Forward.h"
@@ -52,13 +52,13 @@ bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Handle<v8::Value> key, v8::Handle<
 // For use by Source/modules/indexeddb:
 PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
-ScriptValue idbAnyToScriptValue(NewScriptState*, PassRefPtrWillBeRawPtr<IDBAny>);
-ScriptValue idbKeyToScriptValue(NewScriptState*, PassRefPtr<IDBKey>);
+ScriptValue idbAnyToScriptValue(ScriptState*, PassRefPtrWillBeRawPtr<IDBAny>);
+ScriptValue idbKeyToScriptValue(ScriptState*, PassRefPtr<IDBKey>);
 PassRefPtr<IDBKey> scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
 PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 
 #ifndef NDEBUG
-void assertPrimaryKeyValidOrInjectable(NewScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtr<IDBKey>, const IDBKeyPath&);
+void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtr<IDBKey>, const IDBKeyPath&);
 #endif
 
 } // namespace WebCore

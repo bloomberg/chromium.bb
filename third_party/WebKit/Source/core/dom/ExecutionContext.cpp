@@ -160,7 +160,7 @@ void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel leve
     m_client->addMessage(source, level, message, sourceURL, lineNumber, 0);
 }
 
-void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, NewScriptState* scriptState)
+void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* scriptState)
 {
     if (!m_client)
         return;

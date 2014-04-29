@@ -35,7 +35,7 @@
 
 ActiveDOMObject
 CachedAttribute=*
-CallWith=ExecutionContext|NewScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
+CallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity=Frame|Node
 Clamp
 Conditional=*

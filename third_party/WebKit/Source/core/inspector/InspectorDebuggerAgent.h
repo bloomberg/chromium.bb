@@ -31,7 +31,7 @@
 #define InspectorDebuggerAgent_h
 
 #include "InspectorFrontend.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/ConsoleAPITypes.h"
@@ -94,7 +94,7 @@ public:
     bool isPaused();
     bool runningNestedMessageLoop();
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, ScriptCallStack*, unsigned long);
-    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, NewScriptState*, ScriptArguments*, unsigned long);
+    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, ScriptState*, ScriptArguments*, unsigned long);
 
     String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
     PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
@@ -201,7 +201,7 @@ protected:
 
     virtual void enable();
     virtual void disable();
-    virtual void didPause(NewScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) OVERRIDE FINAL;
+    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) OVERRIDE FINAL;
     virtual void didContinue() OVERRIDE FINAL;
     void reset();
     void pageDidCommitLoad();
@@ -238,7 +238,7 @@ private:
 
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Debugger* m_frontend;
-    RefPtr<NewScriptState> m_pausedScriptState;
+    RefPtr<ScriptState> m_pausedScriptState;
     ScriptValue m_currentCallStack;
     ScriptsMap m_scripts;
     BreakpointIdToDebugServerBreakpointIdsMap m_breakpointIdToDebugServerBreakpointIds;

@@ -31,8 +31,8 @@
 #ifndef V8NodeFilterCondition_h
 #define V8NodeFilterCondition_h
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/NodeFilterCondition.h"
 #include <v8.h>
 #include "wtf/PassRefPtr.h"
@@ -78,7 +78,7 @@ private:
 
     static void setWeakCallback(const v8::WeakCallbackData<v8::Value, V8NodeFilterCondition>&);
 
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_filter;
 };
 

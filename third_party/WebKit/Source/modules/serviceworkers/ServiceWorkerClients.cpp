@@ -55,7 +55,7 @@ ServiceWorkerClients::~ServiceWorkerClients()
 
 ScriptPromise ServiceWorkerClients::getServiced(ExecutionContext* context)
 {
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context)));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context)));
     ServiceWorkerGlobalScopeClient::from(context)->getClients(new CallbackPromiseAdapter<ClientArray, ServiceWorkerError>(resolver));
     return resolver->promise();
 }

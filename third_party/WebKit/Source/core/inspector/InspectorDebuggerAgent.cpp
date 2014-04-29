@@ -268,7 +268,7 @@ void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageTy
     addMessageToConsole(source, type);
 }
 
-void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, NewScriptState*, ScriptArguments*, unsigned long)
+void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, ScriptState*, ScriptArguments*, unsigned long)
 {
     addMessageToConsole(source, type);
 }
@@ -1162,7 +1162,7 @@ void InspectorDebuggerAgent::failedToParseSource(const String& url, const String
     m_frontend->scriptFailedToParse(url, data, firstLine, errorLine, errorMessage);
 }
 
-void InspectorDebuggerAgent::didPause(NewScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
+void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
 {
     ASSERT(scriptState && !m_pausedScriptState);
     m_pausedScriptState = scriptState;

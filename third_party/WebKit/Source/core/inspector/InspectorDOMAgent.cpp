@@ -1663,7 +1663,7 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
         if (!functionValue.isEmpty()) {
             LocalFrame* frame = document.frame();
             if (frame) {
-                NewScriptState* scriptState = eventListenerHandlerScriptState(frame, eventListener.get());
+                ScriptState* scriptState = eventListenerHandlerScriptState(frame, eventListener.get());
                 if (scriptState) {
                     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
                     if (!injectedScript.isEmpty()) {
@@ -2090,7 +2090,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
     if (!frame)
         return nullptr;
 
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(NewScriptState::forMainWorld(frame));
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(ScriptState::forMainWorld(frame));
     if (injectedScript.isEmpty())
         return nullptr;
 

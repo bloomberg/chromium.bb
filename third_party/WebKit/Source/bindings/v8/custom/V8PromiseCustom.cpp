@@ -32,9 +32,9 @@
 #include "bindings/v8/custom/V8PromiseCustom.h"
 
 #include "V8Promise.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8PerIsolateData.h"
@@ -210,7 +210,7 @@ void setStateForPromise(v8::Handle<v8::Object> promise, V8PromiseCustom::Promise
     internal->SetInternalField(V8PromiseCustom::InternalResultIndex, value);
     ExecutionContext* context = currentExecutionContext(isolate);
     if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
-        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(NewScriptState::current(isolate), promise), state, ScriptValue(value, isolate));
+        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(ScriptState::current(isolate), promise), state, ScriptValue(value, isolate));
 }
 
 class TaskPerformScopeForInstrumentation {
@@ -235,7 +235,7 @@ public:
         : m_promise(isolate, promise)
         , m_handler(isolate, handler)
         , m_argument(isolate, argument)
-        , m_scriptState(NewScriptState::current(isolate))
+        , m_scriptState(ScriptState::current(isolate))
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_handler.isEmpty());
@@ -250,7 +250,7 @@ private:
     ScopedPersistent<v8::Object> m_promise;
     ScopedPersistent<v8::Function> m_handler;
     ScopedPersistent<v8::Value> m_argument;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
 };
 
 void CallHandlerTask::performTask(ExecutionContext* context)
@@ -261,7 +261,7 @@ void CallHandlerTask::performTask(ExecutionContext* context)
     if (context->activeDOMObjectsAreStopped())
         return;
 
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Value> info[] = { m_argument.newLocal(isolate) };
     v8::TryCatch trycatch;
@@ -280,7 +280,7 @@ public:
         , m_onFulfilled(isolate, onFulfilled)
         , m_onRejected(isolate, onRejected)
         , m_originatorValueObject(isolate, originatorValueObject)
-        , m_scriptState(NewScriptState::current(isolate))
+        , m_scriptState(ScriptState::current(isolate))
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_originatorValueObject.isEmpty());
@@ -295,7 +295,7 @@ private:
     ScopedPersistent<v8::Function> m_onFulfilled;
     ScopedPersistent<v8::Function> m_onRejected;
     ScopedPersistent<v8::Object> m_originatorValueObject;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
 };
 
 void UpdateDerivedTask::performTask(ExecutionContext* context)
@@ -306,7 +306,7 @@ void UpdateDerivedTask::performTask(ExecutionContext* context)
     if (context->activeDOMObjectsAreStopped())
         return;
 
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Local<v8::Object> originatorValueObject = m_originatorValueObject.newLocal(isolate);
     v8::Local<v8::Value> coercedAlready = V8HiddenValue::getHiddenValue(isolate, originatorValueObject, V8HiddenValue::thenableHiddenPromise(isolate));
@@ -504,7 +504,7 @@ void PromisePropagator::updateDerivedFromPromise(v8::Handle<v8::Object> derivedP
     }
     ExecutionContext* context = currentExecutionContext(isolate);
     if (InspectorInstrumentation::isPromiseTrackerEnabled(context)) {
-        NewScriptState* scriptState = NewScriptState::current(isolate);
+        ScriptState* scriptState = ScriptState::current(isolate);
         InspectorInstrumentation::didUpdatePromiseParent(context, ScriptObject(scriptState, derivedPromise), ScriptObject(scriptState, promise));
     }
 }
@@ -680,7 +680,7 @@ v8::Local<v8::Object> V8PromiseCustom::createPromise(v8::Handle<v8::Object> crea
 
     ExecutionContext* context = currentExecutionContext(isolate);
     if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
-        InspectorInstrumentation::didCreatePromise(context, ScriptObject(NewScriptState::current(isolate), promise));
+        InspectorInstrumentation::didCreatePromise(context, ScriptObject(ScriptState::current(isolate), promise));
 
     setStateForPromise(promise, Pending, v8::Undefined(isolate), isolate);
     return promise;

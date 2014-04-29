@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/IDBBindingUtilities.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -324,19 +324,19 @@ void IDBCursor::checkForReferenceCycle()
 }
 #endif
 
-ScriptValue IDBCursor::key(NewScriptState* scriptState)
+ScriptValue IDBCursor::key(ScriptState* scriptState)
 {
     m_keyDirty = false;
     return idbKeyToScriptValue(scriptState, m_key);
 }
 
-ScriptValue IDBCursor::primaryKey(NewScriptState* scriptState)
+ScriptValue IDBCursor::primaryKey(ScriptState* scriptState)
 {
     m_primaryKeyDirty = false;
     return idbKeyToScriptValue(scriptState, m_primaryKey);
 }
 
-ScriptValue IDBCursor::value(NewScriptState* scriptState)
+ScriptValue IDBCursor::value(ScriptState* scriptState)
 {
     ASSERT(isCursorWithValue());
 
@@ -358,7 +358,7 @@ ScriptValue IDBCursor::value(NewScriptState* scriptState)
     return scriptValue;
 }
 
-ScriptValue IDBCursor::source(NewScriptState* scriptState) const
+ScriptValue IDBCursor::source(ScriptState* scriptState) const
 {
     return idbAnyToScriptValue(scriptState, m_source);
 }

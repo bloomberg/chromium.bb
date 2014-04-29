@@ -75,7 +75,7 @@ void InspectorInspectorAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
     String script = m_injectedScriptForOrigin.get(origin);
     if (script.isEmpty())
         return;
-    int injectedScriptId = m_injectedScriptManager->injectedScriptIdFor(NewScriptState::forMainWorld(frame));
+    int injectedScriptId = m_injectedScriptManager->injectedScriptIdFor(ScriptState::forMainWorld(frame));
     StringBuilder scriptSource;
     scriptSource.append(script);
     scriptSource.append("(");

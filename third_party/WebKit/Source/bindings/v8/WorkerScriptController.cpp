@@ -124,7 +124,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     if (context.IsEmpty())
         return false;
 
-    m_scriptState = NewScriptState::create(context, m_world);
+    m_scriptState = ScriptState::create(context, m_world);
 
     v8::Context::Scope scope(context);
 
@@ -158,7 +158,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (!initializeContextIfNeeded())
         return ScriptValue();
 
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
 
     if (!m_disableEvalPending.isEmpty()) {
         m_scriptState->context()->AllowCodeGenerationFromStrings(false);

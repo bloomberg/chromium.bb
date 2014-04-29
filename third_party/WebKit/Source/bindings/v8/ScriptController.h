@@ -53,7 +53,7 @@ class HTMLDocument;
 class HTMLPlugInElement;
 class KURL;
 class LocalFrame;
-class NewScriptState;
+class ScriptState;
 class ScriptSourceCode;
 class SecurityOrigin;
 class V8WindowShell;
@@ -118,7 +118,7 @@ public:
     static bool canAccessFromCurrentOrigin(LocalFrame*);
 
     static void setCaptureCallStackForUncaughtExceptions(bool);
-    void collectIsolatedContexts(Vector<std::pair<NewScriptState*, SecurityOrigin*> >&);
+    void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >&);
 
     bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
 

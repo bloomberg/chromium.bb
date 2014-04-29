@@ -409,7 +409,7 @@ void ScriptDebugServer::handleProgramBreak(v8::Handle<v8::Object> executionState
     }
 
     m_executionState.set(m_isolate, executionState);
-    listener->didPause(NewScriptState::from(m_pausedContext), currentCallFrames(), ScriptValue(exception, m_pausedContext->GetIsolate()), breakpointIds);
+    listener->didPause(ScriptState::from(m_pausedContext), currentCallFrames(), ScriptValue(exception, m_pausedContext->GetIsolate()), breakpointIds);
 
     m_runningNestedMessageLoop = true;
     runMessageLoopOnPause(m_pausedContext);
@@ -573,11 +573,11 @@ bool ScriptDebugServer::isPaused()
     return !m_executionState.isEmpty();
 }
 
-void ScriptDebugServer::compileScript(NewScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage)
+void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage)
 {
     if (scriptState->contextIsEmpty())
         return;
-    NewScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(scriptState);
 
     v8::Handle<v8::String> source = v8String(m_isolate, expression);
     v8::TryCatch tryCatch;
@@ -600,7 +600,7 @@ void ScriptDebugServer::clearCompiledScripts()
     m_compiledScripts.clear();
 }
 
-void ScriptDebugServer::runScript(NewScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage)
+void ScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage)
 {
     if (!m_compiledScripts.contains(scriptId))
         return;
@@ -613,7 +613,7 @@ void ScriptDebugServer::runScript(NewScriptState* scriptState, const String& scr
 
     if (scriptState->contextIsEmpty())
         return;
-    NewScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(scriptState);
     v8::TryCatch tryCatch;
     v8::Local<v8::Value> value = V8ScriptRunner::runCompiledScript(script, scriptState->executionContext(), m_isolate);
     *wasThrown = false;

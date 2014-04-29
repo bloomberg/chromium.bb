@@ -160,8 +160,8 @@ interface TestObject {
     [LogActivity=SetterOnly, LogAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
-    [CallWith=NewScriptState] attribute any callWithNewScriptStateAnyAttribute;
-    [CallWith=ExecutionContext|NewScriptState] attribute any callWithExecutionContextAndNewScriptStateAnyAttribute;
+    [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
+    [CallWith=ExecutionContext|ScriptState] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
     [CheckSecurity=Node] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
     [Conditional=CONDITION] attribute long conditionalLongAttribute;
     [Conditional=CONDITION_1&CONDITION_2] attribute long conditionalAndLongAttribute;
@@ -432,11 +432,11 @@ interface TestObject {
     // Extended attributes for methods
     [LogActivity, LogAllWorlds] void activityLoggingAccessForAllWorldsMethod();
     [CallWith=ExecutionContext] void callWithExecutionContextVoidMethod();
-    [CallWith=NewScriptState] void callWithNewScriptStateVoidMethod();
-    [CallWith=NewScriptState] long callWithNewScriptStateLongMethod();
-    [CallWith=NewScriptState&ExecutionContext] void callWithNewScriptStateExecutionContextVoidMethod();
-    [CallWith=NewScriptState&ScriptArguments] void callWithNewScriptStateScriptArgumentsVoidMethod();
-    [CallWith=NewScriptState&ScriptArguments] void callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
+    [CallWith=ScriptState] void callWithScriptStateVoidMethod();
+    [CallWith=ScriptState] long callWithScriptStateLongMethod();
+    [CallWith=ScriptState&ExecutionContext] void callWithScriptStateExecutionContextVoidMethod();
+    [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethod();
+    [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
     [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();

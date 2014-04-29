@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
@@ -135,16 +135,16 @@ private:
 
 class ExecutableWithDatabase : public RefCounted<ExecutableWithDatabase> {
 public:
-    ExecutableWithDatabase(NewScriptState* scriptState)
+    ExecutableWithDatabase(ScriptState* scriptState)
         : m_scriptState(scriptState) { }
     virtual ~ExecutableWithDatabase() { };
     void start(IDBFactory*, SecurityOrigin*, const String& databaseName);
     virtual void execute(PassRefPtr<IDBDatabase>) = 0;
     virtual RequestCallback* requestCallback() = 0;
     ExecutionContext* context() const { return m_scriptState->executionContext(); }
-    NewScriptState* scriptState() const { return m_scriptState.get(); }
+    ScriptState* scriptState() const { return m_scriptState.get(); }
 private:
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
 };
 
 class OpenDatabaseCallback FINAL : public EventListener {
@@ -256,7 +256,7 @@ static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
 
 class DatabaseLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DatabaseLoader> create(NewScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
+    static PassRefPtr<DatabaseLoader> create(ScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
     {
         return adoptRef(new DatabaseLoader(scriptState, requestCallback));
     }
@@ -307,7 +307,7 @@ public:
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
 private:
-    DatabaseLoader(NewScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
+    DatabaseLoader(ScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
         : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback) { }
     RefPtr<RequestDatabaseCallback> m_requestCallback;
@@ -389,7 +389,7 @@ class DataLoader;
 
 class OpenCursorCallback FINAL : public EventListener {
 public:
-    static PassRefPtr<OpenCursorCallback> create(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static PassRefPtr<OpenCursorCallback> create(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
         return adoptRef(new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize));
     }
@@ -462,7 +462,7 @@ public:
     }
 
 private:
-    OpenCursorCallback(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    OpenCursorCallback(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
         : EventListener(EventListener::CPPEventListenerType)
         , m_scriptState(scriptState)
         , m_requestCallback(requestCallback)
@@ -472,7 +472,7 @@ private:
         m_result = Array<DataEntry>::create();
     }
 
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     RefPtr<RequestDataCallback> m_requestCallback;
     int m_skipCount;
     unsigned m_pageSize;
@@ -481,7 +481,7 @@ private:
 
 class DataLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DataLoader> create(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    static PassRefPtr<DataLoader> create(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
     {
         return adoptRef(new DataLoader(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
     }
@@ -522,7 +522,7 @@ public:
     }
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
-    DataLoader(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    DataLoader(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
         : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback)
         , m_objectStoreName(objectStoreName)
@@ -627,7 +627,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
     if (!idbFactory)
         return;
 
-    NewScriptState::Scope scope(NewScriptState::forMainWorld(frame));
+    ScriptState::Scope scope(ScriptState::forMainWorld(frame));
     TrackExceptionState exceptionState;
     RefPtrWillBeRawPtr<IDBRequest> idbRequest = idbFactory->getDatabaseNames(document, exceptionState);
     if (exceptionState.hadException()) {
@@ -647,8 +647,8 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     if (!idbFactory)
         return;
 
-    NewScriptState* scriptState = NewScriptState::forMainWorld(frame);
-    NewScriptState::Scope scope(scriptState);
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    ScriptState::Scope scope(scriptState);
     RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(scriptState, requestCallback);
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
@@ -669,8 +669,8 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
         return;
     }
 
-    NewScriptState* scriptState = NewScriptState::forMainWorld(frame);
-    NewScriptState::Scope scope(scriptState);
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    ScriptState::Scope scope(scriptState);
     RefPtr<DataLoader> dataLoader = DataLoader::create(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
     dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
@@ -714,12 +714,12 @@ private:
 
 class ClearObjectStore FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<ClearObjectStore> create(NewScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    static PassRefPtr<ClearObjectStore> create(ScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
     {
         return adoptRef(new ClearObjectStore(scriptState, objectStoreName, requestCallback));
     }
 
-    ClearObjectStore(NewScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    ClearObjectStore(ScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
         : ExecutableWithDatabase(scriptState)
         , m_objectStoreName(objectStoreName)
         , m_requestCallback(requestCallback)
@@ -771,8 +771,8 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     if (!idbFactory)
         return;
 
-    NewScriptState* scriptState = NewScriptState::forMainWorld(frame);
-    NewScriptState::Scope scope(scriptState);
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    ScriptState::Scope scope(scriptState);
     RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(scriptState, objectStoreName, requestCallback);
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
 }

@@ -72,7 +72,7 @@ Node* InjectedScriptHost::scriptValueAsNode(ScriptValue value)
     return V8Node::toNative(v8::Handle<v8::Object>::Cast(value.v8Value()));
 }
 
-ScriptValue InjectedScriptHost::nodeAsScriptValue(NewScriptState* scriptState, Node* node)
+ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* scriptState, Node* node)
 {
     v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope scope(isolate);
@@ -97,7 +97,7 @@ void V8InjectedScriptHost::inspectedObjectMethodCustom(const v8::FunctionCallbac
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
     InjectedScriptHost::InspectableObject* object = host->inspectedObject(info[0]->ToInt32()->Value());
-    v8SetReturnValue(info, object->get(NewScriptState::current(info.GetIsolate())).v8Value());
+    v8SetReturnValue(info, object->get(ScriptState::current(info.GetIsolate())).v8Value());
 }
 
 void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -314,7 +314,7 @@ void V8InjectedScriptHost::inspectMethodCustom(const v8::FunctionCallbackInfo<v8
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
     ScriptValue object(info[0], info.GetIsolate());
     ScriptValue hints(info[1], info.GetIsolate());
-    NewScriptState* scriptState = NewScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     host->inspectImpl(object.toJSONValue(scriptState), hints.toJSONValue(scriptState));
 }
 

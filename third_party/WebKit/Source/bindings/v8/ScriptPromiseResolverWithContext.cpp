@@ -15,7 +15,7 @@ namespace {
 
 class RunMicrotasksTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<RunMicrotasksTask> create(NewScriptState* scriptState)
+    static PassOwnPtr<RunMicrotasksTask> create(ScriptState* scriptState)
     {
         return adoptPtr<RunMicrotasksTask>(new RunMicrotasksTask(scriptState));
     }
@@ -26,18 +26,18 @@ public:
             return;
         if (executionContext->activeDOMObjectsAreStopped())
             return;
-        NewScriptState::Scope scope(m_scriptState.get());
+        ScriptState::Scope scope(m_scriptState.get());
         v8::V8::RunMicrotasks(m_scriptState->isolate());
     }
 
 private:
-    explicit RunMicrotasksTask(NewScriptState* scriptState) : m_scriptState(scriptState) { }
-    RefPtr<NewScriptState> m_scriptState;
+    explicit RunMicrotasksTask(ScriptState* scriptState) : m_scriptState(scriptState) { }
+    RefPtr<ScriptState> m_scriptState;
 };
 
 } // namespace
 
-ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(NewScriptState* scriptState)
+ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* scriptState)
     : ActiveDOMObject(scriptState->executionContext())
     , m_state(Pending)
     , m_scriptState(scriptState)
@@ -64,7 +64,7 @@ void ScriptPromiseResolverWithContext::stop()
 void ScriptPromiseResolverWithContext::onTimerFired(Timer<ScriptPromiseResolverWithContext>*)
 {
     RefPtr<ScriptPromiseResolverWithContext> protect(this);
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     resolveOrRejectImmediately();
 

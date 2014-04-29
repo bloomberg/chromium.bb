@@ -73,10 +73,10 @@ public:
 
     // Implement the IDL
     const String& direction() const { return directionToString(m_direction); }
-    ScriptValue key(NewScriptState*);
-    ScriptValue primaryKey(NewScriptState*);
-    ScriptValue value(NewScriptState*);
-    ScriptValue source(NewScriptState*) const;
+    ScriptValue key(ScriptState*);
+    ScriptValue primaryKey(ScriptState*);
+    ScriptValue value(ScriptState*);
+    ScriptValue source(ScriptState*) const;
 
     PassRefPtrWillBeRawPtr<IDBRequest> update(ExecutionContext*, ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);

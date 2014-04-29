@@ -100,7 +100,7 @@ def generate_attribute(interface, attribute):
         'has_type_checking_nullable': has_type_checking_nullable,
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
-        'is_call_with_new_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'NewScriptState'),
+        'is_call_with_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_expose_js_accessors': 'ExposeJSAccessors' in extended_attributes,

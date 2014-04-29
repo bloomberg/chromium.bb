@@ -31,7 +31,7 @@
 #ifndef InjectedScriptModule_h
 #define InjectedScriptModule_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InjectedScriptBase.h"
 #include "wtf/text/WTFString.h"
 
@@ -49,7 +49,7 @@ protected:
     // a static factory method that would create a new instance of the class
     // and call its ensureInjected() method immediately.
     InjectedScriptModule(const String& name);
-    void ensureInjected(InjectedScriptManager*, NewScriptState*);
+    void ensureInjected(InjectedScriptManager*, ScriptState*);
 };
 
 

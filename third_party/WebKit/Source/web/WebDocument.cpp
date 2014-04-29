@@ -33,7 +33,7 @@
 
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSParserMode.h"
@@ -294,7 +294,7 @@ v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString
     Document* document = unwrap<Document>();
     Dictionary dictionary(options, isolate);
     TrackExceptionState exceptionState;
-    ScriptValue constructor = document->registerElement(NewScriptState::current(isolate), name, dictionary, exceptionState, CustomElement::EmbedderNames);
+    ScriptValue constructor = document->registerElement(ScriptState::current(isolate), name, dictionary, exceptionState, CustomElement::EmbedderNames);
     ec = exceptionState.code();
     if (exceptionState.hadException())
         return v8::Handle<v8::Value>();

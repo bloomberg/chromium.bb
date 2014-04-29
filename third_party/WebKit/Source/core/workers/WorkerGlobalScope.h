@@ -145,7 +145,7 @@ namespace WebCore {
         void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType);
 
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) OVERRIDE;
-        void addMessageToWorkerConsole(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, NewScriptState*);
+        void addMessageToWorkerConsole(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);
 
     private:
         virtual void refExecutionContext() OVERRIDE FINAL { ref(); }
@@ -155,7 +155,7 @@ namespace WebCore {
         virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL;
 
         virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
-        virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, NewScriptState* = 0) OVERRIDE FINAL;
+        virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0) OVERRIDE FINAL;
 
         virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
         virtual void didUpdateSecurityOrigin() OVERRIDE FINAL { }

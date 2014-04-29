@@ -303,7 +303,7 @@ void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const
         return;
     }
     ScriptValue value = injectedScript.findObjectById(objectId);
-    NewScriptState::Scope scope(injectedScript.scriptState());
+    ScriptState::Scope scope(injectedScript.scriptState());
     if (value.isEmpty() || value.isUndefined()) {
         *errorString = "Object with given id not found";
         return;

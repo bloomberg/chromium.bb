@@ -35,8 +35,8 @@
 #include "FontFamilyNames.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/css/BinaryDataFontFaceSource.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -88,7 +88,7 @@ public:
 
 private:
     FontFaceReadyPromiseResolver(ExecutionContext* context)
-        : m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
+        : m_resolver(ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context))))
     {
     }
 

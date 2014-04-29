@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptValue.h"
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "platform/JSONValues.h"
 
@@ -54,10 +54,10 @@ bool ScriptValue::toString(String& result) const
     return true;
 }
 
-PassRefPtr<JSONValue> ScriptValue::toJSONValue(NewScriptState* scriptState) const
+PassRefPtr<JSONValue> ScriptValue::toJSONValue(ScriptState* scriptState) const
 {
     ASSERT(!scriptState->contextIsEmpty());
-    NewScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(scriptState);
     return v8ToJSONValue(scriptState->isolate(), v8Value(), JSONValue::maxDepth);
 }
 

@@ -93,7 +93,7 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionCo
     : CustomElementLifecycleCallbacks(flagSet(attached, detached, attributeChanged))
     , ContextLifecycleObserver(executionContext)
     , m_owner(0)
-    , m_scriptState(NewScriptState::current(toIsolate(executionContext)))
+    , m_scriptState(ScriptState::current(toIsolate(executionContext)))
     , m_prototype(m_scriptState->isolate(), prototype)
     , m_created(m_scriptState->isolate(), created)
     , m_attached(m_scriptState->isolate(), attached)
@@ -160,7 +160,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     if (m_scriptState->contextIsEmpty())
         return;
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Context> context = m_scriptState->context();
     v8::Handle<v8::Object> receiver = DOMDataStore::current(isolate).get<V8Element>(element, isolate);
@@ -210,7 +210,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
 
     if (m_scriptState->contextIsEmpty())
         return;
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Context> context = m_scriptState->context();
     v8::Handle<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
@@ -243,7 +243,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
 
     if (m_scriptState->contextIsEmpty())
         return;
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Context> context = m_scriptState->context();
     v8::Handle<v8::Function> callback = weakCallback.newLocal(isolate);

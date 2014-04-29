@@ -39,7 +39,7 @@ namespace WebCore {
 V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, ExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : ActiveDOMCallback(context)
     , m_callback(isolate, callback)
-    , m_scriptState(NewScriptState::current(isolate))
+    , m_scriptState(ScriptState::current(isolate))
 {
     V8HiddenValue::setHiddenValue(isolate, owner, V8HiddenValue::callback(isolate), callback);
     m_callback.setWeak(this, &setWeakCallback);

@@ -54,7 +54,7 @@ class EventListener;
 class EventQueue;
 class EventTarget;
 class ExecutionContextTask;
-class NewScriptState;
+class ScriptState;
 class PublicURLManager;
 class SecurityOrigin;
 class ScriptCallStack;
@@ -84,7 +84,7 @@ public:
     void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
 
     void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber);
-    void addConsoleMessage(MessageSource, MessageLevel, const String& message, NewScriptState* = 0);
+    void addConsoleMessage(MessageSource, MessageLevel, const String& message, ScriptState* = 0);
 
     PublicURLManager& publicURLManager();
 

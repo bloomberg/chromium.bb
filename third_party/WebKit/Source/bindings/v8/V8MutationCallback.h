@@ -27,8 +27,8 @@
 #define V8MutationCallback_h
 
 #include "bindings/v8/ActiveDOMCallback.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/MutationCallback.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -55,7 +55,7 @@ private:
     static void setWeakCallback(const v8::WeakCallbackData<v8::Function, V8MutationCallback>&);
 
     ScopedPersistent<v8::Function> m_callback;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
 };
 
 }

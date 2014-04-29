@@ -64,9 +64,9 @@ public:
     };
     void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
 
-    virtual void compileScript(NewScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage) OVERRIDE;
+    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage) OVERRIDE;
     virtual void clearCompiledScripts() OVERRIDE;
-    virtual void runScript(NewScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage) OVERRIDE;
+    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage) OVERRIDE;
     virtual void setPreprocessorSource(const String&) OVERRIDE;
     virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) OVERRIDE;
     virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) OVERRIDE;

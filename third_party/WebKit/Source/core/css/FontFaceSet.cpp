@@ -28,8 +28,8 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/parser/BisonCSSParser.h"
@@ -65,7 +65,7 @@ private:
     LoadFontPromiseResolver(FontFaceArray faces, ExecutionContext* context)
         : m_numLoading(faces.size())
         , m_errorOccured(false)
-        , m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
+        , m_resolver(ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context))))
     {
         m_fontFaces.swap(faces);
     }
@@ -121,7 +121,7 @@ public:
 
 private:
     FontsReadyPromiseResolver(ExecutionContext* context)
-        : m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
+        : m_resolver(ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context))))
     {
     }
 

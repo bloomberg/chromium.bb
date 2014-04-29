@@ -275,7 +275,7 @@ void ImageBitmapFactories::didFinishLoading(ImageBitmapLoader* loader)
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories& factory, ExecutionContext* context, const IntRect& cropRect)
     : m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
     , m_factory(&factory)
-    , m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
+    , m_resolver(ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context))))
     , m_cropRect(cropRect)
 {
 }

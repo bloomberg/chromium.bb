@@ -31,7 +31,7 @@
 #ifndef DOMWrapperWorld_h
 #define DOMWrapperWorld_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
@@ -71,7 +71,7 @@ public:
 
     static DOMWrapperWorld& world(v8::Handle<v8::Context> context)
     {
-        return NewScriptState::from(context)->world();
+        return ScriptState::from(context)->world();
     }
 
     static DOMWrapperWorld& current(v8::Isolate* isolate)

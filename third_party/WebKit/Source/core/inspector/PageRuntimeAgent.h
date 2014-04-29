@@ -31,7 +31,7 @@
 #ifndef PageRuntimeAgent_h
 #define PageRuntimeAgent_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -52,7 +52,7 @@ public:
     virtual void enable(ErrorString*) OVERRIDE;
 
     void didClearWindowObjectInMainWorld(LocalFrame*);
-    void didCreateIsolatedContext(LocalFrame*, NewScriptState*, SecurityOrigin*);
+    void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
     void frameWindowDiscarded(DOMWindow*);
 
 private:

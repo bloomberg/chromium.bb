@@ -151,7 +151,7 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 {
     if (!m_regexScriptState)
-        m_regexScriptState = NewScriptState::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
+        m_regexScriptState = ScriptState::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
     return m_regexScriptState->context();
 }
 

@@ -85,7 +85,7 @@ InjectedScript InjectedScriptManager::injectedScriptForId(int id)
     return InjectedScript();
 }
 
-int InjectedScriptManager::injectedScriptIdFor(NewScriptState* scriptState)
+int InjectedScriptManager::injectedScriptIdFor(ScriptState* scriptState)
 {
     ScriptStateToId::iterator it = m_scriptStateToId.find(scriptState);
     if (it != m_scriptStateToId.end())
@@ -121,7 +121,7 @@ void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
     Vector<long> idsToRemove;
     IdToInjectedScriptMap::iterator end = m_idToInjectedScript.end();
     for (IdToInjectedScriptMap::iterator it = m_idToInjectedScript.begin(); it != end; ++it) {
-        NewScriptState* scriptState = it->value.scriptState();
+        ScriptState* scriptState = it->value.scriptState();
         if (window != scriptState->domWindow())
             continue;
         m_scriptStateToId.remove(scriptState);
@@ -130,16 +130,16 @@ void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
     m_idToInjectedScript.removeAll(idsToRemove);
 
     // Now remove script states that have id but no injected script.
-    Vector<NewScriptState*> scriptStatesToRemove;
+    Vector<ScriptState*> scriptStatesToRemove;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
-        NewScriptState* scriptState = it->key.get();
+        ScriptState* scriptState = it->key.get();
         if (window == scriptState->domWindow())
             scriptStatesToRemove.append(scriptState);
     }
     m_scriptStateToId.removeAll(scriptStatesToRemove);
 }
 
-bool InjectedScriptManager::canAccessInspectedWorkerGlobalScope(NewScriptState*)
+bool InjectedScriptManager::canAccessInspectedWorkerGlobalScope(ScriptState*)
 {
     return true;
 }
@@ -160,7 +160,7 @@ String InjectedScriptManager::injectedScriptSource()
     return String(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
 }
 
-InjectedScript InjectedScriptManager::injectedScriptFor(NewScriptState* inspectedScriptState)
+InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedScriptState)
 {
     ScriptStateToId::iterator it = m_scriptStateToId.find(inspectedScriptState);
     if (it != m_scriptStateToId.end()) {

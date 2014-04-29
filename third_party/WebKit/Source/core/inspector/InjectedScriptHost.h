@@ -30,7 +30,7 @@
 #ifndef InjectedScriptHost_h
 #define InjectedScriptHost_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -68,14 +68,14 @@ public:
     }
 
     static Node* scriptValueAsNode(ScriptValue);
-    static ScriptValue nodeAsScriptValue(NewScriptState*, Node*);
+    static ScriptValue nodeAsScriptValue(ScriptState*, Node*);
 
     void disconnect();
 
     class InspectableObject {
         WTF_MAKE_FAST_ALLOCATED;
     public:
-        virtual ScriptValue get(NewScriptState*);
+        virtual ScriptValue get(ScriptState*);
         virtual ~InspectableObject() { }
     };
     void addInspectedObject(PassOwnPtr<InspectableObject>);

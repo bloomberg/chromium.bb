@@ -55,7 +55,7 @@ void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, 
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);
 }
 
-void CSPDirectiveList::reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, NewScriptState* scriptState) const
+void CSPDirectiveList::reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ScriptState* scriptState) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
     m_policy->client()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, scriptState);
@@ -118,7 +118,7 @@ SourceListDirective* CSPDirectiveList::operativeDirective(SourceListDirective* d
     return directive ? directive : override;
 }
 
-bool CSPDirectiveList::checkEvalAndReportViolation(SourceListDirective* directive, const String& consoleMessage, NewScriptState* scriptState) const
+bool CSPDirectiveList::checkEvalAndReportViolation(SourceListDirective* directive, const String& consoleMessage, ScriptState* scriptState) const
 {
     if (checkEval(directive))
         return true;
@@ -252,7 +252,7 @@ bool CSPDirectiveList::allowInlineStyle(const String& contextURL, const WTF::Ord
         checkInline(operativeDirective(m_styleSrc.get()));
 }
 
-bool CSPDirectiveList::allowEval(NewScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool CSPDirectiveList::allowEval(ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "));
 

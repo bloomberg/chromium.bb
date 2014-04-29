@@ -932,7 +932,7 @@ public:
 private:
     v8::HandleScope m_handleScope;
     v8::Context::Scope m_contextScope;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
 };
 
 } // namespace WebCore

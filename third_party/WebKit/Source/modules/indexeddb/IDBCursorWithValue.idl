@@ -26,5 +26,5 @@
 [
     WillBeGarbageCollected
 ] interface IDBCursorWithValue : IDBCursor {
-    [CallWith=NewScriptState, CachedAttribute=isValueDirty] readonly attribute any value;
+    [CallWith=ScriptState, CachedAttribute=isValueDirty] readonly attribute any value;
 };

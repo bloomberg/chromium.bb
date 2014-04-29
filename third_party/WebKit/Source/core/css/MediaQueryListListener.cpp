@@ -26,7 +26,7 @@
 namespace WebCore {
 
 MediaQueryListListener::MediaQueryListListener(const ScriptValue& function)
-    : m_scriptState(NewScriptState::current(function.isolate()))
+    : m_scriptState(ScriptState::current(function.isolate()))
     , m_function(function)
 {
     ASSERT(m_function.isFunction());
@@ -36,7 +36,7 @@ void MediaQueryListListener::queryChanged(MediaQueryList* query)
 {
     if (m_scriptState->contextIsEmpty())
         return;
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Value> args[] = { toV8(query, m_scriptState->context()->Global(), m_scriptState->isolate()) };
     invokeCallback(v8::Handle<v8::Function>::Cast(m_function.v8Value()), WTF_ARRAY_LENGTH(args), args, m_scriptState->executionContext(), m_scriptState->isolate());
 }

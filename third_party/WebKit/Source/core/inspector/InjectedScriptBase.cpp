@@ -33,7 +33,6 @@
 
 #include "core/inspector/InjectedScriptBase.h"
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/JSONValues.h"
@@ -77,7 +76,7 @@ ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& 
     ExecutionContext* executionContext = m_injectedScriptObject.scriptState()->executionContext();
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(executionContext, 0, name(), 1);
 
-    NewScriptState* scriptState = m_injectedScriptObject.scriptState();
+    ScriptState* scriptState = m_injectedScriptObject.scriptState();
     bool evalIsDisabled = false;
     if (scriptState) {
         evalIsDisabled = !scriptState->evalEnabled();

@@ -5,10 +5,10 @@
 #ifndef ScriptPromiseResolverWithContext_h
 #define ScriptPromiseResolverWithContext_h
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
@@ -21,7 +21,7 @@ namespace WebCore {
 
 // This class wraps ScriptPromiseResolver and provides the following
 // functionalities in addition to ScriptPromiseResolver's.
-//  - A ScriptPromiseResolverWithContext retains a NewScriptState. A caller
+//  - A ScriptPromiseResolverWithContext retains a ScriptState. A caller
 //    can call resolve or reject from outside of a V8 context.
 //  - This class is an ActiveDOMObject and keeps track of the associated
 //    ExecutionContext state. When the ExecutionContext is suspended,
@@ -31,7 +31,7 @@ class ScriptPromiseResolverWithContext FINAL : public ActiveDOMObject, public Re
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolverWithContext);
 
 public:
-    static PassRefPtr<ScriptPromiseResolverWithContext> create(NewScriptState* scriptState)
+    static PassRefPtr<ScriptPromiseResolverWithContext> create(ScriptState* scriptState)
     {
         RefPtr<ScriptPromiseResolverWithContext> resolver = adoptRef(new ScriptPromiseResolverWithContext(scriptState));
         resolver->suspendIfNeeded();
@@ -52,7 +52,7 @@ public:
         resolveOrReject(value, Rejecting);
     }
 
-    NewScriptState* scriptState() { return m_scriptState.get(); }
+    ScriptState* scriptState() { return m_scriptState.get(); }
 
     // Note that an empty ScriptPromise will be returned after resolve or
     // reject is called.
@@ -61,15 +61,15 @@ public:
         return m_resolver ? m_resolver->promise() : ScriptPromise();
     }
 
-    NewScriptState* scriptState() const { return m_scriptState.get(); }
+    ScriptState* scriptState() const { return m_scriptState.get(); }
 
     // ActiveDOMObject implementation.
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    // Used by ToV8Value<ScriptPromiseResolverWithContext, NewScriptState*>.
-    static v8::Handle<v8::Object> getCreationContext(NewScriptState* scriptState)
+    // Used by ToV8Value<ScriptPromiseResolverWithContext, ScriptState*>.
+    static v8::Handle<v8::Object> getCreationContext(ScriptState* scriptState)
     {
         return scriptState->context()->Global();
     }
@@ -82,12 +82,12 @@ private:
         ResolvedOrRejected,
     };
 
-    explicit ScriptPromiseResolverWithContext(NewScriptState*);
+    explicit ScriptPromiseResolverWithContext(ScriptState*);
 
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        return ToV8Value<ScriptPromiseResolverWithContext, NewScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
+        return ToV8Value<ScriptPromiseResolverWithContext, ScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
     }
 
     template <typename T>
@@ -100,7 +100,7 @@ private:
         // |deref| will be called in |clear|.
         ref();
 
-        NewScriptState::Scope scope(m_scriptState.get());
+        ScriptState::Scope scope(m_scriptState.get());
         m_value.set(m_scriptState->isolate(), toV8Value(value));
         if (!executionContext()->activeDOMObjectsAreSuspended()) {
             resolveOrRejectImmediately();
@@ -116,7 +116,7 @@ private:
     void clear();
 
     ResolutionState m_state;
-    const RefPtr<NewScriptState> m_scriptState;
+    const RefPtr<ScriptState> m_scriptState;
     Timer<ScriptPromiseResolverWithContext> m_timer;
     RefPtr<ScriptPromiseResolver> m_resolver;
     ScopedPersistent<v8::Value> m_value;

@@ -32,8 +32,8 @@
 #define InjectedScriptBase_h
 
 #include "InspectorTypeBuilder.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptState.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -50,10 +50,10 @@ public:
 
     const String& name() const { return m_name; }
     bool isEmpty() const { return m_injectedScriptObject.isEmpty(); }
-    NewScriptState* scriptState() const { return m_injectedScriptObject.scriptState(); }
+    ScriptState* scriptState() const { return m_injectedScriptObject.scriptState(); }
 
 protected:
-    typedef bool (*InspectedStateAccessCheck)(NewScriptState*);
+    typedef bool (*InspectedStateAccessCheck)(ScriptState*);
     InjectedScriptBase(const String& name);
     InjectedScriptBase(const String& name, ScriptObject, InspectedStateAccessCheck);
 

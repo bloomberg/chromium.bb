@@ -31,8 +31,8 @@
 #include "config.h"
 #include "bindings/v8/ScriptEventListener.h"
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8WindowShell.h"
@@ -147,14 +147,14 @@ ScriptValue eventListenerHandler(Document* document, EventListener* listener)
     return ScriptValue(function, isolate);
 }
 
-NewScriptState* eventListenerHandlerScriptState(LocalFrame* frame, EventListener* listener)
+ScriptState* eventListenerHandlerScriptState(LocalFrame* frame, EventListener* listener)
 {
     if (listener->type() != EventListener::JSEventListenerType)
         return 0;
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::HandleScope scope(toIsolate(frame));
     v8::Handle<v8::Context> v8Context = frame->script().windowShell(v8Listener->world())->context();
-    return NewScriptState::from(v8Context);
+    return ScriptState::from(v8Context);
 }
 
 bool eventListenerHandlerLocation(Document* document, EventListener* listener, String& sourceName, String& scriptId, int& lineNumber)

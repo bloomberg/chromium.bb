@@ -26,7 +26,7 @@
 #define InspectorConsoleAgent_h
 
 #include "InspectorFrontend.h"
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptString.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -76,8 +76,8 @@ public:
     virtual void clearFrontend() OVERRIDE FINAL;
     virtual void restore() OVERRIDE FINAL;
 
-    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, NewScriptState*, ScriptArguments*, unsigned long requestIdentifier = 0);
-    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber = 0, NewScriptState* = 0, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, ScriptState*, ScriptArguments*, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber = 0, ScriptState* = 0, unsigned long requestIdentifier = 0);
 
     // FIXME: Remove once we no longer generate stacks outside of Inspector.
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, ScriptCallStack*, unsigned long requestIdentifier = 0);
@@ -85,11 +85,11 @@ public:
     Vector<unsigned> consoleMessageArgumentCounts();
 
     void consoleTime(ExecutionContext*, const String& title);
-    void consoleTimeEnd(ExecutionContext*, const String& title, NewScriptState*);
-    void consoleTimeline(ExecutionContext*, const String& title, NewScriptState*);
-    void consoleTimelineEnd(ExecutionContext*, const String& title, NewScriptState*);
+    void consoleTimeEnd(ExecutionContext*, const String& title, ScriptState*);
+    void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
+    void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
 
-    void consoleCount(NewScriptState*, PassRefPtr<ScriptArguments>);
+    void consoleCount(ScriptState*, PassRefPtr<ScriptArguments>);
 
     void frameWindowDiscarded(DOMWindow*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);

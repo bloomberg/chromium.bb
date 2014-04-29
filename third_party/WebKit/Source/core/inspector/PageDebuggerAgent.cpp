@@ -114,7 +114,7 @@ void PageDebuggerAgent::overlaySteppedOver()
 InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {
-        NewScriptState* scriptState = NewScriptState::forMainWorld(m_pageAgent->mainFrame());
+        ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->mainFrame());
         return injectedScriptManager()->injectedScriptFor(scriptState);
     }
     InjectedScript injectedScript = injectedScriptManager()->injectedScriptForId(*executionContextId);

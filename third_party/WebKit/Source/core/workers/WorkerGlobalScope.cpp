@@ -281,7 +281,7 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, NewScriptState* scriptState)
+void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* scriptState)
 {
     if (!isContextThread()) {
         postTask(AddConsoleMessageTask::create(source, level, message));
@@ -291,7 +291,7 @@ void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, con
     addMessageToWorkerConsole(source, level, message, sourceURL, lineNumber, nullptr, scriptState);
 }
 
-void WorkerGlobalScope::addMessageToWorkerConsole(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, NewScriptState* scriptState)
+void WorkerGlobalScope::addMessageToWorkerConsole(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* scriptState)
 {
     ASSERT(isContextThread());
     if (callStack)

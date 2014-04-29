@@ -54,7 +54,7 @@ namespace WebCore {
 
 static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 
-CustomElementConstructorBuilder::CustomElementConstructorBuilder(NewScriptState* scriptState, const Dictionary* options)
+CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* scriptState, const Dictionary* options)
     : m_scriptState(scriptState)
     , m_options(options)
     , m_wrapperType(0)

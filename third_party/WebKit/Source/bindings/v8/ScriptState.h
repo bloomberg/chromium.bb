@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NewScriptState_h
-#define NewScriptState_h
+#ifndef ScriptState_h
+#define ScriptState_h
 
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/V8PerContextData.h"
@@ -17,16 +17,16 @@ class DOMWrapperWorld;
 class ExecutionContext;
 class LocalFrame;
 
-// NewScriptState is created when v8::Context is created.
-// NewScriptState is destroyed when v8::Context is garbage-collected and
-// all V8 proxy objects that have references to the NewScriptState are destructed.
-class NewScriptState : public RefCounted<NewScriptState> {
-    WTF_MAKE_NONCOPYABLE(NewScriptState);
+// ScriptState is created when v8::Context is created.
+// ScriptState is destroyed when v8::Context is garbage-collected and
+// all V8 proxy objects that have references to the ScriptState are destructed.
+class ScriptState : public RefCounted<ScriptState> {
+    WTF_MAKE_NONCOPYABLE(ScriptState);
 public:
     class Scope {
     public:
         // You need to make sure that scriptState->context() is not empty before creating a Scope.
-        explicit Scope(NewScriptState* scriptState)
+        explicit Scope(ScriptState* scriptState)
             : m_handleScope(scriptState->isolate())
             , m_context(scriptState->context())
         {
@@ -44,26 +44,26 @@ public:
         v8::Handle<v8::Context> m_context;
     };
 
-    static PassRefPtr<NewScriptState> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-    ~NewScriptState();
+    static PassRefPtr<ScriptState> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+    ~ScriptState();
 
-    static NewScriptState* current(v8::Isolate* isolate)
+    static ScriptState* current(v8::Isolate* isolate)
     {
         return from(isolate->GetCurrentContext());
     }
 
-    static NewScriptState* from(v8::Handle<v8::Context> context)
+    static ScriptState* from(v8::Handle<v8::Context> context)
     {
         ASSERT(!context.IsEmpty());
-        NewScriptState* scriptState = static_cast<NewScriptState*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
-        // NewScriptState::from() must not be called for a context that does not have
+        ScriptState* scriptState = static_cast<ScriptState*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
+        // ScriptState::from() must not be called for a context that does not have
         // valid embedder data in the embedder field.
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptState);
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptState->context() == context);
         return scriptState;
     }
 
-    static NewScriptState* forMainWorld(LocalFrame*);
+    static ScriptState* forMainWorld(LocalFrame*);
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
@@ -82,7 +82,7 @@ public:
     void setEvalEnabled(bool);
 
 private:
-    NewScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+    ScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
     v8::Isolate* m_isolate;
     // This persistent handle is weak.
@@ -92,26 +92,26 @@ private:
     RefPtr<DOMWrapperWorld> m_world;
 
     // This OwnPtr causes a cycle:
-    // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> NewScriptState --(OwnPtr)--> V8PerContextData
+    // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> ScriptState --(OwnPtr)--> V8PerContextData
     // So you must explicitly clear the OwnPtr by calling disposePerContextData()
     // once you no longer need V8PerContextData. Otherwise, the v8::Context will leak.
     OwnPtr<V8PerContextData> m_perContextData;
 };
 
-// NewScriptStateProtectingContext keeps the context associated with the NewScriptState alive.
+// ScriptStateProtectingContext keeps the context associated with the ScriptState alive.
 // You need to call clear() once you no longer need the context. Otherwise, the context will leak.
-class NewScriptStateProtectingContext {
-    WTF_MAKE_NONCOPYABLE(NewScriptStateProtectingContext);
+class ScriptStateProtectingContext {
+    WTF_MAKE_NONCOPYABLE(ScriptStateProtectingContext);
 public:
-    NewScriptStateProtectingContext(NewScriptState* scriptState)
+    ScriptStateProtectingContext(ScriptState* scriptState)
         : m_scriptState(scriptState)
     {
         if (m_scriptState)
             m_context.set(m_scriptState->isolate(), m_scriptState->context());
     }
 
-    NewScriptState* operator->() const { return m_scriptState.get(); }
-    NewScriptState* get() const { return m_scriptState.get(); }
+    ScriptState* operator->() const { return m_scriptState.get(); }
+    ScriptState* get() const { return m_scriptState.get(); }
     void clear()
     {
         m_scriptState = nullptr;
@@ -119,10 +119,10 @@ public:
     }
 
 private:
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Context> m_context;
 };
 
 }
 
-#endif // NewScriptState_h
+#endif // ScriptState_h

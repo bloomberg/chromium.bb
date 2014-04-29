@@ -100,7 +100,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     if (result->is2d()) {
         v8::Handle<v8::Value> v8Result = toV8(toCanvasRenderingContext2D(result), info.Holder(), info.GetIsolate());
         if (InspectorInstrumentation::canvasAgentEnabled(&impl->document())) {
-            NewScriptState* scriptState = NewScriptState::current(isolate);
+            ScriptState* scriptState = ScriptState::current(isolate);
             ScriptObject context(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(&impl->document(), context);
             if (!wrapped.isEmpty()) {
@@ -114,7 +114,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
     if (result->is3d()) {
         v8::Handle<v8::Value> v8Result = toV8(toWebGLRenderingContext(result), info.Holder(), info.GetIsolate());
         if (InspectorInstrumentation::canvasAgentEnabled(&impl->document())) {
-            NewScriptState* scriptState = NewScriptState::current(isolate);
+            ScriptState* scriptState = ScriptState::current(isolate);
             ScriptObject glContext(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(&impl->document(), glContext);
             if (!wrapped.isEmpty()) {

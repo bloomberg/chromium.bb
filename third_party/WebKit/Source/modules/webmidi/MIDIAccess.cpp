@@ -193,7 +193,7 @@ void MIDIAccess::permissionDenied()
 
 ScriptPromise MIDIAccess::startRequest()
 {
-    m_resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(executionContext())));
+    m_resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext())));
     ScriptPromise promise = m_resolver->promise();
     promise.then(PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Resolved),
         PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Stopped));

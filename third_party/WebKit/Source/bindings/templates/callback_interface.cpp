@@ -19,7 +19,7 @@ namespace WebCore {
 {
     v8::Isolate* isolate = toIsolate(context);
     m_callback.set(isolate, callback);
-    m_scriptState = NewScriptState::current(isolate);
+    m_scriptState = ScriptState::current(isolate);
 }
 
 {{v8_class}}::~{{v8_class}}()
@@ -38,7 +38,7 @@ namespace WebCore {
     if (m_scriptState->contextIsEmpty())
         {{return_default}};
 
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
     {% if method.call_with_this_handle %}
     v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
     if (thisHandle.IsEmpty()) {

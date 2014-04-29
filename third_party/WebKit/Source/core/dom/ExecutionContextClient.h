@@ -43,7 +43,7 @@ class ExecutionContextTask;
 class KURL;
 template<class T> class LifecycleNotifier;
 class ScriptCallStack;
-class NewScriptState;
+class ScriptState;
 class SecurityContext;
 
 class ExecutionContextClient {
@@ -59,7 +59,7 @@ public:
     virtual SecurityContext& securityContext() = 0;
     virtual const KURL& virtualURL() const = 0;
     virtual KURL virtualCompleteURL(const String&) const = 0;
-    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, NewScriptState*) = 0;
+    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) = 0;
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
@@ -70,7 +70,7 @@ public:
     virtual void tasksWereResumed() { }
 
     void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber) { addMessage(source, level, message, sourceURL, lineNumber, 0); }
-    void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, NewScriptState* state = 0) { addMessage(source, level, message, String(), 0, state); }
+    void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state = 0) { addMessage(source, level, message, String(), 0, state); }
     KURL contextURL() const { return virtualURL(); }
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 

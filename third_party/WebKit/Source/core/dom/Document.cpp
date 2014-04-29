@@ -800,12 +800,12 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     return element;
 }
 
-ScriptValue Document::registerElement(WebCore::NewScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
+ScriptValue Document::registerElement(WebCore::ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
 {
     return registerElement(scriptState, name, Dictionary(), exceptionState);
 }
 
-ScriptValue Document::registerElement(WebCore::NewScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
+ScriptValue Document::registerElement(WebCore::ScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");
@@ -4912,12 +4912,12 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, NewScriptState* scriptState)
+void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* scriptState)
 {
     internalAddMessage(source, level, message, sourceURL, lineNumber, nullptr, scriptState);
 }
 
-void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, NewScriptState* scriptState)
+void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* scriptState)
 {
     if (!isContextThread()) {
         m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));

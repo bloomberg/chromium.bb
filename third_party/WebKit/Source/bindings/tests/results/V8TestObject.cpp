@@ -31,9 +31,9 @@
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8AbstractEventListener.h"
@@ -1819,65 +1819,65 @@ static void callWithExecutionContextAnyAttributeAttributeSetterCallback(v8::Loca
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithNewScriptStateAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void callWithScriptStateAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    NewScriptState* state = NewScriptState::current(info.GetIsolate());
-    v8SetReturnValue(info, impl->callWithNewScriptStateAnyAttribute(state).v8Value());
+    ScriptState* state = ScriptState::current(info.GetIsolate());
+    v8SetReturnValue(info, impl->callWithScriptStateAnyAttribute(state).v8Value());
 }
 
-static void callWithNewScriptStateAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void callWithScriptStateAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectV8Internal::callWithNewScriptStateAnyAttributeAttributeGetter(info);
+    TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithNewScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
-    impl->setCallWithNewScriptStateAnyAttribute(state, cppValue);
+    impl->setCallWithScriptStateAnyAttribute(state, cppValue);
 }
 
-static void callWithNewScriptStateAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void callWithScriptStateAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectV8Internal::callWithNewScriptStateAnyAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithExecutionContextAndNewScriptStateAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    NewScriptState* state = NewScriptState::current(info.GetIsolate());
-    v8SetReturnValue(info, impl->callWithExecutionContextAndNewScriptStateAnyAttribute(state, scriptContext).v8Value());
+    ScriptState* state = ScriptState::current(info.GetIsolate());
+    v8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(state, scriptContext).v8Value());
 }
 
-static void callWithExecutionContextAndNewScriptStateAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectV8Internal::callWithExecutionContextAndNewScriptStateAnyAttributeAttributeGetter(info);
+    TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithExecutionContextAndNewScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(v8Value, info.GetIsolate()));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->setCallWithExecutionContextAndNewScriptStateAnyAttribute(state, scriptContext, cppValue);
+    impl->setCallWithExecutionContextAndScriptStateAnyAttribute(state, scriptContext, cppValue);
 }
 
-static void callWithExecutionContextAndNewScriptStateAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectV8Internal::callWithExecutionContextAndNewScriptStateAnyAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -7182,84 +7182,84 @@ static void callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionC
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithNewScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    NewScriptState* state = NewScriptState::current(info.GetIsolate());
-    impl->callWithNewScriptStateVoidMethod(state);
+    ScriptState* state = ScriptState::current(info.GetIsolate());
+    impl->callWithScriptStateVoidMethod(state);
 }
 
-static void callWithNewScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::callWithNewScriptStateVoidMethodMethod(info);
+    TestObjectV8Internal::callWithScriptStateVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithNewScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    NewScriptState* state = NewScriptState::current(info.GetIsolate());
-    int result = impl->callWithNewScriptStateLongMethod(state);
+    ScriptState* state = ScriptState::current(info.GetIsolate());
+    int result = impl->callWithScriptStateLongMethod(state);
     v8SetReturnValueInt(info, result);
 }
 
-static void callWithNewScriptStateLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::callWithNewScriptStateLongMethodMethod(info);
+    TestObjectV8Internal::callWithScriptStateLongMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithNewScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    ScriptState* state = ScriptState::current(info.GetIsolate());
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->callWithNewScriptStateExecutionContextVoidMethod(state, scriptContext);
+    impl->callWithScriptStateExecutionContextVoidMethod(state, scriptContext);
 }
 
-static void callWithNewScriptStateExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::callWithNewScriptStateExecutionContextVoidMethodMethod(info);
+    TestObjectV8Internal::callWithScriptStateExecutionContextVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithNewScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    ScriptState* state = ScriptState::current(info.GetIsolate());
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 0));
-    impl->callWithNewScriptStateScriptArgumentsVoidMethod(state, scriptArguments.release());
+    impl->callWithScriptStateScriptArgumentsVoidMethod(state, scriptArguments.release());
 }
 
-static void callWithNewScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodMethod(info);
+    TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
-        NewScriptState* state = NewScriptState::current(info.GetIsolate());
+        ScriptState* state = ScriptState::current(info.GetIsolate());
         RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
-        impl->callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
+        impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
         return;
     }
     TONATIVE_VOID(bool, optionalBooleanArg, info[0]->BooleanValue());
-    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    ScriptState* state = ScriptState::current(info.GetIsolate());
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
-    impl->callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release(), optionalBooleanArg);
+    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release(), optionalBooleanArg);
 }
 
-static void callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(info);
+    TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -8043,8 +8043,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"activityLoggingSetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedAttributeAnyAttribute", TestObjectV8Internal::cachedAttributeAnyAttributeAttributeGetterCallback, TestObjectV8Internal::cachedAttributeAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"callWithExecutionContextAnyAttribute", TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"callWithNewScriptStateAnyAttribute", TestObjectV8Internal::callWithNewScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithNewScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"callWithExecutionContextAndNewScriptStateAnyAttribute", TestObjectV8Internal::callWithExecutionContextAndNewScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAndNewScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"callWithScriptStateAnyAttribute", TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"callWithExecutionContextAndScriptStateAnyAttribute", TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"checkSecurityForNodeReadonlyDocumentAttribute", TestObjectV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #if ENABLE(CONDITION)
     {"conditionalLongAttribute", TestObjectV8Internal::conditionalLongAttributeAttributeGetterCallback, TestObjectV8Internal::conditionalLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -8265,11 +8265,11 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethodCallback, 0, 1},
     {"activityLoggingAccessForAllWorldsMethod", TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethodCallback, 0, 0},
     {"callWithExecutionContextVoidMethod", TestObjectV8Internal::callWithExecutionContextVoidMethodMethodCallback, 0, 0},
-    {"callWithNewScriptStateVoidMethod", TestObjectV8Internal::callWithNewScriptStateVoidMethodMethodCallback, 0, 0},
-    {"callWithNewScriptStateLongMethod", TestObjectV8Internal::callWithNewScriptStateLongMethodMethodCallback, 0, 0},
-    {"callWithNewScriptStateExecutionContextVoidMethod", TestObjectV8Internal::callWithNewScriptStateExecutionContextVoidMethodMethodCallback, 0, 0},
-    {"callWithNewScriptStateScriptArgumentsVoidMethod", TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0},
-    {"callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0},
+    {"callWithScriptStateVoidMethod", TestObjectV8Internal::callWithScriptStateVoidMethodMethodCallback, 0, 0},
+    {"callWithScriptStateLongMethod", TestObjectV8Internal::callWithScriptStateLongMethodMethodCallback, 0, 0},
+    {"callWithScriptStateExecutionContextVoidMethod", TestObjectV8Internal::callWithScriptStateExecutionContextVoidMethodMethodCallback, 0, 0},
+    {"callWithScriptStateScriptArgumentsVoidMethod", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0},
+    {"callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0},
     {"callWithActiveWindow", TestObjectV8Internal::callWithActiveWindowMethodCallback, 0, 0},
     {"callWithActiveWindowScriptWindow", TestObjectV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0},
     {"checkSecurityForNodeVoidMethod", TestObjectV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0},

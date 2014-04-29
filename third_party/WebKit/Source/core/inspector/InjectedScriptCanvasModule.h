@@ -31,7 +31,7 @@
 #ifndef InjectedScriptCanvasModule_h
 #define InjectedScriptCanvasModule_h
 
-#include "bindings/v8/NewScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InjectedScriptModule.h"
 #include "wtf/text/WTFString.h"
 
@@ -47,7 +47,7 @@ public:
 
     virtual String source() const OVERRIDE;
 
-    static InjectedScriptCanvasModule moduleForState(InjectedScriptManager*, NewScriptState*);
+    static InjectedScriptCanvasModule moduleForState(InjectedScriptManager*, ScriptState*);
 
     ScriptObject wrapCanvas2DContext(const ScriptObject&);
     ScriptObject wrapWebGLContext(const ScriptObject&);

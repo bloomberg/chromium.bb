@@ -82,7 +82,7 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
         exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
         return;
     }
-    NewScriptState* scriptState = NewScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     v8::Handle<v8::Value> function = info[0];
     String functionString;
     if (!function->IsFunction()) {

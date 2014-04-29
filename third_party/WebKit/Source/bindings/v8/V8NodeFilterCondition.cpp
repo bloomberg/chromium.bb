@@ -41,7 +41,7 @@
 namespace WebCore {
 
 V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
-    : m_scriptState(NewScriptState::current(isolate))
+    : m_scriptState(ScriptState::current(isolate))
     , m_filter(isolate, filter)
 {
     V8HiddenValue::setHiddenValue(isolate, owner, V8HiddenValue::condition(isolate), filter);

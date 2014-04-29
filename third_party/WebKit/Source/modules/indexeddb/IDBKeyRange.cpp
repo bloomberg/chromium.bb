@@ -60,12 +60,12 @@ IDBKeyRange::IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, Low
     ScriptWrappable::init(this);
 }
 
-ScriptValue IDBKeyRange::lowerValue(NewScriptState* scriptState) const
+ScriptValue IDBKeyRange::lowerValue(ScriptState* scriptState) const
 {
     return idbKeyToScriptValue(scriptState, m_lower);
 }
 
-ScriptValue IDBKeyRange::upperValue(NewScriptState* scriptState) const
+ScriptValue IDBKeyRange::upperValue(ScriptState* scriptState) const
 {
     return idbKeyToScriptValue(scriptState, m_upper);
 }

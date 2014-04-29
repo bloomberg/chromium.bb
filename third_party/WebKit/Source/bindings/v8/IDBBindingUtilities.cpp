@@ -401,7 +401,7 @@ bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate, const ScriptValue& scr
     return canInjectNthValueOnKeyPath(isolate, v8Value, keyPathElements, keyPathElements.size() - 1);
 }
 
-ScriptValue idbAnyToScriptValue(NewScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBAny> any)
+ScriptValue idbAnyToScriptValue(ScriptState* scriptState, PassRefPtrWillBeRawPtr<IDBAny> any)
 {
     v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);
@@ -409,7 +409,7 @@ ScriptValue idbAnyToScriptValue(NewScriptState* scriptState, PassRefPtrWillBeRaw
     return ScriptValue(v8Value, isolate);
 }
 
-ScriptValue idbKeyToScriptValue(NewScriptState* scriptState, PassRefPtr<IDBKey> key)
+ScriptValue idbKeyToScriptValue(ScriptState* scriptState, PassRefPtr<IDBKey> key)
 {
     v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);
@@ -433,11 +433,11 @@ PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate* isolate, const Scr
 }
 
 #ifndef NDEBUG
-void assertPrimaryKeyValidOrInjectable(NewScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtr<IDBKey> prpKey, const IDBKeyPath& keyPath)
+void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtr<IDBKey> prpKey, const IDBKeyPath& keyPath)
 {
     RefPtr<IDBKey> key(prpKey);
 
-    NewScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
     ScriptValue keyValue = idbKeyToScriptValue(scriptState, key);
     ScriptValue scriptValue(deserializeIDBValueBuffer(isolate, buffer.get(), blobInfo), isolate);

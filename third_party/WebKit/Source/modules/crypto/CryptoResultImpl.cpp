@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/crypto/CryptoResultImpl.h"
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/DOMException.h"
@@ -145,7 +145,7 @@ private:
     explicit PromiseState(ExecutionContext* context)
         : ContextLifecycleObserver(context)
         , m_weakFactory(this)
-        , m_promiseResolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
+        , m_promiseResolver(ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context))))
     {
     }
 

@@ -61,7 +61,7 @@ void FrameConsole::addMessage(MessageSource source, MessageLevel level, const St
     addMessage(source, level, message, String(), 0, 0, callStack, 0);
 }
 
-void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, NewScriptState* scriptState, unsigned long requestIdentifier)
+void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* scriptState, unsigned long requestIdentifier)
 {
     if (muteCount)
         return;

@@ -72,7 +72,7 @@ class InspectorPageAgent;
 class InspectorLayerTreeAgent;
 class InstrumentingAgents;
 class KURL;
-class NewScriptState;
+class ScriptState;
 class Node;
 class RenderImage;
 class RenderObject;
@@ -194,9 +194,9 @@ public:
     void loadEventFired(LocalFrame*);
 
     void consoleTime(ExecutionContext*, const String&);
-    void consoleTimeEnd(ExecutionContext*, const String&, NewScriptState*);
-    void consoleTimeline(ExecutionContext*, const String& title, NewScriptState*);
-    void consoleTimelineEnd(ExecutionContext*, const String& title, NewScriptState*);
+    void consoleTimeEnd(ExecutionContext*, const String&, ScriptState*);
+    void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
+    void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
 
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);
     void didReceiveResourceResponse(LocalFrame*, unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);

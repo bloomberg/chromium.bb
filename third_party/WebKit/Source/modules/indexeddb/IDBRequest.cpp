@@ -61,7 +61,7 @@ IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBAny>
     , m_transaction(transaction)
     , m_readyState(PENDING)
     , m_requestAborted(false)
-    , m_scriptState(NewScriptState::current(toIsolate(context)))
+    , m_scriptState(ScriptState::current(toIsolate(context)))
     , m_source(source)
     , m_hasPendingActivity(true)
     , m_cursorType(IndexedDB::CursorKeyAndValue)
@@ -444,7 +444,7 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     ASSERT(m_enqueuedEvents.size());
     ASSERT(event->target() == this);
 
-    NewScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(m_scriptState.get());
 
     if (event->type() != EventTypeNames::blocked)
         m_readyState = DONE;

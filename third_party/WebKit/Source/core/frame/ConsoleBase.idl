@@ -31,31 +31,31 @@
     NoInterfaceObject,
     WillBeGarbageCollected,
 ] interface ConsoleBase {
-    [CallWith=ScriptArguments&NewScriptState] void debug();
-    [CallWith=ScriptArguments&NewScriptState] void error();
-    [CallWith=ScriptArguments&NewScriptState] void info();
-    [CallWith=ScriptArguments&NewScriptState] void log();
-    [CallWith=ScriptArguments&NewScriptState] void warn();
-    [CallWith=ScriptArguments&NewScriptState] void dir();
-    [CallWith=ScriptArguments&NewScriptState] void dirxml();
-    [CallWith=ScriptArguments&NewScriptState] void table();
-    [CallWith=ScriptArguments&NewScriptState] void trace();
-    [CallWith=ScriptArguments&NewScriptState, ImplementedAs=assertCondition] void assert([Default=Undefined] optional boolean condition);
-    [CallWith=ScriptArguments&NewScriptState] void count();
+    [CallWith=ScriptArguments&ScriptState] void debug();
+    [CallWith=ScriptArguments&ScriptState] void error();
+    [CallWith=ScriptArguments&ScriptState] void info();
+    [CallWith=ScriptArguments&ScriptState] void log();
+    [CallWith=ScriptArguments&ScriptState] void warn();
+    [CallWith=ScriptArguments&ScriptState] void dir();
+    [CallWith=ScriptArguments&ScriptState] void dirxml();
+    [CallWith=ScriptArguments&ScriptState] void table();
+    [CallWith=ScriptArguments&ScriptState] void trace();
+    [CallWith=ScriptArguments&ScriptState, ImplementedAs=assertCondition] void assert([Default=Undefined] optional boolean condition);
+    [CallWith=ScriptArguments&ScriptState] void count();
     [DeprecateAs=ConsoleMarkTimeline] void markTimeline([Default=NullString] optional DOMString title);
 
-    [CallWith=NewScriptState] void profile([Default=NullString] optional DOMString title);
-    [CallWith=NewScriptState] void profileEnd([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void profile([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void profileEnd([Default=NullString] optional DOMString title);
 
     void time([Default=NullString] optional DOMString title);
-    [CallWith=NewScriptState] void timeEnd([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void timeEnd([Default=NullString] optional DOMString title);
     void timeStamp([Default=NullString] optional DOMString title);
 
-    [CallWith=NewScriptState] void timeline([Default=NullString] optional DOMString title);
-    [CallWith=NewScriptState] void timelineEnd([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void timeline([Default=NullString] optional DOMString title);
+    [CallWith=ScriptState] void timelineEnd([Default=NullString] optional DOMString title);
 
-    [CallWith=ScriptArguments&NewScriptState] void group();
-    [CallWith=ScriptArguments&NewScriptState] void groupCollapsed();
+    [CallWith=ScriptArguments&ScriptState] void group();
+    [CallWith=ScriptArguments&ScriptState] void groupCollapsed();
     void groupEnd();
-    [CallWith=ScriptArguments&NewScriptState] void clear();
+    [CallWith=ScriptArguments&ScriptState] void clear();
 };
