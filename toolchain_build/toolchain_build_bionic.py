@@ -38,7 +38,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = 'fee38c0ebcc5253c5bf36303908f2acf5486f918'
+BIONIC_VERSION = '96add03ea2ca11c27a82d81066f3cdbe9e17baae'
 ARCHES = ['arm']
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
@@ -465,7 +465,7 @@ include $(src_path)/Makefile
 
 
 def ConfigureBionicProjects(clobber=False):
-  PROJECTS = ['libc', 'libm', 'linker', 'tests']
+  PROJECTS = ['libc', 'libm', 'linker', 'tests', 'newlinker', 'newtests']
   arch = 'arm'
   for project in PROJECTS:
     print 'Configure %s for %s.' % (project, arch)
@@ -629,14 +629,17 @@ def main(argv):
   ConfigureAndBuild_libstdcpp()
 
   # Now we can build the linker
-  MakeBionicProject('linker')
+  #MakeBionicProject('linker')
+  MakeBionicProject('newlinker')
 
   # Now we have a full toolchain, so test it
-  MakeBionicProject('tests')
+  #MakeBionicProject('tests')
+  MakeBionicProject('newtests')
 
   # We can run only off buildbots
   if not options.buildbot:
-    MakeBionicProject('tests', ['run'])
+    #MakeBionicProject('tests', ['run'])
+    MakeBionicProject('newtests', ['run'])
 
   dst = os.path.join(TOOLCHAIN_BUILD_OUT, 'linux_arm_bionic', 'log.txt')
   with open(dst, 'w') as dstf:
