@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class WebCompositeAndReadbackAsyncCallback;
 class WebInputEvent;
 class WebLayerTreeView;
 class WebMouseEvent;
@@ -120,6 +121,10 @@ public:
     // processed, it should be assumed that another call to layout is
     // warranted before painting again).
     virtual void paint(WebCanvas*, const WebRect& viewPort, PaintOptions = ReadbackFromCompositorIfAvailable) { }
+
+    // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
+    // object alive until it is called.
+    virtual bool compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { return false; }
 
     // Returns true if we've started tracking repaint rectangles.
     virtual bool isTrackingRepaints() const { return false; }

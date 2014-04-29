@@ -1806,6 +1806,14 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions opt
     }
 }
 
+bool WebViewImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
+{
+    if (!isAcceleratedCompositingActive())
+        return false;
+    m_layerTreeView->compositeAndReadbackAsync(callback);
+    return true;
+}
+
 bool WebViewImpl::isTrackingRepaints() const
 {
     if (!page())

@@ -103,6 +103,7 @@ public:
     virtual void layout() OVERRIDE;
     virtual void enterForceCompositingMode(bool enable) OVERRIDE;
     virtual void paint(WebCanvas*, const WebRect&, PaintOptions = ReadbackFromCompositorIfAvailable) OVERRIDE;
+    virtual bool compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) OVERRIDE;
     virtual bool isTrackingRepaints() const OVERRIDE;
     virtual void themeChanged() OVERRIDE;
     virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE;
