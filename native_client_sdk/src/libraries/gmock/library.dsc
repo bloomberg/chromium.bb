@@ -18,6 +18,7 @@
       ],
       #   gmock-spec-builders.cc:248: error: enumeration value ‘FAIL’ not handled in switch
       'CXXFLAGS': ['-Wno-switch-enum'],
+      'DEPS': ['gtest'],
     }
   ],
   'HEADERS': [

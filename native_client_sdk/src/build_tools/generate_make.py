@@ -276,7 +276,7 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
   return (name, desc['DEST'])
 
 
-def GenerateMasterMakefile(pepperdir, out_path, targets):
+def GenerateMasterMakefile(pepperdir, out_path, targets, deps):
   """Generate a Master Makefile that builds all examples.
 
   Args:
@@ -289,6 +289,7 @@ def GenerateMasterMakefile(pepperdir, out_path, targets):
   rel_path = os.path.relpath(pepperdir, os.path.dirname(out_path))
   template_dict = {
     'projects': targets,
+    'deps' : deps,
     'rel_sdk' : rel_path,
   }
   RunTemplateFileIfChanged(in_path, out_path, template_dict)

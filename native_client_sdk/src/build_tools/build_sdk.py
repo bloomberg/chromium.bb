@@ -353,7 +353,6 @@ def MakeNinjaRelPath(path):
 TOOLCHAIN_LIBS = {
   'bionic' : [
     'libminidump_generator.a',
-    'libnacl.a',
     'libnacl_dyncode.a',
     'libnacl_exception.a',
     'libnacl_list_mappings.a',

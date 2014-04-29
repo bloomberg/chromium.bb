@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'bionic'],
   'TARGETS': [
     {
       'NAME' : 'nacl_io',

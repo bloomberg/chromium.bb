@@ -12,6 +12,10 @@ PROJECTS := \
   {{project}} \
 [[]]
 
+[[for dep,vals in deps.iteritems():]]
+{{dep}}_DEPS:={{'_ALL_TARGET '.join(vals) + '_ALL_TARGET'}}
+[[]]
+
 HTTPD_PY := python {{rel_sdk}}/tools/httpd.py
 
 ifeq ($(TOOLCHAIN),all)
@@ -33,7 +37,7 @@ all:
 define TARGET
 ALL_TARGET_LIST+=$(1)_ALL_TARGET
 .PHONY: $(1)_ALL_TARGET
-$(1)_ALL_TARGET:
+$(1)_ALL_TARGET: $$($(1)_DEPS)
 	+$(MAKE) -C $(1) $(TOOLCHAIN_ARG) all
 
 CLEAN_TARGET_LIST+=$(1)_CLEAN_TARGET

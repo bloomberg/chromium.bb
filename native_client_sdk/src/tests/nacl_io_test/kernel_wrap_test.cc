@@ -530,16 +530,17 @@ TEST_F(KernelWrapTest, truncate) {
   EXPECT_EQ(0, truncate(kDummyConstChar, kDummyInt3));
 }
 
-#ifndef __BIONIC__
 TEST_F(KernelWrapTest, lstat) {
-  struct stat buf;
-  EXPECT_CALL(mock, lstat(kDummyConstChar, &buf)).WillOnce(Return(-1));
-  EXPECT_EQ(-1, lstat(kDummyConstChar, &buf));
-
-  EXPECT_CALL(mock, lstat(kDummyConstChar, &buf)).WillOnce(Return(0));
-  EXPECT_EQ(0, lstat(kDummyConstChar, &buf));
+  struct stat in_statbuf;
+  MakeDummyStatbuf(&in_statbuf);
+  EXPECT_CALL(mock, lstat(StrEq(kDummyConstChar), _))
+      .WillOnce(DoAll(SetStat(&in_statbuf), Return(0)))
+      .WillOnce(Return(-1));
+  struct stat out_statbuf;
+  EXPECT_EQ(0, lstat(kDummyConstChar, &out_statbuf));
+  EXPECT_THAT(&in_statbuf, IsEqualToStatbuf(&out_statbuf));
+  EXPECT_EQ(-1, lstat(kDummyConstChar, &out_statbuf));
 }
-#endif
 
 TEST_F(KernelWrapTest, unlink) {
   EXPECT_CALL(mock, unlink(kDummyConstChar)).WillOnce(Return(kDummyInt));

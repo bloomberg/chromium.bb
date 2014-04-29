@@ -94,6 +94,26 @@ def ValidateToolchains(toolchains):
     buildbot_common.ErrorExit('Invalid toolchain(s): %s' % (
         ', '.join(invalid_toolchains)))
 
+def GetDeps(projects):
+  out = {}
+
+  # Build list of all project names
+  localtargets = [proj['NAME'] for proj in projects]
+
+  # For each project
+  for proj in projects:
+    deplist = []
+    # generate a list of dependencies
+    for targ in proj.get('TARGETS', []):
+      deplist.extend(targ.get('DEPS', []) + targ.get('LIBS', []))
+
+    # and add dependencies to targets built in this subtree
+    localdeps = [dep for dep in deplist if dep in localtargets]
+    if localdeps:
+      out[proj['NAME']] = localdeps
+
+  return out
+
 
 def UpdateProjects(pepperdir, project_tree, toolchains,
                    clobber=False, configs=None, first_toolchain=False):
@@ -123,11 +143,12 @@ def UpdateProjects(pepperdir, project_tree, toolchains,
       buildbot_common.RemoveDir(dirpath)
     buildbot_common.MakeDir(dirpath)
     targets = [desc['NAME'] for desc in projects]
+    deps = GetDeps(projects)
 
     # Generate master make for this branch of projects
     generate_make.GenerateMasterMakefile(pepperdir,
                                          os.path.join(pepperdir, branch),
-                                         targets)
+                                         targets, deps)
 
     if branch.startswith('examples') and not landing_page:
       landing_page = LandingPage()
@@ -156,7 +177,7 @@ def UpdateProjects(pepperdir, project_tree, toolchains,
   branch_name = 'examples'
   generate_make.GenerateMasterMakefile(pepperdir,
                                        os.path.join(pepperdir, branch_name),
-                                       targets)
+                                       targets, {})
 
 
 def BuildProjectsBranch(pepperdir, branch, deps, clean, config, args=None):

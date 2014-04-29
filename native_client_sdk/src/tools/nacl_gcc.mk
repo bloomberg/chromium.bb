@@ -73,6 +73,18 @@ X86_64_LDFLAGS ?= -Wl,-Map,$(X86_64_OUTDIR)/$(TARGET)_x86_64.map
 ARM_LDFLAGS ?= -Wl,-Map,$(ARM_OUTDIR)/$(TARGET)_arm.map
 endif
 
+#
+# Choose between static and dynamic linking for Bionic
+# (Default to dynamic)
+#
+ifeq ($(TOOLCHAIN),bionic)
+ifeq (,$(BIONIC_USE_DYNAMIC))
+BIONIC_LINK:=-static
+else
+BIONIC_LINK:=-Wl,-Ttext-segment=0x100000
+endif
+endif
+
 LDFLAGS_SHARED = -shared
 
 #
@@ -355,7 +367,7 @@ ifneq (,$(findstring arm,$(ARCHES)))
 all: $(ARM_OUTDIR)/$(1)_arm.nexe
 $(ARM_OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(ARM_LINK) -static -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,LINK,$$@,$(ARM_LINK) $(BIONIC_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 endef
