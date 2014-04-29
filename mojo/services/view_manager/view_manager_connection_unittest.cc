@@ -23,9 +23,6 @@ namespace view_manager {
 
 namespace {
 
-// TODO(sky): move ids.h into common place and include that.
-typedef uint32_t ChangeId;
-
 base::RunLoop* current_run_loop = NULL;
 
 // Sets |current_run_loop| and runs it. It is expected that someone else quits
