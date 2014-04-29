@@ -456,10 +456,5 @@ if (use_x11) {
     ]
 
     configs += [ "//build/config/linux:x11" ]
-
-    deps = [
-      ":gfx_export",
-      "//base"
-    ]
   }
 }
