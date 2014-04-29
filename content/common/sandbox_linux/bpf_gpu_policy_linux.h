@@ -29,13 +29,13 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
 
  protected:
   // Start a broker process to handle open() inside the sandbox.
-  // |broker_sandboxer_callback| is a callback that will enable a suitable
-  // sandbox for the broker process itself.
+  // |broker_sandboxer_allocator| is a function pointer which can allocate a
+  // suitable sandbox policy for the broker process itself.
   // |read_whitelist_extra| and |write_whitelist_extra| are lists of file
   // names that should be whitelisted by the broker process, in addition to
   // the basic ones.
   void InitGpuBrokerProcess(
-      const base::Callback<bool(void)>& broker_sandboxer_callback,
+      sandbox::SandboxBPFPolicy* (*broker_sandboxer_allocator)(void),
       const std::vector<std::string>& read_whitelist_extra,
       const std::vector<std::string>& write_whitelist_extra);
 

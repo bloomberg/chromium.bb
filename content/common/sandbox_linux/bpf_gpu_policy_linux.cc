@@ -106,13 +106,16 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
 
 class GpuBrokerProcessPolicy : public GpuProcessPolicy {
  public:
-  GpuBrokerProcessPolicy() {}
+  static sandbox::SandboxBPFPolicy* Create() {
+    return new GpuBrokerProcessPolicy();
+  }
   virtual ~GpuBrokerProcessPolicy() {}
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
+  GpuBrokerProcessPolicy() {}
   DISALLOW_COPY_AND_ASSIGN(GpuBrokerProcessPolicy);
 };
 
@@ -146,9 +149,11 @@ void UpdateProcessTypeToGpuBroker() {
 }
 
 bool UpdateProcessTypeAndEnableSandbox(
-    const base::Callback<bool(void)>& broker_sandboxer_callback) {
+    sandbox::SandboxBPFPolicy* (*broker_sandboxer_allocator)(void)) {
+  DCHECK(broker_sandboxer_allocator);
   UpdateProcessTypeToGpuBroker();
-  return broker_sandboxer_callback.Run();
+  return SandboxSeccompBPF::StartSandboxWithExternalPolicy(
+      make_scoped_ptr(broker_sandboxer_allocator()));
 }
 
 }  // namespace
@@ -198,9 +203,7 @@ bool GpuProcessPolicy::PreSandboxHook() {
   DCHECK(!broker_process());
   // Create a new broker process.
   InitGpuBrokerProcess(
-      base::Bind(&SandboxSeccompBPF::StartSandboxWithExternalPolicy,
-                 base::Passed(scoped_ptr<sandbox::SandboxBPFPolicy>(
-                     new GpuBrokerProcessPolicy))),
+      GpuBrokerProcessPolicy::Create,
       std::vector<std::string>(),  // No extra files in whitelist.
       std::vector<std::string>());
 
@@ -226,7 +229,7 @@ bool GpuProcessPolicy::PreSandboxHook() {
 }
 
 void GpuProcessPolicy::InitGpuBrokerProcess(
-    const base::Callback<bool(void)>& broker_sandboxer_callback,
+    sandbox::SandboxBPFPolicy* (*broker_sandboxer_allocator)(void),
     const std::vector<std::string>& read_whitelist_extra,
     const std::vector<std::string>& write_whitelist_extra) {
   static const char kDriRcPath[] = "/etc/drirc";
@@ -256,7 +259,7 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
   // The initialization callback will perform generic initialization and then
   // call broker_sandboxer_callback.
   CHECK(broker_process_->Init(base::Bind(&UpdateProcessTypeAndEnableSandbox,
-                                         broker_sandboxer_callback)));
+                                         broker_sandboxer_allocator)));
 }
 
 }  // namespace content

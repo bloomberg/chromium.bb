@@ -94,13 +94,16 @@ void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
 
 class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
  public:
-  CrosArmGpuBrokerProcessPolicy() : CrosArmGpuProcessPolicy(false) {}
+  static sandbox::SandboxBPFPolicy* Create() {
+    return new CrosArmGpuBrokerProcessPolicy();
+  }
   virtual ~CrosArmGpuBrokerProcessPolicy() {}
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
+  CrosArmGpuBrokerProcessPolicy() : CrosArmGpuProcessPolicy(false) {}
   DISALLOW_COPY_AND_ASSIGN(CrosArmGpuBrokerProcessPolicy);
 };
 
@@ -169,12 +172,9 @@ bool CrosArmGpuProcessPolicy::PreSandboxHook() {
   // Add ARM-specific files to whitelist in the broker.
 
   AddArmGpuWhitelist(&read_whitelist_extra, &write_whitelist_extra);
-  InitGpuBrokerProcess(
-      base::Bind(&SandboxSeccompBPF::StartSandboxWithExternalPolicy,
-                 base::Passed(scoped_ptr<sandbox::SandboxBPFPolicy>(
-                     new CrosArmGpuBrokerProcessPolicy))),
-      read_whitelist_extra,
-      write_whitelist_extra);
+  InitGpuBrokerProcess(CrosArmGpuBrokerProcessPolicy::Create,
+                       read_whitelist_extra,
+                       write_whitelist_extra);
 
   const int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 
