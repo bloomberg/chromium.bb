@@ -153,7 +153,6 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
             else
                 group = groupIter->value.get();
 
-            ASSERT(keyframe->composite() == AnimationEffect::CompositeReplace);
             group->appendKeyframe(keyframe->createPropertySpecificKeyframe(property));
         }
     }
