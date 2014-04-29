@@ -11,7 +11,7 @@ if (is_linux) {
     direct_dependent_configs = [ ":expat_config" ]
   }
 
-  # TODO(brettw) Android needs direct dependent includes of
+  # TODO(GYP) Android needs direct dependent includes of
   # <android_src>/external/expat/lib
 } else {
   config("expat_config") {

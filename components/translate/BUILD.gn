@@ -33,7 +33,9 @@ static_library("translate_core_browser") {
   deps = [
     ":translate_core_common",
     "//base",
+    "//components/language_usage_metrics",
     "//components/resources:components_resources",
+    "//net",
     "//url",
   ]
 }
