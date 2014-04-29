@@ -392,18 +392,9 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result,
   if (touch_queue_.empty())
     return;
 
-  const WebTouchEvent& acked_event =
-      touch_queue_.front()->coalesced_event().event;
-
   if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED &&
       touch_filtering_state_ == FORWARD_TOUCHES_UNTIL_TIMEOUT) {
     touch_filtering_state_ = FORWARD_ALL_TOUCHES;
-  }
-
-  if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS &&
-      touch_filtering_state_ != DROP_ALL_TOUCHES &&
-      WebTouchEventTraits::IsTouchSequenceStart(acked_event)) {
-    touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
   }
 
   PopTouchEventToClient(ack_result, latency_info);
@@ -473,7 +464,13 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
         DCHECK(pending_async_touch_move_->CanCoalesceWith(touch));
         pending_async_touch_move_->CoalesceWith(touch);
       }
+      DCHECK_EQ(1U, size());
       PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      // It's possible (though unlikely) that ack'ing the current touch will
+      // trigger the queueing of another touch event (e.g., a touchcancel). As
+      // forwarding of the queued event will be deferred while the ack is being
+      // dispatched (see |OnTouchEvent()|), try forwarding it now.
+      TryForwardNextEventToRenderer();
       return;
     }
   }
@@ -522,6 +519,21 @@ void TouchEventQueue::OnGestureScrollEvent(
     return;
 
   if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE) {
+    if (touch_filtering_state_ != DROP_ALL_TOUCHES &&
+        touch_filtering_state_ != DROP_TOUCHES_IN_SEQUENCE) {
+      // If no touch points have a consumer, prevent all subsequent touch events
+      // received during the scroll from reaching the renderer. This ensures
+      // that the first touchstart the renderer sees in any given sequence can
+      // always be preventDefault'ed (cancelable == true).
+      // TODO(jdduke): Revisit if touchstarts during scroll are made cancelable.
+      if (touch_ack_states_.empty() ||
+          AllTouchAckStatesHaveState(
+              INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)) {
+        touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
+        return;
+      }
+    }
+
     pending_async_touch_move_.reset();
     send_touch_events_async_ = true;
     needs_async_touch_move_for_outer_slop_region_ = true;
@@ -762,6 +774,22 @@ void TouchEventQueue::UpdateTouchAckStates(const WebTouchEvent& event,
         touch_ack_states_[point.id] = ack_result;
     }
   }
+}
+
+bool TouchEventQueue::AllTouchAckStatesHaveState(
+    InputEventAckState ack_state) const {
+  if (touch_ack_states_.empty())
+    return false;
+
+  for (TouchPointAckStates::const_iterator iter = touch_ack_states_.begin(),
+                                           end = touch_ack_states_.end();
+       iter != end;
+       ++iter) {
+    if (iter->second != ack_state)
+      return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

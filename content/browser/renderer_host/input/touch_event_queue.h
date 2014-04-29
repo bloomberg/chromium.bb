@@ -164,6 +164,7 @@ class CONTENT_EXPORT TouchEventQueue {
   void ForwardToRenderer(const TouchEventWithLatencyInfo& event);
   void UpdateTouchAckStates(const blink::WebTouchEvent& event,
                             InputEventAckState ack_result);
+  bool AllTouchAckStatesHaveState(InputEventAckState ack_state) const;
 
 
   // Handles touch event forwarding and ack'ed event dispatch.
