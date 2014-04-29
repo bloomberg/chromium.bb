@@ -2243,6 +2243,11 @@ const char kChromeCreatedLoginItem[] =
 // time.
 const char kMigratedLoginItemPref[] =
   "background_mode.migrated_login_item_pref";
+
+// A boolean that tracks whether to show a notification when trying to quit
+// while there are apps running.
+const char kNotifyWhenAppsKeepChromeAlive[] =
+    "apps.notify-when-apps-keep-chrome-alive";
 #endif
 
 // Set to true if background mode is enabled on this browser.

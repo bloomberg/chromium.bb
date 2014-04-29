@@ -647,6 +647,13 @@ Chromium is unable to recover your settings.
         Yes, exit Chromium
       </message>
 
+      <!-- Quit all apps confirmation dialog -->
+      <if expr="is_macosx">
+        <message name="IDS_QUIT_WITH_APPS_TITLE" desc="Title for a notification explaining that Chrome is running in the background.">
+          Chromium is running in the background.
+        </message>
+      </if>
+
       <!-- Autolaunch infobar -->
       <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chromium was automatically launched on startup">
         Chromium is configured to automatically launch when you start your computer.
