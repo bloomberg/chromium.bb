@@ -1469,7 +1469,7 @@ constrain_position(struct weston_move_grab *move, int *cx, int *cy)
 {
 	struct shell_surface *shsurf = move->base.shsurf;
 	struct weston_pointer *pointer = move->base.grab.pointer;
-	int x, y, panel_height, bottom, left, right;
+	int x, y, panel_height, bottom;
 	const int safety = 50;
 
 	x = wl_fixed_to_int(pointer->x + move->dx);
