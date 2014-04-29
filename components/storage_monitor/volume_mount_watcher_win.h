@@ -49,6 +49,9 @@ class VolumeMountWatcherWin {
   // notification if appropriate.
   void OnWindowMessage(UINT event_type, LPARAM data);
 
+  // Processes SHCNE_MEDIAINSERTED (and REMOVED).
+  void OnMediaChange(WPARAM wparam, LPARAM lparam);
+
   // Set the volume notifications object to be used when new
   // removable volumes are found.
   void SetNotifications(StorageMonitor::Receiver* notifications);

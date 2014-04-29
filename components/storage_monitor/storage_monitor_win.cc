@@ -7,12 +7,15 @@
 #include <windows.h>
 #include <dbt.h>
 #include <fileapi.h>
+#include <shlobj.h>
 
 #include "base/win/wrapped_window_proc.h"
 #include "components/storage_monitor/portable_device_watcher_win.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/volume_mount_watcher_win.h"
+
+#define WM_USER_MEDIACHANGED (WM_USER + 5)
 
 // StorageMonitorWin -------------------------------------------------------
 
@@ -24,6 +27,7 @@ StorageMonitorWin::StorageMonitorWin(
     : window_class_(0),
       instance_(NULL),
       window_(NULL),
+      shell_change_notify_id_(0),
       volume_mount_watcher_(volume_mount_watcher),
       portable_device_watcher_(portable_device_watcher) {
   DCHECK(volume_mount_watcher_);
@@ -33,6 +37,8 @@ StorageMonitorWin::StorageMonitorWin(
 }
 
 StorageMonitorWin::~StorageMonitorWin() {
+  if (shell_change_notify_id_)
+    SHChangeNotifyDeregister(shell_change_notify_id_);
   volume_mount_watcher_->SetNotifications(NULL);
   portable_device_watcher_->SetNotifications(NULL);
 
@@ -59,6 +65,7 @@ void StorageMonitorWin::Init() {
   SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
   volume_mount_watcher_->Init();
   portable_device_watcher_->Init(window_);
+  MediaChangeNotificationRegister();
 }
 
 bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
@@ -138,11 +145,30 @@ LRESULT CALLBACK StorageMonitorWin::WndProc(HWND hwnd, UINT message,
     case WM_DEVICECHANGE:
       OnDeviceChange(static_cast<UINT>(wparam), lparam);
       return TRUE;
+    case WM_USER_MEDIACHANGED:
+      OnMediaChange(wparam, lparam);
+      return TRUE;
     default:
       break;
   }
 
   return ::DefWindowProc(hwnd, message, wparam, lparam);
+}
+
+void StorageMonitorWin::MediaChangeNotificationRegister() {
+  LPITEMIDLIST id_list;
+  if (SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &id_list) == NOERROR) {
+    SHChangeNotifyEntry notify_entry;
+    notify_entry.pidl = id_list;
+    notify_entry.fRecursive = TRUE;
+    shell_change_notify_id_ = SHChangeNotifyRegister(
+        window_, SHCNRF_ShellLevel, SHCNE_MEDIAINSERTED | SHCNE_MEDIAREMOVED,
+        WM_USER_MEDIACHANGED, 1, &notify_entry);
+    if (!shell_change_notify_id_)
+      DVLOG(1) << "SHChangeNotifyRegister FAILED";
+  } else {
+    DVLOG(1) << "SHGetSpecialFolderLocation FAILED";
+  }
 }
 
 bool StorageMonitorWin::GetDeviceInfo(const base::FilePath& device_path,
@@ -156,8 +182,13 @@ bool StorageMonitorWin::GetDeviceInfo(const base::FilePath& device_path,
 }
 
 void StorageMonitorWin::OnDeviceChange(UINT event_type, LPARAM data) {
+  DVLOG(1) << "OnDeviceChange " << event_type << " " << data;
   volume_mount_watcher_->OnWindowMessage(event_type, data);
   portable_device_watcher_->OnWindowMessage(event_type, data);
+}
+
+void StorageMonitorWin::OnMediaChange(WPARAM wparam, LPARAM lparam) {
+  volume_mount_watcher_->OnMediaChange(wparam, lparam);
 }
 
 StorageMonitor* StorageMonitor::CreateInternal() {

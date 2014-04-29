@@ -8,6 +8,7 @@
 
 #include <dbt.h>
 #include <fileapi.h>
+#include <shlobj.h>
 #include <winioctl.h>
 
 #include "base/bind_helpers.h"
@@ -467,6 +468,30 @@ void VolumeMountWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
         }
       }
       break;
+    }
+  }
+}
+
+void VolumeMountWatcherWin::OnMediaChange(WPARAM wparam, LPARAM lparam) {
+  if (lparam == SHCNE_MEDIAINSERTED || lparam == SHCNE_MEDIAREMOVED) {
+    struct _ITEMIDLIST* pidl = *reinterpret_cast<struct _ITEMIDLIST**>(
+        wparam);
+    wchar_t sPath[MAX_PATH];
+    if (!SHGetPathFromIDList(pidl, sPath)) {
+      DVLOG(1) << "MediaInserted: SHGetPathFromIDList failed";
+      return;
+    }
+    switch (lparam) {
+      case SHCNE_MEDIAINSERTED: {
+        std::vector<base::FilePath> paths;
+        paths.push_back(base::FilePath(sPath));
+        AddDevicesOnUIThread(paths);
+        break;
+      }
+      case SHCNE_MEDIAREMOVED: {
+        HandleDeviceDetachEventOnUIThread(sPath);
+        break;
+      }
     }
   }
 }
