@@ -1497,9 +1497,6 @@ GraphicsLayerPaintingPhase CompositedLayerMapping::paintingPhaseForPrimaryLayer(
         phase |= GraphicsLayerPaintCompositedScroll;
     }
 
-    if (m_owningLayer.compositingReasons() & CompositingReasonOverflowScrollingParent)
-        phase |= GraphicsLayerPaintCompositedScroll;
-
     return static_cast<GraphicsLayerPaintingPhase>(phase);
 }
 
