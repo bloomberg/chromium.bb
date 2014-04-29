@@ -203,10 +203,10 @@ are well supported by different hardware platforms and don&#8217;t require any
 new compiler intrinsics.</p>
 <p>Vector types can be used through the <code>vector_size</code> attribute:</p>
 <pre class="prettyprint">
-typedef int v4si __attribute__((vector_size(16)));
-v4si a = {1,2,3,4};
-v4si b = {5,6,7,8};
-v4si c, d, e;
+typedef int v4s __attribute__((vector_size(16)));
+v4s a = {1,2,3,4};
+v4s b = {5,6,7,8};
+v4s c, d, e;
 c = b + 1;  /* c = b + {1,1,1,1}; */
 d = 2 * b;  /* d = {2,2,2,2} * b; */
 e = c + d;
@@ -214,11 +214,11 @@ e = c + d;
 <p>Vector comparisons are represented as a bitmask as wide as the compared
 elements of all <code>0</code> or all <code>1</code>:</p>
 <pre class="prettyprint">
-typedef int v4si __attribute__((vector_size(16)));
-v4si snip(v2si in) {
-  v4si limit = {32,64,128,256};
-  vs4i mask = in &gt; limit;
-  vs4i ret = in &amp; mask;
+typedef int v4s __attribute__((vector_size(16)));
+v4s snip(v4s in) {
+  v4s limit = {32,64,128,256};
+  v4s mask = in &gt; limit;
+  v4s ret = in &amp; mask;
   return ret;
 }
 </pre>
@@ -289,14 +289,29 @@ a future release, as will 256-bit and 512-bit vectors.</p>
 </tr>
 </tbody>
 </table>
-<p>Furthermore, C-style casts can be used for:</p>
-<ul class="small-gap">
-<li>Truncation.</li>
-<li>Zero- and sign-extension.</li>
-<li>Conversion to/from floating-point and signed/unsigned integer.</li>
-</ul>
+<p>C-style casts can be used to convert one vector type to another without
+modifying the underlying bits. <code>__builtin_convertvector</code> can be used
+to convert from one type to another provided both types have the same
+number of elements, truncating when converting from floating-point to
+integer.</p>
+<pre class="prettyprint">
+typedef unsigned v4u __attribute__((vector_size(16)));
+typedef float v4f __attribute__((vector_size(16)));
+v4u a = {0x3f19999a,0x40000000,0x40490fdb,0x66ff0c30};
+v4f b = (v4f) a; /* b = {0.6,2,3.14159,6.02214e+23}  */
+v4u c = __builtin_convertvector(b, v4u); /* c = {0,2,3,0} */
+</pre>
 <p>It is also possible to use array-style indexing into vectors to extract
 individual elements using <code>[]</code>.</p>
+<pre class="prettyprint">
+typedef unsigned v4u __attribute__((vector_size(16)));
+template&lt;typename T&gt;
+void print(const T v) {
+  for (size_t i = 0; i != sizeof(v) / sizeof(v[0]); ++i)
+    std::cout &lt;&lt; v[i] &lt;&lt; ' ';
+  std::cout &lt;&lt; std::endl;
+}
+</pre>
 <p>Vector shuffles are currently unsupported but will be added soon.</p>
 </section><section id="auto-vectorization">
 <h3 id="auto-vectorization">Auto-Vectorization</h3>

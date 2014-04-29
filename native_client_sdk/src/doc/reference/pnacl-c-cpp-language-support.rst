@@ -227,10 +227,10 @@ Vector types can be used through the ``vector_size`` attribute:
 
 .. naclcode::
 
-  typedef int v4si __attribute__((vector_size(16)));
-  v4si a = {1,2,3,4};
-  v4si b = {5,6,7,8};
-  v4si c, d, e;
+  typedef int v4s __attribute__((vector_size(16)));
+  v4s a = {1,2,3,4};
+  v4s b = {5,6,7,8};
+  v4s c, d, e;
   c = b + 1;  /* c = b + {1,1,1,1}; */
   d = 2 * b;  /* d = {2,2,2,2} * b; */
   e = c + d;
@@ -240,11 +240,11 @@ elements of all ``0`` or all ``1``:
 
 .. naclcode::
 
-  typedef int v4si __attribute__((vector_size(16)));
-  v4si snip(v2si in) {
-    v4si limit = {32,64,128,256};
-    vs4i mask = in > limit;
-    vs4i ret = in & mask;
+  typedef int v4s __attribute__((vector_size(16)));
+  v4s snip(v4s in) {
+    v4s limit = {32,64,128,256};
+    v4s mask = in > limit;
+    v4s ret = in & mask;
     return ret;
   }
 
@@ -286,14 +286,32 @@ The following operators are supported on vectors:
 | ``=``                                        |
 +----------------------------------------------+
 
-Furthermore, C-style casts can be used for:
+C-style casts can be used to convert one vector type to another without
+modifying the underlying bits. ``__builtin_convertvector`` can be used
+to convert from one type to another provided both types have the same
+number of elements, truncating when converting from floating-point to
+integer.
 
-* Truncation.
-* Zero- and sign-extension.
-* Conversion to/from floating-point and signed/unsigned integer.
+.. naclcode::
+
+  typedef unsigned v4u __attribute__((vector_size(16)));
+  typedef float v4f __attribute__((vector_size(16)));
+  v4u a = {0x3f19999a,0x40000000,0x40490fdb,0x66ff0c30};
+  v4f b = (v4f) a; /* b = {0.6,2,3.14159,6.02214e+23}  */
+  v4u c = __builtin_convertvector(b, v4u); /* c = {0,2,3,0} */
 
 It is also possible to use array-style indexing into vectors to extract
 individual elements using ``[]``.
+
+.. naclcode::
+
+  typedef unsigned v4u __attribute__((vector_size(16)));
+  template<typename T>
+  void print(const T v) {
+    for (size_t i = 0; i != sizeof(v) / sizeof(v[0]); ++i)
+      std::cout << v[i] << ' ';
+    std::cout << std::endl;
+  }
 
 Vector shuffles are currently unsupported but will be added soon.
 
