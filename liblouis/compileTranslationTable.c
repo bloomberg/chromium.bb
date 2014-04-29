@@ -710,10 +710,10 @@ compileError (FileInfo * nested, char *format, ...)
 #endif
   va_end (arguments);
   if (nested)
-    lou_logPrint ("%s:%d: error: %s", nested->fileName,
+    lou_log (LOG_ERROR, "%s:%d: error: %s", nested->fileName,
 		  nested->lineNumber, buffer);
   else
-    lou_logPrint ("error: %s", buffer);
+    lou_log (LOG_ERROR, "error: %s", buffer);
   errorCount++;
 #endif
 }
@@ -732,10 +732,10 @@ compileWarning (FileInfo * nested, char *format, ...)
 #endif
   va_end (arguments);
   if (nested)
-    lou_logPrint ("%s:%d: warning: %s", nested->fileName,
+    lou_log (LOG_WARN, "%s:%d: warning: %s", nested->fileName,
 		  nested->lineNumber, buffer);
   else
-    lou_logPrint ("warning: %s", buffer);
+    lou_log (LOG_WARN, "warning: %s", buffer);
   warningCount++;
 #endif
 }
@@ -4477,7 +4477,7 @@ lou_readCharFromFile (const char *fileName, int *mode)
       nested.lineNumber = 0;
       if (!(nested.in = fopen (nested.fileName, "r")))
 	{
-	  lou_logPrint ("Cannot open file '%s'", nested.fileName);
+	  lou_log (LOG_ERROR, "Cannot open file '%s'", nested.fileName);
 	  *mode = 1;
 	  return EOF;
 	}
@@ -4704,7 +4704,7 @@ defaultTableResolver (const char *tableList, const char *base)
       *cp = '\0';
       if (!(tableFiles[k++] = resolveSubtable (subTable, base, searchPath)))
 	{
-	  lou_logPrint ("Cannot resolve table '%s'", subTable);
+	  lou_log (LOG_ERROR, "Cannot resolve table '%s'", subTable);
 	  free (tableFiles);
 	  return NULL;
 	}
@@ -4761,7 +4761,7 @@ compileFile (const char *fileName)
       return 1;
     }
   else
-    lou_logPrint ("Cannot open table '%s'", nested.fileName);
+    lou_log (LOG_ERROR, "Cannot open table '%s'", nested.fileName);
   errorCount++;
   return 0;
 }
@@ -4788,7 +4788,7 @@ includeFile (FileInfo * nested, CharsString * includedFile)
   if (tableFiles[1] != NULL)
     {
       errorCount++;
-      lou_logPrint ("Table list not supported in include statement: 'include %s'", includeThis);
+      lou_log (LOG_ERROR, "Table list not supported in include statement: 'include %s'", includeThis);
       return 0;
     }
   return compileFile (*tableFiles);
@@ -4841,7 +4841,7 @@ cleanup:
   if (ruleNames)
     deallocateRuleNames ();
   if (warningCount)
-    lou_logPrint ("%d warnings issued", warningCount);
+    lou_log (LOG_WARN, "%d warnings issued", warningCount);
   if (!errorCount)
     {
       setDefaults ();
@@ -4850,7 +4850,7 @@ cleanup:
     }
   else
     {
-      lou_logPrint ("%d errors found.", errorCount);
+      lou_log (LOG_ERROR, "%d errors found.", errorCount);
       if (table)
 	free (table);
       table = NULL;
@@ -4938,7 +4938,7 @@ lou_getTable (const char *tableList)
   errorCount = fileCount = 0;
   table = getTable (tableList);
   if (!table)
-    lou_logPrint ("%s could not be found", tableList);
+    lou_log (LOG_ERROR, "%s could not be found", tableList);
   return table;
 }
 
