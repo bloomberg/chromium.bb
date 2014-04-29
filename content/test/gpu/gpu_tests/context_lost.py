@@ -91,26 +91,6 @@ class _ContextLostValidator(page_test.PageTest):
           raise page_test.Failure(
             'Test failed (context not restored properly?)')
 
-    elif page.force_garbage_collection:
-      # Force GC to clean up any contexts not attached to the page.
-      tab.CollectGarbage()
-      completed = False
-      try:
-        print "Waiting for page to finish."
-        util.WaitFor(lambda: tab.EvaluateJavaScript(
-            'window.domAutomationController._finished'), wait_timeout)
-        completed = True
-      except util.TimeoutException:
-        pass
-
-      if not completed:
-        raise page_test.Failure(
-            'Test didn\'t complete (no context restored event?)')
-      if not tab.EvaluateJavaScript(
-        'window.domAutomationController._succeeded'):
-        raise page_test.Failure(
-          'Test failed (context not restored properly?)')
-
 class ContextLost(test_module.Test):
   enabled = True
   test = _ContextLostValidator
@@ -134,7 +114,6 @@ class ContextLost(test_module.Test):
           ],
           'kill_gpu_process': True,
           'number_of_gpu_process_kills': 1,
-          'force_garbage_collection': False
         },
         {
           'name': 'ContextLost.WebGLContextLostFromLoseContextExtension',
@@ -145,20 +124,7 @@ class ContextLost(test_module.Test):
             { 'action': 'wait',
               'javascript': 'window.domAutomationController._finished' }
           ],
-          'kill_gpu_process': False,
-          'force_garbage_collection': False
-        },
-        {
-          'name': 'ContextLost.WebGLContextLostFromQuantity',
-          'url': 'file://webgl.html?query=forced_quantity_loss',
-          'script_to_evaluate_on_commit': harness_script,
-          'navigate_steps': [
-            { 'action': 'navigate' },
-            { 'action': 'wait',
-              'javascript': 'window.domAutomationController._loaded' }
-          ],
-          'kill_gpu_process': False,
-          'force_garbage_collection': True
+          'kill_gpu_process': False
         },
       ]
     }

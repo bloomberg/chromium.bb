@@ -59,35 +59,6 @@ function testContextRestored() {
     window.domAutomationController.send("FAILED");
 }
 
-function testQuantityLoss() {
-  var count = 0;
-  var iterations = 128;
-
-  function createAndDiscardContext() {
-    count++;
-
-    var c = document.createElement("canvas");
-    c.width = 1;
-    c.height = 1;
-
-    var ctx = c.getContext("experimental-webgl");
-    if (!ctx) {
-      return false;
-    }
-    ctx.clear(gl.COLOR_BUFFER_BIT);
-
-    if (count < iterations) {
-      window.requestAnimationFrame(createAndDiscardContext);
-    } else {
-      window.domAutomationController.setAutomationId(1);
-      alreadySetAutomationId = true;
-      window.domAutomationController.send("LOADED");
-    }
-  };
-
-  createAndDiscardContext();
-}
-
 function contextLostTest(kind)
 {
   switch (kind) {
@@ -107,12 +78,6 @@ function contextLostTest(kind)
       window.domAutomationController.setAutomationId(1);
       alreadySetAutomationId = true;
       window.domAutomationController.send("LOADED");
-      break;
-    case "forced_quantity_loss":
-      // Test creates many new contexts, forcing the original context to be
-      // lost. Then a garbage collect is triggered and the original context is
-      // watched to ensure it restores properly.
-      testQuantityLoss();
       break;
   }
 }
