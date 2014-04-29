@@ -38,6 +38,7 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
+#include "wtf/NonCopyingSort.h"
 
 namespace WebCore {
 
@@ -59,14 +60,37 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
 
     StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
     StringKeyframeVector keyframes;
+    bool everyFrameHasOffset = true;
+    bool looselySortedByOffset = true;
+    double lastOffset = -std::numeric_limits<double>::infinity();
 
     for (size_t i = 0; i < keyframeDictionaryVector.size(); ++i) {
         RefPtrWillBeRawPtr<StringKeyframe> keyframe = StringKeyframe::create();
-        keyframes.append(keyframe);
 
+        bool frameHasOffset = false;
         double offset;
-        if (keyframeDictionaryVector[i].get("offset", offset))
-            keyframe->setOffset(offset);
+        if (keyframeDictionaryVector[i].get("offset", offset)) {
+            // Keyframes with offsets outside the range [0.0, 1.0] are ignored.
+            if (std::isnan(offset) || offset < 0 || offset > 1)
+                continue;
+
+            frameHasOffset = true;
+            // The JS value null gets converted to 0 so we need to check whether the original value is null.
+            if (offset == 0) {
+                ScriptValue scriptValue;
+                if (keyframeDictionaryVector[i].get("offset", scriptValue) && scriptValue.isNull())
+                    frameHasOffset = false;
+            }
+            if (frameHasOffset) {
+                keyframe->setOffset(offset);
+                if (offset < lastOffset)
+                    looselySortedByOffset = false;
+                lastOffset = offset;
+            }
+        }
+        everyFrameHasOffset = everyFrameHasOffset && frameHasOffset;
+
+        keyframes.append(keyframe);
 
         String compositeString;
         keyframeDictionaryVector[i].get("composite", compositeString);
@@ -91,6 +115,14 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
             keyframeDictionaryVector[i].get(property, value);
             keyframe->setPropertyValue(id, value, styleSheetContents);
         }
+    }
+
+    if (!looselySortedByOffset) {
+        if (!everyFrameHasOffset) {
+            exceptionState.throwDOMException(InvalidModificationError, "Keyframes are not loosely sorted by offset.");
+            return nullptr;
+        }
+        nonCopyingSort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
     }
 
     RefPtrWillBeRawPtr<StringKeyframeEffectModel> keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);

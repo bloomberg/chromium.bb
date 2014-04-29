@@ -3345,6 +3345,7 @@
             'animation/CompositorAnimationsTestHelper.h',
             'animation/CompositorAnimationsTimingFunctionReverserTest.cpp',
             'animation/DocumentTimelineTest.cpp',
+            'animation/EffectInputTest.cpp',
             'animation/InterpolationEffectTest.cpp',
             'animation/InterpolationTest.cpp',
             'animation/InterpolableValueTest.cpp',

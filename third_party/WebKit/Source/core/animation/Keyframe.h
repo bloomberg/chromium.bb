@@ -30,7 +30,11 @@ public:
     void setEasing(PassRefPtr<TimingFunction> easing) { m_easing = easing; }
     TimingFunction* easing() const { return m_easing.get(); }
 
-    static bool compareOffsets(const RefPtrWillBeMember<Keyframe>&, const RefPtrWillBeMember<Keyframe>&);
+    static bool compareOffsets(const RefPtrWillBeMember<Keyframe>& a, const RefPtrWillBeMember<Keyframe>& b)
+    {
+        return a->offset() < b->offset();
+    }
+
     virtual PropertySet properties() const = 0;
 
     virtual PassRefPtrWillBeRawPtr<Keyframe> clone() const = 0;

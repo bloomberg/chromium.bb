@@ -50,6 +50,58 @@ test(function() {
     assert_equals(e2Style.backgroundColor, 'rgb(64, 64, 64)');
 }, 'Calling animate() should start an animation. CamelCase property names should be parsed.');
 
+test(function() {
+    var player = e1.animate([
+        {left: '10px', offset: '0'},
+        {left: '100px', offset: '1'}
+    ], durationValue);
+    player.pause();
+    player.currentTime = durationValue / 2;
+    assert_equals(e1Style.left, '55px');
+}, 'Offsets may be specified as strings.');
+
+test(function() {
+    var player = e1.animate([
+        {opacity: '0.5', offset: 0.5},
+        {opacity: '0.9', offset: 1},
+        {opacity: '0', offset: 0}
+    ], durationValue);
+    player.pause();
+    player.currentTime = durationValue / 4;
+    assert_equals(e1Style.opacity, '0.25');
+}, 'Keyframes with offsets should become sorted by offset.');
+
+test(function() {
+    var player = e1.animate([
+        {opacity: '1', offset: -1},
+        {opacity: '1', offset: NaN},
+        {opacity: '1', offset: 2},
+        {opacity: '0.5', offset: 1},
+        {opacity: '0', offset: 0}
+    ], durationValue);
+    player.pause();
+    player.currentTime = durationValue / 2;
+    assert_equals(e1Style.opacity, '0.25');
+}, 'Keyframes with offsets outside the range [0.0, 1.0] are ignored.');
+
+test(function() {
+    var keyframes = [
+        {opacity: '0.5'},
+        {opacity: '1', offset: 1},
+        {opacity: '0', offset: 0}
+    ];
+    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+}, 'Should throw when keyframes are not loosely sorted and any have no offset.');
+
+test(function() {
+    var keyframes = [
+        {opacity: '0.5', offset: null},
+        {opacity: '1', offset: 1},
+        {opacity: '0', offset: 0}
+    ];
+    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+}, 'Should throw when keyframes are not loosely sorted and any have null offset.');
+
 var keyframesWithInvalid = [
         {width: '0px', backgroundColor: 'octarine', offset: 0},
         {width: '1000px', foo: 'bar', offset: 1}];

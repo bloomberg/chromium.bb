@@ -37,11 +37,6 @@
 
 namespace WebCore {
 
-bool Keyframe::compareOffsets(const RefPtrWillBeMember<Keyframe>& a, const RefPtrWillBeMember<Keyframe>& b)
-{
-    return a->offset() < b->offset();
-}
-
 PropertySet KeyframeEffectModelBase::properties() const
 {
     PropertySet result;
