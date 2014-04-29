@@ -13,7 +13,7 @@
 
 namespace content {
 
-// Wrapper around the Blink WebCrypto asynchronous interface, which forwards to
+// Wrapper around the blink WebCrypto asynchronous interface, which forwards to
 // the synchronous platfrom (NSS or OpenSSL) implementation.
 //
 // TODO(eroman): Post the synchronous work to a background thread.
@@ -77,7 +77,12 @@ class WebCryptoImpl : public blink::WebCrypto {
       bool extractable,
       blink::WebCryptoKeyUsageMask usages,
       blink::WebCryptoResult result);
-
+  // This method synchronously computes a digest for the given data, returning
+  // |true| if successful and |false| otherwise.
+  virtual bool digestSynchronous(const blink::WebCryptoAlgorithmId algorithm_id,
+                                 const unsigned char* data,
+                                 unsigned int data_size,
+                                 blink::WebArrayBuffer& result);
   // This method returns a digestor object that can be used to synchronously
   // compute a digest one chunk at a time. Thus, the consume does not need to
   // hold onto a large buffer with all the data to digest. Chunks can be given

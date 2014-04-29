@@ -6,17 +6,12 @@
 #define CONTENT_CHILD_WEBCRYPTO_PLATFORM_CRYPTO_H_
 
 #include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
-
-namespace blink {
-template <typename T>
-class WebVector;
-}
 
 namespace content {
 
@@ -33,28 +28,6 @@ class Status;
 // The general purpose code which applies to both OpenSSL and NSS
 // implementations of webcrypto should live in the outter webcrypto namespace,
 // and the crypto library specific bits in the "platform" namespace.
-//
-// -----------------
-// Threading:
-// -----------------
-//
-// Unless otherwise noted, functions in webcrypto::platform are called
-// exclusively from a sequenced worker pool.
-//
-// This means that operations using a given key cannot occur in
-// parallel and it is not necessary to guard against concurrent usage.
-//
-// The exceptions are:
-//
-//   * Key::ThreadSafeSerializeForClone(), which is called from the
-//     target Blink thread during structured clone.
-//
-//   * ImportKeyRaw(), ImportKeySpki(), ImportKeyPkcs8(), which can be
-//     called from the target Blink thread during structured clone
-//     deserialization, as well as from the webcrypto worker pool.
-//
-//     TODO(eroman): Change it so import happens in worker pool too.
-//                   http://crbug.com/366834
 namespace platform {
 
 class SymKey;
@@ -67,9 +40,6 @@ class Key : public blink::WebCryptoKeyHandle {
   virtual SymKey* AsSymKey() = 0;
   virtual PublicKey* AsPublicKey() = 0;
   virtual PrivateKey* AsPrivateKey() = 0;
-
-  virtual bool ThreadSafeSerializeForClone(
-      blink::WebVector<uint8>* key_data) = 0;
 };
 
 // Do any one-time initialization. Note that this can be called MULTIPLE times
@@ -83,7 +53,7 @@ Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
                             SymKey* key,
                             const CryptoData& data,
                             const CryptoData& iv,
-                            std::vector<uint8>* buffer);
+                            blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |key| is a non-null AES-GCM key.
@@ -94,20 +64,20 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             const CryptoData& iv,
                             const CryptoData& additional_data,
                             unsigned int tag_length_bits,
-                            std::vector<uint8>* buffer);
+                            blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |key| is non-null.
 //  * |data| is not empty.
 Status EncryptRsaEsPkcs1v1_5(PublicKey* key,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer);
+                             blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |key| is non-null.
 Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer);
+                             blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |key| is a non-null HMAC key.
@@ -115,13 +85,13 @@ Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
 Status SignHmac(SymKey* key,
                 const blink::WebCryptoAlgorithm& hash,
                 const CryptoData& data,
-                std::vector<uint8>* buffer);
+                blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |algorithm| is a SHA function.
 Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
                  const CryptoData& data,
-                 std::vector<uint8>* buffer);
+                 blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |algorithm| is a SHA function.
@@ -134,7 +104,7 @@ scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
 Status SignRsaSsaPkcs1v1_5(PrivateKey* key,
                            const blink::WebCryptoAlgorithm& hash,
                            const CryptoData& data,
-                           std::vector<uint8>* buffer);
+                           blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |key| is non-null.
@@ -178,7 +148,6 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
 //  * |key| is non-null.
 //  * |algorithm.id()| is for a symmetric key algorithm.
 //  * For AES algorithms |key_data| is either 16, 24, or 32 bytes long.
-// Note that this may be called from target Blink thread.
 Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
                     const CryptoData& key_data,
                     bool extractable,
@@ -194,14 +163,12 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
                           const CryptoData& exponent_data,
                           blink::WebCryptoKey* key);
 
-// Note that this may be called from target Blink thread.
 Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      const CryptoData& key_data,
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usage_mask,
                      blink::WebCryptoKey* key);
 
-// Note that this may be called from target Blink thread.
 Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                       const CryptoData& key_data,
                       bool extractable,
@@ -210,11 +177,11 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
 
 // Preconditions:
 //  * |key| is non-null.
-Status ExportKeyRaw(SymKey* key, std::vector<uint8>* buffer);
+Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |key| is non-null.
-Status ExportKeySpki(PublicKey* key, std::vector<uint8>* buffer);
+Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |key| is non-null.
@@ -226,14 +193,14 @@ Status ExportRsaPublicKey(PublicKey* key,
 //  * |key| is non-null.
 Status ExportKeyPkcs8(PrivateKey* key,
                       const blink::WebCryptoKeyAlgorithm& key_algorithm,
-                      std::vector<uint8>* buffer);
+                      blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |wrapping_key| is non-null
 //  * |key| is non-null
 Status WrapSymKeyAesKw(SymKey* wrapping_key,
                        SymKey* key,
-                       std::vector<uint8>* buffer);
+                       blink::WebArrayBuffer* buffer);
 
 // Unwraps (decrypts) |wrapped_key_data| using AES-KW and places the results in
 // a WebCryptoKey. Raw key data remains inside NSS. This function should be used
@@ -260,14 +227,14 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
 //  * |buffer| is non-null.
 Status DecryptAesKw(SymKey* key,
                     const CryptoData& data,
-                    std::vector<uint8>* buffer);
+                    blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |wrapping_key| is non-null
 //  * |key| is non-null
 Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
                        SymKey* key,
-                       std::vector<uint8>* buffer);
+                       blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |wrapping_key| is non-null

@@ -19,6 +19,7 @@
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
+#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -119,20 +120,9 @@ namespace webcrypto {
 
 namespace platform {
 
-// Each key maintains a copy of its serialized form
-// in either 'raw', 'pkcs8', or 'spki' format. This is to allow
-// structured cloning of keys synchronously from the target Blink
-// thread without having to lock access to the key.
-//
-// TODO(eroman): Take advantage of this for implementing exportKey(): no need
-//               to call into NSS if the serialized form already exists.
-//               http://crubg.com/366836
 class SymKey : public Key {
  public:
-  static Status Create(crypto::ScopedPK11SymKey key, scoped_ptr<SymKey>* out) {
-    out->reset(new SymKey(key.Pass()));
-    return ExportKeyRaw(out->get(), &(*out)->serialized_key_);
-  }
+  explicit SymKey(crypto::ScopedPK11SymKey key) : key_(key.Pass()) {}
 
   PK11SymKey* key() { return key_.get(); }
 
@@ -140,28 +130,15 @@ class SymKey : public Key {
   virtual PublicKey* AsPublicKey() OVERRIDE { return NULL; }
   virtual PrivateKey* AsPrivateKey() OVERRIDE { return NULL; }
 
-  virtual bool ThreadSafeSerializeForClone(
-      blink::WebVector<uint8>* key_data) OVERRIDE {
-    key_data->assign(Uint8VectorStart(serialized_key_), serialized_key_.size());
-    return true;
-  }
-
  private:
-  explicit SymKey(crypto::ScopedPK11SymKey key) : key_(key.Pass()) {}
-
   crypto::ScopedPK11SymKey key_;
-  std::vector<uint8> serialized_key_;
 
   DISALLOW_COPY_AND_ASSIGN(SymKey);
 };
 
 class PublicKey : public Key {
  public:
-  static Status Create(crypto::ScopedSECKEYPublicKey key,
-                       scoped_ptr<PublicKey>* out) {
-    out->reset(new PublicKey(key.Pass()));
-    return ExportKeySpki(out->get(), &(*out)->serialized_key_);
-  }
+  explicit PublicKey(crypto::ScopedSECKEYPublicKey key) : key_(key.Pass()) {}
 
   SECKEYPublicKey* key() { return key_.get(); }
 
@@ -169,29 +146,15 @@ class PublicKey : public Key {
   virtual PublicKey* AsPublicKey() OVERRIDE { return this; }
   virtual PrivateKey* AsPrivateKey() OVERRIDE { return NULL; }
 
-  virtual bool ThreadSafeSerializeForClone(
-      blink::WebVector<uint8>* key_data) OVERRIDE {
-    key_data->assign(Uint8VectorStart(serialized_key_), serialized_key_.size());
-    return true;
-  }
-
  private:
-  explicit PublicKey(crypto::ScopedSECKEYPublicKey key) : key_(key.Pass()) {}
-
   crypto::ScopedSECKEYPublicKey key_;
-  std::vector<uint8> serialized_key_;
 
   DISALLOW_COPY_AND_ASSIGN(PublicKey);
 };
 
 class PrivateKey : public Key {
  public:
-  static Status Create(crypto::ScopedSECKEYPrivateKey key,
-                       const blink::WebCryptoKeyAlgorithm& algorithm,
-                       scoped_ptr<PrivateKey>* out) {
-    out->reset(new PrivateKey(key.Pass()));
-    return ExportKeyPkcs8(out->get(), algorithm, &(*out)->serialized_key_);
-  }
+  explicit PrivateKey(crypto::ScopedSECKEYPrivateKey key) : key_(key.Pass()) {}
 
   SECKEYPrivateKey* key() { return key_.get(); }
 
@@ -199,17 +162,8 @@ class PrivateKey : public Key {
   virtual PublicKey* AsPublicKey() OVERRIDE { return NULL; }
   virtual PrivateKey* AsPrivateKey() OVERRIDE { return this; }
 
-  virtual bool ThreadSafeSerializeForClone(
-      blink::WebVector<uint8>* key_data) OVERRIDE {
-    key_data->assign(Uint8VectorStart(serialized_key_), serialized_key_.size());
-    return true;
-  }
-
  private:
-  explicit PrivateKey(crypto::ScopedSECKEYPrivateKey key) : key_(key.Pass()) {}
-
   crypto::ScopedSECKEYPrivateKey key_;
-  std::vector<uint8> serialized_key_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivateKey);
 };
@@ -264,7 +218,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                             SymKey* key,
                             const CryptoData& iv,
                             const CryptoData& data,
-                            std::vector<uint8>* buffer) {
+                            blink::WebArrayBuffer* buffer) {
   CK_ATTRIBUTE_TYPE operation = (mode == ENCRYPT) ? CKA_ENCRYPT : CKA_DECRYPT;
 
   SECItem iv_item = MakeSECItemForBuffer(iv);
@@ -301,15 +255,15 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
   unsigned int output_max_len = data.byte_length() + AES_BLOCK_SIZE;
   CHECK_GT(output_max_len, data.byte_length());
 
-  buffer->resize(output_max_len);
+  *buffer = blink::WebArrayBuffer::create(output_max_len, 1);
 
-  unsigned char* buffer_data = Uint8VectorStart(buffer);
+  unsigned char* buffer_data = reinterpret_cast<unsigned char*>(buffer->data());
 
   int output_len;
   if (SECSuccess != PK11_CipherOp(context.get(),
                                   buffer_data,
                                   &output_len,
-                                  buffer->size(),
+                                  buffer->byteLength(),
                                   data.bytes(),
                                   data.byte_length())) {
     return Status::OperationError();
@@ -323,7 +277,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
     return Status::OperationError();
   }
 
-  buffer->resize(final_output_chunk_len + output_len);
+  ShrinkBuffer(buffer, final_output_chunk_len + output_len);
   return Status::Success();
 }
 
@@ -336,7 +290,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                             const CryptoData& iv,
                             const CryptoData& additional_data,
                             unsigned int tag_length_bits,
-                            std::vector<uint8>* buffer) {
+                            blink::WebArrayBuffer* buffer) {
   if (!g_aes_gcm_support.Get().IsSupported())
     return Status::ErrorUnsupported();
 
@@ -379,8 +333,8 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
     buffer_size = data.byte_length();
   }
 
-  buffer->resize(buffer_size);
-  unsigned char* buffer_data = Uint8VectorStart(buffer);
+  *buffer = blink::WebArrayBuffer::create(buffer_size, 1);
+  unsigned char* buffer_data = reinterpret_cast<unsigned char*>(buffer->data());
 
   PK11_EncryptDecryptFunction func =
       (mode == ENCRYPT) ? g_aes_gcm_support.Get().pk11_encrypt_func()
@@ -392,7 +346,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                           &param,
                           buffer_data,
                           &output_len,
-                          buffer->size(),
+                          buffer->byteLength(),
                           data.bytes(),
                           data.byte_length());
 
@@ -401,7 +355,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
 
   // Unfortunately the buffer needs to be shrunk for decryption (see the NSS bug
   // above).
-  buffer->resize(output_len);
+  ShrinkBuffer(buffer, output_len);
 
   return Status::Success();
 }
@@ -749,13 +703,13 @@ class DigestorNSS : public blink::WebCryptoDigestor {
     return true;
   }
 
-  Status FinishWithVectorAndStatus(std::vector<uint8>* result) {
+  Status FinishWithWebArrayAndStatus(blink::WebArrayBuffer* result) {
     if (!hash_context_)
       return Status::ErrorUnexpected();
 
     unsigned int result_length = HASH_ResultLenContext(hash_context_);
-    result->resize(result_length);
-    unsigned char* digest = Uint8VectorStart(result);
+    *result = blink::WebArrayBuffer::create(result_length, 1);
+    unsigned char* digest = reinterpret_cast<unsigned char*>(result->data());
     unsigned int digest_size;  // ignored
     return FinishInternal(digest, &digest_size);
   }
@@ -803,6 +757,7 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
                     bool extractable,
                     blink::WebCryptoKeyUsageMask usage_mask,
                     blink::WebCryptoKey* key) {
+
   DCHECK(!algorithm.isNull());
 
   CK_MECHANISM_TYPE mechanism;
@@ -832,12 +787,7 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
           algorithm, key_data.byte_length(), &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<SymKey> key_handle;
-  status = SymKey::Create(pk11_sym_key.Pass(), &key_handle);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(key_handle.release(),
+  *key = blink::WebCryptoKey::create(new SymKey(pk11_sym_key.Pass()),
                                      blink::WebCryptoKeyTypeSecret,
                                      extractable,
                                      key_algorithm,
@@ -845,7 +795,7 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
   return Status::Success();
 }
 
-Status ExportKeyRaw(SymKey* key, std::vector<uint8>* buffer) {
+Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer) {
   if (PK11_ExtractKeyValue(key->key()) != SECSuccess)
     return Status::OperationError();
 
@@ -855,7 +805,7 @@ Status ExportKeyRaw(SymKey* key, std::vector<uint8>* buffer) {
   if (!key_data)
     return Status::OperationError();
 
-  buffer->assign(key_data->data, key_data->data + key_data->len);
+  *buffer = CreateArrayBuffer(key_data->data, key_data->len);
 
   return Status::Success();
 }
@@ -893,6 +843,7 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      bool extractable,
                      blink::WebCryptoKeyUsageMask usage_mask,
                      blink::WebCryptoKey* key) {
+
   DCHECK(key);
 
   if (!key_data.byte_length())
@@ -921,12 +872,7 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
           algorithm, sec_public_key.get(), &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<PublicKey> key_handle;
-  Status status = PublicKey::Create(sec_public_key.Pass(), &key_handle);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(key_handle.release(),
+  *key = blink::WebCryptoKey::create(new PublicKey(sec_public_key.Pass()),
                                      blink::WebCryptoKeyTypePublic,
                                      extractable,
                                      key_algorithm,
@@ -935,7 +881,7 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
   return Status::Success();
 }
 
-Status ExportKeySpki(PublicKey* key, std::vector<uint8>* buffer) {
+Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer) {
   const crypto::ScopedSECItem spki_der(
       SECKEY_EncodeDERSubjectPublicKeyInfo(key->key()));
   // http://crbug.com/366427: the spec does not define any other failures for
@@ -946,7 +892,7 @@ Status ExportKeySpki(PublicKey* key, std::vector<uint8>* buffer) {
   DCHECK(spki_der->data);
   DCHECK(spki_der->len);
 
-  buffer->assign(spki_der->data, spki_der->data + spki_der->len);
+  *buffer = CreateArrayBuffer(spki_der->data, spki_der->len);
 
   return Status::Success();
 }
@@ -967,7 +913,7 @@ Status ExportRsaPublicKey(PublicKey* key,
 
 Status ExportKeyPkcs8(PrivateKey* key,
                       const blink::WebCryptoKeyAlgorithm& key_algorithm,
-                      std::vector<uint8>* buffer) {
+                      blink::WebArrayBuffer* buffer) {
   // TODO(eroman): Support other RSA key types as they are added to Blink.
   if (key_algorithm.id() != blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 &&
       key_algorithm.id() != blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5)
@@ -1012,7 +958,7 @@ Status ExportKeyPkcs8(PrivateKey* key,
                          NULL,
                          &private_key_info,
                          SEC_ASN1_GET(SECKEY_PrivateKeyInfoTemplate)));
-#else   // defined(USE_NSS)
+#else  // defined(USE_NSS)
   crypto::ScopedSECItem encoded_key(
       PK11_ExportDERPrivateKeyInfo(key->key(), NULL));
 #endif  // defined(USE_NSS)
@@ -1020,7 +966,7 @@ Status ExportKeyPkcs8(PrivateKey* key,
   if (!encoded_key.get())
     return Status::OperationError();
 
-  buffer->assign(encoded_key->data, encoded_key->data + encoded_key->len);
+  *buffer = CreateArrayBuffer(encoded_key->data, encoded_key->len);
   return Status::Success();
 }
 
@@ -1029,6 +975,7 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usage_mask,
                       blink::WebCryptoKey* key) {
+
   DCHECK(key);
 
   if (!key_data.byte_length())
@@ -1063,13 +1010,7 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
   if (!CreatePrivateKeyAlgorithm(algorithm, private_key.get(), &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<PrivateKey> key_handle;
-  Status status =
-      PrivateKey::Create(private_key.Pass(), key_algorithm, &key_handle);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(key_handle.release(),
+  *key = blink::WebCryptoKey::create(new PrivateKey(private_key.Pass()),
                                      blink::WebCryptoKeyTypePrivate,
                                      extractable,
                                      key_algorithm,
@@ -1085,7 +1026,7 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
 Status SignHmac(SymKey* key,
                 const blink::WebCryptoAlgorithm& hash,
                 const CryptoData& data,
-                std::vector<uint8>* buffer) {
+                blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(PK11_GetMechanism(key->key()), WebCryptoHashToHMACMechanism(hash));
 
   SECItem param_item = {siBuffer, NULL, 0};
@@ -1103,8 +1044,8 @@ Status SignHmac(SymKey* key,
 
   DCHECK_NE(0u, signature_item.len);
 
-  buffer->resize(signature_item.len);
-  signature_item.data = Uint8VectorStart(buffer);
+  *buffer = blink::WebArrayBuffer::create(signature_item.len, 1);
+  signature_item.data = reinterpret_cast<unsigned char*>(buffer->data());
 
   if (PK11_SignWithSymKey(key->key(),
                           PK11_GetMechanism(key->key()),
@@ -1114,7 +1055,7 @@ Status SignHmac(SymKey* key,
     return Status::OperationError();
   }
 
-  DCHECK_EQ(buffer->size(), signature_item.len);
+  DCHECK_EQ(buffer->byteLength(), signature_item.len);
   return Status::Success();
 }
 
@@ -1124,7 +1065,7 @@ Status SignHmac(SymKey* key,
 
 Status EncryptRsaEsPkcs1v1_5(PublicKey* key,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer) {
+                             blink::WebArrayBuffer* buffer) {
   const unsigned int encrypted_length_bytes =
       SECKEY_PublicKeyStrength(key->key());
 
@@ -1134,8 +1075,9 @@ Status EncryptRsaEsPkcs1v1_5(PublicKey* key,
       encrypted_length_bytes - 11 < data.byte_length())
     return Status::ErrorDataTooLarge();
 
-  buffer->resize(encrypted_length_bytes);
-  unsigned char* const buffer_data = Uint8VectorStart(buffer);
+  *buffer = blink::WebArrayBuffer::create(encrypted_length_bytes, 1);
+  unsigned char* const buffer_data =
+      reinterpret_cast<unsigned char*>(buffer->data());
 
   if (PK11_PubEncryptPKCS1(key->key(),
                            buffer_data,
@@ -1149,14 +1091,15 @@ Status EncryptRsaEsPkcs1v1_5(PublicKey* key,
 
 Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer) {
+                             blink::WebArrayBuffer* buffer) {
   const int modulus_length_bytes = PK11_GetPrivateModulusLen(key->key());
   if (modulus_length_bytes <= 0)
     return Status::ErrorUnexpected();
   const unsigned int max_output_length_bytes = modulus_length_bytes;
 
-  buffer->resize(max_output_length_bytes);
-  unsigned char* const buffer_data = Uint8VectorStart(buffer);
+  *buffer = blink::WebArrayBuffer::create(max_output_length_bytes, 1);
+  unsigned char* const buffer_data =
+      reinterpret_cast<unsigned char*>(buffer->data());
 
   unsigned int output_length_bytes = 0;
   if (PK11_PrivDecryptPKCS1(key->key(),
@@ -1168,7 +1111,7 @@ Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
     return Status::OperationError();
   }
   DCHECK_LE(output_length_bytes, max_output_length_bytes);
-  buffer->resize(output_length_bytes);
+  ShrinkBuffer(buffer, output_length_bytes);
   return Status::Success();
 }
 
@@ -1179,7 +1122,7 @@ Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
 Status SignRsaSsaPkcs1v1_5(PrivateKey* key,
                            const blink::WebCryptoAlgorithm& hash,
                            const CryptoData& data,
-                           std::vector<uint8>* buffer) {
+                           blink::WebArrayBuffer* buffer) {
   // Pick the NSS signing algorithm by combining RSA-SSA (RSA PKCS1) and the
   // inner hash of the input Web Crypto algorithm.
   SECOidTag sign_alg_tag;
@@ -1209,8 +1152,7 @@ Status SignRsaSsaPkcs1v1_5(PrivateKey* key,
     return Status::OperationError();
   }
 
-  buffer->assign(signature_item->data,
-                 signature_item->data + signature_item->len);
+  *buffer = CreateArrayBuffer(signature_item->data, signature_item->len);
   return Status::Success();
 }
 
@@ -1255,7 +1197,7 @@ Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
                             SymKey* key,
                             const CryptoData& data,
                             const CryptoData& iv,
-                            std::vector<uint8>* buffer) {
+                            blink::WebArrayBuffer* buffer) {
   // TODO(eroman): Inline.
   return AesCbcEncryptDecrypt(mode, key, iv, data, buffer);
 }
@@ -1266,7 +1208,7 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             const CryptoData& iv,
                             const CryptoData& additional_data,
                             unsigned int tag_length_bits,
-                            std::vector<uint8>* buffer) {
+                            blink::WebArrayBuffer* buffer) {
   // TODO(eroman): Inline.
   return AesGcmEncryptDecrypt(
       mode, key, data, iv, additional_data, tag_length_bits, buffer);
@@ -1342,46 +1284,34 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
   if (!CreatePublicKeyAlgorithm(algorithm, sec_public_key, &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<PublicKey> public_key_handle;
-  Status status = PublicKey::Create(
-      crypto::ScopedSECKEYPublicKey(sec_public_key), &public_key_handle);
-  if (status.IsError())
-    return status;
-
-  scoped_ptr<PrivateKey> private_key_handle;
-  status = PrivateKey::Create(
-      scoped_sec_private_key.Pass(), key_algorithm, &private_key_handle);
-  if (status.IsError())
-    return status;
-
-  *public_key = blink::WebCryptoKey::create(public_key_handle.release(),
-                                            blink::WebCryptoKeyTypePublic,
-                                            true,
-                                            key_algorithm,
-                                            usage_mask);
-  *private_key = blink::WebCryptoKey::create(private_key_handle.release(),
-                                             blink::WebCryptoKeyTypePrivate,
-                                             extractable,
-                                             key_algorithm,
-                                             usage_mask);
+  *public_key = blink::WebCryptoKey::create(
+      new PublicKey(crypto::ScopedSECKEYPublicKey(sec_public_key)),
+      blink::WebCryptoKeyTypePublic,
+      true,
+      key_algorithm,
+      usage_mask);
+  *private_key =
+      blink::WebCryptoKey::create(new PrivateKey(scoped_sec_private_key.Pass()),
+                                  blink::WebCryptoKeyTypePrivate,
+                                  extractable,
+                                  key_algorithm,
+                                  usage_mask);
 
   return Status::Success();
 }
 
-void Init() {
-  crypto::EnsureNSSInit();
-}
+void Init() { crypto::EnsureNSSInit(); }
 
 Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
                  const CryptoData& data,
-                 std::vector<uint8>* buffer) {
+                 blink::WebArrayBuffer* buffer) {
   DigestorNSS digestor(algorithm);
   Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
   // http://crbug.com/366427: the spec does not define any other failures for
   // digest, so none of the subsequent errors are spec compliant.
   if (!error.IsSuccess())
     return error;
-  return digestor.FinishWithVectorAndStatus(buffer);
+  return digestor.FinishWithWebArrayAndStatus(buffer);
 }
 
 scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
@@ -1414,13 +1344,11 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!CreateSecretKeyAlgorithm(algorithm, keylen_bytes, &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<SymKey> key_handle;
-  Status status = SymKey::Create(pk11_key.Pass(), &key_handle);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(
-      key_handle.release(), key_type, extractable, key_algorithm, usage_mask);
+  *key = blink::WebCryptoKey::create(new SymKey(pk11_key.Pass()),
+                                     key_type,
+                                     extractable,
+                                     key_algorithm,
+                                     usage_mask);
   return Status::Success();
 }
 
@@ -1430,6 +1358,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
                           const CryptoData& modulus_data,
                           const CryptoData& exponent_data,
                           blink::WebCryptoKey* key) {
+
   if (!modulus_data.byte_length())
     return Status::ErrorImportRsaEmptyModulus();
 
@@ -1478,12 +1407,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!CreatePublicKeyAlgorithm(algorithm, pubkey.get(), &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<PublicKey> key_handle;
-  Status status = PublicKey::Create(pubkey.Pass(), &key_handle);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(key_handle.release(),
+  *key = blink::WebCryptoKey::create(new PublicKey(pubkey.Pass()),
                                      blink::WebCryptoKeyTypePublic,
                                      extractable,
                                      key_algorithm,
@@ -1493,7 +1417,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
 
 Status WrapSymKeyAesKw(SymKey* wrapping_key,
                        SymKey* key,
-                       std::vector<uint8>* buffer) {
+                       blink::WebArrayBuffer* buffer) {
   // The data size must be at least 16 bytes and a multiple of 8 bytes.
   // RFC 3394 does not specify a maximum allowed data length, but since only
   // keys are being wrapped in this application (which are small), a reasonable
@@ -1514,7 +1438,7 @@ Status WrapSymKeyAesKw(SymKey* wrapping_key,
     return Status::ErrorUnexpected();
 
   const unsigned int output_length = input_length + 8;
-  buffer->resize(output_length);
+  *buffer = blink::WebArrayBuffer::create(output_length, 1);
   SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(*buffer));
 
   if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
@@ -1555,12 +1479,7 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
           algorithm, PK11_GetKeyLength(unwrapped_key.get()), &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<SymKey> key_handle;
-  status = SymKey::Create(unwrapped_key.Pass(), &key_handle);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(key_handle.release(),
+  *key = blink::WebCryptoKey::create(new SymKey(unwrapped_key.Pass()),
                                      blink::WebCryptoKeyTypeSecret,
                                      extractable,
                                      key_algorithm,
@@ -1570,7 +1489,7 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
 
 Status DecryptAesKw(SymKey* wrapping_key,
                     const CryptoData& data,
-                    std::vector<uint8>* buffer) {
+                    blink::WebArrayBuffer* buffer) {
   // Due to limitations in the NSS API for the AES-KW algorithm, |data| must be
   // temporarily viewed as a symmetric key to be unwrapped (decrypted).
   crypto::ScopedPK11SymKey decrypted;
@@ -1586,14 +1505,14 @@ Status DecryptAesKw(SymKey* wrapping_key,
   const SECItem* const key_data = PK11_GetKeyData(decrypted.get());
   if (!key_data)
     return Status::OperationError();
-  buffer->assign(key_data->data, key_data->data + key_data->len);
+  *buffer = webcrypto::CreateArrayBuffer(key_data->data, key_data->len);
 
   return Status::Success();
 }
 
 Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
                        SymKey* key,
-                       std::vector<uint8>* buffer) {
+                       blink::WebArrayBuffer* buffer) {
   // Check the raw length of the key to be wrapped against the max size allowed
   // by the RSA wrapping key. With PKCS#1 v1.5 padding used in this function,
   // the maximum data length that can be encrypted is the wrapping_key's modulus
@@ -1605,7 +1524,7 @@ Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
       modulus_length_bytes - 11 < input_length_bytes)
     return Status::ErrorDataTooLarge();
 
-  buffer->resize(modulus_length_bytes);
+  *buffer = blink::WebArrayBuffer::create(modulus_length_bytes, 1);
   SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(*buffer));
 
   if (SECSuccess !=
@@ -1625,6 +1544,7 @@ Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,
                          blink::WebCryptoKey* key) {
+
   // Verify wrapped_key_data size does not exceed the modulus of the RSA key.
   const int modulus_length_bytes =
       PK11_GetPrivateModulusLen(wrapping_key->key());
@@ -1661,12 +1581,7 @@ Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
   if (!CreateSecretKeyAlgorithm(algorithm, key_length, &key_algorithm))
     return Status::ErrorUnexpected();
 
-  scoped_ptr<SymKey> key_handle;
-  status = SymKey::Create(unwrapped_key.Pass(), &key_handle);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(key_handle.release(),
+  *key = blink::WebCryptoKey::create(new SymKey(unwrapped_key.Pass()),
                                      blink::WebCryptoKeyTypeSecret,
                                      extractable,
                                      key_algorithm,

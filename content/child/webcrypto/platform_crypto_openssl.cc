@@ -36,11 +36,6 @@ class SymKey : public Key {
   virtual SymKey* AsSymKey() OVERRIDE { return this; }
   virtual PublicKey* AsPublicKey() OVERRIDE { return NULL; }
   virtual PrivateKey* AsPrivateKey() OVERRIDE { return NULL; }
-  virtual bool ThreadSafeSerializeForClone(
-      blink::WebVector<uint8>* key_data) OVERRIDE {
-    key_data->assign(Uint8VectorStart(key_), key_.size());
-    return true;
-  }
 
   const std::vector<unsigned char>& key() const { return key_; }
 
@@ -88,7 +83,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                             SymKey* key,
                             const CryptoData& iv,
                             const CryptoData& data,
-                            std::vector<uint8>* buffer) {
+                            blink::WebArrayBuffer* buffer) {
   CipherOperation cipher_operation =
       (mode == ENCRYPT) ? kDoEncrypt : kDoDecrypt;
 
@@ -127,9 +122,10 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
     output_max_len += AES_BLOCK_SIZE - remainder;
   DCHECK_GT(output_max_len, data.byte_length());
 
-  buffer->resize(output_max_len);
+  *buffer = blink::WebArrayBuffer::create(output_max_len, 1);
 
-  unsigned char* const buffer_data = Uint8VectorStart(buffer);
+  unsigned char* const buffer_data =
+      reinterpret_cast<unsigned char*>(buffer->data());
 
   int output_len = 0;
   if (!EVP_CipherUpdate(context.get(),
@@ -149,7 +145,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
       static_cast<unsigned int>(final_output_chunk_len);
   DCHECK_LE(final_output_len, output_max_len);
 
-  buffer->resize(final_output_len);
+  ShrinkBuffer(buffer, final_output_len);
 
   return Status::Success();
 }
@@ -188,12 +184,16 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
     return true;
   }
 
-  Status FinishWithVectorAndStatus(std::vector<uint8>* result) {
+  Status FinishWithWebArrayAndStatus(blink::WebArrayBuffer* result) {
     const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
-    result->resize(hash_expected_size);
-    unsigned char* const hash_buffer = Uint8VectorStart(result);
+    *result = blink::WebArrayBuffer::create(hash_expected_size, 1);
+    unsigned char* const hash_buffer =
+        static_cast<unsigned char* const>(result->data());
     unsigned int hash_buffer_size;  // ignored
-    return FinishInternal(hash_buffer, &hash_buffer_size);
+    Status error = FinishInternal(hash_buffer, &hash_buffer_size);
+    if (!error.IsSuccess())
+      result->reset();
+    return error;
   }
 
  private:
@@ -239,8 +239,8 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
   unsigned char result_[EVP_MAX_MD_SIZE];
 };
 
-Status ExportKeyRaw(SymKey* key, std::vector<uint8>* buffer) {
-  *buffer = key->key();
+Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer) {
+  *buffer = CreateArrayBuffer(Uint8VectorStart(key->key()), key->key().size());
   return Status::Success();
 }
 
@@ -250,19 +250,19 @@ Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
                             SymKey* key,
                             const CryptoData& data,
                             const CryptoData& iv,
-                            std::vector<uint8>* buffer) {
+                            blink::WebArrayBuffer* buffer) {
   // TODO(eroman): inline the function here.
   return AesCbcEncryptDecrypt(mode, key, iv, data, buffer);
 }
 
 Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
                  const CryptoData& data,
-                 std::vector<uint8>* buffer) {
+                 blink::WebArrayBuffer* buffer) {
   DigestorOpenSSL digestor(algorithm);
   Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
   if (!error.IsSuccess())
     return error;
-  return digestor.FinishWithVectorAndStatus(buffer);
+  return digestor.FinishWithWebArrayAndStatus(buffer);
 }
 
 scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
@@ -335,7 +335,9 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
 Status SignHmac(SymKey* key,
                 const blink::WebCryptoAlgorithm& hash,
                 const CryptoData& data,
-                std::vector<uint8>* buffer) {
+                blink::WebArrayBuffer* buffer) {
+  blink::WebArrayBuffer result;
+
   const EVP_MD* digest_algorithm = GetDigest(hash.id());
   if (!digest_algorithm)
     return Status::ErrorUnsupported();
@@ -351,9 +353,9 @@ Status SignHmac(SymKey* key,
   const unsigned char null_key[] = {};
   const void* const raw_key_voidp = raw_key.size() ? &raw_key[0] : null_key;
 
-  buffer->resize(hmac_expected_length);
+  result = blink::WebArrayBuffer::create(hmac_expected_length, 1);
   crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(
-      Uint8VectorStart(buffer), hmac_expected_length);
+      reinterpret_cast<unsigned char*>(result.data()), hmac_expected_length);
 
   crypto::OpenSSLErrStackTracer(FROM_HERE);
 
@@ -368,6 +370,7 @@ Status SignHmac(SymKey* key,
   if (!success || hmac_actual_length != hmac_expected_length)
     return Status::OperationError();
 
+  *buffer = result;
   return Status::Success();
 }
 
@@ -388,7 +391,7 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             const CryptoData& iv,
                             const CryptoData& additional_data,
                             unsigned int tag_length_bits,
-                            std::vector<uint8>* buffer) {
+                            blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
@@ -396,14 +399,14 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
 // Guaranteed that key is valid.
 Status EncryptRsaEsPkcs1v1_5(PublicKey* key,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer) {
+                             blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
 
 Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer) {
+                             blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
@@ -411,7 +414,7 @@ Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
 Status SignRsaSsaPkcs1v1_5(PrivateKey* key,
                            const blink::WebCryptoAlgorithm& hash,
                            const CryptoData& data,
-                           std::vector<uint8>* buffer) {
+                           blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
@@ -444,14 +447,14 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
   return Status::ErrorUnsupported();
 }
 
-Status ExportKeySpki(PublicKey* key, std::vector<uint8>* buffer) {
+Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
 
 Status ExportKeyPkcs8(PrivateKey* key,
                       const blink::WebCryptoKeyAlgorithm& key_algorithm,
-                      std::vector<uint8>* buffer) {
+                      blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
@@ -465,7 +468,7 @@ Status ExportRsaPublicKey(PublicKey* key,
 
 Status WrapSymKeyAesKw(SymKey* wrapping_key,
                        SymKey* key,
-                       std::vector<uint8>* buffer) {
+                       blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
@@ -482,14 +485,14 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
 
 Status DecryptAesKw(SymKey* key,
                     const CryptoData& data,
-                    std::vector<uint8>* buffer) {
+                    blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
 
 Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
                        SymKey* key,
-                       std::vector<uint8>* buffer) {
+                       blink::WebArrayBuffer* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
@@ -502,17 +505,6 @@ Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
                          blink::WebCryptoKey* key) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
-}
-
-bool ThreadSafeDeserializeKeyForClone(
-    const blink::WebCryptoKeyAlgorithm& algorithm,
-    blink::WebCryptoKeyType type,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usages,
-    const CryptoData& key_data,
-    blink::WebCryptoKey* key) {
-  // TODO(eroman): http://crbug.com/267888
-  return false;
 }
 
 }  // namespace platform

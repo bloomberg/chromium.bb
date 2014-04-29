@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
@@ -24,7 +25,15 @@ class Status;
 // convenience function for getting the pointer, and should not be used beyond
 // the expected lifetime of |data|.
 CONTENT_EXPORT const uint8* Uint8VectorStart(const std::vector<uint8>& data);
-CONTENT_EXPORT uint8* Uint8VectorStart(std::vector<uint8>* data);
+
+// Shrinks a WebArrayBuffer to a new size.
+// TODO(eroman): This works by re-allocating a new buffer. It would be better if
+//               the WebArrayBuffer could just be truncated instead.
+void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned int new_size);
+
+// Creates a WebArrayBuffer from a uint8 byte array
+blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
+                                        unsigned int data_size);
 
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
