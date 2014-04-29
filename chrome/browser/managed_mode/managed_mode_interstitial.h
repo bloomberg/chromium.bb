@@ -23,12 +23,18 @@ class WebContents;
 // blocked page, to decide later whether to manually allow it.
 class ManagedModeInterstitial : public content::InterstitialPageDelegate {
  public:
+  static void Show(content::WebContents* web_contents,
+                   const GURL& url,
+                   const base::Callback<void(bool)>& callback);
+
+ private:
   ManagedModeInterstitial(content::WebContents* web_contents,
                           const GURL& url,
                           const base::Callback<void(bool)>& callback);
   virtual ~ManagedModeInterstitial();
 
- private:
+  bool Init();
+
   // InterstitialPageDelegate implementation.
   virtual std::string GetHTMLContents() OVERRIDE;
   virtual void CommandReceived(const std::string& command) OVERRIDE;

@@ -233,7 +233,7 @@ void ManagedModeNavigationObserver::OnRequestBlocked(
     navigation_observer->OnRequestBlockedInternal(url);
 
   // Show the interstitial.
-  new ManagedModeInterstitial(web_contents, url, callback);
+  ManagedModeInterstitial::Show(web_contents, url, callback);
 }
 
 void ManagedModeNavigationObserver::OnRequestBlockedInternal(const GURL& url) {
