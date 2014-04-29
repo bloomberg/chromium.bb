@@ -84,6 +84,15 @@ EVENTS_EXPORT int GetChangedMouseButtonFlagsFromNative(
 EVENTS_EXPORT gfx::Vector2d GetMouseWheelOffset(
     const base::NativeEvent& native_event);
 
+// Returns a copy of |native_event|. Depending on the platform, this copy may
+// need to be deleted with ReleaseCopiedNativeEvent().
+base::NativeEvent CopyNativeEvent(
+    const base::NativeEvent& native_event);
+
+// Delete a |native_event| previously created by CopyNativeEvent().
+void ReleaseCopiedNativeEvent(
+    const base::NativeEvent& native_event);
+
 // Gets the touch id from a native event.
 EVENTS_EXPORT int GetTouchId(const base::NativeEvent& native_event);
 

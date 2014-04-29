@@ -29,24 +29,6 @@
 
 namespace {
 
-base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
-#if defined(USE_X11)
-  if (!event || event->type == GenericEvent)
-    return NULL;
-  XEvent* copy = new XEvent;
-  *copy = *event;
-  return copy;
-#elif defined(OS_WIN)
-  return event;
-#elif defined(USE_OZONE)
-  return NULL;
-#else
-  NOTREACHED() <<
-      "Don't know how to copy base::NativeEvent for this platform";
-  return NULL;
-#endif
-}
-
 std::string EventTypeName(ui::EventType type) {
 #define RETURN_IF_TYPE(t) if (type == ui::t)  return #t
 #define CASE_TYPE(t) case ui::t:  return #t
@@ -119,10 +101,8 @@ namespace ui {
 // Event
 
 Event::~Event() {
-#if defined(USE_X11)
   if (delete_native_event_)
-    delete native_event_;
-#endif
+    ReleaseCopiedNativeEvent(native_event_);
 }
 
 bool Event::HasNativeEvent() const {
@@ -151,9 +131,7 @@ Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
     : type_(type),
       time_stamp_(time_stamp),
       flags_(flags),
-#if defined(USE_X11)
-      native_event_(NULL),
-#endif
+      native_event_(base::NativeEvent()),
       delete_native_event_(false),
       cancelable_(true),
       target_(NULL),
@@ -161,7 +139,6 @@ Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
       result_(ER_UNHANDLED) {
   if (type_ < ET_LAST)
     name_ = EventTypeName(type_);
-  Init();
 }
 
 Event::Event(const base::NativeEvent& native_event,
@@ -170,6 +147,7 @@ Event::Event(const base::NativeEvent& native_event,
     : type_(type),
       time_stamp_(EventTimeFromNative(native_event)),
       flags_(flags),
+      native_event_(native_event),
       delete_native_event_(false),
       cancelable_(true),
       target_(NULL),
@@ -190,7 +168,6 @@ Event::Event(const base::NativeEvent& native_event,
           100,
           base::HistogramBase::kUmaTargetedHistogramFlag);
   counter_for_type->Add(delta.InMicroseconds());
-  InitWithNativeEvent(native_event);
 }
 
 Event::Event(const Event& copy)
@@ -198,18 +175,14 @@ Event::Event(const Event& copy)
       time_stamp_(copy.time_stamp_),
       latency_(copy.latency_),
       flags_(copy.flags_),
-      native_event_(::CopyNativeEvent(copy.native_event_)),
-      delete_native_event_(false),
+      native_event_(CopyNativeEvent(copy.native_event_)),
+      delete_native_event_(true),
       cancelable_(true),
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
   if (type_ < ET_LAST)
     name_ = EventTypeName(type_);
-#if defined(USE_X11)
-  if (native_event_)
-    delete_native_event_ = true;
-#endif
 }
 
 void Event::SetType(EventType type) {
@@ -218,14 +191,6 @@ void Event::SetType(EventType type) {
   type_ = type;
   if (type_ < ET_LAST)
     name_ = EventTypeName(type_);
-}
-
-void Event::Init() {
-  std::memset(&native_event_, 0, sizeof(native_event_));
-}
-
-void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {
-  native_event_ = native_event;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

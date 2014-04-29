@@ -34,11 +34,6 @@ bool IsMiddleButtonEvent(NSEvent* event) {
 
 namespace ui {
 
-int EventFlagsFromNative(const base::NativeEvent& event) {
-  NSUInteger modifiers = [event modifierFlags];
-  return EventFlagsFromNSEventWithModifiers(event, modifiers);
-}
-
 int EventFlagsFromModifiers(NSUInteger modifiers) {
   int flags = 0;
   flags |= (modifiers & NSAlphaShiftKeyMask) ? ui::EF_CAPS_LOCK_DOWN : 0;

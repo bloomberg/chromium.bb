@@ -219,10 +219,6 @@ class EVENTS_EXPORT Event {
  private:
   friend class EventTestApi;
 
-  // Safely initializes the native event members of this class.
-  void Init();
-  void InitWithNativeEvent(const base::NativeEvent& native_event);
-
   EventType type_;
   std::string name_;
   base::TimeDelta time_stamp_;

@@ -23,12 +23,10 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   return ET_UNKNOWN;
 }
 
-#if !defined(OS_MACOSX)
 int EventFlagsFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
-#endif
 
 base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
@@ -60,6 +58,15 @@ int GetChangedMouseButtonFlagsFromNative(
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
   return gfx::Vector2d();
+}
+
+base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
+  NOTIMPLEMENTED() <<
+      "Don't know how to copy base::NativeEvent for this platform";
+  return NULL;
+}
+
+void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
 }
 
 void ClearTouchIdIfReleased(const base::NativeEvent& native_event) {

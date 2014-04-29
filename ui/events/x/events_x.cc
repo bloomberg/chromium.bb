@@ -559,6 +559,18 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   }
 }
 
+base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
+  if (!event || event->type == GenericEvent)
+    return NULL;
+  XEvent* copy = new XEvent;
+  *copy = *event;
+  return copy;
+}
+
+void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
+  delete event;
+}
+
 void ClearTouchIdIfReleased(const base::NativeEvent& xev) {
   ui::EventType type = ui::EventTypeFromNative(xev);
   if (type == ui::ET_TOUCH_CANCELLED ||
