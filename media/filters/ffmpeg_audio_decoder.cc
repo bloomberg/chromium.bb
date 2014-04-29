@@ -9,7 +9,7 @@
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/audio_timestamp_helper.h"
+#include "media/base/audio_discard_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
@@ -127,11 +127,8 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
 
 FFmpegAudioDecoder::FFmpegAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : task_runner_(task_runner),
-      state_(kUninitialized),
-      av_sample_format_(0),
-      last_input_timestamp_(kNoTimestamp()),
-      output_frames_to_drop_(0) {}
+    : task_runner_(task_runner), state_(kUninitialized), av_sample_format_(0) {
+}
 
 FFmpegAudioDecoder::~FFmpegAudioDecoder() {
   DCHECK_EQ(state_, kUninitialized);
@@ -254,42 +251,20 @@ void FFmpegAudioDecoder::DecodeBuffer(
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
-  if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp() &&
-      output_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
+  if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp()) {
     DVLOG(1) << "Received a buffer without timestamps!";
     decode_cb.Run(kDecodeError, NULL);
     return;
   }
 
-  if (!buffer->end_of_stream()) {
-    DCHECK(buffer->timestamp() != kNoTimestamp());
-    const bool first_buffer =
-        last_input_timestamp_ == kNoTimestamp() &&
-        output_timestamp_helper_->base_timestamp() == kNoTimestamp();
-    if (first_buffer && codec_context_->codec_id == AV_CODEC_ID_VORBIS &&
-        buffer->timestamp() < base::TimeDelta()) {
-      // Dropping frames for negative timestamps as outlined in section A.2
-      // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
-      DCHECK_EQ(output_frames_to_drop_, 0);
-      output_frames_to_drop_ =
-          0.5 +
-          -buffer->timestamp().InSecondsF() * config_.samples_per_second();
-
-      // If we are dropping samples for Vorbis, the timeline always starts at 0.
-      output_timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
-    } else {
-      if (first_buffer) {
-        output_timestamp_helper_->SetBaseTimestamp(buffer->timestamp());
-      } else if (buffer->timestamp() < last_input_timestamp_) {
-        const base::TimeDelta diff =
-            buffer->timestamp() - last_input_timestamp_;
-        DLOG(WARNING) << "Input timestamps are not monotonically increasing! "
-                      << " ts " << buffer->timestamp().InMicroseconds() << " us"
-                      << " diff " << diff.InMicroseconds() << " us";
-      }
-
-      last_input_timestamp_ = buffer->timestamp();
-    }
+  if (!buffer->end_of_stream() && !discard_helper_->initialized() &&
+      codec_context_->codec_id == AV_CODEC_ID_VORBIS &&
+      buffer->timestamp() < base::TimeDelta()) {
+    // Dropping frames for negative timestamps as outlined in section A.2
+    // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
+    const int discard_frames =
+        discard_helper_->TimeDeltaToFrames(-buffer->timestamp());
+    discard_helper_->Reset(discard_frames);
   }
 
   // Transition to kFlushCodec on the first end of stream buffer.
@@ -321,7 +296,6 @@ void FFmpegAudioDecoder::DecodeBuffer(
 
 bool FFmpegAudioDecoder::FFmpegDecode(
     const scoped_refptr<DecoderBuffer>& buffer) {
-
   DCHECK(queued_audio_.empty());
 
   AVPacket packet;
@@ -340,7 +314,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
   // skipping end of stream packets since they have a size of zero.
   do {
     int frame_decoded = 0;
-    int result = avcodec_decode_audio4(
+    const int result = avcodec_decode_audio4(
         codec_context_.get(), av_frame_.get(), &frame_decoded, &packet);
 
     if (result < 0) {
@@ -364,9 +338,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
     packet.data += result;
 
     scoped_refptr<AudioBuffer> output;
-    int decoded_frames = 0;
-    int original_frames = 0;
-    int channels = DetermineChannels(av_frame_.get());
+    const int channels = DetermineChannels(av_frame_.get());
     if (frame_decoded) {
       if (av_frame_->sample_rate != config_.samples_per_second() ||
           channels != ChannelLayoutToChannelCount(config_.channel_layout()) ||
@@ -392,43 +364,22 @@ bool FFmpegAudioDecoder::FFmpegDecode(
 
       DCHECK_EQ(ChannelLayoutToChannelCount(config_.channel_layout()),
                 output->channel_count());
-      original_frames = av_frame_->nb_samples;
-      int unread_frames = output->frame_count() - original_frames;
+      const int unread_frames = output->frame_count() - av_frame_->nb_samples;
       DCHECK_GE(unread_frames, 0);
       if (unread_frames > 0)
         output->TrimEnd(unread_frames);
 
-      // If there are frames to drop, get rid of as many as we can.
-      if (output_frames_to_drop_ > 0) {
-        int drop = std::min(output->frame_count(), output_frames_to_drop_);
-        output->TrimStart(drop);
-        output_frames_to_drop_ -= drop;
-      }
-
-      decoded_frames = output->frame_count();
       av_frame_unref(av_frame_.get());
     }
 
     // WARNING: |av_frame_| no longer has valid data at this point.
-
-    if (decoded_frames > 0) {
-      // Set the timestamp/duration once all the extra frames have been
-      // discarded.
-      output->set_timestamp(output_timestamp_helper_->GetTimestamp());
-      output->set_duration(
-          output_timestamp_helper_->GetFrameDuration(decoded_frames));
-      output_timestamp_helper_->AddFrames(decoded_frames);
-    } else if (IsEndOfStream(result, original_frames, buffer)) {
+    const int decoded_frames = frame_decoded ? output->frame_count() : 0;
+    if (IsEndOfStream(result, decoded_frames, buffer)) {
       DCHECK_EQ(packet.size, 0);
-      output = AudioBuffer::CreateEOSBuffer();
-    } else {
-      // In case all the frames in the buffer were dropped.
-      output = NULL;
-    }
-
-    if (output.get())
+      queued_audio_.push_back(AudioBuffer::CreateEOSBuffer());
+    } else if (discard_helper_->ProcessBuffers(buffer, output)) {
       queued_audio_.push_back(output);
-
+    }
   } while (packet.size > 0);
 
   return true;
@@ -476,10 +427,7 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   // Success!
   av_frame_.reset(av_frame_alloc());
-  output_timestamp_helper_.reset(
-      new AudioTimestampHelper(config_.samples_per_second()));
-  ResetTimestampState();
-
+  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second()));
   av_sample_format_ = codec_context_->sample_fmt;
 
   if (codec_context_->channels !=
@@ -493,14 +441,12 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  output_frames_to_drop_ = config_.codec_delay();
+  ResetTimestampState();
   return true;
 }
 
 void FFmpegAudioDecoder::ResetTimestampState() {
-  output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
-  last_input_timestamp_ = kNoTimestamp();
-  output_frames_to_drop_ = 0;
+  discard_helper_->Reset(config_.codec_delay());
 }
 
 }  // namespace media

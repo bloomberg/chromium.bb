@@ -99,13 +99,8 @@ class MEDIA_EXPORT AudioBuffer
   // Return the channel layout.
   ChannelLayout channel_layout() const { return channel_layout_; }
 
-  // Access to constructor parameters.
   base::TimeDelta timestamp() const { return timestamp_; }
   base::TimeDelta duration() const { return duration_; }
-
-  // TODO(jrummell): Remove set_timestamp() and set_duration() once
-  // DecryptingAudioDecoder::EnqueueFrames() is changed to set them when
-  // creating the buffer. See http://crbug.com/255261.
   void set_timestamp(base::TimeDelta timestamp) { timestamp_ = timestamp; }
   void set_duration(base::TimeDelta duration) { duration_ = duration; }
 

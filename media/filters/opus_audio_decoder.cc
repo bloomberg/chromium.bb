@@ -10,7 +10,7 @@
 #include "base/sys_byteorder.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/audio_timestamp_helper.h"
+#include "media/base/audio_discard_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
@@ -24,11 +24,6 @@ static uint16 ReadLE16(const uint8* data, size_t data_size, int read_offset) {
   DCHECK_LE(read_offset + sizeof(value), data_size);
   memcpy(&value, data + read_offset, sizeof(value));
   return base::ByteSwapToLE16(value);
-}
-
-static int TimeDeltaToAudioFrames(base::TimeDelta time_delta,
-                                  int frame_rate) {
-  return std::ceil(time_delta.InSecondsF() * frame_rate);
 }
 
 // The Opus specification is part of IETF RFC 6716:
@@ -251,8 +246,6 @@ OpusAudioDecoder::OpusAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
       opus_decoder_(NULL),
-      last_input_timestamp_(kNoTimestamp()),
-      frames_to_discard_(0),
       start_input_timestamp_(kNoTimestamp()) {}
 
 void OpusAudioDecoder::Initialize(const AudioDecoderConfig& config,
@@ -316,20 +309,8 @@ void OpusAudioDecoder::DecodeBuffer(
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
-  if (input->timestamp() == kNoTimestamp() &&
-      output_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
+  if (input->timestamp() == kNoTimestamp()) {
     DLOG(ERROR) << "Received a buffer without timestamps!";
-    decode_cb.Run(kDecodeError, NULL);
-    return;
-  }
-
-  if (last_input_timestamp_ != kNoTimestamp() &&
-      input->timestamp() != kNoTimestamp() &&
-      input->timestamp() < last_input_timestamp_) {
-    base::TimeDelta diff = input->timestamp() - last_input_timestamp_;
-    DLOG(ERROR) << "Input timestamps are not monotonically increasing! "
-                << " ts " << input->timestamp().InMicroseconds() << " us"
-                << " diff " << diff.InMicroseconds() << " us";
     decode_cb.Run(kDecodeError, NULL);
     return;
   }
@@ -337,12 +318,10 @@ void OpusAudioDecoder::DecodeBuffer(
   // Apply the necessary codec delay.
   if (start_input_timestamp_ == kNoTimestamp())
     start_input_timestamp_ = input->timestamp();
-  if (last_input_timestamp_ == kNoTimestamp() &&
+  if (!discard_helper_->initialized() &&
       input->timestamp() == start_input_timestamp_) {
-    frames_to_discard_ = config_.codec_delay();
+    discard_helper_->Reset(config_.codec_delay());
   }
-
-  last_input_timestamp_ = input->timestamp();
 
   scoped_refptr<AudioBuffer> output_buffer;
 
@@ -439,8 +418,7 @@ bool OpusAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  output_timestamp_helper_.reset(
-      new AudioTimestampHelper(config_.samples_per_second()));
+  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second()));
   start_input_timestamp_ = kNoTimestamp();
   return true;
 }
@@ -453,10 +431,8 @@ void OpusAudioDecoder::CloseDecoder() {
 }
 
 void OpusAudioDecoder::ResetTimestampState() {
-  output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
-  last_input_timestamp_ = kNoTimestamp();
-  frames_to_discard_ = TimeDeltaToAudioFrames(config_.seek_preroll(),
-                                              config_.samples_per_second());
+  discard_helper_->Reset(
+      discard_helper_->TimeDeltaToFrames(config_.seek_preroll()));
 }
 
 bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
@@ -492,54 +468,16 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
     return false;
   }
 
-  if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
-      !input->end_of_stream()) {
-    DCHECK(input->timestamp() != kNoTimestamp());
-    output_timestamp_helper_->SetBaseTimestamp(input->timestamp());
-  }
-
   // Trim off any extraneous allocation.
   DCHECK_LE(frames_decoded, output_buffer->get()->frame_count());
   const int trim_frames = output_buffer->get()->frame_count() - frames_decoded;
   if (trim_frames > 0)
     output_buffer->get()->TrimEnd(trim_frames);
 
-  // Handle frame discard and trimming.
-  int frames_to_output = frames_decoded;
-  if (frames_decoded > frames_to_discard_) {
-    if (frames_to_discard_ > 0) {
-      output_buffer->get()->TrimStart(frames_to_discard_);
-      frames_to_output -= frames_to_discard_;
-      frames_to_discard_ = 0;
-    }
-    if (input->discard_padding().InMicroseconds() > 0) {
-      int discard_padding = TimeDeltaToAudioFrames(
-          input->discard_padding(), config_.samples_per_second());
-      if (discard_padding < 0 || discard_padding > frames_to_output) {
-        DVLOG(1) << "Invalid file. Incorrect discard padding value.";
-        return false;
-      }
-      output_buffer->get()->TrimEnd(discard_padding);
-      frames_to_output -= discard_padding;
-    } else {
-      DCHECK_EQ(input->discard_padding().InMicroseconds(), 0);
-    }
-  } else {
-    frames_to_discard_ -= frames_to_output;
-    frames_to_output = 0;
-  }
-
-  // Discard the buffer to indicate we need more data.
-  if (!frames_to_output) {
+  // Handles discards and timestamping.  Discard the buffer if more data needed.
+  if (!discard_helper_->ProcessBuffers(input, *output_buffer))
     *output_buffer = NULL;
-    return true;
-  }
 
-  // Assign timestamp and duration to the buffer.
-  output_buffer->get()->set_timestamp(output_timestamp_helper_->GetTimestamp());
-  output_buffer->get()->set_duration(
-      output_timestamp_helper_->GetFrameDuration(frames_to_output));
-  output_timestamp_helper_->AddFrames(frames_to_output);
   return true;
 }
 

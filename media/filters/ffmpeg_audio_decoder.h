@@ -24,7 +24,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-class AudioTimestampHelper;
+class AudioDiscardHelper;
 class DecoderBuffer;
 
 class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
@@ -81,12 +81,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   // AVSampleFormat initially requested; not Chrome's SampleFormat.
   int av_sample_format_;
 
-  // Used for computing output timestamps.
-  scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
-  base::TimeDelta last_input_timestamp_;
-
-  // Number of frames to drop before generating output buffers.
-  int output_frames_to_drop_;
+  scoped_ptr<AudioDiscardHelper> discard_helper_;
 
   // Since multiple frames may be decoded from the same packet we need to queue
   // them up.

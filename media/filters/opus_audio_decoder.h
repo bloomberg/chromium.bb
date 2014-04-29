@@ -20,7 +20,7 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class AudioBuffer;
-class AudioTimestampHelper;
+class AudioDiscardHelper;
 class DecoderBuffer;
 struct QueuedAudioBuffer;
 
@@ -55,20 +55,11 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   AudioDecoderConfig config_;
   OpusMSDecoder* opus_decoder_;
 
-  // Used for computing output timestamps.
-  scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
-  base::TimeDelta last_input_timestamp_;
-
-  // Number of frames to be discarded from the start of the packet. This value
-  // is respected for all packets except for the first one in the stream. For
-  // the first packet in the stream, |frame_delay_at_start_| is used. This is
-  // usually set to the SeekPreRoll value from the container whenever a seek
-  // happens.
-  int frames_to_discard_;
-
   // When the input timestamp is |start_input_timestamp_| the decoder needs to
   // drop |config_.codec_delay()| frames.
   base::TimeDelta start_input_timestamp_;
+
+  scoped_ptr<AudioDiscardHelper> discard_helper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OpusAudioDecoder);
 };

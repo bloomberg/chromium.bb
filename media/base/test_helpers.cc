@@ -185,9 +185,9 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
       output->channel_data().size() == 1 ? frames * channels : frames;
   for (size_t ch = 0; ch < output->channel_data().size(); ++ch) {
     T* buffer = reinterpret_cast<T*>(output->channel_data()[ch]);
+    const T v = static_cast<T>(start + ch * output_size * increment);
     for (size_t i = 0; i < output_size; ++i) {
-      buffer[i] = start;
-      start += increment;
+      buffer[i] = static_cast<T>(v + i * increment);
     }
   }
   return output;
