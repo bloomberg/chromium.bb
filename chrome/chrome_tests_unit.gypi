@@ -1033,6 +1033,7 @@
         'browser/invalidation/invalidation_service_test_template.h',
         'browser/invalidation/invalidator_storage_unittest.cc',
         'browser/invalidation/ticl_invalidation_service_unittest.cc',
+        'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
         'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
         'browser/local_discovery/privet_http_unittest.cc',
         'browser/local_discovery/privet_url_fetcher_unittest.cc',
@@ -2533,6 +2534,7 @@
 
             # Android uses a different invaliator.
             'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
+            'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
             'browser/invalidation/ticl_invalidation_service_unittest.cc',
 
             # The importer code is not used on Android.

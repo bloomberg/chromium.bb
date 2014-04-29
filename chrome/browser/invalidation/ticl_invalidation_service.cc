@@ -6,16 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_service.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
@@ -61,12 +55,12 @@ namespace invalidation {
 
 TiclInvalidationService::TiclInvalidationService(
     scoped_ptr<IdentityProvider> identity_provider,
+    scoped_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMService* gcm_service,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    Profile* profile)
+    const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : OAuth2TokenService::Consumer("ticl_invalidation"),
-      profile_(profile),
       identity_provider_(identity_provider.Pass()),
+      settings_provider_(settings_provider.Pass()),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       network_channel_type_(PUSH_CLIENT_CHANNEL),
@@ -88,16 +82,6 @@ void TiclInvalidationService::Init(
         GenerateInvalidatorClientId());
   }
 
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kInvalidationServiceUseGCMChannel,
-      base::Bind(&TiclInvalidationService::UpdateInvalidationNetworkChannel,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kGCMChannelEnabled,
-      base::Bind(&TiclInvalidationService::UpdateInvalidationNetworkChannel,
-                 base::Unretained(this)));
-
   UpdateInvalidationNetworkChannel();
   UMA_HISTOGRAM_ENUMERATION("Invalidations.NetworkChannel",
                             network_channel_type_,
@@ -109,6 +93,7 @@ void TiclInvalidationService::Init(
 
   identity_provider_->AddObserver(this);
   identity_provider_->AddActiveAccountRefreshTokenObserver(this);
+  settings_provider_->AddObserver(this);
 }
 
 void TiclInvalidationService::InitForTest(
@@ -286,6 +271,10 @@ void TiclInvalidationService::OnActiveAccountLogout() {
       ClearAndSetNewClientId(GenerateInvalidatorClientId());
 }
 
+void TiclInvalidationService::OnUseGCMChannelChanged() {
+  UpdateInvalidationNetworkChannel();
+}
+
 void TiclInvalidationService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   if (state == syncer::INVALIDATION_CREDENTIALS_REJECTED) {
@@ -319,6 +308,7 @@ std::string TiclInvalidationService::GetOwnerName() const { return "TICL"; }
 
 void TiclInvalidationService::Shutdown() {
   DCHECK(CalledOnValidThread());
+  settings_provider_->RemoveObserver(this);
   identity_provider_->RemoveActiveAccountRefreshTokenObserver(this);
   identity_provider_->RemoveObserver(this);
   if (IsStarted()) {
@@ -422,15 +412,9 @@ void TiclInvalidationService::StartInvalidator(
 }
 
 void TiclInvalidationService::UpdateInvalidationNetworkChannel() {
-  InvalidationNetworkChannel network_channel_type = PUSH_CLIENT_CHANNEL;
-  if (gcm::GCMProfileService::GetGCMEnabledState(profile_) ==
-          gcm::GCMProfileService::ALWAYS_ENABLED &&
-      (profile_->GetPrefs()->GetBoolean(
-           prefs::kInvalidationServiceUseGCMChannel) ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kInvalidationUseGCMChannel))) {
-    network_channel_type = GCM_NETWORK_CHANNEL;
-  }
+  const InvalidationNetworkChannel network_channel_type =
+      settings_provider_->UseGCMChannel() ? GCM_NETWORK_CHANNEL
+                                          : PUSH_CLIENT_CHANNEL;
   if (network_channel_type_ == network_channel_type)
     return;
   network_channel_type_ = network_channel_type;
