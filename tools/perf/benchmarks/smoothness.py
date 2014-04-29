@@ -116,3 +116,10 @@ class SmoothnessToughPinchZoomCases(test.Test):
   """
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_pinch_zoom_cases.py'
+
+
+class SmoothnessPolymer(test.Test):
+  """Measures rendering statistics for Polymer cases.
+  """
+  test = smoothness.Smoothness
+  page_set = 'page_sets/polymer.py'
