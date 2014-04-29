@@ -66,8 +66,6 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   static const SkColor kTextfieldSelectionColor =
       color_utils::AlphaBlend(SK_ColorBLACK,
           kTextfieldSelectionBackgroundFocused, 0xdd);
-  // Tooltip
-  static const SkColor kTooltipBackground = 0xFFFFFFCC;
   // Tree
   static const SkColor kTreeBackground = SK_ColorWHITE;
   static const SkColor kTreeTextColor = SK_ColorBLACK;
@@ -185,10 +183,6 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       return kTextfieldSelectionColor;
     case kColorId_TextfieldSelectionBackgroundFocused:
       return kTextfieldSelectionBackgroundFocused;
-
-    // Tooltip
-    case kColorId_TooltipBackground:
-      return kTooltipBackground;
 
     // Tree
     case kColorId_TreeBackground:

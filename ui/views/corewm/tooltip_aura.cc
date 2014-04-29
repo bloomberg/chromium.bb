@@ -12,13 +12,13 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
+const SkColor kTooltipBackground = 0xFFFFFFCC;
 const int kTooltipHorizontalPadding = 3;
 
 // Max visual tooltip width. If a tooltip is greater than this width, it will
@@ -60,6 +60,8 @@ TooltipAura::TooltipAura(gfx::ScreenType screen_type)
     : screen_type_(screen_type),
       widget_(NULL),
       tooltip_window_(NULL) {
+  label_.set_background(
+      views::Background::CreateSolidBackground(kTooltipBackground));
   label_.set_owned_by_client();
   label_.SetMultiLine(true);
 }
@@ -232,11 +234,6 @@ void TooltipAura::SetText(aura::Window* window,
       2 * kTooltipVerticalPadding;
   CreateWidget();
   SetTooltipBounds(location, width, height);
-
-  label_.set_background(
-      views::Background::CreateSolidBackground(
-          widget_->GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_TooltipBackground)));
 }
 
 void TooltipAura::Show() {
