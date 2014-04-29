@@ -16,7 +16,7 @@
             durationInInitSegment: 6.042,
             duration: 6.051,
             // Supports jagged-ended stream end timestamps with some less than duration:
-            bufferedRangeEndBeforeEndOfStream: 6.042,
+            bufferedRangeEndBeforeEndOfStream: 6.040,
             init: { offset: 0, size: 4357 },
             media: [
                 {  offset: 4357, size: 11830, timecode: 0 },

@@ -15,7 +15,7 @@
             var manifestFilenameB = subType + "/test-v-128k-320x240-30fps-10kfr-manifest.json";
 
             var expectationsA = {
-              webm: "{ [0.000, 2.044) }",
+              webm: "{ [0.000, 2.022) }",
               mp4: "{ [0.000, 2.043) }",
             };
 
@@ -98,7 +98,7 @@
                     test.waitForExpectedEvents(function()
                     {
                         var expectationsAV = {
-                            webm: ["{ [0.000, 2.003) }", "{ [0.000, 2.044) }"],
+                            webm: ["{ [0.000, 2.003) }", "{ [0.000, 2.022) }"],
                             mp4: ["{ [0.000, 2.000) }", "{ [0.000, 2.043) }"],
                         };
 
