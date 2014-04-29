@@ -6,7 +6,9 @@
 """Class capturing a command invocation as data."""
 
 import inspect
+import glob
 import hashlib
+import logging
 import os
 import shutil
 import sys
@@ -259,13 +261,19 @@ def RemoveDirectory(path):
   return Runnable(remove, path)
 
 
-def Remove(path):
-  """Convenience method for generating a command to remove a file."""
-  def remove(subst, path):
-    path = subst.SubstituteAbsPaths(path)
-    if os.path.exists(path):
-      os.remove(path)
-  return Runnable(remove, path)
+def Remove(*args):
+  """Convenience method for generating a command to remove files."""
+  def remove(subst, *args):
+    for arg in args:
+      path = subst.SubstituteAbsPaths(arg)
+      expanded = glob.glob(path)
+      if len(expanded) == 0:
+        logging.debug('command.Remove: argument %s (substituted from %s) '
+                      'does not match any file' %
+                      (path, arg))
+      for f in expanded:
+        os.remove(f)
+  return Runnable(remove, *args)
 
 
 def Rename(src, dst):

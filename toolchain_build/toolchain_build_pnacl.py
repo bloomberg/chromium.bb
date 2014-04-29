@@ -305,6 +305,12 @@ def HostTools(host, options):
     return 'host_x86_64' if IsHost64(host) else 'host_x86_32'
   def BinSubdir(host):
     return 'bin64' if host == 'x86_64-linux' else 'bin'
+  # Return the file name with the appropriate suffix for an executable file.
+  def Exe(file):
+    if TripleIsWindows(host):
+      return file + '.exe'
+    else:
+      return file
   tools = {
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'],
@@ -396,7 +402,13 @@ def HostTools(host, options):
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
                   'all']),
-              command.Command(MAKE_DESTDIR_CMD + ['install'])] +
+              command.Command(MAKE_DESTDIR_CMD + ['install']),
+              command.Remove(*[os.path.join('%(output)s', 'lib', f) for f in
+                              '*.a', '*Hello.*', 'BugpointPasses.*']),
+              command.Remove(*[os.path.join('%(output)s', 'bin', f) for f in
+                               Exe('clang-format'), Exe('clang-check'),
+                               Exe('c-index-test'), Exe('clang-tblgen'),
+                               Exe('llvm-tblgen')])] +
               CopyWindowsHostLibs(host),
       },
   }
