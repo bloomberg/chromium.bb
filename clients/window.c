@@ -2876,6 +2876,14 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	if (!window || !input->xkb.state)
 		return;
 
+	/* We only use input grabs for pointer events for now, so just
+	 * ignore key presses if a grab is active.  We expand the key
+	 * event delivery mechanism to route events to widgets to
+	 * properly handle key grabs.  In the meantime, this prevents
+	 * key event devlivery while a grab is active. */
+	if (input->grab && input->grab_button == 0)
+		return;
+
 	num_syms = xkb_key_get_syms(input->xkb.state, code, &syms);
 
 	sym = XKB_KEY_NoSymbol;
