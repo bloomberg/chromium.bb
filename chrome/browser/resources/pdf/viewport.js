@@ -421,8 +421,15 @@ Viewport.prototype = {
    * @param {Object} documentDimensions the dimensions of the document
    */
   setDocumentDimensions: function(documentDimensions) {
+    var initialDimensions = !this.documentDimensions_;
     this.documentDimensions_ = documentDimensions;
     this.pageDimensions_ = this.documentDimensions_.pageDimensions;
+    if (initialDimensions) {
+      this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
+      if (this.zoom_ > 1)
+        this.setZoom_(1);
+      this.window_.scrollTo(0, 0);
+    }
     this.contentSizeChanged_();
     this.resize_();
   },
