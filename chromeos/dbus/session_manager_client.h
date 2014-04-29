@@ -70,8 +70,13 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Restarts a job referenced by |pid| with the provided command line.
   virtual void RestartJob(int pid, const std::string& command_line) = 0;
 
+  // Used for StartSession. Takes a boolean indicating whether the
+  // operation was successful or not.
+  typedef base::Callback<void(bool success)> StartSessionCallback;
+
   // Starts the session for the user.
-  virtual void StartSession(const std::string& user_email) = 0;
+  virtual void StartSession(const std::string& user_email,
+                            const StartSessionCallback& callback) = 0;
 
   // Stops the current session.
   virtual void StopSession() = 0;

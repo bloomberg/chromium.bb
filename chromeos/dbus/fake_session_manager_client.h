@@ -30,7 +30,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
   virtual bool HasObserver(Observer* observer) OVERRIDE;
   virtual void EmitLoginPromptVisible() OVERRIDE;
   virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE;
-  virtual void StartSession(const std::string& user_email) OVERRIDE;
+  virtual void StartSession(const std::string& user_email,
+                            const StartSessionCallback& callback) OVERRIDE;
   virtual void StopSession() OVERRIDE;
   virtual void StartDeviceWipe() OVERRIDE;
   virtual void RequestLockScreen() OVERRIDE;
