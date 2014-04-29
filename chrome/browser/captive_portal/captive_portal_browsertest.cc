@@ -53,12 +53,11 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using captive_portal::CaptivePortalResult;
 using content::BrowserThread;
 using content::URLRequestFailedJob;
 using content::URLRequestMockHTTPJob;
 using content::WebContents;
-
-namespace captive_portal {
 
 namespace {
 
@@ -685,7 +684,7 @@ class CaptivePortalObserver : public content::NotificationObserver {
 
   int num_results_received() const { return num_results_received_; }
 
-  Result captive_portal_result() const {
+  CaptivePortalResult captive_portal_result() const {
     return captive_portal_result_;
   }
 
@@ -709,7 +708,7 @@ class CaptivePortalObserver : public content::NotificationObserver {
   CaptivePortalService* captive_portal_service_;
 
   // Last result received.
-  Result captive_portal_result_;
+  CaptivePortalResult captive_portal_result_;
 
   content::NotificationRegistrar registrar_;
 
@@ -835,12 +834,14 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // triggering a captive portal check, which is expected to give the result
   // |expected_result|.  The page finishes loading, with a timeout, after the
   // captive portal check.
-  void SlowLoadNoCaptivePortal(Browser* browser, Result expected_result);
+  void SlowLoadNoCaptivePortal(Browser* browser,
+                               CaptivePortalResult expected_result);
 
   // Navigates |browser|'s active tab to an SSL timeout, expecting a captive
   // portal check to be triggered and return a result which will indicates
   // there's no detected captive portal.
-  void FastTimeoutNoCaptivePortal(Browser* browser, Result expected_result);
+  void FastTimeoutNoCaptivePortal(Browser* browser,
+                                  CaptivePortalResult expected_result);
 
   // Navigates the active tab to a slow loading SSL page, which will then
   // trigger a captive portal test.  The test is expected to find a captive
@@ -1051,7 +1052,8 @@ void CaptivePortalBrowserTest::NavigateToPageExpectNoTest(
 }
 
 void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
-    Browser* browser, Result expected_result) {
+    Browser* browser,
+    CaptivePortalResult expected_result) {
   CaptivePortalTabReloader* tab_reloader =
       GetTabReloader(browser->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(tab_reloader);
@@ -1090,8 +1092,9 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
 }
 
 void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
-    Browser* browser, Result expected_result) {
-  ASSERT_NE(expected_result, RESULT_BEHIND_CAPTIVE_PORTAL);
+    Browser* browser,
+    CaptivePortalResult expected_result) {
+  ASSERT_NE(expected_result, captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
 
   // Set the load time to be large, so the timer won't trigger.  The value is
   // not restored at the end of the function.
@@ -1212,7 +1215,7 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
 
   EXPECT_EQ(initial_loading_tabs + 1, NumLoadingTabs());
   EXPECT_EQ(expected_broken_tabs, NumBrokenTabs());
-  EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
+  EXPECT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
   EXPECT_EQ(expected_portal_checks, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
@@ -1291,7 +1294,7 @@ void CaptivePortalBrowserTest::FastErrorBehindCaptivePortal(
 
   EXPECT_EQ(initial_loading_tabs, NumLoadingTabs());
   EXPECT_EQ(expected_broken_tabs, NumBrokenTabs());
-  EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
+  EXPECT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
   EXPECT_EQ(1, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
@@ -1325,7 +1328,7 @@ void CaptivePortalBrowserTest::NavigateLoginTab(Browser* browser,
   navigation_observer.WaitForNavigations(1);
 
   // Check the captive portal result.
-  EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
+  EXPECT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
   EXPECT_EQ(1, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
@@ -1571,7 +1574,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RequestFails) {
   SetUpCaptivePortalService(
       browser()->profile(),
       URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_CLOSED));
-  SlowLoadNoCaptivePortal(browser(), RESULT_NO_RESPONSE);
+  SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_NO_RESPONSE);
 }
 
 // Same as above, but for the rather unlikely case that the connection times out
@@ -1580,13 +1583,13 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RequestFailsFastTimout) {
   SetUpCaptivePortalService(
       browser()->profile(),
       URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_CLOSED));
-  FastTimeoutNoCaptivePortal(browser(), RESULT_NO_RESPONSE);
+  FastTimeoutNoCaptivePortal(browser(), captive_portal::RESULT_NO_RESPONSE);
 }
 
 // Checks the case that captive portal detection is disabled.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Disabled) {
   EnableCaptivePortalDetection(browser()->profile(), false);
-  SlowLoadNoCaptivePortal(browser(), RESULT_INTERNET_CONNECTED);
+  SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_INTERNET_CONNECTED);
 }
 
 // Checks that we look for a captive portal on HTTPS timeouts and don't reload
@@ -1598,7 +1601,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, InternetConnected) {
   ASSERT_TRUE(test_server()->Start());
   SetUpCaptivePortalService(browser()->profile(),
                             test_server()->GetURL("nocontent"));
-  SlowLoadNoCaptivePortal(browser(), RESULT_INTERNET_CONNECTED);
+  SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_INTERNET_CONNECTED);
 }
 
 // Checks that no login page is opened when the HTTP test URL redirects to an
@@ -1624,7 +1627,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RedirectSSLCertError) {
       browser()->profile(),
       test_server()->GetURL(CreateServerRedirect(ssl_login_url.spec())));
 
-  SlowLoadNoCaptivePortal(browser(), RESULT_NO_RESPONSE);
+  SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_NO_RESPONSE);
 }
 
 // A slow SSL load triggers a captive portal check.  The user logs on before
@@ -1948,7 +1951,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
   // login tab.
   EnableCaptivePortalDetection(browser()->profile(), false);
 
-  SlowLoadNoCaptivePortal(browser(), RESULT_INTERNET_CONNECTED);
+  SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_INTERNET_CONNECTED);
 
   // Navigate to a working page.
   ui_test_utils::NavigateToURL(
@@ -1979,7 +1982,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
 
   EXPECT_EQ(1, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
-  ASSERT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
+  ASSERT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
 
   ASSERT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
@@ -2032,7 +2035,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, ReloadTimeout) {
 
   ASSERT_EQ(1, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
-  ASSERT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
+  ASSERT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
 
   ASSERT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
@@ -2112,7 +2115,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
 
   // Check captive portal test results.
   portal_observer.WaitForResults(1);
-  ASSERT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
+  ASSERT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
   EXPECT_EQ(1, portal_observer.num_results_received());
 
@@ -2198,5 +2201,3 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
   Login(browser(), 1, 0);
   FailLoadsAfterLogin(browser(), 1);
 }
-
-}  // namespace captive_portal

@@ -176,7 +176,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // --- Feature tab helpers behind flags ---
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  captive_portal::CaptivePortalTabHelper::CreateForWebContents(web_contents);
+  CaptivePortalTabHelper::CreateForWebContents(web_contents);
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)

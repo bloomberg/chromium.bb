@@ -229,8 +229,8 @@ SSLBlockingPage::SSLBlockingPage(
   }
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  captive_portal::CaptivePortalService* captive_portal_service =
-      captive_portal::CaptivePortalServiceFactory::GetForProfile(profile);
+  CaptivePortalService* captive_portal_service =
+      CaptivePortalServiceFactory::GetForProfile(profile);
   captive_portal_detection_enabled_ = captive_portal_service ->enabled();
   captive_portal_service ->DetectCaptivePortal();
   registrar_.Add(this,
@@ -523,8 +523,8 @@ void SSLBlockingPage::Observe(
     return;
   if (type == chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT) {
     captive_portal_probe_completed_ = true;
-    captive_portal::CaptivePortalService::Results* results =
-        content::Details<captive_portal::CaptivePortalService::Results>(
+    CaptivePortalService::Results* results =
+        content::Details<CaptivePortalService::Results>(
             details).ptr();
     // If a captive portal was detected at any point when the interstitial was
     // displayed, assume that the interstitial was caused by a captive portal.

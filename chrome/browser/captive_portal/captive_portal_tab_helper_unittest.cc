@@ -21,7 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace captive_portal {
+using captive_portal::CaptivePortalResult;
 
 namespace {
 
@@ -54,7 +54,8 @@ class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
   MOCK_METHOD1(OnLoadCommitted, void(int));
   MOCK_METHOD0(OnAbort, void());
   MOCK_METHOD1(OnRedirect, void(bool));
-  MOCK_METHOD2(OnCaptivePortalResults, void(Result, Result));
+  MOCK_METHOD2(OnCaptivePortalResults,
+               void(CaptivePortalResult, CaptivePortalResult));
 };
 
 // Inherits from the ChromeRenderViewHostTestHarness to gain access to
@@ -179,7 +180,8 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   }
 
   // Simulates a captive portal redirect by calling the Observe method.
-  void ObservePortalResult(Result previous_result, Result result) {
+  void ObservePortalResult(CaptivePortalResult previous_result,
+                           CaptivePortalResult result) {
     content::Source<Profile> source_profile(NULL);
 
     CaptivePortalService::Results results;
@@ -572,7 +574,8 @@ TEST_F(CaptivePortalTabHelperTest, LoginTabLogin) {
   SetIsLoginTab();
   EXPECT_TRUE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_INTERNET_CONNECTED);
+  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
+                      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_FALSE(tab_helper().IsLoginTab());
 }
 
@@ -582,7 +585,8 @@ TEST_F(CaptivePortalTabHelperTest, LoginTabError) {
   SetIsLoginTab();
   EXPECT_TRUE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_NO_RESPONSE);
+  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
+                      captive_portal::RESULT_NO_RESPONSE);
   EXPECT_FALSE(tab_helper().IsLoginTab());
 }
 
@@ -592,28 +596,31 @@ TEST_F(CaptivePortalTabHelperTest, LoginTabMultipleResultsBeforeLogin) {
   SetIsLoginTab();
   EXPECT_TRUE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_BEHIND_CAPTIVE_PORTAL);
+  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
+                      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_TRUE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_BEHIND_CAPTIVE_PORTAL,
-                      RESULT_BEHIND_CAPTIVE_PORTAL);
+  ObservePortalResult(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+                      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_TRUE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_NO_RESPONSE, RESULT_INTERNET_CONNECTED);
+  ObservePortalResult(captive_portal::RESULT_NO_RESPONSE,
+                      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_FALSE(tab_helper().IsLoginTab());
 }
 
 TEST_F(CaptivePortalTabHelperTest, NoLoginTab) {
   EXPECT_FALSE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_INTERNET_CONNECTED, RESULT_BEHIND_CAPTIVE_PORTAL);
+  ObservePortalResult(captive_portal::RESULT_INTERNET_CONNECTED,
+                      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_FALSE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_BEHIND_CAPTIVE_PORTAL, RESULT_NO_RESPONSE);
+  ObservePortalResult(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+                      captive_portal::RESULT_NO_RESPONSE);
   EXPECT_FALSE(tab_helper().IsLoginTab());
 
-  ObservePortalResult(RESULT_NO_RESPONSE, RESULT_INTERNET_CONNECTED);
+  ObservePortalResult(captive_portal::RESULT_NO_RESPONSE,
+                      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_FALSE(tab_helper().IsLoginTab());
 }
-
-}  // namespace captive_portal

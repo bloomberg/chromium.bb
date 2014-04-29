@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/captive_portal/testing_utils.h"
+#include "components/captive_portal/captive_portal_testing_utils.h"
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -14,9 +14,8 @@ namespace {
 
 scoped_refptr<net::HttpResponseHeaders> CreateResponseHeaders(
     const std::string& response_headers) {
-  std::string raw_headers =
-      net::HttpUtil::AssembleRawHeaders(response_headers.c_str(),
-                                        response_headers.length());
+  std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
+      response_headers.c_str(), static_cast<int>(response_headers.length()));
   return new net::HttpResponseHeaders(raw_headers);
 }
 

@@ -25,9 +25,9 @@
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_info.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(captive_portal::CaptivePortalTabHelper);
+using captive_portal::CaptivePortalResult;
 
-namespace captive_portal {
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(CaptivePortalTabHelper);
 
 CaptivePortalTabHelper::CaptivePortalTabHelper(
     content::WebContents* web_contents)
@@ -210,8 +210,9 @@ void CaptivePortalTabHelper::OnRedirect(int child_id,
   tab_reloader_->OnRedirect(new_url.SchemeIsSecure());
 }
 
-void CaptivePortalTabHelper::OnCaptivePortalResults(Result previous_result,
-                                                    Result result) {
+void CaptivePortalTabHelper::OnCaptivePortalResults(
+    CaptivePortalResult previous_result,
+    CaptivePortalResult result) {
   tab_reloader_->OnCaptivePortalResults(previous_result, result);
   login_detector_->OnCaptivePortalResults(previous_result, result);
 }
@@ -252,8 +253,8 @@ void CaptivePortalTabHelper::OpenLoginTab() {
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetWebContentsAt(i);
-    captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
-        captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents);
+    CaptivePortalTabHelper* captive_portal_tab_helper =
+        CaptivePortalTabHelper::FromWebContents(web_contents);
     if (captive_portal_tab_helper->IsLoginTab())
       return;
   }
@@ -264,9 +265,7 @@ void CaptivePortalTabHelper::OpenLoginTab() {
           browser,
           CaptivePortalServiceFactory::GetForProfile(profile_)->test_url(),
           content::PAGE_TRANSITION_TYPED);
-  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
-      captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents);
+  CaptivePortalTabHelper* captive_portal_tab_helper =
+      CaptivePortalTabHelper::FromWebContents(web_contents);
   captive_portal_tab_helper->SetIsLoginTab();
 }
-
-}  // namespace captive_portal

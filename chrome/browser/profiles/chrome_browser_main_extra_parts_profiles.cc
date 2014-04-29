@@ -160,7 +160,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   BookmarkUndoServiceFactory::GetInstance();
 #endif
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  captive_portal::CaptivePortalServiceFactory::GetInstance();
+  CaptivePortalServiceFactory::GetInstance();
 #endif
   ChromeGeolocationPermissionContextFactory::GetInstance();
 #if defined(OS_ANDROID)

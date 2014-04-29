@@ -9,8 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
-namespace captive_portal {
-
 // static
 CaptivePortalService* CaptivePortalServiceFactory::GetForProfile(
     Profile* profile) {
@@ -41,5 +39,3 @@ content::BrowserContext* CaptivePortalServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
-
-}  // namespace captive_portal

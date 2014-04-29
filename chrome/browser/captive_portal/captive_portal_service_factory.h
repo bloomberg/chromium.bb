@@ -12,8 +12,6 @@
 
 class Profile;
 
-namespace captive_portal {
-
 class CaptivePortalService;
 
 // Singleton that owns all CaptivePortalServices and associates them with
@@ -43,7 +41,5 @@ class CaptivePortalServiceFactory : public BrowserContextKeyedServiceFactory {
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalServiceFactory);
 };
-
-}  // namespace captive_portal
 
 #endif  // CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_SERVICE_FACTORY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
-#define CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
+#ifndef COMPONENTS_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
+#define COMPONENTS_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -12,6 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+#include "components/captive_portal/captive_portal_export.h"
+#include "components/captive_portal/captive_portal_types.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -20,28 +22,17 @@ class GURL;
 
 namespace captive_portal {
 
-// Possible results of an attempt to detect a captive portal.
-enum Result {
-  // There's a confirmed connection to the Internet.
-  RESULT_INTERNET_CONNECTED,
-  // The URL request received a network or HTTP error, or a non-HTTP response.
-  RESULT_NO_RESPONSE,
-  // The URL request apparently encountered a captive portal.  It received a
-  // a valid HTTP response with a 2xx other than 204, 3xx, or 511 status code.
-  RESULT_BEHIND_CAPTIVE_PORTAL,
-  RESULT_COUNT
-};
-
-class CaptivePortalDetector : public net::URLFetcherDelegate,
-                              public base::NonThreadSafe {
+class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
+    : public net::URLFetcherDelegate,
+      public base::NonThreadSafe {
  public:
   struct Results {
     Results()
-        : result(RESULT_NO_RESPONSE),
+        : result(captive_portal::RESULT_NO_RESPONSE),
           response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {
     }
 
-    Result result;
+    captive_portal::CaptivePortalResult result;
     int response_code;
     base::TimeDelta retry_after_delta;
     GURL landing_url;
@@ -59,8 +50,6 @@ class CaptivePortalDetector : public net::URLFetcherDelegate,
   explicit CaptivePortalDetector(
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~CaptivePortalDetector();
-
-  static std::string CaptivePortalResultToString(Result result);
 
   // Triggers a check for a captive portal. After completion, runs the
   // |callback|.
@@ -115,4 +104,4 @@ class CaptivePortalDetector : public net::URLFetcherDelegate,
 
 }  // namespace captive_portal
 
-#endif  // CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
+#endif  // COMPONENTS_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_

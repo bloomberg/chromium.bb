@@ -2,29 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/captive_portal/captive_portal_detector.h"
+#include "components/captive_portal/captive_portal_detector.h"
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 
 namespace captive_portal {
-
-namespace {
-
-const char* const kCaptivePortalResultNames[] = {
-  "InternetConnected",
-  "NoResponse",
-  "BehindCaptivePortal",
-  "NumCaptivePortalResults",
-};
-COMPILE_ASSERT(arraysize(kCaptivePortalResultNames) == RESULT_COUNT + 1,
-               captive_portal_result_name_count_mismatch);
-
-}  // namespace
 
 const char CaptivePortalDetector::kDefaultURL[] =
     "http://www.gstatic.com/generate_204";
@@ -35,14 +21,6 @@ CaptivePortalDetector::CaptivePortalDetector(
 }
 
 CaptivePortalDetector::~CaptivePortalDetector() {
-}
-
-// static
-std::string CaptivePortalDetector::CaptivePortalResultToString(Result result) {
-  DCHECK_GE(result, 0);
-  DCHECK_LT(static_cast<unsigned int>(result),
-            arraysize(kCaptivePortalResultNames));
-  return kCaptivePortalResultNames[result];
 }
 
 void CaptivePortalDetector::DetectCaptivePortal(
@@ -100,7 +78,7 @@ void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
   DCHECK(results);
   DCHECK(!url_fetcher->GetStatus().is_io_pending());
 
-  results->result = RESULT_NO_RESPONSE;
+  results->result = captive_portal::RESULT_NO_RESPONSE;
   results->response_code = url_fetcher->GetResponseCode();
   results->retry_after_delta = base::TimeDelta();
   results->landing_url = url_fetcher->GetURL();
@@ -138,7 +116,7 @@ void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
   // to login to whatever server issued the response.
   // See:  http://tools.ietf.org/html/rfc6585
   if (results->response_code == 511) {
-    results->result = RESULT_BEHIND_CAPTIVE_PORTAL;
+    results->result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
     return;
   }
 
@@ -148,12 +126,12 @@ void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
 
   // A 204 response code indicates there's no captive portal.
   if (results->response_code == 204) {
-    results->result = RESULT_INTERNET_CONNECTED;
+    results->result = captive_portal::RESULT_INTERNET_CONNECTED;
     return;
   }
 
   // Otherwise, assume it's a captive portal.
-  results->result = RESULT_BEHIND_CAPTIVE_PORTAL;
+  results->result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
 }
 
 base::Time CaptivePortalDetector::GetCurrentTime() const {

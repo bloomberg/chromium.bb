@@ -5,8 +5,9 @@
 #include "chrome/browser/captive_portal/captive_portal_login_detector.h"
 
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#include "components/captive_portal/captive_portal_types.h"
 
-namespace captive_portal {
+using captive_portal::CaptivePortalResult;
 
 CaptivePortalLoginDetector::CaptivePortalLoginDetector(
     Profile* profile)
@@ -32,9 +33,9 @@ void CaptivePortalLoginDetector::OnStoppedLoading() {
 }
 
 void CaptivePortalLoginDetector::OnCaptivePortalResults(
-    Result previous_result,
-    Result result) {
-  if (result != RESULT_BEHIND_CAPTIVE_PORTAL)
+    CaptivePortalResult previous_result,
+    CaptivePortalResult result) {
+  if (result != captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)
     is_login_tab_ = false;
 }
 
@@ -42,5 +43,3 @@ void CaptivePortalLoginDetector::SetIsLoginTab() {
   is_login_tab_ = true;
   first_login_tab_load_ = true;
 }
-
-}  // namespace captive_portal

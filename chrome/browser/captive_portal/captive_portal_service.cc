@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/captive_portal/captive_portal_types.h"
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_MACOSX)
@@ -23,7 +24,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-namespace captive_portal {
+using captive_portal::CaptivePortalResult;
 
 namespace {
 
@@ -53,7 +54,7 @@ enum CaptivePortalDetectionResult {
 // |result_duration| is the time between when a captive portal check first
 // returned |result| and when a check returned a different result, or when the
 // CaptivePortalService was shut down.
-void RecordRepeatHistograms(Result result,
+void RecordRepeatHistograms(CaptivePortalResult result,
                             int repeat_count,
                             base::TimeDelta result_duration) {
   // Histogram macros can't be used with variable names, since they cache
@@ -62,8 +63,7 @@ void RecordRepeatHistograms(Result result,
   // Record number of times the last result was received in a row.
   base::HistogramBase* result_repeated_histogram =
       base::Histogram::FactoryGet(
-          "CaptivePortal.ResultRepeated." +
-              CaptivePortalDetector::CaptivePortalResultToString(result),
+          "CaptivePortal.ResultRepeated." + CaptivePortalResultToString(result),
           1,  // min
           100,  // max
           100,  // bucket_count
@@ -76,8 +76,7 @@ void RecordRepeatHistograms(Result result,
   // Time between first request that returned |result| and now.
   base::HistogramBase* result_duration_histogram =
       base::Histogram::FactoryTimeGet(
-          "CaptivePortal.ResultDuration." +
-              CaptivePortalDetector::CaptivePortalResultToString(result),
+          "CaptivePortal.ResultDuration." + CaptivePortalResultToString(result),
           base::TimeDelta::FromSeconds(1),  // min
           base::TimeDelta::FromHours(1),  // max
           50,  // bucket_count
@@ -86,16 +85,16 @@ void RecordRepeatHistograms(Result result,
 }
 
 int GetHistogramEntryForDetectionResult(
-    const CaptivePortalDetector::Results& results) {
+    const captive_portal::CaptivePortalDetector::Results& results) {
   bool is_https = results.landing_url.SchemeIs("https");
   switch (results.result) {
-    case RESULT_INTERNET_CONNECTED:
+    case captive_portal::RESULT_INTERNET_CONNECTED:
       return DETECTION_RESULT_INTERNET_CONNECTED;
-    case RESULT_NO_RESPONSE:
+    case captive_portal::RESULT_NO_RESPONSE:
       return is_https ?
           DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL :
           DETECTION_RESULT_NO_RESPONSE;
-    case RESULT_BEHIND_CAPTIVE_PORTAL:
+    case captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL:
       return is_https ?
           DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL :
           DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL;
@@ -174,9 +173,9 @@ CaptivePortalService::CaptivePortalService(Profile* profile)
       state_(STATE_IDLE),
       captive_portal_detector_(profile->GetRequestContext()),
       enabled_(false),
-      last_detection_result_(RESULT_INTERNET_CONNECTED),
+      last_detection_result_(captive_portal::RESULT_INTERNET_CONNECTED),
       num_checks_with_same_result_(0),
-      test_url_(CaptivePortalDetector::kDefaultURL) {
+      test_url_(captive_portal::CaptivePortalDetector::kDefaultURL) {
   // The order matters here:
   // |resolve_errors_with_web_service_| must be initialized and |backoff_entry_|
   // created before the call to UpdateEnabledState.
@@ -223,7 +222,7 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
     // Count this as a success, so the backoff entry won't apply exponential
     // backoff, but will apply the standard delay.
     backoff_entry_->InformOfRequest(true);
-    OnResult(RESULT_INTERNET_CONNECTED);
+    OnResult(captive_portal::RESULT_INTERNET_CONNECTED);
     return;
   }
 
@@ -234,13 +233,13 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
 }
 
 void CaptivePortalService::OnPortalDetectionCompleted(
-    const CaptivePortalDetector::Results& results) {
+    const captive_portal::CaptivePortalDetector::Results& results) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(STATE_CHECKING_FOR_PORTAL, state_);
   DCHECK(!TimerRunning());
   DCHECK(enabled_);
 
-  Result result = results.result;
+  CaptivePortalResult result = results.result;
   const base::TimeDelta& retry_after_delta = results.retry_after_delta;
   base::TimeTicks now = GetCurrentTimeTicks();
 
@@ -302,7 +301,7 @@ void CaptivePortalService::Shutdown() {
   }
 }
 
-void CaptivePortalService::OnResult(Result result) {
+void CaptivePortalService::OnResult(CaptivePortalResult result) {
   DCHECK_EQ(STATE_CHECKING_FOR_PORTAL, state_);
   state_ = STATE_IDLE;
 
@@ -317,8 +316,8 @@ void CaptivePortalService::OnResult(Result result) {
       content::Details<Results>(&results));
 }
 
-void CaptivePortalService::ResetBackoffEntry(Result result) {
-  if (!enabled_ || result == RESULT_BEHIND_CAPTIVE_PORTAL) {
+void CaptivePortalService::ResetBackoffEntry(CaptivePortalResult result) {
+  if (!enabled_ || result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
     // Use the shorter time when the captive portal service is not enabled, or
     // behind a captive portal.
     recheck_policy_.backoff_policy.initial_delay_ms =
@@ -379,5 +378,3 @@ bool CaptivePortalService::DetectionInProgress() const {
 bool CaptivePortalService::TimerRunning() const {
   return check_captive_portal_timer_.IsRunning();
 }
-
-}  // namespace captive_portal

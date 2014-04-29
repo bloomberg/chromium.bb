@@ -14,6 +14,7 @@
     'autofill.gypi',
     'bookmarks.gypi',
     'breakpad.gypi',
+    'captive_portal.gypi',
     'cloud_devices.gypi',
     'cronet.gypi',
     'data_reduction_proxy.gypi',

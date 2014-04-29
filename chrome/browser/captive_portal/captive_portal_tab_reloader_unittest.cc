@@ -18,7 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace captive_portal {
+using captive_portal::CaptivePortalResult;
 
 // Used for testing CaptivePortalTabReloader in isolation from the observer.
 // Exposes a number of private functions and mocks out others.
@@ -124,8 +124,9 @@ TEST_F(CaptivePortalTabReloaderTest, InternetConnected) {
   EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
             tab_reloader().state());
 
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_INTERNET_CONNECTED);
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
@@ -151,8 +152,9 @@ TEST_F(CaptivePortalTabReloaderTest, InternetConnectedTimeout) {
   EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
             tab_reloader().state());
 
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_INTERNET_CONNECTED);
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
@@ -172,7 +174,8 @@ TEST_F(CaptivePortalTabReloaderTest, NoResponse) {
   EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
             tab_reloader().state());
 
-  tab_reloader().OnCaptivePortalResults(RESULT_NO_RESPONSE, RESULT_NO_RESPONSE);
+  tab_reloader().OnCaptivePortalResults(captive_portal::RESULT_NO_RESPONSE,
+                                        captive_portal::RESULT_NO_RESPONSE);
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
@@ -188,13 +191,15 @@ TEST_F(CaptivePortalTabReloaderTest, DoesNothingOnHttp) {
   EXPECT_FALSE(tab_reloader().TimerRunning());
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 
   // The user logs in.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 
   // The page times out.
@@ -216,15 +221,17 @@ TEST_F(CaptivePortalTabReloaderTest, Login) {
   // The captive portal service detects a captive portal.  The TabReloader
   // should try and create a new login tab in response.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
 
   // The user logs on from another tab, and a captive portal check is triggered.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
 
@@ -252,8 +259,9 @@ TEST_F(CaptivePortalTabReloaderTest, LoginLate) {
   // The captive portal service detects a captive portal.  The TabReloader
   // should try and create a new login tab in response.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
@@ -265,8 +273,9 @@ TEST_F(CaptivePortalTabReloaderTest, LoginLate) {
 
   // The user logs on from another tab, and a captive portal check is triggered.
   EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
 
@@ -284,16 +293,18 @@ TEST_F(CaptivePortalTabReloaderTest, TimeoutFast) {
   // The captive portal service detects a captive portal.  The TabReloader
   // should try and create a new login tab in response.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
 
   // The user logs on from another tab, and a captive portal check is triggered.
   EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
 
@@ -312,16 +323,18 @@ TEST_F(CaptivePortalTabReloaderTest, SSLProtocolError) {
   // The captive portal service detects a captive portal.  The TabReloader
   // should try and create a new login tab in response.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
 
   // The user logs on from another tab, and a captive portal check is triggered.
   EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
 
@@ -340,8 +353,9 @@ TEST_F(CaptivePortalTabReloaderTest, SSLProtocolErrorFastLogin) {
 
   // The user has logged in from another tab.  The tab automatically reloads.
   EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
 
@@ -352,8 +366,9 @@ TEST_F(CaptivePortalTabReloaderTest, SSLProtocolErrorAlreadyLoggedIn) {
   tab_reloader().OnLoadStart(true);
 
   // The user logs in from another tab before the tab errors out.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
 
@@ -378,8 +393,9 @@ TEST_F(CaptivePortalTabReloaderTest, AlreadyLoggedIn) {
 
   // The user has already logged in.  Since the last result found a captive
   // portal, the tab will be reloaded if a timeout is committed.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
 
@@ -401,8 +417,9 @@ TEST_F(CaptivePortalTabReloaderTest, AlreadyLoggedInBeforeTimerTriggers) {
 
   // The user has already logged in.  Since the last result indicated there is
   // a captive portal, the tab will be reloaded if it times out.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
@@ -426,8 +443,9 @@ TEST_F(CaptivePortalTabReloaderTest, LoginWhileTimerRunning) {
   EXPECT_TRUE(tab_reloader().TimerRunning());
 
   // The user has already logged in.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
 
@@ -452,8 +470,9 @@ TEST_F(CaptivePortalTabReloaderTest, BehindPortalResultWhileTimerRunning) {
 
   // The user is behind a captive portal, but since the tab hasn't timed out,
   // the message is ignored.
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_TIMER_RUNNING,
             tab_reloader().state());
 
@@ -466,15 +485,17 @@ TEST_F(CaptivePortalTabReloaderTest, BehindPortalResultWhileTimerRunning) {
   // The captive portal service detects a captive portal, and this time the
   // tab tries to create a login tab.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
 
   // The user logs on from another tab, and a captive portal check is triggered.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
 
@@ -498,8 +519,9 @@ TEST_F(CaptivePortalTabReloaderTest, LogInWhileTimerRunningNoError) {
   EXPECT_TRUE(tab_reloader().TimerRunning());
 
   // The user has already logged in.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_FALSE(tab_reloader().TimerRunning());
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
@@ -529,14 +551,16 @@ TEST_F(CaptivePortalTabReloaderTest, SSLCertErrorLogin) {
 
   // Captive portal probe finds a captive portal.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
 
   // The user logs in.  Since the interstitial is showing, the page should
   // be reloaded, despite still having a provisional load.
   EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
 }
 
 // Simulate an HTTP redirect to HTTPS, when the Internet is connected.
@@ -557,8 +581,9 @@ TEST_F(CaptivePortalTabReloaderTest, HttpToHttpsRedirectInternetConnected) {
   EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
             tab_reloader().state());
 
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_INTERNET_CONNECTED);
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
@@ -588,15 +613,17 @@ TEST_F(CaptivePortalTabReloaderTest, HttpToHttpsRedirectLogin) {
   // The captive portal service detects a captive portal.  The TabReloader
   // should try and create a new login tab in response.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_INTERNET_CONNECTED,
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
 
   // The user logs on from another tab, and a captive portal check is triggered.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
             tab_reloader().state());
 
@@ -625,8 +652,9 @@ TEST_F(CaptivePortalTabReloaderTest, HttpsToHttpRedirect) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Logging in shouldn't do anything.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
 
@@ -637,8 +665,7 @@ TEST_F(CaptivePortalTabReloaderTest, HttpsToHttpsRedirect) {
             tab_reloader().state());
 
   tab_reloader().OnRedirect(true);
-  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
-            tab_reloader().state());
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
   // Nothing should happen.
   base::MessageLoop::current()->RunUntilIdle();
@@ -655,8 +682,7 @@ TEST_F(CaptivePortalTabReloaderTest, HttpsToHttpToHttpsRedirect) {
   EXPECT_FALSE(tab_reloader().TimerRunning());
 
   tab_reloader().OnRedirect(true);
-  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
-            tab_reloader().state());
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
   // Nothing should happen.
   base::MessageLoop::current()->RunUntilIdle();
@@ -675,9 +701,8 @@ TEST_F(CaptivePortalTabReloaderTest, HttpToHttpRedirect) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Logging in shouldn't do anything.
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
+  tab_reloader().OnCaptivePortalResults(
+      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
+      captive_portal::RESULT_INTERNET_CONNECTED);
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
-
-}  // namespace captive_portal

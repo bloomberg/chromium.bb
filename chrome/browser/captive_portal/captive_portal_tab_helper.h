@@ -27,8 +27,6 @@ namespace net {
 class SSLInfo;
 }
 
-namespace captive_portal {
-
 class CaptivePortalLoginDetector;
 class CaptivePortalTabReloader;
 
@@ -123,7 +121,9 @@ class CaptivePortalTabHelper
                   const GURL& new_url);
 
   // Called by Observe in response to the corresponding event.
-  void OnCaptivePortalResults(Result previous_result, Result result);
+  void OnCaptivePortalResults(
+      captive_portal::CaptivePortalResult previous_result,
+      captive_portal::CaptivePortalResult result);
 
   void OnLoadAborted();
 
@@ -166,7 +166,5 @@ class CaptivePortalTabHelper
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalTabHelper);
 };
-
-}  // namespace captive_portal
 
 #endif  // CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_TAB_HELPER_H_

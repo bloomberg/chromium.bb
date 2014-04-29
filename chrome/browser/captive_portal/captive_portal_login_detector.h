@@ -10,8 +10,6 @@
 
 class Profile;
 
-namespace captive_portal {
-
 // Triggers a captive portal test on navigations that may indicate a captive
 // portal has been logged into.  Currently only tracks if a page was opened
 // at a captive portal tab's login page, and triggers checks every navigation
@@ -27,7 +25,9 @@ class CaptivePortalLoginDetector {
   ~CaptivePortalLoginDetector();
 
   void OnStoppedLoading();
-  void OnCaptivePortalResults(Result previous_result, Result result);
+  void OnCaptivePortalResults(
+      captive_portal::CaptivePortalResult previous_result,
+      captive_portal::CaptivePortalResult result);
 
   bool is_login_tab() const { return is_login_tab_; }
   void SetIsLoginTab();
@@ -45,7 +45,5 @@ class CaptivePortalLoginDetector {
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalLoginDetector);
 };
-
-}  // namespace captive_portal
 
 #endif  // CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_LOGIN_DETECTOR_H_

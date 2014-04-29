@@ -391,7 +391,7 @@ void NetworkPortalDetectorImpl::OnAttemptTimeout() {
 
 void NetworkPortalDetectorImpl::OnAttemptCompleted(
     const CaptivePortalDetector::Results& results) {
-  captive_portal::Result result = results.result;
+  captive_portal::CaptivePortalResult result = results.result;
   int response_code = results.response_code;
 
   DCHECK(CalledOnValidThread());
@@ -401,7 +401,7 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
           << "name=" << default_network_name_ << ", "
           << "id=" << default_network_id_ << ", "
           << "result="
-          << CaptivePortalDetector::CaptivePortalResultToString(results.result)
+          << captive_portal::CaptivePortalResultToString(results.result)
           << ", "
           << "response_code=" << results.response_code;
 
