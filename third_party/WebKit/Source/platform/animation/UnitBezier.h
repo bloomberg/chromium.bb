@@ -43,6 +43,36 @@ struct UnitBezier {
         cy = 3.0 * p1y;
         by = 3.0 * (p2y - p1y) - cy;
         ay = 1.0 - cy - by;
+
+        // End-point gradients are used to calculate timing function results
+        // outside the range [0, 1].
+        //
+        // There are three possibilities for the gradient at each end:
+        // (1) the closest control point is not horizontally coincident with regard to
+        //     (0, 0) or (1, 1). In this case the line between the end point and
+        //     the control point is tangent to the bezier at the end point.
+        // (2) the closest control point is coincident with the end point. In
+        //     this case the line between the end point and the far control
+        //     point is tangent to the bezier at the end point.
+        // (3) the closest control point is horizontally coincident with the end
+        //     point, but vertically distinct. In this case the gradient at the
+        //     end point is Infinite. However, this causes issues when
+        //     interpolating. As a result, we break down to a simple case of
+        //     0 gradient under these conditions.
+
+        if (p1x > 0)
+            m_startGradient = p1y / p1x;
+        else if (!p1y && p2x > 0)
+            m_startGradient = p2y / p2x;
+        else
+            m_startGradient = 0;
+
+        if (p2x < 1)
+            m_endGradient = (p2y - 1) / (p2x - 1);
+        else if (p2x == 1 && p1x < 1)
+            m_endGradient = (p1y - 1) / (p1x - 1);
+        else
+            m_endGradient = 0;
     }
 
     double sampleCurveX(double t)
@@ -110,9 +140,9 @@ struct UnitBezier {
     double solve(double x, double epsilon)
     {
         if (x < 0.0)
-            return 0.0;
+            return 0.0 + m_startGradient * x;
         if (x > 1.0)
-            return 1.0;
+            return 1.0 + m_endGradient * (x - 1.0);
         return sampleCurveY(solveCurveX(x, epsilon));
     }
 
@@ -124,6 +154,9 @@ private:
     double ay;
     double by;
     double cy;
+
+    double m_startGradient;
+    double m_endGradient;
 };
 
 } // namespace WebCore

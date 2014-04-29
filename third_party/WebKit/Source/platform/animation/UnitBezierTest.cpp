@@ -60,15 +60,36 @@ TEST(UnitBezierTest, InputAtEdgeOfRange)
 TEST(UnitBezierTest, InputOutOfRange)
 {
     UnitBezier bezier(0.5, 1.0, 0.5, 1.0);
-    EXPECT_EQ(0.0, bezier.solve(-1.0, 0.005));
+    EXPECT_EQ(-2.0, bezier.solve(-1.0, 0.005));
     EXPECT_EQ(1.0, bezier.solve(2.0, 0.005));
 }
 
 TEST(UnitBezierTest, InputOutOfRangeLargeEpsilon)
 {
     UnitBezier bezier(0.5, 1.0, 0.5, 1.0);
-    EXPECT_EQ(0.0, bezier.solve(-1.0, 1.0));
+    EXPECT_EQ(-2.0, bezier.solve(-1.0, 1.0));
     EXPECT_EQ(1.0, bezier.solve(2.0, 1.0));
+}
+
+TEST(UnitBezierTest, InputOutOfRangeCoincidentEndpoints)
+{
+    UnitBezier bezier(0.0, 0.0, 1.0, 1.0);
+    EXPECT_EQ(-1.0, bezier.solve(-1.0, 0.005));
+    EXPECT_EQ(2.0, bezier.solve(2.0, 0.005));
+}
+
+TEST(UnitBezierTest, InputOutOfRangeVerticalGradient)
+{
+    UnitBezier bezier(0.0, 1.0, 1.0, 0.0);
+    EXPECT_EQ(0.0, bezier.solve(-1.0, 0.005));
+    EXPECT_EQ(1.0, bezier.solve(2.0, 0.005));
+}
+
+TEST(UnitBezierTest, InputOutOfRangeDistinctEndpoints)
+{
+    UnitBezier bezier(0.1, 0.2, 0.8, 0.8);
+    EXPECT_EQ(-2.0, bezier.solve(-1.0, 0.005));
+    EXPECT_EQ(2.0, bezier.solve(2.0, 0.005));
 }
 
 } // namespace

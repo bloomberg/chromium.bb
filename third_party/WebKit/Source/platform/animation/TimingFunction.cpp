@@ -5,6 +5,8 @@
 #include "config.h"
 #include "platform/animation/TimingFunction.h"
 
+#include "wtf/MathExtras.h"
+
 namespace WebCore {
 
 String LinearTimingFunction::toString() const
@@ -40,7 +42,6 @@ String CubicBezierTimingFunction::toString() const
 
 double CubicBezierTimingFunction::evaluate(double fraction, double accuracy) const
 {
-    ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
     if (!m_bezier)
         m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
     return m_bezier->solve(fraction, accuracy);
@@ -78,7 +79,6 @@ String StepsTimingFunction::toString() const
 
 double StepsTimingFunction::evaluate(double fraction, double) const
 {
-    ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
     double startOffset = 0;
     switch (m_stepAtPosition) {
     case StepAtStart:
@@ -94,7 +94,7 @@ double StepsTimingFunction::evaluate(double fraction, double) const
         ASSERT_NOT_REACHED();
         break;
     }
-    return std::min(1.0, floor((m_steps * fraction) + startOffset) / m_steps);
+    return clampTo(floor((m_steps * fraction) + startOffset) / m_steps, 0.0, 1.0);
 }
 
 // Equals operators
