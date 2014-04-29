@@ -25,4 +25,5 @@ nexe = env.ComponentProgram(
 node = env.CommandSelLdrTestNacl('data_below_data_start.out', nexe,
                                  exit_status=1)
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_data_below_data_start_test')
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_data_below_data_start_test')

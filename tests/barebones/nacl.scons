@@ -79,9 +79,10 @@ if not env.Bit('pnacl_generate_pexe') and not env.Bit('build_x86_32'):
     native_env.AddBiasForPNaCl()
     native_env.PNaClForceNative()
 
-    nexe = native_env.ComponentProgram('top_of_sandbox', ['top_of_sandbox.c'])
-    node = native_env.CommandSelLdrTestNacl('top_of_sandbox.out', nexe)
-    native_env.AddNodeToTestSuite(
-        node, ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
-        'run_top_of_sandbox_test',
-        is_broken=is_glibc)
+  nexe = native_env.ComponentProgram('top_of_sandbox', ['top_of_sandbox.c'])
+  node = native_env.CommandSelLdrTestNacl('top_of_sandbox.out', nexe)
+  native_env.AddNodeToTestSuite(
+      node, ['small_tests', 'sel_ldr_tests',
+             'barebones_tests', 'nonpexe_tests'],
+      'run_top_of_sandbox_test',
+      is_broken=is_glibc)

@@ -37,4 +37,5 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-B', irt_comp_test_library],
     stdout_golden=env.File('../hello_world/hello_world.stdout'))
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_compatibility_test')
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_irt_compatibility_test')

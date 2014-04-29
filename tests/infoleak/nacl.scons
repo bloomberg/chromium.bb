@@ -8,6 +8,7 @@ Import('env')
 if env.Bit('bitcode') and not env.Bit('pnacl_generate_pexe'):
   env.AddBiasForPNaCl()
   env.PNaClForceNative()
+testsuites = ['small_tests', 'sel_ldr_tests', 'nonpexe_tests']
 
 infoleak_sources = ['test_infoleak.c']
 if env.Bit('target_arm') and not env.Bit('pnacl_generate_pexe'):
@@ -20,7 +21,7 @@ nexe = env.ComponentProgram('test_infoleak', infoleak_sources,
 
 node = env.CommandSelLdrTestNacl('test_infoleak.out', nexe)
 env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
+                       testsuites,
                        'run_infoleak_test',
                        # Valgrind apparently doesn't implement
                        # stmxcsr/ldmxcsr correctly.  stmxcsr seems to do
@@ -36,7 +37,7 @@ if not env.Bit('pnacl_generate_pexe') and not env.Bit('target_mips32'):
                               EXTRA_LIBS=['${NONIRT_LIBS}'])
   node = env.CommandSelLdrTestNacl('test_fpu_control_word.out', nexe)
   env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests'],
+                         testsuites,
                          'run_fpu_control_word_test',
                          # Valgrind apparenty doesn't implement
                          # fnstcw;fldcw correctly.

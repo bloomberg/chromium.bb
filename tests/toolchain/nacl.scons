@@ -346,6 +346,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
   if not env.Bit('pnacl_generate_pexe'):
     native_env = exc_env.Clone()
     native_env.PNaClForceNative()
+    testsuite = ['toolchain_tests', 'small_tests', 'nonpexe_tests']
     nobj1 = native_env.ComponentObject('eh_separate_files1_native.o',
                                        'eh_separate_files1.cc')
     nobj2 = native_env.ComponentObject('eh_separate_files2_native.o',
@@ -357,7 +358,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                             nexe,
                                             exit_status='55')
     env.AddNodeToTestSuite(node,
-                           ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
+                           testsuite,
                            'run_eh_separate_files_native_test')
     # Test mixed objects, one native, one bitcode.
     nexe = native_env.ComponentProgram('eh_separate_files_mixed1',
@@ -367,7 +368,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                             nexe,
                                             exit_status='55')
     env.AddNodeToTestSuite(node,
-                           ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
+                           testsuite,
                            'run_eh_separate_files_mixed1_test')
     # Test having the bitcode and native objects swapped.
     nexe = native_env.ComponentProgram('eh_separate_files_mixed2',
@@ -377,7 +378,7 @@ if exc_env.Bit('bitcode') and exc_env.AllowNonStableBitcode():
                                             nexe,
                                             exit_status='55')
     env.AddNodeToTestSuite(node,
-                           ['toolchain_tests', 'small_tests', 'nonpexe_tests'],
+                           testsuite,
                            'run_eh_separate_files_mixed2_test')
 
 
@@ -481,6 +482,7 @@ if not env.Bit('pnacl_generate_pexe'):
   if env.Bit('bitcode'):
     asm_env.PNaClForceNative()
     asm_env.AddBiasForPNaCl()
+  testsuite = ['toolchain_tests', 'small_tests', 'nonpexe_tests']
 
   def FarCallObjects(env, suffix=''):
     return [env.ComponentObject(file[:-2] + suffix + '.o', file)
@@ -490,7 +492,7 @@ if not env.Bit('pnacl_generate_pexe'):
   node = asm_env.CommandSelLdrTestNacl('far_call.out', nexe)
   # TODO(mcgrathr): Broken for bitcode pending fixes to gold; see
   # https://code.google.com/p/nativeclient/issues/detail?id=3568
-  asm_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+  asm_env.AddNodeToTestSuite(node, testsuite,
                              'run_far_call_test',
                              is_broken=env.Bit('bitcode'))
 
@@ -509,21 +511,21 @@ if not env.Bit('pnacl_generate_pexe'):
                                     FarCallObjects(pic_env, '_pic'),
                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
     node = pic_env.CommandSelLdrTestNacl('far_call_pic.out', nexe)
-    pic_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+    pic_env.AddNodeToTestSuite(node, testsuite,
                                'run_far_call_pic_test')
 
   dummy_obj = asm_env.ComponentObject('nop_test_main.o', 'dummy.c')
   nexe = asm_env.ComponentProgram('nop_test', [dummy_obj, 'nop_test.S'],
                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
   node = asm_env.CommandSelLdrTestNacl('nop_test.out', nexe)
-  asm_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+  asm_env.AddNodeToTestSuite(node, testsuite,
                              'run_nop_test')
 
   # Test that both the layout and the nops are not munged by stripping.
   stripped_nexe = asm_env.Command('strip_test.nexe', nexe,
                                   '${STRIP} -o ${TARGET} ${SOURCES}')
   node = asm_env.CommandSelLdrTestNacl('strip_test.out', stripped_nexe)
-  asm_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+  asm_env.AddNodeToTestSuite(node, testsuite,
                              'run_strip_test')
 
 if not env.Bit('nacl_disable_shared') and not env.Bit('nacl_static_link'):
@@ -531,7 +533,7 @@ if not env.Bit('nacl_disable_shared') and not env.Bit('nacl_static_link'):
   nexe = env.ComponentProgram('pic_constant', ['pic_constant.c'],
                               EXTRA_LIBS=['pic_constant_lib', '${NONIRT_LIBS}'])
   node = env.CommandSelLdrTestNacl('pic_constant.out', nexe)
-  env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+  env.AddNodeToTestSuite(node, testsuite,
                          'run_pic_constant_test')
 
 WRAP_LINK_FLAGS = ['-Wl,--wrap=foo', '-Wl,--wrap=bar']
