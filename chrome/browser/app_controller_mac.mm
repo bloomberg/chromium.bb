@@ -689,6 +689,41 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 #endif
 }
 
+- (void)openStartupUrls {
+  // On Mac, the URLs are passed in via Cocoa, not command line. The Chrome
+  // NSApplication is created in MainMessageLoop, and then the shortcut urls
+  // are passed in via Apple events. At this point, the first browser is
+  // already loaded in PreMainMessageLoop. If we initialize NSApplication
+  // before PreMainMessageLoop to capture shortcut URL events, it may cause
+  // more problems because it relies on things created in PreMainMessageLoop
+  // and may break existing message loop design.
+  if (startupUrls_.empty())
+    return;
+
+  // If there's only 1 tab and the tab is NTP, close this NTP tab and open all
+  // startup urls in new tabs, because the omnibox will stay focused if we
+  // load url in NTP tab.
+  Browser* browser = chrome::GetLastActiveBrowser();
+  int startupIndex = TabStripModel::kNoTab;
+  content::WebContents* startupContent = NULL;
+
+  if (browser && browser->tab_strip_model()->count() == 1) {
+    startupIndex = browser->tab_strip_model()->active_index();
+    startupContent = browser->tab_strip_model()->GetActiveWebContents();
+  }
+
+  if (startupUrls_.size()) {
+    [self openUrls:startupUrls_];
+    startupUrls_.clear();
+  }
+
+  if (startupIndex != TabStripModel::kNoTab &&
+      startupContent->GetVisibleURL() == GURL(chrome::kChromeUINewTabURL)) {
+    browser->tab_strip_model()->CloseWebContentsAt(startupIndex,
+        TabStripModel::CLOSE_NONE);
+  }
+}
+
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
@@ -737,13 +772,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   startupComplete_ = YES;
 
-  // TODO(viettrungluu): This is very temporary, since this should be done "in"
-  // |BrowserMain()|, i.e., this list of startup URLs should be appended to the
-  // (probably-empty) list of URLs from the command line.
-  if (startupUrls_.size()) {
-    [self openUrls:startupUrls_];
-    [self clearStartupUrls];
-  }
+  [self openStartupUrls];
 
   PrefService* localState = g_browser_process->local_state();
   if (localState) {
@@ -1486,10 +1515,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
 - (const std::vector<GURL>&)startupUrls {
   return startupUrls_;
-}
-
-- (void)clearStartupUrls {
-  startupUrls_.clear();
 }
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge {

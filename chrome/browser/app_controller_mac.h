@@ -132,9 +132,6 @@ class WorkAreaWatcherObserver;
 // Get the URLs that Launch Services expects the browser to open at startup.
 - (const std::vector<GURL>&)startupUrls;
 
-// Clear the list of startup URLs.
-- (void)clearStartupUrls;
-
 - (BookmarkMenuBridge*)bookmarkMenuBridge;
 
 // Subscribes/unsubscribes from the work area change notification.

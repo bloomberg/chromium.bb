@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+#import <Foundation/NSAppleEventDescriptor.h>
+#import <objc/message.h>
+#import <objc/runtime.h>
 
 #include "apps/app_window_registry.h"
 #include "base/command_line.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -23,10 +29,54 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+
+namespace {
+
+GURL g_open_shortcut_url = GURL::EmptyGURL();
+
+}  // namespace
+
+@interface TestOpenShortcutOnStartup : NSObject
+- (void)applicationWillFinishLaunching:(NSNotification*)notification;
+@end
+
+@implementation TestOpenShortcutOnStartup
+
+- (void)applicationWillFinishLaunching:(NSNotification*)notification {
+  if (!g_open_shortcut_url.is_valid())
+    return;
+
+  AppController* controller =
+      base::mac::ObjCCast<AppController>([NSApp delegate]);
+  Method getUrl = class_getInstanceMethod([controller class],
+      @selector(getUrl:withReply:));
+
+  if (getUrl == nil)
+    return;
+
+  base::scoped_nsobject<NSAppleEventDescriptor> shortcutEvent(
+      [[NSAppleEventDescriptor alloc]
+          initWithEventClass:kASAppleScriptSuite
+                     eventID:kASSubroutineEvent
+            targetDescriptor:nil
+                    returnID:kAutoGenerateReturnID
+               transactionID:kAnyTransactionID]);
+  NSString* url =
+      [NSString stringWithUTF8String:g_open_shortcut_url.spec().c_str()];
+  [shortcutEvent setParamDescriptor:
+      [NSAppleEventDescriptor descriptorWithString:url]
+                         forKeyword:keyDirectObject];
+
+  method_invoke(controller, getUrl, shortcutEvent.get(), NULL);
+}
+
+@end
 
 namespace {
 
@@ -225,6 +275,58 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
   EXPECT_EQ(1u, active_browser_list_->size());
   EXPECT_TRUE(UserManagerMac::IsShowing());
   UserManagerMac::Hide();
+}
+
+class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
+ protected:
+  AppControllerOpenShortcutBrowserTest() {
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    // In order to mimic opening shortcut during browser startup, we need to
+    // send the event before -applicationDidFinishLaunching is called, but
+    // after AppController is loaded.
+    //
+    // Since -applicationWillFinishLaunching does nothing now, we swizzle it to
+    // our function to send the event. We need to do this early before running
+    // the main message loop.
+    //
+    // NSApp does not exist yet. We need to get the AppController using
+    // reflection.
+    Class appControllerClass = NSClassFromString(@"AppController");
+    Class openShortcutClass = NSClassFromString(@"TestOpenShortcutOnStartup");
+
+    ASSERT_TRUE(appControllerClass != nil);
+    ASSERT_TRUE(openShortcutClass != nil);
+
+    SEL targetMethod = @selector(applicationWillFinishLaunching:);
+    Method original = class_getInstanceMethod(appControllerClass,
+        targetMethod);
+    Method destination = class_getInstanceMethod(openShortcutClass,
+        targetMethod);
+
+    ASSERT_TRUE(original != NULL);
+    ASSERT_TRUE(destination != NULL);
+
+    method_exchangeImplementations(original, destination);
+
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    g_open_shortcut_url = embedded_test_server()->GetURL("/simple.html");
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // If the arg is empty, PrepareTestCommandLine() after this function will
+    // append about:blank as default url.
+    command_line->AppendArg(chrome::kChromeUINewTabURL);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutBrowserTest,
+                       OpenShortcutOnStartup) {
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(g_open_shortcut_url,
+      browser()->tab_strip_model()->GetActiveWebContents()
+          ->GetLastCommittedURL());
 }
 
 }  // namespace
