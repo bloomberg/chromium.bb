@@ -42,7 +42,7 @@ static HashSet<Node*>* gNodesDispatchingSimulatedClicks = 0;
 
 bool EventDispatcher::dispatchEvent(Node* node, PassRefPtr<EventDispatchMediator> mediator)
 {
-    TRACE_EVENT1("webkit", "EventDispatcher::dispatchEvent", "type", mediator->event()->type().ascii());
+    TRACE_EVENT0("webkit", "EventDispatcher::dispatchEvent");
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     if (!mediator->event())
         return true;
