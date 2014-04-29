@@ -2558,6 +2558,8 @@ input_grab(struct input *input, struct widget *widget, uint32_t button)
 {
 	input->grab = widget;
 	input->grab_button = button;
+
+	input_set_focus_widget(input, widget, input->sx, input->sy);
 }
 
 void
