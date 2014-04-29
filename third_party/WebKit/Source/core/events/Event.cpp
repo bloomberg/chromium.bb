@@ -25,6 +25,7 @@
 
 #include "core/dom/StaticNodeList.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -99,6 +100,25 @@ void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool 
     m_type = eventTypeArg;
     m_canBubble = canBubbleArg;
     m_cancelable = cancelableArg;
+}
+
+bool Event::legacyReturnValue(ExecutionContext* executionContext) const
+{
+    bool returnValue = !defaultPrevented();
+    if (returnValue)
+        UseCounter::count(executionContext, UseCounter::EventGetReturnValueTrue);
+    else
+        UseCounter::count(executionContext, UseCounter::EventGetReturnValueFalse);
+    return returnValue;
+}
+
+void Event::setLegacyReturnValue(ExecutionContext* executionContext, bool returnValue)
+{
+    if (returnValue)
+        UseCounter::count(executionContext, UseCounter::EventSetReturnValueTrue);
+    else
+        UseCounter::count(executionContext, UseCounter::EventSetReturnValueFalse);
+    setDefaultPrevented(!returnValue);
 }
 
 const AtomicString& Event::interfaceName() const

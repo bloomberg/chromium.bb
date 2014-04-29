@@ -35,6 +35,7 @@ namespace WebCore {
 
 class EventTarget;
 class EventDispatcher;
+class ExecutionContext;
 class HTMLIFrameElement;
 
 struct EventInit {
@@ -130,8 +131,8 @@ public:
     // IE Extensions
     EventTarget* srcElement() const { return target(); } // MSIE extension - "the object that fired the event"
 
-    bool legacyReturnValue() const { return !defaultPrevented(); }
-    void setLegacyReturnValue(bool returnValue) { setDefaultPrevented(!returnValue); }
+    bool legacyReturnValue(ExecutionContext*) const;
+    void setLegacyReturnValue(ExecutionContext*, bool returnValue);
 
     virtual const AtomicString& interfaceName() const;
     bool hasInterface(const AtomicString&) const;
