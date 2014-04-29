@@ -81,7 +81,7 @@ class PackedStruct(object):
 
     # Start by sorting by ordinal.
     src_fields = []
-    ordinal = 1
+    ordinal = 0
     for field in struct.fields:
       if field.ordinal is not None:
         ordinal = field.ordinal
