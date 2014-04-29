@@ -225,7 +225,6 @@
                 'IN_NACL_HELPER=1',
               ],
               'sources': [
-                'nacl/loader/nacl_sandbox_linux.cc',
                 'nacl/loader/nonsfi/abi_conversion.cc',
                 'nacl/loader/nonsfi/abi_conversion.h',
                 'nacl/loader/nonsfi/elf_loader.cc',
@@ -245,6 +244,8 @@
                 'nacl/loader/nonsfi/nonsfi_main.h',
                 'nacl/loader/nonsfi/nonsfi_sandbox.cc',
                 'nacl/loader/nonsfi/nonsfi_sandbox.h',
+                'nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.cc',
+                'nacl/loader/sandbox_linux/nacl_sandbox_linux.cc',
                 '../ppapi/nacl_irt/manifest_service.cc',
                 '../ppapi/nacl_irt/manifest_service.h',
                 '../ppapi/nacl_irt/plugin_main.cc',

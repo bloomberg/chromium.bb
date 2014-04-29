@@ -192,7 +192,7 @@ bool Credentials::HasOpenDirectory(int proc_fd) {
       return false;
     }
   }
-  CHECK_GE(proc_self_fd, 0);
+  PCHECK(0 <= proc_self_fd);
 
   // Ownership of proc_self_fd is transferred here, it must not be closed
   // or modified afterwards except via dir.

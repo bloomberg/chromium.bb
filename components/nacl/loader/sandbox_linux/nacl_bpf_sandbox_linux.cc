@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/nacl/loader/nacl_sandbox_linux.h"
+#include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -23,6 +23,8 @@
 using sandbox::ErrorCode;
 using sandbox::SandboxBPF;
 using sandbox::SandboxBPFPolicy;
+
+namespace nacl {
 
 namespace {
 
@@ -172,3 +174,5 @@ bool InitializeBPFSandbox() {
 #endif  // defined(USE_SECCOMP_BPF)
   return false;
 }
+
+}  // namespace nacl
