@@ -109,10 +109,6 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionSendBeginMainFrame");
     states_.push_back(scheduler_->StateAsValue().release());
   }
-  virtual void ScheduledActionAnimate() OVERRIDE {
-    actions_.push_back("ScheduledActionAnimate");
-    states_.push_back(scheduler_->StateAsValue().release());
-  }
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
       OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapIfPossible");
@@ -290,8 +286,7 @@ TEST(SchedulerTest, RequestCommit) {
 
   // BeginImplFrame should prepare the draw.
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
@@ -353,8 +348,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 
   // Because we just swapped, the Scheduler should also request the next
@@ -377,8 +371,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   client.Reset();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
@@ -745,8 +738,7 @@ TEST(SchedulerTest, ManageTiles) {
   // the deadline task.
   client.Reset();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   // On the deadline, he actions should have occured in the right order.
@@ -773,8 +765,7 @@ TEST(SchedulerTest, ManageTiles) {
   // the deadline task.
   client.Reset();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   // Draw. The draw will trigger SetNeedsManageTiles, and
@@ -841,8 +832,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsRedraw();
   client.Reset();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   EXPECT_TRUE(scheduler->ManageTilesPending());
@@ -863,8 +853,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsRedraw();
   client.Reset();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   client.Reset();
@@ -886,8 +875,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsRedraw();
   client.Reset();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   EXPECT_TRUE(scheduler->ManageTilesPending());
@@ -909,8 +897,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsRedraw();
   client.Reset();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   EXPECT_TRUE(scheduler->ManageTilesPending());
@@ -928,8 +915,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsRedraw();
   client.Reset();
   scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
 
   client.Reset();
@@ -1185,8 +1171,7 @@ TEST(SchedulerTest, BeginRetroFrame) {
 
   // BeginImplFrame should prepare the draw.
   client.task_runner().RunPendingTasks();  // Run posted BeginRetroFrame.
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
@@ -1259,8 +1244,7 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
 
   // Swapping will put us into a swap throttled state.
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
@@ -1292,8 +1276,7 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
   // BeginImplFrame deadline should draw.
   scheduler->SetNeedsRedraw();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client.needs_begin_frame());
   client.Reset();
@@ -1345,8 +1328,7 @@ void BeginFramesNotFromClient(bool begin_frame_scheduling_enabled,
 
   // BeginImplFrame should prepare the draw.
   client.task_runner().RunPendingTasks();  // Run posted BeginFrame.
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(client.needs_begin_frame());
   client.Reset();
@@ -1435,8 +1417,7 @@ void BeginFramesNotFromClient_SwapThrottled(bool begin_frame_scheduling_enabled,
 
   // Swapping will put us into a swap throttled state.
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(client.needs_begin_frame());
   client.Reset();
@@ -1460,8 +1441,7 @@ void BeginFramesNotFromClient_SwapThrottled(bool begin_frame_scheduling_enabled,
   // BeginImplFrame deadline should draw.
   scheduler->SetNeedsRedraw();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(client.needs_begin_frame());
   client.Reset();

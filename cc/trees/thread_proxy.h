@@ -82,13 +82,11 @@ class ThreadProxy : public Proxy,
   virtual void DidSwapBuffersCompleteOnImplThread() OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
-  // Please call these 3 functions through
-  // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
-  // SetNeedsAnimate().
+  // Please call these 2 functions through
+  // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsRedrawRect().
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
   virtual void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect)
       OVERRIDE;
-  virtual void SetNeedsAnimateOnImplThread() OVERRIDE;
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
@@ -113,7 +111,6 @@ class ThreadProxy : public Proxy,
       OVERRIDE;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() OVERRIDE;
-  virtual void ScheduledActionAnimate() OVERRIDE;
   virtual void ScheduledActionCommit() OVERRIDE;
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE;
   virtual void ScheduledActionActivatePendingTree() OVERRIDE;
@@ -286,11 +283,7 @@ class ThreadProxy : public Proxy,
 
     // Set when we freeze animations to avoid checkerboarding.
     bool animations_frozen_until_next_draw;
-    base::TimeTicks animation_time;
-
-    // Whether a commit has been completed since the last time animations were
-    // ticked. If this happens, we need to animate again.
-    bool did_commit_after_animating;
+    base::TimeTicks animation_freeze_time;
 
     base::TimeTicks smoothness_takes_priority_expiration_time;
     bool renew_tree_priority_pending;

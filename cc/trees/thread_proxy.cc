@@ -125,10 +125,8 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy,
       inside_draw(false),
       input_throttled_until_commit(false),
       animations_frozen_until_next_draw(false),
-      did_commit_after_animating(false),
       renew_tree_priority_pending(false),
-      weak_factory(proxy) {
-}
+      weak_factory(proxy) {}
 
 ThreadProxy::CompositorThreadOnly::~CompositorThreadOnly() {}
 
@@ -563,12 +561,6 @@ void ThreadProxy::SetNeedsRedrawOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsRedrawOnImplThread");
   DCHECK(IsImplThread());
   impl().scheduler->SetNeedsRedraw();
-}
-
-void ThreadProxy::SetNeedsAnimateOnImplThread() {
-  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsAnimateOnImplThread");
-  DCHECK(IsImplThread());
-  impl().scheduler->SetNeedsAnimate();
 }
 
 void ThreadProxy::SetNeedsManageTilesOnImplThread() {
@@ -1028,18 +1020,6 @@ void ThreadProxy::BeginMainFrameAbortedOnImplThread(bool did_handle) {
   impl().scheduler->BeginMainFrameAborted(did_handle);
 }
 
-void ThreadProxy::ScheduledActionAnimate() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionAnimate");
-  DCHECK(IsImplThread());
-
-  if (!impl().animations_frozen_until_next_draw) {
-    impl().animation_time =
-        impl().layer_tree_host_impl->CurrentFrameTimeTicks();
-  }
-  impl().layer_tree_host_impl->Animate(impl().animation_time);
-  impl().did_commit_after_animating = false;
-}
-
 void ThreadProxy::ScheduledActionCommit() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionCommit");
   DCHECK(IsImplThread());
@@ -1052,10 +1032,10 @@ void ThreadProxy::ScheduledActionCommit() {
   impl().current_resource_update_controller.reset();
 
   if (impl().animations_frozen_until_next_draw) {
-    impl().animation_time = std::max(
-        impl().animation_time, blocked_main().last_monotonic_frame_begin_time);
+    impl().animation_freeze_time =
+        std::max(impl().animation_freeze_time,
+                 blocked_main().last_monotonic_frame_begin_time);
   }
-  impl().did_commit_after_animating = true;
 
   blocked_main().main_thread_inside_commit = true;
   impl().layer_tree_host_impl->BeginCommit();
@@ -1129,13 +1109,17 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   base::TimeDelta draw_duration_estimate = DrawDurationEstimate();
   base::AutoReset<bool> mark_inside(&impl().inside_draw, true);
 
-  if (impl().did_commit_after_animating) {
-    impl().layer_tree_host_impl->Animate(impl().animation_time);
-    impl().did_commit_after_animating = false;
-  }
+  // Advance our animations.
+  base::TimeTicks monotonic_time;
+  if (impl().animations_frozen_until_next_draw)
+    monotonic_time = impl().animation_freeze_time;
+  else
+    monotonic_time = impl().layer_tree_host_impl->CurrentFrameTimeTicks();
 
+  // TODO(enne): This should probably happen post-animate.
   if (impl().layer_tree_host_impl->pending_tree())
     impl().layer_tree_host_impl->pending_tree()->UpdateDrawProperties();
+  impl().layer_tree_host_impl->Animate(monotonic_time);
 
   // This method is called on a forced draw, regardless of whether we are able
   // to produce a frame, as the calling site on main thread is blocked until its
@@ -1189,6 +1173,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     // checkerboarding will be displayed when we force a draw. To avoid this,
     // we freeze animations until we successfully draw.
     impl().animations_frozen_until_next_draw = true;
+    impl().animation_freeze_time = monotonic_time;
   } else {
     DCHECK_NE(DrawSwapReadbackResult::DRAW_SUCCESS, result.draw_result);
   }

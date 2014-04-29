@@ -72,12 +72,10 @@ class LayerTreeHostImplClient {
   virtual void BeginFrame(const BeginFrameArgs& args) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
-  // Please call these 3 functions through
-  // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
-  // SetNeedsAnimate().
+  // Please call these 2 functions through
+  // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsRedrawRect().
   virtual void SetNeedsRedrawOnImplThread() = 0;
   virtual void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) = 0;
-  virtual void SetNeedsAnimateOnImplThread() = 0;
   virtual void DidInitializeVisibleTileOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsManageTilesOnImplThread() = 0;
@@ -140,7 +138,7 @@ class CC_EXPORT LayerTreeHostImpl
                                        bool anchor_point,
                                        float page_scale,
                                        base::TimeDelta duration) OVERRIDE;
-  virtual void SetNeedsAnimate() OVERRIDE;
+  virtual void ScheduleAnimation() OVERRIDE;
   virtual bool HaveTouchEventHandlersAt(const gfx::Point& viewport_port)
       OVERRIDE;
   virtual scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(

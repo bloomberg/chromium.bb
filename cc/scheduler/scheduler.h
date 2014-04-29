@@ -33,7 +33,6 @@ class SchedulerClient {
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible() = 0;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() = 0;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() = 0;
-  virtual void ScheduledActionAnimate() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionUpdateVisibleTiles() = 0;
   virtual void ScheduledActionActivatePendingTree() = 0;
@@ -81,8 +80,6 @@ class CC_EXPORT Scheduler {
   void SetNeedsForcedCommitForReadback();
 
   void SetNeedsRedraw();
-
-  void SetNeedsAnimate();
 
   void SetNeedsManageTiles();
 
