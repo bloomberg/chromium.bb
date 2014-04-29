@@ -14,8 +14,9 @@ namespace syncer {
 
 // An self-contained AttachmentServiceProxy to reduce boilerplate code in tests.
 //
-// Constructs and owns an AttachmentService suitable for use in tests.  Assumes
-// the current thread has a MessageLoop.
+// Constructs and owns an AttachmentService suitable for use in tests.
+// NOTE: This class does not require the current thread to have a MessageLoop,
+// however all methods will effectively become no-op stubs in that case.
 class SYNC_EXPORT AttachmentServiceProxyForTest
     : public AttachmentServiceProxy {
  public:

@@ -4,6 +4,7 @@
 
 #include "sync/api/attachments/attachment_service_proxy_for_test.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "sync/api/attachments/fake_attachment_service.h"
 
@@ -36,8 +37,17 @@ AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
 
   scoped_refptr<Core> core_for_test(
       new OwningCore(wrapped.Pass(), weak_ptr_factory.Pass()));
-  return AttachmentServiceProxyForTest(base::MessageLoopProxy::current(),
-                                       core_for_test);
+
+  scoped_refptr<base::SequencedTaskRunner> runner(
+      base::MessageLoopProxy::current());
+  if (!runner) {
+    // Dummy runner for tests that don't care about AttachmentServiceProxy.
+    DVLOG(1) << "Creating dummy MessageLoop for AttachmentServiceProxy.";
+    base::MessageLoop loop;
+    // This works because |runner| takes a ref to the proxy.
+    runner = loop.message_loop_proxy();
+  }
+  return AttachmentServiceProxyForTest(runner, core_for_test);
 }
 
 AttachmentServiceProxyForTest::~AttachmentServiceProxyForTest() {
