@@ -619,6 +619,72 @@
       ],
     },
     {
+      'target_name': 'irt_exception_test',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'irt_exception_test',
+        'build_newlib': 1,
+        'generate_nmf': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'build_pnacl_newlib': 1,
+        'nonsfi_destination_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/nonsfi',
+        # Workaround because generate_nmf doesn't work yet for NonSFI,
+        # explicitly specify the destination directory for NonSFI so
+        # that we don't have to move it around.
+        'out_pnacl_newlib_x86_32_nonsfi_nexe': '>(nonsfi_destination_dir)/irt_exception_test_pnacl_newlib_x32_nonsfi.nexe',
+        'link_flags': [
+          '-lppapi',
+          '-lppapi_test_lib',
+          '-lplatform',
+          '-lgio',
+          '-lnacl_exception',
+        ],
+        'sources': [
+          'irt_exception/irt_exception_test.cc',
+        ],
+        'test_files': [
+          # TODO(ncbray) move into chrome/test/data/nacl when all tests are
+          # converted.
+          'irt_exception/irt_exception_test.html',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
+        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_exception_lib',
+        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+        '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
+        'ppapi_test_lib',
+      ],
+      'conditions': [
+        ['disable_pnacl==0 and target_arch=="ia32" and OS=="linux"', {
+          'variables': {
+            'enable_x86_32_nonsfi': 1,
+            # Files specifically for NonSFI NaCl. nmf file is
+            # hand-crafted until generate_nmf learns about NonSFI
+            # case, and generate_nmf is the one who usually copies
+            # those files.
+            'nonsfi_test_files': [
+              # TODO(ncbray) move into chrome/test/data/nacl when all tests are
+              # converted.
+              '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
+              'irt_exception/irt_exception_test.html',
+              'irt_exception/irt_exception_test.nmf',
+            ],
+          },
+          'copies': [
+            {
+              'destination': '>(nonsfi_destination_dir)',
+              'files': [
+                '>@(nonsfi_test_files)',
+              ],
+            },
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'pm_nameservice_test',
       'type': 'none',
       'variables': {

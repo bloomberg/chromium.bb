@@ -32,6 +32,7 @@
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
+#include "components/nacl/loader/nonsfi/irt_exception_handling.h"
 #include "components/nacl/loader/sandbox_linux/nacl_sandbox_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
@@ -82,6 +83,9 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
         base::GlobalDescriptors::kBaseDescriptor + kSandboxIPCChannel;
 
     ReplaceFDWithDummy(sandbox_ipc_channel);
+
+    // Install crash signal handlers before disallowing system calls.
+    nacl::nonsfi::InitializeSignalHandler();
   }
 
   // Finish layer-1 sandbox initialization and initialize the layer-2 sandbox.
