@@ -954,9 +954,6 @@ crbug.com/364960 fast/multicol/newmulticol/hide-box-horizontal-bt.html [ Skip ]
 crbug.com/364960 fast/multicol/newmulticol/hide-box-vertical-rl.html [ Skip ]
 crbug.com/364960 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 
-# Flaky on debug
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-pixel.html [ Pass ImageOnlyFailure Failure ]
-
 # Ref tests fail as the reference rendering uses the default text rendering options (GDI w/o AA)
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-isolate-hang-with-neutral.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-override-isolate.html [ Skip ]
