@@ -3081,8 +3081,8 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 
 	if (shsurf->resource)
 		wl_resource_destroy(shsurf->resource);
-	else
-		destroy_shell_surface(shsurf);
+
+	destroy_shell_surface(shsurf);
 }
 
 static void
@@ -3100,15 +3100,17 @@ handle_resource_destroy(struct wl_listener *listener, void *data)
 		container_of(listener, struct shell_surface,
 			     resource_destroy_listener);
 
+	if (!weston_surface_is_mapped(shsurf->surface))
+		return;
+
 	shsurf->surface->ref_count++;
 
 	pixman_region32_fini(&shsurf->surface->pending.input);
 	pixman_region32_init(&shsurf->surface->pending.input);
 	pixman_region32_fini(&shsurf->surface->input);
 	pixman_region32_init(&shsurf->surface->input);
-	if (weston_surface_is_mapped(shsurf->surface))
-		weston_fade_run(shsurf->view, 1.0, 0.0, 300.0,
-				fade_out_done, shsurf);
+	weston_fade_run(shsurf->view, 1.0, 0.0, 300.0,
+			fade_out_done, shsurf);
 }
 
 static void
