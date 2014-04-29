@@ -113,6 +113,7 @@ const SkColor kProgressBarSliceColor = SkColorSetRGB(120, 120, 120);
 
 // Line limits.
 const int kTitleLineLimit = 1;
+const int kTitleNoMessageLineLimit = 2;
 const int kMessageCollapsedLineLimit = 2;
 const int kMessageExpandedLineLimit = 5;
 const int kContextMessageLineLimit = 1;

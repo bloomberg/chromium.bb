@@ -31,8 +31,7 @@ const int kButtonTitleTopPadding = 0;
 // Character limits: Displayed text will be subject to the line limits above,
 // but we also remove trailing characters from text to reduce processing cost.
 // Character limit = pixels per line * line limit / min. pixels per character.
-const size_t kTitleCharacterLimit =
-    message_center::kNotificationWidth * message_center::kTitleLineLimit / 4;
+const int kMinPixelsPerTitleCharacter = 4;
 const size_t kMessageCharacterLimit =
     message_center::kNotificationWidth *
         message_center::kMessageExpandedLineLimit / 3;

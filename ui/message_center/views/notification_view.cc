@@ -318,11 +318,15 @@ NotificationView::NotificationView(MessageCenterController* controller,
     const gfx::FontList& font_list =
         default_label_font_list.DeriveWithSizeDelta(2);
     int padding = kTitleLineHeight - font_list.GetHeight();
+    int title_lines = notification.message().empty() ? kTitleNoMessageLineLimit
+                                                     : kTitleLineLimit;
+    int title_character_limit =
+        kNotificationWidth * title_lines / kMinPixelsPerTitleCharacter;
     title_view_ = new BoundedLabel(
-        gfx::TruncateString(notification.title(), kTitleCharacterLimit),
+        gfx::TruncateString(notification.title(), title_character_limit),
         font_list);
     title_view_->SetLineHeight(kTitleLineHeight);
-    title_view_->SetLineLimit(message_center::kTitleLineLimit);
+    title_view_->SetLineLimit(title_lines);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
     title_view_->SetBorder(MakeTextBorder(padding, 3, 0));

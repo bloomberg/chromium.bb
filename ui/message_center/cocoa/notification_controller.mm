@@ -343,10 +343,13 @@
       message_center::kTextTopPadding - messageBottomGap - contextMessageTopGap;
 
   // Set the title and recalculate the frame.
+  int titleLineLimit = notification_->message().empty()
+                           ? message_center::kTitleNoMessageLineLimit
+                           : message_center::kTitleLineLimit;
   [title_ setString:base::SysUTF16ToNSString(
       [self wrapText:notification_->title()
              forFont:[title_ font]
-       maxNumberOfLines:message_center::kTitleLineLimit])];
+       maxNumberOfLines:titleLineLimit])];
   [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
   titleFrame.origin.y = NSMaxY(rootFrame) - titlePadding - NSHeight(titleFrame);
@@ -362,7 +365,10 @@
   // If there are list items, then the message_ view should not be displayed.
   const std::vector<message_center::NotificationItem>& items =
       notification->items();
-  if (items.size() > 0) {
+  // If there are list items, don't show the main message.  Also if the message
+  // is empty, mark it as hidden and set 0 height, so it doesn't take up any
+  // space (size to fit leaves it 15 px tall.
+  if (items.size() > 0 || notification_->message().empty()) {
     [message_ setHidden:YES];
     messageFrame.origin.y = titleFrame.origin.y;
     messageFrame.size.height = 0;

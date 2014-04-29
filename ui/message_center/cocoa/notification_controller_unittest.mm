@@ -331,4 +331,31 @@ TEST_F(NotificationControllerTest, List) {
             NSMinY([[controller titleView] frame]));
 }
 
+TEST_F(NotificationControllerTest, NoMessage) {
+  message_center::RichNotificationData optional;
+  optional.context_message = UTF8ToUTF16("Context Message");
+
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+          "an_id",
+          UTF8ToUTF16("Notification Title"),
+          UTF8ToUTF16(""),
+          gfx::Image(),
+          base::string16(),
+          DummyNotifierId(),
+          optional,
+          NULL));
+
+  MockMessageCenter message_center;
+  base::scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                               messageCenter:&message_center]);
+  [controller view];
+
+  EXPECT_FALSE([[controller titleView] isHidden]);
+  EXPECT_TRUE([[controller messageView] isHidden]);
+  EXPECT_FALSE([[controller contextMessageView] isHidden]);
+}
+
 }  // namespace message_center
