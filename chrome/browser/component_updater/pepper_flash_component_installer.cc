@@ -91,6 +91,15 @@ base::FilePath GetPepperFlashBaseDirectory() {
 }
 
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
+// Install directory for pepper flash debugger dlls will be like
+// c:\windows\system32\macromed\flash\, or basically the Macromed\Flash
+// subdirectory of the Windows system directory.
+base::FilePath GetPepperFlashDebuggerDirectory() {
+  base::FilePath result;
+  PathService::Get(chrome::DIR_PEPPER_FLASH_DEBUGGER_PLUGIN, &result);
+  return result;
+}
+
 // Pepper Flash plugins have the version encoded in the path itself
 // so we need to enumerate the directories to find the full path.
 // On success, |latest_dir| returns something like:
@@ -100,6 +109,7 @@ base::FilePath GetPepperFlashBaseDirectory() {
 bool GetPepperFlashDirectory(base::FilePath* latest_dir,
                              Version* latest_version,
                              std::vector<base::FilePath>* older_dirs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath base_dir = GetPepperFlashBaseDirectory();
   bool found = false;
   base::FileEnumerator
@@ -125,7 +135,68 @@ bool GetPepperFlashDirectory(base::FilePath* latest_dir,
   }
   return found;
 }
+
+#if defined(OS_WIN)
+const wchar_t kPepperFlashDebuggerDLLSearchString[] =
+#if defined(ARCH_CPU_X86)
+    L"pepflashplayer32*.dll";
+#elif defined(ARCH_CPU_X86_64)
+    L"pepflashplayer64*.dll";
+#else
+#error Unsupported Windows CPU architecture.
+#endif  // defined(ARCH_CPU_X86)
+#endif  // defined(OS_WIN)
+
+bool GetPepperFlashDebuggerPath(base::FilePath* dll_path,
+                                Version* dll_version) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FilePath debugger_dir = GetPepperFlashDebuggerDirectory();
+  // If path doesn't exist they simply don't have the flash debugger installed.
+  if (!base::PathExists(debugger_dir))
+    return false;
+
+  bool found = false;
+#if defined(OS_WIN)
+  // Enumerate any DLLs that match the appropriate pattern for this DLL, and
+  // pick the highest version number we find.
+  base::FileEnumerator file_enumerator(debugger_dir,
+                                       false,
+                                       base::FileEnumerator::FILES,
+                                       kPepperFlashDebuggerDLLSearchString);
+  for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
+       path = file_enumerator.Next()) {
+    // Version number is embedded in file name like basename_x_y_z.dll. Extract.
+    std::string file_name(path.BaseName().RemoveExtension().MaybeAsASCII());
+    // file_name should now be basename_x_y_z. Split along '_' for version.
+    std::vector<std::string> components;
+    base::SplitString(file_name, '_', &components);
+    // Should have at least one version number.
+    if (components.size() <= 1)
+      continue;
+    // Meld version components back into a string, now separated by periods, so
+    // Version can parse it.
+    std::string version_string(components[1]);
+    for (size_t i = 2; i < components.size(); ++i) {
+      version_string += "." + components[i];
+    }
+    Version version(version_string);
+    if (!version.IsValid())
+      continue;
+    if (found) {
+      if (version.CompareTo(*dll_version) > 0) {
+        *dll_path = path;
+        *dll_version = version;
+      }
+    } else {
+      *dll_path = path;
+      *dll_version = version;
+      found = true;
+    }
+  }
 #endif
+  return found;
+}
+#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 
 // Returns true if the Pepper |interface_name| is implemented  by this browser.
 // It does not check if the interface is proxied.
@@ -142,6 +213,7 @@ bool SupportsPepperInterface(const char* interface_name) {
 bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
                                const Version& flash_version,
                                bool out_of_process,
+                               bool is_debugger,
                                content::PepperPluginInfo* plugin_info) {
   if (!flash_version.IsValid())
     return false;
@@ -158,6 +230,9 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = base::StringPrintf("%s %d.%d r%d",
       content::kFlashPluginName, ver_nums[0], ver_nums[1], ver_nums[2]);
+  if (is_debugger) {
+    plugin_info->description += " Debug";
+  }
 
   plugin_info->version = flash_version.GetString();
 
@@ -181,33 +256,45 @@ bool IsPepperFlash(const content::WebPluginInfo& plugin) {
 }
 
 void RegisterPepperFlashWithChrome(const base::FilePath& path,
-                                   const Version& version) {
+                                   const Version& version,
+                                   bool is_debugger) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::PepperPluginInfo plugin_info;
-  if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
+  if (!MakePepperFlashPluginInfo(
+          path, version, true, is_debugger, &plugin_info))
     return;
 
-  std::vector<content::WebPluginInfo> plugins;
-  PluginService::GetInstance()->GetInternalPlugins(&plugins);
-  for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
-       it != plugins.end(); ++it) {
-    if (!IsPepperFlash(*it))
-      continue;
+  // If this is the non-debugger version, we enumerate any installed versions of
+  // pepper flash to make sure we only replace the installed version with a
+  // newer version.
+  if (!is_debugger) {
+    std::vector<content::WebPluginInfo> plugins;
+    PluginService::GetInstance()->GetInternalPlugins(&plugins);
+    for (std::vector<content::WebPluginInfo>::const_iterator it =
+             plugins.begin();
+         it != plugins.end();
+         ++it) {
+      if (!IsPepperFlash(*it))
+        continue;
 
-    // Do it only if the version we're trying to register is newer.
-    Version registered_version(base::UTF16ToUTF8(it->version));
-    if (registered_version.IsValid() &&
-        version.CompareTo(registered_version) <= 0) {
-      return;
+      // Do it only if the version we're trying to register is newer.
+      Version registered_version(base::UTF16ToUTF8(it->version));
+      if (registered_version.IsValid() &&
+          version.CompareTo(registered_version) <= 0) {
+        return;
+      }
+
+      // If the version is newer, remove the old one first.
+      PluginService::GetInstance()->UnregisterInternalPlugin(it->path);
+      break;
     }
-
-    // If the version is newer, remove the old one first.
-    PluginService::GetInstance()->UnregisterInternalPlugin(it->path);
-    break;
   }
 
+  // We only ask for registration at the beginning for the non-debugger plugin,
+  // that way the debugger plugin doesn't automatically clobber the built-in or
+  // updated non-debugger version.
   PluginService::GetInstance()->RegisterInternalPlugin(
-      plugin_info.ToWebPluginInfo(), true);
+      plugin_info.ToWebPluginInfo(), !is_debugger);
   PluginService::GetInstance()->RefreshPlugins();
 }
 
@@ -296,8 +383,9 @@ bool PepperFlashComponentInstaller::Install(
   PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
   path = path.Append(chrome::kPepperFlashPluginFilename);
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RegisterPepperFlashWithChrome, path, version));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&RegisterPepperFlashWithChrome, path, version, false));
   return true;
 }
 
@@ -377,8 +465,9 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
     path = path.Append(chrome::kPepperFlashPluginFilename);
     if (base::PathExists(path)) {
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&RegisterPepperFlashWithChrome, path, version));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&RegisterPepperFlashWithChrome, path, version, false));
     } else {
       version = Version(kNullVersion);
     }
@@ -393,13 +482,25 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
        iter != older_dirs.end(); ++iter) {
     base::DeleteFile(*iter, true);
   }
+
+  // Check for Debugging version of Flash and register if present.
+  base::FilePath debugger_path;
+  Version debugger_version(kNullVersion);
+  if (GetPepperFlashDebuggerPath(&debugger_path, &debugger_version)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&RegisterPepperFlashWithChrome,
+                                       debugger_path,
+                                       debugger_version,
+                                       true));
+  }
 }
 #endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 
 }  // namespace
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
+  #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
   // Component updated flash supersedes bundled flash therefore if that one
   // is disabled then this one should never install.
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -407,7 +508,7 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
     return;
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&StartPepperFlashUpdateRegistration, cus));
-#endif
+  #endif
 }
 
 }  // namespace component_updater
