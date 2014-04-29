@@ -2155,8 +2155,8 @@ void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
 
 void ProfileSyncService::GetAllNodes(
     const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
-  // TODO(rlarocque): Should be GetRegisteredDirectoryTypes.
-  const ModelTypeSet directory_types = GetRegisteredDataTypes();
+  ModelTypeSet directory_types = GetRegisteredDirectoryDataTypes();
+  directory_types.PutAll(syncer::ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =
       new GetAllNodesRequestHelper(directory_types, callback);
 

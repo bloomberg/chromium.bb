@@ -958,8 +958,10 @@ scoped_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
   DirectoryTypeDebugInfoEmitterMap::iterator it = emitter_map->find(type);
 
   if (it == emitter_map->end()) {
-    NOTREACHED() << "Asked to return debug info for invalid type "
-                 << ModelTypeToString(type);
+    // This can happen in some cases.  The UI thread makes requests of us
+    // when it doesn't really know which types are enabled or disabled.
+    DLOG(WARNING) << "Asked to return debug info for invalid type "
+                  << ModelTypeToString(type);
     return scoped_ptr<base::ListValue>();
   }
 
