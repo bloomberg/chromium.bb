@@ -72,7 +72,11 @@ class _ContextLostValidator(page_test.PageTest):
         new_tab = tab.browser.tabs.New()
         # To access these debug URLs from Telemetry, they have to be
         # written using the chrome:// scheme.
-        new_tab.Navigate('chrome://gpucrash')
+        # The try/except is a workaround for crbug.com/368107.
+        try:
+          new_tab.Navigate('chrome://gpucrash')
+        except (exceptions.TabCrashException, Exception):
+          print 'Tab crashed while navigating to chrome://gpucrash'
         # Activate the original tab and wait for completion.
         tab.Activate()
         completed = False
@@ -82,7 +86,11 @@ class _ContextLostValidator(page_test.PageTest):
           completed = True
         except util.TimeoutException:
           pass
-        new_tab.Close()
+        # The try/except is a workaround for crbug.com/368107.
+        try:
+          new_tab.Close()
+        except (exceptions.TabCrashException, Exception):
+          print 'Tab crashed while closing chrome://gpucrash'
         if not completed:
           raise page_test.Failure(
               'Test didn\'t complete (no context lost event?)')
