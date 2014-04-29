@@ -89,14 +89,14 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
   // files have been loaded) and has runTest method.
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(
-          window->GetRenderViewHost(),
+          window->web_contents()->GetRenderViewHost(),
           "window.domAutomationController.send("
           "    '' + (window.uiTests && (typeof uiTests.runTest)));",
           &result));
 
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      window->GetRenderViewHost(),
+      window->web_contents()->GetRenderViewHost(),
       base::StringPrintf("uiTests.runTest('%s')", test_name),
       &result));
   EXPECT_EQ("[OK]", result);
@@ -539,7 +539,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
             worker_data->worker_process_id,
             worker_data->worker_route_id));
     window_ = DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
-    RenderViewHost* client_rvh = window_->GetRenderViewHost();
+    RenderViewHost* client_rvh = window_->web_contents()->GetRenderViewHost();
     WebContents* client_contents = WebContents::FromRenderViewHost(client_rvh);
     content::WaitForLoadStop(client_contents);
   }
@@ -871,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   std::string result;
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(
-          window_->GetRenderViewHost(),
+          window_->web_contents()->GetRenderViewHost(),
           "window.domAutomationController.send("
           "    '' + (window.uiTests && (typeof uiTests.runTest)));",
           &result));
