@@ -530,7 +530,13 @@ class Builder(object):
     deps = deps.replace('\\\n', ' ')
     deps = deps.replace('\n', '')
     # The dependencies are whitespace delimited following the first ':'
-    deps = deps.split(':', 1)[1]
+    # (that is not part of a windows drive letter)
+    deps = deps.split(':', 1)
+    if pynacl.platform.IsWindows() and len(deps[0]) == 1:
+      # The path has a drive letter, find the next ':'
+      deps = deps[1].split(':', 1)[1]
+    else:
+      deps = deps[1]
     deps = deps.split()
     if pynacl.platform.IsWindows():
       deps = [self.FixWindowsPath(d) for d in deps]
