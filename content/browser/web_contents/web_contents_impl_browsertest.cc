@@ -362,7 +362,6 @@ class RenderFrameCreatedObserver : public WebContentsObserver {
   }
 
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE {
-    LOG(ERROR) << "RFCreated: " << render_frame_host;
     last_rfh_ = render_frame_host;
   }
 
@@ -438,3 +437,4 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 }  // namespace content
+
