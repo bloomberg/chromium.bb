@@ -17,9 +17,10 @@ namespace ui {
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
-WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj)
+WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj, jlong vsync_period)
   : weak_java_window_(env, obj),
-    compositor_(NULL) {
+    compositor_(NULL),
+    vsync_period_(base::TimeDelta::FromInternalValue(vsync_period)) {
 }
 
 void WindowAndroid::Destroy(JNIEnv* env, jobject obj) {
@@ -89,12 +90,24 @@ void WindowAndroid::DetachCompositor() {
   observer_list_.Clear();
 }
 
+void WindowAndroid::RequestVSyncUpdate() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WindowAndroid_requestVSyncUpdate(env, GetJavaObject().obj());
+}
+
+void WindowAndroid::OnVSync(JNIEnv* env, jobject obj, jlong time_micros) {
+  FOR_EACH_OBSERVER(
+      WindowAndroidObserver,
+      observer_list_,
+      OnVSync(base::TimeTicks::FromInternalValue(time_micros), vsync_period_));
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env, jobject obj) {
-  WindowAndroid* window = new WindowAndroid(env, obj);
+jlong Init(JNIEnv* env, jobject obj, jlong vsync_period) {
+  WindowAndroid* window = new WindowAndroid(env, obj, vsync_period);
   return reinterpret_cast<intptr_t>(window);
 }
 

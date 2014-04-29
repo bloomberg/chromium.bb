@@ -195,10 +195,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                                     jint max_entries);
   base::android::ScopedJavaLocalRef<jstring>
       GetOriginalUrlForActiveNavigationEntry(JNIEnv* env, jobject obj);
-  void UpdateVSyncParameters(JNIEnv* env, jobject obj, jlong timebase_micros,
-                             jlong interval_micros);
-  void OnVSync(JNIEnv* env, jobject /* obj */, jlong frame_time_micros);
-  jboolean OnAnimate(JNIEnv* env, jobject /* obj */, jlong frame_time_micros);
   void WasResized(JNIEnv* env, jobject obj);
   jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
   void ExitFullscreen(JNIEnv* env, jobject obj);
@@ -308,9 +304,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
-  void AddBeginFrameSubscriber();
-  void RemoveBeginFrameSubscriber();
-  void SetNeedsAnimate();
 
  private:
   class ContentViewUserData;
@@ -337,8 +330,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   blink::WebGestureEvent MakeGestureEvent(
       blink::WebInputEvent::Type type, int64 time_ms, float x, float y) const;
-
-  void SendBeginFrame(base::TimeTicks frame_time);
 
   gfx::Size GetViewportSizePix() const;
   gfx::Size GetViewportSizeOffsetPix() const;
@@ -370,10 +361,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Device scale factor.
   float dpi_scale_;
-
-  // Variables used to keep track of frame timestamps and deadlines.
-  base::TimeDelta vsync_interval_;
-  base::TimeDelta expected_browser_composite_time_;
 
   // The Android view that can be used to add and remove decoration layers
   // like AutofillPopup.

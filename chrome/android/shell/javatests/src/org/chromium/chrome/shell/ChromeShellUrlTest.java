@@ -10,6 +10,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -95,14 +96,17 @@ public class ChromeShellUrlTest extends ChromeShellTestBase {
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    WindowAndroid windowAndroid = new WindowAndroid(
+                            getInstrumentation().getTargetContext().getApplicationContext());
                     ContentViewRenderView contentViewRenderView =
                             new ContentViewRenderView(getInstrumentation().getTargetContext(),
-                                    activity.getWindowAndroid());
+                                    windowAndroid);
                     contentViewRenderView.setCurrentContentViewCore(
                             activity.getActiveContentViewCore());
                 }
             });
         } catch (Throwable e) {
+            e.printStackTrace();
             fail("Could not create a ContentViewRenderView: " + e);
         }
     }

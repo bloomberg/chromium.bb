@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.ui.VSyncMonitor;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -30,6 +31,8 @@ public class WindowAndroid {
 
     // Native pointer to the c++ WindowAndroid object.
     private long mNativeWindowAndroid = 0;
+    private final VSyncMonitor mVSyncMonitor;
+    private VSyncClient mVSyncClient = null;
 
     // A string used as a key to store intent errors in a bundle
     static final String WINDOW_CALLBACK_ERRORS = "window_callback_errors";
@@ -45,6 +48,18 @@ public class WindowAndroid {
     // the Android lint warning "UseSparseArrays".
     protected HashMap<Integer, String> mIntentErrors;
 
+    private final VSyncMonitor.Listener mVSyncListener = new VSyncMonitor.Listener() {
+        @Override
+        public void onVSync(VSyncMonitor monitor, long vsyncTimeMicros) {
+            if (mVSyncClient != null) {
+                mVSyncClient.onVSync(vsyncTimeMicros);
+            }
+            if (mNativeWindowAndroid != 0) {
+                nativeOnVSync(mNativeWindowAndroid, vsyncTimeMicros);
+            }
+        }
+    };
+
     /**
      * @param context The application context.
      */
@@ -54,6 +69,7 @@ public class WindowAndroid {
         mApplicationContext = context;
         mOutstandingIntents = new SparseArray<IntentCallback>();
         mIntentErrors = new HashMap<Integer, String>();
+        mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
     }
 
     /**
@@ -216,6 +232,36 @@ public class WindowAndroid {
     }
 
     /**
+     * An interface to receive VSync notifications from the window.
+     * The one and only client is set with setVSyncClient(client).
+     */
+    public interface VSyncClient {
+        /**
+         * Called very soon after the start of the display's vertical sync period.
+         * @param vsyncTimeMicros Absolute frame time in microseconds.
+         */
+        void onVSync(long vsyncTimeMicros);
+    }
+
+    /**
+     * Sets the VSyncClient.
+     * @param client The client receiving VSync notifications.
+     */
+    public void setVSyncClient(VSyncClient client) {
+        assert mVSyncClient == null || client == null;
+        mVSyncClient = client;
+    }
+
+    /**
+     * Request a VSync callback.
+     * VSyncClient.onVSync() will be called at least once.
+     */
+    @CalledByNative
+    public void requestVSyncUpdate() {
+        mVSyncMonitor.requestUpdate();
+    }
+
+    /**
      * An interface that intent callback objects have to implement.
      */
     public interface IntentCallback {
@@ -226,7 +272,7 @@ public class WindowAndroid {
          * @param contentResolver An instance of ContentResolver class for accessing returned data.
          * @param data The data returned by the intent.
          */
-        public void onIntentCompleted(WindowAndroid window, int resultCode,
+        void onIntentCompleted(WindowAndroid window, int resultCode,
                 ContentResolver contentResolver, Intent data);
     }
 
@@ -257,7 +303,7 @@ public class WindowAndroid {
      */
     public long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
-            mNativeWindowAndroid = nativeInit();
+            mNativeWindowAndroid = nativeInit(mVSyncMonitor.getVSyncPeriodInMicroseconds());
         }
         return mNativeWindowAndroid;
     }
@@ -271,7 +317,8 @@ public class WindowAndroid {
         return null;
     }
 
-    private native long nativeInit();
+    private native long nativeInit(long vsyncPeriod);
+    private native void nativeOnVSync(long nativeWindowAndroid, long vsyncTimeMicros);
     private native void nativeDestroy(long nativeWindowAndroid);
 
 }

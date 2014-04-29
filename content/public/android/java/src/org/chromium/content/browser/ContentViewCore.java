@@ -209,98 +209,6 @@ public class ContentViewCore
         public void onSmartClipDataExtracted(String result);
     }
 
-    private VSyncManager.Provider mVSyncProvider;
-    private VSyncManager.Listener mVSyncListener;
-    private int mVSyncSubscriberCount;
-    private boolean mVSyncListenerRegistered;
-
-    // To avoid IPC delay we use input events to directly trigger a vsync signal in the renderer.
-    // When we do this, we also need to avoid sending the real vsync signal for the current
-    // frame to avoid double-ticking. This flag is used to inhibit the next vsync notification.
-    private boolean mDidSignalVSyncUsingInputEvent;
-
-    public VSyncManager.Listener getVSyncListener(VSyncManager.Provider vsyncProvider) {
-        if (mVSyncProvider != null && mVSyncListenerRegistered) {
-            mVSyncProvider.unregisterVSyncListener(mVSyncListener);
-            mVSyncListenerRegistered = false;
-        }
-
-        mVSyncProvider = vsyncProvider;
-        mVSyncListener = new VSyncManager.Listener() {
-            @Override
-            public void updateVSync(long tickTimeMicros, long intervalMicros) {
-                if (mNativeContentViewCore != 0) {
-                    nativeUpdateVSyncParameters(mNativeContentViewCore, tickTimeMicros,
-                            intervalMicros);
-                }
-            }
-
-            @Override
-            public void onVSync(long frameTimeMicros) {
-                animateIfNecessary(frameTimeMicros);
-
-                if (mRequestedVSyncForInput) {
-                    mRequestedVSyncForInput = false;
-                    removeVSyncSubscriber();
-                }
-                if (mNativeContentViewCore != 0) {
-                    nativeOnVSync(mNativeContentViewCore, frameTimeMicros);
-                }
-            }
-        };
-
-        if (mVSyncSubscriberCount > 0) {
-            // addVSyncSubscriber() is called before getVSyncListener.
-            vsyncProvider.registerVSyncListener(mVSyncListener);
-            mVSyncListenerRegistered = true;
-        }
-
-        return mVSyncListener;
-    }
-
-    @CalledByNative
-    void addVSyncSubscriber() {
-        if (!isVSyncNotificationEnabled()) {
-            mDidSignalVSyncUsingInputEvent = false;
-        }
-        if (mVSyncProvider != null && !mVSyncListenerRegistered) {
-            mVSyncProvider.registerVSyncListener(mVSyncListener);
-            mVSyncListenerRegistered = true;
-        }
-        mVSyncSubscriberCount++;
-    }
-
-    @CalledByNative
-    void removeVSyncSubscriber() {
-        if (mVSyncProvider != null && mVSyncSubscriberCount == 1) {
-            assert mVSyncListenerRegistered;
-            mVSyncProvider.unregisterVSyncListener(mVSyncListener);
-            mVSyncListenerRegistered = false;
-        }
-        mVSyncSubscriberCount--;
-        assert mVSyncSubscriberCount >= 0;
-    }
-
-    @CalledByNative
-    private void resetVSyncNotification() {
-        while (isVSyncNotificationEnabled()) removeVSyncSubscriber();
-        mVSyncSubscriberCount = 0;
-        mVSyncListenerRegistered = false;
-        mNeedAnimate = false;
-    }
-
-    private boolean isVSyncNotificationEnabled() {
-        return mVSyncProvider != null && mVSyncListenerRegistered;
-    }
-
-    @CalledByNative
-    private void setNeedsAnimate() {
-        if (!mNeedAnimate) {
-            mNeedAnimate = true;
-            addVSyncSubscriber();
-        }
-    }
-
     private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
@@ -398,16 +306,6 @@ public class ContentViewCore
 
     // Whether we received a new frame since consumePendingRendererFrame() was last called.
     private boolean mPendingRendererFrame = false;
-
-    // Whether we should animate at the next vsync tick.
-    private boolean mNeedAnimate = false;
-
-    // Whether we requested a proactive vsync event in response to touch input.
-    // This reduces the latency of responding to input by ensuring the renderer
-    // is sent a BeginFrame for every touch event we receive. Otherwise the
-    // renderer's SetNeedsBeginFrame message would get serviced at the next
-    // vsync.
-    private boolean mRequestedVSyncForInput = false;
 
     // On single tap this will store the x, y coordinates of the touch.
     private int mSingleTapX;
@@ -850,8 +748,6 @@ public class ContentViewCore
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
         mWebContents = null;
-        resetVSyncNotification();
-        mVSyncProvider = null;
         if (mViewAndroid != null) mViewAndroid.destroy();
         mNativeContentViewCore = 0;
         mContentSettings = null;
@@ -1193,11 +1089,6 @@ public class ContentViewCore
         MotionEvent offset = createOffsetMotionEvent(event);
 
         cancelRequestToScrollFocusedEditableNodeIntoView();
-
-        if (!mRequestedVSyncForInput) {
-            mRequestedVSyncForInput = true;
-            addVSyncSubscriber();
-        }
 
         final int eventAction = offset.getActionMasked();
 
@@ -3119,18 +3010,6 @@ public class ContentViewCore
         return new Rect(x, y, right, bottom);
     }
 
-    private boolean onAnimate(long frameTimeMicros) {
-        if (mNativeContentViewCore == 0) return false;
-        return nativeOnAnimate(mNativeContentViewCore, frameTimeMicros);
-    }
-
-    private void animateIfNecessary(long frameTimeMicros) {
-        if (mNeedAnimate) {
-            mNeedAnimate = onAnimate(frameTimeMicros);
-            if (!mNeedAnimate) removeVSyncSubscriber();
-        }
-    }
-
     public void extractSmartClipData(int x, int y, int width, int height) {
         if (mNativeContentViewCore != 0) {
             nativeExtractSmartClipData(mNativeContentViewCore, x, y, width, height);
@@ -3339,13 +3218,6 @@ public class ContentViewCore
             Object context, boolean isForward, int maxEntries);
     private native String nativeGetOriginalUrlForActiveNavigationEntry(
             long nativeContentViewCoreImpl);
-
-    private native void nativeUpdateVSyncParameters(long nativeContentViewCoreImpl,
-            long timebaseMicros, long intervalMicros);
-
-    private native void nativeOnVSync(long nativeContentViewCoreImpl, long frameTimeMicros);
-
-    private native boolean nativeOnAnimate(long nativeContentViewCoreImpl, long frameTimeMicros);
 
     private native void nativeWasResized(long nativeContentViewCoreImpl);
 

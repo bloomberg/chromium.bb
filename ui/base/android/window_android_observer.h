@@ -15,6 +15,8 @@ class UI_BASE_EXPORT WindowAndroidObserver {
   virtual void OnAttachCompositor() = 0;
   virtual void OnDetachCompositor() = 0;
   virtual void OnWillDestroyWindow() = 0;
+  virtual void OnVSync(base::TimeTicks frame_time,
+                       base::TimeDelta vsync_period) = 0;
 
  protected:
   virtual ~WindowAndroidObserver() {}

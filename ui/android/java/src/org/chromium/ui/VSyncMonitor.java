@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.ui;
 
 import android.content.Context;
 import android.os.Build;
@@ -61,11 +61,22 @@ public class VSyncMonitor {
     private final Runnable mSyntheticVSyncRunnable;
     private long mLastVSyncCpuTimeNano;
 
+    /**
+     * Constructs a VSyncMonitor
+     * @param context The application context.
+     * @param listener The listener receiving VSync notifications.
+     */
     public VSyncMonitor(Context context, VSyncMonitor.Listener listener) {
         this(context, listener, true);
     }
 
-    VSyncMonitor(Context context, VSyncMonitor.Listener listener, boolean enableJBVSync) {
+    /**
+     * Constructs a VSyncMonitor
+     * @param context The application context.
+     * @param listener The listener receiving VSync notifications.
+     * @param enableJBVsync Whether to allow Choreographer-based notifications on JB and up.
+     */
+    public VSyncMonitor(Context context, VSyncMonitor.Listener listener, boolean enableJBVSync) {
         mListener = listener;
         float refreshRate = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
                 .getDefaultDisplay().getRefreshRate();
@@ -123,7 +134,7 @@ public class VSyncMonitor {
     /**
      * Determine whether a true vsync signal is available on this platform.
      */
-    public boolean isVSyncSignalAvailable() {
+    private boolean isVSyncSignalAvailable() {
         return mChoreographer != null;
     }
 
@@ -133,15 +144,6 @@ public class VSyncMonitor {
      */
     public void stop() {
         mTriggerNextVSyncCount = 0;
-    }
-
-    /**
-     * Unregister the listener.
-     * No vsync events will be reported afterwards.
-     */
-    public void unregisterListener() {
-        stop();
-        mListener = null;
     }
 
     /**

@@ -197,6 +197,8 @@ class RenderWidgetHostViewAndroid
   virtual void OnAttachCompositor() OVERRIDE {}
   virtual void OnDetachCompositor() OVERRIDE;
   virtual void OnWillDestroyWindow() OVERRIDE;
+  virtual void OnVSync(base::TimeTicks frame_time,
+                       base::TimeDelta vsync_period) OVERRIDE;
 
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;
@@ -214,7 +216,6 @@ class RenderWidgetHostViewAndroid
   void SendMouseEvent(const blink::WebMouseEvent& event);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
-  void SendBeginFrame(const cc::BeginFrameArgs& args);
 
   void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
   void OnDidChangeBodyBackgroundColor(SkColor color);
@@ -241,10 +242,6 @@ class RenderWidgetHostViewAndroid
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);
-
-  // Returns true when animation ticks are still needed. This avoids a separate
-  // round-trip for requesting follow-up animation.
-  bool Animate(base::TimeTicks frame_time);
 
   void SynchronousFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);
@@ -306,6 +303,10 @@ class RenderWidgetHostViewAndroid
 
   void InternalSwapCompositorFrame(uint32 output_surface_id,
                                    scoped_ptr<cc::CompositorFrame> frame);
+
+  void SetNeedsAnimate();
+  bool Animate(base::TimeTicks frame_time);
+
 
   // The model object.
   RenderWidgetHostImpl* host_;

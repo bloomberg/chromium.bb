@@ -531,39 +531,20 @@ void RenderWidgetHostViewAndroid::OnDidOverscroll(
                              device_scale_factor),
           gfx::ScaleVector2d(params.current_fling_velocity,
                              device_scale_factor))) {
-    content_view_core_->SetNeedsAnimate();
+    SetNeedsAnimate();
   }
-}
-
-void RenderWidgetHostViewAndroid::SendBeginFrame(
-    const cc::BeginFrameArgs& args) {
-  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::SendBeginFrame");
-  if (!host_)
-    return;
-
-  if (flush_input_requested_) {
-    flush_input_requested_ = false;
-    host_->FlushInput();
-    content_view_core_->RemoveBeginFrameSubscriber();
-  }
-
-  host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
 }
 
 void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame(bool enabled) {
+  if (enabled == needs_begin_frame_)
+    return;
+
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame",
                "enabled", enabled);
-  // ContentViewCoreImpl handles multiple subscribers to the BeginFrame, so
-  // we have to make sure calls to ContentViewCoreImpl's
-  // {Add,Remove}BeginFrameSubscriber are balanced, even if
-  // RenderWidgetHostViewAndroid's may not be.
-  if (content_view_core_ && needs_begin_frame_ != enabled) {
-    if (enabled)
-      content_view_core_->AddBeginFrameSubscriber();
-    else
-      content_view_core_->RemoveBeginFrameSubscriber();
-    needs_begin_frame_ = enabled;
-  }
+  if (content_view_core_ && enabled)
+    content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
+
+  needs_begin_frame_ = enabled;
 }
 
 void RenderWidgetHostViewAndroid::OnStartContentIntent(
@@ -1083,6 +1064,10 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
   overscroll_effect_->Disable();
 }
 
+void RenderWidgetHostViewAndroid::SetNeedsAnimate() {
+  content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
+}
+
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   return overscroll_effect_->Animate(frame_time);
 }
@@ -1194,7 +1179,6 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
     return;
   TRACE_EVENT0("input", "RenderWidgetHostViewAndroid::OnSetNeedsFlushInput");
   flush_input_requested_ = true;
-  content_view_core_->AddBeginFrameSubscriber();
 }
 
 void RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManagerIfNeeded() {
@@ -1285,6 +1269,14 @@ void RenderWidgetHostViewAndroid::SendTouchEvent(
     const blink::WebTouchEvent& event) {
   if (host_)
     host_->ForwardTouchEventWithLatencyInfo(event, CreateLatencyInfo(event));
+
+  // Send a proactive BeginFrame on the next vsync to reduce latency.
+  // This is good enough as long as the first touch event has Begin semantics
+  // and the actual scroll happens on the next vsync.
+  // TODO: Is this actually still needed?
+  if (content_view_core_) {
+    content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
+  }
 }
 
 void RenderWidgetHostViewAndroid::SendMouseEvent(
@@ -1351,6 +1343,8 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (content_view_core_ && !using_synchronous_compositor_) {
     content_view_core_->GetWindowAndroid()->AddObserver(this);
     observing_root_window_ = true;
+    if (needs_begin_frame_)
+      content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
   }
 
   if (resize && content_view_core_)
@@ -1384,6 +1378,37 @@ void RenderWidgetHostViewAndroid::OnWillDestroyWindow() {
   // WindowAndroid and Compositor should outlive all WebContents.
   NOTREACHED();
   observing_root_window_ = false;
+}
+
+void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
+                                          base::TimeDelta vsync_period) {
+  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::OnVSync");
+  if (!host_)
+    return;
+
+  if (flush_input_requested_) {
+    flush_input_requested_ = false;
+    host_->FlushInput();
+  }
+
+  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::SendBeginFrame");
+  base::TimeTicks display_time = frame_time + vsync_period;
+
+  // TODO(brianderson): Use adaptive draw-time estimation.
+  base::TimeDelta estimated_browser_composite_time =
+      base::TimeDelta::FromMicroseconds(
+          (1.0f * base::Time::kMicrosecondsPerSecond) / (3.0f * 60));
+
+  base::TimeTicks deadline = display_time - estimated_browser_composite_time;
+
+  host_->Send(new ViewMsg_BeginFrame(
+      host_->GetRoutingID(),
+      cc::BeginFrameArgs::Create(frame_time, deadline, vsync_period)));
+
+  // TODO(sievers): This should use the LayerTreeHostClient callback
+  bool needs_animate = Animate(frame_time);
+  if (needs_begin_frame_ || needs_animate)
+    content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {

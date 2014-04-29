@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.ui.VSyncMonitor;
 
 import java.util.Arrays;
 import java.util.concurrent.Callable;
