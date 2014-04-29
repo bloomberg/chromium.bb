@@ -10,6 +10,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/rendering/RenderObject.h"
+#include "core/xml/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
 #include "platform/network/ResourceRequest.h"
@@ -185,6 +186,25 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::beginD
     RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("startLine", startLine);
     data->setString("frame", toHexString(document->frame()));
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrReadyStateChangeEvent::data(ExecutionContext* context, XMLHttpRequest* request)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("url", request->url().string());
+    data->setNumber("readyState", request->readyState());
+    if (LocalFrame* frame = frameForExecutionContext(context))
+        data->setString("frame", toHexString(frame));
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrLoadEvent::data(ExecutionContext* context, XMLHttpRequest* request)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("url", request->url().string());
+    if (LocalFrame* frame = frameForExecutionContext(context))
+        data->setString("frame", toHexString(frame));
     return TracedValue::fromJSONValue(data);
 }
 

@@ -18,6 +18,7 @@ class LocalFrame;
 class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
+class XMLHttpRequest;
 
 class InspectorLayoutEvent {
 public:
@@ -78,6 +79,16 @@ public:
 class InspectorParseHtmlEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(Document*, unsigned startLine);
+};
+
+class InspectorXhrReadyStateChangeEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
+};
+
+class InspectorXhrLoadEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
 };
 
 } // namespace WebCore
