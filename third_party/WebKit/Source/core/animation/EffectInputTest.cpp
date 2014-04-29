@@ -117,7 +117,7 @@ TEST_F(AnimationEffectInputTest, Invalid)
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
     jsKeyframes.append(Dictionary(keyframe3, m_isolate));
 
-    RefPtrWillBeRawPtr<AnimationEffect> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState, true);
+    RefPtrWillBeRawPtr<AnimationEffect> animationEffect ALLOW_UNUSED = EffectInput::convert(element.get(), jsKeyframes, exceptionState, true);
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(InvalidModificationError, exceptionState.code());
 }
