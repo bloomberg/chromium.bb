@@ -442,7 +442,12 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
     adj_oom_score_cmdline.push_back(base::IntToString(score));
 
     base::ProcessHandle sandbox_helper_process;
-    if (base::LaunchProcess(adj_oom_score_cmdline, base::LaunchOptions(),
+    base::LaunchOptions options;
+
+    // sandbox_helper_process is a setuid binary.
+    options.allow_new_privs = true;
+
+    if (base::LaunchProcess(adj_oom_score_cmdline, options,
                             &sandbox_helper_process)) {
       base::EnsureProcessGetsReaped(sandbox_helper_process);
     }
