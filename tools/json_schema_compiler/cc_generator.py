@@ -346,24 +346,23 @@ class _Generator(object):
     )
 
     for prop in type_.properties.values():
+      prop_var = 'this->%s' % prop.unix_name
       if prop.optional:
         # Optional enum values are generated with a NONE enum value.
         underlying_type = self._type_helper.FollowRef(prop.type_)
         if underlying_type.property_type == PropertyType.ENUM:
           c.Sblock('if (%s != %s) {' %
-              (prop.unix_name,
+              (prop_var,
                self._type_helper.GetEnumNoneValue(prop.type_)))
         else:
-          c.Sblock('if (%s.get()) {' % prop.unix_name)
+          c.Sblock('if (%s.get()) {' % prop_var)
 
       # ANY is a base::Value which is abstract and cannot be a direct member, so
       # it will always be a pointer.
       is_ptr = prop.optional or prop.type_.property_type == PropertyType.ANY
       c.Append('value->SetWithoutPathExpansion("%s", %s);' % (
           prop.name,
-          self._CreateValueFromType(prop.type_,
-                                    'this->%s' % prop.unix_name,
-                                    is_ptr=is_ptr)))
+          self._CreateValueFromType(prop.type_, prop_var, is_ptr=is_ptr)))
 
       if prop.optional:
         c.Eblock('}')
