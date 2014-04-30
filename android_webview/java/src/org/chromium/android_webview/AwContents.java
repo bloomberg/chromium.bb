@@ -232,8 +232,6 @@ public class AwContents {
         }
         @Override
         public void run() {
-            // This is a no-op if not currently attached.
-            nativeOnDetachedFromWindow(mNativeAwContents);
             nativeDestroy(mNativeAwContents);
         }
     }
