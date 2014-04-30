@@ -14,7 +14,7 @@ import subprocess
 
 testcase_name = None
 for arg in sys.argv:
-  m = re.match("\-\-test\-name=(.*)", arg)
+  m = re.match("\-\-gtest_filter=(.*)", arg)
   if m:
     assert testcase_name is None
     testcase_name = m.groups()[0]
