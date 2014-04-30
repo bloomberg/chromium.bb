@@ -9,26 +9,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
-#if !defined(WEBCRYPTO_HAS_ERROR_TYPE)
-
-// TODO(eroman): Delete once Blink changes have rolled into Chromium.
-namespace blink {
-
-enum WebCryptoErrorType {
-  WebCryptoErrorTypeType,
-  WebCryptoErrorTypeNotSupported,
-  WebCryptoErrorTypeSyntax,
-  WebCryptoErrorTypeInvalidState,
-  WebCryptoErrorTypeInvalidAccess,
-  WebCryptoErrorTypeUnknown,
-  WebCryptoErrorTypeData,
-  WebCryptoErrorTypeOperation,
-};
-
-}  // namespace blink
-
-#endif
-
 namespace content {
 
 namespace webcrypto {

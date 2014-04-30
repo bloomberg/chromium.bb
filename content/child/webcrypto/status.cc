@@ -122,11 +122,7 @@ Status Status::ErrorImportEmptyKeyData() {
 
 Status Status::ErrorImportAesKeyLength() {
   return Status(blink::WebCryptoErrorTypeData,
-#if defined(WEBCRYPTO_HAS_ERROR_TYPE)
                 "AES key data must be 128, 192 or 256 bits");
-#else
-                "");
-#endif
 }
 
 Status Status::ErrorUnexpectedKeyType() {

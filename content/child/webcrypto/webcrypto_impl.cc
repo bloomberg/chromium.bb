@@ -22,17 +22,8 @@ namespace {
 void CompleteWithError(const Status& status, blink::WebCryptoResult* result) {
   DCHECK(status.IsError());
 
-#if defined(WEBCRYPTO_HAS_ERROR_TYPE)
   result->completeWithError(status.error_type(),
                             blink::WebString::fromUTF8(status.error_details()));
-#else
-  // TODO(eroman): Delete once Blink changes have rolled into Chromium.
-  if (!status.error_details().empty())
-    result->completeWithError(
-        blink::WebString::fromUTF8(status.error_details()));
-  else
-    result->completeWithError();
-#endif
 }
 
 bool IsAlgorithmAsymmetric(const blink::WebCryptoAlgorithm& algorithm) {
