@@ -86,6 +86,13 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
                               pid_t current_pid,
                               SandboxBPF* sandbox,
                               int sysno) {
+#if defined(ADDRESS_SANITIZER)
+  if (sysno == __NR_sigaltstack) {
+    // Required for better stack overflow detection in ASan. Disallowed in
+    // non-ASan builds.
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+#endif
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }

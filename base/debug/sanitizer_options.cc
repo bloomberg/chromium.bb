@@ -36,6 +36,8 @@ void _sanitizer_options_link_helper() { }
 //     work around http://crbug.com/162461 (ASan report in OpenCL on Mac).
 //   check_printf=1 - check the memory accesses to printf (and other formatted
 //     output routines) arguments.
+//   use_sigaltstack=1 - handle signals on an alternate signal stack. Useful
+//     for stack overflow detection.
 #if defined(OS_LINUX)
 #if defined(GOOGLE_CHROME_BUILD)
 // Default AddressSanitizer options for the official build. These do not affect
@@ -43,16 +45,16 @@ void _sanitizer_options_link_helper() { }
 // Chromium builds.
 const char kAsanDefaultOptions[] =
     "legacy_pthread_cond=1 malloc_context_size=5 strict_memcmp=0 "
-    "symbolize=false check_printf=1";
+    "symbolize=false check_printf=1 use_sigaltstack=1";
 #else
 // Default AddressSanitizer options for buildbots and non-official builds.
 const char *kAsanDefaultOptions =
-    "strict_memcmp=0 symbolize=false check_printf=1";
+    "strict_memcmp=0 symbolize=false check_printf=1 use_sigaltstack=1";
 #endif  // GOOGLE_CHROME_BUILD
 
 #elif defined(OS_MACOSX)
 const char *kAsanDefaultOptions =
-    "strict_memcmp=0 replace_intrin=0 check_printf=1";
+    "strict_memcmp=0 replace_intrin=0 check_printf=1 use_sigaltstack=1";
 #endif  // OS_LINUX
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)

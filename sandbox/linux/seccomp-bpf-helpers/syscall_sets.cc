@@ -299,7 +299,6 @@ bool SyscallSets::IsAllowedSignalHandling(int sysno) {
     case __NR_rt_sigsuspend:
     case __NR_rt_sigtimedwait:
     case __NR_rt_tgsigqueueinfo:
-    case __NR_sigaltstack:
     case __NR_signalfd:
     case __NR_signalfd4:
 #if defined(__i386__) || defined(__arm__)
