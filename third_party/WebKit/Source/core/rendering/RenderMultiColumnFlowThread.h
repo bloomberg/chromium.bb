@@ -56,6 +56,8 @@ public:
 
     static RenderMultiColumnFlowThread* createAnonymous(Document&, RenderStyle* parentStyle);
 
+    virtual bool isRenderMultiColumnFlowThread() const OVERRIDE FINAL { return true; }
+
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
 
     RenderMultiColumnSet* firstMultiColumnSet() const;

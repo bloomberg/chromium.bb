@@ -261,7 +261,7 @@ void RenderMultiColumnSet::prepareForLayout()
     // Set box width.
     updateLogicalWidth();
 
-    if (multicolBlock->multiColumnFlowThread()->requiresBalancing()) {
+    if (multiColumnFlowThread()->requiresBalancing()) {
         // Set maximum column height. We will not stretch beyond this.
         m_maxColumnHeight = RenderFlowThread::maxLogicalHeight();
         if (!multicolStyle->logicalHeight().isAuto()) {
@@ -277,7 +277,7 @@ void RenderMultiColumnSet::prepareForLayout()
         m_maxColumnHeight = heightAdjustedForSetOffset(m_maxColumnHeight);
         m_computedColumnHeight = 0; // Restart balancing.
     } else {
-        setAndConstrainColumnHeight(heightAdjustedForSetOffset(multicolBlock->multiColumnFlowThread()->columnHeightAvailable()));
+        setAndConstrainColumnHeight(heightAdjustedForSetOffset(multiColumnFlowThread()->columnHeightAvailable()));
     }
 
     clearForcedBreaks();

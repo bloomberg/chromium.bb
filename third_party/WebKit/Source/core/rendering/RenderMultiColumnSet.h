@@ -27,6 +27,7 @@
 #ifndef RenderMultiColumnSet_h
 #define RenderMultiColumnSet_h
 
+#include "core/rendering/RenderMultiColumnFlowThread.h"
 #include "core/rendering/RenderRegionSet.h"
 #include "wtf/Vector.h"
 
@@ -56,7 +57,11 @@ public:
     virtual bool isRenderMultiColumnSet() const OVERRIDE { return true; }
 
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
-    RenderMultiColumnFlowThread* multiColumnFlowThread() const { return multiColumnBlockFlow()->multiColumnFlowThread(); }
+    RenderMultiColumnFlowThread* multiColumnFlowThread() const
+    {
+        ASSERT_WITH_SECURITY_IMPLICATION(!flowThread() || flowThread()->isRenderMultiColumnFlowThread());
+        return static_cast<RenderMultiColumnFlowThread*>(flowThread());
+    }
 
     RenderMultiColumnSet* nextSiblingMultiColumnSet() const;
 
