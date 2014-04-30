@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 

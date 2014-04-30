@@ -23,7 +23,6 @@
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
@@ -38,9 +37,18 @@
 #define MAYBE(test_name) test_name
 #endif
 
+#define EXPECT_BYTES_EQ(expected, actual) \
+  EXPECT_EQ(CryptoData(expected), CryptoData(actual))
+
+#define EXPECT_BYTES_EQ_HEX(expected_hex, actual_bytes) \
+  EXPECT_BYTES_EQ(HexStringToBytes(expected_hex), actual_bytes)
+
 namespace content {
 
 namespace webcrypto {
+
+// These functions are used by GTEST to support EXPECT_EQ() for
+// webcrypto::Status and webcrypto::CryptoData
 
 void PrintTo(const Status& status, ::std::ostream* os) {
   if (status.IsSuccess())
@@ -65,88 +73,17 @@ bool operator!=(const content::webcrypto::Status& a,
   return !(a == b);
 }
 
+void PrintTo(const CryptoData& data, ::std::ostream* os) {
+  *os << "[" << base::HexEncode(data.bytes(), data.byte_length()) << "]";
+}
+
+bool operator==(const content::webcrypto::CryptoData& a,
+                const content::webcrypto::CryptoData& b) {
+  return a.byte_length() == b.byte_length() &&
+         memcmp(a.bytes(), b.bytes(), a.byte_length()) == 0;
+}
+
 namespace {
-
-// -----------------------------------------------------------------------------
-// TODO(eroman): Remove these helpers and convert all of the tests to using the
-//               std::vector<> flavor of functions directly.
-// -----------------------------------------------------------------------------
-
-blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
-                                        unsigned int data_size) {
-  blink::WebArrayBuffer buffer = blink::WebArrayBuffer::create(data_size, 1);
-  DCHECK(!buffer.isNull());
-  if (data_size)  // data_size == 0 might mean the data pointer is invalid
-    memcpy(buffer.data(), data, data_size);
-  return buffer;
-}
-
-void AssignWebArrayBuffer(const std::vector<uint8>& in,
-                          blink::WebArrayBuffer* out) {
-  *out = CreateArrayBuffer(Uint8VectorStart(in), in.size());
-}
-
-Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
-               const blink::WebCryptoKey& key,
-               const CryptoData& data,
-               blink::WebArrayBuffer* web_buffer) {
-  std::vector<uint8> buffer;
-  Status status = Encrypt(algorithm, key, data, &buffer);
-  AssignWebArrayBuffer(buffer, web_buffer);
-  return status;
-}
-
-Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
-               const blink::WebCryptoKey& key,
-               const CryptoData& data,
-               blink::WebArrayBuffer* web_buffer) {
-  std::vector<uint8> buffer;
-  Status status = Decrypt(algorithm, key, data, &buffer);
-  AssignWebArrayBuffer(buffer, web_buffer);
-  return status;
-}
-
-Status Digest(const blink::WebCryptoAlgorithm& algorithm,
-              const CryptoData& data,
-              blink::WebArrayBuffer* web_buffer) {
-  std::vector<uint8> buffer;
-  Status status = Digest(algorithm, data, &buffer);
-  AssignWebArrayBuffer(buffer, web_buffer);
-  return status;
-}
-
-Status ExportKey(blink::WebCryptoKeyFormat format,
-                 const blink::WebCryptoKey& key,
-                 blink::WebArrayBuffer* web_buffer) {
-  std::vector<uint8> buffer;
-  Status status = webcrypto::ExportKey(format, key, &buffer);
-  AssignWebArrayBuffer(buffer, web_buffer);
-  return status;
-}
-
-Status Sign(const blink::WebCryptoAlgorithm& algorithm,
-            const blink::WebCryptoKey& key,
-            const CryptoData& data,
-            blink::WebArrayBuffer* web_buffer) {
-  std::vector<uint8> buffer;
-
-  Status status = Sign(algorithm, key, data, &buffer);
-  AssignWebArrayBuffer(buffer, web_buffer);
-  return status;
-}
-
-Status WrapKey(blink::WebCryptoKeyFormat format,
-               const blink::WebCryptoKey& wrapping_key,
-               const blink::WebCryptoKey& key_to_wrap,
-               const blink::WebCryptoAlgorithm& wrapping_algorithm,
-               blink::WebArrayBuffer* web_buffer) {
-  std::vector<uint8> buffer;
-
-  Status status = webcrypto::WrapKey(
-      format, wrapping_key, key_to_wrap, wrapping_algorithm, &buffer);
-  AssignWebArrayBuffer(buffer, web_buffer);
-  return status;
-}
 
 // -----------------------------------------------------------------------------
 
@@ -255,34 +192,6 @@ std::vector<uint8> HexStringToBytes(const std::string& hex) {
   return bytes;
 }
 
-::testing::AssertionResult ArrayBufferMatches(
-    const std::vector<uint8>& expected,
-    const blink::WebArrayBuffer& actual) {
-  if (base::HexEncode(webcrypto::Uint8VectorStart(expected), expected.size()) ==
-      base::HexEncode(actual.data(), actual.byteLength()))
-    return ::testing::AssertionSuccess();
-  return ::testing::AssertionFailure();
-}
-
-void ExpectCryptoDataMatchesHex(const std::string& expected_hex,
-                                const CryptoData& actual) {
-  EXPECT_STRCASEEQ(
-      expected_hex.c_str(),
-      base::HexEncode(actual.bytes(), actual.byte_length()).c_str());
-}
-
-void ExpectArrayBufferMatchesHex(const std::string& expected_hex,
-                                 const blink::WebArrayBuffer& array_buffer) {
-  ExpectCryptoDataMatchesHex(expected_hex, CryptoData(array_buffer));
-}
-
-void ExpectVectorMatches(const std::vector<uint8>& expected,
-                         const std::vector<uint8>& actual) {
-  EXPECT_EQ(
-      base::HexEncode(webcrypto::Uint8VectorStart(expected), expected.size()),
-      base::HexEncode(webcrypto::Uint8VectorStart(actual), actual.size()));
-}
-
 std::vector<uint8> MakeJsonVector(const std::string& json_string) {
   return std::vector<uint8>(json_string.begin(), json_string.end());
 }
@@ -378,10 +287,12 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(base::DictionaryValue* dict,
   struct {
     const char* name;
     blink::WebCryptoAlgorithmId id;
-  } kDigestNameToId[] = {{"sha-1", blink::WebCryptoAlgorithmIdSha1},
-                         {"sha-256", blink::WebCryptoAlgorithmIdSha256},
-                         {"sha-384", blink::WebCryptoAlgorithmIdSha384},
-                         {"sha-512", blink::WebCryptoAlgorithmIdSha512}, };
+  } kDigestNameToId[] = {
+        {"sha-1", blink::WebCryptoAlgorithmIdSha1},
+        {"sha-256", blink::WebCryptoAlgorithmIdSha256},
+        {"sha-384", blink::WebCryptoAlgorithmIdSha384},
+        {"sha-512", blink::WebCryptoAlgorithmIdSha512},
+    };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDigestNameToId); ++i) {
     if (kDigestNameToId[i].name == algorithm_name)
@@ -418,18 +329,13 @@ void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
   dict->SetString("e", "AQAB");
 }
 
-// Determines if two ArrayBuffers have identical content.
-bool ArrayBuffersEqual(const blink::WebArrayBuffer& a,
-                       const blink::WebArrayBuffer& b) {
-  return a.byteLength() == b.byteLength() &&
-         memcmp(a.data(), b.data(), a.byteLength()) == 0;
-}
-
-// Given a vector of WebArrayBuffers, determines if there are any copies.
-bool CopiesExist(std::vector<blink::WebArrayBuffer> bufs) {
+// Returns true if any of the vectors in the input list have identical content.
+// Dumb O(n^2) implementation but should be fast enough for the input sizes that
+// are used.
+bool CopiesExist(const std::vector<std::vector<uint8> >& bufs) {
   for (size_t i = 0; i < bufs.size(); ++i) {
     for (size_t j = i + 1; j < bufs.size(); ++j) {
-      if (ArrayBuffersEqual(bufs[i], bufs[j]))
+      if (CryptoData(bufs[i]) == CryptoData(bufs[j]))
         return true;
     }
   }
@@ -573,23 +479,28 @@ Status AesGcmEncrypt(const blink::WebCryptoKey& key,
   blink::WebCryptoAlgorithm algorithm =
       CreateAesGcmAlgorithm(iv, additional_data, tag_length_bits);
 
-  blink::WebArrayBuffer output;
+  std::vector<uint8> output;
   Status status = Encrypt(algorithm, key, CryptoData(plain_text), &output);
   if (status.IsError())
     return status;
 
-  if (output.byteLength() * 8 < tag_length_bits) {
-    EXPECT_TRUE(false);
+  if ((tag_length_bits % 8) != 0) {
+    EXPECT_TRUE(false) << "Encrypt should have failed.";
+    return Status::OperationError();
+  }
+
+  size_t tag_length_bytes = tag_length_bits / 8;
+
+  if (tag_length_bytes > output.size()) {
+    EXPECT_TRUE(false) << "tag length is larger than output";
     return Status::OperationError();
   }
 
   // The encryption result is cipher text with authentication tag appended.
-  cipher_text->assign(static_cast<uint8*>(output.data()),
-                      static_cast<uint8*>(output.data()) +
-                          (output.byteLength() - tag_length_bits / 8));
-  authentication_tag->assign(
-      static_cast<uint8*>(output.data()) + cipher_text->size(),
-      static_cast<uint8*>(output.data()) + output.byteLength());
+  cipher_text->assign(output.begin(),
+                      output.begin() + (output.size() - tag_length_bytes));
+  authentication_tag->assign(output.begin() + cipher_text->size(),
+                             output.end());
 
   return Status::Success();
 }
@@ -600,7 +511,7 @@ Status AesGcmDecrypt(const blink::WebCryptoKey& key,
                      unsigned int tag_length_bits,
                      const std::vector<uint8>& cipher_text,
                      const std::vector<uint8>& authentication_tag,
-                     blink::WebArrayBuffer* plain_text) {
+                     std::vector<uint8>* plain_text) {
   EXPECT_TRUE(SupportsAesGcm());
   blink::WebCryptoAlgorithm algorithm =
       CreateAesGcmAlgorithm(iv, additional_data, tag_length_bits);
@@ -642,11 +553,11 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                       key);
 }
 
-// Parses an ArrayBuffer of JSON into a dictionary.
+// Parses a vector of JSON into a dictionary.
 scoped_ptr<base::DictionaryValue> GetJwkDictionary(
-    const blink::WebArrayBuffer& json) {
-  base::StringPiece json_string(reinterpret_cast<const char*>(json.data()),
-                                json.byteLength());
+    const std::vector<uint8>& json) {
+  base::StringPiece json_string(
+      reinterpret_cast<const char*>(Uint8VectorStart(json)), json.size());
   base::Value* value = base::JSONReader::Read(json_string);
   EXPECT_TRUE(value);
   base::DictionaryValue* dict_value = NULL;
@@ -703,10 +614,10 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
   return ::testing::AssertionSuccess();
 }
 
-// Verifies that the JSON in the input ArrayBuffer contains the provided
+// Verifies that the JSON in the input vector contains the provided
 // expected values. Exact matches are required on the fields examined.
 ::testing::AssertionResult VerifySecretJwk(
-    const blink::WebArrayBuffer& json,
+    const std::vector<uint8>& json,
     const std::string& alg_expected,
     const std::string& k_expected_hex,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
@@ -731,10 +642,10 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
   return VerifyJwk(dict, "oct", alg_expected, use_mask_expected);
 }
 
-// Verifies that the JSON in the input ArrayBuffer contains the provided
+// Verifies that the JSON in the input vector contains the provided
 // expected values. Exact matches are required on the fields examined.
 ::testing::AssertionResult VerifyPublicJwk(
-    const blink::WebArrayBuffer& json,
+    const std::vector<uint8>& json,
     const std::string& alg_expected,
     const std::string& n_expected_hex,
     const std::string& e_expected_hex,
@@ -849,10 +760,10 @@ TEST_F(SharedCryptoTest, DigestSampleSets) {
     std::vector<uint8> test_input = GetBytesFromHexString(test, "input");
     std::vector<uint8> test_output = GetBytesFromHexString(test, "output");
 
-    blink::WebArrayBuffer output;
+    std::vector<uint8> output;
     ASSERT_EQ(Status::Success(),
               Digest(test_algorithm, CryptoData(test_input), &output));
-    EXPECT_TRUE(ArrayBufferMatches(test_output, output));
+    EXPECT_BYTES_EQ(test_output, output);
   }
 }
 
@@ -889,8 +800,7 @@ TEST_F(SharedCryptoTest, DigestSampleSetsInChunks) {
       begin = begin + chunk_length;
     }
     EXPECT_TRUE(digestor->finish(output, output_length));
-    ExpectVectorMatches(test_output,
-                        std::vector<uint8>(output, output + output_length));
+    EXPECT_BYTES_EQ(test_output, CryptoData(output, output_length));
   }
 }
 
@@ -924,17 +834,17 @@ TEST_F(SharedCryptoTest, HMACSampleSets) {
     EXPECT_EQ(test_key.size() * 8, key.algorithm().hmacParams()->lengthBits());
 
     // Verify exported raw key is identical to the imported data
-    blink::WebArrayBuffer raw_key;
+    std::vector<uint8> raw_key;
     EXPECT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
-    EXPECT_TRUE(ArrayBufferMatches(test_key, raw_key));
+    EXPECT_BYTES_EQ(test_key, raw_key);
 
-    blink::WebArrayBuffer output;
+    std::vector<uint8> output;
 
     ASSERT_EQ(Status::Success(),
               Sign(algorithm, key, CryptoData(test_message), &output));
 
-    EXPECT_TRUE(ArrayBufferMatches(test_mac, output));
+    EXPECT_BYTES_EQ(test_mac, output);
 
     bool signature_match = false;
     EXPECT_EQ(Status::Success(),
@@ -946,14 +856,13 @@ TEST_F(SharedCryptoTest, HMACSampleSets) {
     EXPECT_TRUE(signature_match);
 
     // Ensure truncated signature does not verify by passing one less byte.
-    EXPECT_EQ(Status::Success(),
-              VerifySignature(
-                  algorithm,
-                  key,
-                  CryptoData(static_cast<const unsigned char*>(output.data()),
-                             output.byteLength() - 1),
-                  CryptoData(test_message),
-                  &signature_match));
+    EXPECT_EQ(
+        Status::Success(),
+        VerifySignature(algorithm,
+                        key,
+                        CryptoData(Uint8VectorStart(output), output.size() - 1),
+                        CryptoData(test_message),
+                        &signature_match));
     EXPECT_FALSE(signature_match);
 
     // Ensure truncated signature does not verify by passing no bytes.
@@ -986,12 +895,12 @@ TEST_F(SharedCryptoTest, AesCbcFailures) {
       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt);
 
   // Verify exported raw key is identical to the imported data
-  blink::WebArrayBuffer raw_key;
+  std::vector<uint8> raw_key;
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
-  ExpectArrayBufferMatchesHex(key_hex, raw_key);
+  EXPECT_BYTES_EQ_HEX(key_hex, raw_key);
 
-  blink::WebArrayBuffer output;
+  std::vector<uint8> output;
 
   // Use an invalid |iv| (fewer than 16 bytes)
   {
@@ -1088,12 +997,12 @@ TEST_F(SharedCryptoTest, MAYBE(AesCbcSampleSets)) {
     EXPECT_EQ(test_key.size() * 8, key.algorithm().aesParams()->lengthBits());
 
     // Verify exported raw key is identical to the imported data
-    blink::WebArrayBuffer raw_key;
+    std::vector<uint8> raw_key;
     EXPECT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
-    EXPECT_TRUE(ArrayBufferMatches(test_key, raw_key));
+    EXPECT_BYTES_EQ(test_key, raw_key);
 
-    blink::WebArrayBuffer output;
+    std::vector<uint8> output;
 
     // Test encryption.
     EXPECT_EQ(Status::Success(),
@@ -1101,7 +1010,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesCbcSampleSets)) {
                       key,
                       CryptoData(test_plain_text),
                       &output));
-    EXPECT_TRUE(ArrayBufferMatches(test_cipher_text, output));
+    EXPECT_BYTES_EQ(test_cipher_text, output);
 
     // Test decryption.
     EXPECT_EQ(Status::Success(),
@@ -1109,7 +1018,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesCbcSampleSets)) {
                       key,
                       CryptoData(test_cipher_text),
                       &output));
-    EXPECT_TRUE(ArrayBufferMatches(test_plain_text, output));
+    EXPECT_BYTES_EQ(test_plain_text, output);
 
     const unsigned int kAesCbcBlockSize = 16;
 
@@ -1149,8 +1058,8 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyAes)) {
       algorithm.push_back(CreateAesGcmKeyGenAlgorithm(kKeyLength[i]));
   }
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  std::vector<blink::WebArrayBuffer> keys;
-  blink::WebArrayBuffer key_bytes;
+  std::vector<std::vector<uint8> > keys;
+  std::vector<uint8> key_bytes;
   for (size_t i = 0; i < algorithm.size(); ++i) {
     SCOPED_TRACE(i);
     // Generate a small sample of keys.
@@ -1162,7 +1071,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyAes)) {
       EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
       ASSERT_EQ(Status::Success(),
                 ExportKey(blink::WebCryptoKeyFormatRaw, key, &key_bytes));
-      EXPECT_EQ(key_bytes.byteLength() * 8,
+      EXPECT_EQ(key_bytes.size() * 8,
                 key.algorithm().aesParams()->lengthBits());
       keys.push_back(key_bytes);
     }
@@ -1193,9 +1102,9 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyAesBadLength)) {
 
 TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmac)) {
   // Generate a small sample of HMAC keys.
-  std::vector<blink::WebArrayBuffer> keys;
+  std::vector<std::vector<uint8> > keys;
   for (int i = 0; i < 16; ++i) {
-    blink::WebArrayBuffer key_bytes;
+    std::vector<uint8> key_bytes;
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
     blink::WebCryptoAlgorithm algorithm =
         CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 512);
@@ -1208,10 +1117,10 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmac)) {
               key.algorithm().hmacParams()->hash().id());
     EXPECT_EQ(512u, key.algorithm().hmacParams()->lengthBits());
 
-    blink::WebArrayBuffer raw_key;
+    std::vector<uint8> raw_key;
     ASSERT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
-    EXPECT_EQ(64U, raw_key.byteLength());
+    EXPECT_EQ(64U, raw_key.size());
     keys.push_back(raw_key);
   }
   // Ensure all entries in the key sample set are unique. This is a simplistic
@@ -1231,10 +1140,10 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmacNoLength)) {
   EXPECT_EQ(blink::WebCryptoAlgorithmIdSha1,
             key.algorithm().hmacParams()->hash().id());
   EXPECT_EQ(512u, key.algorithm().hmacParams()->lengthBits());
-  blink::WebArrayBuffer raw_key;
+  std::vector<uint8> raw_key;
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
-  EXPECT_EQ(64U, raw_key.byteLength());
+  EXPECT_EQ(64U, raw_key.size());
 
   // The block size for HMAC SHA-512 is larger.
   algorithm = CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha512, 0);
@@ -1245,7 +1154,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmacNoLength)) {
   EXPECT_EQ(1024u, key.algorithm().hmacParams()->lengthBits());
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
-  EXPECT_EQ(128U, raw_key.byteLength());
+  EXPECT_EQ(128U, raw_key.size());
 }
 
 TEST_F(SharedCryptoTest, ImportJwkKeyUsage) {
@@ -1586,7 +1495,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkRsaPublicKey)) {
                         &public_key));
 
     // Export the public key as JWK and verify its contents
-    blink::WebArrayBuffer jwk;
+    std::vector<uint8> jwk;
     ASSERT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatJwk, public_key, &jwk));
     EXPECT_TRUE(VerifyPublicJwk(jwk, test.jwk_alg, n_hex, e_hex, test.usage));
@@ -1603,10 +1512,10 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkRsaPublicKey)) {
     EXPECT_EQ(test.algorithm.id(), public_key2.algorithm().id());
 
     // Export the new key as spki and compare to the original.
-    blink::WebArrayBuffer spki;
+    std::vector<uint8> spki;
     ASSERT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatSpki, public_key2, &spki));
-    ExpectCryptoDataMatchesHex(kPublicKeySpkiDerHex, CryptoData(spki));
+    EXPECT_BYTES_EQ_HEX(kPublicKeySpkiDerHex, CryptoData(spki));
   }
 }
 
@@ -1818,7 +1727,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkHappy)) {
       "d1b0ae933c65eb06a03c9c935c2bad0459810241347ab87e9f11adb30415424c6c7f5f"
       "22a003b8ab8de54f6ded0e3ab9245fa79568451dfa258e");
 
-  blink::WebArrayBuffer output;
+  std::vector<uint8> output;
 
   ASSERT_EQ(Status::Success(),
             Sign(CreateAlgorithm(blink::WebCryptoAlgorithmIdHmac),
@@ -1829,7 +1738,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkHappy)) {
   const std::string mac_raw =
       "769f00d3e6a6cc1fb426a14a4f76c6462e6149726e0dee0ec0cf97a16605ac8b";
 
-  ExpectArrayBufferMatchesHex(mac_raw, output);
+  EXPECT_BYTES_EQ_HEX(mac_raw, output);
 
   // TODO(padolph): Import an RSA public key JWK and use it
 }
@@ -1919,7 +1828,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkSymmetricKey)) {
   // Round-trip import/export each key.
 
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  blink::WebArrayBuffer json;
+  std::vector<uint8> json;
   for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(kTests);
        ++test_index) {
     SCOPED_TRACE(test_index);
@@ -1951,10 +1860,10 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkSymmetricKey)) {
     EXPECT_EQ(test.usage, key.usages());
 
     // Export the key in raw format and compare to the original.
-    blink::WebArrayBuffer key_raw_out;
+    std::vector<uint8> key_raw_out;
     ASSERT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatRaw, key, &key_raw_out));
-    ExpectArrayBufferMatchesHex(test.key_hex, key_raw_out);
+    EXPECT_BYTES_EQ_HEX(test.key_hex, key_raw_out);
   }
 }
 
@@ -1972,7 +1881,7 @@ TEST_F(SharedCryptoTest, MAYBE(ExportJwkEmptySymmetricKey)) {
   EXPECT_EQ(0u, key.algorithm().hmacParams()->lengthBits());
 
   // Export the key in JWK format and validate.
-  blink::WebArrayBuffer json;
+  std::vector<uint8> json;
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatJwk, key, &json));
   EXPECT_TRUE(VerifySecretJwk(json, "HS1", key_data_hex, usages));
@@ -1990,11 +1899,11 @@ TEST_F(SharedCryptoTest, MAYBE(ExportJwkEmptySymmetricKey)) {
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
   EXPECT_EQ(0u, key.algorithm().hmacParams()->lengthBits());
 
-  blink::WebArrayBuffer exported_key_data;
+  std::vector<uint8> exported_key_data;
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &exported_key_data));
 
-  EXPECT_EQ(0u, exported_key_data.byteLength());
+  EXPECT_EQ(0u, exported_key_data.size());
 }
 
 TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
@@ -2014,7 +1923,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, key.usages());
   EXPECT_EQ(kModulusLengthBits,
             key.algorithm().rsaParams()->modulusLengthBits());
-  ExpectCryptoDataMatchesHex(
+  EXPECT_BYTES_EQ_HEX(
       "010001", CryptoData(key.algorithm().rsaParams()->publicExponent()));
 
   // Failing case: Empty SPKI data
@@ -2048,10 +1957,10 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
 
   // Passing case: Export a previously imported RSA public key in SPKI format
   // and compare to original data.
-  blink::WebArrayBuffer output;
+  std::vector<uint8> output;
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatSpki, key, &output));
-  ExpectArrayBufferMatchesHex(kPublicKeySpkiDerHex, output);
+  EXPECT_BYTES_EQ_HEX(kPublicKeySpkiDerHex, output);
 
   // Failing case: Try to export a previously imported RSA public key in raw
   // format (not allowed for a public key).
@@ -2093,14 +2002,14 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportPkcs8)) {
             key.algorithm().rsaHashedParams()->hash().id());
   EXPECT_EQ(kModulusLengthBits,
             key.algorithm().rsaHashedParams()->modulusLengthBits());
-  ExpectCryptoDataMatchesHex(
+  EXPECT_BYTES_EQ_HEX(
       "010001",
       CryptoData(key.algorithm().rsaHashedParams()->publicExponent()));
 
-  blink::WebArrayBuffer exported_key;
+  std::vector<uint8> exported_key;
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatPkcs8, key, &exported_key));
-  ExpectArrayBufferMatchesHex(kPrivateKeyPkcs8DerHex, exported_key);
+  EXPECT_BYTES_EQ_HEX(kPrivateKeyPkcs8DerHex, exported_key);
 
   // Failing case: Empty PKCS#8 data
   EXPECT_EQ(Status::ErrorImportEmptyKeyData(),
@@ -2161,7 +2070,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
 
   // Try exporting the generated key pair, and then re-importing to verify that
   // the exported data was valid.
-  blink::WebArrayBuffer public_key_spki;
+  std::vector<uint8> public_key_spki;
   EXPECT_EQ(
       Status::Success(),
       ExportKey(blink::WebCryptoKeyFormatSpki, public_key, &public_key_spki));
@@ -2177,7 +2086,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
   EXPECT_EQ(modulus_length,
             public_key.algorithm().rsaParams()->modulusLengthBits());
 
-  blink::WebArrayBuffer private_key_pkcs8;
+  std::vector<uint8> private_key_pkcs8;
   EXPECT_EQ(
       Status::Success(),
       ExportKey(
@@ -2306,7 +2215,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
 
   // Exporting a private key as SPKI format doesn't make sense. However this
   // will first fail because the key is not extractable.
-  blink::WebArrayBuffer output;
+  std::vector<uint8> output;
   EXPECT_EQ(Status::ErrorKeyNotExtractable(),
             ExportKey(blink::WebCryptoKeyFormatSpki, private_key, &output));
 
@@ -2348,8 +2257,8 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRoundTrip)) {
   algorithm = CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
   const char* const kTestDataHex[] = {"ff", "0102030405060708090a0b0c0d0e0f",
                                       max_data_hex};
-  blink::WebArrayBuffer encrypted_data;
-  blink::WebArrayBuffer decrypted_data;
+  std::vector<uint8> encrypted_data;
+  std::vector<uint8> decrypted_data;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDataHex); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::Success(),
@@ -2357,13 +2266,13 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRoundTrip)) {
                       public_key,
                       CryptoData(HexStringToBytes(kTestDataHex[i])),
                       &encrypted_data));
-    EXPECT_EQ(kModulusLengthBits / 8, encrypted_data.byteLength());
+    EXPECT_EQ(kModulusLengthBits / 8, encrypted_data.size());
     ASSERT_EQ(Status::Success(),
               Decrypt(algorithm,
                       private_key,
                       CryptoData(encrypted_data),
                       &decrypted_data));
-    ExpectArrayBufferMatchesHex(kTestDataHex[i], decrypted_data);
+    EXPECT_BYTES_EQ_HEX(kTestDataHex[i], decrypted_data);
   }
 }
 
@@ -2404,30 +2313,28 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsKnownAnswer)) {
 
   // Decrypt the known-good ciphertext with the private key. As a check we must
   // get the known original cleartext.
-  blink::WebArrayBuffer decrypted_data;
+  std::vector<uint8> decrypted_data;
   ASSERT_EQ(
       Status::Success(),
       Decrypt(algorithm, private_key, CryptoData(ciphertext), &decrypted_data));
-  EXPECT_FALSE(decrypted_data.isNull());
-  EXPECT_TRUE(ArrayBufferMatches(cleartext, decrypted_data));
+  EXPECT_BYTES_EQ(cleartext, decrypted_data);
 
   // Encrypt this decrypted data with the public key.
-  blink::WebArrayBuffer encrypted_data;
+  std::vector<uint8> encrypted_data;
   ASSERT_EQ(
       Status::Success(),
       Encrypt(
           algorithm, public_key, CryptoData(decrypted_data), &encrypted_data));
-  EXPECT_EQ(128u, encrypted_data.byteLength());
+  EXPECT_EQ(128u, encrypted_data.size());
 
   // Finally, decrypt the newly encrypted result with the private key, and
   // compare to the known original cleartext.
-  decrypted_data.reset();
+  decrypted_data.clear();
   ASSERT_EQ(
       Status::Success(),
       Decrypt(
           algorithm, private_key, CryptoData(encrypted_data), &decrypted_data));
-  EXPECT_FALSE(decrypted_data.isNull());
-  EXPECT_TRUE(ArrayBufferMatches(cleartext, decrypted_data));
+  EXPECT_EQ(cleartext, decrypted_data);
 }
 
 TEST_F(SharedCryptoTest, MAYBE(RsaEsFailures)) {
@@ -2446,7 +2353,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsFailures)) {
       &private_key);
 
   // Fail encrypt with a private key.
-  blink::WebArrayBuffer encrypted_data;
+  std::vector<uint8> encrypted_data;
   const std::string message_hex_str("0102030405060708090a0b0c0d0e0f");
   const std::vector<uint8> message_hex(HexStringToBytes(message_hex_str));
   EXPECT_EQ(
@@ -2476,21 +2383,18 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsFailures)) {
       Encrypt(algorithm, public_key, CryptoData(message_hex), &encrypted_data));
 
   // Fail decrypt with a public key.
-  blink::WebArrayBuffer decrypted_data;
+  std::vector<uint8> decrypted_data;
   EXPECT_EQ(
       Status::ErrorUnexpectedKeyType(),
       Decrypt(
           algorithm, public_key, CryptoData(encrypted_data), &decrypted_data));
 
   // Corrupt encrypted data; ensure decrypt fails because padding was disrupted.
-  std::vector<uint8> corrupted_data(
-      static_cast<uint8*>(encrypted_data.data()),
-      static_cast<uint8*>(encrypted_data.data()) + encrypted_data.byteLength());
-  corrupted_data[corrupted_data.size() / 2] ^= 0x01;
-  EXPECT_EQ(
-      Status::OperationError(),
-      Decrypt(
-          algorithm, private_key, CryptoData(corrupted_data), &decrypted_data));
+  EXPECT_EQ(Status::OperationError(),
+            Decrypt(algorithm,
+                    private_key,
+                    CryptoData(Corrupted(encrypted_data)),
+                    &decrypted_data));
 
   // TODO(padolph): Are there other specific data corruption scenarios to
   // consider?
@@ -2500,7 +2404,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsFailures)) {
       Status::Success(),
       Decrypt(
           algorithm, private_key, CryptoData(encrypted_data), &decrypted_data));
-  ExpectArrayBufferMatchesHex(message_hex_str, decrypted_data);
+  EXPECT_BYTES_EQ_HEX(message_hex_str, decrypted_data);
 }
 
 TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
@@ -2523,7 +2427,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5);
 
-  blink::WebArrayBuffer signature;
+  std::vector<uint8> signature;
   bool signature_match;
 
   // Compute a signature.
@@ -2532,15 +2436,13 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
             Sign(algorithm, private_key, CryptoData(data), &signature));
 
   // Ensure truncated signature does not verify by passing one less byte.
-  EXPECT_EQ(
-      Status::Success(),
-      VerifySignature(
-          algorithm,
-          public_key,
-          CryptoData(reinterpret_cast<const unsigned char*>(signature.data()),
-                     signature.byteLength() - 1),
-          CryptoData(data),
-          &signature_match));
+  EXPECT_EQ(Status::Success(),
+            VerifySignature(
+                algorithm,
+                public_key,
+                CryptoData(Uint8VectorStart(signature), signature.size() - 1),
+                CryptoData(data),
+                &signature_match));
   EXPECT_FALSE(signature_match);
 
   // Ensure truncated signature does not verify by passing no bytes.
@@ -2553,9 +2455,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   EXPECT_FALSE(signature_match);
 
   // Ensure corrupted signature does not verify.
-  std::vector<uint8> corrupt_sig(
-      static_cast<uint8*>(signature.data()),
-      static_cast<uint8*>(signature.data()) + signature.byteLength());
+  std::vector<uint8> corrupt_sig = signature;
   corrupt_sig[corrupt_sig.size() / 2] ^= 0x1;
   EXPECT_EQ(Status::Success(),
             VerifySignature(algorithm,
@@ -2672,7 +2572,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSignVerifyKnownAnswer)) {
       CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5);
 
   // Validate the signatures are computed and verified as expected.
-  blink::WebArrayBuffer signature;
+  std::vector<uint8> signature;
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
 
@@ -2684,11 +2584,11 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSignVerifyKnownAnswer)) {
     std::vector<uint8> test_signature =
         GetBytesFromHexString(test, "signature_hex");
 
-    signature.reset();
+    signature.clear();
     ASSERT_EQ(
         Status::Success(),
         Sign(algorithm, private_key, CryptoData(test_message), &signature));
-    EXPECT_TRUE(ArrayBufferMatches(test_signature, signature));
+    EXPECT_BYTES_EQ(test_signature, signature);
 
     bool is_match = false;
     ASSERT_EQ(Status::Success(),
@@ -2715,10 +2615,10 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwKeyImport)) {
                       true,
                       blink::WebCryptoKeyUsageWrapKey,
                       &key));
-  blink::WebArrayBuffer key_raw_out;
+  std::vector<uint8> key_raw_out;
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &key_raw_out));
-  ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
+  EXPECT_BYTES_EQ_HEX(key_raw_hex_in, key_raw_out);
 
   // Import a 192-bit KEK
   key_raw_hex_in = "c0192c6466b2370decbb62b2cfef4384544ffeb4d2fbc103";
@@ -2731,7 +2631,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwKeyImport)) {
                       &key));
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &key_raw_out));
-  ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
+  EXPECT_BYTES_EQ_HEX(key_raw_hex_in, key_raw_out);
 
   // Import a 256-bit Key Encryption Key (KEK)
   key_raw_hex_in =
@@ -2745,7 +2645,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwKeyImport)) {
                       &key));
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &key_raw_out));
-  ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
+  EXPECT_BYTES_EQ_HEX(key_raw_hex_in, key_raw_out);
 
   // Fail import of 0 length key
   EXPECT_EQ(Status::ErrorImportAesKeyLength(),
@@ -2861,14 +2761,14 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapKnownAnswer)) {
         blink::WebCryptoKeyUsageEncrypt);
 
     // Wrap the key and verify the ciphertext result against the known answer.
-    blink::WebArrayBuffer wrapped_key;
+    std::vector<uint8> wrapped_key;
     ASSERT_EQ(Status::Success(),
               WrapKey(blink::WebCryptoKeyFormatRaw,
                       wrapping_key,
                       key,
                       wrapping_algorithm,
                       &wrapped_key));
-    EXPECT_TRUE(ArrayBufferMatches(test_ciphertext, wrapped_key));
+    EXPECT_BYTES_EQ(test_ciphertext, wrapped_key);
 
     // Unwrap the known ciphertext to get a new test_key.
     blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
@@ -2892,10 +2792,10 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapKnownAnswer)) {
     EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, key.usages());
 
     // Export the new key and compare its raw bytes with the original known key.
-    blink::WebArrayBuffer raw_key;
+    std::vector<uint8> raw_key;
     EXPECT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
-    EXPECT_TRUE(ArrayBufferMatches(test_key, raw_key));
+    EXPECT_BYTES_EQ(test_key, raw_key);
   }
 }
 
@@ -3035,10 +2935,10 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwJwkSymkeyUnwrapKnownData)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageVerify, unwrapped_key.usages());
 
   // Export the new key's raw data and compare to the known original.
-  blink::WebArrayBuffer raw_key;
+  std::vector<uint8> raw_key;
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
-  EXPECT_TRUE(ArrayBufferMatches(key_data, raw_key));
+  EXPECT_BYTES_EQ(key_data, raw_key);
 }
 
 // TODO(eroman):
@@ -3079,11 +2979,11 @@ TEST_F(SharedCryptoTest, MAYBE(AesGcmSampleSets)) {
         blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt);
 
     // Verify exported raw key is identical to the imported data
-    blink::WebArrayBuffer raw_key;
+    std::vector<uint8> raw_key;
     EXPECT_EQ(Status::Success(),
               ExportKey(blink::WebCryptoKeyFormatRaw, key, &raw_key));
 
-    EXPECT_TRUE(ArrayBufferMatches(test_key, raw_key));
+    EXPECT_BYTES_EQ(test_key, raw_key);
 
     // Test encryption.
     std::vector<uint8> cipher_text;
@@ -3097,11 +2997,11 @@ TEST_F(SharedCryptoTest, MAYBE(AesGcmSampleSets)) {
                             &cipher_text,
                             &authentication_tag));
 
-    ExpectVectorMatches(test_cipher_text, cipher_text);
-    ExpectVectorMatches(test_authentication_tag, authentication_tag);
+    EXPECT_BYTES_EQ(test_cipher_text, cipher_text);
+    EXPECT_BYTES_EQ(test_authentication_tag, authentication_tag);
 
     // Test decryption.
-    blink::WebArrayBuffer plain_text;
+    std::vector<uint8> plain_text;
     EXPECT_EQ(Status::Success(),
               AesGcmDecrypt(key,
                             test_iv,
@@ -3110,7 +3010,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesGcmSampleSets)) {
                             test_cipher_text,
                             test_authentication_tag,
                             &plain_text));
-    EXPECT_TRUE(ArrayBufferMatches(test_plain_text, plain_text));
+    EXPECT_BYTES_EQ(test_plain_text, plain_text);
 
     // Decryption should fail if any of the inputs are tampered with.
     EXPECT_EQ(Status::OperationError(),
@@ -3204,7 +3104,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapKnownAnswer)) {
                       &key));
 
   // Wrap the symmetric key with raw format.
-  blink::WebArrayBuffer wrapped_key;
+  std::vector<uint8> wrapped_key;
   ASSERT_EQ(Status::Success(),
             WrapKey(blink::WebCryptoKeyFormatRaw,
                     public_key,
@@ -3231,10 +3131,10 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapKnownAnswer)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageSign, key.usages());
 
   // Export the new key and compare its raw bytes with the original known data.
-  blink::WebArrayBuffer raw_key;
+  std::vector<uint8> raw_key;
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
-  EXPECT_TRUE(ArrayBufferMatches(cleartext, raw_key));
+  EXPECT_BYTES_EQ(cleartext, raw_key);
 
   // Unwrap the known wrapped key and compare to the known cleartext.
   ASSERT_EQ(Status::Success(),
@@ -3248,7 +3148,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapKnownAnswer)) {
                       &unwrapped_key));
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
-  EXPECT_TRUE(ArrayBufferMatches(cleartext, raw_key));
+  EXPECT_BYTES_EQ(cleartext, raw_key);
 }
 
 TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapErrors)) {
@@ -3281,7 +3181,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapErrors)) {
                       &key));
 
   // Wrapping with a private key should fail.
-  blink::WebArrayBuffer wrapped_key;
+  std::vector<uint8> wrapped_key;
   EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
             WrapKey(blink::WebCryptoKeyFormatRaw,
                     private_key,
@@ -3393,10 +3293,10 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsJwkSymkeyUnwrapKnownAnswer)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, unwrapped_key.usages());
 
   // Export the unwrapped key and compare to the original.
-  blink::WebArrayBuffer raw_key;
+  std::vector<uint8> raw_key;
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
-  EXPECT_TRUE(ArrayBufferMatches(key_data, raw_key));
+  EXPECT_BYTES_EQ(key_data, raw_key);
 }
 
 TEST_F(SharedCryptoTest, MAYBE(RsaEsJwkSymkeyWrapUnwrapRoundTrip)) {
@@ -3424,7 +3324,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsJwkSymkeyWrapUnwrapRoundTrip)) {
       &private_wrapping_key);
 
   // Wrap the symkey in JWK format, using the public wrapping key.
-  blink::WebArrayBuffer wrapped_data;
+  std::vector<uint8> wrapped_data;
   ASSERT_EQ(Status::Success(),
             WrapKey(blink::WebCryptoKeyFormatJwk,
                     public_wrapping_key,
@@ -3445,12 +3345,12 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsJwkSymkeyWrapUnwrapRoundTrip)) {
                       &unwrapped_key));
 
   // Export the original symkey and the unwrapped key and compare.
-  blink::WebArrayBuffer raw_key1, raw_key2;
+  std::vector<uint8> raw_key1, raw_key2;
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key_to_wrap, &raw_key1));
   EXPECT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key2));
-  EXPECT_TRUE(ArrayBuffersEqual(raw_key1, raw_key2));
+  EXPECT_BYTES_EQ(raw_key1, raw_key2);
 }
 
 TEST_F(SharedCryptoTest, MAYBE(RsaEsJwkSymkeyWrapUnwrapErrors)) {
@@ -3489,15 +3389,13 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsJwkSymkeyWrapUnwrapErrors)) {
 
   // Decrypt the ciphertext and validate the result, to prove that decryption is
   // successful.
-  blink::WebArrayBuffer decrypted_data;
+  std::vector<uint8> decrypted_data;
   ASSERT_EQ(Status::Success(),
             Decrypt(algorithm,
                     private_decryption_key,
                     CryptoData(ciphertext),
                     &decrypted_data));
-  const std::string decrypted(static_cast<const char*>(decrypted_data.data()),
-                              decrypted_data.byteLength());
-  EXPECT_EQ(cleartext, decrypted);
+  EXPECT_BYTES_EQ(cleartext, decrypted_data);
 
   // Import the private wrapping key. Note this is the same underlying keying
   // material used for private_decryption_key above. The only difference is that

@@ -12,10 +12,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
-namespace blink {
-class WebArrayBuffer;
-}
-
 namespace content {
 
 namespace webcrypto {
@@ -36,7 +32,6 @@ class CONTENT_EXPORT CryptoData {
   // remain valid for the lifetime of CryptoData.
   explicit CryptoData(const std::vector<unsigned char>& bytes);
   explicit CryptoData(const std::string& bytes);
-  explicit CryptoData(const blink::WebArrayBuffer& buffer);
   explicit CryptoData(const blink::WebVector<unsigned char>& bytes);
 
   const unsigned char* bytes() const { return bytes_; }
@@ -45,8 +40,6 @@ class CONTENT_EXPORT CryptoData {
  private:
   const unsigned char* const bytes_;
   const unsigned int byte_length_;
-
-  DISALLOW_COPY_AND_ASSIGN(CryptoData);
 };
 
 }  // namespace webcrypto

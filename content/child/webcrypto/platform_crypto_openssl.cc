@@ -17,7 +17,6 @@
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
-#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"

@@ -4,8 +4,6 @@
 
 #include "content/child/webcrypto/crypto_data.h"
 
-#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
-
 namespace content {
 
 namespace webcrypto {
@@ -22,10 +20,6 @@ CryptoData::CryptoData(const std::string& bytes)
     : bytes_(bytes.size() ? reinterpret_cast<const unsigned char*>(bytes.data())
                           : NULL),
       byte_length_(bytes.size()) {}
-
-CryptoData::CryptoData(const blink::WebArrayBuffer& buffer)
-    : bytes_(reinterpret_cast<const unsigned char*>(buffer.data())),
-      byte_length_(buffer.byteLength()) {}
 
 CryptoData::CryptoData(const blink::WebVector<unsigned char>& bytes)
     : bytes_(bytes.data()), byte_length_(bytes.size()) {}
