@@ -24,12 +24,14 @@ import sys
 import tempfile
 import urllib
 import urllib2
+import urlparse
 
 import breakpad  # pylint: disable=W0611
 
-import gcl
 import fix_encoding
+import gcl
 import gclient_utils
+import gerrit_util
 import scm
 import subprocess2
 
@@ -95,16 +97,20 @@ def RunGit(args, **kwargs):
   """Returns stdout."""
   return RunCommand(['git'] + args, **kwargs)
 
+class Error(Exception):
+  """An error during a try job submission.
 
-class InvalidScript(Exception):
+  For this error, trychange.py does not display stack trace, only message
+  """
+
+class InvalidScript(Error):
   def __str__(self):
     return self.args[0] + '\n' + HELP_STRING
 
 
-class NoTryServerAccess(Exception):
+class NoTryServerAccess(Error):
   def __str__(self):
     return self.args[0] + '\n' + HELP_STRING
-
 
 def Escape(name):
   """Escapes characters that could interfere with the file system or try job
@@ -168,6 +174,7 @@ class SCM(object):
       'port': self.GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
       'host': self.GetCodeReviewSetting('TRYSERVER_HTTP_HOST'),
       'svn_repo': self.GetCodeReviewSetting('TRYSERVER_SVN_URL'),
+      'gerrit_url': self.GetCodeReviewSetting('TRYSERVER_GERRIT_URL'),
       'git_repo': self.GetCodeReviewSetting('TRYSERVER_GIT_URL'),
       'project': self.GetCodeReviewSetting('TRYSERVER_PROJECT'),
       # Primarily for revision=auto
@@ -491,6 +498,7 @@ def _SendChangeHTTP(bot_spec, options):
   if response != 'OK':
     raise NoTryServerAccess('%s is unaccessible. Got:\n%s' % (url, response))
 
+  PrintSuccess(bot_spec, options)
 
 @contextlib.contextmanager
 def _TempFilename(name, contents=None):
@@ -568,6 +576,7 @@ def _SendChangeSVN(bot_spec, options):
     except subprocess2.CalledProcessError, e:
       raise NoTryServerAccess(str(e))
 
+  PrintSuccess(bot_spec, options)
 
 def _GetPatchGitRepo(git_url):
   """Gets a path to a Git repo with patches.
@@ -706,6 +715,86 @@ def _SendChangeGit(bot_spec, options):
       patch_git('reset', '--hard', 'origin/master')
       raise
 
+  PrintSuccess(bot_spec, options)
+
+def _SendChangeGerrit(bot_spec, options):
+  """Posts a try job to a Gerrit change.
+
+  Reads Change-Id from the HEAD commit, resolves the current revision, checks
+  that local revision matches the uploaded one, posts a try job in form of a
+  message, sets Tryjob label to 1.
+
+  Gerrit message format: starts with !tryjob, optionally followed by a tryjob
+  definition in JSON format:
+      buildNames: list of strings specifying build names.
+  """
+
+  logging.info('Sending by Gerrit')
+  if not options.gerrit_url:
+    raise NoTryServerAccess('Please use --gerrit_url option to specify the '
+                            'Gerrit instance url to connect to')
+  gerrit_host = urlparse.urlparse(options.gerrit_url).hostname
+  logging.debug('Gerrit host: %s' % gerrit_host)
+
+  def GetChangeId(commmitish):
+    """Finds Change-ID of the HEAD commit."""
+    CHANGE_ID_RGX = '^Change-Id: (I[a-f0-9]{10,})'
+    comment = scm.GIT.Capture(['log', '-1', commmitish, '--format=%b'],
+                              cwd=os.getcwd())
+    change_id_match = re.search(CHANGE_ID_RGX, comment, re.I | re.M)
+    if not change_id_match:
+      raise Error('Change-Id was not found in the HEAD commit. Make sure you '
+                  'have a Git hook installed that generates and inserts a '
+                  'Change-Id into a commit message automatically.')
+    change_id = change_id_match.group(1)
+    return change_id
+
+  def FormatMessage():
+    # Build job definition.
+    job_def = {}
+    builderNames = [builder for builder, _ in bot_spec]
+    if builderNames:
+      job_def['builderNames'] = builderNames
+
+    # Format message.
+    msg = '!tryjob'
+    if job_def:
+      msg = '%s %s' % (msg, json.dumps(job_def, sort_keys=True))
+    return msg
+
+  def PostTryjob(message):
+    logging.info('Posting gerrit message: %s' % message)
+    if not options.dry_run:
+      # Post a message and set TryJob=1 label.
+      try:
+        gerrit_util.SetReview(gerrit_host, change_id, msg=message,
+                              labels={'Tryjob': 1})
+      except gerrit_util.GerritError, e:
+        if e.http_status == 400:
+          raise Error(e.reason)
+        else:
+          raise
+
+  head_sha = scm.GIT.Capture(['log', '-1', '--format=%H'], cwd=os.getcwd())
+
+  change_id = GetChangeId(head_sha)
+
+  # Check that the uploaded revision matches the local one.
+  changes = gerrit_util.GetChangeCurrentRevision(gerrit_host, change_id)
+  assert len(changes) <= 1, 'Multiple changes with id %s' % change_id
+  if not changes:
+    raise Error('A change %s was not found on the server. Was it uploaded?' %
+                change_id)
+  logging.debug('Found Gerrit change: %s' % changes[0])
+  if changes[0]['current_revision'] != head_sha:
+    raise Error('Please upload your latest local changes to Gerrit.')
+
+  # Post a try job.
+  message = FormatMessage()
+  PostTryjob(message)
+  change_url = urlparse.urljoin(options.gerrit_url,
+                                '/#/c/%s' % changes[0]['_number'])
+  print('A tryjob was posted on change %s' % change_url)
 
 def PrintSuccess(bot_spec, options):
   if not options.dry_run:
@@ -920,6 +1009,19 @@ def gen_parser(prog):
                    help="GIT url to use to write the changes in; --use_git is "
                         "implied when using --git_repo")
   parser.add_option_group(group)
+
+  group = optparse.OptionGroup(parser, "Access the try server with Gerrit")
+  group.add_option("--use_gerrit",
+                   action="store_const",
+                   const=_SendChangeGerrit,
+                   dest="send_patch",
+                   help="Use Gerrit to talk to the try server")
+  group.add_option("--gerrit_url",
+                   metavar="GERRIT_URL",
+                   help="Gerrit url to post a tryjob to; --use_gerrit is "
+                        "implied when using --gerrit_url")
+  parser.add_option_group(group)
+
   return parser
 
 
@@ -1033,9 +1135,11 @@ def TryChange(argv,
     can_http = options.port and options.host
     can_svn = options.svn_repo
     can_git = options.git_repo
+    can_gerrit = options.gerrit_url
+    can_something = can_http or can_svn or can_git or can_gerrit
     # If there was no transport selected yet, now we must have enough data to
     # select one.
-    if not options.send_patch and not (can_http or can_svn or can_git):
+    if not options.send_patch and not can_something:
       parser.error('Please specify an access method.')
 
     # Convert options.diff into the content of the diff.
@@ -1122,7 +1226,8 @@ def TryChange(argv,
       all_senders = [
         (_SendChangeHTTP, can_http),
         (_SendChangeSVN, can_svn),
-        (_SendChangeGit, can_git)
+        (_SendChangeGerrit, can_gerrit),
+        (_SendChangeGit, can_git),
       ]
       senders = [sender for sender, can in all_senders if can]
 
@@ -1130,14 +1235,13 @@ def TryChange(argv,
     for sender in senders:
       try:
         sender(bot_spec, options)
-        PrintSuccess(bot_spec, options)
         return 0
       except NoTryServerAccess:
         is_last = sender == senders[-1]
         if is_last:
           raise
     assert False, "Unreachable code"
-  except (InvalidScript, NoTryServerAccess), e:
+  except Error, e:
     if swallow_exception:
       return 1
     print >> sys.stderr, e

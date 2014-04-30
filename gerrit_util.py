@@ -140,7 +140,8 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
   if ignore_404 and response.status == 404:
     return StringIO()
   if response.status != expect_status:
-    raise GerritError(response.status, response.reason)
+    reason = '%s: %s' % (response.reason, response.read())
+    raise GerritError(response.status, reason)
   return StringIO(response.read())
 
 

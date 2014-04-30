@@ -48,14 +48,15 @@ class TryChangeUnittest(TryChangeTestsBase):
     members = [
       'DieWithError', 'EPILOG', 'Escape', 'GIT', 'GIT_PATCH_DIR_BASENAME',
       'GetMungedDiff', 'GuessVCS', 'GIT_BRANCH_FILE',
-      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'OptionParser',
-      'PrintSuccess',
+      'HELP_STRING', 'Error', 'InvalidScript', 'NoTryServerAccess',
+      'OptionParser', 'PrintSuccess',
       'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'contextlib',
       'breakpad',
-      'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils', 'gen_parser',
+      'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils',
+      'gerrit_util', 'gen_parser',
       'getpass', 'itertools', 'json', 'logging', 'optparse', 'os', 'posixpath',
       're', 'scm', 'shutil', 'subprocess2', 'sys', 'tempfile', 'urllib',
-      'urllib2']
+      'urllib2', 'urlparse']
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
 
