@@ -362,6 +362,8 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
 void MediaStreamVideoSource::DoStopSource() {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "DoStopSource()";
+  if (state_ == ENDED)
+    return;
   StopSourceImpl();
   state_ = ENDED;
   SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
