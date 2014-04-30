@@ -665,6 +665,7 @@ void WebDevToolsAgentImpl::willProcessTask()
         return;
     if (InspectorController* ic = inspectorController())
         ic->willProcessTask();
+    TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
 }
 
 void WebDevToolsAgentImpl::didProcessTask()
@@ -673,6 +674,7 @@ void WebDevToolsAgentImpl::didProcessTask()
         return;
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
+    TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
     flushPendingFrontendMessages();
 }
 
