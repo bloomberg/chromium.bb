@@ -765,6 +765,17 @@
           'linux_use_gold_flags%': 0,
         }],
 
+        # linux_use_debug_fission: whether to use split DWARF debug info
+        # files. This can reduce link time significantly, but is incompatible
+        # with some utilities such as icecc and ccache. Requires gold and
+        # gcc >= 4.8 or clang.
+        # http://gcc.gnu.org/wiki/DebugFission
+        ['OS=="linux" and target_arch=="x64"', {
+          'linux_use_debug_fission%': 1,
+        }, {
+          'linux_use_debug_fission%': 0,
+        }],
+
         ['OS=="android" or OS=="ios"', {
           'enable_captive_portal_detection%': 0,
         }, {
@@ -1014,6 +1025,7 @@
     'linux_use_bundled_gold%': '<(linux_use_bundled_gold)',
     'linux_use_bundled_binutils%': '<(linux_use_bundled_binutils)',
     'linux_use_gold_flags%': '<(linux_use_gold_flags)',
+    'linux_use_debug_fission%': '<(linux_use_debug_fission)',
     'use_canvas_skia%': '<(use_canvas_skia)',
     'test_isolation_mode%': '<(test_isolation_mode)',
     'test_isolation_outdir%': '<(test_isolation_outdir)',
@@ -3227,9 +3239,10 @@
               }, {
                 'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
               }],
-              # http://gcc.gnu.org/wiki/DebugFission
-              # Requires gold and gcc >= 4.8 or clang.
-              ['linux_use_gold_flags==1 and (clang==1 or gcc_version>=48) and binutils_version>=223', {
+              # TODO(mostynb): shuffle clang/gcc_version/binutils_version
+              # definitions in to the right scope to use them when setting
+              # linux_use_debug_fission, so it can be used here alone.
+              ['linux_use_debug_fission==1 and linux_use_gold_flags==1 and (clang==1 or gcc_version>=48) and binutils_version>=223', {
                 'cflags': ['-gsplit-dwarf'],
                 'ldflags': ['-Wl,--gdb-index'],
               }],
