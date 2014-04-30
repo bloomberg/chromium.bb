@@ -73,6 +73,11 @@ Router::Router(ScopedMessagePipeHandle message_pipe, MojoAsyncWaiter* waiter)
 
 Router::~Router() {
   weak_self_.set_value(NULL);
+
+  for (ResponderMap::const_iterator i = responders_.begin();
+       i != responders_.end(); ++i) {
+    delete i->second;
+  }
 }
 
 bool Router::Accept(Message* message) {
