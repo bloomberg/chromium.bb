@@ -1629,6 +1629,13 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		FRAME_BUTTON_PRESSED : FRAME_BUTTON_RELEASED;
 	button_id = button->detail == 1 ? BTN_LEFT : BTN_RIGHT;
 
+	/* Make sure we're looking at the right location.  The frame
+	 * could have received a motion event from a pointer from a
+	 * different wl_seat, but under X it looks like our core
+	 * pointer moved.  Move the frame pointer to the button press
+	 * location before deciding what to do. */
+	location = frame_pointer_motion(window->frame, NULL,
+					button->event_x, button->event_y);
 	location = frame_pointer_button(window->frame, NULL,
 					button_id, button_state);
 	if (frame_status(window->frame) & FRAME_STATUS_REPAINT)
