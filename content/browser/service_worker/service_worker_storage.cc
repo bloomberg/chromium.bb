@@ -18,8 +18,9 @@ namespace content {
 
 namespace {
 
-void RunSoon(const base::Closure& closure) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+void RunSoon(const tracked_objects::Location& from_here,
+             const base::Closure& closure) {
+  base::MessageLoop::current()->PostTask(from_here, closure);
 }
 
 void CompleteFindNow(
@@ -30,10 +31,11 @@ void CompleteFindNow(
 }
 
 void CompleteFindSoon(
+    const tracked_objects::Location& from_here,
     const scoped_refptr<ServiceWorkerRegistration>& registration,
     ServiceWorkerStatusCode status,
     const ServiceWorkerStorage::FindRegistrationCallback& callback) {
-  RunSoon(base::Bind(callback, status, registration));
+  RunSoon(from_here, base::Bind(callback, status, registration));
 }
 
 const base::FilePath::CharType kServiceWorkerDirectory[] =
@@ -64,14 +66,16 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   simulated_lazy_initted_ = true;
   scoped_refptr<ServiceWorkerRegistration> null_registration;
   if (!context_) {
-    CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_FAILED, callback);
+    CompleteFindSoon(
+        FROM_HERE, null_registration, SERVICE_WORKER_ERROR_FAILED, callback);
     return;
   }
 
   scoped_refptr<ServiceWorkerRegistration> installing_registration =
       FindInstallingRegistrationForPattern(scope);
   if (installing_registration) {
-    CompleteFindSoon(installing_registration, SERVICE_WORKER_OK, callback);
+    CompleteFindSoon(
+        FROM_HERE, installing_registration, SERVICE_WORKER_OK, callback);
     return;
   }
 
@@ -79,8 +83,8 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   OriginRegistrationsMap::const_iterator
       found = stored_registrations_.find(scope.GetOrigin());
   if (found == stored_registrations_.end()) {
-    CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND,
-                     callback);
+    CompleteFindSoon(
+        FROM_HERE, null_registration, SERVICE_WORKER_ERROR_NOT_FOUND, callback);
     return;
   }
 
@@ -92,17 +96,18 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
       scoped_refptr<ServiceWorkerRegistration> registration =
           context_->GetLiveRegistration(data->registration_id);
       if (registration) {
-        CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
+        CompleteFindSoon(FROM_HERE, registration, SERVICE_WORKER_OK, callback);
         return;
       }
 
       registration = CreateRegistration(data);
-      CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
+      CompleteFindSoon(FROM_HERE, registration, SERVICE_WORKER_OK, callback);
       return;
     }
   }
 
-  CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND, callback);
+  CompleteFindSoon(
+      FROM_HERE, null_registration, SERVICE_WORKER_ERROR_NOT_FOUND, callback);
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
@@ -154,7 +159,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
       // If we have to create a new instance, return it asyncly to simulate
       // having had to retreive the RegistrationData from the db.
       registration = CreateRegistration(data);
-      CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
+      CompleteFindSoon(FROM_HERE, registration, SERVICE_WORKER_OK, callback);
       return;
     }
   }
@@ -165,13 +170,15 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   scoped_refptr<ServiceWorkerRegistration> installing_registration =
       FindInstallingRegistrationForDocument(document_url);
   if (installing_registration) {
-    CompleteFindSoon(installing_registration, SERVICE_WORKER_OK, callback);
+    CompleteFindSoon(
+        FROM_HERE, installing_registration, SERVICE_WORKER_OK, callback);
     return;
   }
 
   // Return asyncly to simulate having had to look in the db since this
   // origin does have some registations.
-  CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND, callback);
+  CompleteFindSoon(
+      FROM_HERE, null_registration, SERVICE_WORKER_ERROR_NOT_FOUND, callback);
 }
 
 void ServiceWorkerStorage::FindRegistrationForId(
@@ -203,7 +210,7 @@ void ServiceWorkerStorage::FindRegistrationForId(
     return;
   }
   registration = CreateRegistration(found->second);
-  CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
+  CompleteFindSoon(FROM_HERE, registration, SERVICE_WORKER_OK, callback);
 }
 
 void ServiceWorkerStorage::GetAllRegistrations(
@@ -211,7 +218,7 @@ void ServiceWorkerStorage::GetAllRegistrations(
   simulated_lazy_initted_ = true;
   std::vector<ServiceWorkerRegistrationInfo> registrations;
   if (!context_) {
-    RunSoon(base::Bind(callback, registrations));
+    RunSoon(FROM_HERE, base::Bind(callback, registrations));
     return;
   }
 
@@ -243,7 +250,7 @@ void ServiceWorkerStorage::GetAllRegistrations(
       registrations.push_back(it->second->GetInfo());
   }
 
-  RunSoon(base::Bind(callback, registrations));
+  RunSoon(FROM_HERE, base::Bind(callback, registrations));
 }
 
 void ServiceWorkerStorage::StoreRegistration(
@@ -254,7 +261,7 @@ void ServiceWorkerStorage::StoreRegistration(
   DCHECK(version);
   DCHECK(simulated_lazy_initted_);
   if (!context_) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
     return;
   }
 
@@ -274,7 +281,7 @@ void ServiceWorkerStorage::StoreRegistration(
   // Keep a seperate map of ptrs keyed by id only.
   registrations_by_id_[registration->id()] = &storage_map[registration->id()];
 
-  RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+  RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_OK));
 }
 
  void ServiceWorkerStorage::UpdateToActiveState(
@@ -282,19 +289,19 @@ void ServiceWorkerStorage::StoreRegistration(
       const StatusCallback& callback) {
   DCHECK(simulated_lazy_initted_);
   if (!context_) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
     return;
   }
 
   RegistrationPtrMap::const_iterator
        found = registrations_by_id_.find(registration->id());
   if (found == registrations_by_id_.end()) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_NOT_FOUND));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_NOT_FOUND));
     return;
   }
   DCHECK(!found->second->is_active);
   found->second->is_active = true;
-  RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+  RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_OK));
 }
 
 void ServiceWorkerStorage::DeleteRegistration(
@@ -304,7 +311,7 @@ void ServiceWorkerStorage::DeleteRegistration(
   RegistrationPtrMap::iterator
       found = registrations_by_id_.find(registration_id);
   if (found == registrations_by_id_.end()) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_NOT_FOUND));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_NOT_FOUND));
     return;
   }
 
@@ -315,7 +322,7 @@ void ServiceWorkerStorage::DeleteRegistration(
 
   registrations_by_id_.erase(found);
 
-  RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+  RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_OK));
   // TODO(michaeln): Either its instance should also be
   // removed from liveregistrations map or the live object
   // should marked as deleted in some way and not 'findable'
