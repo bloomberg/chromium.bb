@@ -86,11 +86,9 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
   return layer_tree_host.Pass();
 }
 
-
-LayerTreeHost::LayerTreeHost(
-    LayerTreeHostClient* client,
-    SharedBitmapManager* manager,
-    const LayerTreeSettings& settings)
+LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
+                             SharedBitmapManager* manager,
+                             const LayerTreeSettings& settings)
     : micro_benchmark_controller_(this),
       next_ui_resource_id_(1),
       animating_(false),
@@ -110,6 +108,7 @@ LayerTreeHost::LayerTreeHost(
       min_page_scale_factor_(1.f),
       max_page_scale_factor_(1.f),
       trigger_idle_updates_(true),
+      has_gpu_rasterization_trigger_(false),
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
       partial_texture_update_requests_(0),

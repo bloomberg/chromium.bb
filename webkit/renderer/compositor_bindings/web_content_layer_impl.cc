@@ -47,10 +47,8 @@ void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
 }
 
 void WebContentLayerImpl::setHasGpuRasterizationHint(bool has_hint) {
-  if (WebLayerImpl::UsingPictureLayer()) {
-    static_cast<PictureLayer*>(layer_->layer())
-        ->SetHasGpuRasterizationHint(has_hint);
-  }
+  // TODO(ajuma): Convert per-layer GPU rasterization hints to per-layer
+  // prepaint-disabling hints (crbug.com/365885).
 }
 
 void WebContentLayerImpl::PaintContents(SkCanvas* canvas,

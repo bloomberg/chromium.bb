@@ -191,6 +191,13 @@ class CC_EXPORT LayerTreeHost {
   void SetDebugState(const LayerTreeDebugState& debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
+  bool has_gpu_rasterization_trigger() const {
+    return has_gpu_rasterization_trigger_;
+  }
+  void set_has_gpu_rasterization_trigger(bool has_trigger) {
+    has_gpu_rasterization_trigger_ = has_trigger;
+  }
+
   void SetViewportSize(const gfx::Size& device_viewport_size);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
 
@@ -391,6 +398,7 @@ class CC_EXPORT LayerTreeHost {
   float max_page_scale_factor_;
   gfx::Transform impl_transform_;
   bool trigger_idle_updates_;
+  bool has_gpu_rasterization_trigger_;
 
   SkColor background_color_;
   bool has_transparent_background_;

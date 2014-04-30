@@ -4981,7 +4981,7 @@ class LayerTreeHostTestHybridRasterizationSetting : public LayerTreeHostTest {
     child->SetBounds(gfx::Size(10, 10));
     parent->AddChild(child);
 
-    parent->SetHasGpuRasterizationHint(true);
+    layer_tree_host()->set_has_gpu_rasterization_trigger(true);
   }
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
@@ -4993,9 +4993,8 @@ class LayerTreeHostTestHybridRasterizationSetting : public LayerTreeHostTest {
     PictureLayerImpl* child =
         static_cast<PictureLayerImpl*>(parent->children()[0]);
 
-    // Only layers with a GPU rasterization hint should use GPU rasterization.
     EXPECT_TRUE(parent->ShouldUseGpuRasterization());
-    EXPECT_FALSE(child->ShouldUseGpuRasterization());
+    EXPECT_TRUE(child->ShouldUseGpuRasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -5005,9 +5004,8 @@ class LayerTreeHostTestHybridRasterizationSetting : public LayerTreeHostTest {
     PictureLayerImpl* child =
         static_cast<PictureLayerImpl*>(parent->children()[0]);
 
-    // Only layers with a GPU rasterization hint should use GPU rasterization.
     EXPECT_TRUE(parent->ShouldUseGpuRasterization());
-    EXPECT_FALSE(child->ShouldUseGpuRasterization());
+    EXPECT_TRUE(child->ShouldUseGpuRasterization());
     EndTest();
   }
 
@@ -5036,7 +5034,7 @@ class LayerTreeHostTestGpuRasterizationSetting : public LayerTreeHostTest {
     child->SetBounds(gfx::Size(10, 10));
     parent->AddChild(child);
 
-    parent->SetHasGpuRasterizationHint(true);
+    layer_tree_host()->set_has_gpu_rasterization_trigger(false);
   }
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }

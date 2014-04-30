@@ -80,7 +80,7 @@ TEST(PictureLayerTest, ForcedCpuRaster) {
   EXPECT_FALSE(layer->ShouldUseGpuRasterization());
 
   // Gpu rasterization cannot be enabled even with raster hint.
-  layer->SetHasGpuRasterizationHint(true);
+  host->set_has_gpu_rasterization_trigger(true);
   EXPECT_FALSE(layer->ShouldUseGpuRasterization());
 }
 
@@ -96,7 +96,7 @@ TEST(PictureLayerTest, ForcedGpuRaster) {
   EXPECT_TRUE(layer->ShouldUseGpuRasterization());
 
   // Gpu rasterization cannot be disabled even with raster hint.
-  layer->SetHasGpuRasterizationHint(false);
+  host->set_has_gpu_rasterization_trigger(false);
   EXPECT_TRUE(layer->ShouldUseGpuRasterization());
 
   // Gpu rasterization cannot be disabled even with skia veto.
@@ -117,17 +117,17 @@ TEST(PictureLayerTest, HybridRaster) {
   // The default value is false.
   EXPECT_FALSE(layer->ShouldUseGpuRasterization());
 
-  // Gpu rasterization can be enabled first time.
-  layer->SetHasGpuRasterizationHint(true);
+  // Gpu rasterization can be enabled.
+  host->set_has_gpu_rasterization_trigger(true);
   EXPECT_TRUE(layer->ShouldUseGpuRasterization());
 
-  // Gpu rasterization can always be disabled.
-  layer->SetHasGpuRasterizationHint(false);
+  // Gpu rasterization can be disabled.
+  host->set_has_gpu_rasterization_trigger(false);
   EXPECT_FALSE(layer->ShouldUseGpuRasterization());
 
-  // Gpu rasterization cannot be enabled once disabled.
-  layer->SetHasGpuRasterizationHint(true);
-  EXPECT_FALSE(layer->ShouldUseGpuRasterization());
+  // Gpu rasterization can be enabled again.
+  host->set_has_gpu_rasterization_trigger(true);
+  EXPECT_TRUE(layer->ShouldUseGpuRasterization());
 }
 
 TEST(PictureLayerTest, VetoGpuRaster) {
@@ -140,7 +140,7 @@ TEST(PictureLayerTest, VetoGpuRaster) {
 
   EXPECT_FALSE(layer->ShouldUseGpuRasterization());
 
-  layer->SetHasGpuRasterizationHint(true);
+  host->set_has_gpu_rasterization_trigger(true);
   EXPECT_TRUE(layer->ShouldUseGpuRasterization());
 
   // Veto gpu rasterization.

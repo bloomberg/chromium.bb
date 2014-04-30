@@ -498,6 +498,11 @@ void RenderWidgetCompositor::startPageScaleAnimation(
       duration);
 }
 
+void RenderWidgetCompositor::heuristicsForGpuRasterizationUpdated(
+    bool matches_heuristics) {
+  layer_tree_host_->set_has_gpu_rasterization_trigger(matches_heuristics);
+}
+
 void RenderWidgetCompositor::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }

@@ -96,6 +96,7 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
                                        bool use_anchor,
                                        float new_page_scale,
                                        double duration_sec);
+  virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristics);
   virtual void setNeedsAnimate();
   virtual bool commitRequested() const;
   virtual void didStopFlinging();
