@@ -134,14 +134,6 @@ blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
   return new WebKitClientMessageLoopImpl();
 }
 
-void DevToolsAgent::clearBrowserCache() {
-  Send(new DevToolsHostMsg_ClearBrowserCache(routing_id()));
-}
-
-void DevToolsAgent::clearBrowserCookies() {
-  Send(new DevToolsHostMsg_ClearBrowserCookies(routing_id()));
-}
-
 void DevToolsAgent::resetTraceEventCallback()
 {
   TraceLog::GetInstance()->SetEventCallbackDisabled();

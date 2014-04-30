@@ -111,12 +111,6 @@ IPC_MESSAGE_ROUTED1(DevToolsHostMsg_DispatchOnEmbedder,
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_SaveAgentRuntimeState,
                     std::string /* state */)
 
-// Clears browser cache.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCache)
-
-// Clears browser cookies.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCookies)
-
 //-----------------------------------------------------------------------------
 // These are messages sent from the GPU process to the inspected renderer.
 

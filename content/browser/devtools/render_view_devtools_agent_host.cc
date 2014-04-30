@@ -402,9 +402,6 @@ bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
                         OnDispatchOnInspectorFrontend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
                         OnSaveAgentRuntimeState)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCache, OnClearBrowserCache)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCookies,
-                        OnClearBrowserCookies)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 handled = false; OnSwapCompositorFrame(msg))
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -440,16 +437,6 @@ void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     return;
   DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
       this, message);
-}
-
-void RenderViewDevToolsAgentHost::OnClearBrowserCache() {
-  if (render_view_host_)
-    GetContentClient()->browser()->ClearCache(render_view_host_);
-}
-
-void RenderViewDevToolsAgentHost::OnClearBrowserCookies() {
-  if (render_view_host_)
-    GetContentClient()->browser()->ClearCookies(render_view_host_);
 }
 
 }  // namespace content

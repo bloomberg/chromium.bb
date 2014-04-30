@@ -54,8 +54,6 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void saveAgentRuntimeState(const blink::WebString& state) OVERRIDE;
   virtual blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop() OVERRIDE;
-  virtual void clearBrowserCache() OVERRIDE;
-  virtual void clearBrowserCookies() OVERRIDE;
   virtual void visitAllocatedObjects(AllocatedObjectVisitor* visitor) OVERRIDE;
 
   typedef void (*TraceEventCallback)(
