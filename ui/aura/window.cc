@@ -426,8 +426,17 @@ Window::SetEventTargeter(scoped_ptr<ui::EventTargeter> targeter) {
 void Window::SetBounds(const gfx::Rect& new_bounds) {
   if (parent_ && parent_->layout_manager())
     parent_->layout_manager()->SetChildBounds(this, new_bounds);
-  else
-    SetBoundsInternal(new_bounds);
+  else {
+    // Ensure we don't go smaller than our minimum bounds.
+    gfx::Rect final_bounds(new_bounds);
+    if (delegate_) {
+      const gfx::Size& min_size = delegate_->GetMinimumSize();
+      final_bounds.set_width(std::max(min_size.width(), final_bounds.width()));
+      final_bounds.set_height(std::max(min_size.height(),
+                                       final_bounds.height()));
+    }
+    SetBoundsInternal(final_bounds);
+  }
 }
 
 void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
@@ -865,16 +874,6 @@ bool Window::HitTest(const gfx::Point& local_point) {
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   gfx::Rect actual_new_bounds(new_bounds);
-
-  // Ensure we don't go smaller than our minimum bounds.
-  if (delegate_) {
-    const gfx::Size& min_size = delegate_->GetMinimumSize();
-    actual_new_bounds.set_width(
-        std::max(min_size.width(), actual_new_bounds.width()));
-    actual_new_bounds.set_height(
-        std::max(min_size.height(), actual_new_bounds.height()));
-  }
-
   gfx::Rect old_bounds = GetTargetBounds();
 
   // Always need to set the layer's bounds -- even if it is to the same thing.
