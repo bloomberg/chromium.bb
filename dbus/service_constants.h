@@ -1409,6 +1409,7 @@ const char kCrosDisksServiceError[] = "org.chromium.CrosDisks.Error";
 
 // Methods.
 const char kEnumerateAutoMountableDevices[] = "EnumerateAutoMountableDevices";
+const char kEnumerateMountEntries[] = "EnumerateMountEntries";
 const char kFormat[] = "Format";
 // TODO(benchan): Deprecate FormatDevice method (crosbug.com/22981)
 const char kFormatDevice[] = "FormatDevice";
