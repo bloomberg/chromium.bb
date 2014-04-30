@@ -105,10 +105,7 @@ namespace WTF {
 
         static bool isValidValue(ValuePeekInType);
 
-        void trace(typename Allocator::Visitor* visitor)
-        {
-            m_impl.trace(visitor);
-        }
+        void trace(typename Allocator::Visitor* visitor) { m_impl.trace(visitor); }
 
     private:
         friend void deleteAllValues<>(const HashSet&);

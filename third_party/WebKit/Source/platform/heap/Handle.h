@@ -78,6 +78,7 @@ struct IsGarbageCollectedMixin {
         typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \
         typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;       \
         typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;         \
+        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;  \
         typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass; \
         COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                 \
             GarbageCollectedMixinSubclass::value ||                                                       \
@@ -86,6 +87,7 @@ struct IsGarbageCollectedMixin {
             HeapHashMapSubclass::value ||                                                                 \
             HeapVectorSubclass::value ||                                                                  \
             HeapDequeSubclass::value ||                                                                   \
+            HeapHashCountedSetSubclass::value ||                                                          \
             HeapTerminatedArraySubclass::value,                                                           \
             ErrorMessage);                                                                                \
     } while (0)
@@ -440,6 +442,9 @@ template<
     typename TraitsArg = HashTraits<ValueArg> >
 class PersistentHeapLinkedHashSet : public PersistentHeapCollectionBase<HeapLinkedHashSet<ValueArg, HashArg, TraitsArg> > { };
 
+template<typename T, typename U, typename V>
+class PersistentHeapHashCountedSet : public PersistentHeapCollectionBase<HeapHashCountedSet<T, U, V> > { };
+
 template<typename T, size_t inlineCapacity = 0>
 class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity> > {
 public:
@@ -766,6 +771,8 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBePersistentHeapVector WebCore::PersistentHeapVector
 #define WillBeHeapDeque WebCore::HeapDeque
 #define WillBePersistentHeapDeque WebCore::PersistentHeapDeque
+#define WillBeHeapHashCountedSet WebCore::HeapHashCountedSet
+#define WillBePersistentHeapHashCountedSet WebCore::PersistentHeapHashCountedSet
 #define WillBeGarbageCollectedMixin WebCore::GarbageCollectedMixin
 #define WillBeHeapSupplement WebCore::HeapSupplement
 #define WillBeHeapSupplementable WebCore::HeapSupplementable
@@ -843,6 +850,8 @@ public:
 #define WillBePersistentHeapVector WTF::Vector
 #define WillBeHeapDeque WTF::Deque
 #define WillBePersistentHeapDeque WTF::Deque
+#define WillBeHeapHeapCountedSet WTF::HeapCountedSet
+#define WillBePersistentHeapHeapCountedSet WTF::HeapCountedSet
 #define WillBeGarbageCollectedMixin WebCore::DummyBase<void>
 #define WillBeHeapSupplement WebCore::Supplement
 #define WillBeHeapSupplementable WebCore::Supplementable
@@ -1036,6 +1045,11 @@ struct NeedsTracing<Vector<T, N> > {
 
 template<typename T, size_t N>
 struct NeedsTracing<Deque<T, N> > {
+    static const bool value = false;
+};
+
+template<typename T, typename U, typename V>
+struct NeedsTracing<HashCountedSet<T, U, V> > {
     static const bool value = false;
 };
 

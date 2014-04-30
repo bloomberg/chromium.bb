@@ -36,6 +36,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
+#include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/HashTraits.h"
@@ -298,6 +299,12 @@ public:
         OffHeapCollectionTraceTrait<Deque<T, N> >::trace(this, deque);
     }
 
+    template<typename T, typename U, typename V>
+    void trace(const HashCountedSet<T, U, V>& set)
+    {
+        OffHeapCollectionTraceTrait<HashCountedSet<T, U, V> >::trace(this, set);
+    }
+
     template<typename T, typename U, typename V, typename W, typename X>
     void trace(const HashMap<T, U, V, W, X, WTF::DefaultAllocator>& map)
     {
@@ -547,6 +554,19 @@ struct OffHeapCollectionTraceTrait<WTF::Deque<T, N> > {
             return;
         for (typename Deque::const_iterator it = deque.begin(), end = deque.end(); it != end; ++it)
             TraceTrait<T>::trace(visitor, const_cast<T*>(&(*it)));
+    }
+};
+
+template<typename T, typename U, typename V>
+struct OffHeapCollectionTraceTrait<WTF::HashCountedSet<T, U, V> > {
+    typedef WTF::HashCountedSet<T, U, V> Set;
+
+    static void trace(Visitor* visitor, const Set& set)
+    {
+        if (set.isEmpty())
+            return;
+        for (typename Set::const_iterator it = set.begin(), end = set.end(); it != end; ++it)
+            TraceTrait<T>::trace(visitor, const_cast<T*>(&(it->key)));
     }
 };
 

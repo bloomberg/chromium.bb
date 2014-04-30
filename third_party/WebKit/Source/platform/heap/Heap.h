@@ -37,6 +37,7 @@
 #include "platform/heap/Visitor.h"
 
 #include "wtf/Assertions.h"
+#include "wtf/HashCountedSet.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -1446,6 +1447,12 @@ template<
     typename TraitsArg = HashTraits<ValueArg> >
 class HeapLinkedHashSet : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> { };
 
+template<
+    typename Value,
+    typename HashFunctions = typename DefaultHash<Value>::Hash,
+    typename Traits = HashTraits<Value> >
+class HeapHashCountedSet : public HashCountedSet<Value, HashFunctions, Traits, HeapAllocator> { };
+
 template<typename T, size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
 public:
@@ -1570,6 +1577,11 @@ struct ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
+template<typename T, typename U, typename V>
+struct ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
 template<typename Table>
 struct ThreadingTrait<HeapHashTableBacking<Table> > {
     typedef typename Table::KeyType Key;
@@ -1591,10 +1603,13 @@ struct ThreadingTrait<HeapVector<T, inlineCapacity> > : public ThreadingTrait<Ve
 template<typename T, size_t inlineCapacity>
 struct ThreadingTrait<HeapDeque<T, inlineCapacity> > : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator> > { };
 
+template<typename T, typename U, typename V>
+struct ThreadingTrait<HeapHashCountedSet<T, U, V> > : public ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator> > { };
+
 // The standard implementation of GCInfoTrait<T>::get() just returns a static
-// from the class T, but we can't do that for HashMap, HashSet, Deque and
-// Vector because they are in WTF and know nothing of GCInfos. Instead we have
-// a specialization of GCInfoTrait for these four classes here.
+// from the class T, but we can't do that for HashMap, HashSet, Vector, etc.
+// because they are in WTF and know nothing of GCInfos. Instead we have a
+// specialization of GCInfoTrait for these four classes here.
 
 template<typename Key, typename Value, typename T, typename U, typename V>
 struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
@@ -1700,6 +1715,25 @@ struct GCInfoTrait<Deque<T, 0, HeapAllocator> > {
             TraceTrait<TargetType>::trace,
             0,
             false, // Deque needs no finalizer if it has no inline capacity.
+            VTableTrait<TargetType>::hasVTable,
+#if ENABLE(GC_TRACING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        return &info;
+    }
+    static const GCInfo info;
+};
+
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > {
+    static const GCInfo* get()
+    {
+        typedef HashCountedSet<T, U, V, HeapAllocator> TargetType;
+        static const GCInfo info = {
+            TraceTrait<TargetType>::trace,
+            0,
+            false, // HashCountedSet is just a HashTable, and needs no finalizer.
             VTableTrait<TargetType>::hasVTable,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
@@ -2003,6 +2037,8 @@ template<typename T, size_t inlineCapacity>
 struct GCInfoTrait<HeapVector<T, inlineCapacity> > : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
 template<typename T, size_t inlineCapacity>
 struct GCInfoTrait<HeapDeque<T, inlineCapacity> > : public GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > { };
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HeapHashCountedSet<T, U, V> > : public GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > { };
 
 template<typename T>
 struct IfWeakMember;

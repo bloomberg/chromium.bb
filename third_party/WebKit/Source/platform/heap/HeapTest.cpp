@@ -1894,6 +1894,7 @@ public:
     HeapHashMap<Member<IntWrapper>, Member<IntWrapper> > map;
     HeapHashSet<Member<IntWrapper> > set;
     HeapHashSet<Member<IntWrapper> > set2;
+    HeapHashCountedSet<Member<IntWrapper> > set3;
     HeapVector<Member<IntWrapper>, 2> vector;
     HeapVector<PairWrappedUnwrapped, 2> vectorWU;
     HeapVector<PairUnwrappedWrapped, 2> vectorUW;
@@ -1905,6 +1906,7 @@ public:
         visitor->trace(map);
         visitor->trace(set);
         visitor->trace(set2);
+        visitor->trace(set3);
         visitor->trace(vector);
         visitor->trace(vectorWU);
         visitor->trace(vectorUW);
@@ -2122,6 +2124,7 @@ TEST(HeapTest, HeapCollectionTypes)
     typedef HeapHashMap<int, Member<IntWrapper> > PrimitiveMember;
 
     typedef HeapHashSet<Member<IntWrapper> > MemberSet;
+    typedef HeapHashCountedSet<Member<IntWrapper> > MemberCountedSet;
 
     typedef HeapVector<Member<IntWrapper>, 2> MemberVector;
     typedef HeapDeque<Member<IntWrapper>, 0> MemberDeque;
@@ -2138,6 +2141,7 @@ TEST(HeapTest, HeapCollectionTypes)
     Persistent<PrimitiveMember> primitiveMember = new PrimitiveMember();
     Persistent<MemberSet> set = new MemberSet();
     Persistent<MemberSet> set2 = new MemberSet();
+    Persistent<MemberCountedSet> set3 = new MemberCountedSet();
     Persistent<MemberVector> vector = new MemberVector();
     Persistent<MemberVector> vector2 = new MemberVector();
     Persistent<VectorWU> vectorWU = new VectorWU();
@@ -2198,6 +2202,8 @@ TEST(HeapTest, HeapCollectionTypes)
             set2->add(three);
             set2->add(four);
             set->add(oneB);
+            set3->add(oneB);
+            set3->add(oneB);
             vector->append(oneB);
             deque->append(oneB);
             vector2->append(threeB);
@@ -2235,6 +2241,7 @@ TEST(HeapTest, HeapCollectionTypes)
             EXPECT_EQ(4u, memberPrimitive->size());
             EXPECT_EQ(1u, set->size());
             EXPECT_EQ(4u, set2->size());
+            EXPECT_EQ(1u, set3->size());
             EXPECT_EQ(1u, vector->size());
             EXPECT_EQ(2u, vector2->size());
             EXPECT_EQ(1u, vectorWU->size());
@@ -2287,6 +2294,11 @@ TEST(HeapTest, HeapCollectionTypes)
             cset1.swap(cset2);
             cset2.swap(set2);
 
+            MemberCountedSet& cCountedSet = container->set3;
+            set3->swap(cCountedSet);
+            EXPECT_EQ(0u, set3->size());
+            set3->swap(cCountedSet);
+
             // Triple swap.
             container->map.swap(memberMember2);
             MemberMember& containedMap = container->map;
@@ -2310,6 +2322,7 @@ TEST(HeapTest, HeapCollectionTypes)
             EXPECT_TRUE(set->contains(three));
             EXPECT_TRUE(set->contains(four));
             EXPECT_TRUE(set2->contains(oneB));
+            EXPECT_TRUE(set3->contains(oneB));
             EXPECT_TRUE(vector->contains(threeB));
             EXPECT_TRUE(vector->contains(fourB));
             EXPECT_TRUE(dequeContains(*deque, threeE));
@@ -2348,6 +2361,7 @@ TEST(HeapTest, HeapCollectionTypes)
         EXPECT_EQ(4u, memberPrimitive->size());
         EXPECT_EQ(4u, set->size());
         EXPECT_EQ(1u, set2->size());
+        EXPECT_EQ(1u, set3->size());
         EXPECT_EQ(2u, vector->size());
         EXPECT_EQ(1u, vector2->size());
         EXPECT_EQ(3u, vectorUW->size());
@@ -2366,6 +2380,8 @@ TEST(HeapTest, HeapCollectionTypes)
         EXPECT_TRUE(set->contains(two));
         EXPECT_FALSE(set->contains(oneB));
         EXPECT_TRUE(set2->contains(oneB));
+        EXPECT_TRUE(set3->contains(oneB));
+        EXPECT_EQ(2u, set3->find(oneB)->value);
         EXPECT_EQ(3, vector->at(0)->value());
         EXPECT_EQ(4, vector->at(1)->value());
         EXPECT_EQ(3, deque->begin()->get()->value());
@@ -2433,11 +2449,13 @@ TEST(HeapTest, HeapWeakCollectionSimple)
     typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeak;
     typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper> > WeakWeak;
     typedef HeapHashSet<WeakMember<IntWrapper> > WeakSet;
+    typedef HeapHashCountedSet<WeakMember<IntWrapper> > WeakCountedSet;
 
     Persistent<WeakStrong> weakStrong = new WeakStrong();
     Persistent<StrongWeak> strongWeak = new StrongWeak();
     Persistent<WeakWeak> weakWeak = new WeakWeak();
     Persistent<WeakSet> weakSet = new WeakSet();
+    Persistent<WeakCountedSet> weakCountedSet = new WeakCountedSet();
 
     Persistent<IntWrapper> two = IntWrapper::create(2);
 
@@ -2453,10 +2471,20 @@ TEST(HeapTest, HeapWeakCollectionSimple)
         weakSet->add(two);
         weakSet->add(keepNumbersAlive[0]);
         weakSet->add(keepNumbersAlive[1]);
+        weakCountedSet->add(IntWrapper::create(0));
+        weakCountedSet->add(two);
+        weakCountedSet->add(two);
+        weakCountedSet->add(two);
+        weakCountedSet->add(keepNumbersAlive[0]);
+        weakCountedSet->add(keepNumbersAlive[1]);
         EXPECT_EQ(1u, weakStrong->size());
         EXPECT_EQ(1u, strongWeak->size());
         EXPECT_EQ(2u, weakWeak->size());
         EXPECT_EQ(4u, weakSet->size());
+        EXPECT_EQ(4u, weakCountedSet->size());
+        EXPECT_EQ(3u, weakCountedSet->find(two)->value);
+        weakCountedSet->remove(two);
+        EXPECT_EQ(2u, weakCountedSet->find(two)->value);
     }
 
     keepNumbersAlive[0] = nullptr;
@@ -2467,6 +2495,7 @@ TEST(HeapTest, HeapWeakCollectionSimple)
     EXPECT_EQ(0u, strongWeak->size());
     EXPECT_EQ(0u, weakWeak->size());
     EXPECT_EQ(2u, weakSet->size());
+    EXPECT_EQ(2u, weakCountedSet->size());
 }
 
 template<typename Set>
@@ -2718,29 +2747,50 @@ typedef HeapHashSet<PairWeakStrong> WeakStrongSet;
 typedef HeapHashSet<PairWeakUnwrapped> WeakUnwrappedSet;
 typedef HeapHashSet<PairStrongWeak> StrongWeakSet;
 typedef HeapHashSet<PairUnwrappedWeak> UnwrappedWeakSet;
+typedef HeapLinkedHashSet<PairWeakStrong> WeakStrongLinkedSet;
+typedef HeapLinkedHashSet<PairWeakUnwrapped> WeakUnwrappedLinkedSet;
+typedef HeapLinkedHashSet<PairStrongWeak> StrongWeakLinkedSet;
+typedef HeapLinkedHashSet<PairUnwrappedWeak> UnwrappedWeakLinkedSet;
+typedef HeapHashCountedSet<PairWeakStrong> WeakStrongCountedSet;
+typedef HeapHashCountedSet<PairWeakUnwrapped> WeakUnwrappedCountedSet;
+typedef HeapHashCountedSet<PairStrongWeak> StrongWeakCountedSet;
+typedef HeapHashCountedSet<PairUnwrappedWeak> UnwrappedWeakCountedSet;
 
+template<typename T>
+T& iteratorExtractor(WTF::KeyValuePair<T, unsigned>& pair)
+{
+    return pair.key;
+}
+
+template<typename T>
+T& iteratorExtractor(T& notAPair)
+{
+    return notAPair;
+}
+
+template<typename WSSet, typename SWSet, typename WUSet, typename UWSet>
 void checkPairSets(
-    Persistent<WeakStrongSet>& weakStrong,
-    Persistent<StrongWeakSet>& strongWeak,
-    Persistent<WeakUnwrappedSet>& weakUnwrapped,
-    Persistent<UnwrappedWeakSet>& unwrappedWeak,
+    Persistent<WSSet>& weakStrong,
+    Persistent<SWSet>& strongWeak,
+    Persistent<WUSet>& weakUnwrapped,
+    Persistent<UWSet>& unwrappedWeak,
     bool ones,
     Persistent<IntWrapper>& two)
 {
-    WeakStrongSet::iterator itWS = weakStrong->begin();
-    StrongWeakSet::iterator itSW = strongWeak->begin();
-    WeakUnwrappedSet::iterator itWU = weakUnwrapped->begin();
-    UnwrappedWeakSet::iterator itUW = unwrappedWeak->begin();
+    typename WSSet::iterator itWS = weakStrong->begin();
+    typename SWSet::iterator itSW = strongWeak->begin();
+    typename WUSet::iterator itWU = weakUnwrapped->begin();
+    typename UWSet::iterator itUW = unwrappedWeak->begin();
 
     EXPECT_EQ(2u, weakStrong->size());
     EXPECT_EQ(2u, strongWeak->size());
     EXPECT_EQ(2u, weakUnwrapped->size());
     EXPECT_EQ(2u, unwrappedWeak->size());
 
-    PairWeakStrong p = *itWS;
-    PairStrongWeak p2 = *itSW;
-    PairWeakUnwrapped p3 = *itWU;
-    PairUnwrappedWeak p4 = *itUW;
+    PairWeakStrong p = iteratorExtractor(*itWS);
+    PairStrongWeak p2 = iteratorExtractor(*itSW);
+    PairWeakUnwrapped p3 = iteratorExtractor(*itWU);
+    PairUnwrappedWeak p4 = iteratorExtractor(*itUW);
     if (p.first == two && p.second == two)
         ++itWS;
     if (p2.first == two && p2.second == two)
@@ -2749,10 +2799,10 @@ void checkPairSets(
         ++itWU;
     if (p4.first == 2 && p4.second == two)
         ++itUW;
-    p = *itWS;
-    p2 = *itSW;
-    p3 = *itWU;
-    p4 = *itUW;
+    p = iteratorExtractor(*itWS);
+    p2 = iteratorExtractor(*itSW);
+    p3 = iteratorExtractor(*itWU);
+    p4 = iteratorExtractor(*itUW);
     IntWrapper* nullWrapper = 0;
     if (ones) {
         EXPECT_EQ(p.first->value(), 1);
@@ -2777,16 +2827,17 @@ void checkPairSets(
     EXPECT_TRUE(unwrappedWeak->contains(PairUnwrappedWeak(2, &*two)));
 }
 
-TEST(HeapTest, HeapWeakPairs)
+template<typename WSSet, typename SWSet, typename WUSet, typename UWSet>
+void heapWeakPairsHelper()
 {
     IntWrapper::s_destructorCalls = 0;
 
     PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
 
-    Persistent<WeakStrongSet> weakStrong = new WeakStrongSet();
-    Persistent<StrongWeakSet> strongWeak = new StrongWeakSet();
-    Persistent<WeakUnwrappedSet> weakUnwrapped = new WeakUnwrappedSet();
-    Persistent<UnwrappedWeakSet> unwrappedWeak = new UnwrappedWeakSet();
+    Persistent<WSSet> weakStrong = new WSSet();
+    Persistent<SWSet> strongWeak = new SWSet();
+    Persistent<WUSet> weakUnwrapped = new WUSet();
+    Persistent<UWSet> unwrappedWeak = new UWSet();
 
     Persistent<IntWrapper> two = IntWrapper::create(2);
 
@@ -2803,6 +2854,13 @@ TEST(HeapTest, HeapWeakPairs)
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     checkPairSets(weakStrong, strongWeak, weakUnwrapped, unwrappedWeak, false, two);
+}
+
+TEST(HeapTest, HeapWeakPairs)
+{
+    heapWeakPairsHelper<WeakStrongSet, StrongWeakSet, WeakUnwrappedSet, UnwrappedWeakSet>();
+    heapWeakPairsHelper<WeakStrongCountedSet, StrongWeakCountedSet, WeakUnwrappedCountedSet, UnwrappedWeakCountedSet>();
+    heapWeakPairsHelper<WeakStrongLinkedSet, StrongWeakLinkedSet, WeakUnwrappedLinkedSet, UnwrappedWeakLinkedSet>();
 }
 
 TEST(HeapTest, HeapWeakCollectionTypes)

@@ -150,10 +150,7 @@ namespace WTF {
 
         static bool isValidKey(KeyPeekInType);
 
-        void trace(typename Allocator::Visitor* visitor)
-        {
-            m_impl.trace(visitor);
-        }
+        void trace(typename Allocator::Visitor* visitor) { m_impl.trace(visitor); }
 
     private:
         AddResult inlineAdd(KeyPeekInType, MappedPassInReferenceType);
