@@ -1630,7 +1630,7 @@ resize_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 
 	weston_pointer_move(pointer, x, y);
 
-	if (!shsurf || !shsurf->resource)
+	if (!shsurf)
 		return;
 
 	weston_view_from_global_fixed(shsurf->view,
@@ -1665,8 +1665,9 @@ send_configure(struct weston_surface *surface,
 
 	assert(shsurf);
 
-	wl_shell_surface_send_configure(shsurf->resource,
-					edges, width, height);
+	if (shsurf->resource)
+		wl_shell_surface_send_configure(shsurf->resource,
+						edges, width, height);
 }
 
 static const struct weston_shell_client shell_client = {
@@ -3514,7 +3515,8 @@ xdg_send_configure(struct weston_surface *surface,
 
 	assert(shsurf);
 
-	xdg_surface_send_configure(shsurf->resource, width, height);
+	if (shsurf->resource)
+		xdg_surface_send_configure(shsurf->resource, width, height);
 }
 
 static const struct weston_shell_client xdg_client = {
