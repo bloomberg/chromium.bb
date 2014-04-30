@@ -216,12 +216,11 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Posts a task to send synthesized mouse move event if there is no a pending
   // task.
-  void PostSynthesizeMouseMove(int mouse_button_flags);
+  void PostSynthesizeMouseMove();
 
-  // Creates and dispatches synthesized mouse move event using the
-  // current mouse location.
-  ui::EventDispatchDetails SynthesizeMouseMoveEvent(int mouse_button_flags)
-      WARN_UNUSED_RESULT;
+  // Creates and dispatches synthesized mouse move event using the current mouse
+  // location.
+  ui::EventDispatchDetails SynthesizeMouseMoveEvent() WARN_UNUSED_RESULT;
 
   // Calls SynthesizeMouseMove() if |window| is currently visible and contains
   // the mouse cursor.

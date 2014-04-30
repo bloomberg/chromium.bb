@@ -849,9 +849,7 @@ TEST_F(WindowEventDispatcherTest, DispatchSyntheticMouseEvents) {
 
 // Tests synthetic mouse events generated when window bounds changes such that
 // the cursor previously outside the window becomes inside, or vice versa.
-// - Synthesize MOVED events when the mouse button is up;
-// - Synthesize DRAGGED events with correct flags when mouse button is down;
-// - Do not synthesize events if the window ignores events or is invisible.
+// Do not synthesize events if the window ignores events or is invisible.
 TEST_F(WindowEventDispatcherTest, SynthesizeMouseEventsOnWindowBoundsChanged) {
   test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
@@ -880,41 +878,12 @@ TEST_F(WindowEventDispatcherTest, SynthesizeMouseEventsOnWindowBoundsChanged) {
   EXPECT_EQ(ui::EF_IS_SYNTHESIZED, recorder.mouse_event_flags().back());
   recorder.Reset();
 
-  // Hold down the LEFT mouse button.
-  Env::GetInstance()->set_mouse_button_flags(ui::EF_LEFT_MOUSE_BUTTON);
-
-  // Update the window bounds so that cursor is back inside the window.
-  // This should trigger a synthetic DRAGGED event with the left button flag.
-  gfx::Rect bounds2(5, 5, 100, 100);
-  window->SetBounds(bounds2);
-  RunAllPendingInMessageLoop();
-  ASSERT_FALSE(recorder.events().empty());
-  ASSERT_FALSE(recorder.mouse_event_flags().empty());
-  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, recorder.events().back());
-  EXPECT_EQ(ui::EF_IS_SYNTHESIZED | ui::EF_LEFT_MOUSE_BUTTON,
-            recorder.mouse_event_flags().back());
-  recorder.Reset();
-
-  // Hold down the RIGHT mouse button.
-  Env::GetInstance()->set_mouse_button_flags(ui::EF_RIGHT_MOUSE_BUTTON);
-
-  // Update the window bounds so that cursor is outside the window.
-  // This should trigger a synthetic DRAGGED event with the right button flag.
-  window->SetBounds(bounds1);
-  RunAllPendingInMessageLoop();
-  ASSERT_FALSE(recorder.events().empty());
-  ASSERT_FALSE(recorder.mouse_event_flags().empty());
-  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, recorder.events().back());
-  EXPECT_EQ(ui::EF_IS_SYNTHESIZED | ui::EF_RIGHT_MOUSE_BUTTON,
-            recorder.mouse_event_flags().back());
-  recorder.Reset();
-
-  // Release mouse button and set window to ignore events.
-  Env::GetInstance()->set_mouse_button_flags(0);
+  // Set window to ignore events.
   window->set_ignore_events(true);
 
   // Update the window bounds so that cursor is back inside the window.
   // This should not trigger a synthetic event.
+  gfx::Rect bounds2(5, 5, 100, 100);
   window->SetBounds(bounds2);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(recorder.events().empty());
