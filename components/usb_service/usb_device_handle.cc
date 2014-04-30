@@ -234,8 +234,7 @@ void UsbDeviceHandle::TransferComplete(PlatformUsbTransferHandle handle) {
         CHECK(transfer.length >= LIBUSB_CONTROL_SETUP_SIZE)
             << "buffer was not correctly set: too small for the control header";
 
-        if (transfer.length >= actual_length &&
-            actual_length >= LIBUSB_CONTROL_SETUP_SIZE) {
+        if (transfer.length >= (LIBUSB_CONTROL_SETUP_SIZE + actual_length))  {
           // If the payload is zero bytes long, pad out the allocated buffer
           // size to one byte so that an IOBuffer of that size can be allocated.
           scoped_refptr<net::IOBuffer> resized_buffer =
