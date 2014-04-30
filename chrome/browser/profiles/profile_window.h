@@ -85,6 +85,9 @@ void ShowUserManagerMaybeWithTutorial(Profile* profile);
 // Enables new profile management preview and shows the user manager tutorial.
 void EnableNewProfileManagementPreview();
 
+// Disables new profile management preview and attempts to relaunch Chrome.
+void DisableNewProfileManagementPreview();
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_

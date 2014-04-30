@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -35,6 +36,9 @@ using base::UserMetricsAction;
 using content::BrowserThread;
 
 namespace {
+
+const char kNewProfileManagementExperimentInternalName[] =
+    "enable-new-profile-management";
 
 // Handles running a callback when a new Browser for the given profile
 // has been completely created.
@@ -302,8 +306,6 @@ void ShowUserManagerMaybeWithTutorial(Profile* profile) {
 }
 
 void EnableNewProfileManagementPreview() {
-  const char kNewProfileManagementExperimentInternalName[] =
-      "enable-new-profile-management";
   about_flags::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::SetExperimentEnabled(
@@ -314,6 +316,16 @@ void EnableNewProfileManagementPreview() {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kNewProfileManagement);
   chrome::ShowUserManagerWithTutorial(profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+}
+
+void DisableNewProfileManagementPreview() {
+  about_flags::PrefServiceFlagsStorage flags_storage(
+      g_browser_process->local_state());
+  about_flags::SetExperimentEnabled(
+      &flags_storage,
+      kNewProfileManagementExperimentInternalName,
+      false);
+  chrome::AttemptRestart();
 }
 
 }  // namespace profiles

@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -62,6 +63,7 @@ const int kProfileAvatarTutorialShowMax = 5;
 const int kFixedGaiaViewHeight = 400;
 const int kFixedGaiaViewWidth = 360;
 const int kFixedAccountRemovalViewWidth = 280;
+const int kFixedEndPreviewViewWidth = 280;
 const int kLargeImageSide = 88;
 
 // Creates a GridLayout with a single column. This ensures that all the child
@@ -387,7 +389,7 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       view_mode_(view_mode),
-      tutorial_showing_(false) {
+      tutorial_mode_(TUTORIAL_MODE_NONE) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
 
@@ -417,6 +419,7 @@ ProfileChooserView::~ProfileChooserView() {
 }
 
 void ProfileChooserView::ResetView() {
+  question_mark_button_ = NULL;
   manage_accounts_link_ = NULL;
   signin_current_profile_link_ = NULL;
   users_button_ = NULL;
@@ -427,11 +430,16 @@ void ProfileChooserView::ResetView() {
   tutorial_ok_button_ = NULL;
   tutorial_learn_more_link_ = NULL;
   tutorial_enable_new_profile_management_button_ = NULL;
+  tutorial_end_preview_link_ = NULL;
+  tutorial_send_feedback_button_ = NULL;
+  end_preview_and_relaunch_button_ = NULL;
+  end_preview_cancel_button_ = NULL;
+  remove_account_and_relaunch_button_ = NULL;
   account_removal_cancel_button_ = NULL;
   gaia_signin_cancel_button_ = NULL;
   open_other_profile_indexes_map_.clear();
   current_profile_accounts_map_.clear();
-  tutorial_showing_ = false;
+  tutorial_mode_ = TUTORIAL_MODE_NONE;
 }
 
 void ProfileChooserView::Init() {
@@ -474,9 +482,8 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     DCHECK(active_item.signed_in);
   }
 
-  // Records if the "mirror enabled" tutorial card is currently shown before
-  // resetting the view.
-  bool tutorial_shown = tutorial_showing_;
+  // Records the last tutorial mode.
+  TutorialMode last_tutorial_mode = tutorial_mode_;
   ResetView();
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
@@ -494,9 +501,13 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
       layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
       sub_view = CreateAccountRemovalView();
       break;
+    case BUBBLE_VIEW_MODE_END_PREVIEW:
+      layout = CreateSingleColumnLayout(this, kFixedEndPreviewViewWidth);
+      sub_view = CreateEndPreviewView();
+      break;
     default:
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
-      sub_view = CreateProfileChooserView(avatar_menu, tutorial_shown);
+      sub_view = CreateProfileChooserView(avatar_menu, last_tutorial_mode);
   }
   layout->StartRow(1, 0);
   layout->AddView(sub_view);
@@ -544,6 +555,16 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowView(primary_account.empty() ? BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
                                        BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
              avatar_menu_.get());
+  } else if (sender == question_mark_button_) {
+    tutorial_mode_ = TUTORIAL_MODE_SEND_FEEDBACK;
+    ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+  } else if (sender == tutorial_send_feedback_button_) {
+    chrome::OpenFeedbackDialog(browser_);
+  } else if (sender == end_preview_and_relaunch_button_) {
+    profiles::DisableNewProfileManagementPreview();
+  } else if (sender == end_preview_cancel_button_) {
+    tutorial_mode_ = TUTORIAL_MODE_SEND_FEEDBACK;
+    ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else if (current_profile_photo_ &&
              sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
@@ -594,8 +615,7 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
         avatar_menu_.get());
   } else if (sender == add_account_link_) {
     ShowView(BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
-  } else {
-    DCHECK(sender == tutorial_learn_more_link_);
+  } else if (sender == tutorial_learn_more_link_) {
     // TODO(guohui): update |learn_more_url| once it is decided.
     const GURL lear_more_url("https://support.google.com/chrome/?hl=en#to");
     chrome::NavigateParams params(
@@ -604,6 +624,9 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
         content::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
     chrome::Navigate(&params);
+  } else {
+    DCHECK(sender == tutorial_end_preview_link_);
+    ShowView(BUBBLE_VIEW_MODE_END_PREVIEW, avatar_menu_.get());
   }
 }
 
@@ -642,7 +665,7 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
 }
 
 views::View* ProfileChooserView::CreateProfileChooserView(
-    AvatarMenu* avatar_menu, bool tutorial_shown) {
+    AvatarMenu* avatar_menu, TutorialMode last_tutorial_mode) {
   // TODO(guohui, noms): the view should be customized based on whether new
   // profile management preview is enabled or not.
 
@@ -654,15 +677,21 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   views::View* current_profile_view = NULL;
   views::View* current_profile_accounts = NULL;
   views::View* option_buttons_view = NULL;
+  bool is_new_profile_management = switches::IsNewProfileManagement();
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
       option_buttons_view = CreateOptionsView(item.signed_in);
       current_profile_view = CreateCurrentProfileView(item, false);
       if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-        tutorial_view = switches::IsNewProfileManagement() ?
-            CreatePreviewEnabledTutorialView(item, tutorial_shown) :
-            CreateNewProfileManagementPreviewView();
+        if (is_new_profile_management) {
+          tutorial_view = last_tutorial_mode == TUTORIAL_MODE_SEND_FEEDBACK ?
+              CreateSendPreviewFeedbackView() :
+              CreatePreviewEnabledTutorialView(
+                  item, last_tutorial_mode == TUTORIAL_MODE_PREVIEW_ENABLED);
+        } else {
+          tutorial_view = CreateNewProfileManagementPreviewView();
+        }
       } else {
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
       }
@@ -728,9 +757,9 @@ views::View* ProfileChooserView::CreatePreviewEnabledTutorialView(
     profile->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, show_count + 1);
   }
-  tutorial_showing_ = true;
 
   return CreateTutorialView(
+      TUTORIAL_MODE_PREVIEW_ENABLED,
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE),
       l10n_util::GetStringUTF16(
           IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT),
@@ -740,13 +769,28 @@ views::View* ProfileChooserView::CreatePreviewEnabledTutorialView(
       &tutorial_ok_button_);
 }
 
+views::View* ProfileChooserView::CreateSendPreviewFeedbackView() {
+  return CreateTutorialView(
+      TUTORIAL_MODE_SEND_FEEDBACK,
+      l10n_util::GetStringUTF16(IDS_PROFILES_FEEDBACK_TUTORIAL_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_FEEDBACK_TUTORIAL_CONTENT_TEXT),
+      l10n_util::GetStringUTF16(IDS_PROFILES_END_PREVIEW),
+      l10n_util::GetStringUTF16(IDS_PROFILES_SEND_FEEDBACK_BUTTON),
+      &tutorial_end_preview_link_,
+      &tutorial_send_feedback_button_);
+}
+
 views::View* ProfileChooserView::CreateTutorialView(
+    TutorialMode tutorial_mode,
     const base::string16& title_text,
     const base::string16& content_text,
     const base::string16& link_text,
     const base::string16& button_text,
     views::Link** link,
     views::LabelButton** button) {
+  tutorial_mode_ = tutorial_mode;
+
   views::View* view = new views::View();
   view->set_background(views::Background::CreateSolidBackground(
       profiles::kAvatarTutorialBackgroundColor));
@@ -847,6 +891,20 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   current_profile_photo_ = new EditableProfilePhoto(
       this, avatar_item.icon, !is_guest,
       gfx::Rect(x_offset, 0, kLargeImageSide, kLargeImageSide));
+
+  if (switches::IsNewProfileManagementPreviewEnabled()) {
+    question_mark_button_ = new views::ImageButton(this);
+    question_mark_button_->SetImageAlignment(
+        views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_MIDDLE);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    question_mark_button_->SetImage(views::ImageButton::STATE_NORMAL,
+                                    rb->GetImageSkiaNamed(IDR_QUESTION_MARK));
+    gfx::Size preferred_size = question_mark_button_->GetPreferredSize();
+    question_mark_button_->SetBounds(
+        0, 0, preferred_size.width(), preferred_size.height());
+    current_profile_photo_->AddChildView(question_mark_button_);
+  }
+
   layout->StartRow(1, 0);
   layout->AddView(current_profile_photo_);
 
@@ -1148,6 +1206,7 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
 
 views::View* ProfileChooserView::CreateNewProfileManagementPreviewView() {
   return CreateTutorialView(
+      TUTORIAL_MODE_ENABLE_PREVIEW,
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_TITLE),
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT),
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
@@ -1155,3 +1214,44 @@ views::View* ProfileChooserView::CreateNewProfileManagementPreviewView() {
       &tutorial_learn_more_link_,
       &tutorial_enable_new_profile_management_button_);
 }
+
+views::View* ProfileChooserView::CreateEndPreviewView() {
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(
+      view, kFixedAccountRemovalViewWidth - 2 * views::kButtonHEdgeMarginNew);
+  layout->SetInsets(views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew,
+                    views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew);
+
+  // Adds title.
+  layout->StartRow(1, 0);
+  layout->AddView(new TitleCard(IDS_PROFILES_END_PREVIEW, this,
+                                &end_preview_cancel_button_));
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+  // Adds main text.
+  views::Label* content_label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_PROFILES_END_PREVIEW_TEXT));
+  content_label->SetMultiLine(true);
+  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  const gfx::FontList& small_font_list =
+      rb->GetFontList(ui::ResourceBundle::SmallFont);
+  content_label->SetFontList(small_font_list);
+  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddView(content_label);
+
+  // Adds button.
+  end_preview_and_relaunch_button_ = new views::BlueButton(
+      this, l10n_util::GetStringUTF16(IDS_PROFILES_END_PREVIEW_AND_RELAUNCH));
+  end_preview_and_relaunch_button_->SetHorizontalAlignment(
+      gfx::ALIGN_CENTER);
+  layout->StartRowWithPadding(
+      1, 0, 0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddView(end_preview_and_relaunch_button_);
+
+  return view;
+}
+

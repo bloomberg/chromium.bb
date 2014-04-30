@@ -55,7 +55,16 @@ class ProfileChooserView : public views::BubbleDelegateView,
     // Shows a web view for adding secondary accounts.
     BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
     // Shows a view for confirming account removal.
-    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL
+    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
+    // Shows a view for ending new profile management preview.
+    BUBBLE_VIEW_MODE_END_PREVIEW
+  };
+
+  enum TutorialMode {
+    TUTORIAL_MODE_NONE,             // No tutorial card shown.
+    TUTORIAL_MODE_ENABLE_PREVIEW,   // The enable-mirror-preview tutorial shown.
+    TUTORIAL_MODE_PREVIEW_ENABLED,  // The welcome-to-mirror tutorial shown.
+    TUTORIAL_MODE_SEND_FEEDBACK     // The send-feedback tutorial shown.
   };
 
   // Shows the bubble if one is not already showing.  This allows us to easily
@@ -132,7 +141,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Creates the profile chooser view. |tutorial_shown| indicates if the "mirror
   // enabled" tutorial was shown or not in the last active view.
   views::View* CreateProfileChooserView(AvatarMenu* avatar_menu,
-                                        bool tutorial_shown);
+                                        TutorialMode tutorial_mode);
 
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
@@ -172,18 +181,25 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::View* CreatePreviewEnabledTutorialView(
       const AvatarMenu::Item& current_avatar_item, bool tutorial_shown);
 
+  // Creates a a tutorial card at the top prompting the user to send feedback
+  // about the new profile management preview and/or to end preview.
+  views::View* CreateSendPreviewFeedbackView();
+
   // Creates a tutorial card with the specified |title_text|, |context_text|,
   // and a bottom row with a right-aligned link using the specified |link_text|,
   // and a left aligned button using the specified |button_text|. The method
-  // sets |link| to point to the newly created link, and |button| to the newly
-  // created button.
+  // sets |link| to point to the newly created link, |button| to the newly
+  // created button, and |tutorial_mode_| to the given |tutorial_mode|.
   views::View* CreateTutorialView(
+      TutorialMode tutorial_mode,
       const base::string16& title_text,
       const base::string16& content_text,
       const base::string16& link_text,
       const base::string16& button_text,
       views::Link** link,
       views::LabelButton** button);
+
+  views::View* CreateEndPreviewView();
 
   scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;
@@ -198,10 +214,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::Link* tutorial_learn_more_link_;
   views::LabelButton* tutorial_ok_button_;
   views::LabelButton* tutorial_enable_new_profile_management_button_;
+  views::Link* tutorial_end_preview_link_;
+  views::LabelButton* tutorial_send_feedback_button_;
 
-  // Links displayed in the active profile card.
+  // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;
   views::LabelButton* signin_current_profile_link_;
+  views::ImageButton* question_mark_button_;
 
   // The profile name and photo in the active profile card. Owned by the
   // views hierarchy.
@@ -220,14 +239,18 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::LabelButton* remove_account_and_relaunch_button_;
   views::ImageButton* account_removal_cancel_button_;
 
+  // Links and buttons displayed in the end-preview view.
+  views::LabelButton* end_preview_and_relaunch_button_;
+  views::ImageButton* end_preview_cancel_button_;
+
   // Records the account id to remove.
   std::string account_id_to_remove_;
 
   // Active view mode.
   BubbleViewMode view_mode_;
 
-  // Whether the tutorial is currently shown.
-  bool tutorial_showing_;
+  // The current tutorial mode.
+  TutorialMode tutorial_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };

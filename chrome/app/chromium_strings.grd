@@ -835,6 +835,9 @@ For Chromium, processes used to display diagnostics information (such as this "a
       <message name="IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that asks the user to preview the new profile management UI.">
        Try the new way to use Chromium with your Google Account and on shared computers.
       </message>
+      <message name="IDS_PROFILES_FEEDBACK_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that asks the user to send feedback about the new profile management UI.">
+       You're previewing the new Chromium.
+      </message>
 
       <!-- Account removal view in the avatar menu bubble -->
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a secondary account.">
@@ -842,6 +845,11 @@ For Chromium, processes used to display diagnostics information (such as this "a
       </message>
       <message name="IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT" desc="Main text of the account removal view when removing a primary account.">
         You're using <ph name="PROFILE_EMAIL">$1<ex>jessica@gmail.com</ex></ph> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK">$2<ex>settings</ex></ph>.
+      </message>
+
+      <!-- End-preview view in the avatar menu bubble -->
+      <message name="IDS_PROFILES_END_PREVIEW_TEXT" desc="Main text of the end-preview view.">
+        Thanks for trying out the new Chromium. Chromium needs to restart to make sure you've saved any open work before continuing.
       </message>
 
       <!-- Sync Promo New Tab Page bubble strings -->
