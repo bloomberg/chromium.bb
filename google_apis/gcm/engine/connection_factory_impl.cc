@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "google_apis/gcm/engine/connection_handler_impl.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
@@ -44,7 +45,8 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
     const std::vector<GURL>& mcs_endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
     scoped_refptr<net::HttpNetworkSession> network_session,
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    GCMStatsRecorder* recorder)
   : mcs_endpoints_(mcs_endpoints),
     next_endpoint_(0),
     last_successful_endpoint_(0),
@@ -56,6 +58,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
     connecting_(false),
     waiting_for_backoff_(false),
     logging_in_(false),
+    recorder_(recorder),
     weak_ptr_factory_(this) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
 }
@@ -118,6 +121,8 @@ void ConnectionFactoryImpl::ConnectWithBackoff() {
              << backoff_entry_->GetTimeUntilRelease().InMilliseconds()
              << " milliseconds.";
     waiting_for_backoff_ = true;
+    recorder_->RecordConnectionDelayedDueToBackoff(
+        backoff_entry_->GetTimeUntilRelease().InMilliseconds());
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ConnectionFactoryImpl::ConnectWithBackoff,
@@ -147,6 +152,7 @@ void ConnectionFactoryImpl::SignalConnectionReset(
   UMA_HISTOGRAM_ENUMERATION("GCM.ConnectionResetReason",
                             reason,
                             CONNECTION_RESET_COUNT);
+  recorder_->RecordConnectionResetSignaled(reason);
   if (!last_login_time_.is_null()) {
     UMA_HISTOGRAM_CUSTOM_TIMES("GCM.ConnectionUpTime",
                                NowTicks() - last_login_time_,
@@ -233,8 +239,10 @@ void ConnectionFactoryImpl::ConnectImpl() {
   DCHECK(!socket_handle_.socket());
 
   connecting_ = true;
+  GURL current_endpoint = GetCurrentEndpoint();
+  recorder_->RecordConnectionInitiated(current_endpoint.host());
   int status = network_session_->proxy_service()->ResolveProxy(
-      GetCurrentEndpoint(),
+      current_endpoint,
       &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -288,6 +296,7 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
       return;  // Proxy reconsideration pending. Return.
     LOG(ERROR) << "Failed to connect to MCS endpoint with error " << result;
     UMA_HISTOGRAM_BOOLEAN("GCM.ConnectionSuccessRate", false);
+    recorder_->RecordConnectionFailure(result);
     CloseSocket();
     backoff_entry_->InformOfRequest(false);
     UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionFailureErrorCode", result);
@@ -307,6 +316,7 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
   UMA_HISTOGRAM_BOOLEAN("GCM.ConnectedViaProxy",
                         !(proxy_info_.is_empty() || proxy_info_.is_direct()));
   ReportSuccessfulProxyConnection();
+  recorder_->RecordConnectionSuccess();
 
   // Reset the endpoint back to the default.
   // TODO(zea): consider prioritizing endpoints more intelligently based on

@@ -301,7 +301,8 @@ void MCSProbe::Start() {
       new ConnectionFactoryImpl(endpoints,
                                 kDefaultBackoffPolicy,
                                 network_session_,
-                                &net_log_));
+                                &net_log_,
+                                &recorder_));
   gcm_store_.reset(
       new GCMStoreImpl(gcm_store_path_,
                        file_thread_.message_loop_proxy()));

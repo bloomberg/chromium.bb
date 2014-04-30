@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "net/base/escape.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -102,12 +103,14 @@ RegistrationRequest::RegistrationRequest(
     const net::BackoffEntry::Policy& backoff_policy,
     const RegistrationCallback& callback,
     int max_retry_count,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    GCMStatsRecorder* recorder)
     : callback_(callback),
       request_info_(request_info),
       backoff_entry_(&backoff_policy),
       request_context_getter_(request_context_getter),
       retries_left_(max_retry_count),
+      recorder_(recorder),
       weak_ptr_factory_(this) {
   DCHECK_GE(max_retry_count, 0);
 }
@@ -152,6 +155,7 @@ void RegistrationRequest::Start() {
   DVLOG(1) << "Performing registration for: " << request_info_.app_id;
   DVLOG(1) << "Registration request: " << body;
   url_fetcher_->SetUploadData(kRegistrationRequestContentType, body);
+  recorder_->RecordRegistrationSent(request_info_.app_id, senders);
   url_fetcher_->Start();
 }
 
@@ -225,14 +229,26 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string token;
   Status status = ParseResponse(source, &token);
   RecordRegistrationStatusToUMA(status);
+  recorder_->RecordRegistrationResponse(
+      request_info_.app_id,
+      request_info_.sender_ids,
+      status);
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
+      recorder_->RecordRegistrationRetryRequested(
+          request_info_.app_id,
+          request_info_.sender_ids,
+          retries_left_);
       RetryWithBackoff(true);
       return;
     }
 
     status = REACHED_MAX_RETRIES;
+    recorder_->RecordRegistrationResponse(
+        request_info_.app_id,
+        request_info_.sender_ids,
+        status);
     RecordRegistrationStatusToUMA(status);
   }
 

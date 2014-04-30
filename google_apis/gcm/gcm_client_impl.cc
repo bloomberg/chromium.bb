@@ -146,12 +146,14 @@ scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
       scoped_refptr<net::HttpNetworkSession> network_session,
-      net::NetLog* net_log) {
+      net::NetLog* net_log,
+      GCMStatsRecorder* recorder) {
   return make_scoped_ptr<ConnectionFactory>(
       new ConnectionFactoryImpl(endpoints,
                                 backoff_policy,
                                 network_session,
-                                net_log));
+                                net_log,
+                                recorder));
 }
 
 GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
@@ -240,7 +242,8 @@ void GCMClientImpl::InitializeMCSClient(
       endpoints,
       kDefaultBackoffPolicy,
       network_session_,
-      net_log_.net_log());
+      net_log_.net_log(),
+      &recorder_);
   mcs_client_ = internals_builder_->BuildMCSClient(
       chrome_build_proto_.chrome_version(),
       clock_.get(),
@@ -417,7 +420,8 @@ void GCMClientImpl::Register(const std::string& app_id,
                                          app_id,
                                          sender_ids),
                               kMaxRegistrationRetries,
-                              url_request_context_getter_);
+                              url_request_context_getter_,
+                              &recorder_);
   pending_registration_requests_[app_id] = registration_request;
   registration_request->Start();
 }
@@ -489,7 +493,8 @@ void GCMClientImpl::Unregister(const std::string& app_id) {
           base::Bind(&GCMClientImpl::OnUnregisterCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
                      app_id),
-          url_request_context_getter_);
+          url_request_context_getter_,
+          &recorder_);
   pending_unregistration_requests_[app_id] = unregistration_request;
   unregistration_request->Start();
 }
@@ -583,7 +588,7 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
   }
   if (device_checkin_info_.android_id > 0)
     stats.android_id = device_checkin_info_.android_id;
-  recorder_.CollectSendingActivities(&stats.sending_activities);
+  recorder_.CollectActivities(&stats.recorded_activities);
 
   for (RegistrationInfoMap::const_iterator it = registrations_.begin();
        it != registrations_.end(); ++it) {
@@ -667,6 +672,11 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
       HandleIncomingDataMessage(data_message_stanza, message_data);
       break;
     case DELETED_MESSAGES:
+      recorder_.RecordDataMessageRecieved(data_message_stanza.category(),
+                                          data_message_stanza.from(),
+                                          data_message_stanza.ByteSize(),
+                                          true,
+                                          GCMStatsRecorder::DELETED_MESSAGES);
       delegate_->OnMessagesDeleted(data_message_stanza.category());
       break;
     case SEND_ERROR:
@@ -688,10 +698,15 @@ void GCMClientImpl::HandleIncomingDataMessage(
   // Drop the message when the app is not registered for the sender of the
   // message.
   RegistrationInfoMap::iterator iter = registrations_.find(app_id);
-  if (iter == registrations_.end() ||
+  bool not_registered =
+      iter == registrations_.end() ||
       std::find(iter->second->sender_ids.begin(),
                 iter->second->sender_ids.end(),
-                data_message_stanza.from()) == iter->second->sender_ids.end()) {
+                data_message_stanza.from()) == iter->second->sender_ids.end();
+  recorder_.RecordDataMessageRecieved(app_id, data_message_stanza.from(),
+      data_message_stanza.ByteSize(), !not_registered,
+      GCMStatsRecorder::DATA_MESSAGE);
+  if (not_registered) {
     return;
   }
 

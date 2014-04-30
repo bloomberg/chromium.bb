@@ -20,6 +20,8 @@ class URLRequestContextGetter;
 
 namespace gcm {
 
+class GCMStatsRecorder;
+
 // Unregistration request is used to revoke registration IDs for applications
 // that were uninstalled and should no longer receive GCM messages. In case an
 // attempt to unregister fails, it will retry using the backoff policy.
@@ -73,7 +75,8 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
       const RequestInfo& request_info,
       const net::BackoffEntry::Policy& backoff_policy,
       const UnregistrationCallback& callback,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      GCMStatsRecorder* recorder);
   virtual ~UnregistrationRequest();
 
   // Starts an unregistration request.
@@ -93,6 +96,9 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   net::BackoffEntry backoff_entry_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
+
+  // Recorder that records GCM activities for debugging purpose. Not owned.
+  GCMStatsRecorder* recorder_;
 
   base::WeakPtrFactory<UnregistrationRequest> weak_ptr_factory_;
 

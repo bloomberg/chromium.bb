@@ -11,6 +11,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "net/base/backoff_entry.h"
 #include "net/http/http_network_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,6 +150,7 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
   base::Closure finished_callback_;
   // The current fake connection handler..
   FakeConnectionHandler* fake_handler_;
+  GCMStatsRecorder dummy_recorder_;
 };
 
 TestConnectionFactoryImpl::TestConnectionFactoryImpl(
@@ -156,7 +158,8 @@ TestConnectionFactoryImpl::TestConnectionFactoryImpl(
     : ConnectionFactoryImpl(BuildEndpoints(),
                             net::BackoffEntry::Policy(),
                             NULL,
-                            NULL),
+                            NULL,
+                            &dummy_recorder_),
       connect_result_(net::ERR_UNEXPECTED),
       num_expected_attempts_(0),
       connections_fulfilled_(true),

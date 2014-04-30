@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "net/base/escape.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -115,11 +116,13 @@ UnregistrationRequest::UnregistrationRequest(
     const RequestInfo& request_info,
     const net::BackoffEntry::Policy& backoff_policy,
     const UnregistrationCallback& callback,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    GCMStatsRecorder* recorder)
     : callback_(callback),
       request_info_(request_info),
       backoff_entry_(&backoff_policy),
       request_context_getter_(request_context_getter),
+      recorder_(recorder),
       weak_ptr_factory_(this) {
 }
 
@@ -156,6 +159,7 @@ void UnregistrationRequest::Start() {
   url_fetcher_->SetUploadData(kRequestContentType, body);
 
   DVLOG(1) << "Performing unregistration for: " << request_info_.app_id;
+  recorder_->RecordUnregistrationSent(request_info_.app_id);
   url_fetcher_->Start();
 }
 
@@ -170,6 +174,9 @@ void UnregistrationRequest::RetryWithBackoff(bool update_backoff) {
              << request_info_.app_id << ", for "
              << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
              << " milliseconds.";
+    recorder_->RecordUnregistrationRetryDelayed(
+        request_info_.app_id,
+        backoff_entry_.GetTimeUntilRelease().InMilliseconds());
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&UnregistrationRequest::RetryWithBackoff,
@@ -190,6 +197,7 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   UMA_HISTOGRAM_ENUMERATION("GCM.UnregistrationRequestStatus",
                             status,
                             UNREGISTRATION_STATUS_COUNT);
+  recorder_->RecordUnregistrationResponse(request_info_.app_id, status);
 
   if (status == URL_FETCHING_FAILED ||
       status == SERVICE_UNAVAILABLE ||

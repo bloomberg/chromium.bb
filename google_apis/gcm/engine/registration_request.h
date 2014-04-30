@@ -23,6 +23,8 @@ class URLRequestContextGetter;
 
 namespace gcm {
 
+class GCMStatsRecorder;
+
 // Registration request is used to obtain registration IDs for applications that
 // want to use GCM. It requires a set of parameters to be specified to identify
 // the Chrome instance, the user, the application and a set of senders that will
@@ -82,7 +84,8 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
       const net::BackoffEntry::Policy& backoff_policy,
       const RegistrationCallback& callback,
       int max_retry_count,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      GCMStatsRecorder* recorder);
   virtual ~RegistrationRequest();
 
   void Start();
@@ -106,6 +109,9 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   int retries_left_;
+
+  // Recorder that records GCM activities for debugging purpose. Not owned.
+  GCMStatsRecorder* recorder_;
 
   base::WeakPtrFactory<RegistrationRequest> weak_ptr_factory_;
 

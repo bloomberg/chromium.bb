@@ -25,6 +25,7 @@ class NetLog;
 namespace gcm {
 
 class ConnectionHandlerImpl;
+class GCMStatsRecorder;
 
 class GCM_EXPORT ConnectionFactoryImpl :
     public ConnectionFactory,
@@ -35,7 +36,8 @@ class GCM_EXPORT ConnectionFactoryImpl :
       const std::vector<GURL>& mcs_endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
       scoped_refptr<net::HttpNetworkSession> network_session,
-      net::NetLog* net_log);
+      net::NetLog* net_log,
+      GCMStatsRecorder* recorder);
   virtual ~ConnectionFactoryImpl();
 
   // ConnectionFactory implementation.
@@ -155,6 +157,9 @@ class GCM_EXPORT ConnectionFactoryImpl :
 
   // Builder for generating new login requests.
   BuildLoginRequestCallback request_builder_;
+
+  // Recorder that records GCM activities for debugging purpose. Not owned.
+  GCMStatsRecorder* recorder_;
 
   base::WeakPtrFactory<ConnectionFactoryImpl> weak_ptr_factory_;
 

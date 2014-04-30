@@ -105,7 +105,7 @@ class GCM_EXPORT GCMClient {
     int send_queue_size;
     int resend_queue_size;
 
-    std::vector<GCMStatsRecorder::SendingActivity> sending_activities;
+    GCMStatsRecorder::RecordedActivities recorded_activities;
   };
 
   // A delegate interface that allows the GCMClient instance to interact with

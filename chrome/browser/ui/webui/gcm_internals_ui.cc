@@ -116,10 +116,10 @@ void GcmInternalsUIMessageHandler::ReturnResults(
     device_info->SetInteger("sendQueueSize", stats->send_queue_size);
     device_info->SetInteger("resendQueueSize", stats->resend_queue_size);
 
-    if (stats->sending_activities.size() > 0) {
+    if (stats->recorded_activities.sending_activities.size() > 0) {
       base::ListValue* send_info = new base::ListValue();
       results.Set("sendInfo", send_info);
-      SetSendingInfo(stats->sending_activities, send_info);
+      SetSendingInfo(stats->recorded_activities.sending_activities, send_info);
     }
   }
   web_ui()->CallJavascriptFunction("gcmInternals.setGcmInternalsInfo",

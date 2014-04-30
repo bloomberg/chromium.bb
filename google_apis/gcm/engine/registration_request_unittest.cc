@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "google_apis/gcm/engine/registration_request.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -80,6 +81,7 @@ class RegistrationRequestTest : public testing::Test {
   base::MessageLoop message_loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
+  GCMStatsRecorder recorder_;
 };
 
 RegistrationRequestTest::RegistrationRequestTest()
@@ -114,7 +116,8 @@ void RegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
       base::Bind(&RegistrationRequestTest::RegistrationCallback,
                  base::Unretained(this)),
       max_retry_count_,
-      url_request_context_getter_.get()));
+      url_request_context_getter_.get(),
+      &recorder_));
 }
 
 void RegistrationRequestTest::SetResponseStatusAndString(

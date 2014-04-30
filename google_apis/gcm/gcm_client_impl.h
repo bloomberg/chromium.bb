@@ -63,7 +63,8 @@ class GCM_EXPORT GCMInternalsBuilder {
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
       scoped_refptr<net::HttpNetworkSession> network_session,
-      net::NetLog* net_log);
+      net::NetLog* net_log,
+      GCMStatsRecorder* recorder);
 };
 
 // Implements the GCM Client. It is used to coordinate MCS Client (communication
