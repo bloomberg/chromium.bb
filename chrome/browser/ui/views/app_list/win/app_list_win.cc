@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
 
+#include "base/command_line.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -42,7 +44,14 @@ bool GetTaskbarRect(gfx::Rect* rect) {
 
 }  // namespace
 
-// static
+AppListWin::AppListWin(app_list::AppListView* view,
+                       const base::Closure& on_should_dismiss)
+    : view_(view),
+      activation_tracker_(view, on_should_dismiss),
+      window_icon_updated_(false) {}
+
+AppListWin::~AppListWin() {}
+
 gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
                                        const gfx::Display& display,
                                        const gfx::Point& cursor,
@@ -76,16 +85,45 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
   return positioner.GetAnchorPointForShelfCursor(edge, cursor);
 }
 
-// static
-void AppListWin::MoveNearCursor(app_list::AppListView* view) {
+void AppListWin::Show() {
+  view_->GetWidget()->Show();
+  if (!window_icon_updated_) {
+    view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
+    window_icon_updated_ = true;
+  }
+  view_->GetWidget()->Activate();
+}
+
+void AppListWin::Hide() {
+  view_->GetWidget()->Hide();
+  activation_tracker_.OnViewHidden();
+}
+
+void AppListWin::MoveNearCursor() {
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   gfx::Screen* screen =
-      gfx::Screen::GetScreenFor(view->GetWidget()->GetNativeView());
+      gfx::Screen::GetScreenFor(view_->GetWidget()->GetNativeView());
   gfx::Display display = screen->GetDisplayNearestPoint(cursor);
 
-  view->SetBubbleArrow(views::BubbleBorder::FLOAT);
+  view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
   gfx::Rect taskbar_rect;
   GetTaskbarRect(&taskbar_rect);
-  view->SetAnchorPoint(
-      FindAnchorPoint(view->GetPreferredSize(), display, cursor, taskbar_rect));
+  view_->SetAnchorPoint(FindAnchorPoint(view_->GetPreferredSize(), display,
+                                        cursor, taskbar_rect));
+}
+
+bool AppListWin::IsVisible() {
+  return view_->GetWidget()->IsVisible();
+}
+
+void AppListWin::Prerender() {
+  view_->Prerender();
+}
+
+gfx::NativeWindow AppListWin::GetWindow() {
+  return view_->GetWidget()->GetNativeWindow();
+}
+
+void AppListWin::SetProfile(Profile* profile) {
+  view_->SetProfileByPath(profile->GetPath());
 }

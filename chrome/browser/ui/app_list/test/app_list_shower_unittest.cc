@@ -2,38 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_list_shower_views.h"
-
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
+#include "chrome/browser/ui/app_list/app_list.h"
+#include "chrome/browser/ui/app_list/app_list_factory.h"
+#include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-class FakeAppListShower : public AppListShower {
+class FakeAppList : public AppList {
  public:
-  explicit FakeAppListShower(AppListShowerDelegate* delegate)
-      : AppListShower(delegate), has_view_(false), visible_(false) {}
-
-  // AppListShower:
-  virtual void HandleViewBeingDestroyed() OVERRIDE {
-    AppListShower::HandleViewBeingDestroyed();
-    has_view_ = false;
-    visible_ = false;
+  explicit FakeAppList(Profile* profile)
+      : profile_(profile) {
   }
 
-  virtual bool IsAppListVisible() const OVERRIDE { return visible_; }
-
-  virtual app_list::AppListView* MakeViewForCurrentProfile() {
-    has_view_ = true;
-    return NULL;
+  std::string profile_name() {
+    return profile_->GetProfileName();
   }
 
-  virtual void UpdateViewForNewProfile() OVERRIDE {}
-
+  // AppList overrides.
   virtual void Show() OVERRIDE {
     visible_ = true;
   }
@@ -42,28 +30,54 @@ class FakeAppListShower : public AppListShower {
     visible_ = false;
   }
 
-  virtual bool HasView() const OVERRIDE {
-    return has_view_;
+  virtual void MoveNearCursor() OVERRIDE {
   }
 
- private:
-  bool has_view_;
-  bool visible_;
+  virtual bool IsVisible() OVERRIDE {
+    return visible_;
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(FakeAppListShower);
+  virtual void Prerender() OVERRIDE {
+    prerendered_ = true;
+  }
+
+  virtual gfx::NativeWindow GetWindow() OVERRIDE {
+    return NULL;
+  }
+
+  virtual void SetProfile(Profile* profile) OVERRIDE {
+    profile_ = profile;
+  }
+
+  Profile* profile_;
+  bool visible_;
+  bool prerendered_;
 };
 
-}  // namespace
-
-class AppListShowerUnitTest : public testing::Test,
-                              public AppListShowerDelegate {
+class FakeFactory : public AppListFactory {
  public:
-  AppListShowerUnitTest()
-      : views_created_(0),
-        views_dismissed_(0) {}
+  FakeFactory()
+      : views_created_(0) {
+  }
 
+  virtual AppList* CreateAppList(
+      Profile* profile,
+      AppListService* service,
+      const base::Closure& on_should_dismiss) OVERRIDE {
+    views_created_++;
+    return new FakeAppList(profile);
+  }
+
+  int views_created_;
+};
+
+class AppListShowerUnitTest : public testing::Test {
+ public:
   virtual void SetUp() OVERRIDE {
-    shower_.reset(new FakeAppListShower(this));
+    factory_ = new FakeFactory;
+    shower_.reset(
+        new AppListShower(scoped_ptr<AppListFactory>(factory_),
+                          NULL /* service */));
     profile1_ = CreateProfile("p1").Pass();
     profile2_ = CreateProfile("p2").Pass();
   }
@@ -75,26 +89,19 @@ class AppListShowerUnitTest : public testing::Test,
     return make_scoped_ptr(new FakeProfile(name));
   }
 
-  // AppListCreatorDelegate:
-  virtual AppListControllerDelegate* GetControllerDelegateForCreate() {
-    return NULL;
+  FakeAppList* GetCurrentAppList() {
+    return static_cast<FakeAppList*>(shower_->app_list());
   }
 
   bool HasKeepAlive() const {
     return shower_->keep_alive_.get() != NULL;
   }
 
-  virtual void OnViewCreated() OVERRIDE { ++views_created_; }
-  virtual void OnViewDismissed() OVERRIDE { ++views_dismissed_; }
-  virtual void MoveNearCursor(app_list::AppListView* view) OVERRIDE {}
-
- protected:
-  scoped_ptr<FakeAppListShower> shower_;
+  // Owned by |shower_|.
+  FakeFactory* factory_;
+  scoped_ptr<AppListShower> shower_;
   scoped_ptr<FakeProfile> profile1_;
   scoped_ptr<FakeProfile> profile2_;
-
-  int views_created_;
-  int views_dismissed_;
 };
 
 TEST_F(AppListShowerUnitTest, Preconditions) {
@@ -119,23 +126,17 @@ TEST_F(AppListShowerUnitTest, HidingViewRemovesKeepalive) {
 }
 
 TEST_F(AppListShowerUnitTest, HideAndShowReusesView) {
-  EXPECT_EQ(0, views_created_);
   shower_->ShowForProfile(profile1_.get());
-  EXPECT_EQ(1, views_created_);
-  EXPECT_EQ(0, views_dismissed_);
   shower_->DismissAppList();
-  EXPECT_EQ(1, views_dismissed_);
   shower_->ShowForProfile(profile1_.get());
-  EXPECT_EQ(1, views_created_);
+  EXPECT_EQ(1, factory_->views_created_);
 }
 
 TEST_F(AppListShowerUnitTest, CloseAndShowRecreatesView) {
   shower_->ShowForProfile(profile1_.get());
   shower_->HandleViewBeingDestroyed();
-  // Destroying implies hiding. A separate notification shouldn't go out.
-  EXPECT_EQ(0, views_dismissed_);
   shower_->ShowForProfile(profile1_.get());
-  EXPECT_EQ(2, views_created_);
+  EXPECT_EQ(2, factory_->views_created_);
 }
 
 TEST_F(AppListShowerUnitTest, CloseRemovesView) {
@@ -156,11 +157,10 @@ TEST_F(AppListShowerUnitTest, CloseAppListClearsProfile) {
 
 TEST_F(AppListShowerUnitTest, SwitchingProfiles) {
   shower_->ShowForProfile(profile1_.get());
-  EXPECT_EQ("p1", shower_->profile()->GetProfileName());
+  EXPECT_EQ("p1", GetCurrentAppList()->profile_name());
   shower_->ShowForProfile(profile2_.get());
-  EXPECT_EQ("p2", shower_->profile()->GetProfileName());
+  EXPECT_EQ("p2", GetCurrentAppList()->profile_name());
 
   // Shouldn't create new view for second profile - it should switch in place.
-  EXPECT_EQ(1, views_created_);
-  EXPECT_EQ(0, views_dismissed_);
+  EXPECT_EQ(1, factory_->views_created_);
 }

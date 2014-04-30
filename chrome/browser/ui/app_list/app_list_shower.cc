@@ -2,23 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_list_shower_views.h"
-
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_shower_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/scoped_keep_alive.h"
-#include "ui/app_list/views/app_list_view.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/screen.h"
 
-AppListShower::AppListShower(AppListShowerDelegate* delegate)
-    : delegate_(delegate),
+AppListShower::AppListShower(scoped_ptr<AppListFactory> factory,
+                             AppListService* service)
+    : factory_(factory.Pass()),
+      service_(service),
       profile_(NULL),
-      app_list_(NULL),
-      window_icon_updated_(false) {
+      can_close_app_list_(true) {
 }
 
 AppListShower::~AppListShower() {
@@ -28,46 +22,48 @@ void AppListShower::ShowForProfile(Profile* requested_profile) {
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).
   if (IsAppListVisible() && (requested_profile == profile_)) {
-    Show();
+    app_list_->Show();
     return;
   }
 
-  if (!HasView()) {
+  if (!app_list_) {
     CreateViewForProfile(requested_profile);
   } else if (requested_profile != profile_) {
     profile_ = requested_profile;
-    UpdateViewForNewProfile();
+    app_list_->SetProfile(requested_profile);
   }
 
   keep_alive_.reset(new ScopedKeepAlive);
   if (!IsAppListVisible())
-    delegate_->MoveNearCursor(app_list_);
-  Show();
+    app_list_->MoveNearCursor();
+  app_list_->Show();
 }
 
 gfx::NativeWindow AppListShower::GetWindow() {
   if (!IsAppListVisible())
     return NULL;
-  return app_list_->GetWidget()->GetNativeWindow();
+  return app_list_->GetWindow();
 }
 
 void AppListShower::CreateViewForProfile(Profile* requested_profile) {
   profile_ = requested_profile;
-  app_list_ = MakeViewForCurrentProfile();
-  delegate_->OnViewCreated();
+  app_list_.reset(factory_->CreateAppList(
+      profile_,
+      service_,
+      base::Bind(&AppListShower::DismissAppList, base::Unretained(this))));
 }
 
 void AppListShower::DismissAppList() {
-  if (HasView()) {
-    Hide();
-    delegate_->OnViewDismissed();
+  if (app_list_ && can_close_app_list_) {
+    app_list_->Hide();
     keep_alive_.reset();
   }
 }
 
 void AppListShower::HandleViewBeingDestroyed() {
-  app_list_ = NULL;
+  app_list_.reset();
   profile_ = NULL;
+  can_close_app_list_ = true;
 
   // We may end up here as the result of the OS deleting the AppList's
   // widget (WidgetObserver::OnWidgetDestroyed). If this happens and there
@@ -88,7 +84,7 @@ void AppListShower::HandleViewBeingDestroyed() {
 }
 
 bool AppListShower::IsAppListVisible() const {
-  return app_list_ && app_list_->GetWidget()->IsVisible();
+  return app_list_ && app_list_->IsVisible();
 }
 
 void AppListShower::WarmupForProfile(Profile* profile) {
@@ -99,38 +95,6 @@ void AppListShower::WarmupForProfile(Profile* profile) {
 
 bool AppListShower::HasView() const {
   return !!app_list_;
-}
-
-app_list::AppListView* AppListShower::MakeViewForCurrentProfile() {
-  // The view delegate will be owned by the app list view. The app list view
-  // manages its own lifetime.
-  AppListViewDelegate* view_delegate = new AppListViewDelegate(
-      profile_, delegate_->GetControllerDelegateForCreate());
-  app_list::AppListView* view = new app_list::AppListView(view_delegate);
-  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  view->InitAsBubbleAtFixedLocation(NULL,
-                                    &pagination_model_,
-                                    cursor,
-                                    views::BubbleBorder::FLOAT,
-                                    false /* border_accepts_events */);
-  return view;
-}
-
-void AppListShower::UpdateViewForNewProfile() {
-  app_list_->SetProfileByPath(profile_->GetPath());
-}
-
-void AppListShower::Show() {
-  app_list_->GetWidget()->Show();
-  if (!window_icon_updated_) {
-    app_list_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
-    window_icon_updated_ = true;
-  }
-  app_list_->GetWidget()->Activate();
-}
-
-void AppListShower::Hide() {
-  app_list_->GetWidget()->Hide();
 }
 
 void AppListShower::ResetKeepAlive() {
