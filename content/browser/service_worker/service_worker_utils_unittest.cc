@@ -24,6 +24,24 @@ TEST(ServiceWorkerUtilsTest, ScopeMatches) {
       GURL("http://www.example.com/*"), GURL("http://www.foo.com/")));
   ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
       GURL("http://www.example.com/*"), GURL("https://www.foo.com/page.html")));
+
+  ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/"), GURL("http://www.example.com/")));
+  ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/"), GURL("http://www.example.com/x")));
+
+  ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/?"), GURL("http://www.example.com/x")));
+  ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/?"), GURL("http://www.example.com/")));
+  ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/?"), GURL("http://www.example.com/xx")));
+  ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/?"), GURL("http://www.example.com/?")));
+
+  // URLs canonicalize \ to / so this is equivalent to  "...//*" and "...//x"
+  ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/\\*"), GURL("http://www.example.com/\\x")));
 }
 
 }  // namespace content
