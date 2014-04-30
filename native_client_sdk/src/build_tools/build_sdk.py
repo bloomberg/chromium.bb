@@ -897,6 +897,9 @@ def BuildStepBuildAppEngine(pepperdir, chrome_revision):
 
 def main(args):
   parser = optparse.OptionParser(description=__doc__)
+  parser.add_option('--nacl-tree-path',
+      help='Path to native client tree for bionic build.',
+      dest='nacl_tree_path')
   parser.add_option('--qemu', help='Add qemu for ARM.',
       action='store_true')
   parser.add_option('--bionic', help='Add bionic build.',
@@ -932,6 +935,26 @@ def main(args):
   options, args = parser.parse_args(args[1:])
   if args:
     parser.error("Unexpected arguments: %s" % str(args))
+
+  if options.nacl_tree_path:
+    options.bionic = True
+    toolchain_build = os.path.join(options.nacl_tree_path, 'toolchain_build')
+    print 'WARNING: Building bionic toolchain from NaCl checkout.'
+    print 'This option builds bionic in a NativeClient checkout and uses the'
+    print 'results instead of downloading a toolchain from the builder.'
+    print 'This may result in a NaCl SDK that can not run on ToT chrome.'
+    print ''
+    response = raw_input("Type 'y' and hit enter to continue.\n")
+    if response != 'y' and response != 'Y':
+      print 'Aborting.'
+      return 1
+
+    # Get head version of NativeClient tree
+    buildbot_common.BuildStep('Build bionic toolchain.')
+    buildbot_common.Run([sys.executable, 'toolchain_build_bionic.py'],
+                        cwd=toolchain_build)
+  else:
+    toolchain_build = None
 
   if buildbot_common.IsSDKBuilder():
     options.archive = True
@@ -978,7 +1001,16 @@ def main(args):
     BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
     BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
     BuildStepDownloadToolchains(toolchains)
-    BuildStepUntarToolchains(pepperdir, toolchains)
+    if options.nacl_tree_path:
+      # Instead of untarring, copy the raw bionic toolchain
+      not_bionic = [i for i in toolchains if i != 'bionic']
+      BuildStepUntarToolchains(pepperdir, not_bionic)
+      tcname = GetToolchainDirName('bionic', 'arm')
+      srcdir = os.path.join(toolchain_build, 'out', tcname)
+      bionicdir = os.path.join(pepperdir, 'toolchain', tcname)
+      oshelpers.Copy(['-r', srcdir, bionicdir])
+    else:
+      BuildStepUntarToolchains(pepperdir, toolchains)
     BuildStepBuildToolchains(pepperdir, toolchains)
 
   BuildStepUpdateHelpers(pepperdir, True)
