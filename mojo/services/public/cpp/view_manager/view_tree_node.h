@@ -14,19 +14,16 @@ namespace mojo {
 namespace services {
 namespace view_manager {
 
-class ViewManager;
 class ViewTreeNodeObserver;
 
 class ViewTreeNode {
  public:
   typedef std::vector<ViewTreeNode*> Children;
 
-  explicit ViewTreeNode(ViewManager* manager);
-  ViewTreeNode();  // Used for tests.
+  ViewTreeNode();
   ~ViewTreeNode();
 
   // Configuration.
-  uint16_t id() const { return id_; }
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;
   }
@@ -48,8 +45,6 @@ class ViewTreeNode {
  private:
   friend class ViewTreeNodePrivate;
 
-  ViewManager* manager_;
-  uint16_t id_;
   bool owned_by_parent_;
   ViewTreeNode* parent_;
   Children children_;
