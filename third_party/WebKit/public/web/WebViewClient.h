@@ -56,6 +56,8 @@ class WebElement;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFileChooserCompletion;
+class WebGeolocationClient;
+class WebGeolocationService;
 class WebGestureEvent;
 class WebHitTestResult;
 class WebImage;
@@ -244,6 +246,14 @@ public:
     virtual void didUpdateInspectorSettings() { }
 
     virtual void didUpdateInspectorSetting(const WebString& key, const WebString& value) { }
+
+
+    // Geolocation ---------------------------------------------------------
+
+    // Access the embedder API for (client-based) geolocation client .
+    virtual WebGeolocationClient* geolocationClient() { return 0; }
+    // Access the embedder API for (non-client-based) geolocation services.
+    virtual WebGeolocationService* geolocationService() { return 0; }
 
 
     // Speech --------------------------------------------------------------

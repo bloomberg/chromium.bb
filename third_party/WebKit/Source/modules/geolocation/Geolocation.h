@@ -44,6 +44,7 @@ class LocalFrame;
 class GeolocationController;
 class GeolocationError;
 class GeolocationPosition;
+class Page;
 class ExecutionContext;
 
 class Geolocation FINAL : public RefCountedWillBeGarbageCollectedFinalized<Geolocation>, public ScriptWrappable, public ActiveDOMObject
@@ -86,6 +87,8 @@ private:
     bool isDenied() const { return m_allowGeolocation == No; }
 
     explicit Geolocation(ExecutionContext*);
+
+    Page* page() const;
 
     // Holds the success and error callbacks and the options that were provided
     // when a oneshot or watcher were created. Also, if specified in the

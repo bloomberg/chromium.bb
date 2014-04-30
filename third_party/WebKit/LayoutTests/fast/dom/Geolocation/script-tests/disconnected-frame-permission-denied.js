@@ -3,16 +3,15 @@ description("Tests that when a request is made on a Geolocation object, permissi
 if (!window.testRunner || !window.internals)
     debug('This test can not run without testRunner or internals');
 
+internals.setGeolocationClientMock(document);
+
+// Prime the Geolocation instance by denying permission. This makes sure that we execute the
+// same code path for both preemptive and non-preemptive permissions policies.
+internals.setGeolocationPermission(document, false);
+internals.setGeolocationPosition(document, 51.478, -0.166, 100);
+
 var error;
 function onIframeLoaded() {
-    var iframeDocument = iframe.contentWindow.document;
-    internals.setGeolocationClientMock(iframeDocument);
-
-    // Prime the Geolocation instance by denying permission. This makes sure that we execute the
-    // same code path for both preemptive and non-preemptive permissions policies.
-    internals.setGeolocationPermission(iframeDocument, false);
-    internals.setGeolocationPosition(iframeDocument, 51.478, -0.166, 100);
-
     iframeGeolocation = iframe.contentWindow.navigator.geolocation;
     iframeGeolocation.getCurrentPosition(function() {
         testFailed('Success callback invoked unexpectedly');

@@ -132,7 +132,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "core/timing/Performance.h"
-#include "modules/geolocation/GeolocationController.h"
 #include "modules/notifications/NotificationController.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -179,7 +178,6 @@
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/EventListenerWrapper.h"
 #include "web/FindInPageCoordinates.h"
-#include "web/GeolocationClientProxy.h"
 #include "web/PageOverlay.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/TextFinder.h"
@@ -1655,7 +1653,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     , m_permissionClient(0)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_userMediaClientImpl(this)
-    , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
 {
     blink::Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
@@ -1681,8 +1678,6 @@ void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
     if (m_frame) {
         provideNotification(*m_frame, notificationPresenterImpl());
         provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
-        provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());
-        m_geolocationClientProxy->setController(GeolocationController::from(m_frame.get()));
     }
 }
 

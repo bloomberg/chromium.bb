@@ -30,7 +30,7 @@ namespace WebCore {
 
 class Geolocation;
 class GeolocationPosition;
-class LocalFrame;
+class Page;
 
 class GeolocationClient {
 public:
@@ -48,7 +48,7 @@ protected:
     virtual ~GeolocationClient() { }
 };
 
-void provideGeolocationTo(LocalFrame&, GeolocationClient*);
+void provideGeolocationTo(Page&, GeolocationClient*);
 
 } // namespace WebCore
 

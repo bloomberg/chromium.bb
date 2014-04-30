@@ -28,7 +28,6 @@
 #include "modules/geolocation/GeolocationController.h"
 
 #include "core/inspector/InspectorController.h"
-#include "core/page/Page.h"
 #include "modules/geolocation/GeolocationClient.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationInspectorAgent.h"
@@ -36,25 +35,16 @@
 
 namespace WebCore {
 
-GeolocationController::GeolocationController(LocalFrame& frame, GeolocationClient* client)
-    : PageLifecycleObserver(frame.page())
+GeolocationController::GeolocationController(Page& page, GeolocationClient* client)
+    : PageLifecycleObserver(&page)
     , m_client(client)
     , m_hasClientForTest(false)
     , m_isClientUpdating(false)
     , m_inspectorAgent()
 {
-    // FIXME: Once GeolocationInspectorAgent is per frame, there will be a 1:1 relationship between
-    // it and this class. Until then, there's one GeolocationInspectorAgent per page that the main
-    // frame is responsible for creating.
-    if (frame.isMainFrame()) {
-        OwnPtr<GeolocationInspectorAgent> geolocationAgent(GeolocationInspectorAgent::create());
-        m_inspectorAgent = geolocationAgent.get();
-        frame.page()->inspectorController().registerModuleAgent(geolocationAgent.release());
-    } else {
-        m_inspectorAgent = GeolocationController::from(frame.page()->mainFrame())->m_inspectorAgent;
-    }
-
-    m_inspectorAgent->AddController(this);
+    OwnPtr<GeolocationInspectorAgent> geolocationAgent(GeolocationInspectorAgent::create(this));
+    m_inspectorAgent = geolocationAgent.get();
+    page.inspectorController().registerModuleAgent(geolocationAgent.release());
 }
 
 void GeolocationController::startUpdatingIfNeeded()
@@ -76,8 +66,6 @@ void GeolocationController::stopUpdatingIfNeeded()
 GeolocationController::~GeolocationController()
 {
     ASSERT(m_observers.isEmpty());
-    if (page())
-        m_inspectorAgent->RemoveController(this);
 }
 
 void GeolocationController::willBeDestroyed()
@@ -86,9 +74,9 @@ void GeolocationController::willBeDestroyed()
         m_client->geolocationDestroyed();
 }
 
-PassOwnPtr<GeolocationController> GeolocationController::create(LocalFrame& frame, GeolocationClient* client)
+PassOwnPtr<GeolocationController> GeolocationController::create(Page& page, GeolocationClient* client)
 {
-    return adoptPtr(new GeolocationController(frame, client));
+    return adoptPtr(new GeolocationController(page, client));
 }
 
 void GeolocationController::addObserver(Geolocation* observer, bool enableHighAccuracy)
@@ -191,9 +179,9 @@ const char* GeolocationController::supplementName()
     return "GeolocationController";
 }
 
-void provideGeolocationTo(LocalFrame& frame, GeolocationClient* client)
+void provideGeolocationTo(Page& page, GeolocationClient* client)
 {
-    Supplement<LocalFrame>::provideTo(frame, GeolocationController::supplementName(), GeolocationController::create(frame, client));
+    Supplement<Page>::provideTo(page, GeolocationController::supplementName(), GeolocationController::create(page, client));
 }
 
 } // namespace WebCore

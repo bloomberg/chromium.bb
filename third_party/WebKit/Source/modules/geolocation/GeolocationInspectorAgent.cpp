@@ -35,24 +35,25 @@
 
 namespace WebCore {
 
-PassOwnPtr<GeolocationInspectorAgent> GeolocationInspectorAgent::create()
+PassOwnPtr<GeolocationInspectorAgent> GeolocationInspectorAgent::create(GeolocationController* controller)
 {
-    return adoptPtr(new GeolocationInspectorAgent());
+    return adoptPtr(new GeolocationInspectorAgent(controller));
 }
 
 GeolocationInspectorAgent::~GeolocationInspectorAgent()
 {
 }
 
-GeolocationInspectorAgent::GeolocationInspectorAgent()
+GeolocationInspectorAgent::GeolocationInspectorAgent(GeolocationController* controller)
     : InspectorBaseAgent<GeolocationInspectorAgent>("Geolocation")
+    , m_controller(controller)
     , m_geolocationOverridden(false)
 {
 }
 
 void GeolocationInspectorAgent::setGeolocationOverride(ErrorString* error, const double* latitude, const double* longitude, const double* accuracy)
 {
-    GeolocationPosition* position = (*m_controllers.begin())->lastPosition();
+    GeolocationPosition* position = m_controller->lastPosition();
     if (!m_geolocationOverridden && position)
         m_platformGeolocationPosition = position;
 
@@ -62,8 +63,7 @@ void GeolocationInspectorAgent::setGeolocationOverride(ErrorString* error, const
     else
         m_geolocationPosition.clear();
 
-    for (WTF::HashSet<GeolocationController*>::iterator it = m_controllers.begin(); it != m_controllers.end(); ++it)
-        (*it)->positionChanged(0); // Kick location update.
+    m_controller->positionChanged(0); // Kick location update.
 }
 
 void GeolocationInspectorAgent::clearGeolocationOverride(ErrorString*)
@@ -73,10 +73,8 @@ void GeolocationInspectorAgent::clearGeolocationOverride(ErrorString*)
     m_geolocationOverridden = false;
     m_geolocationPosition.clear();
 
-    if (m_platformGeolocationPosition.get()) {
-        for (WTF::HashSet<GeolocationController*>::iterator it = m_controllers.begin(); it != m_controllers.end(); ++it)
-            (*it)->positionChanged(m_platformGeolocationPosition.get());
-    }
+    if (m_platformGeolocationPosition.get())
+        m_controller->positionChanged(m_platformGeolocationPosition.get());
 }
 
 GeolocationPosition* GeolocationInspectorAgent::overrideGeolocationPosition(GeolocationPosition* position)
@@ -87,16 +85,6 @@ GeolocationPosition* GeolocationInspectorAgent::overrideGeolocationPosition(Geol
         return m_geolocationPosition.get();
     }
     return position;
-}
-
-void GeolocationInspectorAgent::AddController(GeolocationController* controller)
-{
-    m_controllers.add(controller);
-}
-
-void GeolocationInspectorAgent::RemoveController(GeolocationController* controller)
-{
-    m_controllers.remove(controller);
 }
 
 } // namespace WebCore
