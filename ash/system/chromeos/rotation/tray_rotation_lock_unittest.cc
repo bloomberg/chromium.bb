@@ -101,10 +101,21 @@ TEST_F(TrayRotationLockTest, CreateTrayView) {
 }
 
 // Tests that when the tray view is created, while MaximizeMode is active, that
-// it is visible.
+// it is not visible.
 TEST_F(TrayRotationLockTest, CreateTrayViewDuringMaximizeMode) {
   TearDownViews();
   Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
+  EXPECT_FALSE(tray_view()->visible());
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+}
+
+// Tests that when the tray view is created, while MaximizeMode is active, and
+// rotation is locked, that it is visible.
+TEST_F(TrayRotationLockTest, CreateTrayViewDuringMaximizeModeAndRotationLock) {
+  TearDownViews();
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()-> maximize_mode_controller()->set_rotation_locked(true);
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
   EXPECT_TRUE(tray_view()->visible());
   Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
@@ -113,7 +124,10 @@ TEST_F(TrayRotationLockTest, CreateTrayViewDuringMaximizeMode) {
 // Tests that the enabling of MaximizeMode affects a previously created tray
 // view, changing the visibility.
 TEST_F(TrayRotationLockTest, TrayViewVisibilityChangesDuringMaximizeMode) {
+  TearDownViews();
   Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()-> maximize_mode_controller()->set_rotation_locked(true);
+  SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
   EXPECT_TRUE(tray_view()->visible());
   Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
   EXPECT_FALSE(tray_view()->visible());
@@ -174,17 +188,19 @@ TEST_F(TrayRotationLockTest, CreateSecondaryDefaultView) {
 }
 
 // Tests that activating the default view causes the display to have its
-// rotation locked.
+// rotation locked, and that the tray view becomes visible.
 TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
   MaximizeModeController* maximize_mode_controller = Shell::GetInstance()->
       maximize_mode_controller();
   ASSERT_FALSE(maximize_mode_controller->rotation_locked());
   Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  ASSERT_FALSE(tray_view()->visible());
 
   ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f), 0);
   default_view()->OnGestureEvent(&tap);
   EXPECT_TRUE(maximize_mode_controller->rotation_locked());
+  EXPECT_TRUE(tray_view()->visible());
 
   Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
 }

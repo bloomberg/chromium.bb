@@ -55,14 +55,15 @@ RotationLockDefaultView::~RotationLockDefaultView() {
 bool RotationLockDefaultView::PerformAction(const ui::Event& event) {
   MaximizeModeController* maximize_mode_controller = Shell::GetInstance()->
       maximize_mode_controller();
-  maximize_mode_controller->set_rotation_locked(!maximize_mode_controller->
-      rotation_locked());
+  bool rotation_locked = !maximize_mode_controller->rotation_locked();
+  maximize_mode_controller->set_rotation_locked(rotation_locked);
 
   UpdateImage();
 
   // RotationLockDefaultView can only be created by a TrayRotationLock. The
-  // owner needs to be told of the action so that it can update its image.
-  static_cast<TrayRotationLock*>(owner())->UpdateImage();
+  // owner needs to be told of the action so that it can update its visibility.
+  static_cast<TrayRotationLock*>(owner())->tray_view()->
+      SetVisible(rotation_locked);
 
   return true;
 }
@@ -97,7 +98,7 @@ void RotationLockDefaultView::UpdateImage() {
 }  // namespace tray
 
 TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION),
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED),
       on_primary_display_(false) {
   gfx::NativeView native_view = system_tray->GetWidget()->GetNativeView();
   gfx::Display parent_display = Shell::GetScreen()->
@@ -105,23 +106,13 @@ TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
 
   on_primary_display_ = parent_display.IsInternal();
 
-  if (on_primary_display_) {
-    UpdateImage();
+  if (on_primary_display_)
     Shell::GetInstance()->AddShellObserver(this);
-  }
 }
 
 TrayRotationLock::~TrayRotationLock() {
   if (on_primary_display_)
     Shell::GetInstance()->RemoveShellObserver(this);
-}
-
-void TrayRotationLock::UpdateImage() {
-  if (Shell::GetInstance()->maximize_mode_controller()->rotation_locked()) {
-    SetImageFromResourceId(IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED);
-  } else {
-    SetImageFromResourceId(IDR_AURA_UBER_TRAY_AUTO_ROTATION);
-  }
 }
 
 views::View* TrayRotationLock::CreateDefaultView(user::LoginStatus status) {
@@ -131,8 +122,8 @@ views::View* TrayRotationLock::CreateDefaultView(user::LoginStatus status) {
 }
 
 void TrayRotationLock::OnMaximizeModeStarted() {
-  UpdateImage();
-  tray_view()->SetVisible(true);
+  tray_view()->SetVisible(
+      Shell::GetInstance()->maximize_mode_controller()->rotation_locked());
 }
 
 void TrayRotationLock::OnMaximizeModeEnded() {
@@ -140,8 +131,9 @@ void TrayRotationLock::OnMaximizeModeEnded() {
 }
 
 bool TrayRotationLock::GetInitialVisibility() {
-  return on_primary_display_ && Shell::GetInstance()->
-      IsMaximizeModeWindowManagerEnabled();
+  return on_primary_display_ &&
+         Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled() &&
+         Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
 }
 
 }  // namespace ash

@@ -25,10 +25,6 @@ class ASH_EXPORT TrayRotationLock : public TrayImageItem,
   explicit TrayRotationLock(SystemTray* system_tray);
   virtual ~TrayRotationLock();
 
-  // Checks the display info for the current rotation lock and sets the
-  // the appropriate image.
-  void UpdateImage();
-
   // SystemTrayItem:
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
 
