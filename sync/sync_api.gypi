@@ -11,7 +11,6 @@
   ],
   'dependencies': [
     '../base/base.gyp:base',
-    '../base/base.gyp:test_support_base',
   ],
   'sources': [
     'api/attachments/attachment.cc',

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/test_simple_task_runner.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/fake_attachment_store.h"
 
@@ -26,8 +25,7 @@ FakeAttachmentService::~FakeAttachmentService() {
 // Static.
 scoped_ptr<syncer::AttachmentService> FakeAttachmentService::CreateForTest() {
   scoped_ptr<syncer::AttachmentStore> attachment_store(
-      new syncer::FakeAttachmentStore(scoped_refptr<base::SequencedTaskRunner>(
-          new base::TestSimpleTaskRunner)));
+      new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
   scoped_ptr<syncer::AttachmentService> attachment_service(
       new syncer::FakeAttachmentService(attachment_store.Pass()));
   return attachment_service.Pass();
