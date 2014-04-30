@@ -117,6 +117,9 @@ class ResourceMetadata {
   // files with the same name "Foo" will be renamed to "Foo (1)" and "Foo (2)".
   bool PutEntryUnderDirectory(const ResourceEntry& entry);
 
+  // Returns an unused base name for |entry|.
+  std::string GetDeduplicatedBaseName(const ResourceEntry& entry);
+
   // Removes the entry and its descendants.
   bool RemoveEntryRecursively(const std::string& id);
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 
 #include "base/guid.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -16,17 +17,8 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace internal {
 namespace {
-
-// Sets entry's base name from its title and other attributes.
-void SetBaseNameFromTitle(ResourceEntry* entry) {
-  std::string base_name = entry->title();
-  if (entry->has_file_specific_info() &&
-      entry->file_specific_info().is_hosted_document()) {
-    base_name += entry->file_specific_info().document_extension();
-  }
-  entry->set_base_name(util::NormalizeFileName(base_name));
-}
 
 // Returns true if enough disk space is available for DB operation.
 // TODO(hashimoto): Merge this with FileCache's FreeDiskSpaceGetterInterface.
@@ -36,9 +28,26 @@ bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
       kRequiredDiskSpaceInMB * (1 << 20);
 }
 
-}  // namespace
+// Returns a file name with a uniquifier appended. (e.g. "File (1).txt")
+std::string GetUniquifiedName(const std::string& name, int uniquifier) {
+  base::FilePath name_path = base::FilePath::FromUTF8Unsafe(name);
+  name_path = name_path.InsertBeforeExtension(
+      base::StringPrintf(" (%d)", uniquifier));
+  return name_path.AsUTF8Unsafe();
+}
 
-namespace internal {
+// Returns true when there is no entry with the specified name under the parent
+// other than the specified entry.
+bool EntryCanUseName(ResourceMetadataStorage* storage,
+                     const std::string& parent_local_id,
+                     const std::string& local_id,
+                     const std::string& base_name) {
+  const std::string existing_entry_id = storage->GetChild(parent_local_id,
+                                                          base_name);
+  return existing_entry_id.empty() || existing_entry_id == local_id;
+}
+
+}  // namespace
 
 ResourceMetadata::ResourceMetadata(
     ResourceMetadataStorage* storage,
@@ -97,7 +106,7 @@ bool ResourceMetadata::SetUpDefaultEntries() {
     root.mutable_file_info()->set_is_directory(true);
     root.set_local_id(util::kDriveGrandRootLocalId);
     root.set_title(util::kDriveGrandRootDirName);
-    SetBaseNameFromTitle(&root);
+    root.set_base_name(util::kDriveGrandRootDirName);
     if (!storage_->PutEntry(root))
       return false;
   } else if (!entry.resource_id().empty()) {
@@ -410,34 +419,60 @@ bool ResourceMetadata::PutEntryUnderDirectory(const ResourceEntry& entry) {
   DCHECK(!entry.parent_local_id().empty());
 
   ResourceEntry updated_entry(entry);
+  updated_entry.set_base_name(GetDeduplicatedBaseName(updated_entry));
+  return storage_->PutEntry(updated_entry);
+}
+
+std::string ResourceMetadata::GetDeduplicatedBaseName(
+    const ResourceEntry& entry) {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!entry.parent_local_id().empty());
+  DCHECK(!entry.title().empty());
 
   // The entry name may have been changed due to prior name de-duplication.
   // We need to first restore the file name based on the title before going
   // through name de-duplication again when it is added to another directory.
-  SetBaseNameFromTitle(&updated_entry);
+  std::string base_name = entry.title();
+  if (entry.has_file_specific_info() &&
+      entry.file_specific_info().is_hosted_document()) {
+    base_name += entry.file_specific_info().document_extension();
+  }
+  base_name = util::NormalizeFileName(base_name);
 
-  // Do file name de-duplication - Keep changing |entry|'s name until there is
-  // no other entry with the same name under the parent.
-  int modifier = 0;
-  std::string new_base_name = updated_entry.base_name();
+  // If |base_name| is not used, just return it.
+  if (EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
+                      base_name))
+    return base_name;
+
+  // Find an unused number with binary search.
+  int smallest_known_unused_modifier = 1;
   while (true) {
-    const std::string existing_entry_id =
-        storage_->GetChild(entry.parent_local_id(), new_base_name);
-    if (existing_entry_id.empty() || existing_entry_id == entry.local_id())
+    if (EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
+                        GetUniquifiedName(base_name,
+                                          smallest_known_unused_modifier)))
       break;
 
-    base::FilePath new_path =
-        base::FilePath::FromUTF8Unsafe(updated_entry.base_name());
-    new_path =
-        new_path.InsertBeforeExtension(base::StringPrintf(" (%d)", ++modifier));
-    // The new filename must be different from the previous one.
-    DCHECK_NE(new_base_name, new_path.AsUTF8Unsafe());
-    new_base_name = new_path.AsUTF8Unsafe();
+    const int delta = base::RandInt(1, smallest_known_unused_modifier);
+    if (smallest_known_unused_modifier <= INT_MAX - delta) {
+      smallest_known_unused_modifier += delta;
+    } else {  // No luck finding an unused number. Try again.
+      smallest_known_unused_modifier = 1;
+    }
   }
-  updated_entry.set_base_name(new_base_name);
 
-  // Add the entry to resource map.
-  return storage_->PutEntry(updated_entry);
+  int largest_known_used_modifier = 1;
+  while (smallest_known_unused_modifier - largest_known_used_modifier > 1) {
+    const int modifier = largest_known_used_modifier +
+        (smallest_known_unused_modifier - largest_known_used_modifier) / 2;
+
+    if (EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
+                        GetUniquifiedName(base_name, modifier))) {
+      smallest_known_unused_modifier = modifier;
+    } else {
+      largest_known_used_modifier = modifier;
+    }
+  }
+  return GetUniquifiedName(base_name, smallest_known_unused_modifier);
 }
 
 bool ResourceMetadata::RemoveEntryRecursively(const std::string& id) {

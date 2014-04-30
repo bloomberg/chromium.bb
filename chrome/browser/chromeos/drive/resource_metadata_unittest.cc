@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
@@ -540,35 +541,32 @@ TEST_F(ResourceMetadataTest, DuplicatedNames) {
   // - drive/root/foo/bar.txt
   // - drive/root/foo/bar (1).txt
   // - drive/root/foo/bar (2).txt
-  std::string file_id_0;
-  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateFileEntryWithResourceId(
-          "bar.txt", "bar0", dir_id_0), &file_id_0));
-  std::string file_id_1;
-  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateFileEntryWithResourceId(
-          "bar.txt", "bar1", dir_id_0), &file_id_1));
-  std::string file_id_2;
-  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
-      CreateFileEntryWithResourceId(
-          "bar.txt", "bar2", dir_id_0), &file_id_2));
+  // ...
+  // - drive/root/foo/bar (99).txt
+  std::vector<std::string> file_ids(100);
+  for (size_t i = 0; i < file_ids.size(); ++i) {
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
+        CreateFileEntryWithResourceId(
+            "bar.txt", base::StringPrintf("bar%d", static_cast<int>(i)),
+            dir_id_0), &file_ids[i]));
+  }
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
-      file_id_0, &entry));
+      file_ids[0], &entry));
   EXPECT_EQ("bar.txt", entry.base_name());
-  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
-      file_id_1, &entry));
-  EXPECT_EQ("bar (1).txt", entry.base_name());
-  ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
-      file_id_2, &entry));
-  EXPECT_EQ("bar (2).txt", entry.base_name());
+  for (size_t i = 1; i < file_ids.size(); ++i) {
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+        file_ids[i], &entry)) << i;
+    EXPECT_EQ(base::StringPrintf("bar (%d).txt", static_cast<int>(i)),
+              entry.base_name());
+  }
 
   // Same name but different parent. No renaming.
   // - drive/root/foo (1)/bar.txt
   std::string file_id_3;
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
       CreateFileEntryWithResourceId(
-          "bar.txt", "bar3", dir_id_1), &file_id_3));
+          "bar.txt", "bar_different_parent", dir_id_1), &file_id_3));
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
       file_id_3, &entry));
@@ -580,7 +578,7 @@ TEST_F(ResourceMetadataTest, DuplicatedNames) {
   EXPECT_EQ("bar2", entry.resource_id());
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
       base::FilePath::FromUTF8Unsafe("drive/root/foo (1)/bar.txt"), &entry));
-  EXPECT_EQ("bar3", entry.resource_id());
+  EXPECT_EQ("bar_different_parent", entry.resource_id());
 }
 
 TEST_F(ResourceMetadataTest, EncodedNames) {
