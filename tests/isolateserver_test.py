@@ -378,7 +378,6 @@ class IsolateServerStorageApiTest(TestCase):
     return (
       server + '/content-gs/retrieve/%s/%s' % (namespace, item),
       {
-        'retry_404': True,
         'read_timeout': 60,
         'headers': request_headers,
       },
@@ -817,13 +816,13 @@ class IsolateServerDownloadTest(TestCase):
     self._requests = [
       (
         server + '/content-gs/retrieve/default-gzip/sha-1',
-        {'read_timeout': 60, 'retry_404': True, 'headers': None},
+        {'read_timeout': 60, 'headers': None},
         zlib.compress('Coucou'),
         None,
       ),
       (
         server + '/content-gs/retrieve/default-gzip/sha-2',
-        {'read_timeout': 60, 'retry_404': True, 'headers': None},
+        {'read_timeout': 60, 'headers': None},
         zlib.compress('Bye Bye'),
         None,
       ),
@@ -873,7 +872,6 @@ class IsolateServerDownloadTest(TestCase):
         server + '/content-gs/retrieve/default-gzip/' + h,
         {
           'read_timeout': isolateserver.DOWNLOAD_READ_TIMEOUT,
-          'retry_404': True,
           'headers': None,
         },
         zlib.compress(v),

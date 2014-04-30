@@ -1043,12 +1043,8 @@ class IsolateServer(StorageApi):
     source_url = self.get_fetch_url(digest)
     logging.debug('download_file(%s, %d)', source_url, offset)
 
-    # Because the app engine DB is only eventually consistent, retry 404 errors
-    # because the file might just not be visible yet (even though it has been
-    # uploaded).
     connection = net.url_open(
         source_url,
-        retry_404=True,
         read_timeout=DOWNLOAD_READ_TIMEOUT,
         headers={'Range': 'bytes=%d-' % offset} if offset else None)
 
