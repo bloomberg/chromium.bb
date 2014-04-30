@@ -13,6 +13,7 @@
 """
 
 import os
+import shutil
 
 import pathtools
 from driver_env import env
@@ -35,7 +36,10 @@ class TempFileHandler(object):
         sys_path = pathtools.tosys(path)
         # If exiting early, the file may not have been created yet.
         if os.path.exists(sys_path):
-          os.remove(sys_path)
+          if os.path.isdir(sys_path):
+            shutil.rmtree(sys_path)
+          else:
+            os.remove(sys_path)
       except OSError as err:
         Log.Fatal("TempFileHandler: Unable to wipe file %s w/ error %s",
                   pathtools.touser(path),

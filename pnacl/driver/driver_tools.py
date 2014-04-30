@@ -19,7 +19,6 @@ import sys
 import tempfile
 
 import elftools
-import ldtools
 # filetype needs to be imported here because pnacl-driver injects calls to
 # filetype.ForceFileType into argument parse actions.
 # TODO(dschuff): That's ugly. Find a better way.
@@ -458,17 +457,14 @@ def PathSplit(f):
 # add parent directories. Rinse, repeat.
 class TempNameGen(object):
   def __init__(self, inputs, output):
+    self.TempBase = tempfile.mkdtemp()
     inputs = [ pathtools.abspath(i) for i in inputs ]
-    output = pathtools.abspath(output)
+    output = pathtools.basename(output)
 
-    self.TempBase = output + '---linked'
+    TempFiles.add(self.TempBase)
 
-    # TODO(pdox): Figure out if there's a less confusing way
-    #             to simplify the intermediate filename in this case.
-    #if len(inputs) == 1:
-    #  # There's only one input file, don't bother adding the source name.
-    #  TempMap[inputs[0]] = output + '---'
-    #  return
+    self.Output = output + '---linked'
+
 
     # Build the initial mapping
     self.TempMap = dict()
@@ -478,12 +474,15 @@ class TempNameGen(object):
       path = PathSplit(f)
       self.TempMap[f] = [1, path]
 
+    def MangledName(path):
+      return output + '---' + '_'.join(path[-n:]) + '---'
+
     while True:
       # Find conflicts
       ConflictMap = dict()
       Conflicts = set()
       for (f, [n, path]) in self.TempMap.iteritems():
-        candidate = output + '---' + '_'.join(path[-n:]) + '---'
+        candidate = pathtools.abspath(MangledName(path))
         if candidate in ConflictMap:
           Conflicts.add(ConflictMap[candidate])
           Conflicts.add(f)
@@ -500,28 +499,26 @@ class TempNameGen(object):
           Log.Fatal('Unable to resolve naming conflicts')
         self.TempMap[f][0] = n+1
 
-    # Clean up the map
+    # Clean up the map and put the paths in tempdir
     NewMap = dict()
     for (f, [n, path]) in self.TempMap.iteritems():
-      candidate = output + '---' + '_'.join(path[-n:]) + '---'
-      NewMap[f] = candidate
+      NewMap[f] = os.path.join(self.TempBase, MangledName(path))
     self.TempMap = NewMap
     return
 
   def TempNameForOutput(self, imtype):
-    temp = self.TempBase + '.' + imtype
+    temp = os.path.join(self.TempBase, self.Output + '.' + imtype)
     TempFiles.add(temp)
     return temp
 
   def TempNameForInput(self, input, imtype):
     fullpath = pathtools.abspath(input)
-    # If input is already a temporary name, just change the extension
+    # If input is already a temporary name, just add an extension
     if fullpath.startswith(self.TempBase):
-      temp = self.TempBase + '.' + imtype
+      temp = fullpath + '.' + imtype
     else:
       # Source file
       temp = self.TempMap[fullpath] + '.' + imtype
-
     TempFiles.add(temp)
     return temp
 
