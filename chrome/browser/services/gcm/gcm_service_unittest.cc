@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
@@ -35,6 +36,8 @@ const char kUserID1[] = "user1";
 const char kUserID2[] = "user2";
 
 void PumpCurrentLoop() {
+  base::MessageLoop::ScopedNestableTaskAllower
+      nestable_task_allower(base::MessageLoop::current());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -467,28 +470,7 @@ TEST_F(GCMServiceTest, Shutdown) {
   EXPECT_FALSE(wrapper_->ServiceHasAppHandlers());
 }
 
-// These tests are flaky on Android. See http://crbug.com/367600.
-#if defined(OS_ANDROID)
-#define MAYBE_SignInAndSignOutUnderPositiveChannelSignal \
-    DISABLED_SignInAndSignOutUnderPositiveChannelSignal
-#define MAYBE_SignInAndSignOutUnderNonPositiveChannelSignal \
-    DISABLED_SignInAndSignOutUnderNonPositiveChannelSignal
-#define MAYBE_SignOutAndThenSignIn \
-    DISABLED_SignOutAndThenSignIn
-#define MAYBE_StopAndRestartGCM \
-    DISABLED_StopAndRestartGCM
-#else
-#define MAYBE_SignInAndSignOutUnderPositiveChannelSignal \
-    SignInAndSignOutUnderPositiveChannelSignal
-#define MAYBE_SignInAndSignOutUnderNonPositiveChannelSignal \
-    SignInAndSignOutUnderNonPositiveChannelSignal
-#define MAYBE_SignOutAndThenSignIn \
-    SignOutAndThenSignIn
-#define MAYBE_StopAndRestartGCM \
-    StopAndRestartGCM
-#endif
-
-TEST_F(GCMServiceTest, MAYBE_SignInAndSignOutUnderPositiveChannelSignal) {
+TEST_F(GCMServiceTest, SignInAndSignOutUnderPositiveChannelSignal) {
   wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
   wrapper_->SignIn(kTestAccountID1);
 
@@ -503,7 +485,7 @@ TEST_F(GCMServiceTest, MAYBE_SignInAndSignOutUnderPositiveChannelSignal) {
   EXPECT_EQ(GCMClientMock::CHECKED_OUT, wrapper_->GetGCMClient()->status());
 }
 
-TEST_F(GCMServiceTest, MAYBE_SignInAndSignOutUnderNonPositiveChannelSignal) {
+TEST_F(GCMServiceTest, SignInAndSignOutUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
   wrapper_->CreateService(false, GCMClientMock::NO_DELAY_LOADING);
@@ -520,7 +502,7 @@ TEST_F(GCMServiceTest, MAYBE_SignInAndSignOutUnderNonPositiveChannelSignal) {
   EXPECT_EQ(GCMClientMock::CHECKED_OUT, wrapper_->GetGCMClient()->status());
 }
 
-TEST_F(GCMServiceTest, MAYBE_SignOutAndThenSignIn) {
+TEST_F(GCMServiceTest, SignOutAndThenSignIn) {
   wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
   wrapper_->SignIn(kTestAccountID1);
 
@@ -542,7 +524,7 @@ TEST_F(GCMServiceTest, MAYBE_SignOutAndThenSignIn) {
   EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
 }
 
-TEST_F(GCMServiceTest, MAYBE_StopAndRestartGCM) {
+TEST_F(GCMServiceTest, StopAndRestartGCM) {
   wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
   wrapper_->SignIn(kTestAccountID1);
 
