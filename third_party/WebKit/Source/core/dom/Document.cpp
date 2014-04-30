@@ -5670,6 +5670,7 @@ void Document::clearWeakMembers(Visitor* visitor)
 void Document::trace(Visitor* visitor)
 {
     visitor->trace(m_styleSheetList);
+    visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_visibilityObservers);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     Supplementable<Document>::trace(visitor);

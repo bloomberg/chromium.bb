@@ -147,7 +147,7 @@ public:
 
 } // namespace WTF
 
-#define WTF_USE_ALLOCATOR(ClassName) \
+#define WTF_USE_ALLOCATOR(ClassName, Allocator) \
 public: \
     void* operator new(size_t size) \
     { \

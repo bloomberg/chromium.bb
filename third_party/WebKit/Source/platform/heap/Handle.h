@@ -407,8 +407,10 @@ template<typename Collection, ThreadAffinity Affinity = AnyThread>
 class PersistentHeapCollectionBase
     : public Collection
     , public PersistentBase<ThreadLocalPersistents<Affinity>, PersistentHeapCollectionBase<Collection, Affinity> > {
-    // Never allocate these objects with new. Use Persistent<Collection> instead.
-    DISALLOW_ALLOCATION();
+    // We overload the various new and delete operators with using the WTF DefaultAllocator to ensure persistent
+    // heap collections are always allocated off-heap. This allows persistent collections to be used in
+    // DEFINE_STATIC_LOCAL et. al.
+    WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::DefaultAllocator);
 public:
     PersistentHeapCollectionBase() { }
 

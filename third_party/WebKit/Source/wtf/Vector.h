@@ -545,7 +545,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
     template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
     class Vector : private VectorBuffer<T, inlineCapacity, Allocator>, public VectorDestructorBase<Vector<T, inlineCapacity, Allocator>, T, (inlineCapacity > 0), Allocator::isGarbageCollected> {
-        WTF_USE_ALLOCATOR(Vector);
+        WTF_USE_ALLOCATOR(Vector, Allocator);
     private:
         typedef VectorBuffer<T, inlineCapacity, Allocator> Base;
         typedef VectorTypeOperations<T> TypeOperations;

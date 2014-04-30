@@ -48,7 +48,7 @@ namespace WTF {
         typename MappedTraitsArg = HashTraits<MappedArg>,
         typename Allocator = DefaultAllocator>
     class HashMap {
-        WTF_USE_ALLOCATOR(HashMap);
+        WTF_USE_ALLOCATOR(HashMap, Allocator);
     private:
         typedef KeyTraitsArg KeyTraits;
         typedef MappedTraitsArg MappedTraits;

@@ -55,6 +55,8 @@ public:
     StyleRuleFontFace* fontFaceRule() const { return m_fontFaceRule.get(); }
     WeakPtr<SVGFontFaceElement> createWeakRef() { return m_weakFactory.createWeakPtr(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit SVGFontFaceElement(Document&);
 
@@ -66,7 +68,7 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
-    RefPtrWillBePersistent<StyleRuleFontFace> m_fontFaceRule;
+    RefPtrWillBeMember<StyleRuleFontFace> m_fontFaceRule;
     SVGFontElement* m_fontElement;
     WeakPtrFactory<SVGFontFaceElement> m_weakFactory;
 };

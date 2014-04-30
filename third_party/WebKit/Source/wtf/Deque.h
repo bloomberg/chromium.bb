@@ -44,7 +44,7 @@ namespace WTF {
 
     template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
     class Deque : public VectorDestructorBase<Deque<T, inlineCapacity, Allocator>, T, (inlineCapacity > 0), Allocator::isGarbageCollected> {
-        WTF_USE_ALLOCATOR(Deque);
+        WTF_USE_ALLOCATOR(Deque, Allocator);
     public:
         typedef DequeIterator<T, inlineCapacity, Allocator> iterator;
         typedef DequeConstIterator<T, inlineCapacity, Allocator> const_iterator;

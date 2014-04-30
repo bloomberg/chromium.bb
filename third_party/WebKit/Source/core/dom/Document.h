@@ -1340,7 +1340,7 @@ private:
     bool m_directionSetOnDocumentElement;
     bool m_writingModeSetOnDocumentElement;
     DocumentTiming m_documentTiming;
-    RefPtrWillBePersistent<MediaQueryMatcher> m_mediaQueryMatcher;
+    RefPtrWillBeMember<MediaQueryMatcher> m_mediaQueryMatcher;
     bool m_writeRecursionIsTooDeep;
     unsigned m_writeRecursionDepth;
 

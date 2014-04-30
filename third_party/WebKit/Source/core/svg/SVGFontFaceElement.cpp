@@ -352,6 +352,12 @@ void SVGFontFaceElement::childrenChanged(bool changedByParser, Node* beforeChang
     rebuildFontFace();
 }
 
+void SVGFontFaceElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_fontFaceRule);
+    SVGElement::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(SVG_FONTS)

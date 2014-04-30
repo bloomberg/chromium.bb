@@ -37,7 +37,7 @@ namespace WTF {
         typename HashArg = typename DefaultHash<ValueArg>::Hash,
         typename TraitsArg = HashTraits<ValueArg>,
         typename Allocator = DefaultAllocator> class HashSet {
-        WTF_USE_ALLOCATOR(HashSet);
+        WTF_USE_ALLOCATOR(HashSet, Allocator);
     private:
         typedef HashArg HashFunctions;
         typedef TraitsArg ValueTraits;

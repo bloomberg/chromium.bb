@@ -49,14 +49,15 @@ public:
         const String& expression, Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver>,
         unsigned short type, XPathResult*, ExceptionState&);
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { visitor->trace(m_xpathEvaluator); }
 
 private:
     DocumentXPathEvaluator();
 
     static const char* supplementName() { return "DocumentXPathEvaluator"; }
 
-    RefPtrWillBePersistent<XPathEvaluator> m_xpathEvaluator;
+    GC_PLUGIN_IGNORE("http://crbug.com/367660")
+    RefPtrWillBeMember<XPathEvaluator> m_xpathEvaluator;
 };
 
 } // namespace WebCore
