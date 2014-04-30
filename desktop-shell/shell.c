@@ -2127,6 +2127,12 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 	struct weston_view *parent;
 
 	switch (shsurf->type) {
+	case SHELL_SURFACE_XWAYLAND:
+		return &shsurf->shell->fullscreen_layer.view_list;
+
+	case SHELL_SURFACE_NONE:
+		return NULL;
+
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_TOPLEVEL:
 		if (shsurf->state.fullscreen && !shsurf->state.lowered) {
@@ -2142,22 +2148,15 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 			if (parent)
 				return parent->layer_link.prev;
 		}
-		break;
 
-	case SHELL_SURFACE_XWAYLAND:
-		return &shsurf->shell->fullscreen_layer.view_list;
-
-	case SHELL_SURFACE_NONE:
-	default:
-		/* Go to the fallback, below. */
-		break;
+		/* Move the surface to a normal workspace layer so that surfaces
+		 * which were previously fullscreen or transient are no longer
+		 * rendered on top. */
+		ws = get_current_workspace(shsurf->shell);
+		return &ws->layer.view_list;
 	}
 
-	/* Move the surface to a normal workspace layer so that surfaces
-	 * which were previously fullscreen or transient are no longer
-	 * rendered on top. */
-	ws = get_current_workspace(shsurf->shell);
-	return &ws->layer.view_list;
+	assert(0 && "Unknown shell surface type");
 }
 
 static void
@@ -2198,6 +2197,8 @@ shell_surface_update_layer(struct shell_surface *shsurf)
 
 	new_layer_link = shell_surface_calculate_layer_link(shsurf);
 
+	if (new_layer_link == NULL)
+		return;
 	if (new_layer_link == &shsurf->view->layer_link)
 		return;
 
