@@ -14,7 +14,6 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
@@ -180,11 +179,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsManaged()) {
-    ManagedModeNavigationObserver::CreateForWebContents(web_contents);
-  }
+  ManagedModeNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
 #if defined(ENABLE_PRINTING) && !defined(OS_ANDROID)
