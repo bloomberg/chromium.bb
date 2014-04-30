@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace webkit_database {
+using webkit_database::DatabaseIdentifier;
+
+namespace content {
 namespace {
 
 TEST(DatabaseIdentifierTest, CreateIdentifierFromOrigin) {
@@ -242,4 +244,4 @@ TEST(DatabaseIdentifierTest, ExtractOriginDataFromIdentifier) {
 }
 
 }  // namespace
-}  // namespace webkit_database
+}  // namespace content

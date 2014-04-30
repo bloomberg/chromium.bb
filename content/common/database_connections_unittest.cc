@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,10 @@
 #include "webkit/common/database/database_connections.h"
 
 using base::ASCIIToUTF16;
+using webkit_database::DatabaseConnections;
+using webkit_database::DatabaseConnectionsWrapper;
 
-namespace webkit_database {
+namespace content {
 
 namespace {
 
@@ -142,4 +144,4 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   EXPECT_FALSE(obj->HasOpenConnections());
 }
 
-}  // namespace webkit_database
+}  // namespace content

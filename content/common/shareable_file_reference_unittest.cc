@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,9 @@
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace webkit_blob {
+using webkit_blob::ShareableFileReference;
+
+namespace content {
 
 TEST(ShareableFileReferenceTest, TestReferences) {
   base::MessageLoop message_loop;
@@ -56,4 +58,4 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   // TODO(michaeln): add a test for files that aren't deletable behavior.
 }
 
-}  // namespace webkit_blob
+}  // namespace content
