@@ -946,6 +946,61 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, MasksToBoundsDoesntClobberInnerContainerSize) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+
+  LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
+  LayerImpl* container_layer = scroll_layer->scroll_clip_layer();
+  DCHECK(scroll_layer);
+
+  float min_page_scale = 1.f;
+  float max_page_scale = 4.f;
+  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
+                                                         min_page_scale,
+                                                         max_page_scale);
+
+  // If the container's masks_to_bounds is false, the viewport size should
+  // overwrite the inner viewport container layer's size.
+  {
+    EXPECT_EQ(gfx::Size(50, 50),
+              container_layer->bounds());
+    container_layer->SetMasksToBounds(false);
+
+    container_layer->SetBounds(gfx::Size(30, 25));
+    EXPECT_EQ(gfx::Size(30, 25),
+              container_layer->bounds());
+
+    // This should cause a reset of the inner viewport container layer's bounds.
+    host_impl_->DidChangeTopControlsPosition();
+
+    EXPECT_EQ(gfx::Size(50, 50),
+              container_layer->bounds());
+  }
+
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  container_layer->SetBounds(gfx::Size(50, 50));
+
+  // If the container's masks_to_bounds is true, the viewport size should
+  // *NOT* overwrite the inner viewport container layer's size.
+  {
+    EXPECT_EQ(gfx::Size(50, 50),
+              container_layer->bounds());
+    container_layer->SetMasksToBounds(true);
+
+    container_layer->SetBounds(gfx::Size(30, 25));
+    EXPECT_EQ(gfx::Size(30, 25),
+              container_layer->bounds());
+
+    // This should cause a reset of the inner viewport container layer's bounds.
+    host_impl_->DidChangeTopControlsPosition();
+
+    EXPECT_EQ(gfx::Size(30, 25),
+              container_layer->bounds());
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, PinchGesture) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
