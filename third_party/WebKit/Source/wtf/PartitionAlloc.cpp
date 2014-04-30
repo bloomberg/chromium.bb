@@ -810,6 +810,13 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
     char* charPtr = static_cast<char*>(partitionPageToPointer(page));
 
     if (newSize < currentSize) {
+        size_t mapSize = partitionPageToDirectMapExtent(page)->mapSize;
+
+        // Don't reallocate in-place if new size is less than 80 % of the full
+        // map size, to avoid holding on to too much unused address space.
+        if ((newSize / kSystemPageSize) * 5 < (mapSize / kSystemPageSize) * 4)
+            return false;
+
         // Shrink by decommitting unneeded pages and making them inaccessible.
         size_t decommitSize = currentSize - newSize;
         decommitSystemPages(charPtr + newSize, decommitSize);
