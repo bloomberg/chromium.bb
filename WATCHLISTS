@@ -357,9 +357,6 @@
     'ipc': {
       'filepath': 'ipc/ipc',
     },
-    'libvpx': {
-      'filepath': 'third_party/libvpx'
-    },
     'libwebp': {
       'filepath': 'third_party/libwebp'
     },
@@ -813,8 +810,6 @@
                 'jfweitz+watch@chromium.org', 'skanuj+watch@chromium.org',
                 'donnd+watch@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
-    'libvpx': ['tomfinegan@chromium.org', 'jzern@chromium.org',
-               'fgalligan@chromium.org', 'johannkoenig@chromium.org'],
     'libwebp': ['urvang@google.com', 'jzern@chromium.org',
                 'skal@google.com', 'vikasa@google.com'],
     'linux_fonts': ['derat+watch@chromium.org'],
