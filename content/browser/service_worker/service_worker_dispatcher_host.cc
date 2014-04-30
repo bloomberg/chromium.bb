@@ -216,8 +216,6 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
 
   context_->UnregisterServiceWorker(
       pattern,
-      render_process_id_,
-      provider_host,
       base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete,
                  this,
                  thread_id,

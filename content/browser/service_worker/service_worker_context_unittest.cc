@@ -265,8 +265,8 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   EXPECT_NE(kInvalidServiceWorkerVersionId, version_id);
 
   called = false;
-  context()->UnregisterServiceWorker(
-      pattern, render_process_id_, NULL, MakeUnregisteredCallback(&called));
+  context()->UnregisterServiceWorker(pattern,
+                                     MakeUnregisteredCallback(&called));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();

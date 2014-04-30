@@ -33,7 +33,6 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
   void Unregister(
       const GURL& pattern,
-      int source_process_id,
       const ServiceWorkerUnregisterJob::UnregistrationCallback& callback);
 
   // Jobs are removed whenever they are finished or canceled.

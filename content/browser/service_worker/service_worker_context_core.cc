@@ -160,15 +160,10 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
 
 void ServiceWorkerContextCore::UnregisterServiceWorker(
     const GURL& pattern,
-    int source_process_id,
-    ServiceWorkerProviderHost* provider_host,
     const UnregistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(kinuko): Wire the provider_host so that we can tell which document
-  // is calling .register.
-
-  job_coordinator_->Unregister(pattern, source_process_id, callback);
+  job_coordinator_->Unregister(pattern, callback);
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(

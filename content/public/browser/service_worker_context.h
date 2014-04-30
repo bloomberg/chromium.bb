@@ -37,15 +37,14 @@ class ServiceWorkerContext {
                                      const ResultCallback& callback) = 0;
 
   // Equivalent to calling navigator.serviceWorker.unregister(pattern) from a
-  // renderer in |source_process_id|, except that |pattern| is an absolute URL
-  // instead of relative to some current origin.  |callback| is passed true
-  // when the JS promise is fulfilled or false when the JS promise is rejected.
+  // renderer, except that |pattern| is an absolute URL instead of relative to
+  // some current origin.  |callback| is passed true when the JS promise is
+  // fulfilled or false when the JS promise is rejected.
   //
   // Unregistration can fail if:
   //  * No Service Worker was registered for |pattern|.
   //  * Something unexpected goes wrong, like a renderer crash.
   virtual void UnregisterServiceWorker(const Scope& pattern,
-                                       int source_process_id,
                                        const ResultCallback& callback) = 0;
 
   // TODO(jyasskin): Provide a way to SendMessage to a Scope.

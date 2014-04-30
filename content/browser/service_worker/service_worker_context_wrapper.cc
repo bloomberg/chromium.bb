@@ -109,7 +109,6 @@ static void FinishUnregistrationOnIO(
 
 void ServiceWorkerContextWrapper::UnregisterServiceWorker(
     const GURL& pattern,
-    int source_process_id,
     const ResultCallback& continuation) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -118,15 +117,12 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
         base::Bind(&ServiceWorkerContextWrapper::UnregisterServiceWorker,
                    this,
                    pattern,
-                   source_process_id,
                    continuation));
     return;
   }
 
   context()->UnregisterServiceWorker(
       pattern,
-      source_process_id,
-      NULL /* provider_host */,
       base::Bind(&FinishUnregistrationOnIO, continuation));
 }
 

@@ -245,7 +245,6 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   ASSERT_TRUE(called);
 
   job_coordinator()->Unregister(pattern,
-                                render_process_id_,
                                 SaveUnregistration(SERVICE_WORKER_OK, &called));
 
   ASSERT_FALSE(called);
@@ -271,7 +270,6 @@ TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
 
   bool called;
   job_coordinator()->Unregister(pattern,
-                                render_process_id_,
                                 SaveUnregistration(SERVICE_WORKER_OK, &called));
 
   ASSERT_FALSE(called);
@@ -445,7 +443,6 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   bool unregistration_called = false;
   job_coordinator()->Unregister(
       pattern,
-      render_process_id_,
       SaveUnregistration(SERVICE_WORKER_OK, &unregistration_called));
 
   ASSERT_FALSE(registration_called);
@@ -561,14 +558,11 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   bool unregistration1_called = false;
   job_coordinator()->Unregister(
       pattern,
-      render_process_id_,
       SaveUnregistration(SERVICE_WORKER_OK, &unregistration1_called));
 
   bool unregistration2_called = false;
   job_coordinator()->Unregister(
-      pattern,
-      render_process_id_,
-      SaveUnregistration(SERVICE_WORKER_OK, &unregistration2_called));
+      pattern, SaveUnregistration(SERVICE_WORKER_OK, &unregistration2_called));
 
   ASSERT_FALSE(unregistration1_called);
   ASSERT_FALSE(unregistration2_called);

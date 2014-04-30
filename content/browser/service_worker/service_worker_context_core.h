@@ -138,8 +138,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // The callback will be called on the IO thread.
   void UnregisterServiceWorker(const GURL& pattern,
-                               int source_process_id,
-                               ServiceWorkerProviderHost* provider_host,
                                const UnregistrationCallback& callback);
 
   // This class maintains collections of live instances, this class

@@ -53,7 +53,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& script_url,
       const ResultCallback& continuation) OVERRIDE;
   virtual void UnregisterServiceWorker(const GURL& pattern,
-                                       int source_process_id,
                                        const ResultCallback& continuation)
       OVERRIDE;
 

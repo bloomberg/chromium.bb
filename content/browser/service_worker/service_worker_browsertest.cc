@@ -591,7 +591,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
     base::RunLoop run_loop;
     public_context()->UnregisterServiceWorker(
         embedded_test_server()->GetURL("/*"),
-        RenderProcessID(),
         base::Bind(&ServiceWorkerBlackBoxBrowserTest::ExpectResultAndRun,
                    true,
                    run_loop.QuitClosure()));
@@ -632,7 +631,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
     base::RunLoop run_loop;
     public_context()->UnregisterServiceWorker(
         embedded_test_server()->GetURL("/*"),
-        RenderProcessID(),
         base::Bind(&ServiceWorkerBlackBoxBrowserTest::ExpectResultAndRun,
                    true,
                    run_loop.QuitClosure()));

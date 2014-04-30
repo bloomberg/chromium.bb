@@ -65,7 +65,6 @@ void ServiceWorkerJobCoordinator::Register(
 
 void ServiceWorkerJobCoordinator::Unregister(
     const GURL& pattern,
-    int source_process_id,
     const ServiceWorkerUnregisterJob::UnregistrationCallback& callback) {
   scoped_ptr<ServiceWorkerRegisterJobBase> job(
       new ServiceWorkerUnregisterJob(context_, pattern));
