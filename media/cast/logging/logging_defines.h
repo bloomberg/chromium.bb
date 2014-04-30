@@ -45,8 +45,6 @@ enum CastLoggingEvent {
   kVideoFrameDecoded,
   kVideoRenderDelay,
   // Send-side packet events.
-  kAudioPacketSentToPacer,
-  kVideoPacketSentToPacer,
   kAudioPacketSentToNetwork,
   kVideoPacketSentToNetwork,
   kAudioPacketRetransmitted,

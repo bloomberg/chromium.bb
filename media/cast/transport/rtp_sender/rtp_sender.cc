@@ -20,11 +20,9 @@ static const int kStatsCallbackIntervalMs = 33;
 
 RtpSender::RtpSender(
     base::TickClock* clock,
-    LoggingImpl* logging,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacedSender* const transport)
     : clock_(clock),
-      logging_(logging),
       transport_(transport),
       stats_callback_(),
       transport_task_runner_(transport_task_runner),
@@ -43,7 +41,7 @@ void RtpSender::InitializeAudio(const CastTransportAudioConfig& config) {
   config_.frequency = config.frequency;
   config_.audio_codec = config.codec;
   packetizer_.reset(
-      new RtpPacketizer(transport_, storage_.get(), config_, clock_, logging_));
+      new RtpPacketizer(transport_, storage_.get(), config_));
 }
 
 void RtpSender::InitializeVideo(const CastTransportVideoConfig& config) {
@@ -54,7 +52,7 @@ void RtpSender::InitializeVideo(const CastTransportVideoConfig& config) {
   config_.frequency = kVideoFrequency;
   config_.video_codec = config.codec;
   packetizer_.reset(
-      new RtpPacketizer(transport_, storage_.get(), config_, clock_, logging_));
+      new RtpPacketizer(transport_, storage_.get(), config_));
 }
 
 void RtpSender::IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,

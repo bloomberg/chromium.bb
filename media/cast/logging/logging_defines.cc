@@ -36,8 +36,6 @@ const char* CastLoggingToString(CastLoggingEvent event) {
     ENUM_TO_STRING(VideoFrameEncoded);
     ENUM_TO_STRING(VideoFrameDecoded);
     ENUM_TO_STRING(VideoRenderDelay);
-    ENUM_TO_STRING(AudioPacketSentToPacer);
-    ENUM_TO_STRING(VideoPacketSentToPacer);
     ENUM_TO_STRING(AudioPacketSentToNetwork);
     ENUM_TO_STRING(VideoPacketSentToNetwork);
     ENUM_TO_STRING(AudioPacketRetransmitted);
@@ -65,7 +63,6 @@ EventMediaType GetEventMediaType(CastLoggingEvent event) {
     case kAudioFrameEncoded:
     case kAudioPlayoutDelay:
     case kAudioFrameDecoded:
-    case kAudioPacketSentToPacer:
     case kAudioPacketSentToNetwork:
     case kAudioPacketRetransmitted:
     case kAudioPacketReceived:
@@ -79,7 +76,6 @@ EventMediaType GetEventMediaType(CastLoggingEvent event) {
     case kVideoFrameEncoded:
     case kVideoFrameDecoded:
     case kVideoRenderDelay:
-    case kVideoPacketSentToPacer:
     case kVideoPacketSentToNetwork:
     case kVideoPacketRetransmitted:
     case kVideoPacketReceived:

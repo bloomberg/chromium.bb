@@ -343,7 +343,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   int packet_id = 2;
   int size = 100;
   cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  kVideoPacketSentToPacer,
+                                                  kVideoPacketSentToNetwork,
                                                   rtp_timestamp,
                                                   /*frame_id*/ 0,
                                                   packet_id,
@@ -353,7 +353,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertPacketEvent(now2,
-                                                  kVideoPacketSentToNetwork,
+                                                  kVideoPacketRetransmitted,
                                                   rtp_timestamp,
                                                   /*frame_id*/ 0,
                                                   packet_id,
@@ -375,9 +375,9 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   const BasePacketEvent& base_event = event->base_packet_event(0);
   EXPECT_EQ(packet_id, base_event.packet_id());
   ASSERT_EQ(2, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_PACER,
-            base_event.event_type(0));
   EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_NETWORK,
+            base_event.event_type(0));
+  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_RETRANSMITTED,
             base_event.event_type(1));
   ASSERT_EQ(2, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
@@ -392,7 +392,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   int packet_id_2 = 3;
   int size = 100;
   cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  kVideoPacketSentToPacer,
+                                                  kVideoPacketSentToNetwork,
                                                   rtp_timestamp,
                                                   /*frame_id*/ 0,
                                                   packet_id_1,
@@ -424,7 +424,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   const BasePacketEvent& base_event = event->base_packet_event(0);
   EXPECT_EQ(packet_id_1, base_event.packet_id());
   ASSERT_EQ(1, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_PACER,
+  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_NETWORK,
             base_event.event_type(0));
   ASSERT_EQ(1, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
@@ -447,7 +447,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   int packet_id_2 = 3;
   int size = 100;
   cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  kVideoPacketSentToPacer,
+                                                  kVideoPacketSentToNetwork,
                                                   rtp_timestamp_1,
                                                   /*frame_id*/ 0,
                                                   packet_id_1,
@@ -479,7 +479,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   const BasePacketEvent& base_event = event->base_packet_event(0);
   EXPECT_EQ(packet_id_1, base_event.packet_id());
   ASSERT_EQ(1, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_PACER,
+  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_NETWORK,
             base_event.event_type(0));
   ASSERT_EQ(1, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));

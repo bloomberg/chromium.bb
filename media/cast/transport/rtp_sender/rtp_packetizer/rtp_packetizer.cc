@@ -31,14 +31,10 @@ RtpPacketizerConfig::~RtpPacketizerConfig() {}
 
 RtpPacketizer::RtpPacketizer(PacedSender* const transport,
                              PacketStorage* packet_storage,
-                             RtpPacketizerConfig rtp_packetizer_config,
-                             base::TickClock* clock,
-                             LoggingImpl* logging)
+                             RtpPacketizerConfig rtp_packetizer_config)
     : config_(rtp_packetizer_config),
       transport_(transport),
       packet_storage_(packet_storage),
-      clock_(clock),
-      logging_(logging),
       sequence_number_(config_.sequence_number),
       rtp_timestamp_(0),
       packet_id_(0),
@@ -112,7 +108,6 @@ void RtpPacketizer::Cast(bool is_key,
   DCHECK_LE(payload_length, max_length) << "Invalid argument";
 
   SendPacketVector packets;
-  PacketList packets_for_logging;
 
   size_t remaining_size = data.size();
   std::string::const_iterator data_iter = data.begin();
@@ -155,14 +150,8 @@ void RtpPacketizer::Cast(bool is_key,
     ++send_packets_count_;
     send_octet_count_ += payload_length;
     packets.push_back(make_pair(key, packet));
-    packets_for_logging.push_back(packet);
   }
   DCHECK(packet_id_ == num_packets) << "Invalid state";
-
-  logging_->InsertPacketListEvent(
-      clock_->NowTicks(),
-      config_.audio ? kAudioPacketSentToPacer : kVideoPacketSentToPacer,
-      packets_for_logging);
 
   // Send to network.
   transport_->SendPackets(packets);

@@ -34,8 +34,6 @@ media::cast::proto::EventType ToProtoEventType(CastLoggingEvent event) {
     TO_PROTO_ENUM(kVideoFrameEncoded, VIDEO_FRAME_ENCODED);
     TO_PROTO_ENUM(kVideoFrameDecoded, VIDEO_FRAME_DECODED);
     TO_PROTO_ENUM(kVideoRenderDelay, VIDEO_RENDER_DELAY);
-    TO_PROTO_ENUM(kAudioPacketSentToPacer, AUDIO_PACKET_SENT_TO_PACER);
-    TO_PROTO_ENUM(kVideoPacketSentToPacer, VIDEO_PACKET_SENT_TO_PACER);
     TO_PROTO_ENUM(kAudioPacketSentToNetwork, AUDIO_PACKET_SENT_TO_NETWORK);
     TO_PROTO_ENUM(kVideoPacketSentToNetwork, VIDEO_PACKET_SENT_TO_NETWORK);
     TO_PROTO_ENUM(kAudioPacketRetransmitted, AUDIO_PACKET_RETRANSMITTED);
