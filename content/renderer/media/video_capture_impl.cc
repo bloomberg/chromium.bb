@@ -214,7 +214,8 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
   DCHECK_EQ(format.pixel_format, media::PIXEL_FORMAT_I420);
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0));
+    Send(new VideoCaptureHostMsg_BufferReady(
+        device_id_, buffer_id, std::vector<uint32>()));
     return;
   }
 
@@ -242,12 +243,12 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
           buffer->buffer_size,
           buffer->buffer->handle(),
           timestamp - first_frame_timestamp_,
-          media::BindToCurrentLoop(base::Bind(
-              &VideoCaptureImpl::OnClientBufferFinished,
-              weak_factory_.GetWeakPtr(),
-              buffer_id,
-              buffer,
-              base::Passed(scoped_ptr<gpu::MailboxHolder>().Pass()))));
+          media::BindToCurrentLoop(
+              base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                         weak_factory_.GetWeakPtr(),
+                         buffer_id,
+                         buffer,
+                         std::vector<uint32>())));
 
   for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
        ++it) {
@@ -266,7 +267,7 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
     Send(new VideoCaptureHostMsg_BufferReady(
-        device_id_, buffer_id, mailbox_holder.sync_point));
+        device_id_, buffer_id, std::vector<uint32>()));
     return;
   }
 
@@ -296,10 +297,10 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
 void VideoCaptureImpl::OnClientBufferFinished(
     int buffer_id,
     const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
-    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
+    const std::vector<uint32>& release_sync_points) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const uint32 sync_point = (mailbox_holder ? mailbox_holder->sync_point : 0);
-  Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, sync_point));
+  Send(new VideoCaptureHostMsg_BufferReady(
+      device_id_, buffer_id, release_sync_points));
 }
 
 void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {

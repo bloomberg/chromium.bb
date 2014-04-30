@@ -70,7 +70,7 @@ class MockVideoCaptureControllerEventHandler
                    id,
                    this,
                    buffer_id,
-                   0));
+                   std::vector<uint32>()));
   }
   virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
                                     int buffer_id,
@@ -79,7 +79,8 @@ class MockVideoCaptureControllerEventHandler
                                     base::TimeTicks timestamp) OVERRIDE {
     DoMailboxBufferReady(id);
     // Use a very different syncpoint value when returning a new syncpoint.
-    const uint32 new_sync_point = ~mailbox_holder.sync_point;
+    std::vector<uint32> release_sync_points;
+    release_sync_points.push_back(~mailbox_holder.sync_point);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&VideoCaptureController::ReturnBuffer,
@@ -87,7 +88,7 @@ class MockVideoCaptureControllerEventHandler
                    id,
                    this,
                    buffer_id,
-                   new_sync_point));
+                   release_sync_points));
   }
   virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE {
     DoEnded(id);
@@ -262,9 +263,11 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Client count should return to zero after all clients are gone.";
 }
 
-static void CacheSyncPoint(uint32* sync_value,
-                           scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
-  *sync_value = mailbox_holder->sync_point;
+static void CacheSyncPoint(std::vector<uint32>* called_release_sync_points,
+                           const std::vector<uint32>& release_sync_points) {
+  DCHECK(called_release_sync_points->empty());
+  called_release_sync_points->assign(release_sync_points.begin(),
+                                     release_sync_points.end());
 }
 
 // This test will connect and disconnect several clients while simulating an
@@ -481,7 +484,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     buffer = NULL;
   }
   std::vector<uint32> mailbox_syncpoints(mailbox_buffers);
-  std::vector<uint32> mailbox_syncpoints_new(mailbox_buffers);
+  std::vector<std::vector<uint32> > release_syncpoint_vectors(mailbox_buffers);
   for (int i = 0; i < mailbox_buffers; ++i) {
     buffer = device_->ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE,
                                           gfx::Size(0, 0));
@@ -496,7 +499,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
             buffer,
             make_scoped_ptr(new gpu::MailboxHolder(
                 gpu::Mailbox(), 0, mailbox_syncpoints[i])),
-            base::Bind(&CacheSyncPoint, &mailbox_syncpoints_new[i]),
+            base::Bind(&CacheSyncPoint, &release_syncpoint_vectors[i]),
             capture_resolution),
         base::TimeTicks());
     buffer = NULL;
@@ -513,7 +516,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   base::RunLoop().RunUntilIdle();
   for (size_t i = 0; i < mailbox_syncpoints.size(); ++i) {
     // See: MockVideoCaptureControllerEventHandler::OnMailboxBufferReady()
-    ASSERT_EQ(mailbox_syncpoints[i], ~mailbox_syncpoints_new[i]);
+    ASSERT_EQ(1u, release_syncpoint_vectors[i].size());
+    ASSERT_EQ(mailbox_syncpoints[i], ~release_syncpoint_vectors[i][0]);
   }
   Mock::VerifyAndClearExpectations(client_b_.get());
 }

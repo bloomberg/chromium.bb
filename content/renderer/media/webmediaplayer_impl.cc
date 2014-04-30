@@ -635,7 +635,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   if (video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
 
-  gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
   if (mailbox_holder->texture_target != GL_TEXTURE_2D)
     return false;
 
@@ -682,6 +682,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
 
   web_graphics_context->deleteTexture(source_texture);
   web_graphics_context->flush();
+  video_frame->AppendReleaseSyncPoint(web_graphics_context->insertSyncPoint());
   return true;
 }
 

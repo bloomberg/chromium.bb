@@ -282,7 +282,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 static void ReturnTexture(const scoped_refptr<media::VideoFrame>& frame,
                           uint32 sync_point,
                           bool lost_resource) {
-  frame->mailbox_holder()->sync_point = sync_point;
+  frame->AppendReleaseSyncPoint(sync_point);
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -296,7 +296,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   if (!context_provider_)
     return VideoFrameExternalResources();
 
-  gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
   VideoFrameExternalResources external_resources;
   switch (mailbox_holder->texture_target) {
     case GL_TEXTURE_2D:

@@ -71,10 +71,10 @@ const char* kMediaEme = "Media.EME.";
 void OnReleaseTexture(
     const scoped_refptr<content::StreamTextureFactory>& factories,
     uint32 texture_id,
-    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
+    const std::vector<uint32>& release_sync_points) {
   GLES2Interface* gl = factories->ContextGL();
-  if (mailbox_holder->sync_point)
-    gl->WaitSyncPointCHROMIUM(mailbox_holder->sync_point);
+  for (size_t i = 0; i < release_sync_points.size(); i++)
+    gl->WaitSyncPointCHROMIUM(release_sync_points[i]);
   gl->DeleteTextures(1, &texture_id);
 }
 }  // namespace
@@ -468,7 +468,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   if (!video_frame ||
       video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
-  gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
   DCHECK((!is_remote_ &&
           mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES) ||
          (is_remote_ && mailbox_holder->texture_target == GL_TEXTURE_2D));
@@ -516,6 +516,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     web_graphics_context->bindTexture(GL_TEXTURE_2D, texture);
   web_graphics_context->deleteTexture(source_texture);
   web_graphics_context->flush();
+  video_frame->AppendReleaseSyncPoint(web_graphics_context->insertSyncPoint());
   return true;
 }
 

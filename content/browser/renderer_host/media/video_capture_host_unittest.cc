@@ -151,7 +151,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   void ReturnReceivedDibs(int device_id)  {
     int handle = GetReceivedDib();
     while (handle) {
-      this->OnReceiveEmptyBuffer(device_id, handle, 0);
+      this->OnReceiveEmptyBuffer(device_id, handle, std::vector<uint32>());
       handle = GetReceivedDib();
     }
   }
@@ -239,7 +239,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 
     OnBufferFilled(device_id, buffer_id, frame_format, timestamp);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(device_id, buffer_id, 0);
+      VideoCaptureHost::OnReceiveEmptyBuffer(
+          device_id, buffer_id, std::vector<uint32>());
     }
   }
 
@@ -252,7 +253,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
         device_id, buffer_id, mailbox_holder, format, timestamp);
     if (return_buffers_) {
       VideoCaptureHost::OnReceiveEmptyBuffer(
-          device_id, buffer_id, mailbox_holder.sync_point);
+          device_id, buffer_id, std::vector<uint32>());
     }
   }
 

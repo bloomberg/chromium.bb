@@ -251,7 +251,7 @@ void VideoCaptureController::ReturnBuffer(
     const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
-    uint32 sync_point) {
+    const std::vector<uint32>& sync_points) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
@@ -267,8 +267,10 @@ void VideoCaptureController::ReturnBuffer(
   scoped_refptr<media::VideoFrame> frame = iter->second;
   client->active_buffers.erase(iter);
 
-  if (frame->format() == media::VideoFrame::NATIVE_TEXTURE)
-    frame->mailbox_holder()->sync_point = sync_point;
+  if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
+    for (size_t i = 0; i < sync_points.size(); i++)
+      frame->AppendReleaseSyncPoint(sync_points[i]);
+  }
 
   buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
 }

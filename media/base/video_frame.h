@@ -5,9 +5,12 @@
 #ifndef MEDIA_BASE_VIDEO_FRAME_H_
 #define MEDIA_BASE_VIDEO_FRAME_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/md5.h"
 #include "base/memory/shared_memory.h"
+#include "base/synchronization/lock.h"
 #include "media/base/buffers.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -80,7 +83,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // CB to be called on the mailbox backing this frame when the frame is
   // destroyed.
-  typedef base::Callback<void(scoped_ptr<gpu::MailboxHolder>)> ReleaseMailboxCB;
+  typedef base::Callback<void(const std::vector<uint32>&)> ReleaseMailboxCB;
 
   // Wraps a native texture of the given parameters with a VideoFrame.  The
   // backing of the VideoFrame is held in the mailbox held by |mailbox_holder|,
@@ -204,7 +207,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the mailbox holder of the native texture wrapped by this frame.
   // Only valid to call if this is a NATIVE_TEXTURE frame. Before using the
   // mailbox, the caller must wait for the included sync point.
-  gpu::MailboxHolder* mailbox_holder() const;
+  const gpu::MailboxHolder* mailbox_holder() const;
 
   // Returns the shared-memory handle, if present
   base::SharedMemoryHandle shared_memory_handle() const;
@@ -219,6 +222,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     timestamp_ = timestamp;
   }
 
+  // Append |sync_point| into |release_sync_points_| which will be passed to
+  // the video decoder when |mailbox_holder_release_cb_| is called so that
+  // the video decoder waits for the sync points before reusing the mailbox.
+  // Multiple clients can append multiple sync points on one frame.
+  // This method is thread safe. Both blink and compositor threads can call it.
+  void AppendReleaseSyncPoint(uint32 sync_point);
+
   // Used to keep a running hash of seen frames.  Expects an initialized MD5
   // context.  Calls MD5Update with the context and the contents of the frame.
   void HashFrameForTesting(base::MD5Context* context);
@@ -230,6 +240,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gfx::Size& coded_size,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
+             scoped_ptr<gpu::MailboxHolder> mailbox_holder,
              base::TimeDelta timestamp,
              bool end_of_stream);
   virtual ~VideoFrame();
@@ -267,7 +278,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   uint8* data_[kMaxPlanes];
 
   // Native texture mailbox, if this is a NATIVE_TEXTURE frame.
-  scoped_ptr<gpu::MailboxHolder> mailbox_holder_;
+  const scoped_ptr<gpu::MailboxHolder> mailbox_holder_;
   ReleaseMailboxCB mailbox_holder_release_cb_;
   ReadPixelsCB read_pixels_cb_;
 
@@ -277,6 +288,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::Closure no_longer_needed_cb_;
 
   base::TimeDelta timestamp_;
+
+  base::Lock release_sync_point_lock_;
+  std::vector<uint32> release_sync_points_;
 
   const bool end_of_stream_;
 

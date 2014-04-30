@@ -125,7 +125,9 @@ class CONTENT_EXPORT VideoCaptureHost
 
   // IPC message: Receive an empty buffer from renderer. Send it to device
   // referenced by |device_id|.
-  void OnReceiveEmptyBuffer(int device_id, int buffer_id, uint32 sync_point);
+  void OnReceiveEmptyBuffer(int device_id,
+                            int buffer_id,
+                            const std::vector<uint32>& sync_points);
 
   // IPC message: Get supported formats referenced by |capture_session_id|.
   // |device_id| is needed for message back-routing purposes.

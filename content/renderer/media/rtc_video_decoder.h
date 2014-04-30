@@ -28,10 +28,6 @@ class WaitableEvent;
 class MessageLoopProxy;
 };
 
-namespace gpu {
-struct MailboxHolder;
-}
-
 namespace media {
 class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
@@ -156,7 +152,7 @@ class CONTENT_EXPORT RTCVideoDecoder
       const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
       int64 picture_buffer_id,
       uint32 texture_id,
-      scoped_ptr<gpu::MailboxHolder> mailbox_holder);
+      const std::vector<uint32>& release_sync_points);
   // Tells VDA that a picture buffer can be recycled.
   void ReusePictureBuffer(int64 picture_buffer_id);
 
