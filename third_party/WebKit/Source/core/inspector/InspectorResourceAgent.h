@@ -51,7 +51,6 @@ class DocumentLoader;
 class FormData;
 class LocalFrame;
 class HTTPHeaderMap;
-class InspectorClient;
 class InspectorFrontend;
 class InspectorPageAgent;
 class InstrumentingAgents;
@@ -74,9 +73,9 @@ typedef String ErrorString;
 
 class InspectorResourceAgent FINAL : public InspectorBaseAgent<InspectorResourceAgent>, public InspectorBackendDispatcher::NetworkCommandHandler {
 public:
-    static PassOwnPtr<InspectorResourceAgent> create(InspectorPageAgent* pageAgent, InspectorClient* client)
+    static PassOwnPtr<InspectorResourceAgent> create(InspectorPageAgent* pageAgent)
     {
-        return adoptPtr(new InspectorResourceAgent(pageAgent, client));
+        return adoptPtr(new InspectorResourceAgent(pageAgent));
     }
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
@@ -137,9 +136,7 @@ public:
     virtual void replayXHR(ErrorString*, const String& requestId) OVERRIDE;
 
     virtual void canClearBrowserCache(ErrorString*, bool*) OVERRIDE;
-    virtual void clearBrowserCache(ErrorString*) OVERRIDE;
     virtual void canClearBrowserCookies(ErrorString*, bool*) OVERRIDE;
-    virtual void clearBrowserCookies(ErrorString*) OVERRIDE;
     virtual void setCacheDisabled(ErrorString*, bool cacheDisabled) OVERRIDE;
 
     virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>) OVERRIDE;
@@ -148,12 +145,11 @@ public:
     bool fetchResourceContent(LocalFrame*, const KURL&, String* content, bool* base64Encoded);
 
 private:
-    InspectorResourceAgent(InspectorPageAgent*, InspectorClient*);
+    InspectorResourceAgent(InspectorPageAgent*);
 
     void enable();
 
     InspectorPageAgent* m_pageAgent;
-    InspectorClient* m_client;
     InspectorFrontend::Network* m_frontend;
     String m_userAgentOverride;
     OwnPtr<NetworkResourcesData> m_resourcesData;

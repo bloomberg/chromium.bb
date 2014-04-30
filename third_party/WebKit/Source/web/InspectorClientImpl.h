@@ -56,9 +56,6 @@ public:
 
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
 
-    virtual void clearBrowserCache() OVERRIDE;
-    virtual void clearBrowserCookies() OVERRIDE;
-
     virtual void overrideDeviceMetrics(int, int, float, bool, bool) OVERRIDE;
     virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
 

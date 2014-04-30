@@ -149,7 +149,7 @@ void InspectorController::initializeDeferredAgents()
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
     InspectorOverlay* overlay = m_overlay.get();
 
-    OwnPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent, m_inspectorClient));
+    OwnPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent));
     InspectorResourceAgent* resourceAgent = resourceAgentPtr.get();
     m_agents.append(resourceAgentPtr.release());
 

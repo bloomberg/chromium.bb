@@ -633,16 +633,6 @@ void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
     m_client->saveAgentRuntimeState(state);
 }
 
-void WebDevToolsAgentImpl::clearBrowserCache()
-{
-    m_client->clearBrowserCache();
-}
-
-void WebDevToolsAgentImpl::clearBrowserCookies()
-{
-    m_client->clearBrowserCookies();
-}
-
 void WebDevToolsAgentImpl::setProcessId(long processId)
 {
     inspectorController()->setProcessId(processId);

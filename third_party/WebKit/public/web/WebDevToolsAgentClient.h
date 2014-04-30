@@ -61,9 +61,6 @@ public:
     };
     virtual WebKitClientMessageLoop* createClientMessageLoop() { return 0; }
 
-    virtual void clearBrowserCache() { }
-    virtual void clearBrowserCookies() { }
-
     class AllocatedObjectVisitor {
     public:
         virtual bool visitObject(const void* ptr) = 0;

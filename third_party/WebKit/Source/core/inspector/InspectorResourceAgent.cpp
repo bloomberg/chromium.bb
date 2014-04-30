@@ -43,7 +43,6 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -709,19 +708,9 @@ void InspectorResourceAgent::canClearBrowserCache(ErrorString*, bool* result)
     *result = true;
 }
 
-void InspectorResourceAgent::clearBrowserCache(ErrorString*)
-{
-    m_client->clearBrowserCache();
-}
-
 void InspectorResourceAgent::canClearBrowserCookies(ErrorString*, bool* result)
 {
     *result = true;
-}
-
-void InspectorResourceAgent::clearBrowserCookies(ErrorString*)
-{
-    m_client->clearBrowserCookies();
 }
 
 void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
@@ -820,10 +809,9 @@ bool InspectorResourceAgent::fetchResourceContent(LocalFrame* frame, const KURL&
     return false;
 }
 
-InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent, InspectorClient* client)
+InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorResourceAgent>("Network")
     , m_pageAgent(pageAgent)
-    , m_client(client)
     , m_frontend(0)
     , m_resourcesData(adoptPtr(new NetworkResourcesData()))
     , m_isRecalculatingStyle(false)

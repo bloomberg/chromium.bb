@@ -90,18 +90,6 @@ void InspectorClientImpl::updateInspectorStateCookie(const WTF::String& inspecto
         agent->updateInspectorStateCookie(inspectorState);
 }
 
-void InspectorClientImpl::clearBrowserCache()
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->clearBrowserCache();
-}
-
-void InspectorClientImpl::clearBrowserCookies()
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->clearBrowserCookies();
-}
-
 void InspectorClientImpl::overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
