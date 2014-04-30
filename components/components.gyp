@@ -35,6 +35,7 @@
     'precache.gypi',
     'query_parser.gypi',
     'rappor.gypi',
+    'search_provider_logos.gypi',
     'signin.gypi',
     'startup_metric_utils.gypi',
     'translate.gypi',

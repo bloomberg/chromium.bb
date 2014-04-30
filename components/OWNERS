@@ -102,6 +102,9 @@ per-file query_parser*=droger@chromium.org
 per-file rappor*=asvitkine@chromium.org
 # OWNER-to-be: per-file rappor*=holte@chromium.org
 
+per-file search_provider_logos*=newt@chromium.org
+per-file search_provider_logos*=justincohen@chromium.org
+
 per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org
 
