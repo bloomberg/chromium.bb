@@ -3518,10 +3518,8 @@ void HTMLMediaElement::setControllerInternal(PassRefPtr<MediaController> control
 
     m_mediaController = controller;
 
-    if (m_mediaController) {
-        UseCounter::count(document(), UseCounter::HTMLMediaElementControllerNotNull);
+    if (m_mediaController)
         m_mediaController->addMediaElement(this);
-    }
 }
 
 void HTMLMediaElement::updateMediaController()

@@ -267,7 +267,6 @@ public:
         WebSocketURL = 255,
         WorkerSubjectToCSP = 257,
         WorkerAllowedByChildBlockedByScript = 258,
-        HTMLMediaElementControllerNotNull = 259,
         DeprecatedWebKitGradient = 260,
         DeprecatedWebKitLinearGradient = 261,
         DeprecatedWebKitRepeatingLinearGradient = 262,
