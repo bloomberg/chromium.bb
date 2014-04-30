@@ -49,9 +49,6 @@ namespace blink {
 class WebArrayBuffer;
 class WebString;
 
-// FIXME: Remove once Blink has rolled into Chromium.
-#define WEBCRYPTO_HAS_ERROR_TYPE 1
-
 enum WebCryptoErrorType {
     WebCryptoErrorTypeType,
     WebCryptoErrorTypeNotSupported,
