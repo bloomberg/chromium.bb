@@ -42,7 +42,11 @@ def GetArch():
   gyp_host_arch = re.search(
       'host_arch=([^ ]*)', os.environ.get('GYP_DEFINES', ''))
   if gyp_host_arch:
-    return gyp_host_arch.group(1)
+    arch = gyp_host_arch.group(1)
+    # This matches detect_host_arch.py.
+    if arch == 'x86_64':
+      return 'x64'
+    return arch
 
   return subprocess.check_output(['python', DETECT_HOST_ARCH]).strip()
 
