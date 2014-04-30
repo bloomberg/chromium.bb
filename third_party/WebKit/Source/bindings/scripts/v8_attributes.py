@@ -63,6 +63,9 @@ def generate_attribute(interface, attribute):
     is_reflect = 'Reflect' in extended_attributes
     if is_custom_element_callbacks or is_reflect:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
+    # [PerWorldBindings]
+    if 'PerWorldBindings' in extended_attributes:
+        assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
     # [RaisesException], [RaisesException=Setter]
     is_setter_raises_exception = (
         'RaisesException' in extended_attributes and

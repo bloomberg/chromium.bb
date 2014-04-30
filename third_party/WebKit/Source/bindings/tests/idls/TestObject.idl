@@ -186,8 +186,6 @@ interface TestObject {
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;
     [NotEnumerable] attribute long notEnumerableLongAttribute;
     [PerContextEnabled=FeatureName] attribute long perContextEnabledLongAttribute;
-    [PerWorldBindings] attribute long perWorldBindingsLongAttribute;
-    [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute; // Separate read only attribute to check attribute configuration
     [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [LogActivity, LogAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
     [LogActivity, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;

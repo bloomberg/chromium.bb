@@ -36,8 +36,8 @@ interface Attr : Node {
 
     // DOM 4
 
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString prefix;
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString prefix;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString namespaceURI;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString localName;
 };
 

@@ -36,11 +36,11 @@
     const unsigned short      DOCUMENT_FRAGMENT_NODE         = 11;
     const unsigned short      NOTATION_NODE                  = 12;
 
-    [PerWorldBindings] readonly attribute DOMString nodeName;
+    readonly attribute DOMString nodeName;
 
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, CustomElementCallbacks] attribute DOMString nodeValue;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString nodeValue;
 
-    [PerWorldBindings] readonly attribute unsigned short   nodeType;
+    readonly attribute unsigned short   nodeType;
     [PerWorldBindings] readonly attribute Node             parentNode;
     [PerWorldBindings] readonly attribute NodeList         childNodes;
     [PerWorldBindings] readonly attribute Node             firstChild;
@@ -60,13 +60,13 @@
     [CustomElementCallbacks] void normalize();
 
     // Introduced in DOM Level 2:
-    [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Moved to Element and Attr in DOM4.
-    [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeLocalName] readonly attribute DOMString localName; // Moved to Element and Attr in DOM4.
+    [TreatReturnedNullStringAs=Null, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Moved to Element and Attr in DOM4.
+    [TreatReturnedNullStringAs=Null, MeasureAs=NodeLocalName] readonly attribute DOMString localName; // Moved to Element and Attr in DOM4.
 
     // Introduced in DOM Level 3:
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString baseURI;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString baseURI;
 
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, CustomElementCallbacks] attribute DOMString textContent;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString textContent;
 
     [MeasureAs=NodeIsSameNode] boolean isSameNode([Default=Undefined] optional Node other); // Removed in DOM4.
     boolean isEqualNode(Node other);

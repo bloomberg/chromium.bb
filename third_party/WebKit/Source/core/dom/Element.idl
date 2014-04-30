@@ -24,7 +24,7 @@
 
     // DOM Level 1 Core
 
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString tagName;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString tagName;
 
     [TreatReturnedNullStringAs=Null] DOMString getAttribute(DOMString name);
     [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
@@ -52,33 +52,33 @@
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // DOM4
-    [Reflect, PerWorldBindings] attribute DOMString id;
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, RaisesException=Setter] attribute DOMString prefix;
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
+    [Reflect] attribute DOMString id;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString namespaceURI;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter] attribute DOMString prefix;
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString localName;
 
     [RaisesException] boolean matches(DOMString selectors);
 
     // Common extensions
 
-    [PerWorldBindings] readonly attribute long offsetLeft;
-    [PerWorldBindings] readonly attribute long offsetTop;
-    [PerWorldBindings] readonly attribute long offsetWidth;
-    [PerWorldBindings] readonly attribute long offsetHeight;
+    readonly attribute long offsetLeft;
+    readonly attribute long offsetTop;
+    readonly attribute long offsetWidth;
+    readonly attribute long offsetHeight;
     [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element offsetParent;
-    [PerWorldBindings] readonly attribute long clientLeft;
-    [PerWorldBindings] readonly attribute long clientTop;
-    [PerWorldBindings] readonly attribute long clientWidth;
-    [PerWorldBindings] readonly attribute long clientHeight;
+    readonly attribute long clientLeft;
+    readonly attribute long clientTop;
+    readonly attribute long clientWidth;
+    readonly attribute long clientHeight;
 
     // FIXME: should be:
-    // [PerWorldBindings] attribute (Dictionary or long) scrollLeft;
-    // [PerWorldBindings] attribute (Dictionary or long) scrollTop;
+    // attribute (Dictionary or long) scrollLeft;
+    // attribute (Dictionary or long) scrollTop;
     // http://crbug.com/240176
-    [PerWorldBindings, Custom=Setter] attribute long scrollLeft;
-    [PerWorldBindings, Custom=Setter] attribute long scrollTop;
-    [PerWorldBindings] readonly attribute long scrollWidth;
-    [PerWorldBindings] readonly attribute long scrollHeight;
+    [Custom=Setter] attribute long scrollLeft;
+    [Custom=Setter] attribute long scrollTop;
+    readonly attribute long scrollWidth;
+    readonly attribute long scrollHeight;
 
     void focus();
     void blur();
@@ -99,7 +99,7 @@
     [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText(DOMString where, DOMString text);
     [CustomElementCallbacks, RaisesException, MeasureAs=InsertAdjacentHTML] void insertAdjacentHTML(DOMString where, DOMString html);
 
-    [Reflect=class, PerWorldBindings] attribute DOMString className;
+    [Reflect=class] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;
 
     [PerWorldBindings] readonly attribute DOMStringMap dataset;

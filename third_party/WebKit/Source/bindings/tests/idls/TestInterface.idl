@@ -58,7 +58,6 @@
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodDoubleArgFloatArg(double doubleArg, float floatArg);
     void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestricted double unrestrictedDoubleArg, unrestricted float unrestrictedFloatArg);
-    [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
     [PerWorldBindings] void voidMethod();
 
     // Anonymous indexed property operations

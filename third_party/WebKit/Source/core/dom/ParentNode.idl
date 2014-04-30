@@ -35,7 +35,7 @@
     [PerWorldBindings] readonly attribute HTMLCollection children;
     [PerWorldBindings] readonly attribute Element firstElementChild;
     [PerWorldBindings] readonly attribute Element lastElementChild;
-    [PerWorldBindings] readonly attribute unsigned long childElementCount;
+    readonly attribute unsigned long childElementCount;
 
     // NodeSelector - Selector API
     [RaisesException] Element querySelector(DOMString selectors);
