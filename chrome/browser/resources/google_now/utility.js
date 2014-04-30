@@ -193,7 +193,9 @@ var errorReported = false;
  */
 function reportError(error) {
   var message = 'Critical error:\n' + error.stack;
-  console.error(message);
+  if (isInDebugMode())
+    console.error(message);
+
   if (!errorReported) {
     errorReported = true;
     chrome.metricsPrivate.getIsCrashReportingEnabled(function(isEnabled) {
