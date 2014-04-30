@@ -76,7 +76,7 @@ only lowercase.
 """
 
 import copy
-import os
+import os.path
 import posixpath
 import subprocess
 
@@ -102,6 +102,39 @@ def NormalizePath(path):
   return os.path.normcase(path).replace(os.path.sep, posixpath.sep)
 
 
+def _GitSourceDirectories(base_directory):
+  """Returns set of normalized paths to subdirectories containing sources
+  managed by git."""
+  if not os.path.exists(os.path.join(base_directory, '.git')):
+    return set()
+
+  base_dir_norm = NormalizePath(base_directory)
+  git_source_directories = set([base_dir_norm])
+
+  git_ls_files_cmd = ['git', 'ls-files']
+  # FIXME: Use a context manager in Python 3.2+
+  popen = subprocess.Popen(git_ls_files_cmd,
+                           stdout=subprocess.PIPE,
+                           bufsize=1,  # line buffering, since read by line
+                           cwd=base_directory)
+  try:
+    try:
+      for line in popen.stdout:
+        dir_path = os.path.join(base_directory, os.path.dirname(line))
+        dir_path_norm = NormalizePath(dir_path)
+        # Add the directory as well as all the parent directories,
+        # stopping once we reach an already-listed directory.
+        while dir_path_norm not in git_source_directories:
+          git_source_directories.add(dir_path_norm)
+          dir_path_norm = posixpath.dirname(dir_path_norm)
+    finally:
+      popen.stdout.close()
+  finally:
+    popen.wait()
+
+  return git_source_directories
+
+
 class DepsBuilder(object):
   """Parses include_rules from DEPS files."""
 
@@ -121,15 +154,15 @@ class DepsBuilder(object):
     """
     base_directory = (base_directory or
                       os.path.join(os.path.dirname(__file__),
-                                   os.pardir, os.pardir))
+                                   os.path.pardir, os.path.pardir))
     self.base_directory = os.path.abspath(base_directory)  # Local absolute path
     self.verbose = verbose
     self._under_test = being_tested
     self._ignore_temp_rules = ignore_temp_rules
     self._ignore_specific_rules = ignore_specific_rules
 
-    self.git_source_directories = set()  # Normalized paths
-    self._AddGitSourceDirectories()
+    # Set of normalized paths
+    self.git_source_directories = _GitSourceDirectories(self.base_directory)
 
     # Map of normalized directory paths to rules to use for those
     # directories, or None for directories that should be skipped.
@@ -205,7 +238,7 @@ class DepsBuilder(object):
   def _ApplyDirectoryRules(self, existing_rules, dir_path_local_abs):
     """Combines rules from the existing rules and the new directory.
 
-    Any directory can contain a DEPS file. Toplevel DEPS files can contain
+    Any directory can contain a DEPS file. Top-level DEPS files can contain
     module dependencies which are used by gclient. We use these, along with
     additional include rules and implicit rules for the given directory, to
     come up with a combined set of rules to apply for the directory.
@@ -214,17 +247,18 @@ class DepsBuilder(object):
       existing_rules: The rules for the parent directory. We'll add-on to these.
       dir_path_local_abs: The directory path that the DEPS file may live in (if
                           it exists). This will also be used to generate the
-                          implicit rules. This is a local, non-normalized path.
+                          implicit rules. This is a local path.
 
-    Returns: A tuple containing: (1) the combined set of rules to apply to the
-             sub-tree, and (2) a list of all subdirectories that should NOT be
-             checked, as specified in the DEPS file (if any). Subdirectories
-             are single words, hence no OS-dependence.
+    Returns: A 2-tuple of:
+      (1) the combined set of rules to apply to the sub-tree,
+      (2) a list of all subdirectories that should NOT be checked, as specified
+          in the DEPS file (if any).
+          Subdirectories are single words, hence no OS dependence.
     """
     dir_path_norm = NormalizePath(dir_path_local_abs)
 
-    # Check for a .svn directory in this directory or check this directory is
-    # contained in git source direcotries. This will tell us if it's a source
+    # Check for a .svn directory in this directory or that this directory is
+    # contained in git source directories. This will tell us if it's a source
     # directory and should be checked.
     if not (os.path.exists(os.path.join(dir_path_local_abs, '.svn')) or
             dir_path_norm in self.git_source_directories):
@@ -339,21 +373,3 @@ class DepsBuilder(object):
       # directory should also be skipped.
       self.directory_rules[dir_path_norm] = None
     return self.directory_rules[dir_path_norm]
-
-  def _AddGitSourceDirectories(self):
-    """Adds any directories containing sources managed by git to
-    self.git_source_directories.
-    """
-    if not os.path.exists(os.path.join(self.base_directory, '.git')):
-      return
-
-    popen_out = os.popen('cd %s && git ls-files --full-name .' %
-                         subprocess.list2cmdline([self.base_directory]))
-    for line in popen_out.readlines():
-      dir_path = os.path.join(self.base_directory, os.path.dirname(line))
-      # Add the directory as well as all the parent directories. Use
-      # forward slashes and lower case to normalize paths.
-      while dir_path != self.base_directory:
-        self.git_source_directories.add(NormalizePath(dir_path))
-        dir_path = os.path.dirname(dir_path)
-    self.git_source_directories.add(NormalizePath(self.base_directory))
