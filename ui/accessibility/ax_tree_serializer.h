@@ -293,9 +293,7 @@ void AXTreeSerializer<AXSourceNode>::SerializeChanges(
   AXSourceNode lca = LeastCommonAncestor(node);
 
   if (client_root_) {
-    // If the LCA is anything other than the node itself, tell the
-    // client to first delete the subtree rooted at the LCA.
-    bool need_delete = !tree_->IsEqual(lca, node);
+    bool need_delete = false;
     if (tree_->IsValid(lca)) {
       // Check for any reparenting within this subtree - if there is
       // any, we need to delete and reserialize the whole subtree
