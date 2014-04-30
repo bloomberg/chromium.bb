@@ -419,9 +419,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   //   ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK
   //     Indicates that this is a response to a ViewMsg_Resize message.
   //
-  //   ViewHostMsg_UpdateRect_Flags::IS_RESTORE_ACK
-  //     Indicates that this is a response to a ViewMsg_WasShown message.
-  //
   //   ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK
   //     Indicates that this is a response to a ViewMsg_Repaint message.
   //
@@ -611,9 +608,8 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
 
 // Tells the render view that it is no longer hidden (see WasHidden), and the
 // render view is expected to respond with a full repaint if needs_repainting
-// is true.  In that case, the generated ViewHostMsg_UpdateRect message will
-// have the IS_RESTORE_ACK flag set.  If needs_repainting is false, then this
-// message does not trigger a message in response.
+// is true. If needs_repainting is false, then this message does not trigger a
+// message in response.
 IPC_MESSAGE_ROUTED1(ViewMsg_WasShown,
                     bool /* needs_repainting */)
 

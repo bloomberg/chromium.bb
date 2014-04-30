@@ -370,7 +370,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       is_hidden_(hidden),
       never_visible_(never_visible),
       is_fullscreen_(false),
-      needs_repainting_on_restore_(false),
       has_focus_(false),
       handling_input_event_(false),
       handling_ime_event_(false),
@@ -667,9 +666,6 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   is_fullscreen_ = is_fullscreen;
 
   if (size_ != new_size) {
-    // TODO(darin): We should not need to reset this here.
-    needs_repainting_on_restore_ = false;
-
     size_ = new_size;
 
     has_frame_pending_ = false;
@@ -800,13 +796,8 @@ void RenderWidget::OnWasShown(bool needs_repainting) {
   // See OnWasHidden
   SetHidden(false);
 
-  if (!needs_repainting && !needs_repainting_on_restore_)
+  if (!needs_repainting)
     return;
-  needs_repainting_on_restore_ = false;
-
-  // Tag the next paint as a restore ack, which is picked up by
-  // DoDeferredUpdate when it sends out the next PaintRect message.
-  set_next_paint_is_restore_ack();
 
   // Generate a full repaint.
   if (!is_accelerated_compositing_active_) {
@@ -1857,16 +1848,8 @@ bool RenderWidget::next_paint_is_resize_ack() const {
   return ViewHostMsg_UpdateRect_Flags::is_resize_ack(next_paint_flags_);
 }
 
-bool RenderWidget::next_paint_is_restore_ack() const {
-  return ViewHostMsg_UpdateRect_Flags::is_restore_ack(next_paint_flags_);
-}
-
 void RenderWidget::set_next_paint_is_resize_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
-}
-
-void RenderWidget::set_next_paint_is_restore_ack() {
-  next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_RESTORE_ACK;
 }
 
 void RenderWidget::set_next_paint_is_repaint_ack() {

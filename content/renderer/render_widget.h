@@ -416,9 +416,7 @@ class CONTENT_EXPORT RenderWidget
   void DidToggleFullscreen();
 
   bool next_paint_is_resize_ack() const;
-  bool next_paint_is_restore_ack() const;
   void set_next_paint_is_resize_ack();
-  void set_next_paint_is_restore_ack();
   void set_next_paint_is_repaint_ack();
 
   // Override point to obtain that the current input method state and caret
@@ -580,13 +578,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates that we are in fullscreen mode.
   bool is_fullscreen_;
-
-  // Indicates that we should be repainted when restored.  This flag is set to
-  // true if we receive an invalidation / scroll event from webkit while our
-  // is_hidden_ flag is set to true.  This is used to force a repaint once we
-  // restore to account for the fact that our host would not know about the
-  // invalidation / scroll event(s) from webkit while we are hidden.
-  bool needs_repainting_on_restore_;
 
   // Indicates whether we have been focused/unfocused by the browser.
   bool has_focus_;
