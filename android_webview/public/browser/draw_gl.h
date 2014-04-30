@@ -15,6 +15,8 @@ struct AwDrawGLInfo {
   enum Mode {
     kModeDraw,
     kModeProcess,
+    kModeProcessNoContext,
+    kModeSync,
   } mode;
 
   // Input: current clip rect in surface coordinates. Reflects the current state

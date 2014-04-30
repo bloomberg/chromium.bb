@@ -73,7 +73,6 @@ HardwareRenderer::~HardwareRenderer() {
 bool HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info, DrawGLResult* result) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
   GLViewRendererManager::GetInstance()->DidDrawGL(manager_key_);
-  const DrawGLInput input = shared_renderer_state_->GetDrawGLInput();
 
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
@@ -90,8 +89,11 @@ bool HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info, DrawGLResult* result) {
   ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW);
   internal::ScopedAllowGL allow_gl;
 
-  if (draw_info->mode == AwDrawGLInfo::kModeProcess)
+  if (draw_info->mode != AwDrawGLInfo::kModeDraw)
     return false;
+
+  // Should only need to access SharedRendererState in kModeDraw and kModeSync.
+  const DrawGLInput input = shared_renderer_state_->GetDrawGLInput();
 
   // Update memory budget. This will no-op in compositor if the policy has not
   // changed since last draw.
