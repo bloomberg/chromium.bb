@@ -777,6 +777,8 @@
         'browser/ui/cocoa/extensions/extension_view_mac.mm',
         'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h',
         'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.mm',
+        'browser/ui/cocoa/extensions/media_gallery_list_entry_view.h',
+        'browser/ui/cocoa/extensions/media_gallery_list_entry_view.mm',
         'browser/ui/cocoa/extensions/media_galleries_scan_result_dialog_cocoa.h',
         'browser/ui/cocoa/extensions/media_galleries_scan_result_dialog_cocoa.mm',
         'browser/ui/cocoa/extensions/windowed_install_dialog_controller.h',

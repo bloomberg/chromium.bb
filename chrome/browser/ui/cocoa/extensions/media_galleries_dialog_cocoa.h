@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
+#import "chrome/browser/ui/cocoa/extensions/media_gallery_list_entry_view.h"
 
 @class ConstrainedWindowAlert;
 @class MediaGalleriesCocoaController;
@@ -24,7 +25,8 @@ class MenuModel;
 // This class displays an alert that can be used to grant permission for
 // extensions to access a gallery (media folders).
 class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
-                                  public MediaGalleriesDialog {
+                                  public MediaGalleriesDialog,
+                                  public MediaGalleryListEntryController {
  public:
   MediaGalleriesDialogCocoa(
       MediaGalleriesDialogController* controller,
@@ -37,8 +39,6 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   void OnCancelClicked();
   // Called when the user clicks the Add Gallery button.
   void OnAddFolderClicked();
-  // Called when the user toggles a gallery checkbox.
-  void OnCheckboxToggled(NSButton* checkbox);
 
   // MediaGalleriesDialog implementation:
   virtual void UpdateGalleries() OVERRIDE;
@@ -47,7 +47,10 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
-  ui::MenuModel* GetContextMenu(GalleryDialogId gallery_id);
+  // MediaGalleryListEntryController implementation.
+  virtual void OnCheckboxToggled(GalleryDialogId gallery_id,
+                                 bool checked) OVERRIDE;
+  virtual ui::MenuModel* GetContextMenu(GalleryDialogId gallery_id) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
@@ -76,9 +79,6 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
 
   // True if the user has pressed accept.
   bool accepted_;
-
-  // List of checkboxes ordered from bottom to top.
-  base::scoped_nsobject<NSMutableArray> checkboxes_;
 
   // Container view for checkboxes.
   base::scoped_nsobject<NSView> checkbox_container_;

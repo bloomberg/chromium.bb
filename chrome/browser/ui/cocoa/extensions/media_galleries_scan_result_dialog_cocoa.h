@@ -9,6 +9,7 @@
 
 #include "chrome/browser/media_galleries/media_galleries_scan_result_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
+#import "chrome/browser/ui/cocoa/extensions/media_gallery_list_entry_view.h"
 
 @class ConstrainedWindowAlert;
 @class MediaGalleriesScanResultCocoaController;
@@ -22,7 +23,8 @@ class MenuModel;
 // (media folders) the app (extension) should have access to.
 class MediaGalleriesScanResultDialogCocoa
     : public ConstrainedWindowMacDelegate,
-      public MediaGalleriesScanResultDialog {
+      public MediaGalleriesScanResultDialog,
+      public MediaGalleryListEntryController {
  public:
   MediaGalleriesScanResultDialogCocoa(
       MediaGalleriesScanResultDialogController* controller,
@@ -33,10 +35,6 @@ class MediaGalleriesScanResultDialogCocoa
   void OnAcceptClicked();
   // Called when the user clicks the cancel button.
   void OnCancelClicked();
-  // Called when the user toggles a gallery checkbox.
-  void OnCheckboxToggled(NSButton* checkbox);
-  // Called when the user toggles a gallery checkbox.
-  void OnFolderViewClicked(NSButton* folder_viewer_button);
 
   // MediaGalleriesScanResultDialog implementation:
   virtual void UpdateResults() OVERRIDE;
@@ -45,20 +43,17 @@ class MediaGalleriesScanResultDialogCocoa
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
-  ui::MenuModel* GetContextMenu(MediaGalleryPrefId prefid);
+  // MediaGalleryListEntryController implementation.
+  virtual void OnCheckboxToggled(MediaGalleryPrefId prefId,
+                                 bool checked) OVERRIDE;
+  virtual void OnFolderViewerClicked(MediaGalleryPrefId prefId) OVERRIDE;
+  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId prefid) OVERRIDE;
 
  private:
   friend class MediaGalleriesScanResultDialogCocoaTest;
 
-  void UpdateScanResultCheckbox(const MediaGalleryPrefInfo& scan_result,
-                                bool checked,
-                                CGFloat y_pos);
-
   void InitDialogControls();
-  CGFloat CreateCheckboxes(
-      CGFloat y_pos,
-      const MediaGalleriesScanResultDialogController::OrderedScanResults&
-          scan_results);
+  CGFloat CreateCheckboxes();
 
   // MediaGalleriesScanResultDialog implementation:
   virtual void AcceptDialogForTesting() OVERRIDE;
@@ -71,9 +66,6 @@ class MediaGalleriesScanResultDialogCocoa
 
   // True if the user has pressed accept.
   bool accepted_;
-
-  // List of checkboxes ordered from bottom to top.
-  base::scoped_nsobject<NSMutableArray> checkboxes_;
 
   // Container view for checkboxes.
   base::scoped_nsobject<NSView> checkbox_container_;
