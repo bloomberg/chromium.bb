@@ -819,7 +819,7 @@ void ContainerNode::focusStateChanged()
     if (renderStyle()->affectedByFocus() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
         setNeedsStyleRecalc(SubtreeStyleChange);
     else if (isElementNode() && toElement(this)->childrenAffectedByFocus())
-        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
+        document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
     else if (renderStyle()->affectedByFocus())
         setNeedsStyleRecalc(LocalStyleChange);
 
@@ -841,7 +841,7 @@ void ContainerNode::setFocus(bool received)
 
     // If :focus sets display: none, we lose focus but still need to recalc our style.
     if (isElementNode() && toElement(this)->childrenAffectedByFocus())
-        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
+        document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
     else
         setNeedsStyleRecalc(LocalStyleChange);
 }
@@ -858,7 +858,7 @@ void ContainerNode::setActive(bool down)
         if (renderStyle()->affectedByActive() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange);
         else if (isElementNode() && toElement(this)->childrenAffectedByActive())
-            document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
+            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
         else if (renderStyle()->affectedByActive())
             setNeedsStyleRecalc(LocalStyleChange);
 
@@ -879,7 +879,7 @@ void ContainerNode::setHovered(bool over)
         if (over)
             return;
         if (isElementNode() && toElement(this)->childrenAffectedByHover())
-            document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
+            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
         else
             setNeedsStyleRecalc(LocalStyleChange);
         return;
@@ -888,7 +888,7 @@ void ContainerNode::setHovered(bool over)
     if (renderStyle()->affectedByHover() && renderStyle()->hasPseudoStyle(FIRST_LETTER))
         setNeedsStyleRecalc(SubtreeStyleChange);
     else if (isElementNode() && toElement(this)->childrenAffectedByHover())
-        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
+        document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
     else if (renderStyle()->affectedByHover())
         setNeedsStyleRecalc(LocalStyleChange);
 
