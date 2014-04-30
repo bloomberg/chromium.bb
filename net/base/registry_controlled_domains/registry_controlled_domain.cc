@@ -194,8 +194,7 @@ std::string GetDomainAndRegistryImpl(
 std::string GetDomainAndRegistry(
     const GURL& gurl,
     PrivateRegistryFilter filter) {
-  const url_parse::Component host =
-      gurl.parsed_for_possibly_invalid_spec().host;
+  const url::Component host = gurl.parsed_for_possibly_invalid_spec().host;
   if ((host.len <= 0) || gurl.HostIsIPAddress())
     return std::string();
   return GetDomainAndRegistryImpl(std::string(
@@ -205,7 +204,7 @@ std::string GetDomainAndRegistry(
 std::string GetDomainAndRegistry(
     const std::string& host,
     PrivateRegistryFilter filter) {
-  url_canon::CanonHostInfo host_info;
+  url::CanonHostInfo host_info;
   const std::string canon_host(CanonicalizeHost(host, &host_info));
   if (canon_host.empty() || host_info.IsIPAddress())
     return std::string();
@@ -224,10 +223,8 @@ bool SameDomainOrHost(
     return domain1 == domain2;
 
   // No domains.  See if the hosts are identical.
-  const url_parse::Component host1 =
-      gurl1.parsed_for_possibly_invalid_spec().host;
-  const url_parse::Component host2 =
-      gurl2.parsed_for_possibly_invalid_spec().host;
+  const url::Component host1 = gurl1.parsed_for_possibly_invalid_spec().host;
+  const url::Component host2 = gurl2.parsed_for_possibly_invalid_spec().host;
   if ((host1.len <= 0) || (host1.len != host2.len))
     return false;
   return !strncmp(gurl1.possibly_invalid_spec().data() + host1.begin,
@@ -239,8 +236,7 @@ size_t GetRegistryLength(
     const GURL& gurl,
     UnknownRegistryFilter unknown_filter,
     PrivateRegistryFilter private_filter) {
-  const url_parse::Component host =
-      gurl.parsed_for_possibly_invalid_spec().host;
+  const url::Component host = gurl.parsed_for_possibly_invalid_spec().host;
   if (host.len <= 0)
     return std::string::npos;
   if (gurl.HostIsIPAddress())
@@ -255,7 +251,7 @@ size_t GetRegistryLength(
     const std::string& host,
     UnknownRegistryFilter unknown_filter,
     PrivateRegistryFilter private_filter) {
-  url_canon::CanonHostInfo host_info;
+  url::CanonHostInfo host_info;
   const std::string canon_host(CanonicalizeHost(host, &host_info));
   if (canon_host.empty())
     return std::string::npos;

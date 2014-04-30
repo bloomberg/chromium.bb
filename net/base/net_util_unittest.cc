@@ -1091,7 +1091,7 @@ TEST(NetUtilTest, FormatUrl) {
 
 TEST(NetUtilTest, FormatUrlParsed) {
   // No unescape case.
-  url_parse::Parsed parsed;
+  url::Parsed parsed;
   base::string16 formatted = FormatUrl(
       GURL("http://\xE3\x82\xB0:\xE3\x83\xBC@xn--qcka1pmc.jp:8080/"
            "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),

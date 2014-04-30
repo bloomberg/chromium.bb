@@ -32,10 +32,9 @@ SocketStreamJob* SocketStreamJob::CreateSocketStreamJob(
   if (url.scheme() == "ws" && sts && sts->GetDomainState(
           url.host(), SSLConfigService::IsSNIAvailable(ssl), &domain_state) &&
       domain_state.ShouldUpgradeToSSL()) {
-    url_canon::Replacements<char> replacements;
+    url::Replacements<char> replacements;
     static const char kNewScheme[] = "wss";
-    replacements.SetScheme(kNewScheme,
-                           url_parse::Component(0, strlen(kNewScheme)));
+    replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
     socket_url = url.ReplaceComponents(replacements);
   }
   return SocketStreamJobManager::GetInstance()->CreateJob(

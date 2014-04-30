@@ -409,7 +409,7 @@ base::string16 IDNToUnicodeWithAdjustments(
 }
 
 // If |component| is valid, its begin is incremented by |delta|.
-void AdjustComponent(int delta, url_parse::Component* component) {
+void AdjustComponent(int delta, url::Component* component) {
   if (!component->is_valid())
     return;
 
@@ -418,7 +418,7 @@ void AdjustComponent(int delta, url_parse::Component* component) {
 }
 
 // Adjusts all the components of |parsed| by |delta|, except for the scheme.
-void AdjustAllComponentsButScheme(int delta, url_parse::Parsed* parsed) {
+void AdjustAllComponentsButScheme(int delta, url::Parsed* parsed) {
   AdjustComponent(delta, &(parsed->username));
   AdjustComponent(delta, &(parsed->password));
   AdjustComponent(delta, &(parsed->host));
@@ -434,7 +434,7 @@ base::string16 FormatViewSourceUrl(
     const std::string& languages,
     FormatUrlTypes format_types,
     UnescapeRule::Type unescape_rules,
-    url_parse::Parsed* new_parsed,
+    url::Parsed* new_parsed,
     size_t* prefix_end,
     base::OffsetAdjuster::Adjustments* adjustments) {
   DCHECK(new_parsed);
@@ -527,10 +527,10 @@ class NonHostComponentTransform : public AppendComponentTransform {
 // any) that reflect the transformation the original component underwent to
 // become the transformed value appended to |output|.
 void AppendFormattedComponent(const std::string& spec,
-                              const url_parse::Component& original_component,
+                              const url::Component& original_component,
                               const AppendComponentTransform& transform,
                               base::string16* output,
-                              url_parse::Component* output_component,
+                              url::Component* output_component,
                               base::OffsetAdjuster::Adjustments* adjustments) {
   DCHECK(output);
   if (original_component.is_nonempty()) {
@@ -635,7 +635,7 @@ base::string16 FormatUrlWithOffsets(
     const std::string& languages,
     FormatUrlTypes format_types,
     UnescapeRule::Type unescape_rules,
-    url_parse::Parsed* new_parsed,
+    url::Parsed* new_parsed,
     size_t* prefix_end,
     std::vector<size_t>* offsets_for_adjustment) {
   base::OffsetAdjuster::Adjustments adjustments;
@@ -657,16 +657,16 @@ base::string16 FormatUrlWithAdjustments(
     const std::string& languages,
     FormatUrlTypes format_types,
     UnescapeRule::Type unescape_rules,
-    url_parse::Parsed* new_parsed,
+    url::Parsed* new_parsed,
     size_t* prefix_end,
     base::OffsetAdjuster::Adjustments* adjustments) {
   DCHECK(adjustments != NULL);
   adjustments->clear();
-  url_parse::Parsed parsed_temp;
+  url::Parsed parsed_temp;
   if (!new_parsed)
     new_parsed = &parsed_temp;
   else
-    *new_parsed = url_parse::Parsed();
+    *new_parsed = url::Parsed();
 
   // Special handling for view-source:.  Don't use content::kViewSourceScheme
   // because this library shouldn't depend on chrome.
@@ -683,14 +683,13 @@ base::string16 FormatUrlWithAdjustments(
   // We handle both valid and invalid URLs (this will give us the spec
   // regardless of validity).
   const std::string& spec = url.possibly_invalid_spec();
-  const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
 
   // Scheme & separators.  These are ASCII.
   base::string16 url_string;
   url_string.insert(
       url_string.end(), spec.begin(),
-      spec.begin() + parsed.CountCharactersBefore(url_parse::Parsed::USERNAME,
-                                                  true));
+      spec.begin() + parsed.CountCharactersBefore(url::Parsed::USERNAME, true));
   const char kHTTP[] = "http://";
   const char kFTP[] = "ftp.";
   // URLFixerUpper::FixupURL() treats "ftp.foo.com" as ftp://ftp.foo.com.  This
@@ -721,7 +720,7 @@ base::string16 FormatUrlWithAdjustments(
             static_cast<size_t>(parsed.username.len + parsed.password.len + 2),
             0));
       } else {
-        const url_parse::Component* nonempty_component =
+        const url::Component* nonempty_component =
             parsed.username.is_nonempty() ? &parsed.username : &parsed.password;
         // The seeming off-by-one is to account for the '@' after the
         // username/password.
@@ -815,7 +814,7 @@ base::string16 FormatUrl(const GURL& url,
                          const std::string& languages,
                          FormatUrlTypes format_types,
                          UnescapeRule::Type unescape_rules,
-                         url_parse::Parsed* new_parsed,
+                         url::Parsed* new_parsed,
                          size_t* prefix_end,
                          size_t* offset_for_adjustment) {
   Offsets offsets;

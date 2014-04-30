@@ -39,10 +39,9 @@ typedef ProxyConfigServiceAndroid::GetPropertyCallback GetPropertyCallback;
 
 // Returns whether the provided string was successfully converted to a port.
 bool ConvertStringToPort(const std::string& port, int* output) {
-  url_parse::Component component(0, port.size());
-  int result = url_parse::ParsePort(port.c_str(), component);
-  if (result == url_parse::PORT_INVALID ||
-      result == url_parse::PORT_UNSPECIFIED)
+  url::Component component(0, port.size());
+  int result = url::ParsePort(port.c_str(), component);
+  if (result == url::PORT_INVALID || result == url::PORT_UNSPECIFIED)
     return false;
   *output = result;
   return true;

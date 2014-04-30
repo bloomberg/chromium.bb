@@ -124,12 +124,11 @@ GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,
                                               HostPortPair* endpoint) {
   const HostMappingRules* mapping_rules = GetHostMappingRules();
   if (mapping_rules && mapping_rules->RewriteHost(endpoint)) {
-    url_canon::Replacements<char> replacements;
+    url::Replacements<char> replacements;
     const std::string port_str = base::IntToString(endpoint->port());
-    replacements.SetPort(port_str.c_str(),
-                         url_parse::Component(0, port_str.size()));
+    replacements.SetPort(port_str.c_str(), url::Component(0, port_str.size()));
     replacements.SetHost(endpoint->host().c_str(),
-                         url_parse::Component(0, endpoint->host().size()));
+                         url::Component(0, endpoint->host().size()));
     return url.ReplaceComponents(replacements);
   }
   return url;

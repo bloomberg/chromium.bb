@@ -36,11 +36,11 @@ GURL AppendOrReplaceQueryParameter(const GURL& url,
   std::string param_value = EscapeQueryParamValue(value, true);
 
   const std::string input = url.query();
-  url_parse::Component cursor(0, input.size());
+  url::Component cursor(0, input.size());
   std::string output;
-  url_parse::Component key_range, value_range;
-  while (url_parse::ExtractQueryKeyValue(
-             input.data(), &cursor, &key_range, &value_range)) {
+  url::Component key_range, value_range;
+  while (url::ExtractQueryKeyValue(input.data(), &cursor, &key_range,
+                                   &value_range)) {
     const base::StringPiece key(
         input.data() + key_range.begin, key_range.len);
     const base::StringPiece value(
@@ -118,10 +118,8 @@ void QueryIterator::Advance() {
   key_.reset();
   value_.reset();
   unescaped_value_.clear();
-  at_end_ = !url_parse::ExtractQueryKeyValue(url_.spec().c_str(),
-                                             &query_,
-                                             &key_,
-                                             &value_);
+  at_end_ =
+      !url::ExtractQueryKeyValue(url_.spec().c_str(), &query_, &key_, &value_);
 }
 
 bool GetValueForKeyInQuery(const GURL& url,

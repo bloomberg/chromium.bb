@@ -51,7 +51,7 @@ bool CryptoUtils::IsValidSNI(StringPiece sni) {
   // based on the above spec, we may be losing some hostnames that windows
   // would consider valid. By far the most common hostname character NOT
   // accepted by the above spec is '_'.
-  url_canon::CanonHostInfo host_info;
+  url::CanonHostInfo host_info;
   string canonicalized_host(CanonicalizeHost(sni.as_string(), &host_info));
   return !host_info.IsIPAddress() &&
       IsCanonicalizedHostCompliant(canonicalized_host, std::string()) &&
@@ -60,7 +60,7 @@ bool CryptoUtils::IsValidSNI(StringPiece sni) {
 
 // static
 string CryptoUtils::NormalizeHostname(const char* hostname) {
-  url_canon::CanonHostInfo host_info;
+  url::CanonHostInfo host_info;
   string host(CanonicalizeHost(hostname, &host_info));
 
   // Walk backwards over the string, stopping at the first trailing dot.

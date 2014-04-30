@@ -162,10 +162,10 @@ std::string CanonicalCookie::GetCookieSourceFromURL(const GURL& url) {
   if (url.SchemeIsFile())
     return url.spec();
 
-  url_canon::Replacements<char> replacements;
+  url::Replacements<char> replacements;
   replacements.ClearPort();
   if (url.SchemeIsSecure())
-    replacements.SetScheme("http", url_parse::Component(0, 4));
+    replacements.SetScheme("http", url::Component(0, 4));
 
   return url.GetOrigin().ReplaceComponents(replacements).spec();
 }
@@ -283,11 +283,11 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
   if (!parsed_path.empty() && cookie_path != parsed_path)
     return NULL;
   // Canonicalize path again to make sure it escapes characters as needed.
-  url_parse::Component path_component(0, cookie_path.length());
-  url_canon::RawCanonOutputT<char> canon_path;
-  url_parse::Component canon_path_component;
-  url_canon::CanonicalizePath(cookie_path.data(), path_component,
-                              &canon_path, &canon_path_component);
+  url::Component path_component(0, cookie_path.length());
+  url::RawCanonOutputT<char> canon_path;
+  url::Component canon_path_component;
+  url::CanonicalizePath(cookie_path.data(), path_component, &canon_path,
+                        &canon_path_component);
   cookie_path = std::string(canon_path.data() + canon_path_component.begin,
                             canon_path_component.len);
 

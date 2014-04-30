@@ -516,7 +516,7 @@ bool X509Certificate::VerifyHostname(
   // CanonicalizeHost requires surrounding brackets to parse an IPv6 address.
   const std::string host_or_ip = hostname.find(':') != std::string::npos ?
       "[" + hostname + "]" : hostname;
-  url_canon::CanonHostInfo host_info;
+  url::CanonHostInfo host_info;
   std::string reference_name = CanonicalizeHost(host_or_ip, &host_info);
   // CanonicalizeHost does not normalize absolute vs relative DNS names. If
   // the input name was absolute (included trailing .), normalize it as if it
@@ -533,8 +533,7 @@ bool X509Certificate::VerifyHostname(
 
   // Fully handle all cases where |hostname| contains an IP address.
   if (host_info.IsIPAddress()) {
-    if (common_name_fallback &&
-        host_info.family == url_canon::CanonHostInfo::IPV4) {
+    if (common_name_fallback && host_info.family == url::CanonHostInfo::IPV4) {
       // Fallback to Common name matching. As this is deprecated and only
       // supported for compatibility refuse it for IPv6 addresses.
       return reference_name == cert_common_name;

@@ -61,10 +61,10 @@ class NET_EXPORT QueryIterator {
 
  private:
   const GURL& url_;
-  url_parse::Component query_;
+  url::Component query_;
   bool at_end_;
-  url_parse::Component key_;
-  url_parse::Component value_;
+  url::Component key_;
+  url::Component value_;
   std::string unescaped_value_;
 
   DISALLOW_COPY_AND_ASSIGN(QueryIterator);

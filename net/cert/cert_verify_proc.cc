@@ -431,7 +431,7 @@ static bool CheckNameConstraints(const std::vector<std::string>& dns_names,
   for (std::vector<std::string>::const_iterator i = dns_names.begin();
        i != dns_names.end(); ++i) {
     bool ok = false;
-    url_canon::CanonHostInfo host_info;
+    url::CanonHostInfo host_info;
     const std::string dns_name = CanonicalizeHost(*i, &host_info);
     if (host_info.IsIPAddress())
       continue;

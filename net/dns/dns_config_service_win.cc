@@ -146,8 +146,8 @@ bool ParseDomainASCII(const base::string16& widestr, std::string* domain) {
 
   // Otherwise try to convert it from IDN to punycode.
   const int kInitialBufferSize = 256;
-  url_canon::RawCanonOutputT<base::char16, kInitialBufferSize> punycode;
-  if (!url_canon::IDNToASCII(widestr.data(), widestr.length(), &punycode))
+  url::RawCanonOutputT<base::char16, kInitialBufferSize> punycode;
+  if (!url::IDNToASCII(widestr.data(), widestr.length(), &punycode))
     return false;
 
   // |punycode_output| should now be ASCII; convert it to a std::string.
