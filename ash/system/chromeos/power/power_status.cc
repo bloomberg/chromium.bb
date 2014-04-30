@@ -117,10 +117,9 @@ void PowerStatus::SplitTimeIntoHoursAndMinutes(const base::TimeDelta& time,
                                                int* minutes) {
   DCHECK(hours);
   DCHECK(minutes);
-  *hours = time.InHours();
-  const double seconds =
-      (time - base::TimeDelta::FromHours(*hours)).InSecondsF();
-  *minutes = static_cast<int>(seconds / 60.0 + 0.5);
+  const int total_minutes = static_cast<int>(time.InSecondsF() / 60 + 0.5);
+  *hours = total_minutes / 60;
+  *minutes = total_minutes % 60;
 }
 
 void PowerStatus::AddObserver(Observer* observer) {
