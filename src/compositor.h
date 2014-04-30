@@ -111,7 +111,9 @@ struct weston_shell_interface {
 		      struct weston_seat *ws, uint32_t edges);
 	void (*set_title)(struct shell_surface *shsurf,
 	                  const char *title);
-
+	void (*set_margin)(struct shell_surface *shsurf,
+			   int32_t left, int32_t right,
+			   int32_t top, int32_t bottom);
 };
 
 struct weston_animation {

@@ -2053,6 +2053,16 @@ set_title(struct shell_surface *shsurf, const char *title)
 }
 
 static void
+set_margin(struct shell_surface *shsurf,
+	   int32_t left, int32_t right, int32_t top, int32_t bottom)
+{
+	shsurf->margin.left = left;
+	shsurf->margin.right = right;
+	shsurf->margin.top = top;
+	shsurf->margin.bottom = bottom;
+}
+
+static void
 shell_surface_set_title(struct wl_client *client,
 			struct wl_resource *resource, const char *title)
 {
@@ -3349,10 +3359,7 @@ xdg_surface_set_margin(struct wl_client *client,
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
-	shsurf->margin.left = left;
-	shsurf->margin.right = right;
-	shsurf->margin.top = top;
-	shsurf->margin.bottom = bottom;
+	set_margin(shsurf, left, right, top, bottom);
 }
 
 static void
@@ -6112,6 +6119,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.move = shell_interface_move;
 	ec->shell_interface.resize = surface_resize;
 	ec->shell_interface.set_title = set_title;
+	ec->shell_interface.set_margin = set_margin;
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);

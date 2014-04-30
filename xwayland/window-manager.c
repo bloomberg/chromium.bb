@@ -944,7 +944,8 @@ weston_wm_window_draw_decoration(void *data)
 	cairo_t *cr;
 	int x, y, width, height;
 	int32_t input_x, input_y, input_w, input_h;
-
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
 	uint32_t flags = 0;
 
 	weston_wm_window_read_properties(window);
@@ -1006,6 +1007,12 @@ weston_wm_window_draw_decoration(void *data)
 
 		pixman_region32_init_rect(&window->surface->pending.input,
 					  input_x, input_y, input_w, input_h);
+		
+		shell_interface->set_margin(window->shsurf,
+					    input_x,
+					    width - input_w - input_x,
+					    input_y,
+					    height - input_h - input_y);
 	}
 }
 
