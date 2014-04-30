@@ -1556,7 +1556,8 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *seat,
 	if (!shsurf)
 		return -1;
 
-	if (shsurf->state.fullscreen || shsurf->state.maximized)
+	if (shsurf->grabbed ||
+	    shsurf->state.fullscreen || shsurf->state.maximized)
 		return 0;
 
 	move = malloc(sizeof *move);
@@ -1582,9 +1583,6 @@ common_surface_move(struct wl_resource *resource,
 	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
-
-	if (shsurf->grabbed)
-		return;
 
 	if (seat->pointer &&
 	    seat->pointer->focus &&
@@ -1746,7 +1744,8 @@ surface_resize(struct shell_surface *shsurf,
 {
 	struct weston_resize_grab *resize;
 
-	if (shsurf->state.fullscreen || shsurf->state.maximized)
+	if (shsurf->grabbed ||
+	    shsurf->state.fullscreen || shsurf->state.maximized)
 		return 0;
 
 	if (edges == 0 || edges > 15 ||
@@ -1776,12 +1775,6 @@ common_surface_resize(struct wl_resource *resource,
 	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
-
-	if (shsurf->state.fullscreen)
-		return;
-
-	if (shsurf->grabbed)
-		return;
 
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
