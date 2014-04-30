@@ -181,11 +181,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
-  virtual void DidUpdateBackingStore(
-      const gfx::Rect& scroll_rect,
-      const gfx::Vector2d& scroll_delta,
-      const std::vector<gfx::Rect>& copy_rects,
-      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
@@ -730,8 +725,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   TouchEditingClient* touch_editing_client_;
 
   gfx::Insets insets_;
-
-  std::vector<ui::LatencyInfo> software_latency_info_;
 
   scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 

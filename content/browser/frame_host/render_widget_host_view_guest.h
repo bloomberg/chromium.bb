@@ -77,11 +77,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
 #endif
-  virtual void DidUpdateBackingStore(
-      const gfx::Rect& scroll_rect,
-      const gfx::Vector2d& scroll_delta,
-      const std::vector<gfx::Rect>& copy_rects,
-      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;

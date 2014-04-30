@@ -355,12 +355,10 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
  public:
   explicit RenderWidgetHostProcess(BrowserContext* browser_context)
       : MockRenderProcessHost(browser_context),
-        current_update_buf_(NULL),
         update_msg_should_reply_(false),
         update_msg_reply_flags_(0) {
   }
   virtual ~RenderWidgetHostProcess() {
-    delete current_update_buf_;
   }
 
   void set_update_msg_should_reply(bool reply) {
@@ -380,8 +378,6 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
                                       const base::TimeDelta& max_delay,
                                       IPC::Message* msg) OVERRIDE;
 
-  TransportDIB* current_update_buf_;
-
   // Set to true when WaitForBackingStoreMsg should return a successful update
   // message reply. False implies timeout.
   bool update_msg_should_reply_;
@@ -395,19 +391,10 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
 
 void RenderWidgetHostProcess::InitUpdateRectParams(
     ViewHostMsg_UpdateRect_Params* params) {
-  // Create the shared backing store.
   const int w = 100, h = 100;
-  const size_t pixel_size = w * h * 4;
 
-  if (!current_update_buf_)
-    current_update_buf_ = TransportDIB::Create(pixel_size, 0);
-  params->bitmap = current_update_buf_->id();
-  params->bitmap_rect = gfx::Rect(0, 0, w, h);
-  params->scroll_delta = gfx::Vector2d();
-  params->copy_rects.push_back(params->bitmap_rect);
   params->view_size = gfx::Size(w, h);
   params->flags = update_msg_reply_flags_;
-  params->scale_factor = 1;
 }
 
 bool RenderWidgetHostProcess::WaitForBackingStoreMsg(

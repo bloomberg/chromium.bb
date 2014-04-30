@@ -400,27 +400,8 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
-  // The bitmap to be painted into the view at the locations specified by
-  // update_rects.
-  IPC_STRUCT_MEMBER(TransportDIB::Id, bitmap)
-
-  // The position and size of the bitmap.
-  IPC_STRUCT_MEMBER(gfx::Rect, bitmap_rect)
-
-  // The scroll delta.  Only one of the delta components can be non-zero, and if
-  // they are both zero, then it means there is no scrolling and the scroll_rect
-  // is ignored.
-  IPC_STRUCT_MEMBER(gfx::Vector2d, scroll_delta)
-
-  // The rectangular region to scroll.
-  IPC_STRUCT_MEMBER(gfx::Rect, scroll_rect)
-
   // The scroll offset of the render view.
   IPC_STRUCT_MEMBER(gfx::Vector2d, scroll_offset)
-
-  // The regions of the bitmap (in view coords) that contain updated pixels.
-  // In the case of scrolling, this includes the scroll damage rect.
-  IPC_STRUCT_MEMBER(std::vector<gfx::Rect>, copy_rects)
 
   // The size of the RenderView when this message was generated.  This is
   // included so the host knows how large the view is from the perspective of
@@ -453,10 +434,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // All the above coordinates are in DIP. This is the scale factor needed
   // to convert them to pixels.
   IPC_STRUCT_MEMBER(float, scale_factor)
-
-  // The latency information for the frame. Only valid when accelerated
-  // compositing is disabled.
-  IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)

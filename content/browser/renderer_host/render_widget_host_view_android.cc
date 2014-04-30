@@ -610,14 +610,6 @@ void RenderWidgetHostViewAndroid::FocusedNodeChanged(bool is_editable_node) {
   ime_adapter_android_.FocusedNodeChanged(is_editable_node);
 }
 
-void RenderWidgetHostViewAndroid::DidUpdateBackingStore(
-    const gfx::Rect& scroll_rect,
-    const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects,
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  NOTIMPLEMENTED();
-}
-
 void RenderWidgetHostViewAndroid::RenderProcessGone(
     base::TerminationStatus status, int error_code) {
   Destroy();

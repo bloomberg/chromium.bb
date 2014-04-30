@@ -336,14 +336,6 @@ void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
 }
 #endif
 
-void RenderWidgetHostViewGuest::DidUpdateBackingStore(
-    const gfx::Rect& scroll_rect,
-    const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects,
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  NOTREACHED();
-}
-
 void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
                                                  size_t offset,
                                                  const gfx::Range& range) {

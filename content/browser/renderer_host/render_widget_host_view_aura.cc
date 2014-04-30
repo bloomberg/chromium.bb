@@ -939,54 +939,6 @@ void RenderWidgetHostViewAura::ImeCompositionRangeChanged(
   composition_character_bounds_ = character_bounds;
 }
 
-void RenderWidgetHostViewAura::DidUpdateBackingStore(
-    const gfx::Rect& scroll_rect,
-    const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects,
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  for (size_t i = 0; i < latency_info.size(); i++)
-    software_latency_info_.push_back(latency_info[i]);
-
-  // Use the state of the RenderWidgetHost and not the window as the two may
-  // differ. In particular if the window is hidden but the renderer isn't and we
-  // ignore the update and the window is made visible again the layer isn't
-  // marked as dirty and we show the wrong thing.
-  if (host_->is_hidden())
-    return;
-
-  gfx::Rect clip_rect;
-  if (paint_canvas_) {
-    SkRect sk_clip_rect;
-    if (paint_canvas_->sk_canvas()->getClipBounds(&sk_clip_rect))
-      clip_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(sk_clip_rect));
-  }
-
-  if (!scroll_rect.IsEmpty())
-    SchedulePaintIfNotInClip(scroll_rect, clip_rect);
-
-#if defined(OS_WIN)
-  aura::WindowTreeHost* host = window_->GetHost();
-#endif
-  for (size_t i = 0; i < copy_rects.size(); ++i) {
-    gfx::Rect rect = gfx::SubtractRects(copy_rects[i], scroll_rect);
-    if (rect.IsEmpty())
-      continue;
-
-    SchedulePaintIfNotInClip(rect, clip_rect);
-
-#if defined(OS_WIN)
-    if (host) {
-      // Send the invalid rect in screen coordinates.
-      gfx::Rect screen_rect = GetViewBounds();
-      gfx::Rect invalid_screen_rect(rect);
-      invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
-      HWND hwnd = host->GetAcceleratedWidget();
-      PaintPluginWindowsHelper(hwnd, invalid_screen_rect);
-    }
-#endif  // defined(OS_WIN)
-  }
-}
-
 void RenderWidgetHostViewAura::RenderProcessGone(base::TerminationStatus status,
                                                  int error_code) {
   UpdateCursorIfOverSelf();

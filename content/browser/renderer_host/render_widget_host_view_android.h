@@ -105,11 +105,6 @@ class RenderWidgetHostViewAndroid
                                     bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void FocusedNodeChanged(bool is_editable_node) OVERRIDE;
-  virtual void DidUpdateBackingStore(
-      const gfx::Rect& scroll_rect,
-      const gfx::Vector2d& scroll_delta,
-      const std::vector<gfx::Rect>& copy_rects,
-      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;

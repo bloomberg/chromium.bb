@@ -1009,22 +1009,6 @@ void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
   composition_bounds_ = character_bounds;
 }
 
-void RenderWidgetHostViewMac::DidUpdateBackingStore(
-    const gfx::Rect& scroll_rect,
-    const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects,
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  // This can be called while already inside of a display function. Process the
-  // new frame in a callback to ensure a clean stack.
-  // TODO(ccameron): This should never be called. Remove the remaining callers
-  // and remove all places where the backing store is drawn.
-  AddPendingLatencyInfo(latency_info);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&RenderWidgetHostViewMac::GotSoftwareFrame,
-                 weak_factory_.GetWeakPtr()));
-}
-
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
                                                 int error_code) {
   Destroy();
