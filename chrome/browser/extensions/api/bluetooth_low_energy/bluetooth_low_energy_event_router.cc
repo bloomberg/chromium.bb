@@ -267,7 +267,23 @@ void BluetoothLowEnergyEventRouter::GattServiceRemoved(
 
 void BluetoothLowEnergyEventRouter::GattServiceChanged(
     BluetoothGattService* service) {
-  // TODO
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(2) << "GATT service changed: " << service->GetIdentifier();
+
+  DCHECK(observed_gatt_services_.find(service->GetIdentifier()) !=
+         observed_gatt_services_.end());
+  DCHECK(service_ids_to_objects_.find(service->GetIdentifier()) !=
+         service_ids_to_objects_.end());
+
+  // Signal API event.
+  apibtle::Service api_service;
+  PopulateService(service, &api_service);
+
+  scoped_ptr<base::ListValue> args =
+      apibtle::OnServiceChanged::Create(api_service);
+  scoped_ptr<Event> event(
+      new Event(apibtle::OnServiceChanged::kEventName, args.Pass()));
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void BluetoothLowEnergyEventRouter::GattCharacteristicAdded(

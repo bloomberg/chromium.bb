@@ -156,4 +156,72 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetService) {
   event_router()->DeviceRemoved(mock_adapter_, device_.get());
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Load the extension and let it set up.
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("bluetooth_low_energy/service_events")));
+
+  // Cause events to be sent to the extension.
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+  event_router()->GattServiceAdded(device_.get(), service1_.get());
+  event_router()->GattServiceChanged(service1_.get());
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  event_router()->GattServiceRemoved(device_.get(), service1_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Load the extension and let it set up.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("bluetooth_low_energy/get_removed_service")));
+
+  // 1. getService success.
+  EXPECT_CALL(*mock_adapter_, GetDevice(_))
+      .Times(1)
+      .WillOnce(Return(device_.get()));
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0))
+      .Times(1)
+      .WillOnce(Return(service0_.get()));
+
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+
+  ExtensionTestMessageListener get_service_success_listener("getServiceSuccess",
+                                                            true);
+  EXPECT_TRUE(get_service_success_listener.WaitUntilSatisfied());
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  testing::Mock::VerifyAndClearExpectations(device_.get());
+
+  // 2. getService fail.
+  EXPECT_CALL(*mock_adapter_, GetDevice(_)).Times(0);
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0)).Times(0);
+
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+
+  ExtensionTestMessageListener get_service_fail_listener("getServiceFail",
+                                                         true);
+  EXPECT_TRUE(get_service_fail_listener.WaitUntilSatisfied());
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  testing::Mock::VerifyAndClearExpectations(device_.get());
+
+  get_service_fail_listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
 }  // namespace
