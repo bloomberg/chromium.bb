@@ -35,18 +35,14 @@
 
 #include "content/renderer/history_controller.h"
 
-#include <deque>
-
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 using blink::WebFrame;
 using blink::WebHistoryCommitType;
 using blink::WebHistoryItem;
 using blink::WebURLRequest;
-using blink::WebVector;
 
 namespace content {
 
@@ -68,17 +64,24 @@ void HistoryController::GoToEntry(HistoryEntry* target_entry,
   if (current_entry_) {
     RecursiveGoToEntry(
         main_frame, same_document_loads, different_document_loads);
-  } else {
-    different_document_loads.push_back(
-        std::make_pair(main_frame, provisional_entry_->root()));
   }
 
   if (same_document_loads.empty() && different_document_loads.empty()) {
-    same_document_loads.push_back(
+    // If we don't have any frames to navigate at this point, either
+    // (1) there is no previous history entry to compare against, or
+    // (2) we were unable to match any frames by name. In the first case,
+    // doing a different document navigation to the root item is the only valid
+    // thing to do. In the second case, we should have been able to find a
+    // frame to navigate based on names if this were a same document
+    // navigation, so we can safely assume this is the different document case.
+    different_document_loads.push_back(
         std::make_pair(main_frame, provisional_entry_->root()));
-  }
-
-  if (different_document_loads.empty()) {
+  } else if (different_document_loads.empty()) {
+    // If we have only same document navigations to perform, immediately
+    // declare the load "committed" by updating the current entry.
+    // TODO(japhet): This is a historical quirk, because same-document
+    // history navigations call UpdateForCommit() with commit type
+    // HistoryInertCommit. If that is fixed, we can remove this block.
     previous_entry_.reset(current_entry_.release());
     current_entry_.reset(provisional_entry_.release());
   }
@@ -131,35 +134,6 @@ void HistoryController::RecursiveGoToEntry(
   }
 }
 
-void HistoryController::GoToItem(const WebHistoryItem& target_item,
-                                 WebURLRequest::CachePolicy cache_policy) {
-  // We don't have enough information to set a correct frame id here. This
-  // might be a restore from disk, and the frame ids might not match up if the
-  // state was saved from a different process. Ensure the HistoryEntry's main
-  // frame id matches the actual main frame id. Its subframe ids are invalid to
-  // ensure they don't accidentally match a potentially random frame.
-  HistoryEntry* new_entry = new HistoryEntry(
-      target_item, render_view_->main_render_frame()->GetRoutingID());
-  std::deque<HistoryEntry::HistoryNode*> history_nodes;
-  history_nodes.push_back(new_entry->root_history_node());
-  while (!history_nodes.empty()) {
-    // For each item, read the children (if any) off the WebHistoryItem,
-    // create a new HistoryNode for each child and attach it,
-    // then clear the children on the WebHistoryItem.
-    HistoryEntry::HistoryNode* history_node = history_nodes.front();
-    history_nodes.pop_front();
-
-    WebVector<WebHistoryItem> children = history_node->item().children();
-    for (size_t i = 0; i < children.size(); i++) {
-      HistoryEntry::HistoryNode* child_history_node =
-          history_node->AddChild(children[i], kInvalidFrameRoutingID);
-      history_nodes.push_back(child_history_node);
-    }
-    history_node->item().setChildren(WebVector<WebHistoryItem>());
-  }
-  GoToEntry(new_entry, cache_policy);
-}
-
 void HistoryController::UpdateForInitialLoadInChildFrame(
     RenderFrameImpl* frame,
     const WebHistoryItem& item) {
@@ -195,27 +169,12 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
   }
 }
 
-static WebHistoryItem ItemForExport(HistoryEntry::HistoryNode* history_node) {
-  DCHECK(history_node);
-  WebHistoryItem item = history_node->item();
-  item.setChildren(WebVector<WebHistoryItem>());
-  std::vector<HistoryEntry::HistoryNode*>& child_nodes =
-      history_node->children();
-  for (size_t i = 0; i < child_nodes.size(); i++)
-    item.appendToChildren(ItemForExport(child_nodes.at(i)));
-  return item;
+HistoryEntry* HistoryController::GetCurrentEntry() {
+  return current_entry_.get();
 }
 
-WebHistoryItem HistoryController::GetCurrentItemForExport() {
-  if (!current_entry_)
-    return WebHistoryItem();
-  return ItemForExport(current_entry_->root_history_node());
-}
-
-WebHistoryItem HistoryController::GetPreviousItemForExport() {
-  if (!previous_entry_)
-    return WebHistoryItem();
-  return ItemForExport(previous_entry_->root_history_node());
+HistoryEntry* HistoryController::GetPreviousEntry() {
+  return previous_entry_.get();
 }
 
 WebHistoryItem HistoryController::GetItemForNewChildFrame(

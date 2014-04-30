@@ -333,8 +333,8 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
   // Check post data sent to browser matches
   EXPECT_TRUE(host_nav_params.a.page_state.IsValid());
-  const blink::WebHistoryItem item = PageStateToHistoryItem(
-      host_nav_params.a.page_state);
+  const blink::WebHistoryItem item =
+      PageStateToHistoryEntry(host_nav_params.a.page_state)->root();
   blink::WebHTTPBody body = item.httpBody();
   blink::WebHTTPBody::Element element;
   bool successful = body.elementAt(0, element);
@@ -1792,8 +1792,8 @@ TEST_F(RenderViewImplTest, ContextMenu) {
 
 TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page A</div>");
-  blink::WebHistoryItem page_a_item =
-      view()->history_controller()->GetCurrentItemForExport();
+  PageState page_a_state =
+      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
   int was_page_a = -1;
   base::string16 check_page_a =
       base::ASCIIToUTF16(
@@ -1817,26 +1817,29 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_b);
 
-  blink::WebHistoryItem forward_item =
-      view()->history_controller()->GetCurrentItemForExport();
-  GoBack(view()->history_controller()->GetPreviousItemForExport());
+  PageState forward_state =
+      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  GoBack(HistoryEntryToPageState(
+      view()->history_controller()->GetPreviousEntry()));
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
-  GoForward(forward_item);
+  GoForward(forward_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_c);
 
-  GoBack(view()->history_controller()->GetPreviousItemForExport());
+  GoBack(HistoryEntryToPageState(
+      view()->history_controller()->GetPreviousEntry()));
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
-  forward_item = view()->history_controller()->GetCurrentItemForExport();
-  GoBack(page_a_item);
+  forward_state =
+      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  GoBack(page_a_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
   EXPECT_EQ(1, was_page_a);
 
-  GoForward(forward_item);
+  GoForward(forward_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 }

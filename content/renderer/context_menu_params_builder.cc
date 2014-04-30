@@ -49,8 +49,10 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   for (size_t i = 0; i < data.customItems.size(); ++i)
     params.custom_items.push_back(MenuItemBuilder::Build(data.customItems[i]));
 
-  if (!data.frameHistoryItem.isNull())
-    params.frame_page_state = HistoryItemToPageState(data.frameHistoryItem);
+  if (!data.frameHistoryItem.isNull()) {
+    params.frame_page_state =
+        SingleHistoryItemToPageState(data.frameHistoryItem);
+  }
 
   if (!params.link_url.is_empty()) {
     blink::WebNode selectedNode = data.node;

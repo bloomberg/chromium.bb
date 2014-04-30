@@ -140,6 +140,7 @@ class ExternalPopupMenu;
 class FaviconHelper;
 class GeolocationDispatcher;
 class HistoryController;
+class HistoryEntry;
 class ImageResourceFetcher;
 class InputTagSpeechDispatcher;
 class LoadProgressTracker;
@@ -709,7 +710,7 @@ class CONTENT_EXPORT RenderViewImpl
   void UpdateTitle(blink::WebFrame* frame, const base::string16& title,
                    blink::WebTextDirection title_direction);
   void UpdateSessionHistory(blink::WebFrame* frame);
-  void SendUpdateState(const blink::WebHistoryItem& item);
+  void SendUpdateState(HistoryEntry* entry);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu

@@ -6,6 +6,7 @@
 
 #include "content/common/page_state_serialization.h"
 #include "content/public/common/page_state.h"
+#include "content/renderer/history_entry.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -79,8 +80,8 @@ void AppendHTTPBodyElement(const ExplodedHttpBodyElement& element,
   }
 }
 
-bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
-                                   ExplodedFrameState* state) {
+void GenerateFrameStateFromItem(const WebHistoryItem& item,
+                                ExplodedFrameState* state) {
   state->url_string = item.urlString();
   state->referrer = item.referrer();
   state->referrer_policy = item.referrerPolicy();
@@ -106,68 +107,64 @@ bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
     }
     state->http_body.contains_passwords = http_body.containsPasswordData();
   }
-
-  const WebVector<WebHistoryItem>& children = item.children();
-  state->children.resize(children.size());
-  for (size_t i = 0; i < children.size(); ++i) {
-    if (!RecursivelyGenerateFrameState(children[i], &state->children[i]))
-      return false;
-  }
-
-  return true;
 }
 
-bool RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
-                                    WebHistoryItem* item) {
-  item->setURLString(state.url_string);
-  item->setReferrer(state.referrer, state.referrer_policy);
-  item->setTarget(state.target);
+void RecursivelyGenerateFrameState(HistoryEntry::HistoryNode* node,
+                                   ExplodedFrameState* state) {
+  GenerateFrameStateFromItem(node->item(), state);
+
+  std::vector<HistoryEntry::HistoryNode*>& children = node->children();
+  state->children.resize(children.size());
+  for (size_t i = 0; i < children.size(); ++i)
+    RecursivelyGenerateFrameState(children[i], &state->children[i]);
+}
+
+void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
+                                    HistoryEntry::HistoryNode* node) {
+  WebHistoryItem item;
+  item.initialize();
+  item.setURLString(state.url_string);
+  item.setReferrer(state.referrer, state.referrer_policy);
+  item.setTarget(state.target);
   if (!state.state_object.is_null()) {
-    item->setStateObject(
+    item.setStateObject(
         WebSerializedScriptValue::fromString(state.state_object));
   }
-  item->setDocumentState(state.document_state);
-  item->setScrollOffset(state.scroll_offset);
-  item->setPageScaleFactor(state.page_scale_factor);
+  item.setDocumentState(state.document_state);
+  item.setScrollOffset(state.scroll_offset);
+  item.setPageScaleFactor(state.page_scale_factor);
 
   // These values are generated at WebHistoryItem construction time, and we
   // only want to override those new values with old values if the old values
   // are defined.  A value of 0 means undefined in this context.
   if (state.item_sequence_number)
-    item->setItemSequenceNumber(state.item_sequence_number);
+    item.setItemSequenceNumber(state.item_sequence_number);
   if (state.document_sequence_number)
-    item->setDocumentSequenceNumber(state.document_sequence_number);
+    item.setDocumentSequenceNumber(state.document_sequence_number);
 
-  item->setHTTPContentType(state.http_body.http_content_type);
+  item.setHTTPContentType(state.http_body.http_content_type);
   if (!state.http_body.is_null) {
     WebHTTPBody http_body;
     http_body.initialize();
     http_body.setIdentifier(state.http_body.identifier);
     for (size_t i = 0; i < state.http_body.elements.size(); ++i)
       AppendHTTPBodyElement(state.http_body.elements[i], &http_body);
-    item->setHTTPBody(http_body);
+    item.setHTTPBody(http_body);
   }
+  node->set_item(item);
 
-  for (size_t i = 0; i < state.children.size(); ++i) {
-    WebHistoryItem child_item;
-    child_item.initialize();
-    if (!RecursivelyGenerateHistoryItem(state.children[i], &child_item))
-      return false;
-    item->appendToChildren(child_item);
-  }
-
-  return true;
+  for (size_t i = 0; i < state.children.size(); ++i)
+    RecursivelyGenerateHistoryItem(state.children[i], node->AddChild());
 }
 
 }  // namespace
 
-PageState HistoryItemToPageState(const WebHistoryItem& item) {
+PageState HistoryEntryToPageState(HistoryEntry* entry) {
   ExplodedPageState state;
-  ToNullableString16Vector(item.getReferencedFilePaths(),
+  ToNullableString16Vector(entry->root().getReferencedFilePaths(),
                            &state.referenced_files);
 
-  if (!RecursivelyGenerateFrameState(item, &state.top))
-    return PageState();
+  RecursivelyGenerateFrameState(entry->root_history_node(), &state.top);
 
   std::string encoded_data;
   if (!EncodePageState(state, &encoded_data))
@@ -176,17 +173,28 @@ PageState HistoryItemToPageState(const WebHistoryItem& item) {
   return PageState::CreateFromEncodedData(encoded_data);
 }
 
-WebHistoryItem PageStateToHistoryItem(const PageState& page_state) {
+PageState SingleHistoryItemToPageState(const WebHistoryItem& item) {
+  ExplodedPageState state;
+  ToNullableString16Vector(item.getReferencedFilePaths(),
+                           &state.referenced_files);
+  GenerateFrameStateFromItem(item, &state.top);
+
+  std::string encoded_data;
+  if (!EncodePageState(state, &encoded_data))
+    return PageState();
+
+  return PageState::CreateFromEncodedData(encoded_data);
+}
+
+HistoryEntry* PageStateToHistoryEntry(const PageState& page_state) {
   ExplodedPageState state;
   if (!DecodePageState(page_state.ToEncodedData(), &state))
-    return WebHistoryItem();
+    return NULL;
 
-  WebHistoryItem item;
-  item.initialize();
-  if (!RecursivelyGenerateHistoryItem(state.top, &item))
-    return WebHistoryItem();
+  HistoryEntry* entry = new HistoryEntry();
+  RecursivelyGenerateHistoryItem(state.top, entry->root_history_node());
 
-  return item;
+  return entry;
 }
 
 }  // namespace content

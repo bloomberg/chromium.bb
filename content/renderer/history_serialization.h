@@ -14,12 +14,13 @@ class WebHistoryItem;
 }
 
 namespace content {
+class HistoryEntry;
 class PageState;
 
-CONTENT_EXPORT PageState HistoryItemToPageState(
+CONTENT_EXPORT PageState HistoryEntryToPageState(HistoryEntry* entry);
+CONTENT_EXPORT PageState SingleHistoryItemToPageState(
     const blink::WebHistoryItem& item);
-CONTENT_EXPORT blink::WebHistoryItem PageStateToHistoryItem(
-    const PageState& state);
+CONTENT_EXPORT HistoryEntry* PageStateToHistoryEntry(const PageState& state);
 
 }  // namespace content
 

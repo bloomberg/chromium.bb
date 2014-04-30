@@ -1385,21 +1385,19 @@ void RenderViewImpl::UpdateSessionHistory(WebFrame* frame) {
   // there is no past session history to record.
   if (page_id_ == -1)
     return;
-
-  WebHistoryItem item = history_controller_->GetPreviousItemForExport();
-  SendUpdateState(item);
+  SendUpdateState(history_controller_->GetPreviousEntry());
 }
 
-void RenderViewImpl::SendUpdateState(const WebHistoryItem& item) {
-  if (item.isNull())
+void RenderViewImpl::SendUpdateState(HistoryEntry* entry) {
+  if (!entry)
     return;
 
   // Don't send state updates for kSwappedOutURL.
-  if (item.urlString() == WebString::fromUTF8(kSwappedOutURL))
+  if (entry->root().urlString() == WebString::fromUTF8(kSwappedOutURL))
     return;
 
   Send(new ViewHostMsg_UpdateState(
-      routing_id_, page_id_, HistoryItemToPageState(item)));
+      routing_id_, page_id_, HistoryEntryToPageState(entry)));
 }
 
 bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
@@ -2678,9 +2676,7 @@ void RenderViewImpl::PlayerGone(blink::WebMediaPlayer* player) {
 void RenderViewImpl::SyncNavigationState() {
   if (!webview())
     return;
-
-  WebHistoryItem item = history_controller_->GetCurrentItemForExport();
-  SendUpdateState(item);
+  SendUpdateState(history_controller_->GetCurrentEntry());
 }
 
 GURL RenderViewImpl::GetLoadingUrl(blink::WebFrame* frame) const {

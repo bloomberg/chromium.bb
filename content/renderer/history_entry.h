@@ -38,6 +38,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 
@@ -51,7 +52,7 @@ class RenderViewImpl;
 
 const int kInvalidFrameRoutingID = -1;
 
-class HistoryEntry {
+class CONTENT_EXPORT HistoryEntry {
  public:
   class HistoryNode {
    public:
@@ -61,13 +62,14 @@ class HistoryEntry {
     ~HistoryNode();
 
     HistoryNode* AddChild(const blink::WebHistoryItem& item, int64_t frame_id);
+    HistoryNode* AddChild();
     HistoryNode* CloneAndReplace(HistoryEntry* new_entry,
                                  const blink::WebHistoryItem& new_item,
                                  bool clone_children_of_target,
                                  RenderFrameImpl* target_frame,
                                  RenderFrameImpl* current_frame);
     blink::WebHistoryItem& item() { return item_; }
-    void set_item(const blink::WebHistoryItem& item) { item_ = item; }
+    void set_item(const blink::WebHistoryItem& item);
     std::vector<HistoryNode*>& children() const { return children_->get(); }
     void RemoveChildren();
 
@@ -78,6 +80,7 @@ class HistoryEntry {
   };
 
   HistoryEntry(const blink::WebHistoryItem& root, int64_t frame_id);
+  HistoryEntry();
   ~HistoryEntry();
 
   HistoryEntry* CloneAndReplace(const blink::WebHistoryItem& newItem,
@@ -91,7 +94,6 @@ class HistoryEntry {
   HistoryNode* root_history_node() const { return root_.get(); }
 
  private:
-  HistoryEntry();
 
   scoped_ptr<HistoryNode> root_;
 

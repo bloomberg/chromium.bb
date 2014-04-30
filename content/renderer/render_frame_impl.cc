@@ -701,9 +701,7 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     CHECK(frame) << "Invalid frame name passed: " << params.frame_to_navigate;
   }
 
-  WebHistoryItem item =
-      render_view_->history_controller()->GetCurrentItemForExport();
-  if (is_reload && item.isNull()) {
+  if (is_reload && !render_view_->history_controller()->GetCurrentEntry()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.
     is_reload = false;
@@ -731,12 +729,12 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
   } else if (params.page_state.IsValid()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
-    WebHistoryItem item = PageStateToHistoryItem(params.page_state);
-    if (!item.isNull()) {
+    HistoryEntry* entry = PageStateToHistoryEntry(params.page_state);
+    if (entry) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
-      CHECK(item.urlString() != WebString::fromUTF8(kSwappedOutURL));
-      render_view_->history_controller()->GoToItem(item, cache_policy);
+      CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
+      render_view_->history_controller()->GoToEntry(entry, cache_policy);
     }
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.
@@ -2742,13 +2740,11 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that commited entry has it at all times.
-  WebHistoryItem item =
-      render_view_->history_controller()->GetCurrentItemForExport();
-  if (item.isNull()) {
-    item.initialize();
-    item.setURLString(request.url().spec().utf16());
-  }
-  params.page_state = HistoryItemToPageState(item);
+  HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
+  if (entry)
+    params.page_state = HistoryEntryToPageState(entry);
+  else
+    params.page_state = PageState::CreateFromURL(request.url());
 
   if (!frame->parent()) {
     // Top-level navigation.
@@ -2813,7 +2809,7 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
     base::string16 method = request.httpMethod();
     if (EqualsASCII(method, "POST")) {
       params.is_post = true;
-      params.post_id = ExtractPostId(item);
+      params.post_id = ExtractPostId(entry->root());
     }
 
     // Send the user agent override back.

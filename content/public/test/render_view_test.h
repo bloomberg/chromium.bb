@@ -19,7 +19,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace blink {
-class WebHistoryItem;
 class WebWidget;
 }
 
@@ -32,6 +31,7 @@ class ContentBrowserClient;
 class ContentClient;
 class ContentRendererClient;
 class MockRenderProcess;
+class PageState;
 class RendererMainPlatformDelegate;
 class RendererWebKitPlatformSupportImplNoSandboxImpl;
 class RenderView;
@@ -77,10 +77,9 @@ class RenderViewTest : public testing::Test {
   void LoadHTML(const char* html);
 
   // Navigates the main frame back or forward in session history and commits.
-  // The caller must capture a WebHistoryItem for the target page. This is
-  // available from the WebFrame.
-  void GoBack(const blink::WebHistoryItem& item);
-  void GoForward(const blink::WebHistoryItem& item);
+  // The caller must capture a PageState for the target page.
+  void GoBack(const PageState& state);
+  void GoForward(const PageState& state);
 
   // Navigates the main frame back to whatever is considered the previous
   // history entry internally.
@@ -159,7 +158,7 @@ class RenderViewTest : public testing::Test {
 #endif
 
  private:
-  void GoToOffset(int offset, const blink::WebHistoryItem& history_item);
+  void GoToOffset(int offset, const PageState& state);
 };
 
 }  // namespace content

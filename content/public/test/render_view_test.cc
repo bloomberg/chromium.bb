@@ -125,17 +125,18 @@ void RenderViewTest::LoadHTML(const char* html) {
   ProcessPendingMessages();
 }
 
-void RenderViewTest::GoBack(const blink::WebHistoryItem& item) {
-  GoToOffset(-1, item);
+void RenderViewTest::GoBack(const PageState& state) {
+  GoToOffset(-1, state);
 }
 
-void RenderViewTest::GoForward(const blink::WebHistoryItem& item) {
-  GoToOffset(1, item);
+void RenderViewTest::GoForward(const PageState& state) {
+  GoToOffset(1, state);
 }
 
 void RenderViewTest::GoBackToPrevious() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  GoBack(impl->history_controller()->GetPreviousItemForExport());
+  GoBack(HistoryEntryToPageState(
+      impl->history_controller()->GetPreviousEntry()));
 }
 
 void RenderViewTest::SetUp() {
@@ -400,8 +401,7 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
 }
 
-void RenderViewTest::GoToOffset(int offset,
-                                const blink::WebHistoryItem& history_item) {
+void RenderViewTest::GoToOffset(int offset, const PageState& state) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
 
   int history_list_length = impl->historyBackListCount() +
@@ -415,7 +415,7 @@ void RenderViewTest::GoToOffset(int offset,
   navigate_params.current_history_list_offset = impl->history_list_offset();
   navigate_params.pending_history_list_offset = pending_offset;
   navigate_params.page_id = impl->GetPageId() + offset;
-  navigate_params.page_state = HistoryItemToPageState(history_item);
+  navigate_params.page_state = state;
   navigate_params.request_time = base::Time::Now();
 
   FrameMsg_Navigate navigate_message(impl->main_render_frame()->GetRoutingID(),

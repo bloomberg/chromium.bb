@@ -35,8 +35,6 @@
 
 #include "content/renderer/history_entry.h"
 
-#include <deque>
-
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -51,6 +49,10 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::AddChild(
     int64_t frame_id) {
   children_->push_back(new HistoryNode(entry_, item, frame_id));
   return children_->back();
+}
+
+HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::AddChild() {
+  return AddChild(WebHistoryItem(), kInvalidFrameRoutingID);
 }
 
 HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
@@ -90,13 +92,21 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
   return new_history_node;
 }
 
+void HistoryEntry::HistoryNode::set_item(const WebHistoryItem& item) {
+  // The previous HistoryItem might not have had a target set, or it might be
+  // different than the current one.
+  entry_->unique_names_to_items_[item.target().utf8()] = this;
+  item_ = item;
+}
+
 HistoryEntry::HistoryNode::HistoryNode(HistoryEntry* entry,
                                        const WebHistoryItem& item,
                                        int64_t frame_id)
     : entry_(entry), item_(item) {
   if (frame_id != kInvalidFrameRoutingID)
     entry_->frames_to_items_[frame_id] = this;
-  entry_->unique_names_to_items_[item.target().utf8()] = this;
+  if (!item.isNull())
+    entry_->unique_names_to_items_[item.target().utf8()] = this;
   children_.reset(new ScopedVector<HistoryNode>);
 }
 
@@ -138,6 +148,7 @@ void HistoryEntry::HistoryNode::RemoveChildren() {
 }
 
 HistoryEntry::HistoryEntry() {
+  root_.reset(new HistoryNode(this, WebHistoryItem(), kInvalidFrameRoutingID));
 }
 
 HistoryEntry::~HistoryEntry() {

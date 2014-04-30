@@ -109,23 +109,20 @@ class CONTENT_EXPORT HistoryController {
   explicit HistoryController(RenderViewImpl* render_view);
   ~HistoryController();
 
-  void GoToItem(const blink::WebHistoryItem& item,
-                blink::WebURLRequest::CachePolicy cache_policy);
+  void GoToEntry(HistoryEntry* entry,
+                 blink::WebURLRequest::CachePolicy cache_policy);
 
   void UpdateForCommit(RenderFrameImpl* frame,
                        const blink::WebHistoryItem& item,
                        blink::WebHistoryCommitType commit_type,
                        bool navigation_within_page);
 
-  blink::WebHistoryItem GetCurrentItemForExport();
-  blink::WebHistoryItem GetPreviousItemForExport();
+  HistoryEntry* GetCurrentEntry();
+  HistoryEntry* GetPreviousEntry();
   blink::WebHistoryItem GetItemForNewChildFrame(RenderFrameImpl* frame) const;
   void RemoveChildrenForRedirect(RenderFrameImpl* frame);
 
  private:
-  void GoToEntry(HistoryEntry* entry,
-                 blink::WebURLRequest::CachePolicy cache_policy);
-
   typedef std::vector<std::pair<blink::WebFrame*, blink::WebHistoryItem> >
       HistoryFrameLoadVector;
   void RecursiveGoToEntry(blink::WebFrame* frame,
