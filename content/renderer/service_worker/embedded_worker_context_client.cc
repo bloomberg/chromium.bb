@@ -13,6 +13,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/child/worker_thread_task_runner.h"
+#include "content/common/devtools_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/renderer/document_state.h"
@@ -83,11 +84,13 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
     int embedded_worker_id,
     int64 service_worker_version_id,
     const GURL& service_worker_scope,
-    const GURL& script_url)
+    const GURL& script_url,
+    int worker_devtools_agent_route_id)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
+      worker_devtools_agent_route_id_(worker_devtools_agent_route_id),
       sender_(ChildThread::current()->thread_safe_sender()),
       main_thread_proxy_(base::MessageLoopProxy::current()),
       weak_factory_(this) {
@@ -188,6 +191,18 @@ void EmbeddedWorkerContextClient::reportConsoleMessage(
 
   Send(new EmbeddedWorkerHostMsg_ReportConsoleMessage(
       embedded_worker_id_, params));
+}
+
+void EmbeddedWorkerContextClient::dispatchDevToolsMessage(
+    const blink::WebString& message) {
+  sender_->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+      worker_devtools_agent_route_id_, message.utf8()));
+}
+
+void EmbeddedWorkerContextClient::saveDevToolsAgentState(
+    const blink::WebString& state) {
+  sender_->Send(new DevToolsHostMsg_SaveAgentRuntimeState(
+      worker_devtools_agent_route_id_, state.utf8()));
 }
 
 void EmbeddedWorkerContextClient::didHandleActivateEvent(

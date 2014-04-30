@@ -58,28 +58,27 @@ void EmbeddedWorkerDispatcher::WorkerContextDestroyed(
   workers_.Remove(embedded_worker_id);
 }
 
-void EmbeddedWorkerDispatcher::OnStartWorker(int embedded_worker_id,
-                                             int64 service_worker_version_id,
-                                             const GURL& service_worker_scope,
-                                             const GURL& script_url) {
-  DCHECK(!workers_.Lookup(embedded_worker_id));
+void EmbeddedWorkerDispatcher::OnStartWorker(
+    const EmbeddedWorkerMsg_StartWorker_Params& params) {
+  DCHECK(!workers_.Lookup(params.embedded_worker_id));
   RenderThread::Get()->EnsureWebKitInitialized();
-  scoped_ptr<WorkerWrapper> wrapper(new WorkerWrapper(
-      blink::WebEmbeddedWorker::create(
+  scoped_ptr<WorkerWrapper> wrapper(
+      new WorkerWrapper(blink::WebEmbeddedWorker::create(
           new EmbeddedWorkerContextClient(
-              embedded_worker_id,
-              service_worker_version_id,
-              service_worker_scope,
-              script_url),
+              params.embedded_worker_id,
+              params.service_worker_version_id,
+              params.scope,
+              params.script_url,
+              params.worker_devtools_agent_route_id),
           NULL)));
 
   blink::WebEmbeddedWorkerStartData start_data;
-  start_data.scriptURL = script_url;
+  start_data.scriptURL = params.script_url;
   start_data.userAgent = base::UTF8ToUTF16(GetContentClient()->GetUserAgent());
   start_data.startMode = blink::WebEmbeddedWorkerStartModeDontPauseOnStart;
 
   wrapper->worker()->startWorkerContext(start_data);
-  workers_.AddWithID(wrapper.release(), embedded_worker_id);
+  workers_.AddWithID(wrapper.release(), params.embedded_worker_id);
 }
 
 void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {

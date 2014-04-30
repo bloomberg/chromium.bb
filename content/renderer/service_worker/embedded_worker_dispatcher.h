@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 
-struct ServiceWorkerMsg_StartWorker_Params;
+struct EmbeddedWorkerMsg_StartWorker_Params;
 class GURL;
 
 namespace WebKit {
@@ -33,10 +33,7 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
  private:
   class WorkerWrapper;
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64 service_worker_version_id,
-                     const GURL& service_worker_scope,
-                     const GURL& script_url);
+  void OnStartWorker(const EmbeddedWorkerMsg_StartWorker_Params& params);
   void OnStopWorker(int embedded_worker_id);
 
   IDMap<WorkerWrapper, IDMapOwnPointer> workers_;

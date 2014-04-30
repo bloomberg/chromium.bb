@@ -94,6 +94,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   Status status() const { return status_; }
   int process_id() const { return process_id_; }
   int thread_id() const { return thread_id_; }
+  int worker_devtools_agent_route_id() const {
+    return worker_devtools_agent_route_id_;
+  }
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
@@ -113,7 +116,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Called back from EmbeddedWorkerRegistry after Start() passes control to the
   // UI thread to acquire a reference to the process.
-  void RecordProcessId(int process_id, ServiceWorkerStatusCode status);
+  void RecordProcessId(int process_id,
+                       ServiceWorkerStatusCode status,
+                       int worker_devtools_agent_route_id);
 
   // Called back from Registry when the worker instance has ack'ed that
   // its WorkerGlobalScope is actually started on |thread_id| in the
@@ -157,6 +162,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Current running information. -1 indicates the worker is not running.
   int process_id_;
   int thread_id_;
+  int worker_devtools_agent_route_id_;
 
   ProcessRefMap process_refs_;
   ListenerList listener_list_;

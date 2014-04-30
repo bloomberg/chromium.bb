@@ -6,6 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
+#include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -38,17 +39,20 @@ void EmbeddedWorkerRegistry::StartWorker(const std::vector<int>& process_ids,
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
+  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
+      new EmbeddedWorkerMsg_StartWorker_Params());
+  params->embedded_worker_id = embedded_worker_id;
+  params->service_worker_version_id = service_worker_version_id;
+  params->scope = scope;
+  params->script_url = script_url;
+  params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   context_->process_manager()->AllocateWorkerProcess(
       process_ids,
       script_url,
       base::Bind(&EmbeddedWorkerRegistry::StartWorkerWithProcessId,
                  this,
                  embedded_worker_id,
-                 base::Passed(make_scoped_ptr(new EmbeddedWorkerMsg_StartWorker(
-                     embedded_worker_id,
-                     service_worker_version_id,
-                     scope,
-                     script_url))),
+                 base::Passed(&params),
                  callback));
 }
 
@@ -174,7 +178,7 @@ EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
 
 void EmbeddedWorkerRegistry::StartWorkerWithProcessId(
     int embedded_worker_id,
-    scoped_ptr<EmbeddedWorkerMsg_StartWorker> message,
+    scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status,
     int process_id) {
@@ -188,7 +192,16 @@ void EmbeddedWorkerRegistry::StartWorkerWithProcessId(
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
-  worker->second->RecordProcessId(process_id, status);
+  if (status == SERVICE_WORKER_OK) {
+    // Gets the new routing id for the renderer process.
+    scoped_refptr<RenderWidgetHelper> helper(
+        RenderWidgetHelper::FromProcessHostID(process_id));
+    // |helper| may be NULL in unittest.
+    params->worker_devtools_agent_route_id =
+        helper ? helper->GetNextRoutingID() : MSG_ROUTING_NONE;
+  }
+  worker->second->RecordProcessId(
+      process_id, status, params->worker_devtools_agent_route_id);
 
   if (status != SERVICE_WORKER_OK) {
     callback.Run(status);
@@ -198,7 +211,7 @@ void EmbeddedWorkerRegistry::StartWorkerWithProcessId(
   // is created, and keep an entry in process_sender_map_ for its whole
   // lifetime.
   DCHECK(ContainsKey(process_sender_map_, process_id));
-  callback.Run(Send(process_id, message.release()));
+  callback.Run(Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params)));
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(

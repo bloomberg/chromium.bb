@@ -16,6 +16,15 @@
 
 #define IPC_MESSAGE_START EmbeddedWorkerMsgStart
 
+// Parameters structure for EmbeddedWorkerMsg_StartWorker.
+IPC_STRUCT_BEGIN(EmbeddedWorkerMsg_StartWorker_Params)
+  IPC_STRUCT_MEMBER(int, embedded_worker_id)
+  IPC_STRUCT_MEMBER(int64, service_worker_version_id)
+  IPC_STRUCT_MEMBER(GURL, scope)
+  IPC_STRUCT_MEMBER(GURL, script_url)
+  IPC_STRUCT_MEMBER(int, worker_devtools_agent_route_id)
+IPC_STRUCT_END()
+
 // Parameters structure for EmbeddedWorkerHostMsg_ReportConsoleMessage.
 // The data members directly correspond to parameters of
 // WorkerMessagingProxy::reportConsoleMessage()
@@ -28,11 +37,8 @@ IPC_STRUCT_BEGIN(EmbeddedWorkerHostMsg_ReportConsoleMessage_Params)
 IPC_STRUCT_END()
 
 // Browser -> Renderer message to create a new embedded worker context.
-IPC_MESSAGE_CONTROL4(EmbeddedWorkerMsg_StartWorker,
-                     int /* embedded_worker_id */,
-                     int64 /* service_worker_version_id */,
-                     GURL /* scope */,
-                     GURL /* script_url */)
+IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StartWorker,
+                     EmbeddedWorkerMsg_StartWorker_Params /* params */)
 
 // Browser -> Renderer message to stop (terminate) the embedded worker.
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StopWorker,

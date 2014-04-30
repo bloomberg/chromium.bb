@@ -75,21 +75,25 @@ void EmbeddedWorkerInstance::ReleaseProcessReference(int process_id) {
     process_refs_.erase(found);
 }
 
-EmbeddedWorkerInstance::EmbeddedWorkerInstance(
-    EmbeddedWorkerRegistry* registry,
-    int embedded_worker_id)
+EmbeddedWorkerInstance::EmbeddedWorkerInstance(EmbeddedWorkerRegistry* registry,
+                                               int embedded_worker_id)
     : registry_(registry),
       embedded_worker_id_(embedded_worker_id),
       status_(STOPPED),
       process_id_(-1),
-      thread_id_(-1) {
+      thread_id_(-1),
+      worker_devtools_agent_route_id_(MSG_ROUTING_NONE) {
 }
 
-void EmbeddedWorkerInstance::RecordProcessId(int process_id,
-                                             ServiceWorkerStatusCode status) {
+void EmbeddedWorkerInstance::RecordProcessId(
+    int process_id,
+    ServiceWorkerStatusCode status,
+    int worker_devtools_agent_route_id) {
   DCHECK_EQ(process_id_, -1);
+  DCHECK_EQ(worker_devtools_agent_route_id_, MSG_ROUTING_NONE);
   if (status == SERVICE_WORKER_OK) {
     process_id_ = process_id;
+    worker_devtools_agent_route_id_ = worker_devtools_agent_route_id;
   } else {
     status_ = STOPPED;
   }
@@ -109,6 +113,7 @@ void EmbeddedWorkerInstance::OnStopped() {
   status_ = STOPPED;
   process_id_ = -1;
   thread_id_ = -1;
+  worker_devtools_agent_route_id_ = MSG_ROUTING_NONE;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped());
 }
 

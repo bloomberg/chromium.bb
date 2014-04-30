@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+struct EmbeddedWorkerMsg_StartWorker_Params;
 class GURL;
 
 namespace content {
@@ -104,10 +105,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   EmbeddedWorkerRegistry* registry();
 
  private:
-  void OnStartWorkerStub(int embedded_worker_id,
-                         int64 service_worker_version_id,
-                         const GURL& scope,
-                         const GURL& script_url);
+  void OnStartWorkerStub(const EmbeddedWorkerMsg_StartWorker_Params& params);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
                              int embedded_worker_id,

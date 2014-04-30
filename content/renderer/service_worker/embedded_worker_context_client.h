@@ -51,7 +51,8 @@ class EmbeddedWorkerContextClient
   EmbeddedWorkerContextClient(int embedded_worker_id,
                               int64 service_worker_version_id,
                               const GURL& service_worker_scope,
-                              const GURL& script_url);
+                              const GURL& script_url,
+                              int worker_devtools_agent_route_id);
 
   virtual ~EmbeddedWorkerContextClient();
 
@@ -78,6 +79,8 @@ class EmbeddedWorkerContextClient
                                     const blink::WebString& message,
                                     int line_number,
                                     const blink::WebString& source_url);
+  virtual void dispatchDevToolsMessage(const blink::WebString&);
+  virtual void saveDevToolsAgentState(const blink::WebString&);
   virtual void didHandleActivateEvent(int request_id,
                                       blink::WebServiceWorkerEventResult);
   virtual void didHandleInstallEvent(int request_id,
@@ -107,6 +110,7 @@ class EmbeddedWorkerContextClient
   const int64 service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;
+  const int worker_devtools_agent_route_id_;
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::MessageLoopProxy> main_thread_proxy_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;

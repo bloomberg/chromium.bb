@@ -17,7 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
-class EmbeddedWorkerMsg_StartWorker;
+struct EmbeddedWorkerMsg_StartWorker_Params;
 class GURL;
 
 namespace IPC {
@@ -96,7 +96,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   void StartWorkerWithProcessId(
       int embedded_worker_id,
-      scoped_ptr<EmbeddedWorkerMsg_StartWorker> message,
+      scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
       int process_id);
