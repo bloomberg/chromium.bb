@@ -24,7 +24,6 @@ import org.chromium.android_webview.AwSettings.LayoutAlgorithm;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
-import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -2535,51 +2534,6 @@ public class AwSettingsTest extends AwTestBase {
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
         assertEquals(defaultScale, getPixelScaleOnUiThread(awContents), .01f);
-    }
-
-    /**
-     * Run video test.
-     * @param requiredUserGesture the settings of MediaPlaybackRequiresUserGesture.
-     * @param waitTime time for waiting event happen, -1 means forever.
-     * @return true if the event happened,
-     * @throws Throwable throw exception if timeout.
-     */
-    private boolean runVideoTest(final boolean requiredUserGesture, long waitTime)
-            throws Throwable {
-        final JavascriptEventObserver observer = new JavascriptEventObserver();
-        TestAwContentsClient client = new TestAwContentsClient();
-        final AwContents awContents = createAwTestContainerViewOnMainSync(client).getAwContents();
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                AwSettings awSettings = awContents.getSettings();
-                awSettings.setJavaScriptEnabled(true);
-                awSettings.setMediaPlaybackRequiresUserGesture(requiredUserGesture);
-                observer.register(awContents.getContentViewCore(), "javaObserver");
-            }
-        });
-        VideoTestWebServer webServer = new VideoTestWebServer(getActivity());
-        try {
-            String data = "<html><head><script>" +
-                "addEventListener('DOMContentLoaded', function() { " +
-                "  document.getElementById('video').addEventListener('play', function() { " +
-                "    javaObserver.notifyJava(); " +
-                "  }, false); " +
-                "}, false); " +
-                "</script></head><body>" +
-                "<video id='video' autoplay control src='" +
-                webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
-            loadDataAsync(awContents, data, "text/html", false);
-            if (waitTime == -1) {
-                observer.waitForEvent();
-                return true;
-            } else {
-                return observer.waitForEvent(waitTime);
-            }
-        } finally {
-            if (webServer != null && webServer.getTestWebServer() != null)
-                webServer.getTestWebServer().shutdown();
-        }
     }
 
     /*

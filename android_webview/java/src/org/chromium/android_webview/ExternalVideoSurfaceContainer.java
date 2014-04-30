@@ -11,6 +11,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
@@ -38,7 +40,7 @@ import java.lang.ref.WeakReference;
  */
 @JNINamespace("android_webview")
 public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
-    private static final int INVALID_PLAYER_ID = -1;
+    protected static final int INVALID_PLAYER_ID = -1;
 
     // Because WebView does hole-punching by itself, instead, the hole-punching logic
     // in SurfaceView can clear out some web elements like media control or subtitle.
@@ -78,14 +80,30 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     private int mWidth;
     private int mHeight;
 
+    /**
+     * Factory class to facilitate dependency injection.
+     */
+    public static class Factory {
+        public ExternalVideoSurfaceContainer create(
+                int nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
+            return new ExternalVideoSurfaceContainer(
+                    nativeExternalVideoSurfaceContainer, contentViewCore);
+        }
+    }
+    private static Factory sFactory = new Factory();
+
+    @VisibleForTesting
+    public static void setFactory(Factory factory) {
+        sFactory = factory;
+    }
+
     @CalledByNative
     private static ExternalVideoSurfaceContainer create(
             int nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
-        return new ExternalVideoSurfaceContainer(
-                nativeExternalVideoSurfaceContainer, contentViewCore);
+        return sFactory.create(nativeExternalVideoSurfaceContainer, contentViewCore);
     }
 
-    private ExternalVideoSurfaceContainer(
+    protected ExternalVideoSurfaceContainer(
             int nativeExternalVideoSurfaceContainer, ContentViewCore contentViewCore) {
         assert contentViewCore != null;
         mNativeExternalVideoSurfaceContainer = nativeExternalVideoSurfaceContainer;
@@ -98,7 +116,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
      * @param playerId The ID of the media player.
      */
     @CalledByNative
-    private void requestExternalVideoSurface(int playerId) {
+    protected void requestExternalVideoSurface(int playerId) {
         if (mPlayerId == playerId) return;
 
         if (mPlayerId == INVALID_PLAYER_ID) {
@@ -116,7 +134,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
      * @param playerId The ID of the media player.
      */
     @CalledByNative
-    private void releaseExternalVideoSurface(int playerId) {
+    protected void releaseExternalVideoSurface(int playerId) {
         if (mPlayerId != playerId) return;
 
         releaseIfActiveContainer(this);
@@ -125,7 +143,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     }
 
     @CalledByNative
-    private void destroy() {
+    protected void destroy() {
         releaseExternalVideoSurface(mPlayerId);
     }
 
@@ -176,7 +194,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
      * @param bottom The absolute CSS Y coordinate of the bottom side of the video element.
      */
     @CalledByNative
-    private void onExternalVideoSurfacePositionChanged(
+    protected void onExternalVideoSurfacePositionChanged(
             int playerId, float left, float top, float right, float bottom) {
         if (mPlayerId != playerId) return;
 
@@ -192,7 +210,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
      * Called when the page that contains the video element is scrolled or zoomed.
      */
     @CalledByNative
-    private void onFrameInfoUpdated() {
+    protected void onFrameInfoUpdated() {
         if (mPlayerId == INVALID_PLAYER_ID) return;
 
         layOutSurfaceView();
