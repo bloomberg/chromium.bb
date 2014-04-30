@@ -26,7 +26,7 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeGuestSession)) {
     if (!url.SchemeIs("chrome") && !url.SchemeIs("chrome-extension")) {
-      *reason = net::ERR_CONNECTION_RESET;
+      *reason = net::ERR_BLOCKED_ENROLLMENT_CHECK_PENDING;
       *block = true;
       return true;
     }
