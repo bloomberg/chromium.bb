@@ -161,7 +161,7 @@ public:
         return this == &other;
     }
 
-    virtual void handleEvent(ExecutionContext*, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext* context, Event* event) OVERRIDE
     {
         if (event->type() != EventTypeNames::success) {
             m_executableWithDatabase->requestCallback()->sendFailure("Unexpected event type.");
@@ -177,7 +177,7 @@ public:
 
         RefPtr<IDBDatabase> idbDatabase = requestResult->idbDatabase();
         m_executableWithDatabase->execute(idbDatabase);
-        IDBPendingTransactionMonitor::deactivateNewTransactions();
+        IDBPendingTransactionMonitor::from(*context).deactivateNewTransactions();
         idbDatabase->close();
     }
 

@@ -25,37 +25,46 @@
 
 #include "config.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
-#include "modules/indexeddb/IDBTransaction.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
 
-using WTF::ThreadSpecific;
+#include "core/dom/ExecutionContext.h"
+#include "modules/indexeddb/IDBTransaction.h"
 
 namespace WebCore {
 
-typedef Vector<RefPtr<IDBTransaction> > TransactionList;
-static ThreadSpecific<TransactionList>& transactions()
+const char* IDBPendingTransactionMonitor::supplementName()
 {
-    // FIXME: Move the Vector to ExecutionContext to avoid dealing with
-    // thread-local storage.
-    AtomicallyInitializedStatic(ThreadSpecific<TransactionList>*, transactions = new ThreadSpecific<TransactionList>);
-    return *transactions;
+    return "IDBPendingTransactionMonitor";
 }
 
-void IDBPendingTransactionMonitor::addNewTransaction(PassRefPtr<IDBTransaction> transaction)
+inline IDBPendingTransactionMonitor::IDBPendingTransactionMonitor()
 {
-    transactions()->append(transaction);
+}
+
+IDBPendingTransactionMonitor& IDBPendingTransactionMonitor::from(Supplementable<ExecutionContext>& context)
+{
+    IDBPendingTransactionMonitor* supplement = static_cast<IDBPendingTransactionMonitor*>(Supplement<ExecutionContext>::from(context, supplementName()));
+    if (!supplement) {
+        supplement = new IDBPendingTransactionMonitor();
+        provideTo(context, supplementName(), adoptPtr(supplement));
+    }
+    return *supplement;
+}
+
+IDBPendingTransactionMonitor::~IDBPendingTransactionMonitor()
+{
+}
+
+void IDBPendingTransactionMonitor::addNewTransaction(IDBTransaction& transaction)
+{
+    m_transactions.append(&transaction);
 }
 
 void IDBPendingTransactionMonitor::deactivateNewTransactions()
 {
-    ThreadSpecific<TransactionList>& list = transactions();
-    for (size_t i = 0; i < list->size(); ++i) {
-        RefPtr<IDBTransaction> transaction = list->at(i);
-        transaction->setActive(false);
-    }
+    for (size_t i = 0; i < m_transactions.size(); ++i)
+        m_transactions[i]->setActive(false);
     // FIXME: Exercise this call to clear() in a layout test.
-    list->clear();
+    m_transactions.clear();
 }
 
 };

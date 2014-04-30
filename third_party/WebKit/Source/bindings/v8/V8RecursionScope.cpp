@@ -42,9 +42,9 @@ void V8RecursionScope::didLeaveScriptContext()
 
     // Indexed DB requires that transactions are created with an internal |active| flag
     // set to true, but the flag becomes false when control returns to the event loop.
-    IDBPendingTransactionMonitor::deactivateNewTransactions();
+    IDBPendingTransactionMonitor::from(m_executionContext).deactivateNewTransactions();
 
-    if (m_isDocumentContext)
+    if (m_executionContext.isDocument())
         Microtask::performCheckpoint();
 }
 

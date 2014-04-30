@@ -5675,6 +5675,7 @@ void Document::trace(Visitor* visitor)
     Supplementable<Document>::trace(visitor);
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);
+    ExecutionContext::trace(visitor);
 }
 
 } // namespace WebCore

@@ -26,11 +26,14 @@
 #ifndef IDBPendingTransactionMonitor_h
 #define IDBPendingTransactionMonitor_h
 
+#include "platform/Supplementable.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class ExecutionContext;
 class IDBTransaction;
 
 // This class keeps track of the transactions created during the current
@@ -38,15 +41,24 @@ class IDBTransaction;
 // which is set to true on creation, but must be set to false when control
 // returns to the event loop.
 
-class IDBPendingTransactionMonitor {
+class IDBPendingTransactionMonitor : public Supplement<ExecutionContext> {
     WTF_MAKE_NONCOPYABLE(IDBPendingTransactionMonitor);
 
 public:
-    static void addNewTransaction(PassRefPtr<IDBTransaction>);
-    static void deactivateNewTransactions();
+    static IDBPendingTransactionMonitor& from(Supplementable<ExecutionContext>&);
+    virtual ~IDBPendingTransactionMonitor();
+    // The trace functino doesn't work until ExecutionContext is moved to Oilpan
+    // heap.
+    virtual void trace(Visitor*) OVERRIDE { }
+    void addNewTransaction(IDBTransaction&);
+    void deactivateNewTransactions();
 
 private:
     IDBPendingTransactionMonitor();
+    static const char* supplementName();
+
+    typedef Vector<RefPtr<IDBTransaction> > TransactionList;
+    TransactionList m_transactions;
 };
 
 } // namespace WebCore

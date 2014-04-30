@@ -60,7 +60,7 @@ class V8RecursionScope {
 public:
     V8RecursionScope(v8::Isolate* isolate, ExecutionContext* context)
         : m_isolate(isolate)
-        , m_isDocumentContext(context && context->isDocument())
+        , m_executionContext(*context)
     {
         V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
         ASSERT(!ScriptForbiddenScope::isScriptForbidden());
@@ -114,7 +114,7 @@ private:
     void didLeaveScriptContext();
 
     v8::Isolate* m_isolate;
-    bool m_isDocumentContext;
+    ExecutionContext& m_executionContext;
 };
 
 } // namespace WebCore

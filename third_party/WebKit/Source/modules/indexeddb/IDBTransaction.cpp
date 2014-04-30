@@ -97,7 +97,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vect
     // We pass a reference of this object before it can be adopted.
     relaxAdoptionRequirement();
     if (m_state == Active)
-        IDBPendingTransactionMonitor::addNewTransaction(this);
+        IDBPendingTransactionMonitor::from(*context).addNewTransaction(*this);
     m_database->transactionCreated(this);
 }
 

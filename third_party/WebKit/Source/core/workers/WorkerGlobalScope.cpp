@@ -327,6 +327,7 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_navigator);
     visitor->trace(m_workerClients);
     WillBeHeapSupplementable<WorkerGlobalScope>::trace(visitor);
+    ExecutionContext::trace(visitor);
 }
 
 } // namespace WebCore
