@@ -74,7 +74,7 @@ MojoResult MessagePipe::WriteMessage(
   DCHECK(port == 0 || port == 1);
   uint32_t num_handles =
       transports ? static_cast<uint32_t>(transports->size()) : 0;
-  return EnqueueMessage(
+  return EnqueueMessageInternal(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeMessagePipeEndpoint,
@@ -145,84 +145,8 @@ void MessagePipe::ConvertLocalToProxy(unsigned port) {
 
 MojoResult MessagePipe::EnqueueMessage(
     unsigned port,
-    scoped_ptr<MessageInTransit> message,
-    std::vector<DispatcherTransport>* transports) {
-  DCHECK(port == 0 || port == 1);
-  DCHECK(message.get());
-  if (message->num_handles() == 0) {
-    // If |message->num_handles()| is 0, then |transports| should be null and
-    // |message| should not have dispatchers.
-    DCHECK(!transports);
-    DCHECK(!message->has_dispatchers());
-  } else {
-    // Otherwise either |transports| must be (non-null and) of the right size
-    // and the message shouldn't have dispatchers, or |transports| must be null
-    // and the message should have the right number of dispatchers.
-    DCHECK((transports && transports->size() == message->num_handles() &&
-                !message->has_dispatchers()) ||
-           (!transports && message->has_dispatchers() &&
-                message->dispatchers()->size() == message->num_handles()));
-  }
-
-  if (message->type() == MessageInTransit::kTypeMessagePipe) {
-    DCHECK(!transports);
-    return HandleControlMessage(port, message.Pass());
-  }
-
-  DCHECK_EQ(message->type(), MessageInTransit::kTypeMessagePipeEndpoint);
-
-  base::AutoLock locker(lock_);
-  DCHECK(endpoints_[GetPeerPort(port)].get());
-
-  // The destination port need not be open, unlike the source port.
-  if (!endpoints_[port].get())
-    return MOJO_RESULT_FAILED_PRECONDITION;
-
-  if (transports) {
-    DCHECK(!message->dispatchers());
-
-    // You're not allowed to send either handle to a message pipe over the
-    // message pipe, so check for this. (The case of trying to write a handle to
-    // itself is taken care of by |Core|. That case kind of makes sense, but
-    // leads to complications if, e.g., both sides try to do the same thing with
-    // their respective handles simultaneously. The other case, of trying to
-    // write the peer handle to a handle, doesn't make sense -- since no handle
-    // will be available to read the message from.)
-    for (size_t i = 0; i < transports->size(); i++) {
-      if (!(*transports)[i].is_valid())
-        continue;
-      if ((*transports)[i].GetType() == Dispatcher::kTypeMessagePipe) {
-        MessagePipeDispatcherTransport mp_transport((*transports)[i]);
-        if (mp_transport.GetMessagePipe() == this) {
-          // The other case should have been disallowed by |Core|. (Note: |port|
-          // is the peer port of the handle given to |WriteMessage()|.)
-          DCHECK_EQ(mp_transport.GetPort(), port);
-          return MOJO_RESULT_INVALID_ARGUMENT;
-        }
-      }
-    }
-
-    // Clone the dispatchers and attach them to the message. (This must be done
-    // as a separate loop, since we want to leave the dispatchers alone on
-    // failure.)
-    scoped_ptr<std::vector<scoped_refptr<Dispatcher> > >
-        dispatchers(new std::vector<scoped_refptr<Dispatcher> >());
-    dispatchers->reserve(transports->size());
-    for (size_t i = 0; i < transports->size(); i++) {
-      if ((*transports)[i].is_valid()) {
-        dispatchers->push_back(
-            (*transports)[i].CreateEquivalentDispatcherAndClose());
-      } else {
-        LOG(WARNING) << "Enqueueing null dispatcher";
-        dispatchers->push_back(scoped_refptr<Dispatcher>());
-      }
-    }
-    message->SetDispatchers(dispatchers.Pass());
-  }
-
-  // The endpoint's |EnqueueMessage()| may not report failure.
-  endpoints_[port]->EnqueueMessage(message.Pass());
-  return MOJO_RESULT_OK;
+    scoped_ptr<MessageInTransit> message) {
+  return EnqueueMessageInternal(port, message.Pass(), NULL);
 }
 
 bool MessagePipe::Attach(unsigned port,
@@ -273,6 +197,87 @@ MessagePipe::~MessagePipe() {
   // |Close()|. Thus these should already be null.
   DCHECK(!endpoints_[0].get());
   DCHECK(!endpoints_[1].get());
+}
+
+MojoResult MessagePipe::EnqueueMessageInternal(
+    unsigned port,
+    scoped_ptr<MessageInTransit> message,
+    std::vector<DispatcherTransport>* transports) {
+  DCHECK(port == 0 || port == 1);
+  DCHECK(message.get());
+
+  if (message->type() == MessageInTransit::kTypeMessagePipe) {
+    DCHECK(!transports);
+    return HandleControlMessage(port, message.Pass());
+  }
+
+  DCHECK_EQ(message->type(), MessageInTransit::kTypeMessagePipeEndpoint);
+
+  base::AutoLock locker(lock_);
+  DCHECK(endpoints_[GetPeerPort(port)].get());
+
+  // The destination port need not be open, unlike the source port.
+  if (!endpoints_[port].get())
+    return MOJO_RESULT_FAILED_PRECONDITION;
+
+  if (transports) {
+    MojoResult result = AttachTransportsNoLock(port, message.get(), transports);
+    if (result != MOJO_RESULT_OK)
+      return result;
+  }
+
+  if (message->has_dispatchers())
+    DCHECK_EQ(message->dispatchers()->size(), message->num_handles());
+
+  // The endpoint's |EnqueueMessage()| may not report failure.
+  endpoints_[port]->EnqueueMessage(message.Pass());
+  return MOJO_RESULT_OK;
+}
+
+MojoResult MessagePipe::AttachTransportsNoLock(
+    unsigned port,
+    MessageInTransit* message,
+    std::vector<DispatcherTransport>* transports) {
+  DCHECK(!message->has_dispatchers());
+  DCHECK_EQ(transports->size(), message->num_handles());
+
+  // You're not allowed to send either handle to a message pipe over the message
+  // pipe, so check for this. (The case of trying to write a handle to itself is
+  // taken care of by |Core|. That case kind of makes sense, but leads to
+  // complications if, e.g., both sides try to do the same thing with their
+  // respective handles simultaneously. The other case, of trying to write the
+  // peer handle to a handle, doesn't make sense -- since no handle will be
+  // available to read the message from.)
+  for (size_t i = 0; i < transports->size(); i++) {
+    if (!(*transports)[i].is_valid())
+      continue;
+    if ((*transports)[i].GetType() == Dispatcher::kTypeMessagePipe) {
+      MessagePipeDispatcherTransport mp_transport((*transports)[i]);
+      if (mp_transport.GetMessagePipe() == this) {
+        // The other case should have been disallowed by |Core|. (Note: |port|
+        // is the peer port of the handle given to |WriteMessage()|.)
+        DCHECK_EQ(mp_transport.GetPort(), port);
+        return MOJO_RESULT_INVALID_ARGUMENT;
+      }
+    }
+  }
+
+  // Clone the dispatchers and attach them to the message. (This must be done as
+  // a separate loop, since we want to leave the dispatchers alone on failure.)
+  scoped_ptr<std::vector<scoped_refptr<Dispatcher> > >
+      dispatchers(new std::vector<scoped_refptr<Dispatcher> >());
+  dispatchers->reserve(transports->size());
+  for (size_t i = 0; i < transports->size(); i++) {
+    if ((*transports)[i].is_valid()) {
+      dispatchers->push_back(
+          (*transports)[i].CreateEquivalentDispatcherAndClose());
+    } else {
+      LOG(WARNING) << "Enqueueing null dispatcher";
+      dispatchers->push_back(scoped_refptr<Dispatcher>());
+    }
+  }
+  message->SetDispatchers(dispatchers.Pass());
+  return MOJO_RESULT_OK;
 }
 
 MojoResult MessagePipe::HandleControlMessage(

@@ -16,6 +16,28 @@
 namespace mojo {
 namespace system {
 
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeMessagePipeEndpoint;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeMessagePipe;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeChannel;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeMessagePipeEndpointData;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpoint;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpointAck;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
+    MessageInTransit::kInvalidEndpointId;
+STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
+STATIC_CONST_MEMBER_DEFINITION const size_t
+    MessageInTransit::kMaxSerializedDispatcherSize;
+STATIC_CONST_MEMBER_DEFINITION const size_t
+    MessageInTransit::kMaxSerializedDispatcherPlatformHandles;
+
 struct MessageInTransit::PrivateStructForCompileAsserts {
   // The size of |Header| must be a multiple of the alignment.
   COMPILE_ASSERT(sizeof(Header) % kMessageAlignment == 0,
@@ -40,34 +62,13 @@ struct MessageInTransit::PrivateStructForCompileAsserts {
                  sizeof_MessageInTransit_HandleTableEntry_invalid);
 };
 
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeMessagePipeEndpoint;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeMessagePipe;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeChannel;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeMessagePipeEndpointData;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpoint;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpointAck;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
-    MessageInTransit::kInvalidEndpointId;
-STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
-STATIC_CONST_MEMBER_DEFINITION const size_t
-    MessageInTransit::kMaxSerializedDispatcherSize;
-STATIC_CONST_MEMBER_DEFINITION const size_t
-    MessageInTransit::kMaxSerializedDispatcherPlatformHandles;
-
 // For each attached (Mojo) handle, there'll be a handle table entry and
 // serialized dispatcher data.
 // static
 const size_t MessageInTransit::kMaxSecondaryBufferSize = kMaxMessageNumHandles *
     (sizeof(HandleTableEntry) + kMaxSerializedDispatcherSize);
 
+// static
 const size_t MessageInTransit::kMaxPlatformHandles =
     kMaxMessageNumHandles * kMaxSerializedDispatcherPlatformHandles;
 
@@ -221,10 +222,14 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   if (!num_handles())
     return;
 
-  size_t handle_table_size = num_handles() * sizeof(HandleTableEntry);
-  // The size of the secondary buffer. We'll start with the size of the handle
-  // table, and add to it as we go along.
-  size_t size = handle_table_size;
+  // The offset to the start of the (Mojo) handle table.
+  // TODO(vtl): Add a header to the secondary buffer.
+  const size_t handle_table_start_offset = 0;
+  // The offset to the start of the serialized dispatcher data.
+  const size_t serialized_dispatcher_start_offset =
+      handle_table_start_offset + num_handles() * sizeof(HandleTableEntry);
+  // The size of the secondary buffer we'll add to this as we go along).
+  size_t size = serialized_dispatcher_start_offset;
   size_t num_platform_handles = 0;
 #if DCHECK_IS_ON
   std::vector<size_t> all_max_sizes(num_handles());
@@ -265,9 +270,9 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
     platform_handles_.reset(new std::vector<embedder::PlatformHandle>());
   }
 
-  HandleTableEntry* handle_table =
-      static_cast<HandleTableEntry*>(secondary_buffer_);
-  size_t current_offset = handle_table_size;
+  HandleTableEntry* handle_table = reinterpret_cast<HandleTableEntry*>(
+      static_cast<char*>(secondary_buffer_) + handle_table_start_offset);
+  size_t current_offset = serialized_dispatcher_start_offset;
   for (size_t i = 0; i < num_handles(); i++) {
     Dispatcher* dispatcher = (*dispatchers_)[i].get();
     if (!dispatcher) {

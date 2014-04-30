@@ -242,8 +242,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // To allow us to make assertions about |Header| in the .cc file.
   struct PrivateStructForCompileAsserts;
 
-  // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
-  // size. Must be POD.
+  // Header for the data (main buffer). Must be a multiple of
+  // |kMessageAlignment| bytes in size. Must be POD.
   struct Header {
     // Total size of the message, including the header, the message data
     // ("bytes") including padding (to make it a multiple of |kMessageAlignment|

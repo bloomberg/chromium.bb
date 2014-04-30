@@ -71,14 +71,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
   // endpoint.
   void ConvertLocalToProxy(unsigned port);
 
-  // This is used internally by |WriteMessage()| and by |Channel| to enqueue
-  // messages (typically to a |LocalMessagePipeEndpoint|). Unlike
-  // |WriteMessage()|, |port| is the *destination* port. |transports| should be
-  // non-null only if it's nonempty, and only if |message| has no dispatchers
-  // attached.
+  // This is used by |Channel| to enqueue messages (typically to a
+  // |LocalMessagePipeEndpoint|). Unlike |WriteMessage()|, |port| is the
+  // *destination* port.
   MojoResult EnqueueMessage(unsigned port,
-                            scoped_ptr<MessageInTransit> message,
-                            std::vector<DispatcherTransport>* transports);
+                            scoped_ptr<MessageInTransit> message);
 
   // These are used by |Channel|.
   bool Attach(unsigned port,
@@ -91,8 +88,22 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
   friend class base::RefCountedThreadSafe<MessagePipe>;
   virtual ~MessagePipe();
 
-  // Used by |EnqueueMessage()| to handle control messages that are actually
-  // meant for us.
+  // This is used internally by |WriteMessage()| and by |EnqueueMessage()|.
+  // |transports| may be non-null only if it's nonempty and |message| has no
+  // dispatchers attached.
+  MojoResult EnqueueMessageInternal(
+      unsigned port,
+      scoped_ptr<MessageInTransit> message,
+      std::vector<DispatcherTransport>* transports);
+
+  // Helper for |EnqueueMessageInternal()|. Must be called with |lock_| held.
+  MojoResult AttachTransportsNoLock(
+      unsigned port,
+      MessageInTransit* message,
+      std::vector<DispatcherTransport>* transports);
+
+  // Used by |EnqueueMessageInternal()| to handle control messages that are
+  // actually meant for us.
   MojoResult HandleControlMessage(unsigned port,
                                   scoped_ptr<MessageInTransit> message);
 

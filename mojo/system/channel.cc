@@ -352,7 +352,7 @@ void Channel::OnReadMessageForDownstream(
   scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
   message->DeserializeDispatchers(this);
   MojoResult result = endpoint_info.message_pipe->EnqueueMessage(
-      MessagePipe::GetPeerPort(endpoint_info.port), message.Pass(), NULL);
+      MessagePipe::GetPeerPort(endpoint_info.port), message.Pass());
   if (result != MOJO_RESULT_OK) {
     // TODO(vtl): This might be a "non-error", e.g., if the destination endpoint
     // has been closed (in an unavoidable race). This might also be a "remote"
