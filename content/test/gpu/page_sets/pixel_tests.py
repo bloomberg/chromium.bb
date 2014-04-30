@@ -43,12 +43,12 @@ class PixelTestsPageSet(page_set_module.PageSet):
       url='file://../../data/gpu/pixel_css3d.html',
       name='Pixel.CSS3DBlueBox',
       test_rect=[0, 0, 400, 300],
-      revision=3,
+      revision=4,
       page_set=self))
 
     self.AddPage(PixelTestsPage(
       url='file://../../data/gpu/pixel_webgl.html',
       name='Pixel.WebGLGreenTriangle',
       test_rect=[0, 0, 400, 300],
-      revision=3,
+      revision=4,
       page_set=self))
