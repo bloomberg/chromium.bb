@@ -49,8 +49,6 @@ void CompositingReasonFinder::updateTriggers()
         m_compositingTriggers |= PluginTrigger;
     if (settings.acceleratedCompositingForCanvasEnabled())
         m_compositingTriggers |= CanvasTrigger;
-    if (settings.acceleratedCompositingForAnimationEnabled())
-        m_compositingTriggers |= AnimationTrigger;
     if (settings.compositedScrollingForFramesEnabled())
         m_compositingTriggers |= ScrollableInnerFrameTrigger;
     if (settings.acceleratedCompositingForFiltersEnabled())
@@ -67,11 +65,6 @@ void CompositingReasonFinder::updateTriggers()
     // Or the sticky and fixed position elements should be behind different flags.
     if (settings.acceleratedCompositingForFixedPositionEnabled())
         m_compositingTriggers |= ViewportConstrainedPositionedTrigger;
-}
-
-bool CompositingReasonFinder::hasAnimationTrigger() const
-{
-    return m_compositingTriggers & AnimationTrigger;
 }
 
 bool CompositingReasonFinder::hasOverflowScrollTrigger() const
@@ -217,9 +210,6 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
 
 bool CompositingReasonFinder::requiresCompositingForAnimation(RenderObject* renderer) const
 {
-    if (!(m_compositingTriggers & AnimationTrigger))
-        return false;
-
     return renderer->style()->shouldCompositeForCurrentAnimations();
 }
 

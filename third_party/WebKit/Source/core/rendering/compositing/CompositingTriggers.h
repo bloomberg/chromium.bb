@@ -28,7 +28,6 @@ enum CompositingTrigger {
     VideoTrigger = 1 << 1,
     PluginTrigger = 1 << 2,
     CanvasTrigger = 1 << 3,
-    AnimationTrigger = 1 << 4,
     FilterTrigger = 1 << 5,
     ScrollableInnerFrameTrigger = 1 << 6,
     GPURasterizationTrigger = 1 << 7,

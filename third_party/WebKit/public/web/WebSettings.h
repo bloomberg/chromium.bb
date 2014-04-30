@@ -61,7 +61,6 @@ public:
     virtual void setAccelerated2dCanvasEnabled(bool) = 0;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) = 0;
     virtual void setAcceleratedCompositingEnabled(bool) = 0;
-    virtual void setAcceleratedCompositingForAnimationEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForCanvasEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForFiltersEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool) = 0;

@@ -508,8 +508,6 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
 
 bool CompositingRequirementsUpdater::isRunningAcceleratedTransformAnimation(RenderObject* renderer) const
 {
-    if (!m_compositingReasonFinder.hasAnimationTrigger())
-        return false;
     return renderer->style()->hasCurrentTransformAnimation();
 }
 
