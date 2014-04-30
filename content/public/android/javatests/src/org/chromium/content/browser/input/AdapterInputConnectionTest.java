@@ -137,9 +137,6 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         public void onImeEvent(boolean isFinish) {}
 
         @Override
-        public void onSetFieldValue() {}
-
-        @Override
         public void onDismissInput() {}
 
         @Override

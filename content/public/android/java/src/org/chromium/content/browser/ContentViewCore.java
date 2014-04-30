@@ -522,11 +522,6 @@ public class ContentViewCore
                     }
 
                     @Override
-                    public void onSetFieldValue() {
-                        scrollFocusedEditableNodeIntoView();
-                    }
-
-                    @Override
                     public void onDismissInput() {
                         getContentViewClient().onImeStateChangeRequested(false);
                     }
@@ -2294,7 +2289,8 @@ public class ContentViewCore
 
         if (mActionMode != null) mActionMode.invalidate();
 
-        mImeAdapter.attachAndShowIfNeeded(nativeImeAdapterAndroid, textInputType, showImeIfNeeded);
+        mImeAdapter.updateKeyboardVisibility(
+                nativeImeAdapterAndroid, textInputType, showImeIfNeeded);
 
         if (mInputConnection != null) {
             mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,

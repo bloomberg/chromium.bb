@@ -41,6 +41,7 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("content")
 public class ImeAdapter {
+
     /**
      * Interface for the delegate that needs to be notified of IME changes.
      */
@@ -49,9 +50,20 @@ public class ImeAdapter {
          * @param isFinish whether the event is occurring because input is finished.
          */
         void onImeEvent(boolean isFinish);
-        void onSetFieldValue();
+
+        /**
+         * Called when a request to hide the keyboard is sent to InputMethodManager.
+         */
         void onDismissInput();
+
+        /**
+         * @return View that the keyboard should be attached to.
+         */
         View getAttachedView();
+
+        /**
+         * @return Object that should be called for all keyboard show and hide requests.
+         */
         ResultReceiver getNewShowKeyboardReceiver();
     }
 
@@ -131,6 +143,11 @@ public class ImeAdapter {
         }
     }
 
+    /**
+     * Overrides the InputMethodManagerWrapper that ImeAdapter uses to make calls to
+     * InputMethodManager.
+     * @param immw InputMethodManagerWrapper that should be used to call InputMethodManager.
+     */
     @VisibleForTesting
     public void setInputMethodManagerWrapper(InputMethodManagerWrapper immw) {
         mInputMethodManagerWrapper = immw;
@@ -161,6 +178,9 @@ public class ImeAdapter {
         return mTextInputType;
     }
 
+    /**
+     * @return Constant representing that a focused node is not an input field.
+     */
     public static int getTextInputTypeNone() {
         return sTextInputTypeNone;
     }
@@ -185,16 +205,13 @@ public class ImeAdapter {
         return modifiers;
     }
 
-    public boolean isActive() {
-        return mInputConnection != null && mInputConnection.isActive();
-    }
-
-    private boolean isFor(long nativeImeAdapter, int textInputType) {
-        return mNativeImeAdapterAndroid == nativeImeAdapter &&
-               mTextInputType == textInputType;
-    }
-
-    public void attachAndShowIfNeeded(long nativeImeAdapter, int textInputType,
+    /**
+     * Shows or hides the keyboard based on passed parameters.
+     * @param nativeImeAdapter Pointer to the ImeAdapterAndroid object that is sending the update.
+     * @param textInputType Text input type for the currently focused field in renderer.
+     * @param showIfNeeded Whether the keyboard should be shown if it is currently hidden.
+     */
+    public void updateKeyboardVisibility(long nativeImeAdapter, int textInputType,
             boolean showIfNeeded) {
         mHandler.removeCallbacks(mDismissInput);
 
@@ -204,7 +221,7 @@ public class ImeAdapter {
             return;
         }
 
-        if (!isFor(nativeImeAdapter, textInputType)) {
+        if (mNativeImeAdapterAndroid != nativeImeAdapter || mTextInputType != textInputType) {
             // Set a delayed task to perform unfocus. This avoids hiding the keyboard when tabbing
             // through text inputs or when JS rapidly changes focus to another text element.
             if (textInputType == sTextInputTypeNone) {
@@ -361,8 +378,7 @@ public class ImeAdapter {
                                 event.isSystem(), event.getUnicodeChar());
     }
 
-    boolean sendSyntheticKeyEvent(
-            int eventType, long timestampMs, int keyCode, int unicodeChar) {
+    boolean sendSyntheticKeyEvent(int eventType, long timestampMs, int keyCode, int unicodeChar) {
         if (mNativeImeAdapterAndroid == 0) return false;
 
         nativeSendSyntheticKeyEvent(
@@ -370,12 +386,26 @@ public class ImeAdapter {
         return true;
     }
 
+    /**
+     * Send a request to the native counterpart to delete a given range of characters.
+     * @param beforeLength Number of characters to extend the selection by before the existing
+     *                     selection.
+     * @param afterLength Number of characters to extend the selection by after the existing
+     *                    selection.
+     * @return Whether the native counterpart of ImeAdapter received the call.
+     */
     boolean deleteSurroundingText(int beforeLength, int afterLength) {
         if (mNativeImeAdapterAndroid == 0) return false;
         nativeDeleteSurroundingText(mNativeImeAdapterAndroid, beforeLength, afterLength);
         return true;
     }
 
+    /**
+     * Send a request to the native counterpart to set the selection to given range.
+     * @param start Selection start index.
+     * @param end Selection end index.
+     * @return Whether the native counterpart of ImeAdapter received the call.
+     */
     boolean setEditableSelectionOffsets(int start, int end) {
         if (mNativeImeAdapterAndroid == 0) return false;
         nativeSetEditableSelectionOffsets(mNativeImeAdapterAndroid, start, end);
