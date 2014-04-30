@@ -24,5 +24,6 @@ TEST COMPLETE
   (rect 24 24 188 188)
   (rect 24 24 188 188)
   (rect 24 24 188 188)
+  (rect 24 24 188 188)
 )
 

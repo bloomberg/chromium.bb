@@ -13,7 +13,6 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 (repaint rects
-  (rect 8 8 2 2)
   (rect 123 128 80 80)
   (rect 128 133 70 70)
 )
