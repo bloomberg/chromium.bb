@@ -35,14 +35,6 @@
 
 namespace {
 
-inline bool RunningOnASAN() {
-#if defined(ADDRESS_SANITIZER)
-  return true;
-#else
-  return false;
-#endif
-}
-
 inline bool IsArchitectureX86_64() {
 #if defined(__x86_64__)
   return true;
@@ -65,24 +57,19 @@ namespace sandbox {
 
 ErrorCode RestrictCloneToThreadsAndEPERMFork(SandboxBPF* sandbox) {
   // Glibc's pthread.
-  // TODO(jln): fix this on ASAN.
-  if (!RunningOnASAN()) {
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-                         CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-                         CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_PARENT_SETTID | SIGCHLD,
-                         ErrorCode(EPERM),
-           // ARM
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD,
-                         ErrorCode(EPERM),
-           sandbox->Trap(SIGSYSCloneFailure, NULL))));
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
+  return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
+                       CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
+                       CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
+                       ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       CLONE_PARENT_SETTID | SIGCHLD,
+                       ErrorCode(EPERM),
+         // ARM
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD,
+                       ErrorCode(EPERM),
+         sandbox->Trap(SIGSYSCloneFailure, NULL))));
 }
 
 ErrorCode RestrictPrctl(SandboxBPF* sandbox) {
@@ -213,35 +200,20 @@ ErrorCode RestrictSocketcallCommand(SandboxBPF* sandbox) {
 #endif
 
 ErrorCode RestrictKillTarget(pid_t target_pid, SandboxBPF* sandbox, int sysno) {
-  if (!RunningOnASAN()) {
-    switch (sysno) {
-      case __NR_kill:
-      case __NR_tgkill:
-        return sandbox->Cond(0,
-                             ErrorCode::TP_32BIT,
-                             ErrorCode::OP_EQUAL,
-                             target_pid,
-                             ErrorCode(ErrorCode::ERR_ALLOWED),
-                             sandbox->Trap(SIGSYSKillFailure, NULL));
-      case __NR_tkill:
-        return sandbox->Trap(SIGSYSKillFailure, NULL);
-      default:
-        NOTREACHED();
-        return sandbox->Trap(CrashSIGSYS_Handler, NULL);
-    }
-  } else {
-    switch (sysno) {
-      case __NR_kill:
-      case __NR_tgkill:
-      case __NR_tkill:
-        // On ASAN, fork() is not properly denied. This could lead to the
-        // strange failures we're observing with this policy on ASAN.
-        // TODO(jln): fix this.
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
-      default:
-        NOTREACHED();
-        return sandbox->Trap(CrashSIGSYS_Handler, NULL);
-    }
+  switch (sysno) {
+    case __NR_kill:
+    case __NR_tgkill:
+      return sandbox->Cond(0,
+                           ErrorCode::TP_32BIT,
+                           ErrorCode::OP_EQUAL,
+                           target_pid,
+                           ErrorCode(ErrorCode::ERR_ALLOWED),
+                           sandbox->Trap(SIGSYSKillFailure, NULL));
+    case __NR_tkill:
+      return sandbox->Trap(SIGSYSKillFailure, NULL);
+    default:
+      NOTREACHED();
+      return sandbox->Trap(CrashSIGSYS_Handler, NULL);
   }
 }
 
