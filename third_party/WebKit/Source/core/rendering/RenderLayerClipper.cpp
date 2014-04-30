@@ -53,9 +53,12 @@ void RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContex
 {
     ClipRectsType clipRectsType = clipRectsContext.clipRectsType;
     ASSERT(clipRectsType < NumCachedClipRectsTypes);
-    if (m_clipRectsCache && m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip)) {
-        // FIXME: these asserts trigger for squashing. Need to update this code to support squashing as appropriate.
-        ASSERT(clipRectsContext.rootLayer == m_clipRectsCache->m_clipRectsRoot[clipRectsType]);
+    if (m_clipRectsCache
+        && clipRectsContext.rootLayer == m_clipRectsCache->clipRectsRoot(clipRectsType)
+        && m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip)) {
+        // FIXME: We used to ASSERT that we always got a consistent root layer.
+        // We should add a test that has an inconsistent root. See
+        // http://crbug.com/366118 for an example.
         ASSERT(m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] == clipRectsContext.overlayScrollbarSizeRelevancy);
 
 #ifdef CHECK_CACHED_CLIP_RECTS
@@ -82,12 +85,11 @@ void RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContex
         m_clipRectsCache = adoptPtr(new ClipRectsCache);
 
     if (parentLayer && parentLayer->clipper().clipRects(clipRectsContext) && clipRects == *parentLayer->clipper().clipRects(clipRectsContext))
-        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, parentLayer->clipper().clipRects(clipRectsContext));
+        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, parentLayer->clipper().clipRects(clipRectsContext), clipRectsContext.rootLayer);
     else
-        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, ClipRects::create(clipRects));
+        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, ClipRects::create(clipRects), clipRectsContext.rootLayer);
 
 #ifndef NDEBUG
-    m_clipRectsCache->m_clipRectsRoot[clipRectsType] = clipRectsContext.rootLayer;
     m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] = clipRectsContext.overlayScrollbarSizeRelevancy;
 #endif
 }
@@ -115,8 +117,8 @@ void RenderLayerClipper::clearClipRects(ClipRectsType typeToClear)
 
         ASSERT(typeToClear < NumCachedClipRectsTypes);
         RefPtr<ClipRects> dummy;
-        m_clipRectsCache->setClipRects(typeToClear, RespectOverflowClip, dummy);
-        m_clipRectsCache->setClipRects(typeToClear, IgnoreOverflowClip, dummy);
+        m_clipRectsCache->setClipRects(typeToClear, RespectOverflowClip, dummy, 0);
+        m_clipRectsCache->setClipRects(typeToClear, IgnoreOverflowClip, dummy, 0);
     }
 }
 

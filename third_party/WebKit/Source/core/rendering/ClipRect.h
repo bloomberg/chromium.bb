@@ -205,10 +205,15 @@ public:
     }
 
     PassRefPtr<ClipRects> getClipRects(ClipRectsType clipRectsType, ShouldRespectOverflowClip respectOverflow) { return m_clipRects[getIndex(clipRectsType, respectOverflow)]; }
-    void setClipRects(ClipRectsType clipRectsType, ShouldRespectOverflowClip respectOverflow, PassRefPtr<ClipRects> clipRects) { m_clipRects[getIndex(clipRectsType, respectOverflow)] = clipRects; }
+    void setClipRects(ClipRectsType clipRectsType, ShouldRespectOverflowClip respectOverflow, PassRefPtr<ClipRects> clipRects, const RenderLayer* root)
+    {
+        m_clipRects[getIndex(clipRectsType, respectOverflow)] = clipRects;
+        m_clipRectsRoot[clipRectsType] = root;
+    }
+
+    const RenderLayer* clipRectsRoot(ClipRectsType clipRectsType) const { return m_clipRectsRoot[clipRectsType]; }
 
 #ifndef NDEBUG
-    const RenderLayer* m_clipRectsRoot[NumCachedClipRectsTypes];
     OverlayScrollbarSizeRelevancy m_scrollbarRelevancy[NumCachedClipRectsTypes];
 #endif
 
@@ -221,6 +226,7 @@ private:
         return index;
     }
 
+    const RenderLayer* m_clipRectsRoot[NumCachedClipRectsTypes];
     RefPtr<ClipRects> m_clipRects[NumCachedClipRectsTypes * 2];
 };
 
