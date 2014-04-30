@@ -123,6 +123,8 @@ const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 const char kQuicFieldTrialPacketLengthSuffix[] = "BytePackets";
 const char kQuicFieldTrialPacingSuffix[] = "WithPacing";
+const char kQuicFieldTrialTimeBasedLossDetectionSuffix[] =
+    "WithTimeBasedLossDetection";
 
 const char kSpdyFieldTrialName[] = "SPDY";
 const char kSpdyFieldTrialDisabledGroupName[] = "SpdyDisabled";
@@ -992,6 +994,8 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
   globals_->enable_quic_pacing.CopyToIfSet(
       &params->enable_quic_pacing);
+  globals_->enable_quic_time_based_loss_detection.CopyToIfSet(
+      &params->enable_quic_time_based_loss_detection);
   globals_->enable_quic_persist_server_info.CopyToIfSet(
       &params->enable_quic_persist_server_info);
   globals_->enable_quic_port_selection.CopyToIfSet(
@@ -1089,6 +1093,8 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
         ShouldEnableQuicHttps(command_line, quic_trial_group));
     globals_->enable_quic_pacing.set(
         ShouldEnableQuicPacing(command_line, quic_trial_group));
+    globals_->enable_quic_time_based_loss_detection.set(
+        ShouldEnableQuicTimeBasedLossDetection(command_line, quic_trial_group));
     globals_->enable_quic_persist_server_info.set(
         ShouldEnableQuicPersistServerInfo(command_line));
     globals_->enable_quic_port_selection.set(
@@ -1178,6 +1184,19 @@ bool IOThread::ShouldEnableQuicPacing(const CommandLine& command_line,
     return false;
 
   return quic_trial_group.ends_with(kQuicFieldTrialPacingSuffix);
+}
+
+bool IOThread::ShouldEnableQuicTimeBasedLossDetection(
+    const CommandLine& command_line,
+    base::StringPiece quic_trial_group) {
+  if (command_line.HasSwitch(switches::kEnableQuicTimeBasedLossDetection))
+    return true;
+
+  if (command_line.HasSwitch(switches::kDisableQuicTimeBasedLossDetection))
+    return false;
+
+  return quic_trial_group.ends_with(
+      kQuicFieldTrialTimeBasedLossDetectionSuffix);
 }
 
 bool IOThread::ShouldEnableQuicPersistServerInfo(

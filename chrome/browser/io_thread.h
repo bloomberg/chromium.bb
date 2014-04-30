@@ -168,6 +168,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_https;
     Optional<bool> enable_quic_pacing;
+    Optional<bool> enable_quic_time_based_loss_detection;
     Optional<bool> enable_quic_persist_server_info;
     Optional<bool> enable_quic_port_selection;
     Optional<size_t> quic_max_packet_length;
@@ -291,6 +292,12 @@ class IOThread : public content::BrowserThreadDelegate {
   // QUIC handshake.
   bool ShouldEnableQuicPacing(const base::CommandLine& command_line,
                               base::StringPiece quic_trial_group);
+
+  // Returns true if QUIC time-base loss detection should be negotiated during
+  // the QUIC handshake.
+  bool ShouldEnableQuicTimeBasedLossDetection(
+      const base::CommandLine& command_line,
+      base::StringPiece quic_trial_group);
 
   // Returns true if Chromium should persist QUIC server config information to
   // disk cache.

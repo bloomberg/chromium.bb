@@ -392,7 +392,8 @@ QuicStreamFactory::QuicStreamFactory(
     size_t max_packet_length,
     const QuicVersionVector& supported_versions,
     bool enable_port_selection,
-    bool enable_pacing)
+    bool enable_pacing,
+    bool enable_time_based_loss_detection)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
@@ -410,6 +411,8 @@ QuicStreamFactory::QuicStreamFactory(
       weak_factory_(this) {
   config_.SetDefaults();
   config_.EnablePacing(enable_pacing_);
+  if (enable_time_based_loss_detection)
+    config_.SetLossDetectionToSend(kTIME);
   config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(30),
       QuicTime::Delta::FromSeconds(30));
