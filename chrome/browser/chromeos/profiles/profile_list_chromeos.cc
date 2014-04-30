@@ -50,7 +50,7 @@ void ProfileListChromeOS::RebuildMenu() {
     size_t i = profile_info_->GetIndexOfProfileWithPath(
         ProfileHelper::GetProfilePathByUserIdHash((*it)->username_hash()));
 
-    gfx::Image icon = gfx::Image((*it)->image());
+    gfx::Image icon = gfx::Image((*it)->GetImage());
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kNewProfileManagement)) {
       // old avatar menu uses resized-small images

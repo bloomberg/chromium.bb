@@ -12,7 +12,7 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"

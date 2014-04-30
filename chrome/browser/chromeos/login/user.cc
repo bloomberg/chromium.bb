@@ -10,6 +10,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -168,11 +169,28 @@ void UserContext::CopyFrom(const UserContext& other) {
   auth_flow = other.auth_flow;
 }
 
+std::string User::GetEmail() const {
+  return display_email();
+}
+
 base::string16 User::GetDisplayName() const {
   // Fallback to the email account name in case display name haven't been set.
   return display_name_.empty() ?
       base::UTF8ToUTF16(GetAccountName(true)) :
       display_name_;
+}
+
+base::string16 User::GetGivenName() const {
+  return given_name_;
+}
+
+const gfx::ImageSkia& User::GetImage() const {
+  return user_image_.image();
+}
+
+std::string User::GetUserID() const {
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(
+      email()));
 }
 
 std::string User::GetAccountName(bool use_display_email) const {

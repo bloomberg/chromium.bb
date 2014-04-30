@@ -4,7 +4,7 @@
 
 #include "ash/system/user/config.h"
 
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 

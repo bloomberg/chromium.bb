@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"

@@ -8,7 +8,8 @@
 
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
+#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -76,7 +77,7 @@ void SwitchUser(ash::MultiProfileIndex user_index) {
       ash::Shell::GetInstance()->session_state_delegate();
   ash::MultiProfileUMA::RecordSwitchActiveUser(
       ash::MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
-  delegate->SwitchActiveUser(delegate->GetUserID(user_index));
+  delegate->SwitchActiveUser(delegate->GetUserInfo(user_index)->GetUserID());
 }
 
 class LogoutButton : public TrayPopupLabelButton {

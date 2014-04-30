@@ -6,7 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/screensaver/screensaver_view.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"

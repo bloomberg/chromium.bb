@@ -44,7 +44,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #endif
 
 #if defined(USE_X11)

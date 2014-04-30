@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
 #include "ash/multi_profile_uma.h"
-#include "ash/session_state_observer.h"
+#include "ash/session/session_state_observer.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -132,44 +132,21 @@ SessionStateDelegateChromeos::GetSessionState() const {
   return session_state_;
 }
 
-const base::string16 SessionStateDelegateChromeos::GetUserDisplayName(
+const ash::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
     ash::MultiProfileIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());
-  return chromeos::UserManager::Get()->
-             GetLRULoggedInUsers()[index]->display_name();
+  return chromeos::UserManager::Get()->GetLRULoggedInUsers()[index];
 }
 
-const base::string16 SessionStateDelegateChromeos::GetUserGivenName(
-    ash::MultiProfileIndex index) const {
-  DCHECK_LT(index, NumberOfLoggedInUsers());
-  return chromeos::UserManager::Get()
-      ->GetLRULoggedInUsers()[index]
-      ->given_name();
-}
-
-const std::string SessionStateDelegateChromeos::GetUserEmail(
-    ash::MultiProfileIndex index) const {
-  DCHECK_LT(index, NumberOfLoggedInUsers());
-  return chromeos::UserManager::Get()->
-             GetLRULoggedInUsers()[index]->display_email();
-}
-
-const std::string SessionStateDelegateChromeos::GetUserID(
-    ash::MultiProfileIndex index) const {
-  DCHECK_LT(index, NumberOfLoggedInUsers());
-  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(
-      chromeos::UserManager::Get()->
-             GetLRULoggedInUsers()[index]->email()));
-}
-
-const gfx::ImageSkia& SessionStateDelegateChromeos::GetUserImage(
+const ash::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
     content::BrowserContext* context) const {
   DCHECK(context);
   return chromeos::UserManager::Get()->GetUserByProfile(
-      Profile::FromBrowserContext(context))->image();
+      Profile::FromBrowserContext(context));
 }
 
-bool SessionStateDelegateChromeos::ShouldShowAvatar(aura::Window* window) {
+bool SessionStateDelegateChromeos::ShouldShowAvatar(
+    aura::Window* window) const {
   return chrome::MultiUserWindowManager::GetInstance()->
       ShouldShowAvatar(window);
 }

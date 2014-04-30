@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_dialog.h"
 #include "base/location.h"

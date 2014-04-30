@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
+#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
@@ -64,7 +65,10 @@ class MultiUserNotificationBlockerChromeOSTest
   }
 
   const std::string GetDefaultUserId() {
-    return ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0);
+    return ash::Shell::GetInstance()
+        ->session_state_delegate()
+        ->GetUserInfo(0)
+        ->GetUserID();
   }
 
   const message_center::NotificationBlocker* blocker() {

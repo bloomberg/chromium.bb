@@ -14,7 +14,7 @@
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_constants.h"

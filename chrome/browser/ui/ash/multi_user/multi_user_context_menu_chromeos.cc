@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 
 #include "ash/multi_profile_uma.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -87,13 +87,13 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
         new chromeos::MultiUserContextMenuChromeos(window);
     model.reset(menu);
     for (int user_index = 1; user_index < logged_in_users; ++user_index) {
-      menu->AddItem(
-          user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2 :
-                            IDC_VISIT_DESKTOP_OF_LRU_USER_3,
-          l10n_util::GetStringFUTF16(
-              IDS_VISIT_DESKTOP_OF_LRU_USER,
-              delegate->GetUserDisplayName(user_index),
-              base::ASCIIToUTF16(delegate->GetUserEmail(user_index))));
+      const ash::UserInfo* user_info = delegate->GetUserInfo(user_index);
+      menu->AddItem(user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2
+                                    : IDC_VISIT_DESKTOP_OF_LRU_USER_3,
+                    l10n_util::GetStringFUTF16(
+                        IDS_VISIT_DESKTOP_OF_LRU_USER,
+                        user_info->GetDisplayName(),
+                        base::ASCIIToUTF16(user_info->GetEmail())));
     }
   }
   return model.Pass();
@@ -118,8 +118,11 @@ void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
       // When running the multi user mode on Chrome OS, windows can "visit"
       // another user's desktop.
       const std::string& user_id =
-          ash::Shell::GetInstance()->session_state_delegate()->GetUserID(
-              IDC_VISIT_DESKTOP_OF_LRU_USER_2 == command_id ? 1 : 2);
+          ash::Shell::GetInstance()
+              ->session_state_delegate()
+              ->GetUserInfo(IDC_VISIT_DESKTOP_OF_LRU_USER_2 == command_id ? 1
+                                                                          : 2)
+              ->GetUserID();
       base::Callback<void(bool)> on_accept =
           base::Bind(&OnAcceptTeleportWarning, user_id, window);
 

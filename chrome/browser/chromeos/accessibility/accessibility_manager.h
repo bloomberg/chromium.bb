@@ -8,7 +8,7 @@
 #include <set>
 
 #include "ash/accessibility_delegate.h"
-#include "ash/session_state_observer.h"
+#include "ash/session/session_state_observer.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
