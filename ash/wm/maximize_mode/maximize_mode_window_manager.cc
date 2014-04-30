@@ -18,24 +18,7 @@
 
 namespace ash {
 
-namespace {
-
-// Exits overview mode if it is currently active.
-void CancelOverview() {
-  WindowSelectorController* controller =
-      Shell::GetInstance()->window_selector_controller();
-  if (controller && controller->IsSelecting())
-    controller->OnSelectionCanceled();
-}
-
-}  // namespace
-
 MaximizeModeWindowManager::~MaximizeModeWindowManager() {
-  // Overview mode needs to be ended before exiting maximize mode to prevent
-  // transforming windows which are currently in
-  // overview: http://crbug.com/366605
-  CancelOverview();
-
   Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
@@ -125,7 +108,10 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
       : backdrops_hidden_(false) {
   // The overview mode needs to be ended before the maximize mode is started. To
   // guarantee the proper order, it will be turned off from here.
-  CancelOverview();
+  WindowSelectorController* controller =
+      Shell::GetInstance()->window_selector_controller();
+  if (controller && controller->IsSelecting())
+    controller->OnSelectionCanceled();
 
   MaximizeAllWindows();
   AddWindowCreationObservers();
