@@ -11,7 +11,7 @@
         # TODO(darin): we should not be linking against these libraries!
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx_geometry',
-        'mojo_bindings',
+        'mojo_cpp_bindings',
         'mojo_environment_standalone',
         'mojo_gles2',
         'mojo_native_viewport_bindings',
@@ -237,10 +237,10 @@
           },
           'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
-            'mojo_bindings',
+            'mojo_cpp_bindings',
           ],
           'dependencies': [
-            'mojo_bindings',
+            'mojo_cpp_bindings',
           ],
         },
         {
@@ -284,7 +284,7 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
-            'mojo_bindings',
+            'mojo_cpp_bindings',
             'mojo_environment_standalone',
             'mojo_gles2',
             'mojo_view_manager_bindings',
@@ -305,7 +305,7 @@
           'type': 'shared_library',
           'dependencies': [
             '../base/base.gyp:base',
-            'mojo_bindings',
+            'mojo_cpp_bindings',
             'mojo_environment_standalone',
             'mojo_echo_bindings',
             'mojo_shell_client',

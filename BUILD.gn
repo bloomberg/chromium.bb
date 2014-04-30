@@ -33,6 +33,7 @@ group("root") {
     "//device/usb",
     #"//extensions/common/api:extensions_api",
     "//ipc",
+    "//mojo",
     "//net",
     #"//sdch",
     "//skia",

@@ -8,7 +8,7 @@
       'target_name': 'content_common_mojo_bindings',
       'type': 'static_library',
       'dependencies': [
-        '../mojo/mojo.gyp:mojo_bindings',
+        '../mojo/mojo.gyp:mojo_cpp_bindings',
         '../mojo/mojo.gyp:mojo_environment_chromium',
       ],
       'sources': [
@@ -21,7 +21,7 @@
       },
       'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        '../mojo/mojo.gyp:mojo_bindings',
+        '../mojo/mojo.gyp:mojo_cpp_bindings',
         '../mojo/mojo.gyp:mojo_environment_chromium',
       ],
     },

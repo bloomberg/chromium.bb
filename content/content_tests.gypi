@@ -992,7 +992,7 @@
           'target_name': 'web_ui_test_mojo_bindings',
           'type': 'static_library',
           'dependencies': [
-            '../mojo/mojo.gyp:mojo_bindings',
+            '../mojo/mojo.gyp:mojo_cpp_bindings',
           ],
           'sources': [
             'test/data/web_ui_test_mojo_bindings.mojom',
@@ -1004,7 +1004,7 @@
           },
           'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
-            '../mojo/mojo.gyp:mojo_bindings',
+            '../mojo/mojo.gyp:mojo_cpp_bindings',
           ],
         },
         {
@@ -1027,9 +1027,10 @@
             '../ipc/ipc.gyp:test_support_ipc',
             '../media/media.gyp:media_test_support',
             '../media/media.gyp:shared_memory_support',
-            '../mojo/mojo.gyp:mojo_bindings',
             '../mojo/mojo.gyp:mojo_common_test_support',
+            '../mojo/mojo.gyp:mojo_cpp_bindings',
             '../mojo/mojo.gyp:mojo_environment_chromium',
+            '../mojo/mojo.gyp:mojo_js_bindings',
             '../mojo/mojo.gyp:mojo_service_manager',
             '../mojo/mojo.gyp:mojo_system_impl',
             '../net/net.gyp:net_test_support',

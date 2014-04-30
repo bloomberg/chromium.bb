@@ -117,7 +117,7 @@
       'type': 'executable',
       'dependencies': [
         '../testing/gtest.gyp:gtest',
-        'mojo_bindings',
+        'mojo_cpp_bindings',
         'mojo_environment_standalone',
         'mojo_public_test_utils',
         'mojo_run_all_unittests',
@@ -157,7 +157,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-        'mojo_bindings',
+        'mojo_cpp_bindings',
         'mojo_public_test_utils',
         'mojo_run_all_unittests',
       ],
@@ -175,7 +175,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-        'mojo_bindings',
+        'mojo_cpp_bindings',
         'mojo_public_test_utils',
         'mojo_run_all_unittests',
         'mojo_utility',
@@ -210,7 +210,7 @@
       ],
     },
     {
-      'target_name': 'mojo_bindings',
+      'target_name': 'mojo_cpp_bindings',
       'type': 'static_library',
       'include_dirs': [
         '..'
@@ -253,6 +253,15 @@
         'public/cpp/bindings/lib/shared_data.h',
         'public/cpp/bindings/lib/shared_ptr.h',
         'public/cpp/bindings/lib/sync_dispatcher.cc',
+      ],
+    },
+    {
+      'target_name': 'mojo_js_bindings',
+      'type': 'static_library',
+      'include_dirs': [
+        '..'
+      ],
+      'sources': [
         'public/js/bindings/constants.cc',
         'public/js/bindings/constants.h',
       ],
@@ -274,10 +283,10 @@
       },
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
     },
     {
@@ -337,10 +346,10 @@
       },
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
     },
     {

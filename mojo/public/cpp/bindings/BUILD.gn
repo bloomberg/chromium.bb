@@ -1,0 +1,45 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("bindings") {
+  sources = [
+    "allocation_scope.h",
+    "array.h",
+    "buffer.h",
+    "callback.h",
+    "error_handler.h",
+    "interface.h",
+    "message.h",
+    "passable.h",
+    "remote_ptr.h",
+    "sync_dispatcher.h",
+    "type_converter.h",
+    "lib/array.cc",
+    "lib/array_internal.h",
+    "lib/array_internal.cc",
+    "lib/bindings_internal.h",
+    "lib/bindings_serialization.cc",
+    "lib/bindings_serialization.h",
+    "lib/buffer.cc",
+    "lib/callback_internal.h",
+    "lib/connector.cc",
+    "lib/connector.h",
+    "lib/fixed_buffer.cc",
+    "lib/fixed_buffer.h",
+    "lib/interface.cc",
+    "lib/message.cc",
+    "lib/message_builder.cc",
+    "lib/message_builder.h",
+    "lib/message_internal.h",
+    "lib/message_queue.cc",
+    "lib/message_queue.h",
+    "lib/router.cc",
+    "lib/router.h",
+    "lib/scratch_buffer.cc",
+    "lib/scratch_buffer.h",
+    "lib/shared_data.h",
+    "lib/shared_ptr.h",
+    "lib/sync_dispatcher.cc",
+  ]
+}

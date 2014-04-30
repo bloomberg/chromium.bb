@@ -11,10 +11,10 @@
       },
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
     },
     {
@@ -32,11 +32,11 @@
       },
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
       'dependencies': [
         '../gpu/gpu.gyp:command_buffer_common',
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
     },
     {
@@ -69,10 +69,10 @@
       },
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
       'dependencies': [
-        'mojo_bindings',
+        'mojo_cpp_bindings',
       ],
     },
     {
@@ -171,10 +171,10 @@
           },
           'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
-            'mojo_bindings',
+            'mojo_cpp_bindings',
           ],
           'dependencies': [
-            'mojo_bindings',
+            'mojo_cpp_bindings',
           ],
         },
         {
