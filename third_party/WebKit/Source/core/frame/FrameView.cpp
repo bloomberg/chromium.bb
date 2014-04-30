@@ -985,8 +985,11 @@ void FrameView::layout(bool allowSubtree)
 
     m_layoutCount++;
 
-    if (AXObjectCache* cache = rootForThisLayout->document().axObjectCache())
-        cache->handleLayoutComplete(rootForThisLayout);
+    if (AXObjectCache* cache = rootForThisLayout->document().axObjectCache()) {
+        const KURL& url = rootForThisLayout->document().url();
+        if (url.isValid() && !url.isAboutBlankURL())
+            cache->handleLayoutComplete(rootForThisLayout);
+    }
     updateAnnotatedRegions();
 
     ASSERT(!rootForThisLayout->needsLayout());

@@ -1002,9 +1002,6 @@ crbug.com/345831 [ Linux Mac ] fast/dom/Window/open-window-min-size.html [ Failu
 
 crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
 
-# Fails frequently on ASAN and Debug builds
-crbug.com/363235 [ Linux ] http/tests/accessibility/slow-document-load.html [ Failure Pass ]
-
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
