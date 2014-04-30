@@ -46,13 +46,8 @@ bool FavoriteState::PropertyChanged(const std::string& key,
     ui_data_ = *new_ui_data;
 
     // Add ONCSource to |properties_| for debugging.
-    scoped_ptr<base::DictionaryValue> onc_dict(new base::DictionaryValue);
-    ui_data_.FillDictionary(onc_dict.get());
-    std::string onc_source;
-    onc_dict->GetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
-                                            &onc_source);
     properties_.SetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
-                                              onc_source);
+                                              ui_data_.GetONCSourceAsString());
     return true;
   } else if (key == shill::kGuidProperty) {
     return GetStringValue(key, value, &guid_);

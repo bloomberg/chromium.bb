@@ -15,6 +15,9 @@ const char NetworkUIData::kKeyONCSource[] = "onc_source";
 const char NetworkUIData::kKeyCertificatePattern[] = "certificate_pattern";
 const char NetworkUIData::kKeyCertificateType[] = "certificate_type";
 const char NetworkUIData::kKeyUserSettings[] = "user_settings";
+const char NetworkUIData::kONCSourceUserImport[] = "user_import";
+const char NetworkUIData::kONCSourceDevicePolicy[] = "device_policy";
+const char NetworkUIData::kONCSourceUserPolicy[] = "user_policy";
 
 namespace {
 
@@ -25,9 +28,9 @@ struct StringEnumEntry {
 };
 
 const StringEnumEntry< ::onc::ONCSource> kONCSourceTable[] = {
-  { "user_import", ::onc::ONC_SOURCE_USER_IMPORT },
-  { "device_policy", ::onc::ONC_SOURCE_DEVICE_POLICY },
-  { "user_policy", ::onc::ONC_SOURCE_USER_POLICY }
+  { NetworkUIData::kONCSourceUserImport, ::onc::ONC_SOURCE_USER_IMPORT },
+  { NetworkUIData::kONCSourceDevicePolicy, ::onc::ONC_SOURCE_DEVICE_POLICY },
+  { NetworkUIData::kONCSourceUserPolicy, ::onc::ONC_SOURCE_USER_POLICY }
 };
 
 const StringEnumEntry<ClientCertType> kClientCertTable[] = {
@@ -117,10 +120,14 @@ void NetworkUIData::set_user_settings(scoped_ptr<base::DictionaryValue> dict) {
   user_settings_ = dict.Pass();
 }
 
+std::string NetworkUIData::GetONCSourceAsString() const {
+  return EnumToString(kONCSourceTable, onc_source_);
+}
+
 void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
   dict->Clear();
 
-  std::string source_string = EnumToString(kONCSourceTable, onc_source_);
+  std::string source_string = GetONCSourceAsString();
   if (!source_string.empty())
     dict->SetString(kKeyONCSource, source_string);
 

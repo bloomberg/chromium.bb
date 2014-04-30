@@ -72,6 +72,9 @@ class CHROMEOS_EXPORT NetworkUIData {
     policy_guid_ = guid;
   }
 
+  // Returns |onc_source_| as a string, one of kONCSource*.
+  std::string GetONCSourceAsString() const;
+
   // Fills in |dict| with the currently configured values. This will write the
   // keys appropriate for Network::ui_data() as defined below (kKeyXXX).
   void FillDictionary(base::DictionaryValue* dict) const;
@@ -95,6 +98,11 @@ class CHROMEOS_EXPORT NetworkUIData {
 
   // Key for storing the user settings.
   static const char kKeyUserSettings[];
+
+  // Values for kKeyONCSource
+  static const char kONCSourceUserImport[];
+  static const char kONCSourceDevicePolicy[];
+  static const char kONCSourceUserPolicy[];
 
  private:
   CertificatePattern certificate_pattern_;
