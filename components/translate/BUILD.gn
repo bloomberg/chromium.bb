@@ -33,9 +33,16 @@ static_library("translate_core_browser") {
   deps = [
     ":translate_core_common",
     "//base",
+    "//components/language_usage_metrics",
     "//components/resources:components_resources",
     "//url",
   ]
+  if (!is_android) {
+    # TODO(brettw) move thise above. This project uses net headers. This is
+    # excluded for Android since net doesn't work in the GN build at the time
+    # of this writing.
+    deps += [ "//net" ]
+  }
 }
 
 static_library("translate_core_common") {

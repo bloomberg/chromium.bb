@@ -118,8 +118,8 @@ component("libssl") {
     forward_dependent_configs_from = deps
   }
 
-  if (component_mode == "shared_library") {
-    # TODO(brettw) GCC_SYMBOLS_PRIVATE_EXTERN thing.
+  if (!is_win && component_mode == "shared_library") {
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
   }
 
   if (is_clang) {

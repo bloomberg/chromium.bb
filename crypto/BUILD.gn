@@ -212,12 +212,6 @@ test("crypto_unittests") {
     "symmetric_key_unittest.cc",
   ]
 
-  if (use_openssl) {
-    sources -= [
-      "nss_util_unittest.cc",
-    ]
-  }
-
   if (use_openssl || !is_linux) {
     sources -= [
       "rsa_private_key_nss_unittest.cc",

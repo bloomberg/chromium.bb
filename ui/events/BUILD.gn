@@ -41,6 +41,7 @@ component("events_base") {
     ":dom4_keycode_converter",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
