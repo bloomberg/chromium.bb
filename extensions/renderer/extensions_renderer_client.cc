@@ -5,6 +5,7 @@
 #include "extensions/renderer/extensions_renderer_client.h"
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 namespace extensions {
 
@@ -14,7 +15,10 @@ ExtensionsRendererClient* g_client = NULL;
 
 }  // namespace
 
-ExtensionsRendererClient* ExtensionsRendererClient::Get() { return g_client; }
+ExtensionsRendererClient* ExtensionsRendererClient::Get() {
+  CHECK(g_client);
+  return g_client;
+}
 
 void ExtensionsRendererClient::Set(ExtensionsRendererClient* client) {
   g_client = client;

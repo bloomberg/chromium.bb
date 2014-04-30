@@ -64,17 +64,18 @@ ShellContentRendererClient::~ShellContentRendererClient() {}
 void ShellContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
-  extension_dispatcher_.reset(new extensions::Dispatcher());
-  thread->AddObserver(extension_dispatcher_.get());
-
-  // TODO(jamescook): Init WebSecurityPolicy for chrome-extension: schemes.
-  // See ChromeContentRendererClient for details.
-
   extensions_client_.reset(new ShellExtensionsClient);
   extensions::ExtensionsClient::Set(extensions_client_.get());
 
   extensions_renderer_client_.reset(new ShellExtensionsRendererClient);
   extensions::ExtensionsRendererClient::Set(extensions_renderer_client_.get());
+
+  // Must be initialized after ExtensionsRendererClient.
+  extension_dispatcher_.reset(new extensions::Dispatcher());
+  thread->AddObserver(extension_dispatcher_.get());
+
+  // TODO(jamescook): Init WebSecurityPolicy for chrome-extension: schemes.
+  // See ChromeContentRendererClient for details.
 }
 
 void ShellContentRendererClient::RenderFrameCreated(

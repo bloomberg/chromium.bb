@@ -131,8 +131,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual void AddKeySystems(
       std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
 
-  // For testing.
-  void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
+  // Takes ownership.
+  void SetExtensionDispatcherForTest(
+      extensions::Dispatcher* extension_dispatcher);
+  extensions::Dispatcher* GetExtensionDispatcherForTest();
 
 #if defined(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for testing only.

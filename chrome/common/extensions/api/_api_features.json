@@ -644,6 +644,12 @@
     "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]
   },
+  // TODO(jamescook): Move this to app_shell _api_features.json once that file
+  // exists.
+  "shell": {
+    "contexts": ["blessed_extension"],
+    "extension_types": ["platform_app"]
+  },
   "signedInDevices": {
     "dependencies": ["permission:signedInDevices"],
     "contexts": ["blessed_extension"]

@@ -26,3 +26,12 @@ bool ChromeExtensionsRendererClient::IsIncognitoProcess() const {
 int ChromeExtensionsRendererClient::GetLowestIsolatedWorldId() const {
   return chrome::ISOLATED_WORLD_ID_EXTENSIONS;
 }
+
+void ChromeExtensionsRendererClient::RegisterNativeHandlers(
+    extensions::ModuleSystem* module_system,
+    extensions::ScriptContext* context) {
+}
+
+void ChromeExtensionsRendererClient::PopulateSourceMap(
+    ResourceBundleSourceMap* source_map) {
+}

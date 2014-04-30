@@ -510,6 +510,8 @@
         'common/test_util.h',
         'common/value_builder.cc',
         'common/value_builder.h',
+        'renderer/test_extensions_renderer_client.cc',
+        'renderer/test_extensions_renderer_client.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

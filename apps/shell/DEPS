@@ -7,14 +7,17 @@ include_rules = [
   "+apps/shell/common",
   "+apps/shell/test",
 
+  # Do not add dependencies on Chrome. Talk to OWNERS about how to refactor
+  # the code you need to a shared location.
+  "-chrome",
+
+  # Only allow app_shell and extensions resources, not general Chrome ones.
+  "-grit",
+  "+grit/app_shell_resources.h",
   "+grit/extensions_resources.h",
 
   # TODO(yoz): Do not depend on Chrome resources.
   "!grit/common_resources.h",
-
-  # Do not add dependencies on Chrome. Talk to OWNERS about how to refactor
-  # the code you need to a shared location.
-  "-chrome",
 
   # Real DEPS go in subdirectories, for example apps/shell/browser/DEPS.
   # Temporary exceptions for app_shell bring-up go here.
@@ -25,4 +28,5 @@ include_rules = [
   "!chrome/common/extensions/permissions/chrome_api_permissions.h",
   "!chrome/renderer/extensions/dispatcher.h",
   "!chrome/renderer/extensions/extension_helper.h",
+  "!chrome/renderer/resource_bundle_source_map.h",
 ]

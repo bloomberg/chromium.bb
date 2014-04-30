@@ -1,0 +1,50 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.shell</code> API to watch for launch events and create
+// windows. The <code>createWindow</code> API is a subset of
+// <code>chrome.app.window.create</code>.
+namespace shell {
+
+  [noinline_doc] dictionary CreateWindowOptions {
+    // Stub for the id of a window. This parameter is ignored in app_shell but
+    // provided for compatibility with apps running in Chrome.
+    DOMString? id;
+
+    // Stubs for the bounds of a window; these parameters are ignored in
+    // app_shell but are provided for compatibility with apps running in Chrome.
+    // The created window will always fill the root window of the default
+    // display.
+    object? innerBounds;
+    object? outerBounds;
+  };
+
+  // Called in the creating window (parent) before the load event is called in
+  // the created window (child). The parent can set fields or functions on the
+  // child usable from onload. E.g. background.js:<br>
+  // <code>function(createdWindow) { createdWindow.contentWindow.foo =
+  // function () { }; };</code>
+  // <br>window.js:<br>
+  // <code>window.onload = function () { foo(); }</code>
+  callback CreateWindowCallback =
+      void ([instanceOf=AppWindow] object createdWindow);
+
+  [noinline_doc] dictionary AppWindow {
+    // The JavaScript 'window' object for the created child.
+    [instanceOf=Window] object contentWindow;
+  };
+
+  interface Functions {
+    // Creates a fullscreen window on the default display. Options for id and
+    // bounds are ignored.
+    static void createWindow(DOMString url,
+                             optional CreateWindowOptions options,
+                             optional CreateWindowCallback callback);
+
+    // Returns an $(ref:AppWindow) object for the current script context
+    // (i.e. JavaScript 'window' object).
+    [nocompile] static AppWindow currentWindow();
+    [nocompile, nodoc] static void initializeAppWindow();
+  };
+};

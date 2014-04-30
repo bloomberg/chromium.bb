@@ -10,8 +10,12 @@
 // in non-Chrome browsers, which is useful for example to test touch support
 // with a non-Chrome touch device.
 if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
+  // Compatibility for running under app_shell, which does not have app.window.
+  var createWindow =
+      chrome.shell ? chrome.shell.createWindow : chrome.app.window.create;
+
   var showCalculatorWindow = function () {
-    chrome.app.window.create('calculator.html', {
+    createWindow('calculator.html', {
       innerBounds: {
         width: 243, minWidth: 243, maxWidth: 243,
         height: 380, minHeight: 380, maxHeight: 380

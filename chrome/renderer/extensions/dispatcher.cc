@@ -72,6 +72,7 @@
 #include "extensions/renderer/document_custom_bindings.h"
 #include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/extension_groups.h"
+#include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/i18n_custom_bindings.h"
 #include "extensions/renderer/id_generator_custom_bindings.h"
@@ -475,6 +476,8 @@ Dispatcher::Dispatcher()
   user_script_slave_.reset(new UserScriptSlave(&extensions_));
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
+  // Register JS sources from the extensions module embedder.
+  ExtensionsRendererClient::Get()->PopulateSourceMap(&source_map_);
   PopulateLazyBindingsMap();
 }
 
@@ -1161,7 +1164,12 @@ void Dispatcher::DidCreateScriptContext(
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       module_system);
 
+  // Register the core extensions native handlers.
   RegisterNativeHandlers(module_system, context);
+
+  // Register native handlers from the extensions embedder.
+  ExtensionsRendererClient::Get()->RegisterNativeHandlers(module_system,
+                                                          context);
 
   module_system->RegisterNativeHandler("chrome",
       scoped_ptr<NativeHandler>(new ChromeNativeHandler(context)));

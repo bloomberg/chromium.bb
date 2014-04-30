@@ -20,6 +20,10 @@ class ChromeExtensionsRendererClient
   // extensions::ExtensionsRendererClient implementation.
   virtual bool IsIncognitoProcess() const OVERRIDE;
   virtual int GetLowestIsolatedWorldId() const OVERRIDE;
+  virtual void RegisterNativeHandlers(
+      extensions::ModuleSystem* module_system,
+      extensions::ScriptContext* context) OVERRIDE;
+  virtual void PopulateSourceMap(ResourceBundleSourceMap* source_map) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsRendererClient);

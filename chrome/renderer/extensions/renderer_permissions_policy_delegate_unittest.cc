@@ -13,6 +13,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/test_extensions_renderer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -23,17 +24,22 @@ class RendererPermissionsPolicyDelegateTest : public testing::Test {
  public:
   RendererPermissionsPolicyDelegateTest() {
   }
-  virtual void SetUp() {
+
+  virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
     render_thread_.reset(new content::MockRenderThread());
+    renderer_client_.reset(new TestExtensionsRendererClient);
+    ExtensionsRendererClient::Set(renderer_client_.get());
     extension_dispatcher_.reset(new Dispatcher());
     policy_delegate_.reset(
         new RendererPermissionsPolicyDelegate(extension_dispatcher_.get()));
   }
+
  protected:
+  scoped_ptr<content::MockRenderThread> render_thread_;
+  scoped_ptr<ExtensionsRendererClient> renderer_client_;
   scoped_ptr<Dispatcher> extension_dispatcher_;
   scoped_ptr<RendererPermissionsPolicyDelegate> policy_delegate_;
-  scoped_ptr<content::MockRenderThread> render_thread_;
 };
 
 scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {

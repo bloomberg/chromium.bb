@@ -41,7 +41,11 @@ using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
 
-ChromeRenderViewTest::ChromeRenderViewTest() : extension_dispatcher_(NULL) {
+ChromeRenderViewTest::ChromeRenderViewTest()
+    : password_autofill_(NULL),
+      password_generation_(NULL),
+      autofill_agent_(NULL),
+      chrome_render_thread_(NULL) {
 }
 
 ChromeRenderViewTest::~ChromeRenderViewTest() {
@@ -53,8 +57,6 @@ void ChromeRenderViewTest::SetUp() {
 
   chrome_render_thread_ = new ChromeMockRenderThread();
   render_thread_.reset(chrome_render_thread_);
-
-  extension_dispatcher_ = new extensions::Dispatcher();
 
   content::RenderViewTest::SetUp();
 
@@ -68,8 +70,9 @@ void ChromeRenderViewTest::SetUp() {
 }
 
 void ChromeRenderViewTest::TearDown() {
-  extension_dispatcher_->OnRenderProcessShutdown();
-  extension_dispatcher_ = NULL;
+  ChromeContentRendererClient* client =
+      static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
+  client->GetExtensionDispatcherForTest()->OnRenderProcessShutdown();
 
 #if defined(LEAK_SANITIZER)
   // Do this before shutting down V8 in RenderViewTest::TearDown().
@@ -91,7 +94,7 @@ content::ContentBrowserClient*
 content::ContentRendererClient*
     ChromeRenderViewTest::CreateContentRendererClient() {
   ChromeContentRendererClient* client = new ChromeContentRendererClient();
-  client->SetExtensionDispatcher(extension_dispatcher_);
+  client->SetExtensionDispatcherForTest(new extensions::Dispatcher);
 #if defined(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());
 #endif

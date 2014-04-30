@@ -226,6 +226,11 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
   g_current_client = this;
+
+  extensions::ExtensionsClient::Set(
+      extensions::ChromeExtensionsClient::GetInstance());
+  extensions::ExtensionsRendererClient::Set(
+      ChromeExtensionsRendererClient::GetInstance());
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
@@ -236,8 +241,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
+
   // ChromeRenderViewTest::SetUp() creates its own ExtensionDispatcher and
-  // injects it using SetExtensionDispatcher(). Don't overwrite it.
+  // injects it using SetExtensionDispatcherForTest(). Don't overwrite it.
   if (!extension_dispatcher_)
     extension_dispatcher_.reset(new extensions::Dispatcher());
   permissions_policy_delegate_.reset(
@@ -358,11 +364,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       extension_scheme);
   WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
       extension_resource_scheme);
-
-  extensions::ExtensionsClient::Set(
-      extensions::ChromeExtensionsClient::GetInstance());
-  extensions::ExtensionsRendererClient::Set(
-      ChromeExtensionsRendererClient::GetInstance());
 
 #if defined(OS_WIN)
   // Report if the renderer process has been patched by chrome_elf.
@@ -1246,12 +1247,17 @@ bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
   return true;
 }
 
-void ChromeContentRendererClient::SetExtensionDispatcher(
+void ChromeContentRendererClient::SetExtensionDispatcherForTest(
     extensions::Dispatcher* extension_dispatcher) {
   extension_dispatcher_.reset(extension_dispatcher);
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));
+}
+
+extensions::Dispatcher*
+ChromeContentRendererClient::GetExtensionDispatcherForTest() {
+  return extension_dispatcher_.get();
 }
 
 bool ChromeContentRendererClient::CrossesExtensionExtents(

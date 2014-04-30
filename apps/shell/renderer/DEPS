@@ -4,4 +4,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/renderer",
   "+content/public/test",
+
+  "+third_party/WebKit/public",
+  "+v8/include",
 ]

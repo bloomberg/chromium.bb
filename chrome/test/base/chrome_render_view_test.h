@@ -16,10 +16,6 @@ class TestPasswordAutofillAgent;
 class TestPasswordGenerationAgent;
 }
 
-namespace extensions {
-class Dispatcher;
-}
-
 class ChromeRenderViewTest : public content::RenderViewTest {
  public:
   ChromeRenderViewTest();
@@ -33,8 +29,6 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
   virtual content::ContentRendererClient*
       CreateContentRendererClient() OVERRIDE;
-
-  extensions::Dispatcher* extension_dispatcher_;
 
   autofill::TestPasswordAutofillAgent* password_autofill_;
   autofill::TestPasswordGenerationAgent* password_generation_;

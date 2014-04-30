@@ -8,9 +8,24 @@
   },
   'targets': [
     {
+      'target_name': 'app_shell_resources',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'generate_app_shell_resources',
+          'variables': {
+            'grit_grd_file': 'app_shell_resources.grd',
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/apps/shell',
+          },
+          'includes': [ '../../build/grit_action.gypi' ],
+        },
+      ],
+    },
+    {
       'target_name': 'app_shell_pak',
       'type': 'none',
       'dependencies': [
+        'app_shell_resources',
         # Need extension related resources in common_resources.pak and
         # renderer_resources_100_percent.pak
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
@@ -27,6 +42,7 @@
           'action_name': 'repack_app_shell_pack',
           'variables': {
             'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/apps/shell/app_shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.pak',
               # TODO(jamescook): Extract the extension/app related resources
@@ -63,6 +79,7 @@
         # TODO(rockot): Dependencies above this line are temporary.
         # See http://crbug.com/359656.
         'app_shell_pak',
+        '<(DEPTH)/apps/shell/common/api/api.gyp:shell_api',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_prefs_test_support',
         '<(DEPTH)/content/content.gyp:content',
@@ -84,10 +101,13 @@
       'include_dirs': [
         '../..',
         '<(SHARED_INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)/apps/shell',
       ],
       'sources': [
         'app/shell_main_delegate.cc',
         'app/shell_main_delegate.h',
+        'browser/api/shell/shell_api.cc',
+        'browser/api/shell/shell_api.h',
         'browser/shell_app_runtime_api.cc',
         'browser/shell_app_runtime_api.h',
         'browser/shell_app_sorting.cc',
@@ -120,6 +140,9 @@
         'common/shell_extensions_client.h',
         'renderer/shell_content_renderer_client.cc',
         'renderer/shell_content_renderer_client.h',
+        'renderer/shell_custom_bindings.cc',
+        'renderer/shell_custom_bindings.h',
+        'renderer/shell_custom_bindings.js',
         'renderer/shell_extensions_renderer_client.cc',
         'renderer/shell_extensions_renderer_client.h',
       ],
