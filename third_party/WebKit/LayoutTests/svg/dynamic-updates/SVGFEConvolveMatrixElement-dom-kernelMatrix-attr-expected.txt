@@ -10,7 +10,4 @@ PASS convolveMatrixElement.getAttribute('kernelMatrix') is "3 0 3 0 0 0 3 0 3"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 200 200)
-)
 

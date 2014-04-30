@@ -10,7 +10,4 @@ PASS document.defaultView.getComputedStyle(gradientElement).getPropertyValue('li
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 200 200)
-)
 

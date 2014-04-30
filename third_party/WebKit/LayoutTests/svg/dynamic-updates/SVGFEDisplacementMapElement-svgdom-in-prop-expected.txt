@@ -10,7 +10,4 @@ PASS displacementMap.in1.baseVal is "Texture"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 23 23 128 128)
-)
 

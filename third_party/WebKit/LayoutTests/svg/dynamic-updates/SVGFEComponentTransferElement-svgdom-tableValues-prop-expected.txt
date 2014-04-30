@@ -16,7 +16,4 @@ PASS SVGNumberListToString(feAFunc.tableValues.baseVal) is "0.5 10 1 0.9 "
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 400 200)
-)
 

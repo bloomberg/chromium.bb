@@ -16,7 +16,4 @@ PASS Math.round(feAFunc.offset.baseVal * 100) is 10
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 400 200)
-)
 

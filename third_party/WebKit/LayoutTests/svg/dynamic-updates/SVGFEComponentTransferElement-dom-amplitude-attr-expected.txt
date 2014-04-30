@@ -16,7 +16,4 @@ PASS feAFunc.getAttribute('amplitude') is "1"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 400 200)
-)
 

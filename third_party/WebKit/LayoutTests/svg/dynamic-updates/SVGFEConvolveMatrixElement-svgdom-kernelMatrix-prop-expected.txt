@@ -10,7 +10,4 @@ PASS SVGNumberListToString(convolveMatrixElement.kernelMatrix.baseVal) is "3 0 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 200 200)
-)
 
