@@ -116,6 +116,15 @@ cr.define('print_preview', function() {
     this.addChild(this.copiesSettings_);
 
     /**
+     * Component that renders the media size settings.
+     * @type {!print_preview.MediaSizeSettings}
+     * @private
+     */
+    this.mediaSizeSettings_ =
+        new print_preview.MediaSizeSettings(this.printTicketStore_.mediaSize);
+    this.addChild(this.mediaSizeSettings_);
+
+    /**
      * Component that renders the layout settings.
      * @type {!print_preview.LayoutSettings}
      * @private
@@ -382,6 +391,7 @@ cr.define('print_preview', function() {
       this.destinationSettings_.decorate($('destination-settings'));
       this.pageSettings_.decorate($('page-settings'));
       this.copiesSettings_.decorate($('copies-settings'));
+      this.mediaSizeSettings_.decorate($('media-size-settings'));
       this.layoutSettings_.decorate($('layout-settings'));
       this.colorSettings_.decorate($('color-settings'));
       this.marginSettings_.decorate($('margin-settings'));
@@ -405,6 +415,7 @@ cr.define('print_preview', function() {
       this.destinationSettings_.isEnabled = isEnabled;
       this.pageSettings_.isEnabled = isEnabled;
       this.copiesSettings_.isEnabled = isEnabled;
+      this.mediaSizeSettings_.isEnabled = isEnabled;
       this.layoutSettings_.isEnabled = isEnabled;
       this.colorSettings_.isEnabled = isEnabled;
       this.marginSettings_.isEnabled = isEnabled;
@@ -988,6 +999,7 @@ cr.define('print_preview', function() {
 <include src="data/ticket_items/copies.js"/>
 <include src="data/ticket_items/duplex.js"/>
 <include src="data/ticket_items/header_footer.js"/>
+<include src="data/ticket_items/media_size.js"/>
 <include src="data/ticket_items/landscape.js"/>
 <include src="data/ticket_items/margins_type.js"/>
 <include src="data/ticket_items/page_range.js"/>
@@ -1004,6 +1016,7 @@ cr.define('print_preview', function() {
 
 <include src="settings/page_settings.js"/>
 <include src="settings/copies_settings.js"/>
+<include src="settings/media_size_settings.js"/>
 <include src="settings/layout_settings.js"/>
 <include src="settings/color_settings.js"/>
 <include src="settings/margin_settings.js"/>

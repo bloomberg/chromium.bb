@@ -118,6 +118,14 @@ cr.define('print_preview', function() {
         this.appState_, this.documentInfo_, this.customMargins_);
 
     /**
+     * Media size ticket item.
+     * @type {!print_preview.ticket_items.MediaSize}
+     * @private
+     */
+    this.mediaSize_ = new print_preview.ticket_items.MediaSize(
+        this.appState_, this.destinationStore_);
+
+    /**
      * Landscape ticket item.
      * @type {!print_preview.ticket_items.Landscape}
      * @private
@@ -230,6 +238,10 @@ cr.define('print_preview', function() {
       return this.headerFooter_;
     },
 
+    get mediaSize() {
+      return this.mediaSize_;
+    },
+
     get landscape() {
       return this.landscape_;
     },
@@ -279,6 +291,10 @@ cr.define('print_preview', function() {
           print_preview.AppState.Field.IS_DUPLEX_ENABLED)) {
         this.duplex_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_DUPLEX_ENABLED));
+      }
+      if (this.appState_.hasField(print_preview.AppState.Field.MEDIA_SIZE)) {
+        this.mediaSize_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.MEDIA_SIZE));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_LANDSCAPE_ENABLED)) {
@@ -374,6 +390,15 @@ cr.define('print_preview', function() {
       if (this.duplex.isCapabilityAvailable() && this.duplex.isUserEdited()) {
         cjt.print.duplex =
             {type: this.duplex.getValue() ? 'LONG_EDGE' : 'NO_DUPLEX'};
+      }
+      if (this.mediaSize.isCapabilityAvailable()) {
+        var value = this.mediaSize.getValue();
+        cjt.print.media_size = {
+          width_microns: value.width_microns,
+          height_microns: value.height_microns,
+          is_continuous_feed: value.is_continuous_feed,
+          vendor_id: value.vendor_id
+        };
       }
       if (this.landscape.isCapabilityAvailable() &&
           this.landscape.isUserEdited()) {

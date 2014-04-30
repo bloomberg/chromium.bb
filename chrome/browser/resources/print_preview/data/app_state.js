@@ -40,6 +40,7 @@ cr.define('print_preview', function() {
     SELECTED_DESTINATION_CAPABILITIES: 'selectedDestinationCapabilities',
     SELECTED_DESTINATION_NAME: 'selectedDestinationName',
     IS_GCP_PROMO_DISMISSED: 'isGcpPromoDismissed',
+    MEDIA_SIZE: 'mediaSize',
     MARGINS_TYPE: 'marginsType',
     CUSTOM_MARGINS: 'customMargins',
     IS_COLOR_ENABLED: 'isColorEnabled',
