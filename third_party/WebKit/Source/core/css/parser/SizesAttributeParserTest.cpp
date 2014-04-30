@@ -48,6 +48,10 @@ TEST(SizesAttributeParserTest, Basic)
         {"(max-width: 3000px) 200w, 400w", 500},
         {",, , /**/ ,200px", 200},
         {"50vw", 250},
+        {"calc(40vw*2)", 400},
+        {"(min-width:5000px) calc(5000px/10), (min-width:500px) calc(1200px/3)", 400},
+        {"(min-width:500px) calc(1200/3)", 500},
+        {"(min-width:500px) calc(1200px/(0px*14))", 500},
         // FIXME - test all other units, zero length and calc().
         {0, 0} // Do not remove the terminator line.
     };

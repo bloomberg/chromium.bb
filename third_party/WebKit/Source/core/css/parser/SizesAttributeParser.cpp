@@ -8,6 +8,7 @@
 #include "MediaTypeNames.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/parser/MediaQueryTokenizer.h"
+#include "core/css/parser/SizesCalcParser.h"
 
 namespace WebCore {
 
@@ -33,8 +34,10 @@ bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator start
             result = (unsigned)length;
             return true;
         }
+    } else if (type == FunctionToken) {
+        return SizesCalcParser::parse(startToken, endToken, m_mediaValues, result);
     }
-    // FIXME - Handle calc() FunctionToken here!
+
     return false;
 }
 
