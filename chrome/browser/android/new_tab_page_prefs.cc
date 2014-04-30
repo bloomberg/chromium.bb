@@ -107,6 +107,12 @@ void NewTabPagePrefs::RegisterProfilePrefs(
       prefs::kNtpCollapsedSyncPromo,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kNtpCollapsedForeignSessions,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kNtpMostVisitedURLsBlacklist,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

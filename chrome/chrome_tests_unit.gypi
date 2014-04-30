@@ -2568,6 +2568,7 @@
             ['exclude', '^browser/ui/webui/downloads_'],
             ['exclude', '^browser/ui/webui/flags_'],
             ['exclude', '^browser/ui/webui/help/'],
+            ['exclude', '^browser/ui/webui/ntp/'],
             ['exclude', '^browser/ui/webui/options/'],
             ['exclude', '^browser/ui/webui/options/'],
             ['exclude', '^browser/ui/webui/signin/'],

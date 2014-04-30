@@ -109,9 +109,14 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_, new ThemeSource(profile_));
 #endif  // defined(ENABLE_THEMES)
 
+  // TODO(aurimas) remove this #if once instant_service.cc is no longer compiled
+  // on Android.
+#if !defined(OS_ANDROID)
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
+#endif  // !defined(OS_ANDROID)
+
   content::URLDataSource::Add(
       profile_, new FaviconSource(profile_, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));

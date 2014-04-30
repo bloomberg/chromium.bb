@@ -202,8 +202,8 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   MediaGalleriesPreferencesFactory::GetInstance();
   notifier::ChromeNotifierServiceFactory::GetInstance();
   notifier::SyncedNotificationAppInfoServiceFactory::GetInstance();
-#endif
   NTPResourceCacheFactory::GetInstance();
+#endif
   PasswordStoreFactory::GetInstance();
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
