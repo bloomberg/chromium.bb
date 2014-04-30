@@ -825,6 +825,26 @@ WallpaperManager::GetAppropriateResolution() {
              : WALLPAPER_RESOLUTION_SMALL;
 }
 
+WallpaperManager::WallpaperResolution
+WallpaperManager::GetAppropriateResolutionForTesting() {
+  gfx::Size size =
+      ash::DesktopBackgroundController::GetMaxDisplaySizeInNative();
+  const WallpaperResolution result = (size.width() > kSmallWallpaperMaxWidth ||
+                                      size.height() > kSmallWallpaperMaxHeight)
+                                         ? WALLPAPER_RESOLUTION_LARGE
+                                         : WALLPAPER_RESOLUTION_SMALL;
+
+  LOG(ERROR) << "WallpaperManager::GetAppropriateResolution(): width()="
+             << size.width()
+             << " vs kSmallWallpaperMaxWidth=" << kSmallWallpaperMaxWidth
+             << ", height()=" << size.height()
+             << " vs kSmallWallpaperMaxHeight=" << kSmallWallpaperMaxHeight
+             << ", result = " << (result == WALLPAPER_RESOLUTION_LARGE
+                                      ? "WALLPAPER_RESOLUTION_LARGE"
+                                      : "WALLPAPER_RESOLUTION_SMALL");
+  return result;
+}
+
 void WallpaperManager::SetPolicyControlledWallpaper(
     const std::string& user_id,
     const UserImage& user_image) {

@@ -221,6 +221,9 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Returns the appropriate wallpaper resolution for all root windows.
   static WallpaperResolution GetAppropriateResolution();
+  // This is a temporary variant of the previous method to investigate
+  // a problem with WallpaperManagetBrowserTest.
+  static WallpaperResolution GetAppropriateResolutionForTesting();
 
   void SetCommandLineForTesting(base::CommandLine* command_line);
 
