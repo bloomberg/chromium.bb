@@ -425,12 +425,15 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_static',
+        '../net/net.gyp:http_server',
         '../url/url.gyp:url_lib',
         'mojo_service_manager',
       ],
       'sources': [
         'spy/spy.cc',
         'spy/spy.h',
+        'spy/websocket_server.cc',
+        'spy/websocket_server.h',
       ],
     },
     {

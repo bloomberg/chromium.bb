@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Spy WS test</title>
+  <style>
+    hr {color:sienna;}
+    body {
+      background-color:#b0c4de;
+      font:normal 16px/20px "Helvetica Neue", Helvetica, sans-serif;
+    }
+    #command {
+      width:70%;
+    }
+    #status {
+      background-color:#0094ff;
+      width:50%;
+      padding:4px;
+    }
+  </style>
+</head>
+<body>
+<header><h1>mojo spy</h1></header>
+  <form>
+    <input type="text" id="command" placeholder="enter spy command + enter" />
+  </form>
+  <p id="status">status: no connection</p>
+  <p id="log">...</p>
+  <script>
+    function openConnection() {
+      if (conn.readyState === undefined || conn.readyState > 1) {
+        conn = new WebSocket('ws://127.0.0.1:42424');
+        conn.onopen = function () {
+          state.innerHTML = 'connected @port 42424';
+        };
+        conn.onmessage = function (event) {
+          var message = event.data;
+          log.innerHTML = message;
+        };
+        conn.onclose = function (event) {
+          state.innerHTML = 'connection closed';
+        };
+        conn.onerror = function (event) {
+          state.innerHTML = 'got error';
+        };
+      }
+    }
+
+    var addEvent = (function () {
+      if (document.addEventListener) {
+        return function (el, type, fn) {
+          if (el && el.nodeName || el === window) {
+            el.addEventListener(type, fn, false);
+          } else if (el && el.length) {
+            for (var i = 0; i < el.length; i++) {
+              addEvent(el[i], type, fn);
+            }
+          }
+        };
+      } else {
+        return function (el, type, fn) {
+          if (el && el.nodeName || el === window) {
+            el.attachEvent('on' + type, function () { return fn.call(el, window.event); });
+          } else if (el && el.length) {
+            for (var i = 0; i < el.length; i++) {
+              addEvent(el[i], type, fn);
+            }
+          }
+        };
+      }
+    })();
+
+    var log = document.getElementById('log');
+    var cmd = document.getElementById('command');
+    var form = cmd.form;
+    var conn = {};
+    var state = document.getElementById('status');
+
+    if (window.WebSocket === undefined) {
+      state.innerHTML = 'websockets not supported';
+    } else {
+      addEvent(form, 'submit', function (event) {
+        event.preventDefault();
+        if (conn.readyState === 1) {
+          conn.send(JSON.stringify(cmd.value));
+          log.innerHTML = 'data sent';
+          cmd.value = '';
+        }
+      });
+
+      openConnection();
+    }
+  </script>
+</body>
+</html>

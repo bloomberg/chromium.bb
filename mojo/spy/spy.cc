@@ -8,15 +8,20 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/service_manager/service_manager.h"
+#include "mojo/spy/websocket_server.h"
 
 namespace {
 
 const size_t kMessageBufSize = 2 * 1024;
 const size_t kHandleBufSize = 64;
+const int kDefaultWebSocketPort = 42424;
 
 void CloseHandles(MojoHandle* handles, size_t count) {
   for (size_t ix = 0; ix != count; ++count)
@@ -127,7 +132,7 @@ class SpyInterceptor : public mojo::ServiceManager::Interceptor {
         return real_client.Pass();
 
       // You can get an invalid handle if the app (or service) is
-      // by unconventional means, for example the command line.
+      // created by unconventional means, for example the command line.
       if (!real_client.is_valid())
         return real_client.Pass();
 
@@ -152,11 +157,53 @@ class SpyInterceptor : public mojo::ServiceManager::Interceptor {
   }
 };
 
+spy::WebSocketServer* ws_server = NULL;
+
+void StartServer(int port) {
+  // TODO(cpu) figure out lifetime of the server. See Spy() dtor.
+  ws_server = new spy::WebSocketServer(port);
+  ws_server->Start();
+}
+
+struct SpyOptions {
+  int websocket_port;
+
+  SpyOptions()
+      : websocket_port(kDefaultWebSocketPort) {
+  }
+};
+
+SpyOptions ProcessOptions(const std::string& options) {
+  SpyOptions spy_options;
+  if (options.empty())
+    return spy_options;
+  base::StringPairs kv_pairs;
+  base::SplitStringIntoKeyValuePairs(options, ':', ',', &kv_pairs);
+  base::StringPairs::iterator it = kv_pairs.begin();
+  for (; it != kv_pairs.end(); ++it) {
+    if (it->first == "port") {
+      int port;
+      if (base::StringToInt(it->second, &port))
+        spy_options.websocket_port = port;
+    }
+  }
+  return spy_options;
+}
+
 }  // namespace
 
 namespace mojo {
 
 Spy::Spy(mojo::ServiceManager* service_manager, const std::string& options) {
+  SpyOptions spy_options = ProcessOptions(options);
+  // Start the tread what will accept commands from the frontend.
+  control_thread_.reset(new base::Thread("mojo_spy_control_thread"));
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  control_thread_->StartWithOptions(thread_options);
+  control_thread_->message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(&StartServer, spy_options.websocket_port));
+
+  // Start intercepting mojo services.
   service_manager->SetInterceptor(new SpyInterceptor());
 }
 
