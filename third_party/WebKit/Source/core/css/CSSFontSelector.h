@@ -78,7 +78,7 @@ public:
     virtual unsigned version() const OVERRIDE { return m_fontFaceCache.version(); }
 
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) OVERRIDE;
-    virtual void willUseFontData(const FontDescription&, const AtomicString& family) OVERRIDE;
+    virtual void willUseFontData(const FontDescription&, const AtomicString& family, UChar32) OVERRIDE;
 
     void clearDocument();
 

@@ -164,7 +164,7 @@ public:
 
     FontFallbackList* fontList() const { return m_fontFallbackList.get(); }
 
-    void willUseFontData() const;
+    void willUseFontData(UChar32) const;
 
     static FloatRect pixelSnappedSelectionRect(float fromX, float toX, float y, float height);
 private:
