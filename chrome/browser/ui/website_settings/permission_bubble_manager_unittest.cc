@@ -70,7 +70,6 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
     SetContents(CreateTestWebContents());
 
     manager_.reset(new PermissionBubbleManager(web_contents()));
-    manager_->SetCoalesceIntervalForTesting(0);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -87,6 +86,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void WaitForCoalescing() {
+    manager_->DocumentOnLoadCompletedInMainFrame(0);
     base::MessageLoop::current()->RunUntilIdle();
   }
 
@@ -237,9 +237,8 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsShownInTwoBubbles) {
 
   view_.Hide();
   Accept();
-  EXPECT_FALSE(view_.shown_);
-
   WaitForCoalescing();
+
   EXPECT_TRUE(view_.shown_);
   ASSERT_EQ(1u, view_.permission_requests_.size());
   EXPECT_EQ(&request2_, view_.permission_requests_[0]);
@@ -326,8 +325,8 @@ TEST_F(PermissionBubbleManagerTest, ForgetRequestsOnPageNavigation) {
   ASSERT_EQ(1u, view_.permission_requests_.size());
 
   NavigateAndCommit(GURL("http://www2.google.com/"));
+  WaitForCoalescing();
 
-  EXPECT_FALSE(view_.shown_);
   EXPECT_TRUE(request1_.finished());
   EXPECT_TRUE(request2_.finished());
 }
