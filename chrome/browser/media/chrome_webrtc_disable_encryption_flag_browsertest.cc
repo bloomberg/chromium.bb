@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/common/chrome_version_info.h"
@@ -53,9 +54,15 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
 // Makes a call and checks that there's encryption or not in the SDP offer.
 // TODO(phoglund): this is unreliable on non-webrtc bots because its peer
 // connection server could clash with other tests running in parallel,
-// therefore only running manually.
+// therefore only running manually. http://crbug.com/358207.
 IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
                        MANUAL_VerifyEncryption) {
+// Flaky timeout on a webrtc Win XP bot. http://crbug.com/368163.
+#if defined (OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
+
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
