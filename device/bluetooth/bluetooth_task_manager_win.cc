@@ -123,6 +123,28 @@ namespace device {
 // static
 const int BluetoothTaskManagerWin::kPollIntervalMs = 500;
 
+BluetoothTaskManagerWin::AdapterState::AdapterState() : powered(false) {
+}
+
+BluetoothTaskManagerWin::AdapterState::~AdapterState() {
+}
+
+BluetoothTaskManagerWin::ServiceRecordState::ServiceRecordState() {
+}
+
+BluetoothTaskManagerWin::ServiceRecordState::~ServiceRecordState() {
+}
+
+BluetoothTaskManagerWin::DeviceState::DeviceState()
+    : bluetooth_class(0),
+      visible(false),
+      connected(false),
+      authenticated(false) {
+}
+
+BluetoothTaskManagerWin::DeviceState::~DeviceState() {
+}
+
 BluetoothTaskManagerWin::BluetoothTaskManagerWin(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
     : ui_task_runner_(ui_task_runner),

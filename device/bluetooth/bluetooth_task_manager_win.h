@@ -35,18 +35,24 @@ class BluetoothTaskManagerWin
     : public base::RefCountedThreadSafe<BluetoothTaskManagerWin> {
  public:
   struct AdapterState {
+    AdapterState();
+    ~AdapterState();
     std::string name;
     std::string address;
     bool powered;
   };
 
   struct ServiceRecordState {
+    ServiceRecordState();
+    ~ServiceRecordState();
     std::string name;
     std::string address;
     std::vector<uint8> sdp_bytes;
   };
 
   struct DeviceState {
+    DeviceState();
+    ~DeviceState();
     std::string name;
     std::string address;
     uint32 bluetooth_class;
