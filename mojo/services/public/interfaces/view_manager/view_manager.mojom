@@ -4,6 +4,12 @@
 
 module mojo.services.view_manager {
 
+struct INode {
+  uint32 parent_id;
+  uint32 node_id;
+  uint32 view_id;
+};
+
 // Functions that mutate the hierarchy take a |change_id|. |change_id| is an
 // arbitrary value assigned by the client originating the change. It may be
 // used by the client originating the change to later identify the change in
@@ -31,6 +37,12 @@ interface ViewManager {
   // Removes a view from its current parent.  See description above class for
   // details of |change_id|.
   RemoveNodeFromParent(uint32 node_id, uint32 change_id) => (bool success);
+
+  // Returns the nodes comprising the tree starting at |node_id|. |node_id| is 
+  // the first result in the return value, unless |node_id| is invalid, in which
+  // case an empty vector is returned. The nodes are visited using a depth first
+  // search (pre-order).
+  GetNodeTree(uint32 node_id) => (INode[] nodes);
 
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).

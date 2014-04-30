@@ -58,6 +58,33 @@ void BooleanCallback(bool* result_cache, bool result) {
   current_run_loop->Quit();
 }
 
+struct TestNode {
+  std::string ToString() const {
+    return base::StringPrintf("node=%s parent=%s view=%s",
+                              NodeIdToString(node_id).c_str(),
+                              NodeIdToString(parent_id).c_str(),
+                              NodeIdToString(view_id).c_str());
+  }
+
+  uint32_t parent_id;
+  uint32_t node_id;
+  uint32_t view_id;
+};
+
+// Callback that results in a vector of INodes. The INodes are converted to
+// TestNodes.
+void INodesCallback(std::vector<TestNode>* test_nodes,
+                    const mojo::Array<INode>& data) {
+  for (size_t i = 0; i < data.size(); ++i) {
+    TestNode node;
+    node.parent_id = data[i].parent_id();
+    node.node_id = data[i].node_id();
+    node.view_id = data[i].view_id();
+    test_nodes->push_back(node);
+  }
+  current_run_loop->Quit();
+}
+
 // Creates an id used for transport from the specified parameters.
 uint32_t CreateNodeId(uint16_t connection_id, uint16_t node_id) {
   return (connection_id << 16) | node_id;
@@ -111,6 +138,13 @@ bool RemoveNodeFromParent(ViewManager* view_manager,
                                      base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
+}
+
+void GetNodeTree(ViewManager* view_manager,
+                 uint32_t node_id,
+                 std::vector<TestNode>* nodes) {
+  view_manager->GetNodeTree(node_id, base::Bind(&INodesCallback, nodes));
+  DoRunLoop();
 }
 
 // Creates a view with the specified id. Returns true on success. Blocks until
@@ -534,6 +568,65 @@ TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
     Changes changes(client_.GetAndClearChanges());
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("change_id=0 node=1,1 new_view=null old_view=2,51", changes[0]);
+  }
+}
+
+// Assertions for GetNodeTree.
+TEST_F(ViewManagerConnectionTest, GetNodeTree) {
+  EstablishSecondConnection();
+
+  // Create two nodes in first connection, 1 and 11 (11 is a child of 1).
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 11));
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 1),
+                      101));
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(client_.id(), 1),
+                      CreateNodeId(client_.id(), 11),
+                      102));
+
+  // Create two nodes in second connection, 2 and 3, both children of the root.
+  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2));
+  ASSERT_TRUE(CreateNode(view_manager2_.get(), 3));
+  ASSERT_TRUE(AddNode(view_manager2_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client2_.id(), 2),
+                      99));
+  ASSERT_TRUE(AddNode(view_manager2_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client2_.id(), 3),
+                      99));
+
+  // Attach view to node 11 in the first connection.
+  ASSERT_TRUE(CreateView(view_manager_.get(), 51));
+  ASSERT_TRUE(SetView(view_manager_.get(),
+                      CreateNodeId(client_.id(), 11),
+                      CreateViewId(client_.id(), 51),
+                      22));
+
+  // Verifies GetNodeTree() on the root.
+  {
+    AllocationScope scope;
+    std::vector<TestNode> nodes;
+    GetNodeTree(view_manager2_.get(), CreateNodeId(0, 1), &nodes);
+    ASSERT_EQ(5u, nodes.size());
+    EXPECT_EQ("node=0,1 parent=null view=null", nodes[0].ToString());
+    EXPECT_EQ("node=1,1 parent=0,1 view=null", nodes[1].ToString());
+    EXPECT_EQ("node=1,11 parent=1,1 view=1,51", nodes[2].ToString());
+    EXPECT_EQ("node=2,2 parent=0,1 view=null", nodes[3].ToString());
+    EXPECT_EQ("node=2,3 parent=0,1 view=null", nodes[4].ToString());
+  }
+
+  // Verifies GetNodeTree() on the node 1,1.
+  {
+    AllocationScope scope;
+    std::vector<TestNode> nodes;
+    GetNodeTree(view_manager2_.get(), CreateNodeId(1, 1), &nodes);
+    ASSERT_EQ(2u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=0,1 view=null", nodes[0].ToString());
+    EXPECT_EQ("node=1,11 parent=1,1 view=1,51", nodes[1].ToString());
   }
 }
 

@@ -80,7 +80,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteNode(uint32_t transport_node_id,
                           ChangeId change_id,
-                          const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                          const Callback<void(bool)>& callback) OVERRIDE;
   virtual void AddNode(uint32_t parent_id,
                        uint32_t child_id,
                        ChangeId change_id,
@@ -89,15 +89,18 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
       uint32_t node_id,
       ChangeId change_id,
       const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void GetNodeTree(
+      uint32_t node_id,
+      const Callback<void(Array<INode>)>& callback) OVERRIDE;
   virtual void CreateView(uint16_t view_id,
-                          const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                          const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteView(uint32_t transport_view_id,
                           ChangeId change_id,
-                          const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                          const Callback<void(bool)>& callback) OVERRIDE;
   virtual void SetView(uint32_t transport_node_id,
                        uint32_t transport_view_id,
                        ChangeId change_id,
-                       const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                       const Callback<void(bool)>& callback) OVERRIDE;
 
   // Overriden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const NodeId& node,
