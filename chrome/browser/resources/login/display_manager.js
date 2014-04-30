@@ -741,13 +741,6 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
-     * Returns true if sign in UI should trigger wallpaper load on boot.
-     */
-    shouldLoadWallpaperOnBoot: function() {
-      return loadTimeData.getString('bootIntoWallpaper') == 'on';
-    },
-
-    /**
      * Sets or unsets given |className| for top-level container. Useful for
      * customizing #inner-container with CSS rules. All classes set with with
      * this method will be removed after screen change.
