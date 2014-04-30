@@ -267,7 +267,11 @@ bool EventTarget::fireEventListeners(Event* event)
 
     EventListenerVector* listenersVector = d->eventListenerMap.find(event->type());
     if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && (event->type() == EventTypeNames::animationiteration || event->type() == EventTypeNames::animationend
-        || event->type() == EventTypeNames::animationstart))
+        || event->type() == EventTypeNames::animationstart)
+        // Some code out-there uses custom events to dispatch unprefixed animation events manually,
+        // we can safely remove all this block when cssAnimationUnprefixedEnabled is always on, this
+        // is really a special case. DO NOT ADD MORE EVENTS HERE.
+        && event->interfaceName() != EventNames::CustomEvent)
         listenersVector = 0;
 
     if (listenersVector) {
