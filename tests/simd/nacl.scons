@@ -41,6 +41,10 @@ elif env.Bit('target_mips32'):
 native_env.Append(CFLAGS=c_flags)
 native_env.Append(CXXFLAGS=cxx_flags)
 native_env.Append(CCFLAGS=native_flags)
+# C++ code can't use vector literals because of the following warning:
+#   compound literals are a C99-specific feature
+# Remove pedantic to work around this issue.
+native_env.FilterOut(CCFLAGS=['-pedantic'])
 
 ref_env = env.Clone()
 ref_flags = ['-DVREFIMPL']
@@ -56,5 +60,7 @@ AddTest(ref_env, 'simd.cc', test_suffix='_ref')
 # GCC 4.4 doesn't support all features of the vector extensions in C.
 # TODO(jfb) Re-enable testing when we migrate to a newer GCC.
 if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 5:
-  AddTest(ref_env, 'vector_extension.c',
+  AddTest(native_env, 'vector_extension.c',
           golden_file=ref_env.File('vector_extension.stdout'))
+  AddTest(native_env, 'vector_shuffle.cc',
+          golden_file=ref_env.File('vector_shuffle.stdout'))
