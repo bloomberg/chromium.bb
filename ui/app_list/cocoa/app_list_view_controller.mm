@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -199,9 +200,12 @@ void AppListModelObserverBridge::OnProfilesChanged() {
   contentsView_.reset([[FlippedView alloc] initWithFrame:contentsRect]);
 
   // The contents view contains animations both from an NSCollectionView and the
-  // app list's own transitive drag layers. Ensure the subviews have access to
-  // a compositing layer they can share.
-  [contentsView_ setWantsLayer:YES];
+  // app list's own transitive drag layers. On Mavericks, the subviews need to
+  // have access to a compositing layer they can share. Otherwise the compositor
+  // makes tearing artifacts. However, doing this on Mountain Lion or earler
+  // results in flickering whilst an item is installing.
+  if (base::mac::IsOSMavericksOrLater())
+    [contentsView_ setWantsLayer:YES];
 
   backgroundView_.reset(
       [[BackgroundView alloc] initWithFrame:
