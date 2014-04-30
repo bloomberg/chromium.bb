@@ -295,10 +295,10 @@ CSSPrimitiveValue::CSSPrimitiveValue(const String& str, UnitTypes type)
         m_value.string->ref();
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(const LengthSize& lengthSize)
+CSSPrimitiveValue::CSSPrimitiveValue(const LengthSize& lengthSize, const RenderStyle& style)
     : CSSValue(PrimitiveClass)
 {
-    init(lengthSize);
+    init(lengthSize, style);
 }
 
 CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color, UnitTypes type)
@@ -408,11 +408,11 @@ void CSSPrimitiveValue::init(const Length& length)
     }
 }
 
-void CSSPrimitiveValue::init(const LengthSize& lengthSize)
+void CSSPrimitiveValue::init(const LengthSize& lengthSize, const RenderStyle& style)
 {
     m_primitiveUnitType = CSS_PAIR;
     m_hasCachedCSSText = false;
-    m_value.pair = Pair::create(create(lengthSize.width()), create(lengthSize.height()), Pair::KeepIdenticalValues).leakRef();
+    m_value.pair = Pair::create(create(lengthSize.width(), style.effectiveZoom()), create(lengthSize.height(), style.effectiveZoom()), Pair::KeepIdenticalValues).leakRef();
 }
 
 void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Counter> c)

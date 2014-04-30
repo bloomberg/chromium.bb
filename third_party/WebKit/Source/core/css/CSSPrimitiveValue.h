@@ -249,9 +249,9 @@ public:
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value, zoom));
     }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const LengthSize& value)
+    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const LengthSize& value, const RenderStyle& style)
     {
-        return adoptRefWillBeNoop(new CSSPrimitiveValue(value));
+        return adoptRefWillBeNoop(new CSSPrimitiveValue(value, style));
     }
     template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(T value)
     {
@@ -382,7 +382,7 @@ private:
         init(length);
     }
     CSSPrimitiveValue(const Length&, float zoom);
-    CSSPrimitiveValue(const LengthSize&);
+    CSSPrimitiveValue(const LengthSize&, const RenderStyle&);
     CSSPrimitiveValue(const String&, UnitTypes);
     CSSPrimitiveValue(double, UnitTypes);
 
@@ -404,7 +404,7 @@ private:
     template<typename T> operator T*(); // compile-time guard
 
     void init(const Length&);
-    void init(const LengthSize&);
+    void init(const LengthSize&, const RenderStyle&);
     void init(PassRefPtrWillBeRawPtr<Counter>);
     void init(PassRefPtrWillBeRawPtr<Rect>);
     void init(PassRefPtrWillBeRawPtr<Pair>);

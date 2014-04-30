@@ -113,10 +113,10 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, co
         insetValue->setBottom(pool.createValue(inset->bottom(), style));
         insetValue->setLeft(pool.createValue(inset->left(), style));
 
-        insetValue->setTopLeftRadius(CSSPrimitiveValue::create(inset->topLeftRadius()));
-        insetValue->setTopRightRadius(CSSPrimitiveValue::create(inset->topRightRadius()));
-        insetValue->setBottomRightRadius(CSSPrimitiveValue::create(inset->bottomRightRadius()));
-        insetValue->setBottomLeftRadius(CSSPrimitiveValue::create(inset->bottomLeftRadius()));
+        insetValue->setTopLeftRadius(CSSPrimitiveValue::create(inset->topLeftRadius(), style));
+        insetValue->setTopRightRadius(CSSPrimitiveValue::create(inset->topRightRadius(), style));
+        insetValue->setBottomRightRadius(CSSPrimitiveValue::create(inset->bottomRightRadius(), style));
+        insetValue->setBottomLeftRadius(CSSPrimitiveValue::create(inset->bottomLeftRadius(), style));
 
         basicShapeValue = insetValue.release();
         break;
