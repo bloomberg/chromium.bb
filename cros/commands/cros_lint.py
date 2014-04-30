@@ -14,6 +14,13 @@ from chromite.lib import git
 from chromite import cros
 
 
+PYTHON_EXTENSIONS = frozenset(['.py'])
+
+# Note these are defined to keep in line with cpplint.py. Technically, we could
+# include additional ones, but cpplint.py would just filter them out.
+CPP_EXTENSIONS = frozenset(['.cc', '.cpp', '.h'])
+
+
 def _GetProjectPath(path):
   """Find the absolute path of the git checkout that contains |path|."""
   if git.FindRepoCheckoutRoot(path):
@@ -69,13 +76,55 @@ def _GetPythonPath(paths):
   ] + list(set(os.path.dirname(x) for x in paths))
 
 
+def _CpplintFiles(files, debug):
+  """Returns true if cpplint ran successfully on all files."""
+  # TODO(sosa): Do not filter include_order once C++ system header issues
+  # are resolved.
+  cmd = ['cpplint.py', '--filter=-build/include_order'] + files
+  res = cros_build_lib.RunCommand(cmd,
+                                  error_code_ok=True,
+                                  print_cmd=debug)
+  return res.returncode != 0
+
+
+def _PylintFiles(files, debug):
+  """Returns true if pylint ran successfully on all files."""
+  errors = False
+  for pylintrc, paths in sorted(_GetPylintGroups(files).items()):
+    paths = sorted(list(set([os.path.realpath(x) for x in paths])))
+    cmd = ['pylint', '--rcfile=%s' % pylintrc] + paths
+    extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
+    res = cros_build_lib.RunCommand(cmd, extra_env=extra_env,
+                                    error_code_ok=True,
+                                    print_cmd=debug)
+    if res.returncode != 0:
+      errors = True
+
+  return errors
+
+
+def _BreakoutFilesByLinter(files):
+  """Maps a linter method to the list of files to lint."""
+  map_to_return = {}
+  for f in files:
+    extension = os.path.splitext(f)[1]
+    if extension in PYTHON_EXTENSIONS:
+      pylint_list = map_to_return.setdefault(_PylintFiles, [])
+      pylint_list.append(f)
+    elif extension in CPP_EXTENSIONS:
+      cpplint_list = map_to_return.setdefault(_CpplintFiles, [])
+      cpplint_list.append(f)
+
+  return map_to_return
+
+
 @cros.CommandDecorator('lint')
 class LintCommand(cros.CrosCommand):
   """Run lint checks on the specified files."""
 
   EPILOG = """
-Right now, cros lint just runs pylint on *.py files, but we may also in future
-run other checks (e.g. pyflakes, cpplint, etc.)
+Right now, only supports cpplint and pylint. We may also in the future
+run other checks (e.g. pyflakes, etc.)
 """
 
   @classmethod
@@ -92,15 +141,9 @@ run other checks (e.g. pyflakes, cpplint, etc.)
       cros_build_lib.Warning('No files provided to lint.  Doing nothing.')
 
     errors = False
-    for pylintrc, paths in sorted(_GetPylintGroups(files).items()):
-      paths = sorted(list(set([os.path.realpath(x) for x in paths])))
-      cmd = ['pylint', '--rcfile=%s' % pylintrc] + paths
-      extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
-      res = cros_build_lib.RunCommand(cmd, extra_env=extra_env,
-                                      error_code_ok=True,
-                                      print_cmd=self.options.debug)
-      if res.returncode != 0:
-        errors = True
+    linter_map = _BreakoutFilesByLinter(files)
+    for linter, files in linter_map.iteritems():
+      errors = linter(files, self.options.debug)
 
     if errors:
       sys.exit(1)
