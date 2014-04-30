@@ -6,9 +6,12 @@
 
 #include "apps/shell/browser/shell_app_window.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
+#include "apps/shell/common/api/shell.h"
 #include "base/values.h"
 
 using base::DictionaryValue;
+
+namespace CreateWindow = apps::shell_api::shell::CreateWindow;
 
 namespace apps {
 namespace {
@@ -31,17 +34,11 @@ ShellCreateWindowFunction::~ShellCreateWindowFunction() {
 }
 
 bool ShellCreateWindowFunction::RunImpl() {
-  // Arguments must contain a URL and may contain options and a callback.
-  if (args_->GetSize() < 1 || args_->GetSize() > 3)
-    return false;
-
-  // Extract the URL for the window contents, e.g. "main.html".
-  std::string url_string;
-  if (!args_->GetString(0, &url_string))
-    return false;
+  scoped_ptr<CreateWindow::Params> params(CreateWindow::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Convert "main.html" to "chrome-extension:/<id>/main.html".
-  GURL url = GetExtension()->GetResourceURL(url_string);
+  GURL url = GetExtension()->GetResourceURL(params->url);
   if (!url.is_valid())
     return false;
 
