@@ -164,8 +164,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     const NavigationEntryImpl& entry) {
   TRACE_EVENT0("browser", "RenderFrameHostManager:Navigate");
   // Create a pending RenderFrameHost to use for the navigation.
-  RenderFrameHostImpl* dest_render_frame_host =
-      UpdateRendererStateForNavigate(entry);
+  RenderFrameHostImpl* dest_render_frame_host = UpdateStateForNavigate(entry);
   if (!dest_render_frame_host)
     return NULL;  // We weren't able to create a pending render frame host.
 
@@ -1168,7 +1167,7 @@ void RenderFrameHostManager::ShutdownRenderFrameHostsInSiteInstance(
   }
 }
 
-RenderFrameHostImpl* RenderFrameHostManager::UpdateRendererStateForNavigate(
+RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     const NavigationEntryImpl& entry) {
   // If we are currently navigating cross-process, we want to get back to normal
   // and then navigate as usual.

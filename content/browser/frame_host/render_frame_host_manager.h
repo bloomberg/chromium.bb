@@ -395,7 +395,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Helper method to terminate the pending RenderViewHost.
   void CancelPending();
 
-  RenderFrameHostImpl* UpdateRendererStateForNavigate(
+  RenderFrameHostImpl* UpdateStateForNavigate(
       const NavigationEntryImpl& entry);
 
   // Called when a renderer process is starting to close.  We should not

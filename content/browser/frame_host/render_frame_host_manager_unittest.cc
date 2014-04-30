@@ -1065,7 +1065,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   EXPECT_EQ(kUrl, host->GetSiteInstance()->GetSiteURL());
 
   // The Web UI is committed immediately because the RenderViewHost has not been
-  // used yet. UpdateRendererStateForNavigate() took the short cut path.
+  // used yet. UpdateStateForNavigate() took the short cut path.
   EXPECT_FALSE(manager->pending_web_ui());
   EXPECT_TRUE(manager->web_ui());
 
