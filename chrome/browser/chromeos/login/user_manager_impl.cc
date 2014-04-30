@@ -424,9 +424,9 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
     lru_logged_in_users_.push_back(user);
     // Reset the new user flag if the user already exists.
     is_current_user_new_ = false;
-    // Set active user wallpaper back.
-    WallpaperManager::Get()->SetUserWallpaperNow(active_user_->email());
     NotifyUserAddedToSession(user);
+    // Remember that we need to switch to this user as soon as profile ready.
+    pending_user_switch_ = user_id;
     return;
   }
 
@@ -971,7 +971,18 @@ void UserManagerImpl::Observe(int type,
       User* user = GetUserByProfile(profile);
       if (user != NULL)
         user->set_profile_is_created();
-
+      // If there is pending user switch, do it now.
+      if (!pending_user_switch_.empty()) {
+        // Call SwitchActiveUser async because otherwise it may cause
+        // ProfileManager::GetProfile before the profile gets registered
+        // in ProfileManager. It happens in case of sync profile load when
+        // NOTIFICATION_PROFILE_CREATED is called synchronously.
+        base::MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(&UserManagerImpl::SwitchActiveUser,
+                     base::Unretained(this),
+                     pending_user_switch_));
+        pending_user_switch_.clear();
+      }
       break;
     }
     default:
