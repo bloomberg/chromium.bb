@@ -1435,6 +1435,7 @@ crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-fixed.htm
 crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
 
 crbug.com/368008 virtual/gpu/fast/canvas/canvas-bg.html [ Skip ]
+crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass ]
 
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
