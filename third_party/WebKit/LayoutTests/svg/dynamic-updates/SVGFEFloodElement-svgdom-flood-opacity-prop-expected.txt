@@ -10,7 +10,4 @@ PASS parseFloat(document.defaultView.getComputedStyle(floodElement).getPropertyV
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 200 200)
-)
 

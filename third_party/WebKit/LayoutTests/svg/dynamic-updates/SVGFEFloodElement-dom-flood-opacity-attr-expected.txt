@@ -10,7 +10,4 @@ PASS parseFloat(floodElement.getAttribute('flood-opacity')).toFixed(1) is "0.8"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 200 200)
-)
 

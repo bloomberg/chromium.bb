@@ -10,7 +10,4 @@ PASS floodElement.getAttribute('flood-color') is "rgb(64, 128, 103)"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 8 8 200 200)
-)
 
