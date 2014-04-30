@@ -60,12 +60,14 @@ remoting.init = function() {
   remoting.settings = new remoting.Settings();
   if (remoting.isAppsV2) {
     remoting.identity = new remoting.Identity(consentRequired_);
+    remoting.fullscreen = new remoting.FullscreenAppsV2();
   } else {
     remoting.oauth2 = new remoting.OAuth2();
     if (!remoting.oauth2.isAuthenticated()) {
       document.getElementById('auth-dialog').hidden = false;
     }
     remoting.identity = remoting.oauth2;
+    remoting.fullscreen = new remoting.FullscreenAppsV1();
   }
   remoting.stats = new remoting.ConnectionStats(
       document.getElementById('statistics'));

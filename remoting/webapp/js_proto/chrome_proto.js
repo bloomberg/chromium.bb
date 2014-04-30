@@ -279,11 +279,21 @@ var AppWindow = function() {
   this.contentWindow = null;
   /** @type {chrome.Event} */
   this.onRestored = null;
+  /** @type {chrome.Event} */
+  this.onMaximized = null;
+  /** @type {chrome.Event} */
+  this.onFullscreened = null;
 };
 
 AppWindow.prototype.close = function() {};
 AppWindow.prototype.drawAttention = function() {};
 AppWindow.prototype.minimize = function() {};
+AppWindow.prototype.restore = function() {};
+AppWindow.prototype.fullscreen = function() {};
+/** @return {boolean} */
+AppWindow.prototype.isFullscreen = function() {};
+/** @return {boolean} */
+AppWindow.prototype.isMaximized = function() {};
 
 /**
  * @param {{rects: Array.<ClientRect>}} rects

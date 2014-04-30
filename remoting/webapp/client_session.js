@@ -113,7 +113,10 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
   /** @private */
   this.callSetScreenMode_ = this.onSetScreenMode_.bind(this);
   /** @private */
-  this.callToggleFullScreen_ = this.toggleFullScreen_.bind(this);
+  this.callToggleFullScreen_ = remoting.fullscreen.toggle.bind(
+      remoting.fullscreen);
+  /** @private */
+  this.callOnFullScreenChanged_ = this.onFullScreenChanged_.bind(this);
 
   /** @private */
   this.screenOptionsMenu_ = new remoting.MenuButton(
@@ -151,8 +154,6 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
       'click', this.callSetScreenMode_, false);
   this.fullScreenButton_.addEventListener(
       'click', this.callToggleFullScreen_, false);
-  document.addEventListener(
-      'webkitfullscreenchange', this.onFullScreenChanged_.bind(this), false);
 };
 
 /**
@@ -544,8 +545,14 @@ remoting.ClientSession.prototype.removePlugin = function() {
   this.fullScreenButton_.removeEventListener(
       'click', this.callToggleFullScreen_, false);
 
-  // In case the user had selected full-screen mode, cancel it now.
-  document.webkitCancelFullScreen();
+  // Leave full-screen mode, and stop listening for related events.
+  var listener = this.callOnFullScreenChanged_;
+  remoting.fullscreen.syncWithMaximize(false);
+  remoting.fullscreen.activate(
+      false,
+      function() {
+        remoting.fullscreen.removeListener(listener);
+      });
 
   // Remove mediasource-rendering class from video-contained - this will also
   // hide the <video> element.
@@ -922,6 +929,9 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
                                          window.innerHeight,
                                          window.devicePixelRatio);
     }
+    // Start listening for full-screen related events.
+    remoting.fullscreen.addListener(this.callOnFullScreenChanged_);
+    remoting.fullscreen.syncWithMaximize(true);
   } else if (status == remoting.ClientSession.State.FAILED) {
     switch (error) {
       case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
@@ -1138,7 +1148,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
 
     // If we're running full-screen then try to handle common side-by-side
     // multi-monitor combinations more intelligently.
-    if (document.webkitIsFullScreen) {
+    if (remoting.fullscreen.isActive()) {
       // If the host has two monitors each the same size as the client then
       // scale-to-fit will have the desktop occupy only 50% of the client area,
       // in which case it would be preferable to down-scale less and let the
@@ -1225,29 +1235,22 @@ remoting.ClientSession.prototype.requestPairing = function(clientName, onDone) {
 };
 
 /**
- * Toggles between full-screen and windowed mode.
- * @return {void} Nothing.
+ * Called when the full-screen status has changed, either via the
+ * remoting.Fullscreen class, or via a system event such as the Escape key
+ *
+ * @param {boolean} fullscreen True if the app is entering full-screen mode;
+ *     false if it is leaving it.
  * @private
  */
-remoting.ClientSession.prototype.toggleFullScreen_ = function() {
-  if (document.webkitIsFullScreen) {
-    document.webkitCancelFullScreen();
-  } else {
-    document.body.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-  }
-};
-
-remoting.ClientSession.prototype.onFullScreenChanged_ = function () {
+remoting.ClientSession.prototype.onFullScreenChanged_ = function (fullscreen) {
   var htmlNode = /** @type {HTMLElement} */ (document.documentElement);
-  var isFullScreen = document.webkitIsFullScreen;
-  this.enableBumpScroll_(isFullScreen);
-  if (isFullScreen) {
+  this.enableBumpScroll_(fullscreen);
+  if (fullscreen) {
     htmlNode.classList.add('full-screen');
   } else {
     htmlNode.classList.remove('full-screen');
   }
 };
-
 
 /**
  * Updates the options menu to reflect the current scale-to-fit and full-screen
@@ -1259,7 +1262,7 @@ remoting.ClientSession.prototype.onShowOptionsMenu_ = function() {
   remoting.MenuButton.select(this.resizeToClientButton_, this.resizeToClient_);
   remoting.MenuButton.select(this.shrinkToFitButton_, this.shrinkToFit_);
   remoting.MenuButton.select(this.fullScreenButton_,
-      document.webkitIsFullScreen);
+                             remoting.fullscreen.isActive());
 };
 
 /**
