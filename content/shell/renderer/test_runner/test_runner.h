@@ -73,8 +73,6 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
 
   // Methods used by WebTestProxyBase.
   bool shouldDumpSelectionRect() const;
-  bool testRepaint() const;
-  bool sweepHorizontally() const;
   bool isPrinting() const;
   bool shouldDumpAsText();
   bool shouldDumpAsTextWithPixelResults();
@@ -425,8 +423,6 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   void DumpBackForwardList();
 
   void DumpSelectionRect();
-  void TestRepaint();
-  void RepaintSweepHorizontally();
 
   // Causes layout to happen as if targetted to printed pages.
   void SetPrinting();

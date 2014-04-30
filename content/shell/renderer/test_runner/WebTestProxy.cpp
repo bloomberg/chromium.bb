@@ -451,18 +451,7 @@ string WebTestProxyBase::captureTree(bool debugRenderTree)
 SkCanvas* WebTestProxyBase::capturePixels()
 {
     webWidget()->layout();
-    if (m_testInterfaces->testRunner()->testRepaint()) {
-        WebSize viewSize = webWidget()->size();
-        int width = viewSize.width;
-        int height = viewSize.height;
-        if (m_testInterfaces->testRunner()->sweepHorizontally()) {
-            for (WebRect column(0, 0, 1, height); column.x < width; column.x++)
-                paintRect(column);
-        } else {
-            for (WebRect line(0, 0, width, 1); line.y < height; line.y++)
-                paintRect(line);
-        }
-    } else if (m_testInterfaces->testRunner()->isPrinting())
+    if (m_testInterfaces->testRunner()->isPrinting())
         paintPagesWithBoundaries();
     else
         paintInvalidatedRegion();

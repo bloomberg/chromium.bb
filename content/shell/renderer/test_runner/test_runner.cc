@@ -216,8 +216,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpSpellCheckCallbacks();
   void DumpBackForwardList();
   void DumpSelectionRect();
-  void TestRepaint();
-  void RepaintSweepHorizontally();
   void SetPrinting();
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
   void SetWillSendRequestClearHeader(const std::string& header);
@@ -435,9 +433,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpBackForwardList",
                  &TestRunnerBindings::DumpBackForwardList)
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
-      .SetMethod("testRepaint", &TestRunnerBindings::TestRepaint)
-      .SetMethod("repaintSweepHorizontally",
-                 &TestRunnerBindings::RepaintSweepHorizontally)
       .SetMethod("setPrinting", &TestRunnerBindings::SetPrinting)
       .SetMethod("setShouldStayOnPageAfterHandlingBeforeUnload",
                  &TestRunnerBindings::
@@ -1070,16 +1065,6 @@ void TestRunnerBindings::DumpSelectionRect() {
     runner_->DumpSelectionRect();
 }
 
-void TestRunnerBindings::TestRepaint() {
-  if (runner_)
-    runner_->TestRepaint();
-}
-
-void TestRunnerBindings::RepaintSweepHorizontally() {
-  if (runner_)
-    runner_->RepaintSweepHorizontally();
-}
-
 void TestRunnerBindings::SetPrinting() {
   if (runner_)
     runner_->SetPrinting();
@@ -1636,14 +1621,6 @@ bool TestRunner::shouldDumpBackForwardList() const {
 
 bool TestRunner::shouldDumpSelectionRect() const {
   return dump_selection_rect_;
-}
-
-bool TestRunner::testRepaint() const {
-  return test_repaint_;
-}
-
-bool TestRunner::sweepHorizontally() const {
-  return sweep_horizontally_;
 }
 
 bool TestRunner::isPrinting() const {
@@ -2450,14 +2427,6 @@ void TestRunner::DumpBackForwardList() {
 
 void TestRunner::DumpSelectionRect() {
   dump_selection_rect_ = true;
-}
-
-void TestRunner::TestRepaint() {
-  test_repaint_ = true;
-}
-
-void TestRunner::RepaintSweepHorizontally() {
-  sweep_horizontally_ = true;
 }
 
 void TestRunner::SetPrinting() {
