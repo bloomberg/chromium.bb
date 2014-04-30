@@ -334,7 +334,7 @@ void WorkerTargetsUIHandler::UpdateTargets(
 // AdbTargetsUIHandler --------------------------------------------------------
 
 class AdbTargetsUIHandler
-    : public DevToolsRemoteTargetsUIHandler,
+    : public DevToolsTargetsUIHandler,
       public DevToolsAndroidBridge::DeviceListListener {
  public:
   AdbTargetsUIHandler(Callback callback, Profile* profile);
@@ -359,7 +359,7 @@ class AdbTargetsUIHandler
 };
 
 AdbTargetsUIHandler::AdbTargetsUIHandler(Callback callback, Profile* profile)
-    : DevToolsRemoteTargetsUIHandler(kTargetSourceAdb, callback),
+    : DevToolsTargetsUIHandler(kTargetSourceAdb, callback),
       profile_(profile) {
   DevToolsAndroidBridge* android_bridge =
       DevToolsAndroidBridge::Factory::GetForProfile(profile_);
@@ -508,33 +508,33 @@ DevToolsTargetsUIHandler::CreateForWorkers(
       new WorkerTargetsUIHandler(callback));
 }
 
-void DevToolsTargetsUIHandler::Inspect(const std::string& target_id,
-                                            Profile* profile) {
-  TargetMap::iterator it = targets_.find(target_id);
-  if (it != targets_.end())
-    it->second->Inspect(profile);
+// static
+scoped_ptr<DevToolsTargetsUIHandler>
+DevToolsTargetsUIHandler::CreateForAdb(
+    DevToolsTargetsUIHandler::Callback callback, Profile* profile) {
+  return scoped_ptr<DevToolsTargetsUIHandler>(
+      new AdbTargetsUIHandler(callback, profile));
 }
 
-void DevToolsTargetsUIHandler::Activate(const std::string& target_id) {
+DevToolsTargetImpl* DevToolsTargetsUIHandler::GetTarget(
+    const std::string& target_id) {
   TargetMap::iterator it = targets_.find(target_id);
   if (it != targets_.end())
-    it->second->Activate();
+    return it->second;
+  return NULL;
 }
 
-void DevToolsTargetsUIHandler::Close(const std::string& target_id) {
-  TargetMap::iterator it = targets_.find(target_id);
-  if (it != targets_.end())
-    it->second->Close();
+void DevToolsTargetsUIHandler::Open(const std::string& browser_id,
+                                    const std::string& url) {
 }
 
-void DevToolsTargetsUIHandler::Reload(const std::string& target_id) {
-  TargetMap::iterator it = targets_.find(target_id);
-  if (it != targets_.end())
-    it->second->Reload();
+void DevToolsTargetsUIHandler::OpenAndInspect(
+    const std::string& browser_id,
+    const std::string& url,
+    Profile* profile) {
 }
 
-base::DictionaryValue*
-DevToolsTargetsUIHandler::Serialize(
+base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(
     const DevToolsTargetImpl& target) {
   base::DictionaryValue* target_data = new base::DictionaryValue();
   target_data->SetString(kTargetSourceField, source_id_);
@@ -551,22 +551,6 @@ DevToolsTargetsUIHandler::Serialize(
 void DevToolsTargetsUIHandler::SendSerializedTargets(
     scoped_ptr<base::ListValue> list) {
   callback_.Run(source_id_, list.Pass());
-}
-
-// DevToolsRemoteTargetsUIHandler ---------------------------------------------
-
-DevToolsRemoteTargetsUIHandler::DevToolsRemoteTargetsUIHandler(
-    const std::string& source_id,
-    Callback callback)
-    : DevToolsTargetsUIHandler(source_id, callback) {
-}
-
-// static
-scoped_ptr<DevToolsRemoteTargetsUIHandler>
-DevToolsRemoteTargetsUIHandler::CreateForAdb(
-    DevToolsTargetsUIHandler::Callback callback, Profile* profile) {
-  return scoped_ptr<DevToolsRemoteTargetsUIHandler>(
-      new AdbTargetsUIHandler(callback, profile));
 }
 
 // PortForwardingStatusSerializer ---------------------------------------------

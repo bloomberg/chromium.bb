@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -201,36 +202,36 @@ void InspectUI::InitUI() {
 
 void InspectUI::Inspect(const std::string& source_id,
                         const std::string& target_id) {
-  DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
-  if (handler)
-    handler->Inspect(target_id, Profile::FromWebUI(web_ui()));
+  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  if (target)
+    target->Inspect(Profile::FromWebUI(web_ui()));
 }
 
 void InspectUI::Activate(const std::string& source_id,
                          const std::string& target_id) {
-  DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
-  if (handler)
-    handler->Activate(target_id);
+  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  if (target)
+    target->Activate();
 }
 
 void InspectUI::Close(const std::string& source_id,
                       const std::string& target_id) {
-  DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
-  if (handler)
-    handler->Close(target_id);
+  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  if (target)
+    target->Close();
 }
 
 void InspectUI::Reload(const std::string& source_id,
                        const std::string& target_id) {
-  DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
-  if (handler)
-    handler->Reload(target_id);
+  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  if (target)
+    target->Reload();
 }
 
 void InspectUI::Open(const std::string& source_id,
                      const std::string& browser_id,
                      const std::string& url) {
-  DevToolsRemoteTargetsUIHandler* handler = FindRemoteTargetHandler(source_id);
+  DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
   if (handler)
     handler->Open(browser_id, url);
 }
@@ -263,8 +264,8 @@ void InspectUI::StartListeningNotifications() {
       DevToolsTargetsUIHandler::CreateForRenderers(callback));
   AddTargetUIHandler(
       DevToolsTargetsUIHandler::CreateForWorkers(callback));
-  AddRemoteTargetUIHandler(
-      DevToolsRemoteTargetsUIHandler::CreateForAdb(callback, profile));
+  AddTargetUIHandler(
+      DevToolsTargetsUIHandler::CreateForAdb(callback, profile));
 
   port_status_serializer_.reset(
       new PortForwardingStatusSerializer(
@@ -292,7 +293,6 @@ void InspectUI::StopListeningNotifications() {
     return;
 
   STLDeleteValues(&target_handlers_);
-  STLDeleteValues(&remote_target_handlers_);
 
   port_status_serializer_.reset();
 
@@ -371,24 +371,17 @@ void InspectUI::AddTargetUIHandler(
   target_handlers_[handler_ptr->source_id()] = handler_ptr;
 }
 
-void InspectUI::AddRemoteTargetUIHandler(
-    scoped_ptr<DevToolsRemoteTargetsUIHandler> handler) {
-  DevToolsRemoteTargetsUIHandler* handler_ptr = handler.release();
-  remote_target_handlers_[handler_ptr->source_id()] = handler_ptr;
-}
-
 DevToolsTargetsUIHandler* InspectUI::FindTargetHandler(
     const std::string& source_id) {
   TargetHandlerMap::iterator it = target_handlers_.find(source_id);
-  return it != target_handlers_.end() ?
-         it->second :
-         FindRemoteTargetHandler(source_id);
+     return it != target_handlers_.end() ? it->second : NULL;
 }
 
-DevToolsRemoteTargetsUIHandler* InspectUI::FindRemoteTargetHandler(
-    const std::string& source_id) {
-  RemoteTargetHandlerMap::iterator it = remote_target_handlers_.find(source_id);
-  return it != remote_target_handlers_.end() ? it->second : NULL;
+DevToolsTargetImpl* InspectUI::FindTarget(
+    const std::string& source_id, const std::string& target_id) {
+  TargetHandlerMap::iterator it = target_handlers_.find(source_id);
+  return it != target_handlers_.end() ?
+         it->second->GetTarget(target_id) : NULL;
 }
 
 void InspectUI::PopulateTargets(const std::string& source,

@@ -172,7 +172,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
       IndexingJobsMap;
   IndexingJobsMap indexing_jobs_;
 
-  scoped_ptr<DevToolsRemoteTargetsUIHandler> remote_targets_handler_;
+  scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
 

@@ -21,8 +21,8 @@ class ListValue;
 }
 
 class Browser;
-class DevToolsRemoteTargetsUIHandler;
 class DevToolsTargetsUIHandler;
+class DevToolsTargetImpl;
 class PortForwardingStatusSerializer;
 
 class InspectUI : public content::WebUIController,
@@ -63,12 +63,11 @@ class InspectUI : public content::WebUIController,
 
   void AddTargetUIHandler(
       scoped_ptr<DevToolsTargetsUIHandler> handler);
-  void AddRemoteTargetUIHandler(
-      scoped_ptr<DevToolsRemoteTargetsUIHandler> handler);
 
-  DevToolsTargetsUIHandler* FindTargetHandler(const std::string& source_id);
-  DevToolsRemoteTargetsUIHandler* FindRemoteTargetHandler(
+  DevToolsTargetsUIHandler* FindTargetHandler(
       const std::string& source_id);
+  DevToolsTargetImpl* FindTarget(const std::string& source_id,
+                                 const std::string& target_id);
 
   void PopulateTargets(const std::string& source_id,
                        scoped_ptr<base::ListValue> targets);
@@ -83,10 +82,6 @@ class InspectUI : public content::WebUIController,
 
   typedef std::map<std::string, DevToolsTargetsUIHandler*> TargetHandlerMap;
   TargetHandlerMap target_handlers_;
-
-  typedef std::map<std::string, DevToolsRemoteTargetsUIHandler*>
-      RemoteTargetHandlerMap;
-  RemoteTargetHandlerMap remote_target_handlers_;
 
   scoped_ptr<PortForwardingStatusSerializer> port_status_serializer_;
 

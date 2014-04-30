@@ -36,10 +36,15 @@ class DevToolsTargetsUIHandler {
   static scoped_ptr<DevToolsTargetsUIHandler> CreateForWorkers(
       Callback callback);
 
-  void Inspect(const std::string& target_id, Profile* profile);
-  void Activate(const std::string& target_id);
-  void Close(const std::string& target_id);
-  void Reload(const std::string& target_id);
+  static scoped_ptr<DevToolsTargetsUIHandler> CreateForAdb(
+      Callback callback, Profile* profile);
+
+  DevToolsTargetImpl* GetTarget(const std::string& target_id);
+
+  virtual void Open(const std::string& browser_id, const std::string& url);
+  virtual void OpenAndInspect(const std::string& browser_id,
+                              const std::string& url,
+                              Profile* profile);
 
  protected:
   base::DictionaryValue* Serialize(const DevToolsTargetImpl& target);
@@ -53,23 +58,6 @@ class DevToolsTargetsUIHandler {
   Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsTargetsUIHandler);
-};
-
-class DevToolsRemoteTargetsUIHandler: public DevToolsTargetsUIHandler {
- public:
-  DevToolsRemoteTargetsUIHandler(const std::string& source_id,
-                                Callback callback);
-
-  static scoped_ptr<DevToolsRemoteTargetsUIHandler> CreateForAdb(
-      Callback callback, Profile* profile);
-
-  virtual void Open(const std::string& browser_id, const std::string& url) = 0;
-  virtual void OpenAndInspect(const std::string& browser_id,
-                              const std::string& url,
-                              Profile* profile) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DevToolsRemoteTargetsUIHandler);
 };
 
 class PortForwardingStatusSerializer

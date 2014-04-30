@@ -545,7 +545,7 @@ void DevToolsUIBindings::OpenUrlOnRemoteDeviceAndInspect(
 }
 
 void DevToolsUIBindings::StartRemoteDevicesListener() {
-  remote_targets_handler_ = DevToolsRemoteTargetsUIHandler::CreateForAdb(
+  remote_targets_handler_ = DevToolsTargetsUIHandler::CreateForAdb(
       base::Bind(&DevToolsUIBindings::PopulateRemoteDevices,
                  base::Unretained(this)),
       profile_);
