@@ -30,6 +30,8 @@ const char kDefaultRegistrationURL[] =
 
 namespace gcm {
 
+const int64 GServicesSettings::kMinimumCheckinInterval = 12 * 60 * 60;
+
 GServicesSettings::GServicesSettings(GCMStore* gcm_store)
     : gcm_store_(gcm_store),
       checkin_interval_(kDefaultCheckinInterval),
@@ -77,61 +79,72 @@ void GServicesSettings::UpdateFromLoadResult(
 
 bool GServicesSettings::UpdateSettings(
     const std::map<std::string, std::string>& settings) {
-  int64 new_checkin_interval = 0LL;
+  int64 new_checkin_interval = kMinimumCheckinInterval;
   std::map<std::string, std::string>::const_iterator iter =
       settings.find(kCheckinIntervalKey);
-  if (iter != settings.end()) {
-    if (!base::StringToInt64(iter->second, &new_checkin_interval)) {
-      LOG(ERROR) << "Failed to parse checkin interval: " << iter->second;
-      return false;
-    }
-    if (new_checkin_interval <= 0LL) {
-      LOG(ERROR) << "Checkin interval not positive: " << new_checkin_interval;
-      return false;
-    }
+  if (iter == settings.end()) {
+    LOG(ERROR) << "Setting not found: " << kCheckinIntervalKey;
+    return false;
+  }
+  if (!base::StringToInt64(iter->second, &new_checkin_interval)) {
+    LOG(ERROR) << "Failed to parse checkin interval: " << iter->second;
+    return false;
+  }
+  if (new_checkin_interval < kMinimumCheckinInterval) {
+    LOG(ERROR) << "Checkin interval: " << new_checkin_interval
+               << " is less than allowed minimum: " << kMinimumCheckinInterval;
+    new_checkin_interval = kMinimumCheckinInterval;
   }
 
   std::string new_mcs_hostname;
-  int new_mcs_secure_port = -1;
   iter = settings.find(kMCSHostnameKey);
-  if (iter != settings.end()) {
-    new_mcs_hostname = iter->second;
-    if (new_mcs_hostname.empty()) {
-      LOG(ERROR) << "Empty MCS hostname provided.";
-      return false;
-    }
+  if (iter == settings.end()) {
+    LOG(ERROR) << "Setting not found: " << kMCSHostnameKey;
+    return false;
+  }
+  new_mcs_hostname = iter->second;
+  if (new_mcs_hostname.empty()) {
+    LOG(ERROR) << "Empty MCS hostname provided.";
+    return false;
+  }
 
-    iter = settings.find(kMCSSecurePortKey);
-    if (iter != settings.end()) {
-      if (!base::StringToInt(iter->second, &new_mcs_secure_port)) {
-        LOG(ERROR) << "Failed to parse MCS secure port: " << iter->second;
-        return false;
-      }
-      if (new_mcs_secure_port < 0 || 65535 < new_mcs_secure_port) {
-        LOG(ERROR) << "Incorrect port value: " << new_mcs_secure_port;
-        return false;
-      }
-    }
+  int new_mcs_secure_port = -1;
+  iter = settings.find(kMCSSecurePortKey);
+  if (iter == settings.end()) {
+    LOG(ERROR) << "Setting not found: " << kMCSSecurePortKey;
+    return false;
+  }
+  if (!base::StringToInt(iter->second, &new_mcs_secure_port)) {
+    LOG(ERROR) << "Failed to parse MCS secure port: " << iter->second;
+    return false;
+  }
+  if (new_mcs_secure_port < 0 || 65535 < new_mcs_secure_port) {
+    LOG(ERROR) << "Incorrect port value: " << new_mcs_secure_port;
+    return false;
   }
 
   std::string new_checkin_url;
   iter = settings.find(kCheckinURLKey);
-  if (iter != settings.end()) {
-    new_checkin_url = iter->second;
-    if (new_checkin_url.empty()) {
-      LOG(ERROR) << "Empty checkin URL provided.";
-      return false;
-    }
+  if (iter == settings.end()) {
+    LOG(ERROR) << "Setting not found: " << kCheckinURLKey;
+    return false;
+  }
+  new_checkin_url = iter->second;
+  if (new_checkin_url.empty()) {
+    LOG(ERROR) << "Empty checkin URL provided.";
+    return false;
   }
 
   std::string new_registration_url;
   iter = settings.find(kRegistrationURLKey);
-  if (iter != settings.end()) {
-    new_registration_url = iter->second;
-    if (new_registration_url.empty()) {
-      LOG(ERROR) << "Empty registration URL provided.";
-      return false;
-    }
+  if (iter == settings.end()) {
+    LOG(ERROR) << "Setting not found: " << kRegistrationURLKey;
+    return false;
+  }
+  new_registration_url = iter->second;
+  if (new_registration_url.empty()) {
+    LOG(ERROR) << "Empty registration URL provided.";
+    return false;
   }
 
   // We only update the settings once all of them are correct.

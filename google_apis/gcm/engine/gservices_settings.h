@@ -19,6 +19,9 @@ namespace gcm {
 // extracting them from checkin response and storing in GCMStore.
 class GCM_EXPORT GServicesSettings {
  public:
+  // Minimum periodic checkin interval in seconds.
+  static const int64 kMinimumCheckinInterval;
+
   // Create an instance of GServicesSettings class. |gcm_store| is used to store
   // the settings after they are extracted from checkin response.
   explicit GServicesSettings(GCMStore* gcm_store);

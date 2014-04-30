@@ -12,7 +12,7 @@ namespace gcm {
 
 namespace {
 
-const int64 kAlternativeCheckinInterval = 2000LL;
+const int64 kAlternativeCheckinInterval = 16 * 60 * 60;
 const char kAlternativeCheckinURL[] = "http://alternative.url/checkin";
 const char kAlternativeMCSHostname[] = "http://alternative.gcm.host";
 const int kAlternativeMCSSecurePort = 443;
@@ -121,10 +121,11 @@ class GServicesSettingsTest : public testing::Test {
 
   FakeGCMStore& gcm_store() { return gcm_store_; }
 
+  std::map<std::string, std::string> alternative_settings_;
+
  private:
   FakeGCMStore gcm_store_;
   GServicesSettings gserivces_settings_;
-  std::map<std::string, std::string> alternative_settings_;
 };
 
 GServicesSettingsTest::GServicesSettingsTest()
@@ -176,6 +177,28 @@ TEST_F(GServicesSettingsTest, DefaultSettingsAndDigest) {
   EXPECT_EQ(std::string(), settings().digest());
 }
 
+// Verifies that settings are not updated when load result is empty.
+TEST_F(GServicesSettingsTest, UpdateFromEmptyLoadResult) {
+  GCMStore::LoadResult result;
+  result.gservices_digest = "digest_value";
+  settings().UpdateFromLoadResult(result);
+
+  CheckAllSetToDefault();
+  EXPECT_EQ(std::string(), settings().digest());
+}
+
+// Verifies that settings are not updated when one of them is missing.
+TEST_F(GServicesSettingsTest, UpdateFromLoadResultWithSettingMissing) {
+  GCMStore::LoadResult result;
+  result.gservices_settings = alternative_settings();
+  result.gservices_digest = "digest_value";
+  result.gservices_settings.erase("gcm_hostname");
+  settings().UpdateFromLoadResult(result);
+
+  CheckAllSetToDefault();
+  EXPECT_EQ(std::string(), settings().digest());
+}
+
 // Verifies that the settings are set correctly based on the load result.
 TEST_F(GServicesSettingsTest, UpdateFromLoadResult) {
   GCMStore::LoadResult result;
@@ -200,6 +223,39 @@ TEST_F(GServicesSettingsTest, UpdateFromCheckinResponse) {
 
   CheckAllSetToAlternative();
   EXPECT_EQ("digest_value", settings().digest());
+}
+
+// Verifies that the checkin interval is updated to minimum if the original
+// value is less than minimum.
+TEST_F(GServicesSettingsTest, UpdateFromCheckinResponseMinimumCheckinInterval) {
+  checkin_proto::AndroidCheckinResponse checkin_response;
+
+  checkin_response.set_digest("digest_value");
+  // Setting the checkin interval to less than minimum.
+  alternative_settings_["checkin_interval"] = base::IntToString(3600);
+  SetWithAlternativeSettings(checkin_response);
+
+  settings().UpdateFromCheckinResponse(checkin_response);
+  EXPECT_TRUE(gcm_store().settings_saved());
+
+  EXPECT_EQ(GServicesSettings::kMinimumCheckinInterval,
+            settings().checkin_interval());
+  EXPECT_EQ("digest_value", settings().digest());
+}
+
+// Verifies that settings are not updated when one of them is missing.
+TEST_F(GServicesSettingsTest, UpdateFromCheckinResponseWithSettingMissing) {
+  checkin_proto::AndroidCheckinResponse checkin_response;
+
+  checkin_response.set_digest("digest_value");
+  alternative_settings_.erase("gcm_hostname");
+  SetWithAlternativeSettings(checkin_response);
+
+  settings().UpdateFromCheckinResponse(checkin_response);
+  EXPECT_FALSE(gcm_store().settings_saved());
+
+  CheckAllSetToDefault();
+  EXPECT_EQ(std::string(), settings().digest());
 }
 
 // Verifies that no update is done, when a checkin response misses digest.
