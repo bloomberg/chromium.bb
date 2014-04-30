@@ -21,7 +21,8 @@ ClientContextState::EnableFlags::EnableFlags()
       sample_alpha_to_coverage(false),
       sample_coverage(false),
       scissor_test(false),
-      stencil_test(false) {}
+      stencil_test(false) {
+}
 
 bool ClientContextState::SetCapabilityState(GLenum cap,
                                             bool enabled,

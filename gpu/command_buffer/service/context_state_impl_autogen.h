@@ -21,7 +21,8 @@ ContextState::EnableFlags::EnableFlags()
       sample_alpha_to_coverage(false),
       sample_coverage(false),
       scissor_test(false),
-      stencil_test(false) {}
+      stencil_test(false) {
+}
 
 void ContextState::Initialize() {
   blend_color_red = 0.0f;

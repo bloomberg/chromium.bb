@@ -69,7 +69,9 @@ void GLES2BufferSubData(GLenum target,
 GLenum GLES2CheckFramebufferStatus(GLenum target) {
   return gles2::GetGLContext()->CheckFramebufferStatus(target);
 }
-void GLES2Clear(GLbitfield mask) { gles2::GetGLContext()->Clear(mask); }
+void GLES2Clear(GLbitfield mask) {
+  gles2::GetGLContext()->Clear(mask);
+}
 void GLES2ClearColor(GLclampf red,
                      GLclampf green,
                      GLclampf blue,
@@ -79,7 +81,9 @@ void GLES2ClearColor(GLclampf red,
 void GLES2ClearDepthf(GLclampf depth) {
   gles2::GetGLContext()->ClearDepthf(depth);
 }
-void GLES2ClearStencil(GLint s) { gles2::GetGLContext()->ClearStencil(s); }
+void GLES2ClearStencil(GLint s) {
+  gles2::GetGLContext()->ClearStencil(s);
+}
 void GLES2ColorMask(GLboolean red,
                     GLboolean green,
                     GLboolean blue,
@@ -134,11 +138,15 @@ void GLES2CopyTexSubImage2D(GLenum target,
   gles2::GetGLContext()->CopyTexSubImage2D(
       target, level, xoffset, yoffset, x, y, width, height);
 }
-GLuint GLES2CreateProgram() { return gles2::GetGLContext()->CreateProgram(); }
+GLuint GLES2CreateProgram() {
+  return gles2::GetGLContext()->CreateProgram();
+}
 GLuint GLES2CreateShader(GLenum type) {
   return gles2::GetGLContext()->CreateShader(type);
 }
-void GLES2CullFace(GLenum mode) { gles2::GetGLContext()->CullFace(mode); }
+void GLES2CullFace(GLenum mode) {
+  gles2::GetGLContext()->CullFace(mode);
+}
 void GLES2DeleteBuffers(GLsizei n, const GLuint* buffers) {
   gles2::GetGLContext()->DeleteBuffers(n, buffers);
 }
@@ -157,15 +165,21 @@ void GLES2DeleteShader(GLuint shader) {
 void GLES2DeleteTextures(GLsizei n, const GLuint* textures) {
   gles2::GetGLContext()->DeleteTextures(n, textures);
 }
-void GLES2DepthFunc(GLenum func) { gles2::GetGLContext()->DepthFunc(func); }
-void GLES2DepthMask(GLboolean flag) { gles2::GetGLContext()->DepthMask(flag); }
+void GLES2DepthFunc(GLenum func) {
+  gles2::GetGLContext()->DepthFunc(func);
+}
+void GLES2DepthMask(GLboolean flag) {
+  gles2::GetGLContext()->DepthMask(flag);
+}
 void GLES2DepthRangef(GLclampf zNear, GLclampf zFar) {
   gles2::GetGLContext()->DepthRangef(zNear, zFar);
 }
 void GLES2DetachShader(GLuint program, GLuint shader) {
   gles2::GetGLContext()->DetachShader(program, shader);
 }
-void GLES2Disable(GLenum cap) { gles2::GetGLContext()->Disable(cap); }
+void GLES2Disable(GLenum cap) {
+  gles2::GetGLContext()->Disable(cap);
+}
 void GLES2DisableVertexAttribArray(GLuint index) {
   gles2::GetGLContext()->DisableVertexAttribArray(index);
 }
@@ -178,12 +192,18 @@ void GLES2DrawElements(GLenum mode,
                        const void* indices) {
   gles2::GetGLContext()->DrawElements(mode, count, type, indices);
 }
-void GLES2Enable(GLenum cap) { gles2::GetGLContext()->Enable(cap); }
+void GLES2Enable(GLenum cap) {
+  gles2::GetGLContext()->Enable(cap);
+}
 void GLES2EnableVertexAttribArray(GLuint index) {
   gles2::GetGLContext()->EnableVertexAttribArray(index);
 }
-void GLES2Finish() { gles2::GetGLContext()->Finish(); }
-void GLES2Flush() { gles2::GetGLContext()->Flush(); }
+void GLES2Finish() {
+  gles2::GetGLContext()->Finish();
+}
+void GLES2Flush() {
+  gles2::GetGLContext()->Flush();
+}
 void GLES2FramebufferRenderbuffer(GLenum target,
                                   GLenum attachment,
                                   GLenum renderbuffertarget,
@@ -199,7 +219,9 @@ void GLES2FramebufferTexture2D(GLenum target,
   gles2::GetGLContext()->FramebufferTexture2D(
       target, attachment, textarget, texture, level);
 }
-void GLES2FrontFace(GLenum mode) { gles2::GetGLContext()->FrontFace(mode); }
+void GLES2FrontFace(GLenum mode) {
+  gles2::GetGLContext()->FrontFace(mode);
+}
 void GLES2GenBuffers(GLsizei n, GLuint* buffers) {
   gles2::GetGLContext()->GenBuffers(n, buffers);
 }
@@ -250,7 +272,9 @@ void GLES2GetBooleanv(GLenum pname, GLboolean* params) {
 void GLES2GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetBufferParameteriv(target, pname, params);
 }
-GLenum GLES2GetError() { return gles2::GetGLContext()->GetError(); }
+GLenum GLES2GetError() {
+  return gles2::GetGLContext()->GetError();
+}
 void GLES2GetFloatv(GLenum pname, GLfloat* params) {
   gles2::GetGLContext()->GetFloatv(pname, params);
 }
@@ -351,7 +375,9 @@ GLboolean GLES2IsShader(GLuint shader) {
 GLboolean GLES2IsTexture(GLuint texture) {
   return gles2::GetGLContext()->IsTexture(texture);
 }
-void GLES2LineWidth(GLfloat width) { gles2::GetGLContext()->LineWidth(width); }
+void GLES2LineWidth(GLfloat width) {
+  gles2::GetGLContext()->LineWidth(width);
+}
 void GLES2LinkProgram(GLuint program) {
   gles2::GetGLContext()->LinkProgram(program);
 }
@@ -414,7 +440,9 @@ void GLES2StencilFuncSeparate(GLenum face,
                               GLuint mask) {
   gles2::GetGLContext()->StencilFuncSeparate(face, func, ref, mask);
 }
-void GLES2StencilMask(GLuint mask) { gles2::GetGLContext()->StencilMask(mask); }
+void GLES2StencilMask(GLuint mask) {
+  gles2::GetGLContext()->StencilMask(mask);
+}
 void GLES2StencilMaskSeparate(GLenum face, GLuint mask) {
   gles2::GetGLContext()->StencilMaskSeparate(face, mask);
 }
@@ -659,7 +687,9 @@ void GLES2InsertEventMarkerEXT(GLsizei length, const GLchar* marker) {
 void GLES2PushGroupMarkerEXT(GLsizei length, const GLchar* marker) {
   gles2::GetGLContext()->PushGroupMarkerEXT(length, marker);
 }
-void GLES2PopGroupMarkerEXT() { gles2::GetGLContext()->PopGroupMarkerEXT(); }
+void GLES2PopGroupMarkerEXT() {
+  gles2::GetGLContext()->PopGroupMarkerEXT();
+}
 void GLES2GenVertexArraysOES(GLsizei n, GLuint* arrays) {
   gles2::GetGLContext()->GenVertexArraysOES(n, arrays);
 }
@@ -672,7 +702,9 @@ GLboolean GLES2IsVertexArrayOES(GLuint array) {
 void GLES2BindVertexArrayOES(GLuint array) {
   gles2::GetGLContext()->BindVertexArrayOES(array);
 }
-void GLES2SwapBuffers() { gles2::GetGLContext()->SwapBuffers(); }
+void GLES2SwapBuffers() {
+  gles2::GetGLContext()->SwapBuffers();
+}
 GLuint GLES2GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                         GLsizei count,
                                         GLenum type,
@@ -846,7 +878,9 @@ void GLES2ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
 void GLES2TraceBeginCHROMIUM(const char* name) {
   gles2::GetGLContext()->TraceBeginCHROMIUM(name);
 }
-void GLES2TraceEndCHROMIUM() { gles2::GetGLContext()->TraceEndCHROMIUM(); }
+void GLES2TraceEndCHROMIUM() {
+  gles2::GetGLContext()->TraceEndCHROMIUM();
+}
 void GLES2AsyncTexSubImage2DCHROMIUM(GLenum target,
                                      GLint level,
                                      GLint xoffset,
@@ -931,378 +965,778 @@ void GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 namespace gles2 {
 
 extern const NameToFunc g_gles2_function_table[] = {
-    {"glActiveTexture",
-     reinterpret_cast<GLES2FunctionPointer>(glActiveTexture), },
-    {"glAttachShader",
-     reinterpret_cast<GLES2FunctionPointer>(glAttachShader), },
-    {"glBindAttribLocation",
-     reinterpret_cast<GLES2FunctionPointer>(glBindAttribLocation), },
-    {"glBindBuffer", reinterpret_cast<GLES2FunctionPointer>(glBindBuffer), },
-    {"glBindFramebuffer",
-     reinterpret_cast<GLES2FunctionPointer>(glBindFramebuffer), },
-    {"glBindRenderbuffer",
-     reinterpret_cast<GLES2FunctionPointer>(glBindRenderbuffer), },
-    {"glBindTexture", reinterpret_cast<GLES2FunctionPointer>(glBindTexture), },
-    {"glBlendColor", reinterpret_cast<GLES2FunctionPointer>(glBlendColor), },
-    {"glBlendEquation",
-     reinterpret_cast<GLES2FunctionPointer>(glBlendEquation), },
-    {"glBlendEquationSeparate",
-     reinterpret_cast<GLES2FunctionPointer>(glBlendEquationSeparate), },
-    {"glBlendFunc", reinterpret_cast<GLES2FunctionPointer>(glBlendFunc), },
-    {"glBlendFuncSeparate",
-     reinterpret_cast<GLES2FunctionPointer>(glBlendFuncSeparate), },
-    {"glBufferData", reinterpret_cast<GLES2FunctionPointer>(glBufferData), },
-    {"glBufferSubData",
-     reinterpret_cast<GLES2FunctionPointer>(glBufferSubData), },
-    {"glCheckFramebufferStatus",
-     reinterpret_cast<GLES2FunctionPointer>(glCheckFramebufferStatus), },
-    {"glClear", reinterpret_cast<GLES2FunctionPointer>(glClear), },
-    {"glClearColor", reinterpret_cast<GLES2FunctionPointer>(glClearColor), },
-    {"glClearDepthf", reinterpret_cast<GLES2FunctionPointer>(glClearDepthf), },
-    {"glClearStencil",
-     reinterpret_cast<GLES2FunctionPointer>(glClearStencil), },
-    {"glColorMask", reinterpret_cast<GLES2FunctionPointer>(glColorMask), },
-    {"glCompileShader",
-     reinterpret_cast<GLES2FunctionPointer>(glCompileShader), },
-    {"glCompressedTexImage2D",
-     reinterpret_cast<GLES2FunctionPointer>(glCompressedTexImage2D), },
-    {"glCompressedTexSubImage2D",
-     reinterpret_cast<GLES2FunctionPointer>(glCompressedTexSubImage2D), },
-    {"glCopyTexImage2D",
-     reinterpret_cast<GLES2FunctionPointer>(glCopyTexImage2D), },
-    {"glCopyTexSubImage2D",
-     reinterpret_cast<GLES2FunctionPointer>(glCopyTexSubImage2D), },
-    {"glCreateProgram",
-     reinterpret_cast<GLES2FunctionPointer>(glCreateProgram), },
-    {"glCreateShader",
-     reinterpret_cast<GLES2FunctionPointer>(glCreateShader), },
-    {"glCullFace", reinterpret_cast<GLES2FunctionPointer>(glCullFace), },
-    {"glDeleteBuffers",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteBuffers), },
-    {"glDeleteFramebuffers",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteFramebuffers), },
-    {"glDeleteProgram",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteProgram), },
-    {"glDeleteRenderbuffers",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteRenderbuffers), },
-    {"glDeleteShader",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteShader), },
-    {"glDeleteTextures",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteTextures), },
-    {"glDepthFunc", reinterpret_cast<GLES2FunctionPointer>(glDepthFunc), },
-    {"glDepthMask", reinterpret_cast<GLES2FunctionPointer>(glDepthMask), },
-    {"glDepthRangef", reinterpret_cast<GLES2FunctionPointer>(glDepthRangef), },
-    {"glDetachShader",
-     reinterpret_cast<GLES2FunctionPointer>(glDetachShader), },
-    {"glDisable", reinterpret_cast<GLES2FunctionPointer>(glDisable), },
-    {"glDisableVertexAttribArray",
-     reinterpret_cast<GLES2FunctionPointer>(glDisableVertexAttribArray), },
-    {"glDrawArrays", reinterpret_cast<GLES2FunctionPointer>(glDrawArrays), },
-    {"glDrawElements",
-     reinterpret_cast<GLES2FunctionPointer>(glDrawElements), },
-    {"glEnable", reinterpret_cast<GLES2FunctionPointer>(glEnable), },
-    {"glEnableVertexAttribArray",
-     reinterpret_cast<GLES2FunctionPointer>(glEnableVertexAttribArray), },
-    {"glFinish", reinterpret_cast<GLES2FunctionPointer>(glFinish), },
-    {"glFlush", reinterpret_cast<GLES2FunctionPointer>(glFlush), },
-    {"glFramebufferRenderbuffer",
-     reinterpret_cast<GLES2FunctionPointer>(glFramebufferRenderbuffer), },
-    {"glFramebufferTexture2D",
-     reinterpret_cast<GLES2FunctionPointer>(glFramebufferTexture2D), },
-    {"glFrontFace", reinterpret_cast<GLES2FunctionPointer>(glFrontFace), },
-    {"glGenBuffers", reinterpret_cast<GLES2FunctionPointer>(glGenBuffers), },
-    {"glGenerateMipmap",
-     reinterpret_cast<GLES2FunctionPointer>(glGenerateMipmap), },
-    {"glGenFramebuffers",
-     reinterpret_cast<GLES2FunctionPointer>(glGenFramebuffers), },
-    {"glGenRenderbuffers",
-     reinterpret_cast<GLES2FunctionPointer>(glGenRenderbuffers), },
-    {"glGenTextures", reinterpret_cast<GLES2FunctionPointer>(glGenTextures), },
-    {"glGetActiveAttrib",
-     reinterpret_cast<GLES2FunctionPointer>(glGetActiveAttrib), },
-    {"glGetActiveUniform",
-     reinterpret_cast<GLES2FunctionPointer>(glGetActiveUniform), },
-    {"glGetAttachedShaders",
-     reinterpret_cast<GLES2FunctionPointer>(glGetAttachedShaders), },
-    {"glGetAttribLocation",
-     reinterpret_cast<GLES2FunctionPointer>(glGetAttribLocation), },
-    {"glGetBooleanv", reinterpret_cast<GLES2FunctionPointer>(glGetBooleanv), },
-    {"glGetBufferParameteriv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetBufferParameteriv), },
-    {"glGetError", reinterpret_cast<GLES2FunctionPointer>(glGetError), },
-    {"glGetFloatv", reinterpret_cast<GLES2FunctionPointer>(glGetFloatv), },
-    {"glGetFramebufferAttachmentParameteriv",
+    {
+     "glActiveTexture", reinterpret_cast<GLES2FunctionPointer>(glActiveTexture),
+    },
+    {
+     "glAttachShader", reinterpret_cast<GLES2FunctionPointer>(glAttachShader),
+    },
+    {
+     "glBindAttribLocation",
+     reinterpret_cast<GLES2FunctionPointer>(glBindAttribLocation),
+    },
+    {
+     "glBindBuffer", reinterpret_cast<GLES2FunctionPointer>(glBindBuffer),
+    },
+    {
+     "glBindFramebuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glBindFramebuffer),
+    },
+    {
+     "glBindRenderbuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glBindRenderbuffer),
+    },
+    {
+     "glBindTexture", reinterpret_cast<GLES2FunctionPointer>(glBindTexture),
+    },
+    {
+     "glBlendColor", reinterpret_cast<GLES2FunctionPointer>(glBlendColor),
+    },
+    {
+     "glBlendEquation", reinterpret_cast<GLES2FunctionPointer>(glBlendEquation),
+    },
+    {
+     "glBlendEquationSeparate",
+     reinterpret_cast<GLES2FunctionPointer>(glBlendEquationSeparate),
+    },
+    {
+     "glBlendFunc", reinterpret_cast<GLES2FunctionPointer>(glBlendFunc),
+    },
+    {
+     "glBlendFuncSeparate",
+     reinterpret_cast<GLES2FunctionPointer>(glBlendFuncSeparate),
+    },
+    {
+     "glBufferData", reinterpret_cast<GLES2FunctionPointer>(glBufferData),
+    },
+    {
+     "glBufferSubData", reinterpret_cast<GLES2FunctionPointer>(glBufferSubData),
+    },
+    {
+     "glCheckFramebufferStatus",
+     reinterpret_cast<GLES2FunctionPointer>(glCheckFramebufferStatus),
+    },
+    {
+     "glClear", reinterpret_cast<GLES2FunctionPointer>(glClear),
+    },
+    {
+     "glClearColor", reinterpret_cast<GLES2FunctionPointer>(glClearColor),
+    },
+    {
+     "glClearDepthf", reinterpret_cast<GLES2FunctionPointer>(glClearDepthf),
+    },
+    {
+     "glClearStencil", reinterpret_cast<GLES2FunctionPointer>(glClearStencil),
+    },
+    {
+     "glColorMask", reinterpret_cast<GLES2FunctionPointer>(glColorMask),
+    },
+    {
+     "glCompileShader", reinterpret_cast<GLES2FunctionPointer>(glCompileShader),
+    },
+    {
+     "glCompressedTexImage2D",
+     reinterpret_cast<GLES2FunctionPointer>(glCompressedTexImage2D),
+    },
+    {
+     "glCompressedTexSubImage2D",
+     reinterpret_cast<GLES2FunctionPointer>(glCompressedTexSubImage2D),
+    },
+    {
+     "glCopyTexImage2D",
+     reinterpret_cast<GLES2FunctionPointer>(glCopyTexImage2D),
+    },
+    {
+     "glCopyTexSubImage2D",
+     reinterpret_cast<GLES2FunctionPointer>(glCopyTexSubImage2D),
+    },
+    {
+     "glCreateProgram", reinterpret_cast<GLES2FunctionPointer>(glCreateProgram),
+    },
+    {
+     "glCreateShader", reinterpret_cast<GLES2FunctionPointer>(glCreateShader),
+    },
+    {
+     "glCullFace", reinterpret_cast<GLES2FunctionPointer>(glCullFace),
+    },
+    {
+     "glDeleteBuffers", reinterpret_cast<GLES2FunctionPointer>(glDeleteBuffers),
+    },
+    {
+     "glDeleteFramebuffers",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteFramebuffers),
+    },
+    {
+     "glDeleteProgram", reinterpret_cast<GLES2FunctionPointer>(glDeleteProgram),
+    },
+    {
+     "glDeleteRenderbuffers",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteRenderbuffers),
+    },
+    {
+     "glDeleteShader", reinterpret_cast<GLES2FunctionPointer>(glDeleteShader),
+    },
+    {
+     "glDeleteTextures",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteTextures),
+    },
+    {
+     "glDepthFunc", reinterpret_cast<GLES2FunctionPointer>(glDepthFunc),
+    },
+    {
+     "glDepthMask", reinterpret_cast<GLES2FunctionPointer>(glDepthMask),
+    },
+    {
+     "glDepthRangef", reinterpret_cast<GLES2FunctionPointer>(glDepthRangef),
+    },
+    {
+     "glDetachShader", reinterpret_cast<GLES2FunctionPointer>(glDetachShader),
+    },
+    {
+     "glDisable", reinterpret_cast<GLES2FunctionPointer>(glDisable),
+    },
+    {
+     "glDisableVertexAttribArray",
+     reinterpret_cast<GLES2FunctionPointer>(glDisableVertexAttribArray),
+    },
+    {
+     "glDrawArrays", reinterpret_cast<GLES2FunctionPointer>(glDrawArrays),
+    },
+    {
+     "glDrawElements", reinterpret_cast<GLES2FunctionPointer>(glDrawElements),
+    },
+    {
+     "glEnable", reinterpret_cast<GLES2FunctionPointer>(glEnable),
+    },
+    {
+     "glEnableVertexAttribArray",
+     reinterpret_cast<GLES2FunctionPointer>(glEnableVertexAttribArray),
+    },
+    {
+     "glFinish", reinterpret_cast<GLES2FunctionPointer>(glFinish),
+    },
+    {
+     "glFlush", reinterpret_cast<GLES2FunctionPointer>(glFlush),
+    },
+    {
+     "glFramebufferRenderbuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glFramebufferRenderbuffer),
+    },
+    {
+     "glFramebufferTexture2D",
+     reinterpret_cast<GLES2FunctionPointer>(glFramebufferTexture2D),
+    },
+    {
+     "glFrontFace", reinterpret_cast<GLES2FunctionPointer>(glFrontFace),
+    },
+    {
+     "glGenBuffers", reinterpret_cast<GLES2FunctionPointer>(glGenBuffers),
+    },
+    {
+     "glGenerateMipmap",
+     reinterpret_cast<GLES2FunctionPointer>(glGenerateMipmap),
+    },
+    {
+     "glGenFramebuffers",
+     reinterpret_cast<GLES2FunctionPointer>(glGenFramebuffers),
+    },
+    {
+     "glGenRenderbuffers",
+     reinterpret_cast<GLES2FunctionPointer>(glGenRenderbuffers),
+    },
+    {
+     "glGenTextures", reinterpret_cast<GLES2FunctionPointer>(glGenTextures),
+    },
+    {
+     "glGetActiveAttrib",
+     reinterpret_cast<GLES2FunctionPointer>(glGetActiveAttrib),
+    },
+    {
+     "glGetActiveUniform",
+     reinterpret_cast<GLES2FunctionPointer>(glGetActiveUniform),
+    },
+    {
+     "glGetAttachedShaders",
+     reinterpret_cast<GLES2FunctionPointer>(glGetAttachedShaders),
+    },
+    {
+     "glGetAttribLocation",
+     reinterpret_cast<GLES2FunctionPointer>(glGetAttribLocation),
+    },
+    {
+     "glGetBooleanv", reinterpret_cast<GLES2FunctionPointer>(glGetBooleanv),
+    },
+    {
+     "glGetBufferParameteriv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetBufferParameteriv),
+    },
+    {
+     "glGetError", reinterpret_cast<GLES2FunctionPointer>(glGetError),
+    },
+    {
+     "glGetFloatv", reinterpret_cast<GLES2FunctionPointer>(glGetFloatv),
+    },
+    {
+     "glGetFramebufferAttachmentParameteriv",
      reinterpret_cast<GLES2FunctionPointer>(
-         glGetFramebufferAttachmentParameteriv), },
-    {"glGetIntegerv", reinterpret_cast<GLES2FunctionPointer>(glGetIntegerv), },
-    {"glGetProgramiv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetProgramiv), },
-    {"glGetProgramInfoLog",
-     reinterpret_cast<GLES2FunctionPointer>(glGetProgramInfoLog), },
-    {"glGetRenderbufferParameteriv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetRenderbufferParameteriv), },
-    {"glGetShaderiv", reinterpret_cast<GLES2FunctionPointer>(glGetShaderiv), },
-    {"glGetShaderInfoLog",
-     reinterpret_cast<GLES2FunctionPointer>(glGetShaderInfoLog), },
-    {"glGetShaderPrecisionFormat",
-     reinterpret_cast<GLES2FunctionPointer>(glGetShaderPrecisionFormat), },
-    {"glGetShaderSource",
-     reinterpret_cast<GLES2FunctionPointer>(glGetShaderSource), },
-    {"glGetString", reinterpret_cast<GLES2FunctionPointer>(glGetString), },
-    {"glGetTexParameterfv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetTexParameterfv), },
-    {"glGetTexParameteriv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetTexParameteriv), },
-    {"glGetUniformfv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetUniformfv), },
-    {"glGetUniformiv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetUniformiv), },
-    {"glGetUniformLocation",
-     reinterpret_cast<GLES2FunctionPointer>(glGetUniformLocation), },
-    {"glGetVertexAttribfv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribfv), },
-    {"glGetVertexAttribiv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribiv), },
-    {"glGetVertexAttribPointerv",
-     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribPointerv), },
-    {"glHint", reinterpret_cast<GLES2FunctionPointer>(glHint), },
-    {"glIsBuffer", reinterpret_cast<GLES2FunctionPointer>(glIsBuffer), },
-    {"glIsEnabled", reinterpret_cast<GLES2FunctionPointer>(glIsEnabled), },
-    {"glIsFramebuffer",
-     reinterpret_cast<GLES2FunctionPointer>(glIsFramebuffer), },
-    {"glIsProgram", reinterpret_cast<GLES2FunctionPointer>(glIsProgram), },
-    {"glIsRenderbuffer",
-     reinterpret_cast<GLES2FunctionPointer>(glIsRenderbuffer), },
-    {"glIsShader", reinterpret_cast<GLES2FunctionPointer>(glIsShader), },
-    {"glIsTexture", reinterpret_cast<GLES2FunctionPointer>(glIsTexture), },
-    {"glLineWidth", reinterpret_cast<GLES2FunctionPointer>(glLineWidth), },
-    {"glLinkProgram", reinterpret_cast<GLES2FunctionPointer>(glLinkProgram), },
-    {"glPixelStorei", reinterpret_cast<GLES2FunctionPointer>(glPixelStorei), },
-    {"glPolygonOffset",
-     reinterpret_cast<GLES2FunctionPointer>(glPolygonOffset), },
-    {"glReadPixels", reinterpret_cast<GLES2FunctionPointer>(glReadPixels), },
-    {"glReleaseShaderCompiler",
-     reinterpret_cast<GLES2FunctionPointer>(glReleaseShaderCompiler), },
-    {"glRenderbufferStorage",
-     reinterpret_cast<GLES2FunctionPointer>(glRenderbufferStorage), },
-    {"glSampleCoverage",
-     reinterpret_cast<GLES2FunctionPointer>(glSampleCoverage), },
-    {"glScissor", reinterpret_cast<GLES2FunctionPointer>(glScissor), },
-    {"glShaderBinary",
-     reinterpret_cast<GLES2FunctionPointer>(glShaderBinary), },
-    {"glShaderSource",
-     reinterpret_cast<GLES2FunctionPointer>(glShaderSource), },
-    {"glShallowFinishCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glShallowFinishCHROMIUM), },
-    {"glShallowFlushCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glShallowFlushCHROMIUM), },
-    {"glStencilFunc", reinterpret_cast<GLES2FunctionPointer>(glStencilFunc), },
-    {"glStencilFuncSeparate",
-     reinterpret_cast<GLES2FunctionPointer>(glStencilFuncSeparate), },
-    {"glStencilMask", reinterpret_cast<GLES2FunctionPointer>(glStencilMask), },
-    {"glStencilMaskSeparate",
-     reinterpret_cast<GLES2FunctionPointer>(glStencilMaskSeparate), },
-    {"glStencilOp", reinterpret_cast<GLES2FunctionPointer>(glStencilOp), },
-    {"glStencilOpSeparate",
-     reinterpret_cast<GLES2FunctionPointer>(glStencilOpSeparate), },
-    {"glTexImage2D", reinterpret_cast<GLES2FunctionPointer>(glTexImage2D), },
-    {"glTexParameterf",
-     reinterpret_cast<GLES2FunctionPointer>(glTexParameterf), },
-    {"glTexParameterfv",
-     reinterpret_cast<GLES2FunctionPointer>(glTexParameterfv), },
-    {"glTexParameteri",
-     reinterpret_cast<GLES2FunctionPointer>(glTexParameteri), },
-    {"glTexParameteriv",
-     reinterpret_cast<GLES2FunctionPointer>(glTexParameteriv), },
-    {"glTexSubImage2D",
-     reinterpret_cast<GLES2FunctionPointer>(glTexSubImage2D), },
-    {"glUniform1f", reinterpret_cast<GLES2FunctionPointer>(glUniform1f), },
-    {"glUniform1fv", reinterpret_cast<GLES2FunctionPointer>(glUniform1fv), },
-    {"glUniform1i", reinterpret_cast<GLES2FunctionPointer>(glUniform1i), },
-    {"glUniform1iv", reinterpret_cast<GLES2FunctionPointer>(glUniform1iv), },
-    {"glUniform2f", reinterpret_cast<GLES2FunctionPointer>(glUniform2f), },
-    {"glUniform2fv", reinterpret_cast<GLES2FunctionPointer>(glUniform2fv), },
-    {"glUniform2i", reinterpret_cast<GLES2FunctionPointer>(glUniform2i), },
-    {"glUniform2iv", reinterpret_cast<GLES2FunctionPointer>(glUniform2iv), },
-    {"glUniform3f", reinterpret_cast<GLES2FunctionPointer>(glUniform3f), },
-    {"glUniform3fv", reinterpret_cast<GLES2FunctionPointer>(glUniform3fv), },
-    {"glUniform3i", reinterpret_cast<GLES2FunctionPointer>(glUniform3i), },
-    {"glUniform3iv", reinterpret_cast<GLES2FunctionPointer>(glUniform3iv), },
-    {"glUniform4f", reinterpret_cast<GLES2FunctionPointer>(glUniform4f), },
-    {"glUniform4fv", reinterpret_cast<GLES2FunctionPointer>(glUniform4fv), },
-    {"glUniform4i", reinterpret_cast<GLES2FunctionPointer>(glUniform4i), },
-    {"glUniform4iv", reinterpret_cast<GLES2FunctionPointer>(glUniform4iv), },
-    {"glUniformMatrix2fv",
-     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix2fv), },
-    {"glUniformMatrix3fv",
-     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix3fv), },
-    {"glUniformMatrix4fv",
-     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix4fv), },
-    {"glUseProgram", reinterpret_cast<GLES2FunctionPointer>(glUseProgram), },
-    {"glValidateProgram",
-     reinterpret_cast<GLES2FunctionPointer>(glValidateProgram), },
-    {"glVertexAttrib1f",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib1f), },
-    {"glVertexAttrib1fv",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib1fv), },
-    {"glVertexAttrib2f",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib2f), },
-    {"glVertexAttrib2fv",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib2fv), },
-    {"glVertexAttrib3f",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib3f), },
-    {"glVertexAttrib3fv",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib3fv), },
-    {"glVertexAttrib4f",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib4f), },
-    {"glVertexAttrib4fv",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib4fv), },
-    {"glVertexAttribPointer",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribPointer), },
-    {"glViewport", reinterpret_cast<GLES2FunctionPointer>(glViewport), },
-    {"glBlitFramebufferCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glBlitFramebufferCHROMIUM), },
-    {"glRenderbufferStorageMultisampleCHROMIUM",
+         glGetFramebufferAttachmentParameteriv),
+    },
+    {
+     "glGetIntegerv", reinterpret_cast<GLES2FunctionPointer>(glGetIntegerv),
+    },
+    {
+     "glGetProgramiv", reinterpret_cast<GLES2FunctionPointer>(glGetProgramiv),
+    },
+    {
+     "glGetProgramInfoLog",
+     reinterpret_cast<GLES2FunctionPointer>(glGetProgramInfoLog),
+    },
+    {
+     "glGetRenderbufferParameteriv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetRenderbufferParameteriv),
+    },
+    {
+     "glGetShaderiv", reinterpret_cast<GLES2FunctionPointer>(glGetShaderiv),
+    },
+    {
+     "glGetShaderInfoLog",
+     reinterpret_cast<GLES2FunctionPointer>(glGetShaderInfoLog),
+    },
+    {
+     "glGetShaderPrecisionFormat",
+     reinterpret_cast<GLES2FunctionPointer>(glGetShaderPrecisionFormat),
+    },
+    {
+     "glGetShaderSource",
+     reinterpret_cast<GLES2FunctionPointer>(glGetShaderSource),
+    },
+    {
+     "glGetString", reinterpret_cast<GLES2FunctionPointer>(glGetString),
+    },
+    {
+     "glGetTexParameterfv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetTexParameterfv),
+    },
+    {
+     "glGetTexParameteriv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetTexParameteriv),
+    },
+    {
+     "glGetUniformfv", reinterpret_cast<GLES2FunctionPointer>(glGetUniformfv),
+    },
+    {
+     "glGetUniformiv", reinterpret_cast<GLES2FunctionPointer>(glGetUniformiv),
+    },
+    {
+     "glGetUniformLocation",
+     reinterpret_cast<GLES2FunctionPointer>(glGetUniformLocation),
+    },
+    {
+     "glGetVertexAttribfv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribfv),
+    },
+    {
+     "glGetVertexAttribiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribiv),
+    },
+    {
+     "glGetVertexAttribPointerv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetVertexAttribPointerv),
+    },
+    {
+     "glHint", reinterpret_cast<GLES2FunctionPointer>(glHint),
+    },
+    {
+     "glIsBuffer", reinterpret_cast<GLES2FunctionPointer>(glIsBuffer),
+    },
+    {
+     "glIsEnabled", reinterpret_cast<GLES2FunctionPointer>(glIsEnabled),
+    },
+    {
+     "glIsFramebuffer", reinterpret_cast<GLES2FunctionPointer>(glIsFramebuffer),
+    },
+    {
+     "glIsProgram", reinterpret_cast<GLES2FunctionPointer>(glIsProgram),
+    },
+    {
+     "glIsRenderbuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glIsRenderbuffer),
+    },
+    {
+     "glIsShader", reinterpret_cast<GLES2FunctionPointer>(glIsShader),
+    },
+    {
+     "glIsTexture", reinterpret_cast<GLES2FunctionPointer>(glIsTexture),
+    },
+    {
+     "glLineWidth", reinterpret_cast<GLES2FunctionPointer>(glLineWidth),
+    },
+    {
+     "glLinkProgram", reinterpret_cast<GLES2FunctionPointer>(glLinkProgram),
+    },
+    {
+     "glPixelStorei", reinterpret_cast<GLES2FunctionPointer>(glPixelStorei),
+    },
+    {
+     "glPolygonOffset", reinterpret_cast<GLES2FunctionPointer>(glPolygonOffset),
+    },
+    {
+     "glReadPixels", reinterpret_cast<GLES2FunctionPointer>(glReadPixels),
+    },
+    {
+     "glReleaseShaderCompiler",
+     reinterpret_cast<GLES2FunctionPointer>(glReleaseShaderCompiler),
+    },
+    {
+     "glRenderbufferStorage",
+     reinterpret_cast<GLES2FunctionPointer>(glRenderbufferStorage),
+    },
+    {
+     "glSampleCoverage",
+     reinterpret_cast<GLES2FunctionPointer>(glSampleCoverage),
+    },
+    {
+     "glScissor", reinterpret_cast<GLES2FunctionPointer>(glScissor),
+    },
+    {
+     "glShaderBinary", reinterpret_cast<GLES2FunctionPointer>(glShaderBinary),
+    },
+    {
+     "glShaderSource", reinterpret_cast<GLES2FunctionPointer>(glShaderSource),
+    },
+    {
+     "glShallowFinishCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glShallowFinishCHROMIUM),
+    },
+    {
+     "glShallowFlushCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glShallowFlushCHROMIUM),
+    },
+    {
+     "glStencilFunc", reinterpret_cast<GLES2FunctionPointer>(glStencilFunc),
+    },
+    {
+     "glStencilFuncSeparate",
+     reinterpret_cast<GLES2FunctionPointer>(glStencilFuncSeparate),
+    },
+    {
+     "glStencilMask", reinterpret_cast<GLES2FunctionPointer>(glStencilMask),
+    },
+    {
+     "glStencilMaskSeparate",
+     reinterpret_cast<GLES2FunctionPointer>(glStencilMaskSeparate),
+    },
+    {
+     "glStencilOp", reinterpret_cast<GLES2FunctionPointer>(glStencilOp),
+    },
+    {
+     "glStencilOpSeparate",
+     reinterpret_cast<GLES2FunctionPointer>(glStencilOpSeparate),
+    },
+    {
+     "glTexImage2D", reinterpret_cast<GLES2FunctionPointer>(glTexImage2D),
+    },
+    {
+     "glTexParameterf", reinterpret_cast<GLES2FunctionPointer>(glTexParameterf),
+    },
+    {
+     "glTexParameterfv",
+     reinterpret_cast<GLES2FunctionPointer>(glTexParameterfv),
+    },
+    {
+     "glTexParameteri", reinterpret_cast<GLES2FunctionPointer>(glTexParameteri),
+    },
+    {
+     "glTexParameteriv",
+     reinterpret_cast<GLES2FunctionPointer>(glTexParameteriv),
+    },
+    {
+     "glTexSubImage2D", reinterpret_cast<GLES2FunctionPointer>(glTexSubImage2D),
+    },
+    {
+     "glUniform1f", reinterpret_cast<GLES2FunctionPointer>(glUniform1f),
+    },
+    {
+     "glUniform1fv", reinterpret_cast<GLES2FunctionPointer>(glUniform1fv),
+    },
+    {
+     "glUniform1i", reinterpret_cast<GLES2FunctionPointer>(glUniform1i),
+    },
+    {
+     "glUniform1iv", reinterpret_cast<GLES2FunctionPointer>(glUniform1iv),
+    },
+    {
+     "glUniform2f", reinterpret_cast<GLES2FunctionPointer>(glUniform2f),
+    },
+    {
+     "glUniform2fv", reinterpret_cast<GLES2FunctionPointer>(glUniform2fv),
+    },
+    {
+     "glUniform2i", reinterpret_cast<GLES2FunctionPointer>(glUniform2i),
+    },
+    {
+     "glUniform2iv", reinterpret_cast<GLES2FunctionPointer>(glUniform2iv),
+    },
+    {
+     "glUniform3f", reinterpret_cast<GLES2FunctionPointer>(glUniform3f),
+    },
+    {
+     "glUniform3fv", reinterpret_cast<GLES2FunctionPointer>(glUniform3fv),
+    },
+    {
+     "glUniform3i", reinterpret_cast<GLES2FunctionPointer>(glUniform3i),
+    },
+    {
+     "glUniform3iv", reinterpret_cast<GLES2FunctionPointer>(glUniform3iv),
+    },
+    {
+     "glUniform4f", reinterpret_cast<GLES2FunctionPointer>(glUniform4f),
+    },
+    {
+     "glUniform4fv", reinterpret_cast<GLES2FunctionPointer>(glUniform4fv),
+    },
+    {
+     "glUniform4i", reinterpret_cast<GLES2FunctionPointer>(glUniform4i),
+    },
+    {
+     "glUniform4iv", reinterpret_cast<GLES2FunctionPointer>(glUniform4iv),
+    },
+    {
+     "glUniformMatrix2fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix2fv),
+    },
+    {
+     "glUniformMatrix3fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix3fv),
+    },
+    {
+     "glUniformMatrix4fv",
+     reinterpret_cast<GLES2FunctionPointer>(glUniformMatrix4fv),
+    },
+    {
+     "glUseProgram", reinterpret_cast<GLES2FunctionPointer>(glUseProgram),
+    },
+    {
+     "glValidateProgram",
+     reinterpret_cast<GLES2FunctionPointer>(glValidateProgram),
+    },
+    {
+     "glVertexAttrib1f",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib1f),
+    },
+    {
+     "glVertexAttrib1fv",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib1fv),
+    },
+    {
+     "glVertexAttrib2f",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib2f),
+    },
+    {
+     "glVertexAttrib2fv",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib2fv),
+    },
+    {
+     "glVertexAttrib3f",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib3f),
+    },
+    {
+     "glVertexAttrib3fv",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib3fv),
+    },
+    {
+     "glVertexAttrib4f",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib4f),
+    },
+    {
+     "glVertexAttrib4fv",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttrib4fv),
+    },
+    {
+     "glVertexAttribPointer",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribPointer),
+    },
+    {
+     "glViewport", reinterpret_cast<GLES2FunctionPointer>(glViewport),
+    },
+    {
+     "glBlitFramebufferCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glBlitFramebufferCHROMIUM),
+    },
+    {
+     "glRenderbufferStorageMultisampleCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(
-         glRenderbufferStorageMultisampleCHROMIUM), },
-    {"glRenderbufferStorageMultisampleEXT",
+         glRenderbufferStorageMultisampleCHROMIUM),
+    },
+    {
+     "glRenderbufferStorageMultisampleEXT",
      reinterpret_cast<GLES2FunctionPointer>(
-         glRenderbufferStorageMultisampleEXT), },
-    {"glFramebufferTexture2DMultisampleEXT",
+         glRenderbufferStorageMultisampleEXT),
+    },
+    {
+     "glFramebufferTexture2DMultisampleEXT",
      reinterpret_cast<GLES2FunctionPointer>(
-         glFramebufferTexture2DMultisampleEXT), },
-    {"glTexStorage2DEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glTexStorage2DEXT), },
-    {"glGenQueriesEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glGenQueriesEXT), },
-    {"glDeleteQueriesEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteQueriesEXT), },
-    {"glIsQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glIsQueryEXT), },
-    {"glBeginQueryEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glBeginQueryEXT), },
-    {"glEndQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glEndQueryEXT), },
-    {"glGetQueryivEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glGetQueryivEXT), },
-    {"glGetQueryObjectuivEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjectuivEXT), },
-    {"glInsertEventMarkerEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glInsertEventMarkerEXT), },
-    {"glPushGroupMarkerEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glPushGroupMarkerEXT), },
-    {"glPopGroupMarkerEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glPopGroupMarkerEXT), },
-    {"glGenVertexArraysOES",
-     reinterpret_cast<GLES2FunctionPointer>(glGenVertexArraysOES), },
-    {"glDeleteVertexArraysOES",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteVertexArraysOES), },
-    {"glIsVertexArrayOES",
-     reinterpret_cast<GLES2FunctionPointer>(glIsVertexArrayOES), },
-    {"glBindVertexArrayOES",
-     reinterpret_cast<GLES2FunctionPointer>(glBindVertexArrayOES), },
-    {"glSwapBuffers", reinterpret_cast<GLES2FunctionPointer>(glSwapBuffers), },
-    {"glGetMaxValueInBufferCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGetMaxValueInBufferCHROMIUM), },
-    {"glGenSharedIdsCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGenSharedIdsCHROMIUM), },
-    {"glDeleteSharedIdsCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glDeleteSharedIdsCHROMIUM), },
-    {"glRegisterSharedIdsCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glRegisterSharedIdsCHROMIUM), },
-    {"glEnableFeatureCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glEnableFeatureCHROMIUM), },
-    {"glMapBufferCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glMapBufferCHROMIUM), },
-    {"glUnmapBufferCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glUnmapBufferCHROMIUM), },
-    {"glMapImageCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glMapImageCHROMIUM), },
-    {"glUnmapImageCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glUnmapImageCHROMIUM), },
-    {"glMapBufferSubDataCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glMapBufferSubDataCHROMIUM), },
-    {"glUnmapBufferSubDataCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glUnmapBufferSubDataCHROMIUM), },
-    {"glMapTexSubImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glMapTexSubImage2DCHROMIUM), },
-    {"glUnmapTexSubImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glUnmapTexSubImage2DCHROMIUM), },
-    {"glResizeCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glResizeCHROMIUM), },
-    {"glGetRequestableExtensionsCHROMIUM",
+         glFramebufferTexture2DMultisampleEXT),
+    },
+    {
+     "glTexStorage2DEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glTexStorage2DEXT),
+    },
+    {
+     "glGenQueriesEXT", reinterpret_cast<GLES2FunctionPointer>(glGenQueriesEXT),
+    },
+    {
+     "glDeleteQueriesEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteQueriesEXT),
+    },
+    {
+     "glIsQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glIsQueryEXT),
+    },
+    {
+     "glBeginQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glBeginQueryEXT),
+    },
+    {
+     "glEndQueryEXT", reinterpret_cast<GLES2FunctionPointer>(glEndQueryEXT),
+    },
+    {
+     "glGetQueryivEXT", reinterpret_cast<GLES2FunctionPointer>(glGetQueryivEXT),
+    },
+    {
+     "glGetQueryObjectuivEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjectuivEXT),
+    },
+    {
+     "glInsertEventMarkerEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glInsertEventMarkerEXT),
+    },
+    {
+     "glPushGroupMarkerEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glPushGroupMarkerEXT),
+    },
+    {
+     "glPopGroupMarkerEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glPopGroupMarkerEXT),
+    },
+    {
+     "glGenVertexArraysOES",
+     reinterpret_cast<GLES2FunctionPointer>(glGenVertexArraysOES),
+    },
+    {
+     "glDeleteVertexArraysOES",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteVertexArraysOES),
+    },
+    {
+     "glIsVertexArrayOES",
+     reinterpret_cast<GLES2FunctionPointer>(glIsVertexArrayOES),
+    },
+    {
+     "glBindVertexArrayOES",
+     reinterpret_cast<GLES2FunctionPointer>(glBindVertexArrayOES),
+    },
+    {
+     "glSwapBuffers", reinterpret_cast<GLES2FunctionPointer>(glSwapBuffers),
+    },
+    {
+     "glGetMaxValueInBufferCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGetMaxValueInBufferCHROMIUM),
+    },
+    {
+     "glGenSharedIdsCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGenSharedIdsCHROMIUM),
+    },
+    {
+     "glDeleteSharedIdsCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glDeleteSharedIdsCHROMIUM),
+    },
+    {
+     "glRegisterSharedIdsCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glRegisterSharedIdsCHROMIUM),
+    },
+    {
+     "glEnableFeatureCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glEnableFeatureCHROMIUM),
+    },
+    {
+     "glMapBufferCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glMapBufferCHROMIUM),
+    },
+    {
+     "glUnmapBufferCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glUnmapBufferCHROMIUM),
+    },
+    {
+     "glMapImageCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glMapImageCHROMIUM),
+    },
+    {
+     "glUnmapImageCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glUnmapImageCHROMIUM),
+    },
+    {
+     "glMapBufferSubDataCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glMapBufferSubDataCHROMIUM),
+    },
+    {
+     "glUnmapBufferSubDataCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glUnmapBufferSubDataCHROMIUM),
+    },
+    {
+     "glMapTexSubImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glMapTexSubImage2DCHROMIUM),
+    },
+    {
+     "glUnmapTexSubImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glUnmapTexSubImage2DCHROMIUM),
+    },
+    {
+     "glResizeCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glResizeCHROMIUM),
+    },
+    {
+     "glGetRequestableExtensionsCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGetRequestableExtensionsCHROMIUM),
+    },
+    {
+     "glRequestExtensionCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glRequestExtensionCHROMIUM),
+    },
+    {
+     "glRateLimitOffscreenContextCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(
-         glGetRequestableExtensionsCHROMIUM), },
-    {"glRequestExtensionCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glRequestExtensionCHROMIUM), },
-    {"glRateLimitOffscreenContextCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(
-         glRateLimitOffscreenContextCHROMIUM), },
-    {"glGetMultipleIntegervCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGetMultipleIntegervCHROMIUM), },
-    {"glGetProgramInfoCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGetProgramInfoCHROMIUM), },
-    {"glCreateStreamTextureCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glCreateStreamTextureCHROMIUM), },
-    {"glCreateImageCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glCreateImageCHROMIUM), },
-    {"glDestroyImageCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glDestroyImageCHROMIUM), },
-    {"glGetImageParameterivCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGetImageParameterivCHROMIUM), },
-    {"glGetTranslatedShaderSourceANGLE",
-     reinterpret_cast<GLES2FunctionPointer>(
-         glGetTranslatedShaderSourceANGLE), },
-    {"glPostSubBufferCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glPostSubBufferCHROMIUM), },
-    {"glTexImageIOSurface2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glTexImageIOSurface2DCHROMIUM), },
-    {"glCopyTextureCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glCopyTextureCHROMIUM), },
-    {"glDrawArraysInstancedANGLE",
-     reinterpret_cast<GLES2FunctionPointer>(glDrawArraysInstancedANGLE), },
-    {"glDrawElementsInstancedANGLE",
-     reinterpret_cast<GLES2FunctionPointer>(glDrawElementsInstancedANGLE), },
-    {"glVertexAttribDivisorANGLE",
-     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribDivisorANGLE), },
-    {"glGenMailboxCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGenMailboxCHROMIUM), },
-    {"glProduceTextureCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glProduceTextureCHROMIUM), },
-    {"glConsumeTextureCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glConsumeTextureCHROMIUM), },
-    {"glBindUniformLocationCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glBindUniformLocationCHROMIUM), },
-    {"glBindTexImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glBindTexImage2DCHROMIUM), },
-    {"glReleaseTexImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glReleaseTexImage2DCHROMIUM), },
-    {"glTraceBeginCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glTraceBeginCHROMIUM), },
-    {"glTraceEndCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glTraceEndCHROMIUM), },
-    {"glAsyncTexSubImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glAsyncTexSubImage2DCHROMIUM), },
-    {"glAsyncTexImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glAsyncTexImage2DCHROMIUM), },
-    {"glWaitAsyncTexImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glWaitAsyncTexImage2DCHROMIUM), },
-    {"glWaitAllAsyncTexImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(
-         glWaitAllAsyncTexImage2DCHROMIUM), },
-    {"glDiscardFramebufferEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glDiscardFramebufferEXT), },
-    {"glLoseContextCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glLoseContextCHROMIUM), },
-    {"glInsertSyncPointCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glInsertSyncPointCHROMIUM), },
-    {"glWaitSyncPointCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glWaitSyncPointCHROMIUM), },
-    {"glDrawBuffersEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glDrawBuffersEXT), },
-    {"glDiscardBackbufferCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glDiscardBackbufferCHROMIUM), },
-    {"glScheduleOverlayPlaneCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glScheduleOverlayPlaneCHROMIUM), },
-    {NULL, NULL, }, };
+         glRateLimitOffscreenContextCHROMIUM),
+    },
+    {
+     "glGetMultipleIntegervCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGetMultipleIntegervCHROMIUM),
+    },
+    {
+     "glGetProgramInfoCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGetProgramInfoCHROMIUM),
+    },
+    {
+     "glCreateStreamTextureCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glCreateStreamTextureCHROMIUM),
+    },
+    {
+     "glCreateImageCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glCreateImageCHROMIUM),
+    },
+    {
+     "glDestroyImageCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glDestroyImageCHROMIUM),
+    },
+    {
+     "glGetImageParameterivCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGetImageParameterivCHROMIUM),
+    },
+    {
+     "glGetTranslatedShaderSourceANGLE",
+     reinterpret_cast<GLES2FunctionPointer>(glGetTranslatedShaderSourceANGLE),
+    },
+    {
+     "glPostSubBufferCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glPostSubBufferCHROMIUM),
+    },
+    {
+     "glTexImageIOSurface2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glTexImageIOSurface2DCHROMIUM),
+    },
+    {
+     "glCopyTextureCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glCopyTextureCHROMIUM),
+    },
+    {
+     "glDrawArraysInstancedANGLE",
+     reinterpret_cast<GLES2FunctionPointer>(glDrawArraysInstancedANGLE),
+    },
+    {
+     "glDrawElementsInstancedANGLE",
+     reinterpret_cast<GLES2FunctionPointer>(glDrawElementsInstancedANGLE),
+    },
+    {
+     "glVertexAttribDivisorANGLE",
+     reinterpret_cast<GLES2FunctionPointer>(glVertexAttribDivisorANGLE),
+    },
+    {
+     "glGenMailboxCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGenMailboxCHROMIUM),
+    },
+    {
+     "glProduceTextureCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glProduceTextureCHROMIUM),
+    },
+    {
+     "glConsumeTextureCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glConsumeTextureCHROMIUM),
+    },
+    {
+     "glBindUniformLocationCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glBindUniformLocationCHROMIUM),
+    },
+    {
+     "glBindTexImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glBindTexImage2DCHROMIUM),
+    },
+    {
+     "glReleaseTexImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glReleaseTexImage2DCHROMIUM),
+    },
+    {
+     "glTraceBeginCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glTraceBeginCHROMIUM),
+    },
+    {
+     "glTraceEndCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glTraceEndCHROMIUM),
+    },
+    {
+     "glAsyncTexSubImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glAsyncTexSubImage2DCHROMIUM),
+    },
+    {
+     "glAsyncTexImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glAsyncTexImage2DCHROMIUM),
+    },
+    {
+     "glWaitAsyncTexImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glWaitAsyncTexImage2DCHROMIUM),
+    },
+    {
+     "glWaitAllAsyncTexImage2DCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glWaitAllAsyncTexImage2DCHROMIUM),
+    },
+    {
+     "glDiscardFramebufferEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glDiscardFramebufferEXT),
+    },
+    {
+     "glLoseContextCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glLoseContextCHROMIUM),
+    },
+    {
+     "glInsertSyncPointCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glInsertSyncPointCHROMIUM),
+    },
+    {
+     "glWaitSyncPointCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glWaitSyncPointCHROMIUM),
+    },
+    {
+     "glDrawBuffersEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glDrawBuffersEXT),
+    },
+    {
+     "glDiscardBackbufferCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glDiscardBackbufferCHROMIUM),
+    },
+    {
+     "glScheduleOverlayPlaneCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glScheduleOverlayPlaneCHROMIUM),
+    },
+    {
+     NULL, NULL,
+    },
+};
 
 }  // namespace gles2
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_

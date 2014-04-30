@@ -511,7 +511,9 @@ TEST_F(GLES2FormatTest, DeleteBuffers) {
 }
 
 TEST_F(GLES2FormatTest, DeleteBuffersImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::DeleteBuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteBuffersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -542,7 +544,9 @@ TEST_F(GLES2FormatTest, DeleteFramebuffers) {
 }
 
 TEST_F(GLES2FormatTest, DeleteFramebuffersImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::DeleteFramebuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteFramebuffersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -583,7 +587,9 @@ TEST_F(GLES2FormatTest, DeleteRenderbuffers) {
 }
 
 TEST_F(GLES2FormatTest, DeleteRenderbuffersImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::DeleteRenderbuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteRenderbuffersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -624,7 +630,9 @@ TEST_F(GLES2FormatTest, DeleteTextures) {
 }
 
 TEST_F(GLES2FormatTest, DeleteTexturesImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::DeleteTexturesImmediate& cmd =
       *GetBufferAs<cmds::DeleteTexturesImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -828,7 +836,9 @@ TEST_F(GLES2FormatTest, GenBuffers) {
 }
 
 TEST_F(GLES2FormatTest, GenBuffersImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::GenBuffersImmediate& cmd = *GetBufferAs<cmds::GenBuffersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
   EXPECT_EQ(static_cast<uint32>(cmds::GenBuffersImmediate::kCmdId),
@@ -868,7 +878,9 @@ TEST_F(GLES2FormatTest, GenFramebuffers) {
 }
 
 TEST_F(GLES2FormatTest, GenFramebuffersImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::GenFramebuffersImmediate& cmd =
       *GetBufferAs<cmds::GenFramebuffersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -899,7 +911,9 @@ TEST_F(GLES2FormatTest, GenRenderbuffers) {
 }
 
 TEST_F(GLES2FormatTest, GenRenderbuffersImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::GenRenderbuffersImmediate& cmd =
       *GetBufferAs<cmds::GenRenderbuffersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -929,7 +943,9 @@ TEST_F(GLES2FormatTest, GenTextures) {
 }
 
 TEST_F(GLES2FormatTest, GenTexturesImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::GenTexturesImmediate& cmd = *GetBufferAs<cmds::GenTexturesImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
   EXPECT_EQ(static_cast<uint32>(cmds::GenTexturesImmediate::kCmdId),
@@ -1764,7 +1780,8 @@ TEST_F(GLES2FormatTest, TexParameterfv) {
 TEST_F(GLES2FormatTest, TexParameterfvImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+  };
   cmds::TexParameterfvImmediate& cmd =
       *GetBufferAs<cmds::TexParameterfvImmediate>();
   void* next_cmd =
@@ -1814,7 +1831,9 @@ TEST_F(GLES2FormatTest, TexParameteriv) {
 
 TEST_F(GLES2FormatTest, TexParameterivImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLint data[] = {static_cast<GLint>(kSomeBaseValueToTestWith + 0), };
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+  };
   cmds::TexParameterivImmediate& cmd =
       *GetBufferAs<cmds::TexParameterivImmediate>();
   void* next_cmd =
@@ -1892,7 +1911,8 @@ TEST_F(GLES2FormatTest, Uniform1fvImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+  };
   cmds::Uniform1fvImmediate& cmd = *GetBufferAs<cmds::Uniform1fvImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -1938,8 +1958,10 @@ TEST_F(GLES2FormatTest, Uniform1iv) {
 
 TEST_F(GLES2FormatTest, Uniform1ivImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLint data[] = {static_cast<GLint>(kSomeBaseValueToTestWith + 0),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 1), };
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 1),
+  };
   cmds::Uniform1ivImmediate& cmd = *GetBufferAs<cmds::Uniform1ivImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -1992,7 +2014,8 @@ TEST_F(GLES2FormatTest, Uniform2fvImmediate) {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+  };
   cmds::Uniform2fvImmediate& cmd = *GetBufferAs<cmds::Uniform2fvImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -2041,10 +2064,12 @@ TEST_F(GLES2FormatTest, Uniform2iv) {
 
 TEST_F(GLES2FormatTest, Uniform2ivImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLint data[] = {static_cast<GLint>(kSomeBaseValueToTestWith + 0),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 1),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 2),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 3), };
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 3),
+  };
   cmds::Uniform2ivImmediate& cmd = *GetBufferAs<cmds::Uniform2ivImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -2101,7 +2126,8 @@ TEST_F(GLES2FormatTest, Uniform3fvImmediate) {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+  };
   cmds::Uniform3fvImmediate& cmd = *GetBufferAs<cmds::Uniform3fvImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -2152,12 +2178,14 @@ TEST_F(GLES2FormatTest, Uniform3iv) {
 
 TEST_F(GLES2FormatTest, Uniform3ivImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLint data[] = {static_cast<GLint>(kSomeBaseValueToTestWith + 0),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 1),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 2),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 3),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 4),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 5), };
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 5),
+  };
   cmds::Uniform3ivImmediate& cmd = *GetBufferAs<cmds::Uniform3ivImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -2218,7 +2246,8 @@ TEST_F(GLES2FormatTest, Uniform4fvImmediate) {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+  };
   cmds::Uniform4fvImmediate& cmd = *GetBufferAs<cmds::Uniform4fvImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -2271,14 +2300,16 @@ TEST_F(GLES2FormatTest, Uniform4iv) {
 
 TEST_F(GLES2FormatTest, Uniform4ivImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLint data[] = {static_cast<GLint>(kSomeBaseValueToTestWith + 0),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 1),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 2),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 3),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 4),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 5),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 6),
-                         static_cast<GLint>(kSomeBaseValueToTestWith + 7), };
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 7),
+  };
   cmds::Uniform4ivImmediate& cmd = *GetBufferAs<cmds::Uniform4ivImmediate>();
   const GLsizei kNumElements = 2;
   const size_t kExpectedCmdSize =
@@ -2324,7 +2355,8 @@ TEST_F(GLES2FormatTest, UniformMatrix2fvImmediate) {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+  };
   cmds::UniformMatrix2fvImmediate& cmd =
       *GetBufferAs<cmds::UniformMatrix2fvImmediate>();
   const GLsizei kNumElements = 2;
@@ -2385,7 +2417,8 @@ TEST_F(GLES2FormatTest, UniformMatrix3fvImmediate) {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 14),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 15),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 16),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 17), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 17),
+  };
   cmds::UniformMatrix3fvImmediate& cmd =
       *GetBufferAs<cmds::UniformMatrix3fvImmediate>();
   const GLsizei kNumElements = 2;
@@ -2460,7 +2493,8 @@ TEST_F(GLES2FormatTest, UniformMatrix4fvImmediate) {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 28),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 29),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 30),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 31), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 31),
+  };
   cmds::UniformMatrix4fvImmediate& cmd =
       *GetBufferAs<cmds::UniformMatrix4fvImmediate>();
   const GLsizei kNumElements = 2;
@@ -2531,7 +2565,8 @@ TEST_F(GLES2FormatTest, VertexAttrib1fv) {
 TEST_F(GLES2FormatTest, VertexAttrib1fvImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+  };
   cmds::VertexAttrib1fvImmediate& cmd =
       *GetBufferAs<cmds::VertexAttrib1fvImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
@@ -2579,7 +2614,8 @@ TEST_F(GLES2FormatTest, VertexAttrib2fvImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+  };
   cmds::VertexAttrib2fvImmediate& cmd =
       *GetBufferAs<cmds::VertexAttrib2fvImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
@@ -2630,7 +2666,8 @@ TEST_F(GLES2FormatTest, VertexAttrib3fvImmediate) {
   static GLfloat data[] = {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+  };
   cmds::VertexAttrib3fvImmediate& cmd =
       *GetBufferAs<cmds::VertexAttrib3fvImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
@@ -2684,7 +2721,8 @@ TEST_F(GLES2FormatTest, VertexAttrib4fvImmediate) {
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
       static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
-      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3), };
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+  };
   cmds::VertexAttrib4fvImmediate& cmd =
       *GetBufferAs<cmds::VertexAttrib4fvImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
@@ -2865,7 +2903,9 @@ TEST_F(GLES2FormatTest, GenQueriesEXT) {
 }
 
 TEST_F(GLES2FormatTest, GenQueriesEXTImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::GenQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::GenQueriesEXTImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -2896,7 +2936,9 @@ TEST_F(GLES2FormatTest, DeleteQueriesEXT) {
 }
 
 TEST_F(GLES2FormatTest, DeleteQueriesEXTImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::DeleteQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::DeleteQueriesEXTImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -2984,7 +3026,9 @@ TEST_F(GLES2FormatTest, GenVertexArraysOES) {
 }
 
 TEST_F(GLES2FormatTest, GenVertexArraysOESImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::GenVertexArraysOESImmediate& cmd =
       *GetBufferAs<cmds::GenVertexArraysOESImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -3016,7 +3060,9 @@ TEST_F(GLES2FormatTest, DeleteVertexArraysOES) {
 }
 
 TEST_F(GLES2FormatTest, DeleteVertexArraysOESImmediate) {
-  static GLuint ids[] = {12, 23, 34, };
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
   cmds::DeleteVertexArraysOESImmediate& cmd =
       *GetBufferAs<cmds::DeleteVertexArraysOESImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(arraysize(ids)), ids);
@@ -3371,70 +3417,72 @@ TEST_F(GLES2FormatTest, ProduceTextureCHROMIUM) {
 
 TEST_F(GLES2FormatTest, ProduceTextureCHROMIUMImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLbyte data[] = {static_cast<GLbyte>(kSomeBaseValueToTestWith + 0),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 1),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 2),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 3),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 4),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 5),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 6),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 7),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 8),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 9),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 10),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 11),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 12),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 13),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 14),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 15),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 16),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 17),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 18),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 19),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 20),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 21),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 22),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 23),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 24),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 25),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 26),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 27),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 28),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 29),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 30),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 31),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 32),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 33),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 34),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 35),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 36),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 37),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 38),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 39),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 40),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 41),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 42),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 43),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 44),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 45),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 46),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 47),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 48),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 49),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 50),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 51),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 52),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 53),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 54),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 55),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 56),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 57),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 58),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 59),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 60),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 61),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 62),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 63), };
+  static GLbyte data[] = {
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 15),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 16),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 17),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 18),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 19),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 20),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 21),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 22),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 23),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 24),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 25),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 26),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 27),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 28),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 29),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 30),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 31),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 32),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 33),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 34),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 35),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 36),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 37),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 38),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 39),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 40),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 41),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 42),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 43),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 44),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 45),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 46),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 47),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 48),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 49),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 50),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 51),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 52),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 53),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 54),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 55),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 56),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 57),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 58),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 59),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 60),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 61),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 62),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 63),
+  };
   cmds::ProduceTextureCHROMIUMImmediate& cmd =
       *GetBufferAs<cmds::ProduceTextureCHROMIUMImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11), data);
@@ -3466,70 +3514,72 @@ TEST_F(GLES2FormatTest, ConsumeTextureCHROMIUM) {
 
 TEST_F(GLES2FormatTest, ConsumeTextureCHROMIUMImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLbyte data[] = {static_cast<GLbyte>(kSomeBaseValueToTestWith + 0),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 1),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 2),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 3),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 4),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 5),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 6),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 7),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 8),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 9),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 10),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 11),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 12),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 13),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 14),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 15),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 16),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 17),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 18),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 19),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 20),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 21),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 22),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 23),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 24),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 25),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 26),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 27),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 28),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 29),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 30),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 31),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 32),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 33),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 34),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 35),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 36),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 37),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 38),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 39),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 40),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 41),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 42),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 43),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 44),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 45),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 46),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 47),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 48),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 49),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 50),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 51),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 52),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 53),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 54),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 55),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 56),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 57),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 58),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 59),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 60),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 61),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 62),
-                          static_cast<GLbyte>(kSomeBaseValueToTestWith + 63), };
+  static GLbyte data[] = {
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 15),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 16),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 17),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 18),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 19),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 20),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 21),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 22),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 23),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 24),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 25),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 26),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 27),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 28),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 29),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 30),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 31),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 32),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 33),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 34),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 35),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 36),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 37),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 38),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 39),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 40),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 41),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 42),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 43),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 44),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 45),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 46),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 47),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 48),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 49),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 50),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 51),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 52),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 53),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 54),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 55),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 56),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 57),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 58),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 59),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 60),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 61),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 62),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 63),
+  };
   cmds::ConsumeTextureCHROMIUMImmediate& cmd =
       *GetBufferAs<cmds::ConsumeTextureCHROMIUMImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11), data);
@@ -3738,8 +3788,10 @@ TEST_F(GLES2FormatTest, DiscardFramebufferEXT) {
 
 TEST_F(GLES2FormatTest, DiscardFramebufferEXTImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLenum data[] = {static_cast<GLenum>(kSomeBaseValueToTestWith + 0),
-                          static_cast<GLenum>(kSomeBaseValueToTestWith + 1), };
+  static GLenum data[] = {
+      static_cast<GLenum>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLenum>(kSomeBaseValueToTestWith + 1),
+  };
   cmds::DiscardFramebufferEXTImmediate& cmd =
       *GetBufferAs<cmds::DiscardFramebufferEXTImmediate>();
   const GLsizei kNumElements = 2;
@@ -3798,7 +3850,9 @@ TEST_F(GLES2FormatTest, DrawBuffersEXT) {
 
 TEST_F(GLES2FormatTest, DrawBuffersEXTImmediate) {
   const int kSomeBaseValueToTestWith = 51;
-  static GLenum data[] = {static_cast<GLenum>(kSomeBaseValueToTestWith + 0), };
+  static GLenum data[] = {
+      static_cast<GLenum>(kSomeBaseValueToTestWith + 0),
+  };
   cmds::DrawBuffersEXTImmediate& cmd =
       *GetBufferAs<cmds::DrawBuffersEXTImmediate>();
   const GLsizei kNumElements = 1;

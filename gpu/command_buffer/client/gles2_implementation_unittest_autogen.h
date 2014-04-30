@@ -444,7 +444,9 @@ TEST_F(GLES2ImplementationTest, FrontFace) {
 }
 
 TEST_F(GLES2ImplementationTest, GenBuffers) {
-  GLuint ids[2] = {0, };
+  GLuint ids[2] = {
+      0,
+  };
   struct Cmds {
     cmds::GenBuffersImmediate gen;
     GLuint data[2];
@@ -471,7 +473,9 @@ TEST_F(GLES2ImplementationTest, GenerateMipmap) {
 }
 
 TEST_F(GLES2ImplementationTest, GenFramebuffers) {
-  GLuint ids[2] = {0, };
+  GLuint ids[2] = {
+      0,
+  };
   struct Cmds {
     cmds::GenFramebuffersImmediate gen;
     GLuint data[2];
@@ -487,7 +491,9 @@ TEST_F(GLES2ImplementationTest, GenFramebuffers) {
 }
 
 TEST_F(GLES2ImplementationTest, GenRenderbuffers) {
-  GLuint ids[2] = {0, };
+  GLuint ids[2] = {
+      0,
+  };
   struct Cmds {
     cmds::GenRenderbuffersImmediate gen;
     GLuint data[2];
@@ -503,7 +509,9 @@ TEST_F(GLES2ImplementationTest, GenRenderbuffers) {
 }
 
 TEST_F(GLES2ImplementationTest, GenTextures) {
-  GLuint ids[2] = {0, };
+  GLuint ids[2] = {
+      0,
+  };
   struct Cmds {
     cmds::GenTexturesImmediate gen;
     GLuint data[2];
@@ -1583,7 +1591,9 @@ TEST_F(GLES2ImplementationTest, TexStorage2DEXT) {
 }
 
 TEST_F(GLES2ImplementationTest, GenQueriesEXT) {
-  GLuint ids[2] = {0, };
+  GLuint ids[2] = {
+      0,
+  };
   struct Cmds {
     cmds::GenQueriesEXTImmediate gen;
     GLuint data[2];
@@ -1627,7 +1637,9 @@ TEST_F(GLES2ImplementationTest, PopGroupMarkerEXT) {
 }
 
 TEST_F(GLES2ImplementationTest, GenVertexArraysOES) {
-  GLuint ids[2] = {0, };
+  GLuint ids[2] = {
+      0,
+  };
   struct Cmds {
     cmds::GenVertexArraysOESImmediate gen;
     GLuint data[2];

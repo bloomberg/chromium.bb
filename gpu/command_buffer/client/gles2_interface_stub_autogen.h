@@ -287,8 +287,10 @@ virtual void Uniform2fv(GLint location,
                         const GLfloat* v) OVERRIDE;
 virtual void Uniform2i(GLint location, GLint x, GLint y) OVERRIDE;
 virtual void Uniform2iv(GLint location, GLsizei count, const GLint* v) OVERRIDE;
-virtual void Uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z)
-    OVERRIDE;
+virtual void Uniform3f(GLint location,
+                       GLfloat x,
+                       GLfloat y,
+                       GLfloat z) OVERRIDE;
 virtual void Uniform3fv(GLint location,
                         GLsizei count,
                         const GLfloat* v) OVERRIDE;
@@ -302,8 +304,11 @@ virtual void Uniform4f(GLint location,
 virtual void Uniform4fv(GLint location,
                         GLsizei count,
                         const GLfloat* v) OVERRIDE;
-virtual void Uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w)
-    OVERRIDE;
+virtual void Uniform4i(GLint location,
+                       GLint x,
+                       GLint y,
+                       GLint z,
+                       GLint w) OVERRIDE;
 virtual void Uniform4iv(GLint location, GLsizei count, const GLint* v) OVERRIDE;
 virtual void UniformMatrix2fv(GLint location,
                               GLsizei count,
@@ -323,8 +328,10 @@ virtual void VertexAttrib1f(GLuint indx, GLfloat x) OVERRIDE;
 virtual void VertexAttrib1fv(GLuint indx, const GLfloat* values) OVERRIDE;
 virtual void VertexAttrib2f(GLuint indx, GLfloat x, GLfloat y) OVERRIDE;
 virtual void VertexAttrib2fv(GLuint indx, const GLfloat* values) OVERRIDE;
-virtual void VertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z)
-    OVERRIDE;
+virtual void VertexAttrib3f(GLuint indx,
+                            GLfloat x,
+                            GLfloat y,
+                            GLfloat z) OVERRIDE;
 virtual void VertexAttrib3fv(GLuint indx, const GLfloat* values) OVERRIDE;
 virtual void VertexAttrib4f(GLuint indx,
                             GLfloat x,
@@ -448,8 +455,10 @@ virtual void GetTranslatedShaderSourceANGLE(GLuint shader,
                                             GLsizei bufsize,
                                             GLsizei* length,
                                             char* source) OVERRIDE;
-virtual void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height)
-    OVERRIDE;
+virtual void PostSubBufferCHROMIUM(GLint x,
+                                   GLint y,
+                                   GLint width,
+                                   GLint height) OVERRIDE;
 virtual void TexImageIOSurface2DCHROMIUM(GLenum target,
                                          GLsizei width,
                                          GLsizei height,
