@@ -196,16 +196,12 @@ class TestServerThread(threading.Thread):
 
     # Pass the remaining arguments as-is.
     for key, values in args_copy.iteritems():
-      is_path = key in ['data-dir', 'cert-and-key-file', 'ssl-client-ca']
       if not isinstance(values, list):
         values = [values]
       for value in values:
         if value is None:
           self.command_line.append('--%s' % key)
         else:
-          # Arguments with file paths get mangled.
-          if is_path and not os.path.isabs(value):
-            value = os.path.join(constants.DIR_SOURCE_ROOT, value)
           self.command_line.append('--%s=%s' % (key, value))
 
   def _CloseUnnecessaryFDsForTestServerProcess(self):
@@ -231,8 +227,11 @@ class TestServerThread(threading.Thread):
       command = [os.path.join(command, 'net', 'tools', 'testserver',
                               'testserver.py')] + self.command_line
     logging.info('Running: %s', command)
+    # Pass DIR_SOURCE_ROOT as the child's working directory so that relative
+    # paths in the arguments are resolved correctly.
     self.process = subprocess.Popen(
-        command, preexec_fn=self._CloseUnnecessaryFDsForTestServerProcess)
+        command, preexec_fn=self._CloseUnnecessaryFDsForTestServerProcess,
+        cwd=constants.DIR_SOURCE_ROOT)
     if self.process:
       if self.pipe_out:
         self.is_ready = self._WaitToStartAndGetPortFromTestServer()

@@ -192,7 +192,12 @@ bool RemoteTestServer::Init(const base::FilePath& document_root) {
     return false;
   SetPort(test_server_port);
 
-  SetResourcePath(document_root, base::FilePath().AppendASCII("net")
+  // Unlike LocalTestServer, RemoteTestServer passes relative paths to the test
+  // server. The test server fails on empty strings in some configurations.
+  base::FilePath fixed_root = document_root;
+  if (fixed_root.empty())
+    fixed_root = base::FilePath(base::FilePath::kCurrentDirectory);
+  SetResourcePath(fixed_root, base::FilePath().AppendASCII("net")
                                            .AppendASCII("data")
                                            .AppendASCII("ssl")
                                            .AppendASCII("certificates"));
