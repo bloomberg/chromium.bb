@@ -1005,10 +1005,6 @@ weston_output_share(struct weston_output *output,
 	}
 
 	if (pid == 0) {
-		/* We don't want anything circular */
-		unsetenv("WAYLAND_DISPLAY");
-		unsetenv("WAYLAND_SOCKET");
-
 		/* do not give our signal mask to the new process */
 		sigfillset(&allsigs);
 		sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
