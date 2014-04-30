@@ -259,7 +259,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
 #endif
 
-#if defined(ENABLE_NOTIFICATIONS)
+#if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
+  // Android does not use the message center for notifications.
   MessageCenterNotificationManager::RegisterPrefs(registry);
 #endif
 

@@ -14,8 +14,6 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/api/notifications/notifications_api.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -41,12 +39,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/show_desktop_notification_params.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/info_map.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -56,6 +48,17 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/message_center/notifier_settings.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/notifications/notifications_api.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
+#endif
 
 using blink::WebTextDirection;
 using content::BrowserThread;
@@ -566,6 +569,7 @@ void DesktopNotificationService::ShowDesktopNotification(
 
 base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
     const GURL& origin, int process_id) {
+#if defined(ENABLE_EXTENSIONS)
   // If the source is an extension, lookup the display name.
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
     extensions::InfoMap* extension_info_map =
@@ -583,6 +587,8 @@ base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
       }
     }
   }
+#endif
+
   return base::UTF8ToUTF16(origin.host());
 }
 
@@ -706,6 +712,7 @@ void DesktopNotificationService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+#if defined(ENABLE_EXTENSIONS)
   DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNINSTALLED, type);
 
   extensions::Extension* extension =
@@ -719,10 +726,12 @@ void DesktopNotificationService::Observe(
     return;
 
   SetNotifierEnabled(notifier_id, true);
+#endif
 }
 
 void DesktopNotificationService::FirePermissionLevelChangedEvent(
     const NotifierId& notifier_id, bool enabled) {
+#if defined(ENABLE_EXTENSIONS)
   DCHECK_EQ(NotifierId::APPLICATION, notifier_id.type);
   extensions::api::notifications::PermissionLevel permission =
       enabled ? extensions::api::notifications::PERMISSION_LEVEL_GRANTED
@@ -744,5 +753,5 @@ void DesktopNotificationService::FirePermissionLevelChangedEvent(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&extensions::InfoMap::SetNotificationsDisabled,
                  extension_info_map, notifier_id.id, !enabled));
-
+#endif
 }

@@ -132,7 +132,9 @@
             'views/message_popup_bubble.h',
           ],
         }],
-        ['notifications==0', {  # Android and iOS.
+        # iOS disables notifications altogether, Android implements its own
+        # notification UI manager instead of deferring to the message center.
+        ['notifications==0 or OS=="android"', {
           'sources/': [
             # Exclude everything except dummy impl.
             ['exclude', '\\.(cc|mm)$'],
@@ -141,6 +143,14 @@
           ],
         }, {  # notifications==1
           'sources!': [ 'dummy_message_center.cc' ],
+        }],
+        # Include a minimal set of files required for notifications on Android.
+        ['OS=="android"', {
+          'sources/': [
+            ['include', '^notification\\.cc$'],
+            ['include', '^notification_delegate\\.cc$'],
+            ['include', '^notifier_settings\\.cc$'],
+          ],
         }],
       ],
     },  # target_name: message_center
