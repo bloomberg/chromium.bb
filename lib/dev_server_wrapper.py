@@ -10,6 +10,7 @@ import multiprocessing
 import os
 import socket
 import tempfile
+import httplib
 import urllib2
 
 from chromite.buildbot import constants
@@ -47,6 +48,10 @@ class DevServerException(Exception):
 
 class DevServerStartupError(DevServerException):
   """Thrown when the devserver fails to start up."""
+
+
+class DevServerStopError(DevServerException):
+  """Thrown when the devserver fails to stop."""
 
 
 class DevServerResponseError(DevServerException):
@@ -128,7 +133,7 @@ class DevServerWrapper(multiprocessing.Process):
     logging.debug('Retrieving %s', url)
     try:
       res = urllib2.urlopen(url, timeout=timeout)
-    except urllib2.HTTPError as e:
+    except (urllib2.HTTPError, httplib.HTTPException) as e:
       logging.error('Devserver responsded with an error!')
       raise DevServerResponseError(e)
     except (urllib2.URLError, socket.timeout) as e:
@@ -251,7 +256,7 @@ class DevServerWrapper(multiprocessing.Process):
 
     logging.debug('Stopping devserver instance with pid %s', self._pid)
     if self.is_alive():
-      self._RunCommand(['kill', self._pid])
+      self._RunCommand(['kill', self._pid], error_code_ok=True)
     else:
       logging.debug('Devserver not running!')
       return
@@ -259,7 +264,10 @@ class DevServerWrapper(multiprocessing.Process):
     self.join(self.KILL_TIMEOUT)
     if self.is_alive():
       logging.warning('Devserver is unstoppable. Killing with SIGKILL')
-      self._RunCommand(['kill', '-9', self._pid])
+      try:
+        self._RunCommand(['kill', '-9', self._pid])
+      except cros_build_lib.RunCommandError as e:
+        raise DevServerStopError('Unable to stop devserver: %s' % e)
 
   def PrintLog(self):
     """Print devserver output to stdout."""
