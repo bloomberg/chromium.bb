@@ -269,6 +269,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
  private:
   friend class VisitRelayingRenderProcessHost;
 
+  void MaybeActivateMojo();
+
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();
 
@@ -309,6 +311,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
+  bool mojo_activation_required_;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
