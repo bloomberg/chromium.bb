@@ -9,47 +9,53 @@
 
 namespace chrome {
 
-// static
-std::string VersionInfo::GetVersionStringModifier() {
+namespace {
+
+// Helper function to return both the channel enum and modifier string.
+// Implements both together to prevent their behavior from diverging, which has
+// happened multiple times in the past.
+VersionInfo::Channel GetChannelImpl(std::string* modifier_out) {
+  VersionInfo::Channel channel = VersionInfo::CHANNEL_UNKNOWN;
+  std::string modifier;
+
   char* env = getenv("CHROME_VERSION_EXTRA");
-  if (!env)
-    return std::string();
-  std::string modifier(env);
+  if (env)
+    modifier = env;
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Only ever return "", "unknown", "dev" or "beta" in a branded build.
   if (modifier == "unstable")  // linux version of "dev"
     modifier = "dev";
   if (modifier == "stable") {
+    channel = VersionInfo::CHANNEL_STABLE;
     modifier = "";
-  } else if ((modifier == "dev") || (modifier == "beta")) {
-    // do nothing.
+  } else if (modifier == "dev") {
+    channel = VersionInfo::CHANNEL_DEV;
+  } else if (modifier == "beta") {
+    channel = VersionInfo::CHANNEL_BETA;
   } else {
     modifier = "unknown";
   }
 #endif
 
+  if (modifier_out)
+    modifier_out->swap(modifier);
+
+  return channel;
+}
+
+}  // namespace
+
+// static
+std::string VersionInfo::GetVersionStringModifier() {
+  std::string modifier;
+  GetChannelImpl(&modifier);
   return modifier;
 }
 
 // static
 VersionInfo::Channel VersionInfo::GetChannel() {
-#if defined(GOOGLE_CHROME_BUILD)
-  std::string channel = GetVersionStringModifier();
-  // There might be suffixes after channel name (e.g. "aura"), so match just
-  // the beginning of version string modifier.
-  if (channel.empty()) {
-    return CHANNEL_STABLE;
-  } else if (StartsWithASCII(channel, "beta ", true)) {
-    return CHANNEL_BETA;
-  } else if (StartsWithASCII(channel, "dev ", true)) {
-    return CHANNEL_DEV;
-  } else if (StartsWithASCII(channel, "canary ", true)) {
-    return CHANNEL_CANARY;
-  }
-#endif
-
-  return CHANNEL_UNKNOWN;
+  return GetChannelImpl(NULL);
 }
 
 }  // namespace chrome
