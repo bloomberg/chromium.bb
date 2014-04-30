@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guestview/webview/plugin_permission_helper.h"
+#include "chrome/browser/guest_view/web_view/plugin_permission_helper.h"
 
-#include "chrome/browser/guestview/webview/webview_guest.h"
-#include "chrome/browser/guestview/webview/webview_permission_types.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_process_host.h"
