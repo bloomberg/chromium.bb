@@ -11,6 +11,51 @@ if (cpu_arch == "arm") {
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && enable_printing != 0
 
+# The list of Skia defines that are to be set for chromium.
+gypi_skia_defines = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("//third_party/skia/gyp/skia_for_chromium_defines.gypi"),
+      "--replace=<(skia_include_path)=//third_party/skia/include",
+      "--replace=<(skia_src_path)=//third_party/skia/src" ],
+    "scope",
+    [ "//third_party/skia/gyp/skia_for_chromium_defines.gypi" ])
+
+# The list of Skia core sources that are to be set for chromium.
+gypi_skia_core = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("//third_party/skia/gyp/core.gypi"),
+      "--replace=<(skia_include_path)=//third_party/skia/include",
+      "--replace=<(skia_src_path)=//third_party/skia/src" ],
+    "scope",
+    [ "//third_party/skia/gyp/core.gypi" ])
+
+# The list of Skia gpu sources that are to be set for chromium.
+gypi_skia_gpu = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("//third_party/skia/gyp/gpu.gypi"),
+      "--replace=<(skia_include_path)=//third_party/skia/include",
+      "--replace=<(skia_src_path)=//third_party/skia/src" ],
+    "scope",
+    [ "//third_party/skia/gyp/gpu.gypi" ])
+
+# The list of Skia pdf sources that are to be set for chromium.
+gypi_skia_pdf = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("//third_party/skia/gyp/pdf.gypi"),
+      "--replace=<(skia_include_path)=//third_party/skia/include",
+      "--replace=<(skia_src_path)=//third_party/skia/src" ],
+    "scope",
+    [ "//third_party/skia/gyp/pdf.gypi" ])
+
+# The list of Skia effects that are to be set for chromium.
+gypi_skia_effects = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("//third_party/skia/gyp/effects.gypi"),
+      "--replace=<(skia_include_path)=//third_party/skia/include",
+      "--replace=<(skia_src_path)=//third_party/skia/src" ],
+    "scope",
+    [ "//third_party/skia/gyp/effects.gypi" ])
+
 # The list of Skia files is kept in skia_gn_files.gypi. Read it.
 gypi_values = exec_script(
     "//build/gypi_to_gn.py",
@@ -44,7 +89,17 @@ config("skia_config") {
     "//third_party/skia/src/lazy",
   ]
 
-  defines = gypi_values.skia_feature_defines
+  defines = gypi_skia_defines.skia_for_chromium_defines
+
+  defines += [
+    "SK_ENABLE_INST_COUNT=0",
+    "GR_GL_CUSTOM_SETUP_HEADER=\"GrGLConfig_chrome.h\"",
+    "SK_ENABLE_LEGACY_API_ALIASING=1",
+    "SK_ATTR_DEPRECATED=SK_NOTHING_ARG1",
+    "GR_GL_IGNORE_ES3_MSAA=0",
+    "SK_WILL_NEVER_DRAW_PERSPECTIVE_TEXT",
+    "SK_SUPPORT_LEGACY_GETTOTALCLIP",
+  ]
 
   if (component_mode == "shared_library") {
     defines += [ "SKIA_DLL" ]
@@ -96,14 +151,24 @@ config("skia_library_config") {
     # SkGraphics::Init().
     "SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0",
 
+    # Forcing the unoptimized path for the offset image filter in skia until
+    # all filters used in Blink support the optimized path properly
+    "SK_DISABLE_OFFSETIMAGEFILTER_OPTIMIZATION",
+
     # Disable this check because it is too strict for some Chromium-specific
     # subclasses of SkPixelRef. See bug: crbug.com/171776.
     "SK_DISABLE_PIXELREF_LOCKCOUNT_BALANCE_CHECK",
 
     "IGNORE_ROT_AA_RECT_OPT",
 
-    # Forces Skia not to use typographic metrics with GDI.
+    "SK_IGNORE_BLURRED_RRECT_OPT",
+
+    "SK_IGNORE_QUAD_RR_CORNERS_OPT",
+
+    # this flag forces Skia not to use typographic metrics with GDI.
     "SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS",
+
+    "SK_USE_DISCARDABLE_SCALEDIMAGECACHE",
   ]
 
   # Settings for text blitting, chosen to approximate the system browser.
@@ -111,6 +176,7 @@ config("skia_library_config") {
     defines += [
       "SK_GAMMA_EXPONENT=1.2",
       "SK_GAMMA_CONTRAST=0.2",
+      "SK_HIGH_QUALITY_IS_LANCZOS",
     ]
   } else if (is_android) {
     defines += [
@@ -122,11 +188,13 @@ config("skia_library_config") {
     defines += [
       "SK_GAMMA_SRGB",
       "SK_GAMMA_CONTRAST=0.5",
+      "SK_HIGH_QUALITY_IS_LANCZOS",
     ]
   } else if (is_mac) {
     defines += [
       "SK_GAMMA_SRGB",
       "SK_GAMMA_CONTRAST=0.0",
+      "SK_HIGH_QUALITY_IS_LANCZOS",
     ]
   }
 
@@ -225,14 +293,15 @@ component("skia") {
   ]
 
   # The skia gypi values are relative to the skia_dir, so we need to rebase.
-  sources += gypi_values.skia_core_sources
-  sources += gypi_values.skia_effects_sources
-  sources += gypi_values.skia_pdf_sources
+  sources += gypi_skia_core.sources
+  sources += gypi_skia_effects.sources
+  sources += gypi_skia_pdf.sources
   sources += gypi_values.skia_library_sources
 
   # GPU
   if (skia_support_gpu) {
-    sources += gypi_values.skia_gpu_sources
+    sources += gypi_skia_gpu.skgpu_sources
+    sources += gypi_skia_gpu.skgpu_null_gl_sources
   }
 
   # Fixup Chrome sources.
