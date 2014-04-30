@@ -99,6 +99,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*, const LayoutRect& clipRect, const GraphicsLayer*);
 };
 
+class InspectorMarkLoadEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+};
+
 } // namespace WebCore
 
 

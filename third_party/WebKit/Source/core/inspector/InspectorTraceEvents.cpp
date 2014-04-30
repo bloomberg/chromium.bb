@@ -9,6 +9,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
@@ -231,6 +232,15 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(Rende
     data->setNumber("nodeId", nodeId);
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
     data->setNumber("layerId", graphicsLayerId);
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorMarkLoadEvent::data(LocalFrame* frame)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("frame", toHexString(frame));
+    bool isMainFrame = frame && frame->page()->mainFrame() == frame;
+    data->setBoolean("isMainFrame", isMainFrame);
     return TracedValue::fromJSONValue(data);
 }
 
