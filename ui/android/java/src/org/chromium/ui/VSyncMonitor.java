@@ -4,6 +4,7 @@
 
 package org.chromium.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
@@ -20,6 +21,7 @@ import org.chromium.base.TraceEvent;
  * On ICS, VSyncMonitor relies on setVSyncPointForICS() being called to set a reasonable
  * approximation of a vertical sync starting point; see also http://crbug.com/156397.
  */
+@SuppressLint("NewApi")
 public class VSyncMonitor {
     private static final long NANOSECONDS_PER_SECOND = 1000000000;
     private static final long NANOSECONDS_PER_MILLISECOND = 1000000;
