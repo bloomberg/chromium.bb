@@ -4,8 +4,6 @@
 
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -23,10 +21,6 @@
 #endif
 
 namespace policy {
-
-// OAuth2 scope for the userinfo service.
-const char kServiceScopeGetUserInfo[] =
-    "https://www.googleapis.com/auth/userinfo.email";
 
 // The key under which the hosted-domain value is stored in the UserInfo
 // response.
@@ -77,7 +71,7 @@ void CloudPolicyClientRegistrationHelper::TokenServiceHelper::FetchAccessToken(
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-  scopes.insert(kServiceScopeGetUserInfo);
+  scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
   token_request_ = token_service->StartRequest(account_id, scopes, this);
 }
 
@@ -135,14 +129,11 @@ void CloudPolicyClientRegistrationHelper::LoginTokenHelper::FetchAccessToken(
   // userinfo services.
   oauth2_access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcherImpl(this, context, login_refresh_token));
-  std::vector<std::string> scopes;
-  scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
-  scopes.push_back(kServiceScopeGetUserInfo);
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   oauth2_access_token_fetcher_->Start(
       gaia_urls->oauth2_chrome_client_id(),
       gaia_urls->oauth2_chrome_client_secret(),
-      scopes);
+      GetScopes());
 }
 
 void CloudPolicyClientRegistrationHelper::LoginTokenHelper::OnGetTokenSuccess(
@@ -209,6 +200,24 @@ void CloudPolicyClientRegistrationHelper::StartRegistrationWithLoginToken(
       context_,
       base::Bind(&CloudPolicyClientRegistrationHelper::OnTokenFetched,
                  base::Unretained(this)));
+}
+
+void CloudPolicyClientRegistrationHelper::StartRegistrationWithAccessToken(
+    const std::string& access_token,
+    const base::Closure& callback) {
+  DCHECK(!client_->is_registered());
+  callback_ = callback;
+  client_->AddObserver(this);
+  OnTokenFetched(access_token);
+}
+
+// static
+std::vector<std::string>
+CloudPolicyClientRegistrationHelper::GetScopes() {
+  std::vector<std::string> scopes;
+  scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
+  scopes.push_back(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+  return scopes;
 }
 #endif
 

@@ -151,7 +151,11 @@ UserPolicySigninServiceBase::CreateClientForRegistrationOnly(
     const std::string& username) {
   DCHECK(!username.empty());
   // We should not be called with a client already initialized.
+#if !defined(OS_IOS)
+  // On iOS we check if an account has policy while the profile is signed in
+  // to another account.
   DCHECK(!policy_manager() || !policy_manager()->core()->client());
+#endif
 
   // If the user should not get policy, just bail out.
   if (!policy_manager() || !ShouldLoadPolicyForUser(username)) {

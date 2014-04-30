@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_IOS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -47,12 +48,15 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   virtual ~UserPolicySigninService();
 
   // Registers a CloudPolicyClient for fetching policy for |username|.
-  // This requests an OAuth2 token for the services involved, and contacts
-  // the policy service if the account has management enabled.
-  // |callback| is invoked once we have registered this device to fetch policy,
-  // or once it is determined that |username| is not a managed account.
+  // This requires a valid OAuth access token for the scopes returned by the
+  // |GetScopes| static function. |callback| is invoked once we have
+  // registered this device to fetch policy, or once it is determined that
+  // |username| is not a managed account.
   void RegisterForPolicy(const std::string& username,
+                         const std::string& access_token,
                          PolicyRegistrationBlockCallback callback);
+
+  static std::vector<std::string> GetScopes();
 
   // Wrapper for FetchPolicyForSignedInUser that uses a block instead of
   // a base::Callback.
@@ -81,10 +85,6 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
 
   scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
   base::WeakPtrFactory<UserPolicySigninService> weak_factory_;
-
-  // Weak pointer to the token service used to authenticate the
-  // CloudPolicyClient during registration.
-  ProfileOAuth2TokenService* oauth2_token_service_;
 
   // The PrefService associated with the profile.
   PrefService* profile_prefs_;

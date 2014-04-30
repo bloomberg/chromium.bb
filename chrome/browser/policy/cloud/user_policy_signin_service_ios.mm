@@ -13,12 +13,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/policy_switches.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -52,13 +50,13 @@ UserPolicySigninService::UserPolicySigninService(
                                   signin_manager,
                                   system_request_context),
       weak_factory_(this),
-      oauth2_token_service_(token_service),
       profile_prefs_(profile->GetPrefs()) {}
 
 UserPolicySigninService::~UserPolicySigninService() {}
 
 void UserPolicySigninService::RegisterForPolicy(
     const std::string& username,
+    const std::string& access_token,
     PolicyRegistrationBlockCallback callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
   scoped_ptr<CloudPolicyClient> policy_client = CreateClientForRegistrationOnly(
@@ -75,13 +73,17 @@ void UserPolicySigninService::RegisterForPolicy(
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
       policy_client.get(),
       GetRegistrationType()));
-  registration_helper_->StartRegistration(
-      oauth2_token_service_,
-      username,
-      base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
-                 base::Unretained(this),
-                 base::Passed(&policy_client),
-                 [callback copy]));
+      registration_helper_->StartRegistrationWithAccessToken(
+          access_token,
+          base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
+                     base::Unretained(this),
+                     base::Passed(&policy_client),
+                     [callback copy]));
+}
+
+// static
+std::vector<std::string> UserPolicySigninService::GetScopes() {
+  return CloudPolicyClientRegistrationHelper::GetScopes();
 }
 
 void UserPolicySigninService::FetchPolicy(

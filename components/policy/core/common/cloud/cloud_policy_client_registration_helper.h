@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CLIENT_REGISTRATION_HELPER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -52,6 +53,15 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   // |callback| is invoked when the registration is complete.
   void StartRegistrationWithLoginToken(const std::string& login_refresh_token,
                                        const base::Closure& callback);
+
+  // Starts the client registration process. |access_token| must be a valid
+  // OAuth access token for the scopes returned by the |GetScopes| static
+  // function.
+  void StartRegistrationWithAccessToken(const std::string& access_token,
+                                        const base::Closure& callback);
+
+  // Returns the scopes required for policy client registration.
+  static std::vector<std::string> GetScopes();
 #endif
 
  private:
