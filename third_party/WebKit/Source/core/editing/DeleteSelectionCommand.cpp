@@ -635,6 +635,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     Node* listItemInFirstParagraph = enclosingNodeOfType(m_upstreamStart, isListItem);
     Node* listItemInSecondParagraph = enclosingNodeOfType(m_downstreamEnd, isListItem);
     if (listItemInFirstParagraph && listItemInSecondParagraph
+        && listItemInFirstParagraph->parentElement() != listItemInSecondParagraph->parentElement()
         && canMergeLists(listItemInFirstParagraph->parentElement(), listItemInSecondParagraph->parentElement())) {
         mergeIdenticalElements(listItemInFirstParagraph->parentElement(), listItemInSecondParagraph->parentElement());
         m_endingPosition = mergeDestination.deepEquivalent();
