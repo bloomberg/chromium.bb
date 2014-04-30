@@ -16,8 +16,11 @@ import maps_expectations
 from telemetry import test
 from telemetry.core import bitmap
 from telemetry.core import util
-from telemetry.page import page_test
+from telemetry.page import page
 from telemetry.page import page_set
+from telemetry.page import page_test
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
 
 class _MapsValidator(cloud_storage_test_base.ValidatorBase):
   def __init__(self):
@@ -72,6 +75,22 @@ class _MapsValidator(cloud_storage_test_base.ValidatorBase):
       json_contents = json.load(f)
     return json_contents
 
+
+class MapsPage(page.Page):
+  def __init__(self, page_set, base_dir):
+    super(MapsPage, self).__init__(
+      url='http://localhost:10020/tracker.html',
+      page_set=page_set,
+      base_dir=base_dir)
+    self.name = 'Maps.maps_001'
+    self.script_to_evaluate_on_commit = 'window.screen = null;'
+    self.pixel_expectations = 'data/maps_001_expectations.json'
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.RunAction(NavigateAction())
+    action_runner.RunAction(WaitAction({'javascript': 'window.testDone'}))
+
+
 class Maps(cloud_storage_test_base.TestBase):
   """Google Maps pixel tests."""
   test = _MapsValidator
@@ -82,24 +101,8 @@ class Maps(cloud_storage_test_base.TestBase):
   def CreatePageSet(self, options):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'content', 'test', 'gpu', 'page_sets')
-    page_set_dict = {
-      'archive_data_file': 'data/maps.json',
-      'make_javascript_deterministic': False,
-      'pages': [
-        {
-          'name': 'Maps.maps_001',
-          'url': 'http://localhost:10020/tracker.html',
-          # TODO: Hack to prevent maps from scaling due to window size.
-          # Remove when the maps team provides a better way of overriding this
-          # behavior
-          'script_to_evaluate_on_commit': 'window.screen = null;',
-          'navigate_steps': [
-            { 'action': 'navigate' },
-            { 'action': 'wait', 'javascript': 'window.testDone' }
-          ],
-          'pixel_expectations': 'data/maps_001_expectations.json'
-        }
-      ]
-    }
-
-    return page_set.PageSet.FromDict(page_set_dict, page_set_path)
+    ps = page_set.PageSet(archive_data_file='data/maps.json',
+                          make_javascript_deterministic=False,
+                          file_path=page_set_path)
+    ps.AddPage(MapsPage(ps, ps.base_dir))
+    return ps

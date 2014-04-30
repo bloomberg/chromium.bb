@@ -7,8 +7,11 @@ import screenshot_sync_expectations as expectations
 
 from telemetry import test
 from telemetry.core import util
+from telemetry.page import page
 from telemetry.page import page_set
 from telemetry.page import page_test
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
 
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
@@ -26,6 +29,23 @@ class _ScreenshotSyncValidator(page_test.PageTest):
       message = tab.EvaluateJavaScript('window.__testMessage')
       raise page_test.Failure(message)
 
+
+class ScreenshotSyncPage(page.Page):
+  def __init__(self, page_set, base_dir):
+    super(ScreenshotSyncPage, self).__init__(
+      url='file://screenshot_sync.html',
+      page_set=page_set,
+      base_dir=base_dir)
+    self.name = 'ScreenshotSync'
+    self.user_agent_type = 'desktop'
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.RunAction(NavigateAction())
+    action_runner.RunAction(WaitAction({
+      'javascript': 'window.__testComplete',
+      'timeout': 120}))
+
+
 class ScreenshotSyncProcess(test.Test):
   """Tests that screenhots are properly synchronized with the frame one which
   they were requested"""
@@ -35,21 +55,9 @@ class ScreenshotSyncProcess(test.Test):
     return expectations.ScreenshotSyncExpectations()
 
   def CreatePageSet(self, options):
-    page_set_dict = {
-      'description': 'Test cases for screenshot synchronization',
-      'user_agent_type': 'desktop',
-      'serving_dirs': [''],
-      'pages': [
-        {
-          'name': 'ScreenshotSync',
-          'url': 'file://screenshot_sync.html',
-          'navigate_steps': [
-            { 'action': 'navigate' },
-            { 'action': 'wait',
-              'javascript': 'window.__testComplete',
-              'timeout': 120 }
-          ]
-        }
-      ]
-    }
-    return page_set.PageSet.FromDict(page_set_dict, data_path)
+    ps = page_set.PageSet(
+      file_path=data_path,
+      description='Test cases for screenshot synchronization',
+      serving_dirs=[''])
+    ps.AddPage(ScreenshotSyncPage(ps, ps.base_dir))
+    return ps

@@ -6,8 +6,11 @@ import os
 from telemetry import test as test_module
 from telemetry.core import exceptions
 from telemetry.core import util
+from telemetry.page import page
 from telemetry.page import page_set
+# pylint: disable=W0401,W0614
 from telemetry.page import page_test
+from telemetry.page.actions.all_page_actions import *
 
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
@@ -100,6 +103,39 @@ class _ContextLostValidator(page_test.PageTest):
           raise page_test.Failure(
             'Test failed (context not restored properly?)')
 
+class WebGLContextLostFromGPUProcessExitPage(page.Page):
+  def __init__(self, page_set, base_dir):
+    super(WebGLContextLostFromGPUProcessExitPage, self).__init__(
+      url='file://webgl.html?query=kill_after_notification',
+      page_set=page_set,
+      base_dir=base_dir)
+    self.name = 'ContextLost.WebGLContextLostFromGPUProcessExit'
+    self.script_to_evaluate_on_commit = harness_script
+    self.kill_gpu_process = True
+    self.number_of_gpu_process_kills = 1
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.RunAction(NavigateAction())
+    action_runner.RunAction(WaitAction(
+      {'javascript': 'window.domAutomationController._loaded'}))
+
+
+class WebGLContextLostFromLoseContextExtensionPage(page.Page):
+  def __init__(self, page_set, base_dir):
+    super(WebGLContextLostFromLoseContextExtensionPage, self).__init__(
+      url='file://webgl.html?query=WEBGL_lose_context',
+      page_set=page_set,
+      base_dir=base_dir)
+    self.name = 'ContextLost.WebGLContextLostFromLoseContextExtension',
+    self.script_to_evaluate_on_commit = harness_script
+    self.kill_gpu_process = False
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.RunAction(NavigateAction())
+    action_runner.RunAction(WaitAction(
+      {'javascript': 'window.domAutomationController._finished'}))
+
+
 class ContextLost(test_module.Test):
   enabled = True
   test = _ContextLostValidator
@@ -107,34 +143,11 @@ class ContextLost(test_module.Test):
   # to repeat. pageset_repeat would be another option.
   # options = {'page_repeat': 5}
   def CreatePageSet(self, options):
-    page_set_dict = {
-      'description': 'Test cases for real and synthetic context lost events',
-      'user_agent_type': 'desktop',
-      'serving_dirs': [''],
-      'pages': [
-        {
-          'name': 'ContextLost.WebGLContextLostFromGPUProcessExit',
-          'url': 'file://webgl.html?query=kill_after_notification',
-          'script_to_evaluate_on_commit': harness_script,
-          'navigate_steps': [
-            { 'action': 'navigate' },
-            { 'action': 'wait',
-              'javascript': 'window.domAutomationController._loaded' }
-          ],
-          'kill_gpu_process': True,
-          'number_of_gpu_process_kills': 1,
-        },
-        {
-          'name': 'ContextLost.WebGLContextLostFromLoseContextExtension',
-          'url': 'file://webgl.html?query=WEBGL_lose_context',
-          'script_to_evaluate_on_commit': harness_script,
-          'navigate_steps': [
-            { 'action': 'navigate' },
-            { 'action': 'wait',
-              'javascript': 'window.domAutomationController._finished' }
-          ],
-          'kill_gpu_process': False
-        },
-      ]
-    }
-    return page_set.PageSet.FromDict(page_set_dict, data_path)
+    ps = page_set.PageSet(
+      file_path=data_path,
+      description='Test cases for real and synthetic context lost events',
+      user_agent_type='desktop',
+      serving_dirs=set(['']))
+    ps.AddPage(WebGLContextLostFromGPUProcessExitPage(ps, ps.base_dir))
+    ps.AddPage(WebGLContextLostFromLoseContextExtensionPage(ps, ps.base_dir))
+    return ps

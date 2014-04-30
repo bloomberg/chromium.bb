@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry import test
+from telemetry.page import page
 from telemetry.page import page_set
+from telemetry.page import page_test
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
+
 from webgl_conformance import WebglConformanceValidator
 from webgl_conformance import conformance_harness_script
 from webgl_conformance import conformance_path
@@ -43,24 +48,27 @@ robustness_harness_script = conformance_harness_script + r"""
   window.webglRobustnessTestHarness = robustnessTestHarness;
 """
 
+class WebglRobustnessPage(page.Page):
+  def __init__(self, page_set, base_dir):
+    super(WebglRobustnessPage, self).__init__(
+      url='file://extra/lots-of-polys-example.html',
+      page_set=page_set,
+      base_dir=base_dir)
+    self.script_to_evaluate_on_commit = robustness_harness_script
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.RunAction(NavigateAction())
+    action_runner.RunAction(
+      WaitAction({'javascript': 'webglTestHarness._finished'}))
 
 class WebglRobustness(test.Test):
   test = WebglConformanceValidator
 
   def CreatePageSet(self, options):
-    page_set_dict = {
-      'description': 'Test cases for WebGL robustness',
-      'user_agent_type': 'desktop',
-      'serving_dirs': [''],
-      'pages': [
-        {
-          'url': 'file://extra/lots-of-polys-example.html',
-          'script_to_evaluate_on_commit': robustness_harness_script,
-          'navigate_steps': [
-            { 'action': 'navigate' },
-            { 'action': 'wait', 'javascript': 'webglTestHarness._finished' }
-          ]
-        }
-      ]
-    }
-    return page_set.PageSet.FromDict(page_set_dict, conformance_path)
+    ps = page_set.PageSet(
+      file_path=conformance_path,
+      description='Test cases for WebGL robustness',
+      user_agent_type='desktop',
+      serving_dirs=[''])
+    ps.AddPage(WebglRobustnessPage(ps, ps.base_dir))
+    return ps
