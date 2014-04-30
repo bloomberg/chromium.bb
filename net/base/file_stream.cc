@@ -4,11 +4,6 @@
 
 #include "net/base/file_stream.h"
 
-#include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/worker_pool.h"
 #include "net/base/file_stream_context.h"
 #include "net/base/net_errors.h"
 
@@ -18,29 +13,15 @@ FileStream::FileStream(const scoped_refptr<base::TaskRunner>& task_runner)
     : context_(new Context(task_runner)) {
 }
 
-FileStream::FileStream()
-    : context_(new Context(base::WorkerPool::GetTaskRunner(true /* slow */))) {
-}
-
 FileStream::FileStream(base::PlatformFile file,
                        int flags,
                        const scoped_refptr<base::TaskRunner>& task_runner)
     : context_(new Context(base::File(file), task_runner)) {
 }
 
-FileStream::FileStream(base::PlatformFile file, int flags)
-    : context_(new Context(base::File(file),
-                           base::WorkerPool::GetTaskRunner(true /* slow */))) {
-}
-
 FileStream::FileStream(base::File file,
                        const scoped_refptr<base::TaskRunner>& task_runner)
     : context_(new Context(file.Pass(), task_runner)) {
-}
-
-FileStream::FileStream(base::File file)
-    : context_(new Context(file.Pass(),
-                           base::WorkerPool::GetTaskRunner(true /* slow */))) {
 }
 
 FileStream::~FileStream() {

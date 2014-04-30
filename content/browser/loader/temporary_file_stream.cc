@@ -30,16 +30,18 @@ void DidCreateTemporaryFile(
     return;
   }
 
+  scoped_refptr<base::TaskRunner> task_runner =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+
   // Cancelled or not, create the deletable_file so the temporary is cleaned up.
   scoped_refptr<ShareableFileReference> deletable_file =
       ShareableFileReference::GetOrCreate(
           file_path,
           ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-          BrowserThread::GetMessageLoopProxyForThread(
-              BrowserThread::FILE).get());
+          task_runner.get());
 
   scoped_ptr<net::FileStream> file_stream(
-      new net::FileStream(file_proxy->TakeFile()));
+      new net::FileStream(file_proxy->TakeFile(), task_runner));
 
   callback.Run(error_code, file_stream.Pass(), deletable_file);
 }

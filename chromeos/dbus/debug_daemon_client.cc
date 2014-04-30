@@ -222,6 +222,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
 
     pipe_reader_.reset(new PipeReaderForString(
+        base::WorkerPool::GetTaskRunner(true /* task_is_slow */),
         base::Bind(&DebugDaemonClientImpl::OnIOComplete,
                    weak_ptr_factory_.GetWeakPtr())));
     int write_fd = -1;

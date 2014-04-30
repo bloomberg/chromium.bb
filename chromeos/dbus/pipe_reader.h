@@ -5,10 +5,21 @@
 #ifndef CHROMEOS_DBUS_PIPE_READER_H_
 #define CHROMEOS_DBUS_PIPE_READER_H_
 
+#include <string>
+
 #include "base/callback.h"
-#include "base/memory/ref_counted_memory.h"
-#include "net/base/file_stream.h"
-#include "net/base/io_buffer.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+
+namespace base {
+class TaskRunner;
+}
+
+namespace net {
+class FileStream;
+class IOBufferWithSize;
+}
 
 namespace chromeos {
 
@@ -26,9 +37,10 @@ namespace chromeos {
 //     |callback|.
 class PipeReader {
  public:
-  typedef base::Callback<void(void)>IOCompleteCallback;
+  typedef base::Callback<void(void)> IOCompleteCallback;
 
-  explicit PipeReader(PipeReader::IOCompleteCallback callback);
+  PipeReader(const scoped_refptr<base::TaskRunner>& task_runner,
+             const IOCompleteCallback& callback);
   virtual ~PipeReader();
 
   // Closes writeable descriptor; normally used in parent process after fork.
@@ -55,6 +67,7 @@ class PipeReader {
   int write_fd_;
   scoped_ptr<net::FileStream> data_stream_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
+  scoped_refptr<base::TaskRunner> task_runner_;
   IOCompleteCallback callback_;
 
   // Note: This should remain the last member so it'll be destroyed and
@@ -67,7 +80,8 @@ class PipeReader {
 // PipeReader subclass which accepts incoming data to a string.
 class PipeReaderForString : public PipeReader {
  public:
-  explicit PipeReaderForString(PipeReader::IOCompleteCallback callback);
+  PipeReaderForString(const scoped_refptr<base::TaskRunner>& task_runner,
+                      const IOCompleteCallback& callback);
 
   virtual void AcceptData(const char *data, int length) OVERRIDE;
 

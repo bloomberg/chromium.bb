@@ -31,9 +31,6 @@ class NET_EXPORT FileStream {
   // Uses |task_runner| for asynchronous operations.
   explicit FileStream(const scoped_refptr<base::TaskRunner>& task_runner);
 
-  // Same as above, but runs async tasks in base::WorkerPool.
-  FileStream();
-
   // Construct a FileStream with an existing file handle and opening flags.
   // |file| is valid file handle.
   // |flags| is a bitfield of base::PlatformFileFlags when the file handle was
@@ -47,14 +44,9 @@ class NET_EXPORT FileStream {
              int flags,
              const scoped_refptr<base::TaskRunner>& task_runner);
 
-  // Same as above, but runs async tasks in base::WorkerPool.
-  // This constructor is deprecated.
-  FileStream(base::PlatformFile file, int flags);
-
-  // Non-deprecated versions of the previous two constructors.
+  // Non-deprecated version of the previous constructor.
   FileStream(base::File file,
              const scoped_refptr<base::TaskRunner>& task_runner);
-  explicit FileStream(base::File file);
 
   // The underlying file is closed automatically.
   virtual ~FileStream();

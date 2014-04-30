@@ -68,7 +68,7 @@ namespace {
 
 TEST_F(FileStreamTest, AsyncOpenExplicitClose) {
   TestCompletionCallback callback;
-  FileStream stream;
+  FileStream stream(base::MessageLoopProxy::current());
   int flags = base::File::FLAG_OPEN |
               base::File::FLAG_READ |
               base::File::FLAG_ASYNC;

@@ -11,16 +11,9 @@ namespace net {
 
 namespace testing {
 
-MockFileStream::MockFileStream()
-    : net::FileStream(),
-      forced_error_(net::OK),
-      async_error_(false),
-      throttled_(false),
-      weak_factory_(this) {
-}
-
-MockFileStream::MockFileStream(base::File file)
-    : net::FileStream(file.Pass()),
+MockFileStream::MockFileStream(
+    const scoped_refptr<base::TaskRunner>& task_runner)
+    : net::FileStream(task_runner),
       forced_error_(net::OK),
       async_error_(false),
       throttled_(false),
