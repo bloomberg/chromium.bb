@@ -297,6 +297,18 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
     return true;
   }
 
+  // If the request has been canceled, only dispatch
+  // ResourceMsg_RequestComplete (otherwise resource leaks) and drop other
+  // messages.
+  if (request_info->is_canceled) {
+    if (message.type() == ResourceMsg_RequestComplete::ID) {
+      DispatchMessage(message);
+    } else {
+      ReleaseResourcesInDataMessage(message);
+    }
+    return true;
+  }
+
   if (request_info->is_deferred) {
     request_info->deferred_message_queue.push_back(new IPC::Message(message));
     return true;
@@ -588,6 +600,23 @@ void ResourceDispatcher::CancelPendingRequest(int request_id) {
     return;
   }
 
+  PendingRequestInfo& request_info = it->second;
+  request_info.is_canceled = true;
+
+  // Removes pending requests. If ResourceMsg_RequestComplete was queued,
+  // dispatch it.
+  MessageQueue& queue = request_info.deferred_message_queue;
+  while (!queue.empty()) {
+    IPC::Message* message = queue.front();
+    if (message->type() == ResourceMsg_RequestComplete::ID) {
+      DispatchMessage(*message);
+    } else {
+      ReleaseResourcesInDataMessage(*message);
+    }
+    queue.pop_front();
+    delete message;
+  }
+
   // |request_id| will be removed from |pending_requests_| when
   // OnRequestComplete returns with ERR_ABORTED.
   message_sender()->Send(new ResourceHostMsg_CancelRequest(request_id));
@@ -627,6 +656,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
     : peer(NULL),
       resource_type(ResourceType::SUB_RESOURCE),
       is_deferred(false),
+      is_canceled(false),
       blocked_response(false),
       buffer_size(0) {
 }
@@ -641,6 +671,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       resource_type(resource_type),
       origin_pid(origin_pid),
       is_deferred(false),
+      is_canceled(false),
       url(request_url),
       frame_origin(frame_origin),
       response_url(request_url),
