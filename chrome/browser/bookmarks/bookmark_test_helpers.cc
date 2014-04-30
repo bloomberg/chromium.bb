@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
-#include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
 namespace {
@@ -101,9 +100,12 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   if (model->loaded())
     return;
   base::RunLoop run_loop;
-  BookmarkLoadObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+
+  BookmarkLoadObserver observer(run_loop.QuitClosure());
   model->AddObserver(&observer);
-  content::RunThisRunLoop(&run_loop);
+  run_loop.Run();
   model->RemoveObserver(&observer);
   DCHECK(model->loaded());
 }
