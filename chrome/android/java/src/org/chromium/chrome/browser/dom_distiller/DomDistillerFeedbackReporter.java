@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -38,7 +38,7 @@ public final class DomDistillerFeedbackReporter implements
     private final long mNativePointer;
     private final Tab mTab;
 
-    private ContentView mContentView;
+    private ContentViewCore mContentViewCore;
     private DomDistillerFeedbackReportingView mReportingView;
 
     /**
@@ -85,7 +85,7 @@ public final class DomDistillerFeedbackReporter implements
         if (!good) {
             Activity activity = mTab.getWindowAndroid().getActivity().get();
             String url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
-                   mContentView.getContentViewCore().getUrl());
+                   mContentViewCore.getUrl());
             sExternalFeedbackReporter.reportFeedback(activity, url, good);
         }
     }
@@ -95,7 +95,7 @@ public final class DomDistillerFeedbackReporter implements
      */
     @CalledByNative
     private void showOverlay() {
-        mReportingView = DomDistillerFeedbackReportingView.create(mContentView, this);
+        mReportingView = DomDistillerFeedbackReportingView.create(mContentViewCore, this);
     }
 
     /**
@@ -110,15 +110,15 @@ public final class DomDistillerFeedbackReporter implements
     }
 
     /**
-     * Updates which ContentView and WebContents the FeedbackReporter is monitoring.
+     * Updates which ContentViewCore and WebContents the FeedbackReporter is monitoring.
      */
     private void updatePointers() {
-        mContentView = mTab.getContentView();
+        mContentViewCore = mTab.getContentViewCore();
         nativeReplaceWebContents(mNativePointer, mTab.getWebContents());
     }
 
     /**
-     * Creates a TabObserver for monitoring a Tab, used to react to changes in the ContentView
+     * Creates a TabObserver for monitoring a Tab, used to react to changes in the ContentViewCore
      * or to trigger its own destruction.
      *
      * @return TabObserver that can be used to monitor a Tab.
@@ -139,7 +139,7 @@ public final class DomDistillerFeedbackReporter implements
             @Override
             public void onDestroyed(Tab tab) {
                 nativeDestroy(mNativePointer);
-                mContentView = null;
+                mContentViewCore = null;
             }
         };
     }

@@ -21,14 +21,14 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.UiUtils;
 
 /**
  * View that appears on the screen as the user scrolls on the page and can be swiped away.
- * Meant to be tacked onto the {@link org.chromium.content.browser.ContentView} layer and alerted
- * when either the page scroll position or viewport size changes.
+ * Meant to be tacked onto the {@link org.chromium.content.browser.ContentViewCore}'s view and
+ * alerted when either the page scroll position or viewport size changes.
  *
  * GENERAL BEHAVIOR
  * This View is brought onto the screen by sliding upwards from the bottom of the screen.  Afterward
@@ -90,7 +90,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
     // Detects when the user is dragging the View.
     private final GestureDetector mGestureDetector;
 
-    // Detects when the user is dragging the ContentView.
+    // Detects when the user is dragging the ContentViewCore.
     private final GestureStateListener mGestureStateListener;
 
     // Monitors for animation completions and resets the state.
@@ -132,6 +132,9 @@ public abstract class SwipableOverlayView extends FrameLayout {
     // Whether or not the View has been, or is being, dismissed.
     private boolean mIsDismissed;
 
+    // The ContentViewCore to which the overlay is added.
+    private ContentViewCore mContentViewCore;
+
     /**
      * Creates a SwipableOverlayView.
      * @param context Context for acquiring resources.
@@ -148,12 +151,14 @@ public abstract class SwipableOverlayView extends FrameLayout {
     }
 
     /**
-     * Adds this View to the given ContentView.
+     * Adds this View to the given ContentViewCore's view.
      * @param layout Layout to add this View to.
      */
-    protected void addToView(ContentView contentView) {
-        contentView.addView(this, 0, createLayoutParams());
-        contentView.getContentViewCore().addGestureStateListener(mGestureStateListener);
+    protected void addToView(ContentViewCore contentViewCore) {
+        assert mContentViewCore == null;
+        mContentViewCore = contentViewCore;
+        contentViewCore.getContainerView().addView(this, 0, createLayoutParams());
+        contentViewCore.addGestureStateListener(mGestureStateListener);
 
         // Listen for the layout to know when to animate the View coming onto the screen.
         addOnLayoutChangeListener(createLayoutChangeListener());
@@ -173,10 +178,9 @@ public abstract class SwipableOverlayView extends FrameLayout {
      * Removes the View from its parent.
      */
     boolean removeFromParent() {
-        if (getParent() instanceof ContentView) {
-            ContentView parent = (ContentView) getParent();
-            parent.removeView(this);
-            parent.getContentViewCore().removeGestureStateListener(mGestureStateListener);
+        if (mContentViewCore != null) {
+            mContentViewCore.getContainerView().removeView(this);
+            mContentViewCore = null;
             return true;
         }
         return false;

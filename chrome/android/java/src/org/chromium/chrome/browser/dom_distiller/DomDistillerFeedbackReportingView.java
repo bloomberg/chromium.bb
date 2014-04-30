@@ -13,7 +13,7 @@ import android.widget.ImageButton;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
-import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 
 /**
  * A view which displays a question to the user about the quality of distillation, where the user
@@ -50,20 +50,20 @@ public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
     }
 
     /**
-     * Creates a DomDistillerFeedbackReportingView and adds it to the given ContentView.
+     * Creates a DomDistillerFeedbackReportingView and adds it to the given ContentViewCore.
      *
-     * @param contentView      ContentView to display the DomDistillerFeedbackReportingView for.
+     * @param contentView      ContentViewCore to display the DomDistillerFeedbackReportingView for.
      * @param feedbackObserver Class that is alerted for DomDistillerFeedbackReportingView events.
      * @return The created banner.
      */
-    public static DomDistillerFeedbackReportingView create(ContentView contentView,
+    public static DomDistillerFeedbackReportingView create(ContentViewCore contentViewCore,
                                                FeedbackObserver feedbackObserver) {
-        Context context = contentView.getContext().getApplicationContext();
+        Context context = contentViewCore.getContext().getApplicationContext();
         DomDistillerFeedbackReportingView view =
                 (DomDistillerFeedbackReportingView) LayoutInflater.from(context)
                         .inflate(VIEW_LAYOUT, null);
         view.initialize(feedbackObserver);
-        view.addToView(contentView);
+        view.addToView(contentViewCore);
         return view;
     }
 

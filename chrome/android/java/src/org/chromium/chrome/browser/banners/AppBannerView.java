@@ -31,7 +31,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.IntentCallback;
@@ -152,18 +152,19 @@ public class AppBannerView extends SwipableOverlayView
     private int mInstallState;
 
     /**
-     * Creates a BannerView and adds it to the given ContentView.
-     * @param contentView ContentView to display the AppBannerView for.
+     * Creates a BannerView and adds it to the given ContentViewCore.
+     * @param contentViewCore ContentViewCore to display the AppBannerView for.
      * @param observer    Class that is alerted for AppBannerView events.
      * @param data        Data about the app.
      * @return            The created banner.
      */
-    public static AppBannerView create(ContentView contentView, Observer observer, AppData data) {
-        Context context = contentView.getContext().getApplicationContext();
+    public static AppBannerView create(
+            ContentViewCore contentViewCore, Observer observer,AppData data) {
+        Context context = contentViewCore.getContext().getApplicationContext();
         AppBannerView banner =
                 (AppBannerView) LayoutInflater.from(context).inflate(BANNER_LAYOUT, null);
         banner.initialize(observer, data);
-        banner.addToView(contentView);
+        banner.addToView(contentViewCore);
         return banner;
     }
 

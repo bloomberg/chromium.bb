@@ -14,7 +14,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
-import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.R;
 
@@ -42,8 +42,8 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
     /** Tab that the AppBannerView/AppBannerManager is owned by. */
     private final Tab mTab;
 
-    /** ContentView that the AppBannerView/AppBannerManager is currently attached to. */
-    private ContentView mContentView;
+    /** ContentViewCore that the AppBannerView/AppBannerManager is currently attached to. */
+    private ContentViewCore mContentViewCore;
 
     /** Current banner being shown. */
     private AppBannerView mBannerView;
@@ -100,7 +100,7 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
             @Override
             public void onDestroyed(Tab tab) {
                 nativeDestroy(mNativePointer);
-                mContentView = null;
+                mContentViewCore = null;
                 resetState();
             }
         };
@@ -110,7 +110,8 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
      * Updates which ContentView and WebContents the AppBannerView is monitoring.
      */
     private void updatePointers() {
-        if (mContentView != mTab.getContentView()) mContentView = mTab.getContentView();
+        if (mContentViewCore != mTab.getContentViewCore())
+            mContentViewCore = mTab.getContentViewCore();
         nativeReplaceWebContents(mNativePointer, mTab.getWebContents());
     }
 
@@ -126,7 +127,7 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
 
         if (sAppDetailsDelegate == null || !isBannerForCurrentPage(url)) return;
 
-        int iconSize = AppBannerView.getIconSize(mContentView.getContext());
+        int iconSize = AppBannerView.getIconSize(mContentViewCore.getContext());
         sAppDetailsDelegate.getAppDetailsAsynchronously(this, url, packageName, iconSize);
     }
 
@@ -160,8 +161,8 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
             return false;
         }
 
-        mAppData.setIcon(new BitmapDrawable(mContentView.getContext().getResources(), appIcon));
-        mBannerView = AppBannerView.create(mContentView, this, mAppData);
+        mAppData.setIcon(new BitmapDrawable(mContentViewCore.getContext().getResources(), appIcon));
+        mBannerView = AppBannerView.create(mContentViewCore, this, mAppData);
         return true;
     }
 
@@ -224,8 +225,8 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
      * @return          True if the user is still on the same page.
      */
     private boolean isBannerForCurrentPage(String bannerUrl) {
-        return mContentView != null &&
-               TextUtils.equals(mContentView.getContentViewCore().getUrl(), bannerUrl);
+        return mContentViewCore != null &&
+               TextUtils.equals(mContentViewCore.getUrl(), bannerUrl);
     }
 
     private static native boolean nativeIsEnabled();
