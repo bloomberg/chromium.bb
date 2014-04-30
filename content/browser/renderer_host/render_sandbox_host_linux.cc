@@ -39,7 +39,14 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
   CHECK(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
 
   renderer_socket_ = fds[0];
+  // The SandboxIPC client is not expected to read from |renderer_socket_|.
+  // Instead, it reads from a temporary socket sent with the request.
+  PCHECK(0 == shutdown(renderer_socket_, SHUT_RD)) << "shutdown";
+
   const int browser_socket = fds[1];
+  // The SandboxIPC handler is not expected to write to |browser_socket|.
+  // Instead, it replies on a temporary socket provided by the caller.
+  PCHECK(0 == shutdown(browser_socket, SHUT_WR)) << "shutdown";
 
   int pipefds[2];
   CHECK(0 == pipe(pipefds));
