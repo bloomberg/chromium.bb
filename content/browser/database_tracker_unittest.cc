@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,16 +11,19 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/database_tracker.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/database/database_identifier.h"
 
 using base::ASCIIToUTF16;
+using webkit_database::DatabaseConnections;
+using webkit_database::DatabaseTracker;
+using webkit_database::OriginInfo;
 
 namespace {
 
@@ -182,10 +185,10 @@ bool EnsureFileOfSize(const base::FilePath& file_path, int64 length) {
 
 }  // namespace
 
-namespace webkit_database {
+namespace content {
 
 // We declare a helper class, and make it a friend of DatabaseTracker using
-// the FRIEND_TEST() macro, and we implement all tests we want to run as
+// the FORWARD_DECLARE_TEST macro, and we implement all tests we want to run as
 // static methods of this class. Then we make our TEST() targets call these
 // static functions. This allows us to run each test in normal mode and
 // incognito mode without writing the same code twice.
@@ -195,8 +198,8 @@ class DatabaseTracker_TestHelper_Test {
     // Initialize the tracker database.
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-        new quota::MockSpecialStoragePolicy;
+    scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
+        new MockSpecialStoragePolicy;
     special_storage_policy->AddProtected(GURL(kOrigin2Url));
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(),
@@ -303,8 +306,8 @@ class DatabaseTracker_TestHelper_Test {
     // Initialize the tracker database.
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-        new quota::MockSpecialStoragePolicy;
+    scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
+        new MockSpecialStoragePolicy;
     special_storage_policy->AddProtected(GURL(kOrigin2Url));
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(),
@@ -562,8 +565,8 @@ class DatabaseTracker_TestHelper_Test {
     base::FilePath origin1_db_dir;
     base::FilePath origin2_db_dir;
     {
-      scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-          new quota::MockSpecialStoragePolicy;
+      scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
+          new MockSpecialStoragePolicy;
       special_storage_policy->AddSessionOnly(GURL(kOrigin2Url));
       scoped_refptr<DatabaseTracker> tracker(
           new DatabaseTracker(temp_dir.path(),
@@ -642,8 +645,8 @@ class DatabaseTracker_TestHelper_Test {
     base::FilePath origin1_db_dir;
     base::FilePath origin2_db_dir;
     {
-      scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-          new quota::MockSpecialStoragePolicy;
+      scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
+          new MockSpecialStoragePolicy;
       special_storage_policy->AddSessionOnly(GURL(kOrigin2Url));
       scoped_refptr<DatabaseTracker> tracker(
           new DatabaseTracker(temp_dir.path(),
@@ -809,8 +812,9 @@ class DatabaseTracker_TestHelper_Test {
     // Create another record of a database in the tracker db and create
     // a spoof_db_file on disk in the expected location.
     tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
-                            &database_size);
-    base::FilePath spoof_db_file2 = tracker->GetFullDBFilePath(kOriginId, kName);
+        &database_size);
+    base::FilePath spoof_db_file2 = tracker->GetFullDBFilePath(kOriginId,
+        kName);
     EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
     EXPECT_NE(spoof_db_file, spoof_db_file2);
     EXPECT_TRUE(base::CreateDirectory(spoof_db_file2.DirName()));
@@ -868,4 +872,4 @@ TEST(DatabaseTrackerTest, HandleSqliteError) {
   DatabaseTracker_TestHelper_Test::HandleSqliteError();
 }
 
-}  // namespace webkit_database
+}  // namespace content

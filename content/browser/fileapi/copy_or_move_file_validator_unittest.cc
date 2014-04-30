@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "content/public/test/async_file_test_helper.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +18,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

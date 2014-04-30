@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "content/public/test/mock_special_storage_policy.h"
 
 #include "base/stl_util.h"
 
-namespace quota {
+namespace content {
 
 MockSpecialStoragePolicy::MockSpecialStoragePolicy()
     : all_unlimited_(false) {
@@ -44,4 +44,4 @@ bool MockSpecialStoragePolicy::HasSessionOnlyOrigins() {
 
 MockSpecialStoragePolicy::~MockSpecialStoragePolicy() {}
 
-}  // namespace quota
+}  // namespace content

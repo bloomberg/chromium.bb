@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +26,6 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/native_file_util.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
@@ -120,7 +120,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(root_path()));
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
-        new quota::MockSpecialStoragePolicy();
+        new content::MockSpecialStoragePolicy();
 
     ScopedVector<fileapi::FileSystemBackend> additional_providers;
     additional_providers.push_back(new MediaFileSystemBackend(

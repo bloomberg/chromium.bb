@@ -22,6 +22,7 @@
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/test/mock_blob_url_request_context.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -29,7 +30,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
@@ -227,7 +227,7 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
   ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
-      new quota::MockSpecialStoragePolicy();
+      new content::MockSpecialStoragePolicy();
 
   if (quota_mode == QUOTA_ENABLED) {
     quota_manager_ = new QuotaManager(false /* is_incognito */,

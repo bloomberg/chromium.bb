@@ -4,14 +4,13 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/usage_tracker.h"
 
 using quota::kQuotaStatusOk;
 using quota::kStorageTypeTemporary;
-using quota::MockSpecialStoragePolicy;
 using quota::QuotaClient;
 using quota::QuotaClientList;
 using quota::SpecialStoragePolicy;

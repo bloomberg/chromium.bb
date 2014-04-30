@@ -10,13 +10,13 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/appcache_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache_database.h"
 #include "webkit/browser/appcache/appcache_storage_impl.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #include <set>
 
@@ -96,8 +96,8 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
     bool init_storage) {
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(NULL);
-  scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
-      new quota::MockSpecialStoragePolicy;
+  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
+      new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
   mock_policy->AddSessionOnly(kSessionOnlyManifestURL.GetOrigin());
   scoped_refptr<MockURLRequestContextGetter> mock_request_context_getter =

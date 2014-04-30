@@ -16,7 +16,7 @@
         ['OS!="ios"', {
           # layouttest_support_content is not supported nor required on iOS.
           'dependencies': [
-            'webkit_test_support_content',
+            'test_support_content',
             '../skia/skia.gyp:skia',
             '../ui/accessibility/accessibility.gyp:ax_gen',
             '../v8/tools/gyp/v8.gyp:v8',
@@ -58,11 +58,11 @@
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../url/url.gyp:url_lib',
+        '../webkit/common/webkit_common.gyp:webkit_common',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
         'content.gyp:content_app_both',
         'content.gyp:content_browser',
         'content.gyp:content_common',
-        'webkit_test_support_content',
       ],
       'include_dirs': [
         '..',
@@ -95,6 +95,8 @@
         'public/test/mock_render_thread.h',
         'public/test/mock_resource_context.cc',
         'public/test/mock_resource_context.h',
+        'public/test/mock_special_storage_policy.cc',
+        'public/test/mock_special_storage_policy.h',
         'public/test/mock_storage_client.cc',
         'public/test/mock_storage_client.h',
         'public/test/render_view_test.cc',
@@ -332,23 +334,6 @@
       ],
     },
     {
-      'target_name': 'webkit_test_support_content',
-      'type': 'static_library',
-      'dependencies': [
-        '../webkit/common/webkit_common.gyp:webkit_common',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'export_dependent_settings': [
-        '../webkit/common/webkit_common.gyp:webkit_common',
-      ],
-      'sources': [
-        '../webkit/browser/quota/mock_special_storage_policy.cc',
-        '../webkit/browser/quota/mock_special_storage_policy.h',
-      ],
-    },
-    {
       'target_name': 'content_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -408,6 +393,7 @@
         'browser/child_process_security_policy_unittest.cc',
         'browser/compositor/software_browser_compositor_output_surface_unittest.cc',
         'browser/compositor/software_output_device_ozone_unittest.cc',
+        'browser/database_tracker_unittest.cc',
         'browser/device_sensors/data_fetcher_shared_memory_base_unittest.cc',
         'browser/device_sensors/sensor_manager_android_unittest.cc',
         'browser/devtools/devtools_http_handler_unittest.cc',
@@ -692,7 +678,6 @@
         'test/run_all_unittests.cc',
         '../webkit/browser/blob/local_file_stream_reader_unittest.cc',
         '../webkit/browser/database/database_quota_client_unittest.cc',
-        '../webkit/browser/database/database_tracker_unittest.cc',
         '../webkit/browser/database/database_util_unittest.cc',
         '../webkit/browser/database/databases_table_unittest.cc',
         '../webkit/browser/fileapi/sandbox_database_test_helper.cc',

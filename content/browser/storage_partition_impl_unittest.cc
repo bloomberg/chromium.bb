@@ -12,6 +12,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -20,7 +21,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
@@ -669,8 +669,8 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastWeek) {
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
   // Protect kOrigin1.
-  scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
-      new quota::MockSpecialStoragePolicy;
+  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
+      new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
   PopulateTestQuotaManagedData(GetMockManager());
@@ -705,8 +705,8 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   // Protect kOrigin1.
-  scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
-      new quota::MockSpecialStoragePolicy;
+  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
+      new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
   PopulateTestQuotaManagedData(GetMockManager());
@@ -742,8 +742,8 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
   // Protect kOrigin1.
-  scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
-      new quota::MockSpecialStoragePolicy;
+  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
+      new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
   PopulateTestQuotaManagedData(GetMockManager());
@@ -842,8 +842,8 @@ TEST_F(StoragePartitionImplTest, RemoveCookieLastHour) {
 
 TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
   // Protect kOrigin1.
-  scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
-      new quota::MockSpecialStoragePolicy;
+  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
+      new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
   RemoveLocalStorageTester tester(browser_context());
@@ -874,8 +874,8 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
 
 TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
   // Protect kOrigin1.
-  scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
-      new quota::MockSpecialStoragePolicy;
+  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
+      new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
   RemoveLocalStorageTester tester(browser_context());

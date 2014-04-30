@@ -26,6 +26,7 @@
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +36,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 using fileapi::FileSystemOperationContext;
@@ -232,7 +232,7 @@ class PicasaFileUtilTest : public testing::Test {
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
-        new quota::MockSpecialStoragePolicy();
+        new content::MockSpecialStoragePolicy();
 
     SynchronouslyRunOnMediaTaskRunner(base::Bind(
         &PicasaFileUtilTest::SetUpOnMediaTaskRunner, base::Unretained(this)));

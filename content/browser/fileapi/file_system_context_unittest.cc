@@ -8,12 +8,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/quota/mock_quota_manager.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
@@ -53,7 +53,7 @@ class FileSystemContextTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
-    storage_policy_ = new quota::MockSpecialStoragePolicy();
+    storage_policy_ = new MockSpecialStoragePolicy();
 
     mock_quota_manager_ =
         new MockQuotaManager(false /* is_incognito */,

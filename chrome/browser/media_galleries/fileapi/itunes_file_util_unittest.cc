@@ -19,6 +19,7 @@
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemOperation;
@@ -157,7 +157,7 @@ class ItunesFileUtilTest : public testing::Test {
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
-        new quota::MockSpecialStoragePolicy();
+        new content::MockSpecialStoragePolicy();
 
     // Initialize fake ItunesDataProvider on media task runner thread.
     MediaFileSystemBackend::MediaTaskRunner()->PostTask(

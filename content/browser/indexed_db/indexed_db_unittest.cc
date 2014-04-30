@@ -13,9 +13,9 @@
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/database/database_identifier.h"
@@ -31,7 +31,7 @@ class IndexedDBTest : public testing::Test {
       : kNormalOrigin("http://normal/"),
         kSessionOnlyOrigin("http://session-only/"),
         task_runner_(new base::TestSimpleTaskRunner),
-        special_storage_policy_(new quota::MockSpecialStoragePolicy),
+        special_storage_policy_(new MockSpecialStoragePolicy),
         file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin);
@@ -42,7 +42,7 @@ class IndexedDBTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
 
  private:
   BrowserThreadImpl file_thread_;

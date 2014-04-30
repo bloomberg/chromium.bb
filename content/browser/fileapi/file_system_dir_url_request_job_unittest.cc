@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/net_errors.h"
@@ -33,7 +34,6 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationContext;
@@ -83,7 +83,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    special_storage_policy_ = new quota::MockSpecialStoragePolicy;
+    special_storage_policy_ = new MockSpecialStoragePolicy;
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, temp_dir_.path());
 
@@ -271,7 +271,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   net::URLRequestContext empty_context_;
   scoped_ptr<net::TestDelegate> delegate_;
   scoped_ptr<net::URLRequest> request_;
-  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemDirURLRequestJobTest> weak_factory_;
 

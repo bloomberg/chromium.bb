@@ -17,10 +17,10 @@
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_database.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
@@ -35,7 +35,6 @@ using quota::kStorageTypePersistent;
 using quota::kStorageTypeSyncable;
 using quota::kStorageTypeTemporary;
 using quota::kStorageTypeUnknown;
-using quota::MockSpecialStoragePolicy;
 using quota::QuotaClient;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;

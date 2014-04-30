@@ -475,7 +475,7 @@
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
         '../components/components_resources.gyp:components_resources',
-        '../content/content_shell_and_tests.gyp:webkit_test_support_content',
+        '../content/content_shell_and_tests.gyp:test_support_content',
         '../content/content.gyp:content_app_both',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',

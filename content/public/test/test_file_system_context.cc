@@ -5,12 +5,12 @@
 #include "content/public/test/test_file_system_context.h"
 
 #include "base/memory/scoped_vector.h"
+#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_options.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 namespace content {
 
@@ -33,7 +33,7 @@ CreateFileSystemContextWithAdditionalProvidersForTesting(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
-      make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
+      make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
       std::vector<fileapi::URLRequestAutoMountHandler>(),
@@ -51,7 +51,7 @@ CreateFileSystemContextWithAutoMountersForTesting(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
-      make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
+      make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
       auto_mounters,
@@ -67,7 +67,7 @@ fileapi::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
-      make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
+      make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
       std::vector<fileapi::URLRequestAutoMountHandler>(),
