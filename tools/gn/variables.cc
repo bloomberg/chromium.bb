@@ -529,42 +529,6 @@ const char kForwardDependentConfigsFrom_Help[] =
     "      forward_dependent_configs_from = deps\n"
     "    }\n";
 
-const char kHardDep[] = "hard_dep";
-const char kHardDep_HelpShort[] =
-    "hard_dep: [boolean] Indicates a target should be built before dependees.";
-const char kHardDep_Help[] =
-    "hard_dep: Indicates a target should be built before dependees.\n"
-    "\n"
-    "  Ninja's default is to assume that targets can be compiled\n"
-    "  independently. This breaks down for generated files that are included\n"
-    "  in other targets because Ninja doesn't know to run the generator\n"
-    "  before compiling the source file.\n"
-    "\n"
-    "  Setting \"hard_dep\" to true on a target means that no sources in\n"
-    "  targets depending directly on this one will be compiled until this\n"
-    "  target is complete. It will introduce a Ninja implicit dependency\n"
-    "  from those sources to this target. This flag is not transitive so\n"
-    "  it will only affect direct dependents, which will cause problems if\n"
-    "  a direct dependent uses this generated file in a public header that a\n"
-    "  third target consumes. Try not to do this.\n"
-    "\n"
-    "  See also \"gn help source_prereqs\" which allows you to specify the\n"
-    "  exact generated file dependency on the target consuming it.\n"
-    "\n"
-    "Example:\n"
-    "  executable(\"foo\") {\n"
-    "    # myresource will be run before any of the sources in this target\n"
-    "    # are compiled.\n"
-    "    deps = [ \":myresource\" ]\n"
-    "    ...\n"
-    "  }\n"
-    "\n"
-    "  action(\"myresource\") {\n"
-    "    hard_dep = true\n"
-    "    script = \"my_generator.py\"\n"
-    "    outputs = \"$target_gen_dir/myresource.h\"\n"
-    "  }\n";
-
 const char kIncludeDirs[] = "include_dirs";
 const char kIncludeDirs_HelpShort[] =
     "include_dirs: [directory list] Additional include directories.";
@@ -781,9 +745,7 @@ const char kSourcePrereqs_Help[] =
     "  dependencies your script may have.\n"
     "\n"
     "  See also \"gn help data\" and \"gn help datadeps\" (which declare\n"
-    "  run-time rather than compile-time dependencies), and\n"
-    "  \"gn help hard_dep\" which allows you to declare the source dependency\n"
-    "  on the target generating a file rather than the target consuming it.\n"
+    "  run-time rather than compile-time dependencies).\n"
     "\n"
     "Examples:\n"
     "  executable(\"foo\") {\n"
@@ -923,7 +885,6 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Deps)
     INSERT_VARIABLE(DirectDependentConfigs)
     INSERT_VARIABLE(ForwardDependentConfigsFrom)
-    INSERT_VARIABLE(HardDep)
     INSERT_VARIABLE(IncludeDirs)
     INSERT_VARIABLE(Ldflags)
     INSERT_VARIABLE(Libs)
