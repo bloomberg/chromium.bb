@@ -5,5 +5,7 @@ If the test passes, you should not see any red below
 (repaint rects
   (rect 0 140 220 60)
   (rect 0 240 220 60)
+  (rect 0 140 220 50)
+  (rect 0 240 220 50)
 )
 

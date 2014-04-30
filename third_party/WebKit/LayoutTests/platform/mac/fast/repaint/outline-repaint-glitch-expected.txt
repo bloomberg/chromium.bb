@@ -8,13 +8,13 @@ TEST FAIL: The boxes will resize, but the outlines will break. The first box wil
 
 
 (repaint rects
-  (rect 29 221 180 60)
-  (rect 29 221 180 40)
   (rect 15 265 208 20)
   (rect 15 261 208 4)
-  (rect 29 381 180 40)
-  (rect 29 381 180 60)
+  (rect 29 221 180 60)
+  (rect 29 221 180 40)
   (rect 15 425 208 20)
   (rect 15 421 208 4)
+  (rect 29 381 180 40)
+  (rect 29 381 180 60)
 )
 

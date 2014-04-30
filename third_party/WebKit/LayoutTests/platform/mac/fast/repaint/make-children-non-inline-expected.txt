@@ -11,9 +11,9 @@ after
 the break.
 (repaint rects
   (rect 8 60 784 162)
+  (rect 8 222 784 100)
   (rect 8 60 784 90)
   (rect 8 150 10 100)
   (rect 8 250 784 72)
-  (rect 8 222 784 100)
 )
 
