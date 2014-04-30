@@ -2525,9 +2525,10 @@ class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
     self._pkg_dir = os.path.join(
         self._build_root, constants.DEFAULT_CHROOT_DIR,
         'build', self._current_board, 'var', 'db', 'pkg')
-    self.chrome_src = os.path.join(self._run.options.chrome_root, 'src')
-    self.out_board_dir = os.path.join(
-        self.chrome_src, 'out_%s' % self._current_board)
+    if self._run.config.chrome_sdk_build_chrome:
+      self.chrome_src = os.path.join(self._run.options.chrome_root, 'src')
+      self.out_board_dir = os.path.join(
+          self.chrome_src, 'out_%s' % self._current_board)
 
   def _BuildAndArchiveChromeSysroot(self):
     """Generate and upload sysroot for building Chrome."""

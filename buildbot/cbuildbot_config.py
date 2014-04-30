@@ -895,7 +895,9 @@ paladin = _config(
   description='Commit Queue',
   upload_standalone_images=False,
   chroot_replace=True,
-  images=['test']
+  images=['test'],
+  chrome_sdk=True,
+  chrome_sdk_build_chrome=False,
 )
 
 # Used for paladin builders that build from source.
