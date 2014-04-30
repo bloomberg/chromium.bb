@@ -631,13 +631,13 @@ WebstorePrivateEnableAppLauncherFunction::
 WebstorePrivateEnableAppLauncherFunction::
     ~WebstorePrivateEnableAppLauncherFunction() {}
 
-bool WebstorePrivateEnableAppLauncherFunction::RunImpl() {
+bool WebstorePrivateEnableAppLauncherFunction::RunSync() {
   AppListService::Get(GetCurrentBrowser()->host_desktop_type())
       ->EnableAppList(GetProfile(), AppListService::ENABLE_VIA_WEBSTORE_LINK);
   return true;
 }
 
-bool WebstorePrivateGetBrowserLoginFunction::RunImpl() {
+bool WebstorePrivateGetBrowserLoginFunction::RunSync() {
   GetBrowserLogin::Results::Info info;
   info.login = GetProfile()->GetOriginalProfile()->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
@@ -645,12 +645,12 @@ bool WebstorePrivateGetBrowserLoginFunction::RunImpl() {
   return true;
 }
 
-bool WebstorePrivateGetStoreLoginFunction::RunImpl() {
+bool WebstorePrivateGetStoreLoginFunction::RunSync() {
   results_ = GetStoreLogin::Results::Create(GetWebstoreLogin(GetProfile()));
   return true;
 }
 
-bool WebstorePrivateSetStoreLoginFunction::RunImpl() {
+bool WebstorePrivateSetStoreLoginFunction::RunSync() {
   scoped_ptr<SetStoreLogin::Params> params(
       SetStoreLogin::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -684,12 +684,12 @@ void WebstorePrivateGetWebGLStatusFunction::
   SendResponse(true);
 }
 
-bool WebstorePrivateGetIsLauncherEnabledFunction::RunImpl() {
+bool WebstorePrivateGetIsLauncherEnabledFunction::RunSync() {
   results_ = GetIsLauncherEnabled::Results::Create(IsAppLauncherEnabled());
   return true;
 }
 
-bool WebstorePrivateIsInIncognitoModeFunction::RunImpl() {
+bool WebstorePrivateIsInIncognitoModeFunction::RunSync() {
   results_ = IsInIncognitoMode::Results::Create(
       GetProfile() != GetProfile()->GetOriginalProfile());
   return true;

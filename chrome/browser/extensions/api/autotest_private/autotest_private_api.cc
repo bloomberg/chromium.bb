@@ -66,21 +66,21 @@ bool IsTestMode(Profile* profile) {
 
 }  // namespace
 
-bool AutotestPrivateLogoutFunction::RunImpl() {
+bool AutotestPrivateLogoutFunction::RunSync() {
   DVLOG(1) << "AutotestPrivateLogoutFunction";
   if (!IsTestMode(GetProfile()))
     chrome::AttemptUserExit();
   return true;
 }
 
-bool AutotestPrivateRestartFunction::RunImpl() {
+bool AutotestPrivateRestartFunction::RunSync() {
   DVLOG(1) << "AutotestPrivateRestartFunction";
   if (!IsTestMode(GetProfile()))
     chrome::AttemptRestart();
   return true;
 }
 
-bool AutotestPrivateShutdownFunction::RunImpl() {
+bool AutotestPrivateShutdownFunction::RunSync() {
   scoped_ptr<api::autotest_private::Shutdown::Params> params(
       api::autotest_private::Shutdown::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -92,7 +92,7 @@ bool AutotestPrivateShutdownFunction::RunImpl() {
   return true;
 }
 
-bool AutotestPrivateLoginStatusFunction::RunImpl() {
+bool AutotestPrivateLoginStatusFunction::RunSync() {
   DVLOG(1) << "AutotestPrivateLoginStatusFunction";
 
   base::DictionaryValue* result(new base::DictionaryValue);
@@ -138,7 +138,7 @@ bool AutotestPrivateLoginStatusFunction::RunImpl() {
   return true;
 }
 
-bool AutotestPrivateLockScreenFunction::RunImpl() {
+bool AutotestPrivateLockScreenFunction::RunSync() {
   DVLOG(1) << "AutotestPrivateLockScreenFunction";
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
@@ -147,7 +147,7 @@ bool AutotestPrivateLockScreenFunction::RunImpl() {
   return true;
 }
 
-bool AutotestPrivateGetExtensionsInfoFunction::RunImpl() {
+bool AutotestPrivateGetExtensionsInfoFunction::RunSync() {
   DVLOG(1) << "AutotestPrivateGetExtensionsInfoFunction";
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
@@ -212,7 +212,7 @@ static int AccessArray(const volatile int arr[], const volatile int *index) {
   return arr[*index];
 }
 
-bool AutotestPrivateSimulateAsanMemoryBugFunction::RunImpl() {
+bool AutotestPrivateSimulateAsanMemoryBugFunction::RunSync() {
   DVLOG(1) << "AutotestPrivateSimulateAsanMemoryBugFunction";
   if (!IsTestMode(GetProfile())) {
     // This array is volatile not to let compiler optimize us out.

@@ -102,7 +102,7 @@ GetLoggedInProfileInfoList(content::WebContents* contents) {
 }
 } // namespace
 
-bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunImpl() {
+bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunSync() {
   chromeos::User* user =
       chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
   if (user) {
@@ -115,7 +115,7 @@ bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunImpl() {
   return true;
 }
 
-bool FileBrowserPrivateGetPreferencesFunction::RunImpl() {
+bool FileBrowserPrivateGetPreferencesFunction::RunSync() {
   api::file_browser_private::Preferences result;
   const PrefService* const service = GetProfile()->GetPrefs();
 
@@ -140,7 +140,7 @@ bool FileBrowserPrivateGetPreferencesFunction::RunImpl() {
   return true;
 }
 
-bool FileBrowserPrivateSetPreferencesFunction::RunImpl() {
+bool FileBrowserPrivateSetPreferencesFunction::RunSync() {
   using extensions::api::file_browser_private::SetPreferences::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -233,7 +233,7 @@ void FileBrowserPrivateZipSelectionFunction::OnZipDone(bool success) {
   Release();
 }
 
-bool FileBrowserPrivateZoomFunction::RunImpl() {
+bool FileBrowserPrivateZoomFunction::RunSync() {
   using extensions::api::file_browser_private::Zoom::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -370,7 +370,7 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
   }
 }
 
-bool FileBrowserPrivateGetProfilesFunction::RunImpl() {
+bool FileBrowserPrivateGetProfilesFunction::RunSync() {
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
       profiles = GetLoggedInProfileInfoList(GetAssociatedWebContents());
 
@@ -392,7 +392,7 @@ bool FileBrowserPrivateGetProfilesFunction::RunImpl() {
   return true;
 }
 
-bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
+bool FileBrowserPrivateVisitDesktopFunction::RunSync() {
   using api::file_browser_private::VisitDesktop::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&

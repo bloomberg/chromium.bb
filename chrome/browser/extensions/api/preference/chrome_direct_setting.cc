@@ -29,7 +29,7 @@ bool DirectSettingFunctionBase::IsCalledFromComponentExtension() {
 
 GetDirectSettingFunction::GetDirectSettingFunction() {}
 
-bool GetDirectSettingFunction::RunImpl() {
+bool GetDirectSettingFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(IsCalledFromComponentExtension());
 
   std::string pref_key;
@@ -53,7 +53,7 @@ GetDirectSettingFunction::~GetDirectSettingFunction() {}
 
 SetDirectSettingFunction::SetDirectSettingFunction() {}
 
-bool SetDirectSettingFunction::RunImpl() {
+bool SetDirectSettingFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(IsCalledFromComponentExtension());
 
   std::string pref_key;
@@ -84,7 +84,7 @@ SetDirectSettingFunction::~SetDirectSettingFunction() {}
 
 ClearDirectSettingFunction::ClearDirectSettingFunction() {}
 
-bool ClearDirectSettingFunction::RunImpl() {
+bool ClearDirectSettingFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(IsCalledFromComponentExtension());
 
   std::string pref_key;

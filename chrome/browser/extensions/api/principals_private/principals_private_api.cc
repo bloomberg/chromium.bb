@@ -13,16 +13,16 @@
 
 namespace extensions {
 
-bool PrincipalsPrivateExtensionFunction::RunImpl() {
+bool PrincipalsPrivateExtensionFunction::RunSync() {
   if (!switches::IsNewProfileManagement()) {
     SetError(
         "Need to enable new-profile-management to use principalsPrivate API.");
     return false;
   }
-  return RunImplSafe();
+  return RunSyncSafe();
 }
 
-bool PrincipalsPrivateSignOutFunction::RunImplSafe() {
+bool PrincipalsPrivateSignOutFunction::RunSyncSafe() {
   Browser* browser = GetCurrentBrowser();
   if (browser) {
     profiles::LockProfile(browser->profile());
@@ -30,7 +30,7 @@ bool PrincipalsPrivateSignOutFunction::RunImplSafe() {
   return true;
 }
 
-bool PrincipalsPrivateShowAvatarBubbleFunction::RunImplSafe() {
+bool PrincipalsPrivateShowAvatarBubbleFunction::RunSyncSafe() {
   Browser* browser = GetCurrentBrowser();
   if (browser) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(

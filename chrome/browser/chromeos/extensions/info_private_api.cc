@@ -185,7 +185,7 @@ ChromeosInfoPrivateSetFunction::ChromeosInfoPrivateSetFunction() {
 ChromeosInfoPrivateSetFunction::~ChromeosInfoPrivateSetFunction() {
 }
 
-bool ChromeosInfoPrivateSetFunction::RunImpl() {
+bool ChromeosInfoPrivateSetFunction::RunSync() {
   std::string param_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &param_name));
   if (param_name == kPropertyTimezone) {

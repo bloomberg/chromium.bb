@@ -266,7 +266,7 @@ void BrowserContextKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
   DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
-bool OmniboxSendSuggestionsFunction::RunImpl() {
+bool OmniboxSendSuggestionsFunction::RunSync() {
   scoped_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -279,7 +279,7 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
   return true;
 }
 
-bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
+bool OmniboxSetDefaultSuggestionFunction::RunSync() {
   scoped_ptr<SetDefaultSuggestion::Params> params(
       SetDefaultSuggestion::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

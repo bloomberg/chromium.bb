@@ -104,7 +104,7 @@ class LogPrivateStartNetInternalsWatchFunction
 
  protected:
   virtual ~LogPrivateStartNetInternalsWatchFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LogPrivateStartNetInternalsWatchFunction);
@@ -119,7 +119,7 @@ class LogPrivateStopNetInternalsWatchFunction
 
  protected:
   virtual ~LogPrivateStopNetInternalsWatchFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LogPrivateStopNetInternalsWatchFunction);

@@ -21,7 +21,7 @@ namespace extensions {
 
 namespace command_line_private = api::command_line_private;
 
-bool CommandLinePrivateHasSwitchFunction::RunImpl() {
+bool CommandLinePrivateHasSwitchFunction::RunSync() {
   scoped_ptr<command_line_private::HasSwitch::Params> params(
       command_line_private::HasSwitch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

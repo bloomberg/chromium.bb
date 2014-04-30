@@ -24,14 +24,14 @@ namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
 typedef std::vector<linked_ptr<
     api::system_display::DisplayUnitInfo> > DisplayInfo;
 
-bool SystemDisplayGetInfoFunction::RunImpl() {
+bool SystemDisplayGetInfoFunction::RunSync() {
   DisplayInfo all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   results_ = api::system_display::GetInfo::Results::Create(all_displays_info);
   return true;
 }
 
-bool SystemDisplaySetDisplayPropertiesFunction::RunImpl() {
+bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
 #if !defined(OS_CHROMEOS)
   SetError("Function available only on ChromeOS.");
   return false;

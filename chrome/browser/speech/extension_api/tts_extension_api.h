@@ -30,35 +30,35 @@ class TtsSpeakFunction : public ChromeAsyncExtensionFunction {
 class TtsStopSpeakingFunction : public ChromeSyncExtensionFunction {
  private:
   virtual ~TtsStopSpeakingFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tts.stop", TTS_STOP)
 };
 
 class TtsPauseFunction : public ChromeSyncExtensionFunction {
  private:
   virtual ~TtsPauseFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tts.pause", TTS_PAUSE)
 };
 
 class TtsResumeFunction : public ChromeSyncExtensionFunction {
  private:
   virtual ~TtsResumeFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tts.resume", TTS_RESUME)
 };
 
 class TtsIsSpeakingFunction : public ChromeSyncExtensionFunction {
  private:
   virtual ~TtsIsSpeakingFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tts.isSpeaking", TTS_ISSPEAKING)
 };
 
 class TtsGetVoicesFunction : public ChromeSyncExtensionFunction {
  private:
   virtual ~TtsGetVoicesFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tts.getVoices", TTS_GETVOICES)
 };
 

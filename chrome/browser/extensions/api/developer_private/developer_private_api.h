@@ -149,7 +149,7 @@ class DeveloperPrivateAutoUpdateFunction : public ChromeSyncExtensionFunction {
   virtual ~DeveloperPrivateAutoUpdateFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class DeveloperPrivateGetItemsInfoFunction
@@ -202,7 +202,7 @@ class DeveloperPrivateInspectFunction : public ChromeSyncExtensionFunction {
   virtual ~DeveloperPrivateInspectFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class DeveloperPrivateAllowFileAccessFunction
@@ -215,7 +215,7 @@ class DeveloperPrivateAllowFileAccessFunction
   virtual ~DeveloperPrivateAllowFileAccessFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class DeveloperPrivateAllowIncognitoFunction
@@ -228,7 +228,7 @@ class DeveloperPrivateAllowIncognitoFunction
   virtual ~DeveloperPrivateAllowIncognitoFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class DeveloperPrivateReloadFunction : public ChromeSyncExtensionFunction {
@@ -240,7 +240,7 @@ class DeveloperPrivateReloadFunction : public ChromeSyncExtensionFunction {
   virtual ~DeveloperPrivateReloadFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class DeveloperPrivateShowPermissionsDialogFunction
@@ -255,7 +255,7 @@ class DeveloperPrivateShowPermissionsDialogFunction
   virtual ~DeveloperPrivateShowPermissionsDialogFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
   // Overridden from ExtensionInstallPrompt::Delegate
   virtual void InstallUIProceed() OVERRIDE;
@@ -281,7 +281,7 @@ class DeveloperPrivateEnableFunction
   void OnRequirementsChecked(std::string extension_id,
                              std::vector<std::string> requirements_errors);
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   scoped_ptr<RequirementsChecker> requirements_checker_;
@@ -370,7 +370,7 @@ class DeveloperPrivateIsProfileManagedFunction
   virtual ~DeveloperPrivateIsProfileManagedFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class DeveloperPrivateLoadDirectoryFunction

@@ -19,8 +19,10 @@ class TestExtensionFunction : public SyncExtensionFunction {
  protected:
   virtual ~TestExtensionFunction();
 
-  // ExtensionFunction:
-  virtual void Run() OVERRIDE;
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+  virtual bool RunSafe() = 0;
 };
 
 class TestNotifyPassFunction : public TestExtensionFunction {
@@ -30,8 +32,8 @@ class TestNotifyPassFunction : public TestExtensionFunction {
  protected:
   virtual ~TestNotifyPassFunction();
 
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // TestExtensionFunction:
+  virtual bool RunSafe() OVERRIDE;
 };
 
 class TestNotifyFailFunction : public TestExtensionFunction {
@@ -41,8 +43,8 @@ class TestNotifyFailFunction : public TestExtensionFunction {
  protected:
   virtual ~TestNotifyFailFunction();
 
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // TestExtensionFunction:
+  virtual bool RunSafe() OVERRIDE;
 };
 
 class TestLogFunction : public TestExtensionFunction {
@@ -52,8 +54,8 @@ class TestLogFunction : public TestExtensionFunction {
  protected:
   virtual ~TestLogFunction();
 
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // TestExtensionFunction:
+  virtual bool RunSafe() OVERRIDE;
 };
 
 class TestResetQuotaFunction : public TestExtensionFunction {
@@ -63,8 +65,8 @@ class TestResetQuotaFunction : public TestExtensionFunction {
  protected:
   virtual ~TestResetQuotaFunction();
 
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // TestExtensionFunction:
+  virtual bool RunSafe() OVERRIDE;
 };
 
 class TestSendMessageFunction : public AsyncExtensionFunction {
@@ -82,7 +84,7 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class TestGetConfigFunction : public SyncExtensionFunction {
+class TestGetConfigFunction : public TestExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("test.getConfig", UNKNOWN)
 
@@ -116,8 +118,8 @@ class TestGetConfigFunction : public SyncExtensionFunction {
 
   virtual ~TestGetConfigFunction();
 
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // TestExtensionFunction:
+  virtual bool RunSafe() OVERRIDE;
 };
 
 class TestWaitForRoundTripFunction : public TestExtensionFunction {
@@ -127,8 +129,8 @@ class TestWaitForRoundTripFunction : public TestExtensionFunction {
  protected:
   virtual ~TestWaitForRoundTripFunction();
 
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // TestExtensionFunction:
+  virtual bool RunSafe() OVERRIDE;
 };
 
 }  // namespace extensions

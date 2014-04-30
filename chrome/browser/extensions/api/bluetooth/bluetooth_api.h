@@ -201,7 +201,7 @@ class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~BluetoothRemoveProfileFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class BluetoothConnectFunction : public BluetoothExtensionFunction {

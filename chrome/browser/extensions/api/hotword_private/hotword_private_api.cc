@@ -65,7 +65,7 @@ void HotwordPrivateEventService::SignalEvent() {
   router->BroadcastEvent(event.Pass());
 }
 
-bool HotwordPrivateSetEnabledFunction::RunImpl() {
+bool HotwordPrivateSetEnabledFunction::RunSync() {
   scoped_ptr<api::hotword_private::SetEnabled::Params> params(
       api::hotword_private::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -75,7 +75,7 @@ bool HotwordPrivateSetEnabledFunction::RunImpl() {
   return true;
 }
 
-bool HotwordPrivateSetAudioLoggingEnabledFunction::RunImpl() {
+bool HotwordPrivateSetAudioLoggingEnabledFunction::RunSync() {
   scoped_ptr<api::hotword_private::SetEnabled::Params> params(
       api::hotword_private::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -85,7 +85,7 @@ bool HotwordPrivateSetAudioLoggingEnabledFunction::RunImpl() {
   return true;
 }
 
-bool HotwordPrivateGetStatusFunction::RunImpl() {
+bool HotwordPrivateGetStatusFunction::RunSync() {
   api::hotword_private::StatusDetails result;
 
   HotwordService* hotword_service =

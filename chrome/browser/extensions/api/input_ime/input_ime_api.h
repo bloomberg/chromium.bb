@@ -87,7 +87,7 @@ class InputImeSetCompositionFunction : public SyncExtensionFunction {
   virtual ~InputImeSetCompositionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeClearCompositionFunction : public SyncExtensionFunction {
@@ -99,7 +99,7 @@ class InputImeClearCompositionFunction : public SyncExtensionFunction {
   virtual ~InputImeClearCompositionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeCommitTextFunction : public SyncExtensionFunction {
@@ -110,7 +110,7 @@ class InputImeCommitTextFunction : public SyncExtensionFunction {
   virtual ~InputImeCommitTextFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeSetCandidateWindowPropertiesFunction
@@ -123,7 +123,7 @@ class InputImeSetCandidateWindowPropertiesFunction
   virtual ~InputImeSetCandidateWindowPropertiesFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeSetCandidatesFunction : public SyncExtensionFunction {
@@ -134,7 +134,7 @@ class InputImeSetCandidatesFunction : public SyncExtensionFunction {
   virtual ~InputImeSetCandidatesFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeSetCursorPositionFunction : public SyncExtensionFunction {
@@ -146,7 +146,7 @@ class InputImeSetCursorPositionFunction : public SyncExtensionFunction {
   virtual ~InputImeSetCursorPositionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeSetMenuItemsFunction : public SyncExtensionFunction {
@@ -157,7 +157,7 @@ class InputImeSetMenuItemsFunction : public SyncExtensionFunction {
   virtual ~InputImeSetMenuItemsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeUpdateMenuItemsFunction : public SyncExtensionFunction {
@@ -169,7 +169,7 @@ class InputImeUpdateMenuItemsFunction : public SyncExtensionFunction {
   virtual ~InputImeUpdateMenuItemsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
@@ -180,7 +180,7 @@ class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
   virtual ~InputImeDeleteSurroundingTextFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {

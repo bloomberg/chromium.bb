@@ -105,7 +105,7 @@ class FontSettingsClearFontFunction : public ChromeSyncExtensionFunction {
   virtual ~FontSettingsClearFontFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // fontSettings.getFont API function.
@@ -117,7 +117,7 @@ class FontSettingsGetFontFunction : public ChromeSyncExtensionFunction {
   virtual ~FontSettingsGetFontFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // fontSettings.setFont API function.
@@ -129,7 +129,7 @@ class FontSettingsSetFontFunction : public ChromeSyncExtensionFunction {
   virtual ~FontSettingsSetFontFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // fontSettings.getFontList API function.
@@ -155,7 +155,7 @@ class ClearFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
   virtual ~ClearFontPrefExtensionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
   // Implementations should return the name of the preference to clear, like
   // "webkit.webprefs.default_font_size".
@@ -168,7 +168,7 @@ class GetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
   virtual ~GetFontPrefExtensionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
   // Implementations should return the name of the preference to get, like
   // "webkit.webprefs.default_font_size".
@@ -185,7 +185,7 @@ class SetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
   virtual ~SetFontPrefExtensionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
   // Implementations should return the name of the preference to set, like
   // "webkit.webprefs.default_font_size".

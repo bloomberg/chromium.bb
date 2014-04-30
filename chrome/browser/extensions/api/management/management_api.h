@@ -42,7 +42,7 @@ class ManagementGetAllFunction : public ManagementFunction {
   virtual ~ManagementGetAllFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ManagementGetFunction : public ManagementFunction {
@@ -53,7 +53,7 @@ class ManagementGetFunction : public ManagementFunction {
   virtual ~ManagementGetFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
@@ -65,7 +65,7 @@ class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
   virtual ~ManagementGetPermissionWarningsByIdFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ManagementGetPermissionWarningsByManifestFunction
@@ -94,7 +94,7 @@ class ManagementLaunchAppFunction : public ManagementFunction {
   virtual ~ManagementLaunchAppFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ManagementSetEnabledFunction : public AsyncManagementFunction,

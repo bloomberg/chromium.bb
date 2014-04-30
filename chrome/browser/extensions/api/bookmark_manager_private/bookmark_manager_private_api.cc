@@ -357,13 +357,13 @@ bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut,
   return true;
 }
 
-bool BookmarkManagerPrivateCopyFunction::RunImpl() {
+bool BookmarkManagerPrivateCopyFunction::RunOnReady() {
   scoped_ptr<Copy::Params> params(Copy::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   return CopyOrCut(false, params->id_list);
 }
 
-bool BookmarkManagerPrivateCutFunction::RunImpl() {
+bool BookmarkManagerPrivateCutFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -372,7 +372,7 @@ bool BookmarkManagerPrivateCutFunction::RunImpl() {
   return CopyOrCut(true, params->id_list);
 }
 
-bool BookmarkManagerPrivatePasteFunction::RunImpl() {
+bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -405,7 +405,7 @@ bool BookmarkManagerPrivatePasteFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateCanPasteFunction::RunImpl() {
+bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -423,7 +423,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateSortChildrenFunction::RunImpl() {
+bool BookmarkManagerPrivateSortChildrenFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -519,7 +519,7 @@ bool BookmarkManagerPrivateGetStringsFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateStartDragFunction::RunImpl() {
+bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -553,7 +553,7 @@ bool BookmarkManagerPrivateStartDragFunction::RunImpl() {
   }
 }
 
-bool BookmarkManagerPrivateDropFunction::RunImpl() {
+bool BookmarkManagerPrivateDropFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -602,7 +602,7 @@ bool BookmarkManagerPrivateDropFunction::RunImpl() {
   }
 }
 
-bool BookmarkManagerPrivateGetSubtreeFunction::RunImpl() {
+bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
   scoped_ptr<GetSubtree::Params> params(GetSubtree::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -626,19 +626,19 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateCanEditFunction::RunImpl() {
+bool BookmarkManagerPrivateCanEditFunction::RunOnReady() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   SetResult(new base::FundamentalValue(
       prefs->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;
 }
 
-bool BookmarkManagerPrivateRecordLaunchFunction::RunImpl() {
+bool BookmarkManagerPrivateRecordLaunchFunction::RunOnReady() {
   RecordBookmarkLaunch(NULL, BOOKMARK_LAUNCH_LOCATION_MANAGER);
   return true;
 }
 
-bool BookmarkManagerPrivateCreateWithMetaInfoFunction::RunImpl() {
+bool BookmarkManagerPrivateCreateWithMetaInfoFunction::RunOnReady() {
   scoped_ptr<CreateWithMetaInfo::Params> params(
       CreateWithMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -656,7 +656,7 @@ bool BookmarkManagerPrivateCreateWithMetaInfoFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateGetMetaInfoFunction::RunImpl() {
+bool BookmarkManagerPrivateGetMetaInfoFunction::RunOnReady() {
   scoped_ptr<GetMetaInfo::Params> params(GetMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -685,7 +685,7 @@ bool BookmarkManagerPrivateGetMetaInfoFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateSetMetaInfoFunction::RunImpl() {
+bool BookmarkManagerPrivateSetMetaInfoFunction::RunOnReady() {
   scoped_ptr<SetMetaInfo::Params> params(SetMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -698,7 +698,7 @@ bool BookmarkManagerPrivateSetMetaInfoFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunImpl() {
+bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunOnReady() {
   scoped_ptr<UpdateMetaInfo::Params> params(
       UpdateMetaInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -719,13 +719,13 @@ bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunImpl() {
+bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunOnReady() {
   bool can_open_new_windows = true;
   SetResult(new base::FundamentalValue(can_open_new_windows));
   return true;
 }
 
-bool BookmarkManagerPrivateRemoveTreesFunction::RunImpl() {
+bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
   scoped_ptr<RemoveTrees::Params> params(RemoveTrees::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -744,7 +744,7 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateUndoFunction::RunImpl() {
+bool BookmarkManagerPrivateUndoFunction::RunOnReady() {
 #if !defined(OS_ANDROID)
   BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager()->
       Undo();
@@ -753,7 +753,7 @@ bool BookmarkManagerPrivateUndoFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateRedoFunction::RunImpl() {
+bool BookmarkManagerPrivateRedoFunction::RunOnReady() {
 #if !defined(OS_ANDROID)
   BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager()->
       Redo();
@@ -762,7 +762,7 @@ bool BookmarkManagerPrivateRedoFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateGetUndoInfoFunction::RunImpl() {
+bool BookmarkManagerPrivateGetUndoInfoFunction::RunOnReady() {
 #if !defined(OS_ANDROID)
   UndoManager* undo_manager =
       BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager();
@@ -777,7 +777,7 @@ bool BookmarkManagerPrivateGetUndoInfoFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerPrivateGetRedoInfoFunction::RunImpl() {
+bool BookmarkManagerPrivateGetRedoInfoFunction::RunOnReady() {
 #if !defined(OS_ANDROID)
   UndoManager* undo_manager =
       BookmarkUndoServiceFactory::GetForProfile(GetProfile())->undo_manager();

@@ -56,7 +56,7 @@ class BrowsingDataSettingsFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("browsingData.settings", BROWSINGDATA_SETTINGS)
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~BrowsingDataSettingsFunction() {}

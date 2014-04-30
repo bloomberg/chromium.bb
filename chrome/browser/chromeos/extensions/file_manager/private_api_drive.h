@@ -185,7 +185,7 @@ class FileBrowserPrivateGetDriveConnectionStateFunction
  protected:
   virtual ~FileBrowserPrivateGetDriveConnectionStateFunction() {}
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.requestAccessToken method.

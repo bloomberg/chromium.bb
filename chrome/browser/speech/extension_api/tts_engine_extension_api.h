@@ -60,7 +60,7 @@ void ExtensionTtsEngineResume(Utterance* utterance);
 class ExtensionTtsEngineSendTtsEventFunction : public SyncExtensionFunction {
  private:
   virtual ~ExtensionTtsEngineSendTtsEventFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("ttsEngine.sendTtsEvent", TTSENGINE_SENDTTSEVENT)
 };
 

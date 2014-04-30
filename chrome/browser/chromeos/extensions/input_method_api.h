@@ -25,7 +25,7 @@ class GetInputMethodFunction : public SyncExtensionFunction {
  protected:
   virtual ~GetInputMethodFunction();
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.get", INPUTMETHODPRIVATE_GET)
@@ -40,7 +40,7 @@ class StartImeFunction : public SyncExtensionFunction {
  protected:
   virtual ~StartImeFunction();
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.startIme",

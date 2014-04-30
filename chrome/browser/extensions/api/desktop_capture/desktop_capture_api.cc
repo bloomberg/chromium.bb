@@ -261,7 +261,7 @@ DesktopCaptureCancelChooseDesktopMediaFunction::
 DesktopCaptureCancelChooseDesktopMediaFunction::
     ~DesktopCaptureCancelChooseDesktopMediaFunction() {}
 
-bool DesktopCaptureCancelChooseDesktopMediaFunction::RunImpl() {
+bool DesktopCaptureCancelChooseDesktopMediaFunction::RunSync() {
   int request_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
 

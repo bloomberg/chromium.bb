@@ -24,7 +24,7 @@ class ContentSettingsContentSettingClearFunction
   virtual ~ContentSettingsContentSettingClearFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ContentSettingsContentSettingGetFunction
@@ -36,7 +36,7 @@ class ContentSettingsContentSettingGetFunction
   virtual ~ContentSettingsContentSettingGetFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ContentSettingsContentSettingSetFunction
@@ -48,7 +48,7 @@ class ContentSettingsContentSettingSetFunction
   virtual ~ContentSettingsContentSettingSetFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ContentSettingsContentSettingGetResourceIdentifiersFunction

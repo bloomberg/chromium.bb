@@ -62,7 +62,7 @@ namespace extensions {
 
 namespace system_private = api::system_private;
 
-bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunImpl() {
+bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunSync() {
   PrefService* prefs = GetProfile()->GetPrefs();
   int value = prefs->GetInteger(prefs::kIncognitoModeAvailability);
   EXTENSION_FUNCTION_VALIDATE(
@@ -72,7 +72,7 @@ bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunImpl() {
   return true;
 }
 
-bool SystemPrivateGetUpdateStatusFunction::RunImpl() {
+bool SystemPrivateGetUpdateStatusFunction::RunSync() {
   std::string state;
   double download_progress = 0;
 #if defined(OS_CHROMEOS)
@@ -133,7 +133,7 @@ bool SystemPrivateGetUpdateStatusFunction::RunImpl() {
   return true;
 }
 
-bool SystemPrivateGetApiKeyFunction::RunImpl() {
+bool SystemPrivateGetApiKeyFunction::RunSync() {
   SetResult(new base::StringValue(google_apis::GetAPIKey()));
   return true;
 }

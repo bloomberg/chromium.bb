@@ -19,8 +19,7 @@
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 
-
-bool InfobarsShowFunction::RunImpl() {
+bool InfobarsShowFunction::RunSync() {
   base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 

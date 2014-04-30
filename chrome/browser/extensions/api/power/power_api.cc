@@ -9,7 +9,7 @@
 
 namespace extensions {
 
-bool PowerRequestKeepAwakeFunction::RunImpl() {
+bool PowerRequestKeepAwakeFunction::RunSync() {
   scoped_ptr<api::power::RequestKeepAwake::Params> params(
       api::power::RequestKeepAwake::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -18,7 +18,7 @@ bool PowerRequestKeepAwakeFunction::RunImpl() {
   return true;
 }
 
-bool PowerReleaseKeepAwakeFunction::RunImpl() {
+bool PowerReleaseKeepAwakeFunction::RunSync() {
   PowerApiManager::GetInstance()->RemoveRequest(extension_id());
   return true;
 }

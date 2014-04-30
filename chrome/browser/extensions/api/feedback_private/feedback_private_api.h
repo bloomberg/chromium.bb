@@ -61,7 +61,7 @@ class FeedbackPrivateGetStringsFunction : public ChromeSyncExtensionFunction {
   virtual ~FeedbackPrivateGetStringsFunction() {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   static base::Closure* test_callback_;
@@ -74,7 +74,7 @@ class FeedbackPrivateGetUserEmailFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FeedbackPrivateGetUserEmailFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class FeedbackPrivateGetSystemInformationFunction

@@ -38,18 +38,17 @@ namespace WaitForRoundTrip = core_api::test::WaitForRoundTrip;
 
 TestExtensionFunction::~TestExtensionFunction() {}
 
-void TestExtensionFunction::Run() {
+bool TestExtensionFunction::RunSync() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     error_ = kNotTestProcessError;
-    SendResponse(false);
-    return;
+    return false;
   }
-  SendResponse(RunImpl());
+  return RunSafe();
 }
 
 TestNotifyPassFunction::~TestNotifyPassFunction() {}
 
-bool TestNotifyPassFunction::RunImpl() {
+bool TestNotifyPassFunction::RunSafe() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
       content::Source<content::BrowserContext>(dispatcher()->browser_context()),
@@ -59,7 +58,7 @@ bool TestNotifyPassFunction::RunImpl() {
 
 TestNotifyFailFunction::~TestNotifyFailFunction() {}
 
-bool TestNotifyFailFunction::RunImpl() {
+bool TestNotifyFailFunction::RunSafe() {
   scoped_ptr<NotifyFail::Params> params(NotifyFail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
@@ -71,7 +70,7 @@ bool TestNotifyFailFunction::RunImpl() {
 
 TestLogFunction::~TestLogFunction() {}
 
-bool TestLogFunction::RunImpl() {
+bool TestLogFunction::RunSafe() {
   scoped_ptr<Log::Params> params(Log::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   VLOG(1) << params->message;
@@ -80,7 +79,7 @@ bool TestLogFunction::RunImpl() {
 
 TestResetQuotaFunction::~TestResetQuotaFunction() {}
 
-bool TestResetQuotaFunction::RunImpl() {
+bool TestResetQuotaFunction::RunSafe() {
   QuotaService* quota =
       ExtensionSystem::Get(browser_context())->quota_service();
   quota->Purge();
@@ -123,7 +122,7 @@ TestGetConfigFunction::TestConfigState::GetInstance() {
 
 TestGetConfigFunction::~TestGetConfigFunction() {}
 
-bool TestGetConfigFunction::RunImpl() {
+bool TestGetConfigFunction::RunSafe() {
   TestConfigState* test_config_state = TestConfigState::GetInstance();
 
   if (!test_config_state->config_state()) {
@@ -137,7 +136,7 @@ bool TestGetConfigFunction::RunImpl() {
 
 TestWaitForRoundTripFunction::~TestWaitForRoundTripFunction() {}
 
-bool TestWaitForRoundTripFunction::RunImpl() {
+bool TestWaitForRoundTripFunction::RunSafe() {
   scoped_ptr<WaitForRoundTrip::Params> params(
       WaitForRoundTrip::Params::Create(*args_));
   SetResult(new base::StringValue(params->message));

@@ -216,7 +216,7 @@ LogPrivateStartNetInternalsWatchFunction::
 ~LogPrivateStartNetInternalsWatchFunction() {
 }
 
-bool LogPrivateStartNetInternalsWatchFunction::RunImpl() {
+bool LogPrivateStartNetInternalsWatchFunction::RunSync() {
   LogPrivateAPI::Get(GetProfile())->StartNetInternalsWatch(extension_id());
   return true;
 }
@@ -229,7 +229,7 @@ LogPrivateStopNetInternalsWatchFunction::
 ~LogPrivateStopNetInternalsWatchFunction() {
 }
 
-bool LogPrivateStopNetInternalsWatchFunction::RunImpl() {
+bool LogPrivateStopNetInternalsWatchFunction::RunSync() {
   LogPrivateAPI::Get(GetProfile())->StopNetInternalsWatch(extension_id());
   return true;
 }

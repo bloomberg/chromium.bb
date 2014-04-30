@@ -14,7 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
-bool FirstRunPrivateGetLocalizedStringsFunction::RunImpl() {
+bool FirstRunPrivateGetLocalizedStringsFunction::RunSync() {
   UMA_HISTOGRAM_COUNTS("CrosFirstRun.DialogShown", 1);
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
   chromeos::User* user =
@@ -50,7 +50,7 @@ bool FirstRunPrivateGetLocalizedStringsFunction::RunImpl() {
   return true;
 }
 
-bool FirstRunPrivateLaunchTutorialFunction::RunImpl() {
+bool FirstRunPrivateLaunchTutorialFunction::RunSync() {
   chromeos::first_run::LaunchTutorial();
   return true;
 }

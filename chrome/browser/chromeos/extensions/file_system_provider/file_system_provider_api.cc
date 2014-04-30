@@ -90,7 +90,7 @@ base::File::Error ProviderErrorToFileError(
 
 }  // namespace
 
-bool FileSystemProviderMountFunction::RunImpl() {
+bool FileSystemProviderMountFunction::RunSync() {
   using api::file_system_provider::Mount::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -130,7 +130,7 @@ bool FileSystemProviderMountFunction::RunImpl() {
   return true;
 }
 
-bool FileSystemProviderUnmountFunction::RunImpl() {
+bool FileSystemProviderUnmountFunction::RunSync() {
   using api::file_system_provider::Unmount::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -151,7 +151,7 @@ bool FileSystemProviderUnmountFunction::RunImpl() {
   return true;
 }
 
-bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunImpl() {
+bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunSync() {
   using api::file_system_provider_internal::UnmountRequestedSuccess::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -190,7 +190,7 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunImpl() {
   return true;
 }
 
-bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunImpl() {
+bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunSync() {
   using api::file_system_provider_internal::UnmountRequestedError::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

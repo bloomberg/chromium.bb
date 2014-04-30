@@ -79,7 +79,7 @@ class DesktopCaptureCancelChooseDesktopMediaFunction
   virtual ~DesktopCaptureCancelChooseDesktopMediaFunction();
 
   // ExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class DesktopCaptureRequestsRegistry {

@@ -483,7 +483,7 @@ void BluetoothAddProfileFunction::OnProfileRegistered(
 
 BluetoothRemoveProfileFunction::~BluetoothRemoveProfileFunction() {}
 
-bool BluetoothRemoveProfileFunction::RunImpl() {
+bool BluetoothRemoveProfileFunction::RunSync() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<RemoveProfile::Params> params(
       RemoveProfile::Params::Create(*args_));

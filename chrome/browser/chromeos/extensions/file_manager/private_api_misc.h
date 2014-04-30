@@ -30,7 +30,7 @@ class FileBrowserPrivateLogoutUserForReauthenticationFunction
   virtual ~FileBrowserPrivateLogoutUserForReauthenticationFunction() {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.getPreferences method.
@@ -44,7 +44,7 @@ class FileBrowserPrivateGetPreferencesFunction
  protected:
   virtual ~FileBrowserPrivateGetPreferencesFunction() {}
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.setPreferences method.
@@ -58,7 +58,7 @@ class FileBrowserPrivateSetPreferencesFunction
  protected:
   virtual ~FileBrowserPrivateSetPreferencesFunction() {}
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.zipSelection method.
@@ -98,7 +98,7 @@ class FileBrowserPrivateZoomFunction : public ChromeSyncExtensionFunction {
   virtual ~FileBrowserPrivateZoomFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Implements the chrome.fileBrowserPrivate.installWebstoreItem method.
@@ -149,7 +149,7 @@ class FileBrowserPrivateGetProfilesFunction
   virtual ~FileBrowserPrivateGetProfilesFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class FileBrowserPrivateVisitDesktopFunction
@@ -162,7 +162,7 @@ class FileBrowserPrivateVisitDesktopFunction
   virtual ~FileBrowserPrivateVisitDesktopFunction() {}
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

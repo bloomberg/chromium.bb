@@ -126,7 +126,7 @@ class SyncFileSystemSetConflictResolutionPolicyFunction
 
  protected:
   virtual ~SyncFileSystemSetConflictResolutionPolicyFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class SyncFileSystemGetConflictResolutionPolicyFunction
@@ -137,7 +137,7 @@ class SyncFileSystemGetConflictResolutionPolicyFunction
 
  protected:
   virtual ~SyncFileSystemGetConflictResolutionPolicyFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class SyncFileSystemGetServiceStatusFunction
@@ -148,7 +148,7 @@ class SyncFileSystemGetServiceStatusFunction
 
  protected:
   virtual ~SyncFileSystemGetServiceStatusFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

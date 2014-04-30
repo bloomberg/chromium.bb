@@ -109,6 +109,9 @@ ChromeAsyncExtensionFunction::~ChromeAsyncExtensionFunction() {}
 
 ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {}
 
-void ChromeSyncExtensionFunction::Run() { SendResponse(RunImpl()); }
+bool ChromeSyncExtensionFunction::RunImpl() {
+  SendResponse(RunSync());
+  return true;
+}
 
 ChromeSyncExtensionFunction::~ChromeSyncExtensionFunction() {}

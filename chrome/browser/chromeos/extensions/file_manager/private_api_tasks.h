@@ -63,7 +63,7 @@ class FileBrowserPrivateSetDefaultTaskFunction
   virtual ~FileBrowserPrivateSetDefaultTaskFunction() {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

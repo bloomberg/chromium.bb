@@ -38,7 +38,7 @@ class GetDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   virtual ~GetDirectSettingFunction();
@@ -54,7 +54,7 @@ class SetDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   virtual ~SetDirectSettingFunction();
@@ -70,7 +70,7 @@ class ClearDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   virtual ~ClearDirectSettingFunction();

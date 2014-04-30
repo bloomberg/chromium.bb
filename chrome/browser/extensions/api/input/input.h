@@ -24,7 +24,7 @@ class VirtualKeyboardPrivateInsertTextFunction : public SyncExtensionFunction {
   virtual ~VirtualKeyboardPrivateInsertTextFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
@@ -36,7 +36,7 @@ class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
   virtual ~VirtualKeyboardPrivateMoveCursorFunction() {}
 
   // ExtensionFunction.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class VirtualKeyboardPrivateSendKeyEventFunction
@@ -50,7 +50,7 @@ class VirtualKeyboardPrivateSendKeyEventFunction
   virtual ~VirtualKeyboardPrivateSendKeyEventFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class VirtualKeyboardPrivateHideKeyboardFunction
@@ -64,7 +64,7 @@ class VirtualKeyboardPrivateHideKeyboardFunction
   virtual ~VirtualKeyboardPrivateHideKeyboardFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class VirtualKeyboardPrivateLockKeyboardFunction
@@ -78,7 +78,7 @@ class VirtualKeyboardPrivateLockKeyboardFunction
   virtual ~VirtualKeyboardPrivateLockKeyboardFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class VirtualKeyboardPrivateKeyboardLoadedFunction
@@ -92,7 +92,7 @@ class VirtualKeyboardPrivateKeyboardLoadedFunction
   virtual ~VirtualKeyboardPrivateKeyboardLoadedFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class VirtualKeyboardPrivateGetKeyboardConfigFunction
@@ -106,7 +106,7 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
   virtual ~VirtualKeyboardPrivateGetKeyboardConfigFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class InputAPI : public BrowserContextKeyedAPI {

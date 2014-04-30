@@ -375,8 +375,9 @@ SyncExtensionFunction::SyncExtensionFunction() {
 SyncExtensionFunction::~SyncExtensionFunction() {
 }
 
-void SyncExtensionFunction::Run() {
-  SendResponse(RunImpl());
+bool SyncExtensionFunction::RunImpl() {
+  SendResponse(RunSync());
+  return true;
 }
 
 SyncIOThreadExtensionFunction::SyncIOThreadExtensionFunction() {
@@ -385,6 +386,7 @@ SyncIOThreadExtensionFunction::SyncIOThreadExtensionFunction() {
 SyncIOThreadExtensionFunction::~SyncIOThreadExtensionFunction() {
 }
 
-void SyncIOThreadExtensionFunction::Run() {
-  SendResponse(RunImpl());
+bool SyncIOThreadExtensionFunction::RunImpl() {
+  SendResponse(RunSync());
+  return true;
 }

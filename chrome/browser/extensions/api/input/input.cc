@@ -33,7 +33,7 @@ const char kNotYetImplementedError[] =
 
 namespace extensions {
 
-bool VirtualKeyboardPrivateInsertTextFunction::RunImpl() {
+bool VirtualKeyboardPrivateInsertTextFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
   base::string16 text;
@@ -46,7 +46,7 @@ bool VirtualKeyboardPrivateInsertTextFunction::RunImpl() {
 #endif
 }
 
-bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
+bool VirtualKeyboardPrivateMoveCursorFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -69,7 +69,7 @@ bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
 #endif
 }
 
-bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
+bool VirtualKeyboardPrivateSendKeyEventFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
   base::Value* options_value = NULL;
@@ -101,7 +101,7 @@ bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
 #endif
 }
 
-bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
+bool VirtualKeyboardPrivateHideKeyboardFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
   UMA_HISTOGRAM_ENUMERATION(
@@ -121,7 +121,7 @@ bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
 #endif
 }
 
-bool VirtualKeyboardPrivateLockKeyboardFunction::RunImpl() {
+bool VirtualKeyboardPrivateLockKeyboardFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
   bool lock;
@@ -134,7 +134,7 @@ bool VirtualKeyboardPrivateLockKeyboardFunction::RunImpl() {
 #endif
 }
 
-bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
+bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
   keyboard::MarkKeyboardLoadFinished();
@@ -146,7 +146,7 @@ bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
 #endif
 }
 
-bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunImpl() {
+bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
   base::DictionaryValue* results = new base::DictionaryValue();

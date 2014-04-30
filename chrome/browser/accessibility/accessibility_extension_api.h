@@ -101,7 +101,7 @@ class ExtensionAccessibilityEventRouter {
 class AccessibilitySetAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilitySetAccessibilityEnabledFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "experimental.accessibility.setAccessibilityEnabled",
       EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED)
@@ -111,7 +111,7 @@ class AccessibilitySetAccessibilityEnabledFunction
 class AccessibilitySetNativeAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilitySetNativeAccessibilityEnabledFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "experimental.accessibility.setNativeAccessibilityEnabled",
       EXPERIMENTAL_ACCESSIBILITY_SETNATIVEACCESSIBILITYENABLED)
@@ -121,7 +121,7 @@ class AccessibilitySetNativeAccessibilityEnabledFunction
 class AccessibilityGetFocusedControlFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityGetFocusedControlFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "experimental.accessibility.getFocusedControl",
       EXPERIMENTAL_ACCESSIBILITY_GETFOCUSEDCONTROL)
@@ -131,7 +131,7 @@ class AccessibilityGetFocusedControlFunction
 class AccessibilityGetAlertsForTabFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityGetAlertsForTabFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "experimental.accessibility.getAlertsForTab",
       EXPERIMENTAL_ACCESSIBILITY_GETALERTSFORTAB)

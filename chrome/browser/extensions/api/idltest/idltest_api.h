@@ -13,7 +13,7 @@ class IdltestSendArrayBufferFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~IdltestSendArrayBufferFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class IdltestSendArrayBufferViewFunction : public SyncExtensionFunction {
@@ -23,7 +23,7 @@ class IdltestSendArrayBufferViewFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~IdltestSendArrayBufferViewFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class IdltestGetArrayBufferFunction : public SyncExtensionFunction {
@@ -32,7 +32,7 @@ class IdltestGetArrayBufferFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~IdltestGetArrayBufferFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IDLTEST_IDLTEST_API_H_

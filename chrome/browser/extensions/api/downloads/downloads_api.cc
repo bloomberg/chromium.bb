@@ -1073,7 +1073,7 @@ DownloadsSearchFunction::DownloadsSearchFunction() {}
 
 DownloadsSearchFunction::~DownloadsSearchFunction() {}
 
-bool DownloadsSearchFunction::RunImpl() {
+bool DownloadsSearchFunction::RunSync() {
   scoped_ptr<downloads::Search::Params> params(
       downloads::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1113,7 +1113,7 @@ DownloadsPauseFunction::DownloadsPauseFunction() {}
 
 DownloadsPauseFunction::~DownloadsPauseFunction() {}
 
-bool DownloadsPauseFunction::RunImpl() {
+bool DownloadsPauseFunction::RunSync() {
   scoped_ptr<downloads::Pause::Params> params(
       downloads::Pause::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1134,7 +1134,7 @@ DownloadsResumeFunction::DownloadsResumeFunction() {}
 
 DownloadsResumeFunction::~DownloadsResumeFunction() {}
 
-bool DownloadsResumeFunction::RunImpl() {
+bool DownloadsResumeFunction::RunSync() {
   scoped_ptr<downloads::Resume::Params> params(
       downloads::Resume::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1155,7 +1155,7 @@ DownloadsCancelFunction::DownloadsCancelFunction() {}
 
 DownloadsCancelFunction::~DownloadsCancelFunction() {}
 
-bool DownloadsCancelFunction::RunImpl() {
+bool DownloadsCancelFunction::RunSync() {
   scoped_ptr<downloads::Resume::Params> params(
       downloads::Resume::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1174,7 +1174,7 @@ DownloadsEraseFunction::DownloadsEraseFunction() {}
 
 DownloadsEraseFunction::~DownloadsEraseFunction() {}
 
-bool DownloadsEraseFunction::RunImpl() {
+bool DownloadsEraseFunction::RunSync() {
   scoped_ptr<downloads::Erase::Params> params(
       downloads::Erase::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1349,7 +1349,7 @@ DownloadsOpenFunction::DownloadsOpenFunction() {}
 
 DownloadsOpenFunction::~DownloadsOpenFunction() {}
 
-bool DownloadsOpenFunction::RunImpl() {
+bool DownloadsOpenFunction::RunSync() {
   scoped_ptr<downloads::Open::Params> params(
       downloads::Open::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1400,7 +1400,7 @@ DownloadsSetShelfEnabledFunction::DownloadsSetShelfEnabledFunction() {}
 
 DownloadsSetShelfEnabledFunction::~DownloadsSetShelfEnabledFunction() {}
 
-bool DownloadsSetShelfEnabledFunction::RunImpl() {
+bool DownloadsSetShelfEnabledFunction::RunSync() {
   scoped_ptr<downloads::SetShelfEnabled::Params> params(
       downloads::SetShelfEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

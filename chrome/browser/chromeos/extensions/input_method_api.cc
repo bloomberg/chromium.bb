@@ -28,7 +28,7 @@ GetInputMethodFunction::GetInputMethodFunction() {
 GetInputMethodFunction::~GetInputMethodFunction() {
 }
 
-bool GetInputMethodFunction::RunImpl() {
+bool GetInputMethodFunction::RunSync() {
 #if !defined(OS_CHROMEOS)
   NOTREACHED();
   return false;
@@ -48,7 +48,7 @@ StartImeFunction::StartImeFunction() {
 StartImeFunction::~StartImeFunction() {
 }
 
-bool StartImeFunction::RunImpl() {
+bool StartImeFunction::RunSync() {
 #if !defined(OS_CHROMEOS)
   NOTREACHED();
   return false;

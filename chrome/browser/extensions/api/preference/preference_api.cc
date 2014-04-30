@@ -521,7 +521,7 @@ bool PreferenceFunction::ValidateBrowserPref(
 
 GetPreferenceFunction::~GetPreferenceFunction() { }
 
-bool GetPreferenceFunction::RunImpl() {
+bool GetPreferenceFunction::RunSync() {
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
   base::DictionaryValue* details = NULL;
@@ -583,7 +583,7 @@ bool GetPreferenceFunction::RunImpl() {
 
 SetPreferenceFunction::~SetPreferenceFunction() { }
 
-bool SetPreferenceFunction::RunImpl() {
+bool SetPreferenceFunction::RunSync() {
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
   base::DictionaryValue* details = NULL;
@@ -669,7 +669,7 @@ bool SetPreferenceFunction::RunImpl() {
 
 ClearPreferenceFunction::~ClearPreferenceFunction() { }
 
-bool ClearPreferenceFunction::RunImpl() {
+bool ClearPreferenceFunction::RunSync() {
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
   base::DictionaryValue* details = NULL;

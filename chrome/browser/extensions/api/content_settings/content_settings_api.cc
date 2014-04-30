@@ -60,7 +60,7 @@ namespace extensions {
 namespace helpers = content_settings_helpers;
 namespace keys = content_settings_api_constants;
 
-bool ContentSettingsContentSettingClearFunction::RunImpl() {
+bool ContentSettingsContentSettingClearFunction::RunSync() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -94,7 +94,7 @@ bool ContentSettingsContentSettingClearFunction::RunImpl() {
   return true;
 }
 
-bool ContentSettingsContentSettingGetFunction::RunImpl() {
+bool ContentSettingsContentSettingGetFunction::RunSync() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -168,7 +168,7 @@ bool ContentSettingsContentSettingGetFunction::RunImpl() {
   return true;
 }
 
-bool ContentSettingsContentSettingSetFunction::RunImpl() {
+bool ContentSettingsContentSettingSetFunction::RunSync() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 

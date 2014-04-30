@@ -24,7 +24,7 @@ class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
   virtual ~WallpaperPrivateGetStringsFunction() {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WallpaperPrivateSetWallpaperIfExistsFunction

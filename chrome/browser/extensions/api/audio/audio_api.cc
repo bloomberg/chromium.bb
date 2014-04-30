@@ -65,7 +65,7 @@ void AudioGetInfoFunction::OnGetInfoCompleted(const OutputInfo& output_info,
   SendResponse(success);
 }
 
-bool AudioSetActiveDevicesFunction::RunImpl() {
+bool AudioSetActiveDevicesFunction::RunSync() {
   scoped_ptr<api::audio::SetActiveDevices::Params> params(
       api::audio::SetActiveDevices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -78,7 +78,7 @@ bool AudioSetActiveDevicesFunction::RunImpl() {
   return true;
 }
 
-bool AudioSetPropertiesFunction::RunImpl() {
+bool AudioSetPropertiesFunction::RunSync() {
   scoped_ptr<api::audio::SetProperties::Params> params(
       api::audio::SetProperties::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

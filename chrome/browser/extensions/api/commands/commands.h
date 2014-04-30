@@ -9,7 +9,7 @@
 
 class GetAllCommandsFunction : public ChromeSyncExtensionFunction {
   virtual ~GetAllCommandsFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("commands.getAll", COMMANDS_GETALL)
 };
 

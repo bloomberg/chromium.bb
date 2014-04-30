@@ -25,7 +25,7 @@ bool IsNegative(double* value) {
   return value && *value < 0.0;
 }
 
-bool LocationWatchLocationFunction::RunImpl() {
+bool LocationWatchLocationFunction::RunSync() {
   scoped_ptr<WatchLocation::Params> params(
       WatchLocation::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -58,7 +58,7 @@ bool LocationWatchLocationFunction::RunImpl() {
   return true;
 }
 
-bool LocationClearWatchFunction::RunImpl() {
+bool LocationClearWatchFunction::RunSync() {
   scoped_ptr<ClearWatch::Params> params(
       ClearWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

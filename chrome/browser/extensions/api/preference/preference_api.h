@@ -189,7 +189,7 @@ class GetPreferenceFunction : public PreferenceFunction {
   virtual ~GetPreferenceFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class SetPreferenceFunction : public PreferenceFunction {
@@ -200,7 +200,7 @@ class SetPreferenceFunction : public PreferenceFunction {
   virtual ~SetPreferenceFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ClearPreferenceFunction : public PreferenceFunction {
@@ -212,7 +212,7 @@ class ClearPreferenceFunction : public PreferenceFunction {
   virtual ~ClearPreferenceFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

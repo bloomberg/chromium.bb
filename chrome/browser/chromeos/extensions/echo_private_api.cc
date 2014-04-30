@@ -90,7 +90,7 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
   SendResponse(true);
 }
 
-bool EchoPrivateGetRegistrationCodeFunction::RunImpl() {
+bool EchoPrivateGetRegistrationCodeFunction::RunSync() {
   scoped_ptr<echo_api::GetRegistrationCode::Params> params =
       echo_api::GetRegistrationCode::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -102,7 +102,7 @@ EchoPrivateSetOfferInfoFunction::EchoPrivateSetOfferInfoFunction() {}
 
 EchoPrivateSetOfferInfoFunction::~EchoPrivateSetOfferInfoFunction() {}
 
-bool EchoPrivateSetOfferInfoFunction::RunImpl() {
+bool EchoPrivateSetOfferInfoFunction::RunSync() {
   scoped_ptr<echo_api::SetOfferInfo::Params> params =
       echo_api::SetOfferInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -121,7 +121,7 @@ EchoPrivateGetOfferInfoFunction::EchoPrivateGetOfferInfoFunction() {}
 
 EchoPrivateGetOfferInfoFunction::~EchoPrivateGetOfferInfoFunction() {}
 
-bool EchoPrivateGetOfferInfoFunction::RunImpl() {
+bool EchoPrivateGetOfferInfoFunction::RunSync() {
   scoped_ptr<echo_api::GetOfferInfo::Params> params =
       echo_api::GetOfferInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);

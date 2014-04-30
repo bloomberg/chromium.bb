@@ -22,7 +22,7 @@ class TabCaptureCaptureFunction : public ChromeSyncExtensionFunction {
   virtual ~TabCaptureCaptureFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class TabCaptureGetCapturedTabsFunction : public ChromeSyncExtensionFunction {
@@ -34,7 +34,7 @@ class TabCaptureGetCapturedTabsFunction : public ChromeSyncExtensionFunction {
   virtual ~TabCaptureGetCapturedTabsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

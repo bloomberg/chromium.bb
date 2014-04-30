@@ -47,7 +47,7 @@ bool ReadingListPrivateAddEntryFunction::RunImpl() {
   return true;
 }
 
-bool ReadingListPrivateRemoveEntryFunction::RunImpl() {
+bool ReadingListPrivateRemoveEntryFunction::RunSync() {
   scoped_ptr<RemoveEntry::Params> params(RemoveEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   DomDistillerService* service =
@@ -63,7 +63,7 @@ bool ReadingListPrivateRemoveEntryFunction::RunImpl() {
   return true;
 }
 
-bool ReadingListPrivateGetEntriesFunction::RunImpl() {
+bool ReadingListPrivateGetEntriesFunction::RunSync() {
   DomDistillerService* service =
       DomDistillerServiceFactory::GetForBrowserContext(GetProfile());
   const std::vector<ArticleEntry>& entries = service->GetEntries();

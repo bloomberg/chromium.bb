@@ -203,7 +203,7 @@ void ExtensionTtsEngineResume(Utterance* utterance) {
   WarnIfMissingPauseOrResumeListener(profile, event_router, id);
 }
 
-bool ExtensionTtsEngineSendTtsEventFunction::RunImpl() {
+bool ExtensionTtsEngineSendTtsEventFunction::RunSync() {
   int utterance_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &utterance_id));
 

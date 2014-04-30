@@ -40,7 +40,7 @@ class FileSystemGetDisplayPathFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemGetDisplayPathFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class FileSystemEntryFunction : public ChromeAsyncExtensionFunction {
@@ -105,7 +105,7 @@ class FileSystemIsWritableEntryFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemIsWritableEntryFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
@@ -198,7 +198,7 @@ class FileSystemIsRestorableFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemIsRestorableFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {

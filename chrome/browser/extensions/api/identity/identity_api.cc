@@ -689,7 +689,7 @@ IdentityRemoveCachedAuthTokenFunction::
     ~IdentityRemoveCachedAuthTokenFunction() {
 }
 
-bool IdentityRemoveCachedAuthTokenFunction::RunImpl() {
+bool IdentityRemoveCachedAuthTokenFunction::RunSync() {
   if (GetProfile()->IsOffTheRecord()) {
     error_ = identity_constants::kOffTheRecord;
     return false;

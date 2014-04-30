@@ -68,7 +68,9 @@ class ChromeSyncExtensionFunction : public ChromeAsyncExtensionFunction {
  public:
   ChromeSyncExtensionFunction();
 
-  virtual void Run() OVERRIDE;
+  virtual bool RunImpl() OVERRIDE;
+
+  virtual bool RunSync() = 0;
 
  protected:
   virtual ~ChromeSyncExtensionFunction();

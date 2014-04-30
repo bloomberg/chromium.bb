@@ -499,7 +499,7 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
   }
 }
 
-bool RuntimeSetUninstallURLFunction::RunImpl() {
+bool RuntimeSetUninstallURLFunction::RunSync() {
   std::string url_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
 
@@ -514,7 +514,7 @@ bool RuntimeSetUninstallURLFunction::RunImpl() {
   return true;
 }
 
-bool RuntimeReloadFunction::RunImpl() {
+bool RuntimeReloadFunction::RunSync() {
   RuntimeAPI::GetFactoryInstance()->Get(GetProfile())->MaybeReloadExtension(
       extension_id());
   return true;
@@ -592,7 +592,7 @@ void RuntimeRequestUpdateCheckFunction::ReplyUpdateFound(
   SendResponse(true);
 }
 
-bool RuntimeRestartFunction::RunImpl() {
+bool RuntimeRestartFunction::RunSync() {
 #if defined(OS_CHROMEOS)
   if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
     chromeos::DBusThreadManager::Get()
@@ -605,7 +605,7 @@ bool RuntimeRestartFunction::RunImpl() {
   return false;
 }
 
-bool RuntimeGetPlatformInfoFunction::RunImpl() {
+bool RuntimeGetPlatformInfoFunction::RunSync() {
   GetPlatformInfo::Results::PlatformInfo info;
 
   const char* os = chrome::OmahaQueryParams::GetOS();
@@ -654,7 +654,7 @@ bool RuntimeGetPlatformInfoFunction::RunImpl() {
   return true;
 }
 
-bool RuntimeGetPackageDirectoryEntryFunction::RunImpl() {
+bool RuntimeGetPackageDirectoryEntryFunction::RunSync() {
   fileapi::IsolatedContext* isolated_context =
       fileapi::IsolatedContext::GetInstance();
   DCHECK(isolated_context);

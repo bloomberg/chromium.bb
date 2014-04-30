@@ -112,8 +112,7 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 
 }  // namespace
 
-
-bool BrowsingDataSettingsFunction::RunImpl() {
+bool BrowsingDataSettingsFunction::RunSync() {
   PrefService* prefs = GetProfile()->GetPrefs();
 
   // Fill origin types.

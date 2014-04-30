@@ -259,7 +259,7 @@ std::vector<base::FilePath> GetGrayListedDirectories() {
 
 }  // namespace file_system_api
 
-bool FileSystemGetDisplayPathFunction::RunImpl() {
+bool FileSystemGetDisplayPathFunction::RunSync() {
   std::string filesystem_name;
   std::string filesystem_path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
@@ -402,7 +402,7 @@ void FileSystemGetWritableEntryFunction::SetIsDirectoryOnFileThread() {
   }
 }
 
-bool FileSystemIsWritableEntryFunction::RunImpl() {
+bool FileSystemIsWritableEntryFunction::RunSync() {
   std::string filesystem_name;
   std::string filesystem_path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
@@ -949,7 +949,7 @@ void FileSystemRetainEntryFunction::SetIsDirectoryOnFileThread() {
   is_directory_ = base::DirectoryExists(path_);
 }
 
-bool FileSystemIsRestorableFunction::RunImpl() {
+bool FileSystemIsRestorableFunction::RunSync() {
   std::string entry_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));
   SetResult(new base::FundamentalValue(SavedFilesService::Get(

@@ -62,7 +62,7 @@ const char* whitelisted_extensions[] = {
 
 }  // namespace
 
-bool TabCaptureCaptureFunction::RunImpl() {
+bool TabCaptureCaptureFunction::RunSync() {
   scoped_ptr<api::tab_capture::Capture::Params> params =
       TabCapture::Capture::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -163,7 +163,7 @@ bool TabCaptureCaptureFunction::RunImpl() {
   return true;
 }
 
-bool TabCaptureGetCapturedTabsFunction::RunImpl() {
+bool TabCaptureGetCapturedTabsFunction::RunSync() {
   extensions::TabCaptureRegistry* registry =
       extensions::TabCaptureRegistry::Get(GetProfile());
 

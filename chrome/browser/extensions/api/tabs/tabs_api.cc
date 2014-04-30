@@ -189,7 +189,7 @@ bool MatchesBool(bool* boolean, bool value) {
 
 // Windows ---------------------------------------------------------------------
 
-bool WindowsGetFunction::RunImpl() {
+bool WindowsGetFunction::RunSync() {
   scoped_ptr<windows::Get::Params> params(windows::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -211,7 +211,7 @@ bool WindowsGetFunction::RunImpl() {
   return true;
 }
 
-bool WindowsGetCurrentFunction::RunImpl() {
+bool WindowsGetCurrentFunction::RunSync() {
   scoped_ptr<windows::GetCurrent::Params> params(
       windows::GetCurrent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -233,7 +233,7 @@ bool WindowsGetCurrentFunction::RunImpl() {
   return true;
 }
 
-bool WindowsGetLastFocusedFunction::RunImpl() {
+bool WindowsGetLastFocusedFunction::RunSync() {
   scoped_ptr<windows::GetLastFocused::Params> params(
       windows::GetLastFocused::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -260,7 +260,7 @@ bool WindowsGetLastFocusedFunction::RunImpl() {
   return true;
 }
 
-bool WindowsGetAllFunction::RunImpl() {
+bool WindowsGetAllFunction::RunSync() {
   scoped_ptr<windows::GetAll::Params> params(
       windows::GetAll::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -334,7 +334,7 @@ bool WindowsCreateFunction::ShouldOpenIncognitoWindow(
   return incognito;
 }
 
-bool WindowsCreateFunction::RunImpl() {
+bool WindowsCreateFunction::RunSync() {
   scoped_ptr<windows::Create::Params> params(
       windows::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -598,7 +598,7 @@ bool WindowsCreateFunction::RunImpl() {
   return true;
 }
 
-bool WindowsUpdateFunction::RunImpl() {
+bool WindowsUpdateFunction::RunSync() {
   scoped_ptr<windows::Update::Params> params(
       windows::Update::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -718,7 +718,7 @@ bool WindowsUpdateFunction::RunImpl() {
   return true;
 }
 
-bool WindowsRemoveFunction::RunImpl() {
+bool WindowsRemoveFunction::RunSync() {
   scoped_ptr<windows::Remove::Params> params(
       windows::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -740,7 +740,7 @@ bool WindowsRemoveFunction::RunImpl() {
 
 // Tabs ------------------------------------------------------------------------
 
-bool TabsGetSelectedFunction::RunImpl() {
+bool TabsGetSelectedFunction::RunSync() {
   // windowId defaults to "current" window.
   int window_id = extension_misc::kCurrentWindowId;
 
@@ -767,7 +767,7 @@ bool TabsGetSelectedFunction::RunImpl() {
   return true;
 }
 
-bool TabsGetAllInWindowFunction::RunImpl() {
+bool TabsGetAllInWindowFunction::RunSync() {
   scoped_ptr<tabs::GetAllInWindow::Params> params(
       tabs::GetAllInWindow::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -785,7 +785,7 @@ bool TabsGetAllInWindowFunction::RunImpl() {
   return true;
 }
 
-bool TabsQueryFunction::RunImpl() {
+bool TabsQueryFunction::RunSync() {
   scoped_ptr<tabs::Query::Params> params(tabs::Query::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -900,7 +900,7 @@ bool TabsQueryFunction::RunImpl() {
   return true;
 }
 
-bool TabsCreateFunction::RunImpl() {
+bool TabsCreateFunction::RunSync() {
   scoped_ptr<tabs::Create::Params> params(tabs::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -1038,7 +1038,7 @@ bool TabsCreateFunction::RunImpl() {
   return true;
 }
 
-bool TabsDuplicateFunction::RunImpl() {
+bool TabsDuplicateFunction::RunSync() {
   scoped_ptr<tabs::Duplicate::Params> params(
       tabs::Duplicate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1081,7 +1081,7 @@ bool TabsDuplicateFunction::RunImpl() {
   return true;
 }
 
-bool TabsGetFunction::RunImpl() {
+bool TabsGetFunction::RunSync() {
   scoped_ptr<tabs::Get::Params> params(tabs::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->tab_id;
@@ -1106,7 +1106,7 @@ bool TabsGetFunction::RunImpl() {
   return true;
 }
 
-bool TabsGetCurrentFunction::RunImpl() {
+bool TabsGetCurrentFunction::RunSync() {
   DCHECK(dispatcher());
 
   WebContents* contents = dispatcher()->delegate()->GetAssociatedWebContents();
@@ -1116,7 +1116,7 @@ bool TabsGetCurrentFunction::RunImpl() {
   return true;
 }
 
-bool TabsHighlightFunction::RunImpl() {
+bool TabsHighlightFunction::RunSync() {
   scoped_ptr<tabs::Highlight::Params> params(
       tabs::Highlight::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1370,7 +1370,7 @@ void TabsUpdateFunction::OnExecuteCodeFinished(
   SendResponse(error.empty());
 }
 
-bool TabsMoveFunction::RunImpl() {
+bool TabsMoveFunction::RunSync() {
   scoped_ptr<tabs::Move::Params> params(tabs::Move::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -1517,7 +1517,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
   return true;
 }
 
-bool TabsReloadFunction::RunImpl() {
+bool TabsReloadFunction::RunSync() {
   scoped_ptr<tabs::Reload::Params> params(
       tabs::Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1571,7 +1571,7 @@ bool TabsReloadFunction::RunImpl() {
   return true;
 }
 
-bool TabsRemoveFunction::RunImpl() {
+bool TabsRemoveFunction::RunSync() {
   scoped_ptr<tabs::Remove::Params> params(tabs::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

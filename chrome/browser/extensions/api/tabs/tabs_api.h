@@ -44,27 +44,27 @@ namespace extensions {
 // Windows
 class WindowsGetFunction : public ChromeSyncExtensionFunction {
   virtual ~WindowsGetFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("windows.get", WINDOWS_GET)
 };
 class WindowsGetCurrentFunction : public ChromeSyncExtensionFunction {
   virtual ~WindowsGetCurrentFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("windows.getCurrent", WINDOWS_GETCURRENT)
 };
 class WindowsGetLastFocusedFunction : public ChromeSyncExtensionFunction {
   virtual ~WindowsGetLastFocusedFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("windows.getLastFocused", WINDOWS_GETLASTFOCUSED)
 };
 class WindowsGetAllFunction : public ChromeSyncExtensionFunction {
   virtual ~WindowsGetAllFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("windows.getAll", WINDOWS_GETALL)
 };
 class WindowsCreateFunction : public ChromeSyncExtensionFunction {
   virtual ~WindowsCreateFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   // Returns whether the window should be created in incognito mode.
   // |create_data| are the options passed by the extension. It may be NULL.
   // |urls| is the list of urls to open. If we are creating an incognito window,
@@ -80,54 +80,54 @@ class WindowsCreateFunction : public ChromeSyncExtensionFunction {
 };
 class WindowsUpdateFunction : public ChromeSyncExtensionFunction {
   virtual ~WindowsUpdateFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("windows.update", WINDOWS_UPDATE)
 };
 class WindowsRemoveFunction : public ChromeSyncExtensionFunction {
   virtual ~WindowsRemoveFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("windows.remove", WINDOWS_REMOVE)
 };
 
 // Tabs
 class TabsGetFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsGetFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.get", TABS_GET)
 };
 class TabsGetCurrentFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsGetCurrentFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.getCurrent", TABS_GETCURRENT)
 };
 class TabsGetSelectedFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsGetSelectedFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.getSelected", TABS_GETSELECTED)
 };
 class TabsGetAllInWindowFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsGetAllInWindowFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.getAllInWindow", TABS_GETALLINWINDOW)
 };
 class TabsQueryFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsQueryFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.query", TABS_QUERY)
 };
 class TabsCreateFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsCreateFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.create", TABS_CREATE)
 };
 class TabsDuplicateFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsDuplicateFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.duplicate", TABS_DUPLICATE)
 };
 class TabsHighlightFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsHighlightFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   bool HighlightTab(TabStripModel* tabstrip,
                     ui::ListSelectionModel* selection,
                     int *active_index,
@@ -158,7 +158,7 @@ class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
 };
 class TabsMoveFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsMoveFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   bool MoveTab(int tab_id,
                int* new_index,
                int iteration,
@@ -168,12 +168,12 @@ class TabsMoveFunction : public ChromeSyncExtensionFunction {
 };
 class TabsReloadFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsReloadFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("tabs.reload", TABS_RELOAD)
 };
 class TabsRemoveFunction : public ChromeSyncExtensionFunction {
   virtual ~TabsRemoveFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   bool RemoveTab(int tab_id);
   DECLARE_EXTENSION_FUNCTION("tabs.remove", TABS_REMOVE)
 };

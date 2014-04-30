@@ -217,7 +217,7 @@ void ExtensionAccessibilityEventRouter::DispatchEvent(
   event_router->BroadcastEvent(event.Pass());
 }
 
-bool AccessibilitySetAccessibilityEnabledFunction::RunImpl() {
+bool AccessibilitySetAccessibilityEnabledFunction::RunSync() {
   bool enabled;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   ExtensionAccessibilityEventRouter::GetInstance()
@@ -225,7 +225,7 @@ bool AccessibilitySetAccessibilityEnabledFunction::RunImpl() {
   return true;
 }
 
-bool AccessibilitySetNativeAccessibilityEnabledFunction::RunImpl() {
+bool AccessibilitySetNativeAccessibilityEnabledFunction::RunSync() {
   bool enabled;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   if (enabled) {
@@ -238,7 +238,7 @@ bool AccessibilitySetNativeAccessibilityEnabledFunction::RunImpl() {
   return true;
 }
 
-bool AccessibilityGetFocusedControlFunction::RunImpl() {
+bool AccessibilityGetFocusedControlFunction::RunSync() {
   // Get the serialized dict from the last focused control and return it.
   // However, if the dict is empty, that means we haven't seen any focus
   // events yet, so return null instead.
@@ -254,7 +254,7 @@ bool AccessibilityGetFocusedControlFunction::RunImpl() {
   return true;
 }
 
-bool AccessibilityGetAlertsForTabFunction::RunImpl() {
+bool AccessibilityGetAlertsForTabFunction::RunSync() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 

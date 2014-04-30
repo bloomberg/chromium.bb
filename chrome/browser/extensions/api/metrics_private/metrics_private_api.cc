@@ -39,13 +39,13 @@ const size_t kMaxBuckets = 10000; // We don't ever want more than these many
                                   // and would cause crazy memory usage
 } // namespace
 
-bool MetricsPrivateGetIsCrashReportingEnabledFunction::RunImpl() {
+bool MetricsPrivateGetIsCrashReportingEnabledFunction::RunSync() {
   SetResult(new base::FundamentalValue(
       MetricsServiceHelper::IsCrashReportingEnabled()));
   return true;
 }
 
-bool MetricsPrivateGetFieldTrialFunction::RunImpl() {
+bool MetricsPrivateGetFieldTrialFunction::RunSync() {
   std::string name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
@@ -53,7 +53,7 @@ bool MetricsPrivateGetFieldTrialFunction::RunImpl() {
   return true;
 }
 
-bool MetricsPrivateGetVariationParamsFunction::RunImpl() {
+bool MetricsPrivateGetVariationParamsFunction::RunSync() {
   scoped_ptr<GetVariationParams::Params> params(
       GetVariationParams::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -69,7 +69,7 @@ bool MetricsPrivateGetVariationParamsFunction::RunImpl() {
   return true;
 }
 
-bool MetricsPrivateRecordUserActionFunction::RunImpl() {
+bool MetricsPrivateRecordUserActionFunction::RunSync() {
   scoped_ptr<RecordUserAction::Params> params(
       RecordUserAction::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -114,7 +114,7 @@ bool MetricsHistogramHelperFunction::RecordValue(
   return true;
 }
 
-bool MetricsPrivateRecordValueFunction::RunImpl() {
+bool MetricsPrivateRecordValueFunction::RunSync() {
   scoped_ptr<RecordValue::Params> params(RecordValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -129,7 +129,7 @@ bool MetricsPrivateRecordValueFunction::RunImpl() {
                      params->metric.buckets, params->value);
 }
 
-bool MetricsPrivateRecordSparseValueFunction::RunImpl() {
+bool MetricsPrivateRecordSparseValueFunction::RunSync() {
   scoped_ptr<RecordSparseValue::Params> params(
       RecordSparseValue::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -139,7 +139,7 @@ bool MetricsPrivateRecordSparseValueFunction::RunImpl() {
   return true;
 }
 
-bool MetricsPrivateRecordPercentageFunction::RunImpl() {
+bool MetricsPrivateRecordPercentageFunction::RunSync() {
   scoped_ptr<RecordPercentage::Params> params(
       RecordPercentage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -147,14 +147,14 @@ bool MetricsPrivateRecordPercentageFunction::RunImpl() {
                      1, 101, 102, params->value);
 }
 
-bool MetricsPrivateRecordCountFunction::RunImpl() {
+bool MetricsPrivateRecordCountFunction::RunSync() {
   scoped_ptr<RecordCount::Params> params(RecordCount::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   return RecordValue(params->metric_name, base::HISTOGRAM,
                      1, 1000000, 50, params->value);
 }
 
-bool MetricsPrivateRecordSmallCountFunction::RunImpl() {
+bool MetricsPrivateRecordSmallCountFunction::RunSync() {
   scoped_ptr<RecordSmallCount::Params> params(
       RecordSmallCount::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -162,7 +162,7 @@ bool MetricsPrivateRecordSmallCountFunction::RunImpl() {
                      1, 100, 50, params->value);
 }
 
-bool MetricsPrivateRecordMediumCountFunction::RunImpl() {
+bool MetricsPrivateRecordMediumCountFunction::RunSync() {
   scoped_ptr<RecordMediumCount::Params> params(
       RecordMediumCount::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -170,7 +170,7 @@ bool MetricsPrivateRecordMediumCountFunction::RunImpl() {
                      1, 10000, 50, params->value);
 }
 
-bool MetricsPrivateRecordTimeFunction::RunImpl() {
+bool MetricsPrivateRecordTimeFunction::RunSync() {
   scoped_ptr<RecordTime::Params> params(RecordTime::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   static const int kTenSecMs = 10 * 1000;
@@ -178,7 +178,7 @@ bool MetricsPrivateRecordTimeFunction::RunImpl() {
                      1, kTenSecMs, 50, params->value);
 }
 
-bool MetricsPrivateRecordMediumTimeFunction::RunImpl() {
+bool MetricsPrivateRecordMediumTimeFunction::RunSync() {
   scoped_ptr<RecordMediumTime::Params> params(
       RecordMediumTime::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -187,7 +187,7 @@ bool MetricsPrivateRecordMediumTimeFunction::RunImpl() {
                      1, kThreeMinMs, 50, params->value);
 }
 
-bool MetricsPrivateRecordLongTimeFunction::RunImpl() {
+bool MetricsPrivateRecordLongTimeFunction::RunSync() {
   scoped_ptr<RecordLongTime::Params> params(
       RecordLongTime::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

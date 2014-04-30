@@ -433,7 +433,7 @@ InputImeEventRouter::InputImeEventRouter()
 
 InputImeEventRouter::~InputImeEventRouter() {}
 
-bool InputImeSetCompositionFunction::RunImpl() {
+bool InputImeSetCompositionFunction::RunSync() {
   InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -479,7 +479,7 @@ bool InputImeSetCompositionFunction::RunImpl() {
   return true;
 }
 
-bool InputImeClearCompositionFunction::RunImpl() {
+bool InputImeClearCompositionFunction::RunSync() {
   InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -497,7 +497,7 @@ bool InputImeClearCompositionFunction::RunImpl() {
   return true;
 }
 
-bool InputImeCommitTextFunction::RunImpl() {
+bool InputImeCommitTextFunction::RunSync() {
   // TODO(zork): Support committing when not active.
   InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
@@ -562,7 +562,7 @@ bool InputImeSendKeyEventsFunction::RunImpl() {
   return true;
 }
 
-bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
+bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
   scoped_ptr<SetCandidateWindowProperties::Params> parent_params(
       SetCandidateWindowProperties::Params::Create(*args_));
   const SetCandidateWindowProperties::Params::Parameters&
@@ -637,7 +637,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
   return true;
 }
 
-bool InputImeSetCandidatesFunction::RunImpl() {
+bool InputImeSetCandidatesFunction::RunSync() {
   InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -673,7 +673,7 @@ bool InputImeSetCandidatesFunction::RunImpl() {
   return true;
 }
 
-bool InputImeSetCursorPositionFunction::RunImpl() {
+bool InputImeSetCursorPositionFunction::RunSync() {
   InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
@@ -692,7 +692,7 @@ bool InputImeSetCursorPositionFunction::RunImpl() {
   return true;
 }
 
-bool InputImeSetMenuItemsFunction::RunImpl() {
+bool InputImeSetMenuItemsFunction::RunSync() {
   scoped_ptr<SetMenuItems::Params> parent_params(
       SetMenuItems::Params::Create(*args_));
   const SetMenuItems::Params::Parameters& params =
@@ -719,7 +719,7 @@ bool InputImeSetMenuItemsFunction::RunImpl() {
   return true;
 }
 
-bool InputImeUpdateMenuItemsFunction::RunImpl() {
+bool InputImeUpdateMenuItemsFunction::RunSync() {
   scoped_ptr<UpdateMenuItems::Params> parent_params(
       UpdateMenuItems::Params::Create(*args_));
   const UpdateMenuItems::Params::Parameters& params =
@@ -746,7 +746,7 @@ bool InputImeUpdateMenuItemsFunction::RunImpl() {
   return true;
 }
 
-bool InputImeDeleteSurroundingTextFunction::RunImpl() {
+bool InputImeDeleteSurroundingTextFunction::RunSync() {
   scoped_ptr<DeleteSurroundingText::Params> parent_params(
       DeleteSurroundingText::Params::Create(*args_));
   const DeleteSurroundingText::Params::Parameters& params =

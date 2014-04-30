@@ -31,7 +31,7 @@ class EchoPrivateGetRegistrationCodeFunction
 
  protected:
   virtual ~EchoPrivateGetRegistrationCodeFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   void GetRegistrationCode(const std::string& type);
@@ -60,7 +60,7 @@ class EchoPrivateSetOfferInfoFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~EchoPrivateSetOfferInfoFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION("echoPrivate.setOfferInfo",
@@ -73,7 +73,7 @@ class EchoPrivateGetOfferInfoFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~EchoPrivateGetOfferInfoFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getOfferInfo",

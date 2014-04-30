@@ -518,7 +518,7 @@ ExtensionActionFunction::ExtensionActionFunction()
 ExtensionActionFunction::~ExtensionActionFunction() {
 }
 
-bool ExtensionActionFunction::RunImpl() {
+bool ExtensionActionFunction::RunSync() {
   ExtensionActionManager* manager = ExtensionActionManager::Get(GetProfile());
   const Extension* extension = GetExtension();
   if (StartsWithASCII(name(), "systemIndicator.", false)) {
@@ -921,10 +921,10 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   return true;
 }
 
-bool EnablePageActionsFunction::RunImpl() {
+bool EnablePageActionsFunction::RunSync() {
   return SetPageActionEnabled(true);
 }
 
-bool DisablePageActionsFunction::RunImpl() {
+bool DisablePageActionsFunction::RunSync() {
   return SetPageActionEnabled(false);
 }

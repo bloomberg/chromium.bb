@@ -32,7 +32,7 @@ namespace Create = api::context_menus::Create;
 namespace Remove = api::context_menus::Remove;
 namespace Update = api::context_menus::Update;
 
-bool ContextMenusCreateFunction::RunImpl() {
+bool ContextMenusCreateFunction::RunSync() {
   MenuItem::Id id(GetProfile()->IsOffTheRecord(),
                   MenuItem::ExtensionKey(extension_id()));
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
@@ -57,7 +57,7 @@ bool ContextMenusCreateFunction::RunImpl() {
                                  GetExtension(), id, &error_);
 }
 
-bool ContextMenusUpdateFunction::RunImpl() {
+bool ContextMenusUpdateFunction::RunSync() {
   MenuItem::Id item_id(GetProfile()->IsOffTheRecord(),
                        MenuItem::ExtensionKey(extension_id()));
   scoped_ptr<Update::Params> params(Update::Params::Create(*args_));
@@ -74,7 +74,7 @@ bool ContextMenusUpdateFunction::RunImpl() {
                                  GetExtension(), item_id, &error_);
 }
 
-bool ContextMenusRemoveFunction::RunImpl() {
+bool ContextMenusRemoveFunction::RunSync() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -103,7 +103,7 @@ bool ContextMenusRemoveFunction::RunImpl() {
   return true;
 }
 
-bool ContextMenusRemoveAllFunction::RunImpl() {
+bool ContextMenusRemoveAllFunction::RunSync() {
   MenuManager* manager = MenuManager::Get(GetProfile());
   manager->RemoveAllContextItems(MenuItem::ExtensionKey(GetExtension()->id()));
   manager->WriteToStorage(GetExtension(),

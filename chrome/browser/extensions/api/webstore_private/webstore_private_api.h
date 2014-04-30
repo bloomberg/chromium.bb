@@ -209,7 +209,7 @@ class WebstorePrivateEnableAppLauncherFunction
   virtual ~WebstorePrivateEnableAppLauncherFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WebstorePrivateGetBrowserLoginFunction
@@ -222,7 +222,7 @@ class WebstorePrivateGetBrowserLoginFunction
   virtual ~WebstorePrivateGetBrowserLoginFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WebstorePrivateGetStoreLoginFunction
@@ -235,7 +235,7 @@ class WebstorePrivateGetStoreLoginFunction
   virtual ~WebstorePrivateGetStoreLoginFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WebstorePrivateSetStoreLoginFunction
@@ -248,7 +248,7 @@ class WebstorePrivateSetStoreLoginFunction
   virtual ~WebstorePrivateSetStoreLoginFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WebstorePrivateGetWebGLStatusFunction
@@ -285,7 +285,7 @@ class WebstorePrivateGetIsLauncherEnabledFunction
   virtual ~WebstorePrivateGetIsLauncherEnabledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   void OnIsLauncherCheckCompleted(bool is_enabled);
@@ -303,7 +303,7 @@ class WebstorePrivateIsInIncognitoModeFunction
   virtual ~WebstorePrivateIsInIncognitoModeFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WebstorePrivateSignInFunction : public ChromeAsyncExtensionFunction,

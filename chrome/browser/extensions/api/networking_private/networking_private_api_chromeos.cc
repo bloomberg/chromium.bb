@@ -317,7 +317,7 @@ NetworkingPrivateGetEnabledNetworkTypesFunction::
 ~NetworkingPrivateGetEnabledNetworkTypesFunction() {
 }
 
-bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunImpl() {
+bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunSync() {
   NetworkStateHandler* state_handler =
       NetworkHandler::Get()->network_state_handler();
 
@@ -341,7 +341,7 @@ NetworkingPrivateEnableNetworkTypeFunction::
 ~NetworkingPrivateEnableNetworkTypeFunction() {
 }
 
-bool NetworkingPrivateEnableNetworkTypeFunction::RunImpl() {
+bool NetworkingPrivateEnableNetworkTypeFunction::RunSync() {
   scoped_ptr<api::EnableNetworkType::Params> params =
       api::EnableNetworkType::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -380,7 +380,7 @@ NetworkingPrivateDisableNetworkTypeFunction::
 ~NetworkingPrivateDisableNetworkTypeFunction() {
 }
 
-bool NetworkingPrivateDisableNetworkTypeFunction::RunImpl() {
+bool NetworkingPrivateDisableNetworkTypeFunction::RunSync() {
   scoped_ptr<api::DisableNetworkType::Params> params =
       api::DisableNetworkType::Params::Create(*args_);
   NetworkStateHandler* state_handler =
@@ -419,7 +419,7 @@ NetworkingPrivateRequestNetworkScanFunction::
 ~NetworkingPrivateRequestNetworkScanFunction() {
 }
 
-bool NetworkingPrivateRequestNetworkScanFunction::RunImpl() {
+bool NetworkingPrivateRequestNetworkScanFunction::RunSync() {
   NetworkHandler::Get()->network_state_handler()->RequestScan();
   return true;
 }

@@ -313,7 +313,7 @@ void DeveloperPrivateAPI::OnListenerRemoved(
 
 namespace api {
 
-bool DeveloperPrivateAutoUpdateFunction::RunImpl() {
+bool DeveloperPrivateAutoUpdateFunction::RunSync() {
   ExtensionUpdater* updater = GetExtensionUpdater(GetProfile());
   if (updater)
     updater->CheckNow(ExtensionUpdater::CheckParams());
@@ -652,7 +652,7 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
 
 DeveloperPrivateGetItemsInfoFunction::~DeveloperPrivateGetItemsInfoFunction() {}
 
-bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
+bool DeveloperPrivateAllowFileAccessFunction::RunSync() {
   scoped_ptr<AllowFileAccess::Params> params(
       AllowFileAccess::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -683,7 +683,7 @@ bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
 DeveloperPrivateAllowFileAccessFunction::
     ~DeveloperPrivateAllowFileAccessFunction() {}
 
-bool DeveloperPrivateAllowIncognitoFunction::RunImpl() {
+bool DeveloperPrivateAllowIncognitoFunction::RunSync() {
   scoped_ptr<AllowIncognito::Params> params(
       AllowIncognito::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -703,8 +703,7 @@ bool DeveloperPrivateAllowIncognitoFunction::RunImpl() {
 DeveloperPrivateAllowIncognitoFunction::
     ~DeveloperPrivateAllowIncognitoFunction() {}
 
-
-bool DeveloperPrivateReloadFunction::RunImpl() {
+bool DeveloperPrivateReloadFunction::RunSync() {
   scoped_ptr<Reload::Params> params(Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -714,7 +713,7 @@ bool DeveloperPrivateReloadFunction::RunImpl() {
   return true;
 }
 
-bool DeveloperPrivateShowPermissionsDialogFunction::RunImpl() {
+bool DeveloperPrivateShowPermissionsDialogFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id_));
   ExtensionService* service = GetProfile()->GetExtensionService();
   CHECK(!extension_id_.empty());
@@ -771,7 +770,7 @@ DeveloperPrivateShowPermissionsDialogFunction::
 
 DeveloperPrivateEnableFunction::DeveloperPrivateEnableFunction() {}
 
-bool DeveloperPrivateEnableFunction::RunImpl() {
+bool DeveloperPrivateEnableFunction::RunSync() {
   scoped_ptr<Enable::Params> params(Enable::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -850,7 +849,7 @@ void DeveloperPrivateEnableFunction::OnRequirementsChecked(
 
 DeveloperPrivateEnableFunction::~DeveloperPrivateEnableFunction() {}
 
-bool DeveloperPrivateInspectFunction::RunImpl() {
+bool DeveloperPrivateInspectFunction::RunSync() {
   scoped_ptr<developer::Inspect::Params> params(
       developer::Inspect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
@@ -1296,7 +1295,7 @@ void DeveloperPrivateChoosePathFunction::FileSelectionCanceled() {
 
 DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 
-bool DeveloperPrivateIsProfileManagedFunction::RunImpl() {
+bool DeveloperPrivateIsProfileManagedFunction::RunSync() {
   SetResult(new base::FundamentalValue(GetProfile()->IsManaged()));
   return true;
 }

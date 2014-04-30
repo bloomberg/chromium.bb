@@ -36,7 +36,7 @@ std::string GetUpdateURLData(const ExtensionPrefs* prefs,
 
 }  // namespace extension
 
-bool ExtensionSetUpdateUrlDataFunction::RunImpl() {
+bool ExtensionSetUpdateUrlDataFunction::RunSync() {
   std::string data;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &data));
 
@@ -51,13 +51,13 @@ bool ExtensionSetUpdateUrlDataFunction::RunImpl() {
   return true;
 }
 
-bool ExtensionIsAllowedIncognitoAccessFunction::RunImpl() {
+bool ExtensionIsAllowedIncognitoAccessFunction::RunSync() {
   SetResult(new base::FundamentalValue(
       util::IsIncognitoEnabled(extension_id(), GetProfile())));
   return true;
 }
 
-bool ExtensionIsAllowedFileSchemeAccessFunction::RunImpl() {
+bool ExtensionIsAllowedFileSchemeAccessFunction::RunSync() {
   SetResult(new base::FundamentalValue(
       util::AllowFileAccess(extension_id(), GetProfile())));
   return true;

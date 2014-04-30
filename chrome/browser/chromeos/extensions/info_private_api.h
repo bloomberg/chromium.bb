@@ -42,7 +42,7 @@ class ChromeosInfoPrivateSetFunction : public SyncExtensionFunction {
  protected:
   virtual ~ChromeosInfoPrivateSetFunction();
 
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION("chromeosInfoPrivate.set", CHROMEOSINFOPRIVATE_SET)

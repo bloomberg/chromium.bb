@@ -477,7 +477,7 @@ class WebRequestInternalAddEventListenerFunction
   virtual ~WebRequestInternalAddEventListenerFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WebRequestInternalEventHandledFunction
@@ -501,7 +501,7 @@ class WebRequestInternalEventHandledFunction
       const std::string& error);
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class WebRequestHandlerBehaviorChangedFunction
@@ -519,7 +519,7 @@ class WebRequestHandlerBehaviorChangedFunction
   // Handle quota exceeded gracefully: Only warn the user but still execute the
   // function.
   virtual void OnQuotaExceeded(const std::string& error) OVERRIDE;
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Send updates to |host| with information about what webRequest-related

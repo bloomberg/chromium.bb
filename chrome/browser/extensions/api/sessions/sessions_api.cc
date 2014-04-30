@@ -195,7 +195,7 @@ scoped_ptr<api::sessions::Session>
                                   window.Pass());
 }
 
-bool SessionsGetRecentlyClosedFunction::RunImpl() {
+bool SessionsGetRecentlyClosedFunction::RunSync() {
   scoped_ptr<GetRecentlyClosed::Params> params(
       GetRecentlyClosed::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -362,7 +362,7 @@ scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
   return device_struct.Pass();
 }
 
-bool SessionsGetDevicesFunction::RunImpl() {
+bool SessionsGetDevicesFunction::RunSync() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
   if (!(service && service->GetPreferredDataTypes().Has(syncer::SESSIONS))) {
@@ -564,7 +564,7 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
   return SetResultRestoredWindow(ExtensionTabUtil::GetWindowId(browsers[0]));
 }
 
-bool SessionsRestoreFunction::RunImpl() {
+bool SessionsRestoreFunction::RunSync() {
   scoped_ptr<Restore::Params> params(Restore::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

@@ -35,7 +35,7 @@ class IdleSetDetectionIntervalFunction : public ChromeSyncExtensionFunction {
   virtual ~IdleSetDetectionIntervalFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

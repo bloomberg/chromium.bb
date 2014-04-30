@@ -25,7 +25,7 @@ class FileBrowserPrivateGetStringsFunction
   virtual ~FileBrowserPrivateGetStringsFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

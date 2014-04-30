@@ -99,7 +99,7 @@ scoped_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
   return device.Pass();
 }
 
-bool SignedInDevicesGetFunction::RunImpl() {
+bool SignedInDevicesGetFunction::RunSync() {
   scoped_ptr<api::signed_in_devices::Get::Params> params(
       api::signed_in_devices::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

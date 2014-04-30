@@ -27,7 +27,7 @@ static const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
 
 }
 
-bool I18nGetAcceptLanguagesFunction::RunImpl() {
+bool I18nGetAcceptLanguagesFunction::RunSync() {
   std::string accept_languages =
       GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   // Currently, there are 2 ways to set browser's accept-languages: through UI

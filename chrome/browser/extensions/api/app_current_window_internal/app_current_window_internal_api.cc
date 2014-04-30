@@ -117,7 +117,7 @@ BoundsType GetBoundsType(const std::string& type_as_string) {
 
 }  // namespace bounds
 
-bool AppCurrentWindowInternalExtensionFunction::RunImpl() {
+bool AppCurrentWindowInternalExtensionFunction::RunSync() {
   apps::AppWindowRegistry* registry =
       apps::AppWindowRegistry::Get(GetProfile());
   DCHECK(registry);

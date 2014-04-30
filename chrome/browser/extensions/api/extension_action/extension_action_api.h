@@ -125,7 +125,7 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
  protected:
   ExtensionActionFunction();
   virtual ~ExtensionActionFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
   virtual bool RunExtensionAction() = 0;
 
   bool ExtractDataFromArguments();
@@ -449,7 +449,7 @@ class EnablePageActionsFunction : public PageActionsFunction {
   virtual ~EnablePageActionsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Implement chrome.pageActions.disableForTab().
@@ -462,7 +462,7 @@ class DisablePageActionsFunction : public PageActionsFunction {
   virtual ~DisablePageActionsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_ACTION_API_H_

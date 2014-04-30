@@ -17,7 +17,7 @@ class ContextMenusCreateFunction : public ChromeSyncExtensionFunction {
   virtual ~ContextMenusCreateFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ContextMenusUpdateFunction : public ChromeSyncExtensionFunction {
@@ -28,7 +28,7 @@ class ContextMenusUpdateFunction : public ChromeSyncExtensionFunction {
   virtual ~ContextMenusUpdateFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ContextMenusRemoveFunction : public ChromeSyncExtensionFunction {
@@ -39,7 +39,7 @@ class ContextMenusRemoveFunction : public ChromeSyncExtensionFunction {
   virtual ~ContextMenusRemoveFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ContextMenusRemoveAllFunction : public ChromeSyncExtensionFunction {
@@ -50,7 +50,7 @@ class ContextMenusRemoveAllFunction : public ChromeSyncExtensionFunction {
   virtual ~ContextMenusRemoveAllFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

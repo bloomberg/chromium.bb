@@ -234,7 +234,7 @@ void FileBrowserPrivateGetFileTasksFunction::OnSniffingMimeTypeCompleted(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateSetDefaultTaskFunction::RunImpl() {
+bool FileBrowserPrivateSetDefaultTaskFunction::RunSync() {
   using extensions::api::file_browser_private::SetDefaultTask::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);

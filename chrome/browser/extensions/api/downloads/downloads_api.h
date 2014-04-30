@@ -111,7 +111,7 @@ class DownloadsSearchFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.search", DOWNLOADS_SEARCH)
   DownloadsSearchFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~DownloadsSearchFunction();
@@ -124,7 +124,7 @@ class DownloadsPauseFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.pause", DOWNLOADS_PAUSE)
   DownloadsPauseFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~DownloadsPauseFunction();
@@ -137,7 +137,7 @@ class DownloadsResumeFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.resume", DOWNLOADS_RESUME)
   DownloadsResumeFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~DownloadsResumeFunction();
@@ -150,7 +150,7 @@ class DownloadsCancelFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.cancel", DOWNLOADS_CANCEL)
   DownloadsCancelFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~DownloadsCancelFunction();
@@ -163,7 +163,7 @@ class DownloadsEraseFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.erase", DOWNLOADS_ERASE)
   DownloadsEraseFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~DownloadsEraseFunction();
@@ -242,7 +242,7 @@ class DownloadsOpenFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.open", DOWNLOADS_OPEN)
   DownloadsOpenFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~DownloadsOpenFunction();
@@ -256,7 +256,7 @@ class DownloadsSetShelfEnabledFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("downloads.setShelfEnabled",
                              DOWNLOADS_SETSHELFENABLED)
   DownloadsSetShelfEnabledFunction();
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  protected:
   virtual ~DownloadsSetShelfEnabledFunction();

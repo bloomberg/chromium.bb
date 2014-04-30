@@ -55,7 +55,7 @@ WebcamPrivateSetFunction::WebcamPrivateSetFunction() {
 WebcamPrivateSetFunction::~WebcamPrivateSetFunction() {
 }
 
-bool WebcamPrivateSetFunction::RunImpl() {
+bool WebcamPrivateSetFunction::RunSync() {
   // Get parameters
   scoped_ptr<api::webcam_private::Set::Params> params(
       api::webcam_private::Set::Params::Create(*args_));
@@ -92,7 +92,7 @@ WebcamPrivateGetFunction::WebcamPrivateGetFunction() {
 WebcamPrivateGetFunction::~WebcamPrivateGetFunction() {
 }
 
-bool WebcamPrivateGetFunction::RunImpl() {
+bool WebcamPrivateGetFunction::RunSync() {
   // Get parameters
   scoped_ptr<api::webcam_private::Get::Params> params(
       api::webcam_private::Get::Params::Create(*args_));
@@ -130,7 +130,7 @@ WebcamPrivateResetFunction::WebcamPrivateResetFunction() {
 WebcamPrivateResetFunction::~WebcamPrivateResetFunction() {
 }
 
-bool WebcamPrivateResetFunction::RunImpl() {
+bool WebcamPrivateResetFunction::RunSync() {
   // Get parameters
   scoped_ptr<api::webcam_private::Reset::Params> params(
       api::webcam_private::Reset::Params::Create(*args_));

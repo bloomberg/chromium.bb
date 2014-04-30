@@ -18,7 +18,7 @@ class SystemDisplayGetInfoFunction : public SyncExtensionFunction {
 
  protected:
   virtual ~SystemDisplayGetInfoFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class SystemDisplaySetDisplayPropertiesFunction
@@ -29,7 +29,7 @@ class SystemDisplaySetDisplayPropertiesFunction
 
  protected:
   virtual ~SystemDisplaySetDisplayPropertiesFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

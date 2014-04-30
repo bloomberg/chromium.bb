@@ -22,7 +22,7 @@ class AppCurrentWindowInternalExtensionFunction
   virtual bool RunWithWindow(apps::AppWindow* window) = 0;
 
  private:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class AppCurrentWindowInternalFocusFunction

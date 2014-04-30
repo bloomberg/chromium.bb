@@ -60,34 +60,8 @@ class CookiesEventRouter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(CookiesEventRouter);
 };
 
-// Serves as a base class for all cookies API functions, and defines some
-// common functionality for parsing cookies API function arguments.
-// Note that all of the functions in this file derive from
-// AsyncExtensionFunction, and are not threadsafe, so they should not be
-// concurrently accessed from multiple threads. They modify |result_| and other
-// member variables directly.
-// See extensions/browser/extension_function.h for more information.
-class CookiesFunction : public ChromeAsyncExtensionFunction {
- protected:
-  virtual ~CookiesFunction() {}
-
-  // Constructs a GURL from the given url string. Returns false and assigns the
-  // internal error_ value if the URL is invalid. If |check_host_permissions| is
-  // true, the URL is also checked against the extension's host permissions, and
-  // if there is no permission for the URL, this function returns false.
-  bool ParseUrl(const std::string& url_string, GURL* url,
-                bool check_host_permissions);
-
-  // Gets the store identified by |store_id| and returns it in |context|.
-  // If |store_id| contains an empty string, retrieves the current execution
-  // context's store. In this case, |store_id| is populated with the found
-  // store, and |context| can be NULL if the caller only wants |store_id|.
-  bool ParseStoreContext(std::string* store_id,
-                         net::URLRequestContextGetter** context);
-};
-
 // Implements the cookies.get() extension function.
-class CookiesGetFunction : public CookiesFunction {
+class CookiesGetFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.get", COOKIES_GET)
 
@@ -110,7 +84,7 @@ class CookiesGetFunction : public CookiesFunction {
 };
 
 // Implements the cookies.getAll() extension function.
-class CookiesGetAllFunction : public CookiesFunction {
+class CookiesGetAllFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.getAll", COOKIES_GETALL)
 
@@ -133,7 +107,7 @@ class CookiesGetAllFunction : public CookiesFunction {
 };
 
 // Implements the cookies.set() extension function.
-class CookiesSetFunction : public CookiesFunction {
+class CookiesSetFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.set", COOKIES_SET)
 
@@ -156,7 +130,7 @@ class CookiesSetFunction : public CookiesFunction {
 };
 
 // Implements the cookies.remove() extension function.
-class CookiesRemoveFunction : public CookiesFunction {
+class CookiesRemoveFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.remove", COOKIES_REMOVE)
 
@@ -179,7 +153,7 @@ class CookiesRemoveFunction : public CookiesFunction {
 };
 
 // Implements the cookies.getAllCookieStores() extension function.
-class CookiesGetAllCookieStoresFunction : public CookiesFunction {
+class CookiesGetAllCookieStoresFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.getAllCookieStores",
                              COOKIES_GETALLCOOKIESTORES)
@@ -188,9 +162,7 @@ class CookiesGetAllCookieStoresFunction : public CookiesFunction {
   virtual ~CookiesGetAllCookieStoresFunction() {}
 
   // ExtensionFunction:
-  // CookiesGetAllCookieStoresFunction is sync.
-  virtual void Run() OVERRIDE;
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class CookiesAPI : public BrowserContextKeyedAPI,

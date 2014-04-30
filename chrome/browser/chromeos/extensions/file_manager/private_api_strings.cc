@@ -62,7 +62,7 @@ FileBrowserPrivateGetStringsFunction::FileBrowserPrivateGetStringsFunction() {
 FileBrowserPrivateGetStringsFunction::~FileBrowserPrivateGetStringsFunction() {
 }
 
-bool FileBrowserPrivateGetStringsFunction::RunImpl() {
+bool FileBrowserPrivateGetStringsFunction::RunSync() {
   base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
 

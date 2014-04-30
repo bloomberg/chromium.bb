@@ -284,7 +284,7 @@ class IdentityRemoveCachedAuthTokenFunction
   virtual ~IdentityRemoveCachedAuthTokenFunction();
 
   // SyncExtensionFunction implementation:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class IdentityLaunchWebAuthFlowFunction : public ChromeAsyncExtensionFunction,

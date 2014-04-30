@@ -22,7 +22,7 @@ base::DictionaryValue* CreateCommandValue(
 
 }  // namespace
 
-bool GetAllCommandsFunction::RunImpl() {
+bool GetAllCommandsFunction::RunSync() {
   base::ListValue* command_list = new base::ListValue();
 
   extensions::CommandService* command_service =

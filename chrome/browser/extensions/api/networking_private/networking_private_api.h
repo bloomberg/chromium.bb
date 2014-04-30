@@ -158,7 +158,7 @@ class NetworkingPrivateGetEnabledNetworkTypesFunction
   virtual ~NetworkingPrivateGetEnabledNetworkTypesFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetEnabledNetworkTypesFunction);
@@ -176,7 +176,7 @@ class NetworkingPrivateEnableNetworkTypeFunction
   virtual ~NetworkingPrivateEnableNetworkTypeFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEnableNetworkTypeFunction);
@@ -194,7 +194,7 @@ class NetworkingPrivateDisableNetworkTypeFunction
   virtual ~NetworkingPrivateDisableNetworkTypeFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDisableNetworkTypeFunction);
@@ -212,7 +212,7 @@ class NetworkingPrivateRequestNetworkScanFunction
   virtual ~NetworkingPrivateRequestNetworkScanFunction();
 
   // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateRequestNetworkScanFunction);

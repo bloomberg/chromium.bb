@@ -22,7 +22,7 @@ class SystemPrivateGetIncognitoModeAvailabilityFunction
   virtual ~SystemPrivateGetIncognitoModeAvailabilityFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // API function which returns the status of system update.
@@ -36,7 +36,7 @@ class SystemPrivateGetUpdateStatusFunction
   virtual ~SystemPrivateGetUpdateStatusFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // API function which returns the Google API key.
@@ -48,7 +48,7 @@ class SystemPrivateGetApiKeyFunction : public SyncExtensionFunction {
   virtual ~SystemPrivateGetApiKeyFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // Dispatches systemPrivate.onBrightnessChanged event for extensions.

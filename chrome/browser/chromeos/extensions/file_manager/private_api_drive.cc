@@ -737,7 +737,7 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateGetDriveConnectionStateFunction::RunImpl() {
+bool FileBrowserPrivateGetDriveConnectionStateFunction::RunSync() {
   api::file_browser_private::DriveConnectionState result;
 
   switch (drive::util::GetDriveConnectionStatus(GetProfile())) {

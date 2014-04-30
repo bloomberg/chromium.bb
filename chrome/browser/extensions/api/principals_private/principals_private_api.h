@@ -23,11 +23,11 @@ class PrincipalsPrivateExtensionFunction : public ChromeSyncExtensionFunction {
 
   // ExtensionFunction:
   // Checks for the flag "new-profile-management", if set calls
-  // RunImplSafe which must be overriden by subclasses.
-  virtual bool RunImpl() OVERRIDE FINAL;
+  // RunSyncSafe which must be overriden by subclasses.
+  virtual bool RunSync() OVERRIDE FINAL;
 
  private:
-  virtual bool RunImplSafe() = 0;
+  virtual bool RunSyncSafe() = 0;
 };
 
 class PrincipalsPrivateSignOutFunction
@@ -42,7 +42,7 @@ class PrincipalsPrivateSignOutFunction
 
  private:
   // PrincipalsPrivateExtensionFunction
-  virtual bool RunImplSafe() OVERRIDE;
+  virtual bool RunSyncSafe() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PrincipalsPrivateSignOutFunction);
 };
@@ -59,7 +59,7 @@ class PrincipalsPrivateShowAvatarBubbleFunction
 
  private:
   // PrincipalsPrivateExtensionFunction
-  virtual bool RunImplSafe() OVERRIDE;
+  virtual bool RunSyncSafe() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PrincipalsPrivateShowAvatarBubbleFunction);
 };

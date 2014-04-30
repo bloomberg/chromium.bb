@@ -19,7 +19,7 @@ class IdentityPrivateGetResourcesFunction : public SyncExtensionFunction {
   virtual ~IdentityPrivateGetResourcesFunction();
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IdentityPrivateGetResourcesFunction);

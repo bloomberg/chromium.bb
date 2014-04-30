@@ -25,7 +25,7 @@ class PermissionsContainsFunction : public ChromeSyncExtensionFunction {
   virtual ~PermissionsContainsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // chrome.permissions.getAll
@@ -37,7 +37,7 @@ class PermissionsGetAllFunction : public ChromeSyncExtensionFunction {
   virtual ~PermissionsGetAllFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // chrome.permissions.remove
@@ -49,7 +49,7 @@ class PermissionsRemoveFunction : public ChromeSyncExtensionFunction {
   virtual ~PermissionsRemoveFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // chrome.permissions.request

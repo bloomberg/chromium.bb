@@ -47,7 +47,7 @@ void IdleQueryStateFunction::IdleStateCallback(IdleState state) {
   SendResponse(true);
 }
 
-bool IdleSetDetectionIntervalFunction::RunImpl() {
+bool IdleSetDetectionIntervalFunction::RunSync() {
   int threshold;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);

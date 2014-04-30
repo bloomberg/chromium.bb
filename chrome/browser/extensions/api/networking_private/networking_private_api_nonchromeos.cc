@@ -248,7 +248,7 @@ NetworkingPrivateGetEnabledNetworkTypesFunction::
 ~NetworkingPrivateGetEnabledNetworkTypesFunction() {
 }
 
-bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunImpl() {
+bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunSync() {
   base::ListValue* network_list = new base::ListValue;
   network_list->Append(new base::StringValue(onc::network_type::kWiFi));
   SetResult(network_list);
@@ -262,7 +262,7 @@ NetworkingPrivateEnableNetworkTypeFunction::
 ~NetworkingPrivateEnableNetworkTypeFunction() {
 }
 
-bool NetworkingPrivateEnableNetworkTypeFunction::RunImpl() {
+bool NetworkingPrivateEnableNetworkTypeFunction::RunSync() {
   scoped_ptr<api::EnableNetworkType::Params> params =
       api::EnableNetworkType::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -276,7 +276,7 @@ NetworkingPrivateDisableNetworkTypeFunction::
 ~NetworkingPrivateDisableNetworkTypeFunction() {
 }
 
-bool NetworkingPrivateDisableNetworkTypeFunction::RunImpl() {
+bool NetworkingPrivateDisableNetworkTypeFunction::RunSync() {
   scoped_ptr<api::DisableNetworkType::Params> params =
       api::DisableNetworkType::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -290,7 +290,7 @@ NetworkingPrivateRequestNetworkScanFunction::
   ~NetworkingPrivateRequestNetworkScanFunction() {
 }
 
-bool NetworkingPrivateRequestNetworkScanFunction::RunImpl() {
+bool NetworkingPrivateRequestNetworkScanFunction::RunSync() {
   NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
   service_client->RequestNetworkScan();

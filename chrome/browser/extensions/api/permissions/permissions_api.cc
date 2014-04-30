@@ -48,7 +48,7 @@ bool ignore_user_gesture_for_tests = false;
 
 }  // namespace
 
-bool PermissionsContainsFunction::RunImpl() {
+bool PermissionsContainsFunction::RunSync() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -64,14 +64,14 @@ bool PermissionsContainsFunction::RunImpl() {
   return true;
 }
 
-bool PermissionsGetAllFunction::RunImpl() {
+bool PermissionsGetAllFunction::RunSync() {
   scoped_ptr<Permissions> permissions =
       helpers::PackPermissionSet(GetExtension()->GetActivePermissions().get());
   results_ = GetAll::Results::Create(*permissions);
   return true;
 }
 
-bool PermissionsRemoveFunction::RunImpl() {
+bool PermissionsRemoveFunction::RunSync() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

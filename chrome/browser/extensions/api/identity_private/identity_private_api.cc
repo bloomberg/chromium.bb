@@ -18,7 +18,7 @@ IdentityPrivateGetResourcesFunction::IdentityPrivateGetResourcesFunction() {}
 
 IdentityPrivateGetResourcesFunction::~IdentityPrivateGetResourcesFunction() {}
 
-bool IdentityPrivateGetResourcesFunction::RunImpl() {
+bool IdentityPrivateGetResourcesFunction::RunSync() {
   base::DictionaryValue* result = new base::DictionaryValue;
 
   result->SetString("IDR_CLOSE_DIALOG",
@@ -35,4 +35,4 @@ bool IdentityPrivateGetResourcesFunction::RunImpl() {
   return true;
 }
 
-}  // extensions
+}  // namespace extensions

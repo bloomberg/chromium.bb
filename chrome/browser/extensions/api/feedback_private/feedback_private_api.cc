@@ -96,7 +96,7 @@ void FeedbackPrivateAPI::RequestFeedback(
 // static
 base::Closure* FeedbackPrivateGetStringsFunction::test_callback_ = NULL;
 
-bool FeedbackPrivateGetStringsFunction::RunImpl() {
+bool FeedbackPrivateGetStringsFunction::RunSync() {
   base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
 
@@ -132,7 +132,7 @@ bool FeedbackPrivateGetStringsFunction::RunImpl() {
   return true;
 }
 
-bool FeedbackPrivateGetUserEmailFunction::RunImpl() {
+bool FeedbackPrivateGetUserEmailFunction::RunSync() {
   // TODO(rkc): Remove logging once crbug.com/284662 is closed.
   LOG(WARNING) << "FEEDBACK_DEBUG: User e-mail requested.";
   FeedbackService* service =

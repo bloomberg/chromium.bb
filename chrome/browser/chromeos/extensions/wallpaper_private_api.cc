@@ -231,7 +231,7 @@ void WindowStateManager::OnWindowDestroyed(aura::Window* window) {
 
 }  // namespace
 
-bool WallpaperPrivateGetStringsFunction::RunImpl() {
+bool WallpaperPrivateGetStringsFunction::RunSync() {
   base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
 

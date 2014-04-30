@@ -285,28 +285,28 @@ bool TtsSpeakFunction::RunImpl() {
   return true;
 }
 
-bool TtsStopSpeakingFunction::RunImpl() {
+bool TtsStopSpeakingFunction::RunSync() {
   TtsController::GetInstance()->Stop();
   return true;
 }
 
-bool TtsPauseFunction::RunImpl() {
+bool TtsPauseFunction::RunSync() {
   TtsController::GetInstance()->Pause();
   return true;
 }
 
-bool TtsResumeFunction::RunImpl() {
+bool TtsResumeFunction::RunSync() {
   TtsController::GetInstance()->Resume();
   return true;
 }
 
-bool TtsIsSpeakingFunction::RunImpl() {
+bool TtsIsSpeakingFunction::RunSync() {
   SetResult(base::Value::CreateBooleanValue(
       TtsController::GetInstance()->IsSpeaking()));
   return true;
 }
 
-bool TtsGetVoicesFunction::RunImpl() {
+bool TtsGetVoicesFunction::RunSync() {
   std::vector<VoiceData> voices;
   TtsController::GetInstance()->GetVoices(GetProfile(), &voices);
 

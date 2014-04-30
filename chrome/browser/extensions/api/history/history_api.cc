@@ -235,12 +235,6 @@ void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-void HistoryFunction::Run() {
-  if (!RunImpl()) {
-    SendResponse(false);
-  }
-}
-
 bool HistoryFunction::ValidateUrl(const std::string& url_string, GURL* url) {
   GURL temp_url(url_string);
   if (!temp_url.is_valid()) {

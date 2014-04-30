@@ -120,11 +120,11 @@ class ExtensionFunction
 
   // Execute the API. Clients should initialize the ExtensionFunction using
   // SetArgs(), set_request_id(), and the other setters before calling this
-  // method. Derived classes should be ready to return GetResultList() and
-  // GetError() before returning from this function.
+  // method.
+  //
   // Note that once Run() returns, dispatcher() can be NULL, so be sure to
   // NULL-check.
-  virtual void Run();
+  void Run();
 
   // Gets whether quota should be applied to this individual function
   // invocation. This is different to GetQuotaLimitHeuristics which is only
@@ -502,9 +502,11 @@ class SyncExtensionFunction : public UIThreadExtensionFunction {
  public:
   SyncExtensionFunction();
 
-  virtual void Run() OVERRIDE;
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
+  virtual bool RunSync() = 0;
+
   virtual ~SyncExtensionFunction();
 };
 
@@ -512,9 +514,11 @@ class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
  public:
   SyncIOThreadExtensionFunction();
 
-  virtual void Run() OVERRIDE;
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
+  virtual bool RunSync() = 0;
+
   virtual ~SyncIOThreadExtensionFunction();
 };
 

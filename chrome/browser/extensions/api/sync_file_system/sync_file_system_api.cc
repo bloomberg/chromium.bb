@@ -340,7 +340,7 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   SendResponse(true);
 }
 
-bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
+bool SyncFileSystemSetConflictResolutionPolicyFunction::RunSync() {
   std::string policy_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &policy_string));
   ConflictResolutionPolicy policy = ExtensionEnumToConflictResolutionPolicy(
@@ -362,7 +362,7 @@ bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
   return true;
 }
 
-bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
+bool SyncFileSystemGetConflictResolutionPolicyFunction::RunSync() {
   sync_file_system::SyncFileSystemService* service =
       GetSyncFileSystemService(GetProfile());
   DCHECK(service);
@@ -374,7 +374,7 @@ bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
   return true;
 }
 
-bool SyncFileSystemGetServiceStatusFunction::RunImpl() {
+bool SyncFileSystemGetServiceStatusFunction::RunSync() {
   sync_file_system::SyncFileSystemService* service =
       GetSyncFileSystemService(GetProfile());
   results_ = api::sync_file_system::GetServiceStatus::Results::Create(

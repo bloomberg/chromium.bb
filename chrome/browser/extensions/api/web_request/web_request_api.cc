@@ -2144,7 +2144,7 @@ void ClearCacheQuotaHeuristic::OnPageLoad(Bucket* bucket) {
   bucket->DeductToken();
 }
 
-bool WebRequestInternalAddEventListenerFunction::RunImpl() {
+bool WebRequestInternalAddEventListenerFunction::RunSync() {
   // Argument 0 is the callback, which we don't use here.
   ExtensionWebRequestEventRouter::RequestFilter filter;
   base::DictionaryValue* value = NULL;
@@ -2240,7 +2240,7 @@ void WebRequestInternalEventHandledFunction::RespondWithError(
       response.release());
 }
 
-bool WebRequestInternalEventHandledFunction::RunImpl() {
+bool WebRequestInternalEventHandledFunction::RunSync() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
@@ -2420,7 +2420,7 @@ void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
   Run();
 }
 
-bool WebRequestHandlerBehaviorChangedFunction::RunImpl() {
+bool WebRequestHandlerBehaviorChangedFunction::RunSync() {
   helpers::ClearCacheOnNavigation();
   return true;
 }

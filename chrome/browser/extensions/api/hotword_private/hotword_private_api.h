@@ -49,7 +49,7 @@ class HotwordPrivateSetEnabledFunction : public ChromeSyncExtensionFunction {
   virtual ~HotwordPrivateSetEnabledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class HotwordPrivateSetAudioLoggingEnabledFunction
@@ -62,7 +62,7 @@ class HotwordPrivateSetAudioLoggingEnabledFunction
   virtual ~HotwordPrivateSetAudioLoggingEnabledFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
@@ -74,7 +74,7 @@ class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
   virtual ~HotwordPrivateGetStatusFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -235,7 +235,7 @@ ExtensionService* AsyncManagementFunction::service() {
   return GetProfile()->GetExtensionService();
 }
 
-bool ManagementGetAllFunction::RunImpl() {
+bool ManagementGetAllFunction::RunSync() {
   ExtensionInfoList extensions;
   ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
@@ -248,7 +248,7 @@ bool ManagementGetAllFunction::RunImpl() {
   return true;
 }
 
-bool ManagementGetFunction::RunImpl() {
+bool ManagementGetFunction::RunSync() {
   scoped_ptr<management::Get::Params> params(
       management::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -267,7 +267,7 @@ bool ManagementGetFunction::RunImpl() {
   return true;
 }
 
-bool ManagementGetPermissionWarningsByIdFunction::RunImpl() {
+bool ManagementGetPermissionWarningsByIdFunction::RunSync() {
   scoped_ptr<management::GetPermissionWarningsById::Params> params(
       management::GetPermissionWarningsById::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -419,7 +419,7 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseFailure(
   Release();
 }
 
-bool ManagementLaunchAppFunction::RunImpl() {
+bool ManagementLaunchAppFunction::RunSync() {
   scoped_ptr<management::LaunchApp::Params> params(
       management::LaunchApp::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

@@ -98,16 +98,16 @@ base::FilePath GetDefaultFilepathForBookmarkExport() {
 
 }  // namespace
 
-void BookmarksFunction::Run() {
+bool BookmarksFunction::RunImpl() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   if (!model->loaded()) {
     // Bookmarks are not ready yet.  We'll wait.
     model->AddObserver(this);
     AddRef();  // Balanced in Loaded().
-    return;
+    return true;
   }
 
-  bool success = RunImpl();
+  bool success = RunOnReady();
   if (success) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
@@ -115,6 +115,7 @@ void BookmarksFunction::Run() {
         content::Details<const BookmarksFunction>(this));
   }
   SendResponse(success);
+  return true;
 }
 
 bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
@@ -217,8 +218,8 @@ void BookmarksFunction::BookmarkModelChanged() {
 void BookmarksFunction::BookmarkModelLoaded(BookmarkModel* model,
                                             bool ids_reassigned) {
   model->RemoveObserver(this);
-  Run();
-  Release();  // Balanced in Run().
+  RunOnReady();
+  Release();  // Balanced in RunOnReady().
 }
 
 BookmarkEventRouter::BookmarkEventRouter(BrowserContext* context,
@@ -386,7 +387,7 @@ void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-bool BookmarksGetFunction::RunImpl() {
+bool BookmarksGetFunction::RunOnReady() {
   scoped_ptr<bookmarks::Get::Params> params(
       bookmarks::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -414,7 +415,7 @@ bool BookmarksGetFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksGetChildrenFunction::RunImpl() {
+bool BookmarksGetChildrenFunction::RunOnReady() {
   scoped_ptr<bookmarks::GetChildren::Params> params(
       bookmarks::GetChildren::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -434,7 +435,7 @@ bool BookmarksGetChildrenFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksGetRecentFunction::RunImpl() {
+bool BookmarksGetRecentFunction::RunOnReady() {
   scoped_ptr<bookmarks::GetRecent::Params> params(
       bookmarks::GetRecent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -458,7 +459,7 @@ bool BookmarksGetRecentFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksGetTreeFunction::RunImpl() {
+bool BookmarksGetTreeFunction::RunOnReady() {
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   const BookmarkNode* node =
       BookmarkModelFactory::GetForProfile(GetProfile())->root_node();
@@ -467,7 +468,7 @@ bool BookmarksGetTreeFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksGetSubTreeFunction::RunImpl() {
+bool BookmarksGetSubTreeFunction::RunOnReady() {
   scoped_ptr<bookmarks::GetSubTree::Params> params(
       bookmarks::GetSubTree::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -482,7 +483,7 @@ bool BookmarksGetSubTreeFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksSearchFunction::RunImpl() {
+bool BookmarksSearchFunction::RunOnReady() {
   scoped_ptr<bookmarks::Search::Params> params(
       bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -546,7 +547,7 @@ bool BookmarksRemoveFunction::ExtractIds(const base::ListValue* args,
   return true;
 }
 
-bool BookmarksRemoveFunction::RunImpl() {
+bool BookmarksRemoveFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -569,7 +570,7 @@ bool BookmarksRemoveFunction::RunImpl() {
   return true;
 }
 
-bool BookmarksCreateFunction::RunImpl() {
+bool BookmarksCreateFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -597,7 +598,7 @@ bool BookmarksMoveFunction::ExtractIds(const base::ListValue* args,
   return BookmarksUpdateFunction::ExtractIds(args, ids, invalid_id);
 }
 
-bool BookmarksMoveFunction::RunImpl() {
+bool BookmarksMoveFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -664,7 +665,7 @@ bool BookmarksUpdateFunction::ExtractIds(const base::ListValue* args,
   return BookmarksRemoveFunction::ExtractIds(args, ids, invalid_id);
 }
 
-bool BookmarksUpdateFunction::RunImpl() {
+bool BookmarksUpdateFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -734,7 +735,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
  public:
   explicit CreateBookmarkBucketMapper(BrowserContext* context)
       : browser_context_(context) {}
-  // TODO(tim): This should share code with BookmarksCreateFunction::RunImpl,
+  // TODO(tim): This should share code with BookmarksCreateFunction::RunOnReady,
   // but I can't figure out a good way to do that with all the macros.
   virtual void GetBucketsForArgs(const base::ListValue* args,
                                  BucketList* buckets) OVERRIDE {
@@ -980,7 +981,7 @@ void BookmarksIOFunction::MultiFilesSelected(
   NOTREACHED() << "Should not be able to select multiple files";
 }
 
-bool BookmarksImportFunction::RunImpl() {
+bool BookmarksImportFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
   SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE);
@@ -1010,7 +1011,7 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
 
-bool BookmarksExportFunction::RunImpl() {
+bool BookmarksExportFunction::RunOnReady() {
   SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE);
   return true;
 }

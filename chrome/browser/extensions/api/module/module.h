@@ -25,7 +25,7 @@ class ExtensionSetUpdateUrlDataFunction : public ChromeSyncExtensionFunction {
   virtual ~ExtensionSetUpdateUrlDataFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ExtensionIsAllowedIncognitoAccessFunction
@@ -38,7 +38,7 @@ class ExtensionIsAllowedIncognitoAccessFunction
   virtual ~ExtensionIsAllowedIncognitoAccessFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class ExtensionIsAllowedFileSchemeAccessFunction
@@ -51,7 +51,7 @@ class ExtensionIsAllowedFileSchemeAccessFunction
   virtual ~ExtensionIsAllowedFileSchemeAccessFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

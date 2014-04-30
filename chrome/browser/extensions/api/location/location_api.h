@@ -18,7 +18,7 @@ class LocationWatchLocationFunction : public ChromeSyncExtensionFunction {
   virtual ~LocationWatchLocationFunction() {}
 
   // SyncExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class LocationClearWatchFunction : public ChromeSyncExtensionFunction {
@@ -30,7 +30,7 @@ class LocationClearWatchFunction : public ChromeSyncExtensionFunction {
   virtual ~LocationClearWatchFunction() {}
 
   // SyncExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 }  // namespace extensions

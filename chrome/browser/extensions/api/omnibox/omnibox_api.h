@@ -80,7 +80,7 @@ class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
   virtual ~OmniboxSendSuggestionsFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 class OmniboxAPI : public BrowserContextKeyedAPI,
@@ -159,7 +159,7 @@ class OmniboxSetDefaultSuggestionFunction : public ChromeSyncExtensionFunction {
   virtual ~OmniboxSetDefaultSuggestionFunction() {}
 
   // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunSync() OVERRIDE;
 };
 
 // If the extension has set a custom default suggestion via

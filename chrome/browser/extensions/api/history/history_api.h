@@ -89,7 +89,6 @@ void BrowserContextKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies();
 class HistoryFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~HistoryFunction() {}
-  virtual void Run() OVERRIDE;
 
   bool ValidateUrl(const std::string& url_string, GURL* url);
   bool VerifyDeleteAllowed();
