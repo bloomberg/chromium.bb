@@ -304,7 +304,7 @@ class TestPacketWriter : public QuicPacketWriter {
     }
 
     if (use_tagging_decrypter_) {
-      framer_.framer()->SetDecrypter(new TaggingDecrypter);
+      framer_.framer()->SetDecrypter(new TaggingDecrypter, ENCRYPTION_NONE);
     }
     EXPECT_TRUE(framer_.ProcessPacket(packet));
     if (block_on_next_write_) {
@@ -1064,6 +1064,22 @@ TEST_P(QuicConnectionTest, RejectPacketTooFarOut) {
   ProcessDataPacket(6000, 0, !kEntropyFlag);
   EXPECT_FALSE(
       QuicConnectionPeer::GetConnectionClosePacket(&connection_) == NULL);
+}
+
+TEST_P(QuicConnectionTest, RejectUnencryptedStreamData) {
+  // Process an unencrypted packet from the non-crypto stream.
+  frame1_.stream_id = 3;
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA,
+                                           false));
+  ProcessDataPacket(1, 0, !kEntropyFlag);
+  EXPECT_FALSE(
+      QuicConnectionPeer::GetConnectionClosePacket(&connection_) == NULL);
+  const vector<QuicConnectionCloseFrame>& connection_close_frames =
+      writer_->connection_close_frames();
+  EXPECT_EQ(1u, connection_close_frames.size());
+  EXPECT_EQ(QUIC_UNENCRYPTED_STREAM_DATA,
+            connection_close_frames[0].error_code);
 }
 
 TEST_P(QuicConnectionTest, TruncatedAck) {
@@ -2417,24 +2433,25 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
 
   // Process an encrypted packet which can not yet be decrypted
   // which should result in the packet being buffered.
-  ProcessDataPacketAtLevel(1, false, kEntropyFlag, ENCRYPTION_INITIAL);
+  ProcessDataPacketAtLevel(1, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 
   // Transition to the new encryption state and process another
   // encrypted packet which should result in the original packet being
   // processed.
-  connection_.SetDecrypter(new StrictTaggingDecrypter(tag));
+  connection_.SetDecrypter(new StrictTaggingDecrypter(tag),
+                           ENCRYPTION_INITIAL);
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
   EXPECT_CALL(visitor_, WillAcceptStreamFrames(_)).Times(2).WillRepeatedly(
       Return(true));
   EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(2);
-  ProcessDataPacketAtLevel(2, false, kEntropyFlag, ENCRYPTION_INITIAL);
+  ProcessDataPacketAtLevel(2, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 
   // Finally, process a third packet and note that we do not
   // reprocess the buffered packet.
   EXPECT_CALL(visitor_, WillAcceptStreamFrames(_)).WillOnce(Return(true));
   EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
-  ProcessDataPacketAtLevel(3, false, kEntropyFlag, ENCRYPTION_INITIAL);
+  ProcessDataPacketAtLevel(3, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 }
 
 TEST_P(QuicConnectionTest, TestRetransmitOrder) {
@@ -2962,9 +2979,20 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
   QuicTime ack_time = clock_.ApproximateNow().Add(DefaultDelayedAckTime());
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  const uint8 tag = 0x07;
+  connection_.SetDecrypter(new StrictTaggingDecrypter(tag),
+                           ENCRYPTION_INITIAL);
+  framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
   // Process a packet from the non-crypto stream.
   frame1_.stream_id = 3;
-  ProcessPacket(1);
+
+  // The same as ProcessPacket(1) except that ENCRYPTION_INITIAL is used
+  // instead of ENCRYPTION_NONE.
+  EXPECT_CALL(visitor_, WillAcceptStreamFrames(_)).WillOnce(
+      Return(accept_packet_));
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(accept_packet_ ? 1 : 0);
+  ProcessDataPacketAtLevel(1, 0, !kEntropyFlag, ENCRYPTION_INITIAL);
+
   // Check if delayed ack timer is running for the expected interval.
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
   EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());

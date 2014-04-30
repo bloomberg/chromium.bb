@@ -26,6 +26,10 @@ class QuicFramerPeer {
       QuicPacketSequenceNumber packet_sequence_number);
   static void SetIsServer(QuicFramer* framer, bool is_server);
 
+  // SwapCrypters exchanges the state of the crypters of |framer1| with
+  // |framer2|.
+  static void SwapCrypters(QuicFramer* framer1, QuicFramer* framer2);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);
 };

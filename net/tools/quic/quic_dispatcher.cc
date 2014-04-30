@@ -88,7 +88,7 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
       const QuicVersionNegotiationPacket& /*packet*/) OVERRIDE {
     DCHECK(false);
   }
-  virtual void OnPacketComplete() OVERRIDE {
+  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE {
     DCHECK(false);
   }
   virtual bool OnPacketHeader(const QuicPacketHeader& /*header*/) OVERRIDE {
@@ -146,6 +146,9 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     return false;
   }
   virtual void OnFecData(const QuicFecData& /*fec*/) OVERRIDE {
+    DCHECK(false);
+  }
+  virtual void OnPacketComplete() OVERRIDE {
     DCHECK(false);
   }
 

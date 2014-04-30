@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/mock_crypto_client_stream.h"
 
+#include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_server_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +37,8 @@ bool MockCryptoClientStream::CryptoConnect() {
     case ZERO_RTT: {
       encryption_established_ = true;
       handshake_confirmed_ = false;
+      session()->connection()->SetDecrypter(QuicDecrypter::Create(kNULL),
+                                            ENCRYPTION_INITIAL);
       session()->OnCryptoHandshakeEvent(
           QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
       break;
@@ -50,6 +53,8 @@ bool MockCryptoClientStream::CryptoConnect() {
         client_session()->OnProofVerifyDetailsAvailable(*proof_verify_details_);
       }
       SetConfigNegotiated();
+      session()->connection()->SetDecrypter(QuicDecrypter::Create(kNULL),
+                                            ENCRYPTION_FORWARD_SECURE);
       session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
       break;
     }

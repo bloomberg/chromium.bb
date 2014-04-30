@@ -94,6 +94,10 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // cease.
   virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) = 0;
 
+  // Called when a packet has been decrypted. |level| is the encryption level
+  // of the packet.
+  virtual void OnDecryptedPacket(EncryptionLevel level) = 0;
+
   // Called when the complete header of a packet had been parsed.
   // If OnPacketHeader returns false, framing for this packet will cease.
   virtual bool OnPacketHeader(const QuicPacketHeader& header) = 0;
@@ -326,16 +330,18 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // SetDecrypter sets the primary decrypter, replacing any that already exists,
   // and takes ownership. If an alternative decrypter is in place then the
   // function DCHECKs. This is intended for cases where one knows that future
-  // packets will be using the new decrypter and the previous decrypter is not
-  // obsolete.
-  void SetDecrypter(QuicDecrypter* decrypter);
+  // packets will be using the new decrypter and the previous decrypter is now
+  // obsolete. |level| indicates the encryption level of the new decrypter.
+  void SetDecrypter(QuicDecrypter* decrypter, EncryptionLevel level);
 
   // SetAlternativeDecrypter sets a decrypter that may be used to decrypt
-  // future packets and takes ownership of it. If |latch_once_used| is true,
-  // then the first time that the decrypter is successful it will replace the
-  // primary decrypter. Otherwise both decrypters will remain active and the
-  // primary decrypter will be the one last used.
+  // future packets and takes ownership of it. |level| indicates the encryption
+  // level of the decrypter. If |latch_once_used| is true, then the first time
+  // that the decrypter is successful it will replace the primary decrypter.
+  // Otherwise both decrypters will remain active and the primary decrypter
+  // will be the one last used.
   void SetAlternativeDecrypter(QuicDecrypter* decrypter,
+                               EncryptionLevel level,
                                bool latch_once_used);
 
   const QuicDecrypter* decrypter() const;
@@ -345,10 +351,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // takes ownership of |encrypter|.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
   const QuicEncrypter* encrypter(EncryptionLevel level) const;
-
-  // SwapCryptersForTest exchanges the state of the crypters with |other|. To
-  // be used in tests only.
-  void SwapCryptersForTest(QuicFramer* other);
 
   // Returns a new encrypted packet, owned by the caller.
   QuicEncryptedPacket* EncryptPacket(EncryptionLevel level,
@@ -511,7 +513,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
   scoped_ptr<QuicDecrypter> decrypter_;
   // Alternative decrypter that can also be used to decrypt packets.
   scoped_ptr<QuicDecrypter> alternative_decrypter_;
-  // alternative_decrypter_latch_is true if, when |alternative_decrypter_|
+  // The encryption level of |decrypter_|.
+  EncryptionLevel decrypter_level_;
+  // The encryption level of |alternative_decrypter_|.
+  EncryptionLevel alternative_decrypter_level_;
+  // |alternative_decrypter_latch_| is true if, when |alternative_decrypter_|
   // successfully decrypts a packet, we should install it as the only
   // decrypter.
   bool alternative_decrypter_latch_;

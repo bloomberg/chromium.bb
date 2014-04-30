@@ -54,6 +54,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
       const QuicPacketHeader& header) OVERRIDE {
     return true;
   }
+  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE {}
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
     has_header_ = true;
     header_ = header;

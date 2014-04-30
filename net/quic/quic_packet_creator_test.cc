@@ -155,6 +155,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnAckFrame(_));
     EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
@@ -180,6 +181,7 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFEC) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnFecProtectedPayload(_));
     EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
@@ -201,6 +203,7 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFEC) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnFecData(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -223,6 +226,7 @@ TEST_P(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnAckFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -241,6 +245,7 @@ TEST_P(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnAckFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -273,6 +278,7 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnFecProtectedPayload(_));
     EXPECT_CALL(framer_visitor_, OnAckFrame(_));
@@ -291,6 +297,7 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnFecProtectedPayload(_));
     EXPECT_CALL(framer_visitor_, OnAckFrame(_));
@@ -315,6 +322,7 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnFecData(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -352,6 +360,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -373,6 +382,7 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectionClose) {
   EXPECT_CALL(framer_visitor_, OnPacket());
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
   EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+  EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
   EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
   EXPECT_CALL(framer_visitor_, OnConnectionCloseFrame(_));
   EXPECT_CALL(framer_visitor_, OnPacketComplete());
@@ -644,6 +654,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrame) {
     EXPECT_CALL(framer_visitor_, OnPacket());
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_)).WillOnce(
         DoAll(SaveArg<0>(&header), Return(true)));
     EXPECT_CALL(framer_visitor_, OnStreamFrame(_));

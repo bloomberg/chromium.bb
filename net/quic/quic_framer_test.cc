@@ -252,6 +252,8 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     return accept_public_header_;
   }
 
+  virtual void OnDecryptedPacket(EncryptionLevel level) OVERRIDE {}
+
   virtual bool OnUnauthenticatedHeader(
       const QuicPacketHeader& header) OVERRIDE {
     return true;
@@ -373,7 +375,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
         framer_(QuicSupportedVersions(), start_, true) {
     version_ = GetParam();
     framer_.set_version(version_);
-    framer_.SetDecrypter(decrypter_);
+    framer_.SetDecrypter(decrypter_, ENCRYPTION_NONE);
     framer_.SetEncrypter(ENCRYPTION_NONE, encrypter_);
     framer_.set_visitor(&visitor_);
     framer_.set_received_entropy_calculator(&entropy_calculator_);

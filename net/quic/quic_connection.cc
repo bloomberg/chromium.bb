@@ -203,6 +203,9 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       random_generator_(helper->GetRandomGenerator()),
       connection_id_(connection_id),
       peer_address_(address),
+      last_packet_revived_(false),
+      last_size_(0),
+      last_decrypted_packet_level_(ENCRYPTION_NONE),
       largest_seen_packet_with_ack_(0),
       largest_seen_packet_with_stop_waiting_(0),
       pending_version_negotiation_packet_(false),
@@ -422,6 +425,10 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   return true;
 }
 
+void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
+  last_decrypted_packet_level_ = level;
+}
+
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   if (debug_visitor_) {
     debug_visitor_->OnPacketHeader(header);
@@ -508,6 +515,13 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK(connected_);
   if (debug_visitor_) {
     debug_visitor_->OnStreamFrame(frame);
+  }
+  if (frame.stream_id != kCryptoStreamId &&
+      last_decrypted_packet_level_ == ENCRYPTION_NONE) {
+    DLOG(WARNING) << ENDPOINT
+                  << "Received an unencrypted data frame: closing connection";
+    SendConnectionClose(QUIC_UNENCRYPTED_STREAM_DATA);
+    return false;
   }
   last_stream_frames_.push_back(frame);
   return true;
@@ -1618,13 +1632,15 @@ void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {
   encryption_level_ = level;
 }
 
-void QuicConnection::SetDecrypter(QuicDecrypter* decrypter) {
-  framer_.SetDecrypter(decrypter);
+void QuicConnection::SetDecrypter(QuicDecrypter* decrypter,
+                                  EncryptionLevel level) {
+  framer_.SetDecrypter(decrypter, level);
 }
 
 void QuicConnection::SetAlternativeDecrypter(QuicDecrypter* decrypter,
+                                             EncryptionLevel level,
                                              bool latch_once_used) {
-  framer_.SetAlternativeDecrypter(decrypter, latch_once_used);
+  framer_.SetAlternativeDecrypter(decrypter, level, latch_once_used);
 }
 
 const QuicDecrypter* QuicConnection::decrypter() const {

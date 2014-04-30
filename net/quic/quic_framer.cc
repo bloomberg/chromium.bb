@@ -165,6 +165,8 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       last_sequence_number_(0),
       last_serialized_connection_id_(0),
       supported_versions_(supported_versions),
+      decrypter_level_(ENCRYPTION_NONE),
+      alternative_decrypter_level_(ENCRYPTION_NONE),
       alternative_decrypter_latch_(false),
       is_server_(is_server),
       validate_flags_(true),
@@ -1691,14 +1693,19 @@ StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
       - kStartOfHashData);
 }
 
-void QuicFramer::SetDecrypter(QuicDecrypter* decrypter) {
+void QuicFramer::SetDecrypter(QuicDecrypter* decrypter,
+                              EncryptionLevel level) {
   DCHECK(alternative_decrypter_.get() == NULL);
+  DCHECK_GE(level, decrypter_level_);
   decrypter_.reset(decrypter);
+  decrypter_level_ = level;
 }
 
 void QuicFramer::SetAlternativeDecrypter(QuicDecrypter* decrypter,
+                                         EncryptionLevel level,
                                          bool latch_once_used) {
   alternative_decrypter_.reset(decrypter);
+  alternative_decrypter_level_ = level;
   alternative_decrypter_latch_ = latch_once_used;
 }
 
@@ -1722,18 +1729,6 @@ const QuicEncrypter* QuicFramer::encrypter(EncryptionLevel level) const {
   DCHECK_LT(level, NUM_ENCRYPTION_LEVELS);
   DCHECK(encrypter_[level].get() != NULL);
   return encrypter_[level].get();
-}
-
-void QuicFramer::SwapCryptersForTest(QuicFramer* other) {
-  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
-    encrypter_[i].swap(other->encrypter_[i]);
-  }
-  decrypter_.swap(other->decrypter_);
-  alternative_decrypter_.swap(other->alternative_decrypter_);
-
-  const bool other_latch = other->alternative_decrypter_latch_;
-  other->alternative_decrypter_latch_ = alternative_decrypter_latch_;
-  alternative_decrypter_latch_ = other_latch;
 }
 
 QuicEncryptedPacket* QuicFramer::EncryptPacket(
@@ -1789,7 +1784,9 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
           header.public_header.version_flag,
           header.public_header.sequence_number_length),
       encrypted));
-  if  (decrypted_.get() == NULL && alternative_decrypter_.get() != NULL) {
+  if  (decrypted_.get() != NULL) {
+    visitor_->OnDecryptedPacket(decrypter_level_);
+  } else if  (alternative_decrypter_.get() != NULL) {
     decrypted_.reset(alternative_decrypter_->DecryptPacket(
         header.packet_sequence_number,
         GetAssociatedDataFromEncryptedPacket(
@@ -1799,13 +1796,19 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
             header.public_header.sequence_number_length),
         encrypted));
     if (decrypted_.get() != NULL) {
+      visitor_->OnDecryptedPacket(alternative_decrypter_level_);
       if (alternative_decrypter_latch_) {
         // Switch to the alternative decrypter and latch so that we cannot
         // switch back.
         decrypter_.reset(alternative_decrypter_.release());
+        decrypter_level_ = alternative_decrypter_level_;
+        alternative_decrypter_level_ = ENCRYPTION_NONE;
       } else {
         // Switch the alternative decrypter so that we use it first next time.
         decrypter_.swap(alternative_decrypter_);
+        EncryptionLevel level = alternative_decrypter_level_;
+        alternative_decrypter_level_ = decrypter_level_;
+        decrypter_level_ = level;
       }
     }
   }

@@ -387,6 +387,8 @@ enum QuicErrorCode {
   QUIC_INVALID_FEC_DATA = 5,
   // STREAM frame data is malformed.
   QUIC_INVALID_STREAM_DATA = 46,
+  // STREAM frame data is not encrypted.
+  QUIC_UNENCRYPTED_STREAM_DATA = 61,
   // RST_STREAM frame data is malformed.
   QUIC_INVALID_RST_STREAM_DATA = 6,
   // CONNECTION_CLOSE frame data is malformed.
@@ -505,7 +507,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 61,
+  QUIC_LAST_ERROR = 62,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

@@ -141,7 +141,7 @@ void QuicConnectionPeer::SetPeerAddress(QuicConnection* connection,
 // static
 void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
                                       QuicFramer* framer) {
-  framer->SwapCryptersForTest(&connection->framer_);
+  QuicFramerPeer::SwapCrypters(framer, &connection->framer_);
 }
 
 // static
