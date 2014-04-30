@@ -89,7 +89,7 @@ class HttpServerPropertiesManager
 
   // Returns true if |server| supports SPDY. Should only be called from IO
   // thread.
-  virtual bool SupportsSpdy(const net::HostPortPair& server) const OVERRIDE;
+  virtual bool SupportsSpdy(const net::HostPortPair& server) OVERRIDE;
 
   // Add |server| as the SPDY server which supports SPDY protocol into the
   // persisitent store. Should only be called from IO thread.

@@ -121,7 +121,7 @@ class NET_EXPORT HttpServerProperties {
   virtual void Clear() = 0;
 
   // Returns true if |server| supports SPDY.
-  virtual bool SupportsSpdy(const HostPortPair& server) const = 0;
+  virtual bool SupportsSpdy(const HostPortPair& server) = 0;
 
   // Add |server| into the persistent store. Should only be called from IO
   // thread.

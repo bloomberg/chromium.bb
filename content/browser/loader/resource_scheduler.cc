@@ -337,7 +337,7 @@ class ResourceScheduler::Client {
     if (request->url_request()->priority() < net::LOW) {
       net::HostPortPair host_port_pair =
           net::HostPortPair::FromURL(request->url_request()->url());
-      const net::HttpServerProperties& http_server_properties =
+      net::HttpServerProperties& http_server_properties =
           *request->url_request()->context()->http_server_properties();
       if (!http_server_properties.SupportsSpdy(host_port_pair)) {
         return true;
@@ -410,7 +410,7 @@ class ResourceScheduler::Client {
       return START_REQUEST;
     }
 
-    const net::HttpServerProperties& http_server_properties =
+    net::HttpServerProperties& http_server_properties =
         *url_request.context()->http_server_properties();
 
     if (url_request.priority() >= net::LOW ||
