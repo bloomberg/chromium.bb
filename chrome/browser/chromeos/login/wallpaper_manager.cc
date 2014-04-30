@@ -203,6 +203,22 @@ bool SaveWallpaperInternal(const base::FilePath& path,
   return written_bytes == size;
 }
 
+// Returns index of the first public session user found in |users|
+// or -1 otherwise.
+int FindPublicSession(const chromeos::UserList& users) {
+  int index = -1;
+  int i = 0;
+  for (UserList::const_iterator it = users.begin();
+       it != users.end(); ++it, ++i) {
+    if ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
+      index = i;
+      break;
+    }
+  }
+
+  return index;
+}
+
 }  // namespace
 
 const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
@@ -1295,17 +1311,19 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   DCHECK(result) << "Unable to fetch setting "
                  << kAccountsPrefShowUserNamesOnSignIn;
   const chromeos::UserList& users = UserManager::Get()->GetUsers();
-  if (!show_users || users.empty()) {
+  int public_session_user_index = FindPublicSession(users);
+  if ((!show_users && public_session_user_index == -1) || users.empty()) {
     // Boot into sign in form, preload default wallpaper.
     SetDefaultWallpaperDelayed(UserManager::kSignInUser);
     return;
   }
 
   if (!disable_boot_animation) {
+    int index = public_session_user_index != -1 ? public_session_user_index : 0;
     // Normal boot, load user wallpaper.
     // If normal boot animation is disabled wallpaper would be set
     // asynchronously once user pods are loaded.
-    SetUserWallpaperDelayed(users[0]->email());
+    SetUserWallpaperDelayed(users[index]->email());
   }
 }
 

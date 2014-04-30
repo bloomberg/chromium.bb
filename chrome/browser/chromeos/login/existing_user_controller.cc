@@ -188,18 +188,22 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
 
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                              &show_users_on_signin);
-  if (show_users_on_signin) {
-    for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-      // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-      bool meets_locally_managed_requirements =
-          (*it)->GetType() != User::USER_TYPE_LOCALLY_MANAGED ||
-          UserManager::Get()->AreLocallyManagedUsersAllowed();
-      bool meets_whitelist_requirements =
-          LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
-          (*it)->GetType() != User::USER_TYPE_REGULAR;
-      if (meets_locally_managed_requirements && meets_whitelist_requirements) {
-        filtered_users.push_back(*it);
-      }
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    // TODO(xiyuan): Clean user profile whose email is not in whitelist.
+    bool meets_locally_managed_requirements =
+        (*it)->GetType() != User::USER_TYPE_LOCALLY_MANAGED ||
+        UserManager::Get()->AreLocallyManagedUsersAllowed();
+    bool meets_whitelist_requirements =
+        LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
+        (*it)->GetType() != User::USER_TYPE_REGULAR;
+
+    // Public session accounts are always shown on login screen.
+    bool meets_show_users_requirements = show_users_on_signin ||
+        (*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
+    if (meets_locally_managed_requirements &&
+        meets_whitelist_requirements &&
+        meets_show_users_requirements) {
+      filtered_users.push_back(*it);
     }
   }
 
@@ -207,12 +211,12 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
   // have guest session link.
   bool show_guest;
   cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &show_guest);
-  bool show_users;
-  cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn, &show_users);
+  show_users_on_signin |= !filtered_users.empty();
   show_guest &= !filtered_users.empty();
   bool show_new_user = true;
   login_display_->set_parent_window(GetNativeWindow());
-  login_display_->Init(filtered_users, show_guest, show_users, show_new_user);
+  login_display_->Init(
+      filtered_users, show_guest, show_users_on_signin, show_new_user);
   host_->OnPreferencesChanged();
 }
 

@@ -109,7 +109,8 @@ class WebUILoginDisplay : public LoginDisplay,
   // Whether to show guest login.
   bool show_guest_;
 
-  // Weather to show the user pads or a plain credentials dialogue.
+  // Weather to show the user pods or a GAIA sign in.
+  // Public sessions are always shown.
   bool show_users_;
 
   // Whether to show add new user.
