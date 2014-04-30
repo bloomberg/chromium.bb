@@ -40,28 +40,39 @@
         'src/snappy.h',
       ],
       'conditions': [
-        ['OS=="win"', {
-            # Signed/unsigned comparison
-            'msvs_disabled_warnings': [
-              # https://code.google.com/p/snappy/issues/detail?id=71
-              4018,
-              # https://code.google.com/p/snappy/issues/detail?id=75
-              4267,
-            ],
-          }],
         ['clang == 1', {
-            # snappy-stubs-internal.h unapologetically has: using namespace std
-            # https://code.google.com/p/snappy/issues/detail?id=70
-            'xcode_settings': {
-              'WARNING_CFLAGS!': [ '-Wheader-hygiene' ],
-            },
-            'cflags!': [ '-Wheader-hygiene' ],
-          }],
+          # snappy-stubs-internal.h unapologetically has: using namespace std
+          # https://code.google.com/p/snappy/issues/detail?id=70
+          'xcode_settings': {
+            'WARNING_CFLAGS!': [ '-Wheader-hygiene' ],
+          },
+          'cflags': [ '-Wno-header-hygiene' ],
+        }],
+        ['OS=="linux"', {
+          'defines': [
+            # TODO(tfarina): Only Linux has the generated config.h for now.
+            # Generate the config.h in the other platforms: mac, win and enable
+            # this for everyone.
+            'HAVE_CONFIG_H=1',
+          ],
+        }],
+        ['OS=="win"', {
+          # Signed/unsigned comparison
+          'msvs_disabled_warnings': [
+            # https://code.google.com/p/snappy/issues/detail?id=71
+            4018,
+            # https://code.google.com/p/snappy/issues/detail?id=75
+            4267,
+          ],
+        }],
       ],
     },
     {
       'target_name': 'snappy_unittest',
       'type': 'executable',
+      'defines': [
+        'HAVE_CONFIG_H=1',
+      ],
       'sources': [
         'src/snappy-test.cc',
         'src/snappy-test.h',
@@ -72,6 +83,14 @@
         '../../base/base.gyp:base',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/zlib/zlib.gyp:zlib',
+      ],
+      'conditions': [
+        ['clang == 1', {
+          'cflags': [
+            '-Wno-return-type',
+            '-Wno-header-hygiene'
+          ],
+        }],
       ],
     },
   ],
