@@ -114,7 +114,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
+// Very flaky, see http://crbug.com/368621
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, DISABLED_AddingSeveralUsers) {
   EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY,
             ash::Shell::GetInstance()->session_state_delegate()->
                 GetSessionState());
