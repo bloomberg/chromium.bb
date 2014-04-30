@@ -490,6 +490,9 @@ void WorkerThreadableWebSocketChannel::Bridge::initialize(const String& sourceUR
 bool WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const String& protocol)
 {
     ASSERT(m_workerClientWrapper);
+    if (!m_workerGlobalScope)
+        return false;
+    ASSERT(m_syncHelper);
     m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::connect, m_peer, url.copy(), protocol.isolatedCopy())));
     RefPtr<Bridge> protect(this);
     waitForMethodCompletion();
