@@ -220,8 +220,7 @@ gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
           size,
           std::min(width, height),
           AvatarImageSource::POSITION_CENTER,
-          is_rectangle ? AvatarImageSource::BORDER_NORMAL :
-              AvatarImageSource::BORDER_NONE));
+          AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), size));
 }
