@@ -29,7 +29,7 @@ import org.chromium.ui.base.WindowAndroid;
  *             compatibility.
  */
 public class ContentView extends FrameLayout
-        implements ContentViewCore.InternalAccessDelegate, PageInfo {
+        implements ContentViewCore.InternalAccessDelegate {
 
     private final ContentViewCore mContentViewCore;
 
@@ -65,23 +65,6 @@ public class ContentView extends FrameLayout
 
         mContentViewCore = new ContentViewCore(context);
         mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid);
-    }
-
-    // PageInfo implementation.
-
-    @Override
-    public String getTitle() {
-        return mContentViewCore.getTitle();
-    }
-
-    @Override
-    public int getBackgroundColor() {
-        return mContentViewCore.getBackgroundColor();
-    }
-
-    @Override
-    public View getView() {
-        return this;
     }
 
     /**

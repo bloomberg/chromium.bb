@@ -206,7 +206,7 @@ public class ContextMenuTest extends ChromeShellTestBase {
         assertNotNull("Context menu was not properly created", menu);
         assertFalse("Context menu did not have window focus", getActivity().hasWindowFocus());
 
-        TestTouchUtils.singleClickView(getInstrumentation(), tab.getPageInfo().getView(), 0, 0);
+        TestTouchUtils.singleClickView(getInstrumentation(), tab.getView(), 0, 0);
 
         Assert.assertTrue("Activity did not regain focus.",
                 CriteriaHelper.pollForCriteria(new Criteria() {

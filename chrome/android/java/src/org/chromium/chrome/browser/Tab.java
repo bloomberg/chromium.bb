@@ -32,7 +32,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationClient;
 import org.chromium.content.browser.NavigationHistory;
-import org.chromium.content.browser.PageInfo;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.Clipboard;
@@ -453,8 +452,7 @@ public class Tab implements NavigationClient {
      *         be {@code null}, if the tab is frozen or being initialized or destroyed.
      */
     public View getView() {
-        PageInfo pageInfo = getPageInfo();
-        return pageInfo != null ? pageInfo.getView() : null;
+        return mNativePage != null ? mNativePage.getView() : mContentView;
     }
 
     /**
@@ -535,7 +533,9 @@ public class Tab implements NavigationClient {
      * @return The background color of the tab.
      */
     public int getBackgroundColor() {
-        return getPageInfo() != null ? getPageInfo().getBackgroundColor() : Color.WHITE;
+        if (mNativePage != null) return mNativePage.getBackgroundColor();
+        if (mContentViewCore != null) return mContentViewCore.getBackgroundColor();
+        return Color.WHITE;
     }
 
     /**
@@ -587,14 +587,6 @@ public class Tab implements NavigationClient {
      */
     public ContentViewCore getContentViewCore() {
         return mNativePage == null ? mContentViewCore : null;
-    }
-
-    /**
-     * @return A {@link PageInfo} describing the current page.  This is always not {@code null}
-     *         except during initialization, destruction, and when the tab is frozen.
-     */
-    public PageInfo getPageInfo() {
-        return mNativePage != null ? mNativePage : mContentView;
     }
 
     /**
@@ -768,7 +760,7 @@ public class Tab implements NavigationClient {
 
     /**
      * Completes the {@link ContentView} specific initialization around a native WebContents
-     * pointer.  {@link #getPageInfo()} will still return the {@link NativePage} if there is one.
+     * pointer. {@link #getNativePage()} will still return the {@link NativePage} if there is one.
      * All initialization that needs to reoccur after a web contents swap should be added here.
      * <p />
      * NOTE: If you attempt to pass a native WebContents that does not have the same incognito
@@ -868,7 +860,9 @@ public class Tab implements NavigationClient {
      */
     @CalledByNative
     public String getTitle() {
-        return getPageInfo() != null ? getPageInfo().getTitle() : "";
+        if (mNativePage != null) return mNativePage.getTitle();
+        if (mContentViewCore != null) return mContentViewCore.getTitle();
+        return "";
     }
 
     /**
@@ -929,7 +923,7 @@ public class Tab implements NavigationClient {
 
     private void destroyNativePageInternal(NativePage nativePage) {
         if (nativePage == null) return;
-        assert getPageInfo() != nativePage : "Attempting to destroy active page.";
+        assert nativePage != mNativePage : "Attempting to destroy active page.";
 
         nativePage.destroy();
     }
