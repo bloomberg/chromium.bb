@@ -486,13 +486,17 @@ gfx::RectF MathUtil::ScaleRectProportional(const gfx::RectF& input_outer_rect,
   return output_inner_rect;
 }
 
+static inline bool NearlyZero(double value) {
+  return std::abs(value) < std::numeric_limits<double>::epsilon();
+}
+
 static inline float ScaleOnAxis(double a, double b, double c) {
-  if (!b && !c)
-    return a;
-  if (!a && !c)
-    return b;
-  if (!a && !b)
-    return c;
+  if (NearlyZero(b) && NearlyZero(c))
+    return std::abs(a);
+  if (NearlyZero(a) && NearlyZero(c))
+    return std::abs(b);
+  if (NearlyZero(a) && NearlyZero(b))
+    return std::abs(c);
 
   // Do the sqrt as a double to not lose precision.
   return static_cast<float>(std::sqrt(a * a + b * b + c * c));
