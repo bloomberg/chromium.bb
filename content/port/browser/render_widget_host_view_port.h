@@ -292,7 +292,11 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // create one and if one doesn't exist already. Some ports may not create
   // one depending on the current state.
   virtual void CreateBrowserAccessibilityManagerIfNeeded() = 0;
-
+  virtual void SetBrowserAccessibilityManager(
+      BrowserAccessibilityManager* manager) = 0;
+  virtual void OnAccessibilitySetFocus(int acc_obj_id) = 0;
+  virtual void AccessibilityShowMenu(int acc_obj_id) = 0;
+  virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) = 0;
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.
   virtual uint32 RendererFrameNumber() = 0;

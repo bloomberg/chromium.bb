@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/software_frame_manager.h"
@@ -51,8 +50,7 @@ class WebContents;
 @interface RenderWidgetHostViewCocoa
     : BaseView <RenderWidgetHostViewMacBase,
                 RenderWidgetHostViewMacOwner,
-                NSTextInputClient,
-                BrowserAccessibilityDelegateCocoa> {
+                NSTextInputClient> {
  @private
   scoped_ptr<content::RenderWidgetHostViewMac> renderWidgetHostView_;
   // This ivar is the cocoa delegate of the NSResponder.
@@ -305,6 +303,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void AcceleratedSurfaceInitialized(int host_id,
                                              int route_id) OVERRIDE;
   virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;
+  virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds)
+      OVERRIDE;
+  virtual void OnAccessibilitySetFocus(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityShowMenu(int acc_obj_id) OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 

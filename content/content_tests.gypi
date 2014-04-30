@@ -18,6 +18,7 @@
           'dependencies': [
             'webkit_test_support_content',
             '../skia/skia.gyp:skia',
+            '../ui/accessibility/accessibility.gyp:ax_gen',
             '../v8/tools/gyp/v8.gyp:v8',
           ],
           'include_dirs': [

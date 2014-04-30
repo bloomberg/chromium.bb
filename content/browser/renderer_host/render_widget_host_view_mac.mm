@@ -2049,9 +2049,64 @@ void RenderWidgetHostViewMac::CreateBrowserAccessibilityManagerIfNeeded() {
         new BrowserAccessibilityManagerMac(
             cocoa_view_,
             BrowserAccessibilityManagerMac::GetEmptyDocument(),
-            NULL));
+            render_widget_host_));
   }
 }
+
+gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
+    const gfx::Rect& bounds) {
+  NSPoint origin = NSMakePoint(bounds.x(), bounds.y());
+  NSSize size = NSMakeSize(bounds.width(), bounds.height());
+  origin.y = NSHeight([cocoa_view_ bounds]) - origin.y;
+  NSPoint originInWindow = [cocoa_view_ convertPoint:origin toView:nil];
+  NSPoint originInScreen =
+      [[cocoa_view_ window] convertBaseToScreen:originInWindow];
+  originInScreen.y = originInScreen.y - size.height;
+  return gfx::Point(originInScreen.x, originInScreen.y);
+}
+
+void RenderWidgetHostViewMac::OnAccessibilitySetFocus(int accObjId) {
+  // Immediately set the focused item even though we have not officially set
+  // focus on it as VoiceOver expects to get the focused item after this
+  // method returns.
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  if (manager)
+    manager->SetFocus(manager->GetFromID(accObjId), false);
+}
+
+void RenderWidgetHostViewMac::AccessibilityShowMenu(int accObjId) {
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  if (!manager)
+    return;
+  BrowserAccessibilityCocoa* obj =
+      manager->GetFromID(accObjId)->ToBrowserAccessibilityCocoa();
+
+  // Performs a right click copying WebKit's
+  // accessibilityPerformShowMenuAction.
+  NSPoint objOrigin = [obj origin];
+  NSSize size = [[obj size] sizeValue];
+  gfx::Point origin = AccessibilityOriginInScreen(
+      gfx::Rect(objOrigin.x, objOrigin.y, size.width, size.height));
+  NSPoint location = NSMakePoint(origin.x(), origin.y());
+  location = [[cocoa_view_ window] convertScreenToBase:location];
+  location.x += size.width/2;
+  location.y += size.height/2;
+
+  NSEvent* fakeRightClick = [NSEvent
+                          mouseEventWithType:NSRightMouseDown
+                                    location:location
+                               modifierFlags:0
+                                   timestamp:0
+                                windowNumber:[[cocoa_view_ window] windowNumber]
+                                     context:[NSGraphicsContext currentContext]
+                                 eventNumber:0
+                                  clickCount:1
+                                    pressure:0];
+
+  [cocoa_view_ mouseEvent:fakeRightClick];
+}
+
+
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (active) {
@@ -3443,72 +3498,6 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
     }
   }
   return [super accessibilityFocusedUIElement];
-}
-
-- (void)doDefaultAction:(int32)accessibilityObjectId {
-  RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
-  rwh->Send(new AccessibilityMsg_DoDefaultAction(
-      rwh->GetRoutingID(), accessibilityObjectId));
-}
-
-// VoiceOver uses this method to move the caret to the beginning of the next
-// word in a text field.
-- (void)accessibilitySetTextSelection:(int32)accId
-                          startOffset:(int32)startOffset
-                            endOffset:(int32)endOffset {
-  RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
-  rwh->AccessibilitySetTextSelection(accId, startOffset, endOffset);
-}
-
-// Convert a web accessibility's location in web coordinates into a cocoa
-// screen coordinate.
-- (NSPoint)accessibilityPointInScreen:(NSPoint)origin
-                                 size:(NSSize)size {
-  origin.y = NSHeight([self bounds]) - origin.y;
-  NSPoint originInWindow = [self convertPoint:origin toView:nil];
-  NSPoint originInScreen = [[self window] convertBaseToScreen:originInWindow];
-  originInScreen.y = originInScreen.y - size.height;
-  return originInScreen;
-}
-
-- (void)setAccessibilityFocus:(BOOL)focus
-              accessibilityId:(int32)accessibilityObjectId {
-  if (focus) {
-    RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
-    rwh->Send(new AccessibilityMsg_SetFocus(
-        rwh->GetRoutingID(), accessibilityObjectId));
-
-    // Immediately set the focused item even though we have not officially set
-    // focus on it as VoiceOver expects to get the focused item after this
-    // method returns.
-    BrowserAccessibilityManager* manager =
-        renderWidgetHostView_->GetBrowserAccessibilityManager();
-    manager->SetFocus(manager->GetFromID(accessibilityObjectId), false);
-  }
-}
-
-- (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility {
-  // Performs a right click copying WebKit's
-  // accessibilityPerformShowMenuAction.
-  NSPoint origin = [accessibility origin];
-  NSSize size = [[accessibility size] sizeValue];
-  NSPoint location = [self accessibilityPointInScreen:origin size:size];
-  location = [[self window] convertScreenToBase:location];
-  location.x += size.width/2;
-  location.y += size.height/2;
-
-  NSEvent* fakeRightClick = [NSEvent
-                           mouseEventWithType:NSRightMouseDown
-                                     location:location
-                                modifierFlags:0
-                                    timestamp:0
-                                 windowNumber:[[self window] windowNumber]
-                                      context:[NSGraphicsContext currentContext]
-                                  eventNumber:0
-                                   clickCount:1
-                                     pressure:0];
-
-  [self mouseEvent:fakeRightClick];
 }
 
 // Below is the nasty tooltip stuff -- copied from WebKit's WebHTMLView.mm

@@ -7,7 +7,6 @@
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
-#import "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 
 namespace content {
@@ -30,12 +29,8 @@ void BrowserAccessibilityMac::OnDataChanged() {
   }
 
   // We take ownership of the cocoa obj here.
-  BrowserAccessibilityManagerMac* manager =
-      static_cast<BrowserAccessibilityManagerMac*>(manager_);
   browser_accessibility_cocoa_ = [[BrowserAccessibilityCocoa alloc]
-      initWithObject:this
-      delegate:
-          (id<BrowserAccessibilityDelegateCocoa>)manager->parent_view()];
+      initWithObject:this];
 }
 
 void BrowserAccessibilityMac::NativeReleaseReference() {

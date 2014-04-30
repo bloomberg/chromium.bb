@@ -9,7 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "content/browser/accessibility/browser_accessibility.h"
-#import "content/browser/accessibility/browser_accessibility_delegate_mac.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility
 // object. The renderer converts webkit's accessibility tree into a
@@ -19,15 +19,11 @@
  @private
   content::BrowserAccessibility* browserAccessibility_;
   base::scoped_nsobject<NSMutableArray> children_;
-  id<BrowserAccessibilityDelegateCocoa> delegate_;
 }
 
 // This creates a cocoa browser accessibility object around
-// the cross platform BrowserAccessibility object.  The delegate is
-// used to communicate with the host renderer.  None of these
-// parameters can be null.
-- (id)initWithObject:(content::BrowserAccessibility*)accessibility
-            delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate;
+// the cross platform BrowserAccessibility object, which can't be null.
+- (id)initWithObject:(content::BrowserAccessibility*)accessibility;
 
 // Clear this object's pointer to the wrapped BrowserAccessibility object
 // because the wrapped object has been deleted, but this object may
@@ -40,6 +36,14 @@
 // Convenience method to get the internal, cross-platform role
 // from browserAccessibility_.
 - (ui::AXRole)internalRole;
+
+// Convenience method to get the BrowserAccessibilityDelegate from
+// the manager.
+- (content::BrowserAccessibilityDelegate*)delegate;
+
+// Convert the local objet's origin to a global point.
+- (NSPoint)pointInScreen:(NSPoint)origin
+                    size:(NSSize)size;
 
 // Return the method name for the given attribute. For testing only.
 - (NSString*)methodNameForAttribute:(NSString*)attribute;

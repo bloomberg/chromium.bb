@@ -230,7 +230,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
 }
 
 void BrowserAccessibilityManagerWin::OnRootChanged(ui::AXNode* new_root) {
-  if (delegate_ && delegate_->HasFocus())
+  if (delegate_ && delegate_->AccessibilityViewHasFocus())
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetRoot());
 }
 

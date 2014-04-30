@@ -45,18 +45,20 @@ CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
 class CONTENT_EXPORT BrowserAccessibilityDelegate {
  public:
   virtual ~BrowserAccessibilityDelegate() {}
-  virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
+  virtual void AccessibilitySetFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
+  virtual void AccessibilityShowMenu(int acc_obj_id) = 0;
   virtual void AccessibilityScrollToMakeVisible(
       int acc_obj_id, gfx::Rect subfocus) = 0;
   virtual void AccessibilityScrollToPoint(
       int acc_obj_id, gfx::Point point) = 0;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) = 0;
-  virtual bool HasFocus() const = 0;
-  virtual gfx::Rect GetViewBounds() const = 0;
-  virtual gfx::Point GetLastTouchEventLocation() const = 0;
-  virtual void FatalAccessibilityTreeError() = 0;
+  virtual bool AccessibilityViewHasFocus() const = 0;
+  virtual gfx::Rect AccessibilityGetViewBounds() const = 0;
+  virtual gfx::Point AccessibilityOriginInScreen(
+      const gfx::Rect& bounds) const = 0;
+  virtual void AccessibilityFatalError() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -158,10 +160,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // given root (inclusive). Does not make a new reference.
   BrowserAccessibility* GetFocus(BrowserAccessibility* root);
 
-  // Is the on-screen keyboard allowed to be shown, in response to a
-  // focus event on a text box?
-  bool IsOSKAllowed(const gfx::Rect& bounds);
-
   // True by default, but some platforms want to treat the root
   // scroll offsets separately.
   virtual bool UseRootScrollOffsetsWhenComputingBounds();
@@ -177,6 +175,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   virtual void OnNodeCreationFinished(ui::AXNode* node) OVERRIDE;
   virtual void OnNodeChangeFinished(ui::AXNode* node) OVERRIDE;
   virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE {}
+
+  BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 
  protected:
   BrowserAccessibilityManager(

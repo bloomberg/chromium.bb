@@ -1183,61 +1183,10 @@ void RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManagerIfNeeded() {
       obj = content_view_core_->GetJavaObject();
     SetBrowserAccessibilityManager(
         new BrowserAccessibilityManagerAndroid(
-            obj, BrowserAccessibilityManagerAndroid::GetEmptyDocument(), this));
+            obj,
+            BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
+            host_));
   }
-}
-
-void RenderWidgetHostViewAndroid::SetAccessibilityFocus(int acc_obj_id) {
-  if (!host_)
-    return;
-
-  host_->AccessibilitySetFocus(acc_obj_id);
-}
-
-void RenderWidgetHostViewAndroid::AccessibilityDoDefaultAction(int acc_obj_id) {
-  if (!host_)
-    return;
-
-  host_->AccessibilityDoDefaultAction(acc_obj_id);
-}
-
-void RenderWidgetHostViewAndroid::AccessibilityScrollToMakeVisible(
-    int acc_obj_id, gfx::Rect subfocus) {
-  if (!host_)
-    return;
-
-  host_->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
-}
-
-void RenderWidgetHostViewAndroid::AccessibilityScrollToPoint(
-    int acc_obj_id, gfx::Point point) {
-  if (!host_)
-    return;
-
-  host_->AccessibilityScrollToPoint(acc_obj_id, point);
-}
-
-void RenderWidgetHostViewAndroid::AccessibilitySetTextSelection(
-    int acc_obj_id, int start_offset, int end_offset) {
-  if (!host_)
-    return;
-
-  host_->AccessibilitySetTextSelection(
-      acc_obj_id, start_offset, end_offset);
-}
-
-gfx::Point RenderWidgetHostViewAndroid::GetLastTouchEventLocation() const {
-  NOTIMPLEMENTED();
-  // Only used on Win8
-  return gfx::Point();
-}
-
-void RenderWidgetHostViewAndroid::FatalAccessibilityTreeError() {
-  if (!host_)
-    return;
-
-  host_->FatalAccessibilityTreeError();
-  SetBrowserAccessibilityManager(NULL);
 }
 
 bool RenderWidgetHostViewAndroid::LockMouse() {

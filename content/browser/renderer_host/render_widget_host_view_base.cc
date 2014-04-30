@@ -498,6 +498,17 @@ void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
   browser_accessibility_manager_.reset(manager);
 }
 
+void RenderWidgetHostViewBase::OnAccessibilitySetFocus(int acc_obj_id) {
+}
+
+void RenderWidgetHostViewBase::AccessibilityShowMenu(int acc_obj_id) {
+}
+
+gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(
+    const gfx::Rect& bounds) {
+  return bounds.origin();
+}
+
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   RenderWidgetHostImpl* impl = NULL;
   if (GetRenderWidgetHost())

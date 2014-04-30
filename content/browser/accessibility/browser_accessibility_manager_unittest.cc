@@ -67,24 +67,26 @@ class TestBrowserAccessibilityDelegate
   TestBrowserAccessibilityDelegate()
       : got_fatal_error_(false) {}
 
-  virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE {}
+  virtual void AccessibilitySetFocus(int acc_obj_id) OVERRIDE {}
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE {}
+  virtual void AccessibilityShowMenu(int acc_obj_id) OVERRIDE {}
   virtual void AccessibilityScrollToMakeVisible(
       int acc_obj_id, gfx::Rect subfocus) OVERRIDE {}
   virtual void AccessibilityScrollToPoint(
       int acc_obj_id, gfx::Point point) OVERRIDE {}
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE {}
-  virtual bool HasFocus() const OVERRIDE {
+  virtual bool AccessibilityViewHasFocus() const OVERRIDE {
     return false;
   }
-  virtual gfx::Rect GetViewBounds() const OVERRIDE {
+  virtual gfx::Rect AccessibilityGetViewBounds() const OVERRIDE {
     return gfx::Rect();
   }
-  virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE {
+  virtual gfx::Point AccessibilityOriginInScreen(
+      const gfx::Rect& bounds) const OVERRIDE {
     return gfx::Point();
   }
-  virtual void FatalAccessibilityTreeError() OVERRIDE {
+  virtual void AccessibilityFatalError() OVERRIDE {
     got_fatal_error_ = true;
   }
 

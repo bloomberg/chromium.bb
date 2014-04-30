@@ -1821,11 +1821,11 @@ void RenderWidgetHostViewAura::CreateBrowserAccessibilityManagerIfNeeded() {
   if (legacy_render_widget_host_HWND_) {
     manager = new BrowserAccessibilityManagerWin(
         legacy_render_widget_host_HWND_.get(), accessible_parent,
-        BrowserAccessibilityManagerWin::GetEmptyDocument(), this);
+        BrowserAccessibilityManagerWin::GetEmptyDocument(), host_);
   }
 #else
   manager = BrowserAccessibilityManager::Create(
-      BrowserAccessibilityManager::GetEmptyDocument(), this);
+      BrowserAccessibilityManager::GetEmptyDocument(), host_);
 #endif
   SetBrowserAccessibilityManager(manager);
 }
@@ -2743,58 +2743,6 @@ void RenderWidgetHostViewAura::OnUpdateVSyncParameters(
     base::TimeDelta interval) {
   if (IsShowing())
     host_->UpdateVSyncParameters(timebase, interval);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, BrowserAccessibilityDelegate implementation:
-
-void RenderWidgetHostViewAura::SetAccessibilityFocus(int acc_obj_id) {
-  if (!host_)
-    return;
-
-  host_->AccessibilitySetFocus(acc_obj_id);
-}
-
-void RenderWidgetHostViewAura::AccessibilityDoDefaultAction(int acc_obj_id) {
-  if (!host_)
-    return;
-
-  host_->AccessibilityDoDefaultAction(acc_obj_id);
-}
-
-void RenderWidgetHostViewAura::AccessibilityScrollToMakeVisible(
-    int acc_obj_id, gfx::Rect subfocus) {
-  if (!host_)
-    return;
-
-  host_->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
-}
-
-void RenderWidgetHostViewAura::AccessibilityScrollToPoint(
-    int acc_obj_id, gfx::Point point) {
-  if (!host_)
-    return;
-
-  host_->AccessibilityScrollToPoint(acc_obj_id, point);
-}
-
-void RenderWidgetHostViewAura::AccessibilitySetTextSelection(
-    int acc_obj_id, int start_offset, int end_offset) {
-  if (!host_)
-    return;
-
-  host_->AccessibilitySetTextSelection(
-      acc_obj_id, start_offset, end_offset);
-}
-
-gfx::Point RenderWidgetHostViewAura::GetLastTouchEventLocation() const {
-  // Only needed for Win 8 non-aura.
-  return gfx::Point();
-}
-
-void RenderWidgetHostViewAura::FatalAccessibilityTreeError() {
-  host_->FatalAccessibilityTreeError();
-  SetBrowserAccessibilityManager(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

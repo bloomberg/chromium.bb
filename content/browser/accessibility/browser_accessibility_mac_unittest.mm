@@ -14,45 +14,6 @@
 #import "testing/gtest_mac.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
-@interface MockAccessibilityDelegate :
-    NSView<BrowserAccessibilityDelegateCocoa>
-
-- (NSPoint)accessibilityPointInScreen:(NSPoint)origin
-                                 size:(NSSize)size;
-- (void)doDefaultAction:(int32)accessibilityObjectId;
-- (void)accessibilitySetTextSelection:(int32)accId
-                          startOffset:(int32)startOffset
-                            endOffset:(int32)endOffset;
-- (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility;
-- (void)setAccessibilityFocus:(BOOL)focus
-              accessibilityId:(int32)accessibilityObjectId;
-- (NSWindow*)window;
-
-@end
-
-@implementation MockAccessibilityDelegate
-
-- (NSPoint)accessibilityPointInScreen:(NSPoint)origin
-                                 size:(NSSize)size {
-  return NSZeroPoint;
-}
-- (void)doDefaultAction:(int32)accessibilityObjectId {
-}
-- (void)accessibilitySetTextSelection:(int32)accId
-                          startOffset:(int32)startOffset
-                            endOffset:(int32)endOffset {
-}
-- (void)performShowMenuAction:(BrowserAccessibilityCocoa*)accessibility {
-}
-- (void)setAccessibilityFocus:(BOOL)focus
-              accessibilityId:(int32)accessibilityObjectId {
-}
-- (NSWindow*)window {
-  return nil;
-}
-
-@end
-
 namespace content {
 
 class BrowserAccessibilityTest : public ui::CocoaTest {
@@ -87,17 +48,15 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     child2.location.set_height(100);
     child2.role = ui::AX_ROLE_HEADING;
 
-    delegate_.reset([[MockAccessibilityDelegate alloc] init]);
     manager_.reset(
         new BrowserAccessibilityManagerMac(
-            delegate_,
+            nil,
             MakeAXTreeUpdate(root, child1, child2),
             NULL));
     accessibility_.reset([manager_->GetRoot()->ToBrowserAccessibilityCocoa()
         retain]);
   }
 
-  base::scoped_nsobject<MockAccessibilityDelegate> delegate_;
   base::scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
   scoped_ptr<BrowserAccessibilityManager> manager_;
 };

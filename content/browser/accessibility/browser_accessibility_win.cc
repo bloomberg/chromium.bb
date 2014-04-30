@@ -2819,11 +2819,6 @@ STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(PATTERNID id,
            << id;
   if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
     if (IsEditableText()) {
-      // The BrowserAccessibilityManager keeps track of instances when
-      // we don't want to show the on-screen keyboard.
-      if (!manager()->IsOSKAllowed(GetGlobalBoundsRect()))
-        return E_NOTIMPL;
-
       DVLOG(1) << "Returning UIA text provider";
       base::win::UIATextProvider::CreateTextProvider(true, provider);
       return S_OK;

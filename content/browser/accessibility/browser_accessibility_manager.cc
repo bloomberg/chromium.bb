@@ -95,7 +95,7 @@ void BrowserAccessibilityManager::Initialize(
   if (!tree_->Unserialize(initial_tree)) {
     if (delegate_) {
       LOG(ERROR) << tree_->error();
-      delegate_->FatalAccessibilityTreeError();
+      delegate_->AccessibilityFatalError();
     } else {
       LOG(FATAL) << tree_->error();
     }
@@ -147,14 +147,6 @@ void BrowserAccessibilityManager::GotMouseDown() {
   NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetFromAXNode(focus_));
 }
 
-bool BrowserAccessibilityManager::IsOSKAllowed(const gfx::Rect& bounds) {
-  if (!delegate_ || !delegate_->HasFocus())
-    return false;
-
-  gfx::Point touch_point = delegate_->GetLastTouchEventLocation();
-  return bounds.Contains(touch_point);
-}
-
 bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
   return true;
 }
@@ -169,7 +161,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     if (!tree_->Unserialize(param.update)) {
       if (delegate_) {
         LOG(ERROR) << tree_->error();
-        delegate_->FatalAccessibilityTreeError();
+        delegate_->AccessibilityFatalError();
       } else {
         CHECK(false) << tree_->error();
       }
@@ -184,7 +176,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   }
 
   if (should_send_initial_focus &&
-      (!delegate_ || delegate_->HasFocus())) {
+      (!delegate_ || delegate_->AccessibilityViewHasFocus())) {
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetFromAXNode(focus_));
   }
 
@@ -209,7 +201,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
       // Don't send a native focus event if the window itself doesn't
       // have focus.
-      if (delegate_ && !delegate_->HasFocus())
+      if (delegate_ && !delegate_->AccessibilityViewHasFocus())
         continue;
     }
 
@@ -243,7 +235,7 @@ void BrowserAccessibilityManager::SetFocus(ui::AXNode* node, bool notify) {
     focus_ = node;
 
   if (notify && node && delegate_)
-    delegate_->SetAccessibilityFocus(node->id());
+    delegate_->AccessibilitySetFocus(node->id());
 }
 
 void BrowserAccessibilityManager::SetFocus(
@@ -282,7 +274,7 @@ void BrowserAccessibilityManager::SetTextSelection(
 
 gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   if (delegate_)
-    return delegate_->GetViewBounds();
+    return delegate_->AccessibilityGetViewBounds();
   return gfx::Rect();
 }
 

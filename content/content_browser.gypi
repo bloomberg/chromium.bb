@@ -239,7 +239,6 @@
     'browser/accessibility/browser_accessibility_android.h',
     'browser/accessibility/browser_accessibility_cocoa.h',
     'browser/accessibility/browser_accessibility_cocoa.mm',
-    'browser/accessibility/browser_accessibility_delegate_mac.h',
     'browser/accessibility/browser_accessibility_mac.h',
     'browser/accessibility/browser_accessibility_mac.mm',
     'browser/accessibility/browser_accessibility_manager.cc',

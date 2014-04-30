@@ -307,12 +307,9 @@ NSDictionary* attributeToMethodNameMap = nil;
   dict = nil;
 }
 
-- (id)initWithObject:(BrowserAccessibility*)accessibility
-            delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate {
-  if ((self = [super init])) {
+- (id)initWithObject:(BrowserAccessibility*)accessibility {
+  if ((self = [super init]))
     browserAccessibility_ = accessibility;
-    delegate_ = delegate;
-  }
   return self;
 }
 
@@ -666,8 +663,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSValue*)position {
   NSPoint origin = [self origin];
   NSSize size = [[self size] sizeValue];
-  NSPoint pointInScreen =
-      [delegate_ accessibilityPointInScreen:origin size:size];
+  NSPoint pointInScreen = [self pointInScreen:origin size:size];
   return [NSValue valueWithPoint:pointInScreen];
 }
 
@@ -679,6 +675,22 @@ NSDictionary* attributeToMethodNameMap = nil;
 // Returns an enum indicating the role from browserAccessibility_.
 - (ui::AXRole)internalRole {
   return static_cast<ui::AXRole>(browserAccessibility_->GetRole());
+}
+
+- (content::BrowserAccessibilityDelegate*)delegate {
+  return browserAccessibility_->manager() ?
+      browserAccessibility_->manager()->delegate() :
+      nil;
+}
+
+- (NSPoint)pointInScreen:(NSPoint)origin
+                    size:(NSSize)size {
+  if (!browserAccessibility_)
+    return NSZeroPoint;
+
+  gfx::Rect bounds(origin.x, origin.y, size.width, size.height);
+  gfx::Point point = [self delegate]->AccessibilityOriginInScreen(bounds);
+  return NSMakePoint(point.x(), point.y());
 }
 
 // Returns a string indicating the NSAccessibility role of this object.
@@ -1005,7 +1017,13 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (id)window {
-  return [delegate_ window];
+  if (!browserAccessibility_)
+    return nil;
+
+  BrowserAccessibilityManagerMac* manager =
+      static_cast<BrowserAccessibilityManagerMac*>(
+          browserAccessibility_->manager());
+  return [manager->parent_view() window];
 }
 
 - (NSString*)methodNameForAttribute:(NSString*)attribute {
@@ -1161,8 +1179,7 @@ NSDictionary* attributeToMethodNameMap = nil;
         range.location, range.length);
     NSPoint origin = NSMakePoint(rect.x(), rect.y());
     NSSize size = NSMakeSize(rect.width(), rect.height());
-    NSPoint pointInScreen =
-        [delegate_ accessibilityPointInScreen:origin size:size];
+    NSPoint pointInScreen = [self pointInScreen:origin size:size];
     NSRect nsrect = NSMakeRect(
         pointInScreen.x, pointInScreen.y, rect.width(), rect.height());
     return [NSValue valueWithRect:nsrect];
@@ -1466,11 +1483,13 @@ NSDictionary* attributeToMethodNameMap = nil;
   if (!browserAccessibility_)
     return;
 
-  // TODO(feldstein): Support more actions.
-  if ([action isEqualToString:NSAccessibilityPressAction])
-    [delegate_ doDefaultAction:browserAccessibility_->GetId()];
-  else if ([action isEqualToString:NSAccessibilityShowMenuAction])
-    [delegate_ performShowMenuAction:self];
+  // TODO(dmazzoni): Support more actions.
+  if ([action isEqualToString:NSAccessibilityPressAction]) {
+    [self delegate]->AccessibilityDoDefaultAction(
+        browserAccessibility_->GetId());
+  } else if ([action isEqualToString:NSAccessibilityShowMenuAction]) {
+    [self delegate]->AccessibilityShowMenu(browserAccessibility_->GetId());
+  }
 }
 
 // Returns the description of the given action.
@@ -1496,15 +1515,14 @@ NSDictionary* attributeToMethodNameMap = nil;
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
     NSNumber* focusedNumber = value;
     BOOL focused = [focusedNumber intValue];
-    [delegate_ setAccessibilityFocus:focused
-                     accessibilityId:browserAccessibility_->GetId()];
+    if (focused)
+      [self delegate]->AccessibilitySetFocus(browserAccessibility_->GetId());
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
     NSRange range = [(NSValue*)value rangeValue];
-    [delegate_
-        accessibilitySetTextSelection:browserAccessibility_->GetId()
-        startOffset:range.location
-        endOffset:range.location + range.length];
+    [self delegate]->AccessibilitySetTextSelection(
+        browserAccessibility_->GetId(),
+        range.location, range.location + range.length);
   }
 }
 
