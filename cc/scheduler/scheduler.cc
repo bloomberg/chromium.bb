@@ -502,9 +502,6 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
 
   ProcessScheduledActions();
 
-  if (!state_machine_.HasInitializedOutputSurface())
-    return;
-
   state_machine_.OnBeginImplFrameDeadlinePending();
   ScheduleBeginImplFrameDeadline(
       AdjustedBeginImplFrameDeadline(args, draw_duration_estimate));
