@@ -7,6 +7,7 @@ import unittest
 
 from measurements import timeline_based_measurement as tbm_module
 from metrics import timeline_based_metric
+from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.core.timeline import model as model_module
 from telemetry.core.timeline import async_slice
@@ -96,6 +97,8 @@ class TimelineBasedMeasurementTest(
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
+  # Disabled due to flakiness: crbug.com/368386
+  @test.Disabled
   def testTimelineBasedForSmoke(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir(
         'interaction_enabled_page.html')
