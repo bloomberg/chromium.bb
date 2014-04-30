@@ -52,6 +52,9 @@ public:
         , m_baselineType(AlphabeticBaseline)
         , m_hasAnnotationsBefore(false)
         , m_hasAnnotationsAfter(false)
+        , m_lineBreakBidiStatusEor(WTF::Unicode::LeftToRight)
+        , m_lineBreakBidiStatusLastStrong(WTF::Unicode::LeftToRight)
+        , m_lineBreakBidiStatusLast(WTF::Unicode::LeftToRight)
 #ifndef NDEBUG
         , m_hasBadChildList(false)
 #endif
