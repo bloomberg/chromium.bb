@@ -12,8 +12,13 @@
 #include "content/public/browser/android/compositor_client.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace content {
 class Compositor;
+class LayerTreeBuildHelper;
 
 class ContentViewRenderView : public CompositorClient {
  public:
@@ -28,6 +33,8 @@ class ContentViewRenderView : public CompositorClient {
   void Destroy(JNIEnv* env, jobject obj);
   void SetCurrentContentViewCore(JNIEnv* env, jobject obj,
                                  jlong native_content_view_core);
+  void SetLayerTreeBuildHelper(
+      JNIEnv* env, jobject obj, jlong native_build_helper);
   void SurfaceCreated(JNIEnv* env, jobject obj);
   void SurfaceDestroyed(JNIEnv* env, jobject obj);
   void SurfaceChanged(JNIEnv* env, jobject obj,
@@ -49,6 +56,8 @@ class ContentViewRenderView : public CompositorClient {
   bool buffers_swapped_during_composite_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
+  scoped_refptr<cc::Layer> root_layer_;
+  scoped_ptr<LayerTreeBuildHelper> layer_tree_build_helper_;
 
   scoped_ptr<content::Compositor> compositor_;
 

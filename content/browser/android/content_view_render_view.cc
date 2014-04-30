@@ -13,8 +13,10 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/layers/layer.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/layer_tree_build_helper_impl.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
+#include "content/public/browser/android/layer_tree_build_helper.h"
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/size.h"
@@ -35,6 +37,7 @@ ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
                                              jobject obj,
                                              gfx::NativeWindow root_window)
     : buffers_swapped_during_composite_(false),
+      layer_tree_build_helper_(new LayerTreeBuildHelperImpl()),
       root_window_(root_window),
       current_surface_format_(0) {
   java_obj_.Reset(env, obj);
@@ -43,8 +46,19 @@ ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
 ContentViewRenderView::~ContentViewRenderView() {
 }
 
+void ContentViewRenderView::SetLayerTreeBuildHelper(JNIEnv* env,
+                                                    jobject obj,
+                                                    jlong native_build_helper) {
+  CHECK(native_build_helper);
+
+  LayerTreeBuildHelper* build_helper =
+      reinterpret_cast<LayerTreeBuildHelper*>(native_build_helper);
+  layer_tree_build_helper_.reset(build_helper);
+}
 // static
-static jlong Init(JNIEnv* env, jobject obj, jlong native_root_window) {
+static jlong Init(JNIEnv* env,
+                  jobject obj,
+                  jlong native_root_window) {
   gfx::NativeWindow root_window =
       reinterpret_cast<gfx::NativeWindow>(native_root_window);
   ContentViewRenderView* content_view_render_view =
@@ -61,10 +75,8 @@ void ContentViewRenderView::SetCurrentContentViewCore(
   InitCompositor();
   ContentViewCoreImpl* content_view_core =
       reinterpret_cast<ContentViewCoreImpl*>(native_content_view_core);
-  if (content_view_core)
-    compositor_->SetRootLayer(content_view_core->GetLayer());
-  else
-    compositor_->SetRootLayer(cc::Layer::Create());
+  compositor_->SetRootLayer(
+      layer_tree_build_helper_->GetLayerTree(content_view_core->GetLayer()));
 }
 
 void ContentViewRenderView::SurfaceCreated(
@@ -129,5 +141,4 @@ void ContentViewRenderView::InitCompositor() {
   if (!compositor_)
     compositor_.reset(Compositor::Create(this, root_window_));
 }
-
 }  // namespace content

@@ -41,7 +41,7 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
     private int mPendingSwapBuffers;
     private boolean mNeedToRender;
 
-    private ContentViewCore mContentViewCore;
+    protected ContentViewCore mContentViewCore;
 
     private final Runnable mRenderRunnable = new Runnable() {
         @Override
@@ -198,6 +198,14 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
         nativeSetOverlayVideoMode(mNativeContentViewRenderView, enabled);
     }
 
+    /**
+     * Set the native layer tree helper for this {@link ContentViewRenderView}.
+     * @param layerTreeBuildHelperNativePtr Native pointer to the layer tree build helper.
+     */
+    public void setLayerTreeBuildHelper(long layerTreeBuildHelperNativePtr) {
+        nativeSetLayerTreeBuildHelper(mNativeContentViewRenderView, layerTreeBuildHelperNativePtr);
+    }
+
     @CalledByNative
     private void requestRender() {
         boolean rendererHasFrame =
@@ -233,7 +241,7 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
         if (mPendingSwapBuffers > 0) mPendingSwapBuffers--;
     }
 
-    private void render() {
+    protected void render() {
         if (mPendingRenders > 0) mPendingRenders--;
 
         // Waiting for the content view contents to be ready avoids compositing
@@ -260,6 +268,8 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
     private native void nativeDestroy(long nativeContentViewRenderView);
     private native void nativeSetCurrentContentViewCore(long nativeContentViewRenderView,
             long nativeContentViewCore);
+    private native void nativeSetLayerTreeBuildHelper(long nativeContentViewRenderView,
+            long buildHelperNativePtr);
     private native void nativeSurfaceCreated(long nativeContentViewRenderView);
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
     private native void nativeSurfaceChanged(long nativeContentViewRenderView,
