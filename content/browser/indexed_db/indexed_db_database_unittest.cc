@@ -161,9 +161,10 @@ class MockDeleteCallbacks : public IndexedDBCallbacks {
   virtual void OnSuccess(int64) OVERRIDE { success_called_ = true; }
 
   bool blocked_called() const { return blocked_called_; }
+  bool success_called() const { return success_called_; }
 
  private:
-  virtual ~MockDeleteCallbacks() { EXPECT_TRUE(success_called_); }
+  virtual ~MockDeleteCallbacks() {}
 
   bool blocked_called_;
   bool success_called_;
@@ -209,6 +210,7 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
 
   EXPECT_FALSE(db->backing_store());
   EXPECT_TRUE(backing_store->HasOneRef());  // local
+  EXPECT_TRUE(request2->success_called());
 }
 
 }  // namespace content

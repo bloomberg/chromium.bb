@@ -220,9 +220,10 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
     error_called_ = true;
     EXPECT_EQ(blink::WebIDBDatabaseExceptionQuotaError, error.code());
   }
+  bool error_called() const { return error_called_; }
 
  private:
-  virtual ~LookingForQuotaErrorMockCallbacks() { EXPECT_TRUE(error_called_); }
+  virtual ~LookingForQuotaErrorMockCallbacks() {}
   bool error_called_;
 };
 
@@ -247,6 +248,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
                 NULL /* request_context */,
                 origin,
                 temp_directory.path());
+  EXPECT_TRUE(callbacks->error_called());
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
@@ -443,11 +445,10 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
   virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {
     saw_error_= true;
   }
-
- protected:
-  virtual ~ErrorCallbacks() { EXPECT_TRUE(saw_error_); }
+  bool saw_error() const { return saw_error_; }
 
  private:
+  virtual ~ErrorCallbacks() {}
   bool saw_error_;
 };
 
@@ -491,7 +492,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   // Open at version < 2, which will fail; ensure factory doesn't retain
   // the database object.
   {
-    scoped_refptr<IndexedDBCallbacks> callbacks(new ErrorCallbacks());
+    scoped_refptr<ErrorCallbacks> callbacks(new ErrorCallbacks());
     IndexedDBPendingConnection connection(callbacks,
                                           db_callbacks,
                                           0, /* child_process_id */
@@ -502,6 +503,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
                     NULL /* request_context */,
                     origin,
                     temp_directory.path());
+    EXPECT_TRUE(callbacks->saw_error());
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));
   }
 
