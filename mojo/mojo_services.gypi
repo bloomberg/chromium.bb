@@ -119,36 +119,14 @@
       ],
     },
     {
-      'target_name': 'mojo_view_manager_bindings',
-      'type': 'static_library',
-      'sources': [
-        'services/public/interfaces/view_manager/view_manager.mojom',
-      ],
-      'variables': {
-        'mojom_base_output_dir': 'mojo',
-      },
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_cpp_bindings',
-      ],
-      'dependencies': [
-        'mojo_cpp_bindings',
-      ],
-    },
-    {
       'target_name': 'mojo_view_manager_lib',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        'mojo_view_manager_bindings',
       ],
       'sources': [
         'services/public/cpp/view_manager/lib/view.cc',
         'services/public/cpp/view_manager/lib/view_manager.cc',
-        'services/public/cpp/view_manager/lib/view_manager_private.cc',
-        'services/public/cpp/view_manager/lib/view_manager_private.h',
-        'services/public/cpp/view_manager/lib/view_manager_synchronizer.cc',
-        'services/public/cpp/view_manager/lib/view_manager_synchronizer.h',
         'services/public/cpp/view_manager/lib/view_tree_host.cc',
         'services/public/cpp/view_manager/lib/view_tree_node.cc',
         'services/public/cpp/view_manager/lib/view_tree_node_observer.cc',
@@ -168,7 +146,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
-        'mojo_environment_chromium',
         'mojo_run_all_unittests',
         'mojo_view_manager_lib',
       ],
@@ -183,6 +160,23 @@
   'conditions': [
     ['use_aura==1', {
       'targets': [
+        {
+          'target_name': 'mojo_view_manager_bindings',
+          'type': 'static_library',
+          'sources': [
+            'services/public/interfaces/view_manager/view_manager.mojom',
+          ],
+          'variables': {
+            'mojom_base_output_dir': 'mojo',
+          },
+          'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+          'export_dependent_settings': [
+            'mojo_cpp_bindings',
+          ],
+          'dependencies': [
+            'mojo_cpp_bindings',
+          ],
+        },
         {
           'target_name': 'mojo_view_manager',
           'type': '<(component)',
