@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sample_vector.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "net/base/load_flags.h"
@@ -36,6 +37,8 @@ HpackHuffmanAggregator::HpackHuffmanAggregator()
 }
 
 HpackHuffmanAggregator::~HpackHuffmanAggregator() {
+  STLDeleteContainerPairSecondPointers(encoders_.begin(), encoders_.end());
+  encoders_.clear();
 }
 
 void HpackHuffmanAggregator::AggregateTransactionCharacterCounts(
