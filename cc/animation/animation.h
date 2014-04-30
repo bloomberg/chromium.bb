@@ -126,6 +126,16 @@ class CC_EXPORT Animation {
   void set_is_impl_only(bool is_impl_only) { is_impl_only_ = is_impl_only; }
   bool is_impl_only() const { return is_impl_only_; }
 
+  void set_affects_active_observers(bool affects_active_observers) {
+    affects_active_observers_ = affects_active_observers;
+  }
+  bool affects_active_observers() const { return affects_active_observers_; }
+
+  void set_affects_pending_observers(bool affects_pending_observers) {
+    affects_pending_observers_ = affects_pending_observers;
+  }
+  bool affects_pending_observers() const { return affects_pending_observers_; }
+
  private:
   Animation(scoped_ptr<AnimationCurve> curve,
             int animation_id,
@@ -181,6 +191,20 @@ class CC_EXPORT Animation {
   bool is_controlling_instance_;
 
   bool is_impl_only_;
+
+  // When pushed from a main-thread controller to a compositor-thread
+  // controller, an animation will initially only affect pending observers
+  // (corresponding to layers in the pending tree). Animations that only
+  // affect pending observers are able to reach the Starting state and tick
+  // pending observers, but cannot proceed any further and do not tick active
+  // observers. After activation, such animations affect both kinds of observers
+  // and are able to proceed past the Starting state. When the removal of
+  // an animation is pushed from a main-thread controller to a
+  // compositor-thread controller, this initially only makes the animation
+  // stop affecting pending observers. After activation, such animations no
+  // longer affect any observers, and are deleted.
+  bool affects_active_observers_;
+  bool affects_pending_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Animation);
 };

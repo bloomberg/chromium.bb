@@ -47,6 +47,7 @@ TEST(LayerAnimationControllerTest, SyncNewAnimation) {
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
@@ -72,6 +73,7 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
@@ -116,6 +118,7 @@ TEST(LayerAnimationControllerTest, UseSpecifiedStartTimes) {
   controller->GetAnimation(Animation::Opacity)->set_start_time(start_time);
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
@@ -180,6 +183,7 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(1u, registrar->active_animation_controllers().size());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   // Both controllers should now be active.
   EXPECT_EQ(1u, registrar->active_animation_controllers().size());
   EXPECT_EQ(1u, registrar_impl->active_animation_controllers().size());
@@ -222,6 +226,7 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(0u, registrar->active_animation_controllers().size());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->has_any_animation());
   EXPECT_FALSE(controller_impl->has_any_animation());
   EXPECT_EQ(0u, registrar->active_animation_controllers().size());
@@ -248,6 +253,7 @@ TEST(LayerAnimationControllerTest, SyncPause) {
   int animation_id = controller->GetAnimation(Animation::Opacity)->id();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
@@ -275,6 +281,7 @@ TEST(LayerAnimationControllerTest, SyncPause) {
 
   // The pause run state change should make it to the impl thread controller.
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_EQ(Animation::Paused,
             controller_impl->GetAnimation(group_id,
                                           Animation::Opacity)->run_state());
@@ -297,6 +304,7 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
@@ -317,6 +325,7 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity));
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   // Even though the main thread has a 'new' animation, it should not be pushed
   // because the animation has already completed on the impl thread.
@@ -341,6 +350,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, NULL);
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   controller_impl->Animate(kInitialTickTime + 0.5);
   controller_impl->UpdateState(true, events.get());
@@ -378,7 +388,10 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
-  // Both controllers should now have deleted the animation.
+  // Both controllers should now have deleted the animation. The impl controller
+  // should have deleted the animation even though activation has not occurred,
+  // since the animation was already waiting for deletion when
+  // PushAnimationUpdatesTo was called.
   EXPECT_FALSE(controller->has_any_animation());
   EXPECT_FALSE(controller_impl->has_any_animation());
 }
@@ -641,6 +654,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
 
   dummy_provider_impl.set_scroll_offset(initial_value);
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_TRUE(controller_impl->GetAnimation(Animation::ScrollOffset));
   double duration = controller_impl->GetAnimation(
       Animation::ScrollOffset)->curve()->Duration();
@@ -719,6 +733,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
 
   dummy_provider.set_scroll_offset(initial_value);
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_TRUE(controller_impl->GetAnimation(Animation::ScrollOffset));
   double duration = controller_impl->GetAnimation(
       Animation::ScrollOffset)->curve()->Duration();
@@ -1306,6 +1321,7 @@ TEST(LayerAnimationControllerTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
   EXPECT_TRUE(active_animation->needs_synchronized_start_time());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
 
   active_animation = controller_impl->GetAnimation(0, Animation::Opacity);
   EXPECT_TRUE(active_animation);
@@ -1358,13 +1374,13 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
   EXPECT_FALSE(controller->HasActiveAnimation());
 }
 
-// Tests that an animation controller with only an inactive observer gets ticked
+// Tests that an animation controller with only a pending observer gets ticked
 // but doesn't progress animations past the Starting state.
 TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   scoped_ptr<AnimationEventsVector> events(
       make_scoped_ptr(new AnimationEventsVector));
   FakeLayerAnimationValueObserver dummy;
-  FakeInactiveLayerAnimationValueObserver inactive_dummy;
+  FakeInactiveLayerAnimationValueObserver pending_dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
 
@@ -1382,9 +1398,9 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
             controller->GetAnimation(id, Animation::Opacity)->run_state());
 
-  controller->AddValueObserver(&inactive_dummy);
+  controller->AddValueObserver(&pending_dummy);
 
-  // With only an inactive observer, the animation should progress to the
+  // With only a pending observer, the animation should progress to the
   // Starting state and get ticked at its starting point, but should not
   // progress to Running.
   controller->Animate(kInitialTickTime + 1.0);
@@ -1392,7 +1408,7 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(0u, events->size());
   EXPECT_EQ(Animation::Starting,
             controller->GetAnimation(id, Animation::Opacity)->run_state());
-  EXPECT_EQ(0.5f, inactive_dummy.opacity());
+  EXPECT_EQ(0.5f, pending_dummy.opacity());
 
   // Even when already in the Starting state, the animation should stay
   // there, and shouldn't be ticked past its starting point.
@@ -1401,7 +1417,7 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(0u, events->size());
   EXPECT_EQ(Animation::Starting,
             controller->GetAnimation(id, Animation::Opacity)->run_state());
-  EXPECT_EQ(0.5f, inactive_dummy.opacity());
+  EXPECT_EQ(0.5f, pending_dummy.opacity());
 
   controller->AddValueObserver(&dummy);
 
@@ -1412,12 +1428,12 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(1u, events->size());
   EXPECT_EQ(Animation::Running,
             controller->GetAnimation(id, Animation::Opacity)->run_state());
-  EXPECT_EQ(0.5f, inactive_dummy.opacity());
+  EXPECT_EQ(0.5f, pending_dummy.opacity());
   EXPECT_EQ(0.5f, dummy.opacity());
 
   // The animation should now tick past its starting point.
   controller->Animate(kInitialTickTime + 3.5);
-  EXPECT_NE(0.5f, inactive_dummy.opacity());
+  EXPECT_NE(0.5f, pending_dummy.opacity());
   EXPECT_NE(0.5f, dummy.opacity());
 }
 
@@ -1568,6 +1584,7 @@ TEST(LayerAnimationControllerTest, MainThreadAbortedAnimationGetsDeleted) {
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
 
   controller->AbortAnimations(Animation::Opacity);
@@ -1583,6 +1600,7 @@ TEST(LayerAnimationControllerTest, MainThreadAbortedAnimationGetsDeleted) {
             controller->GetAnimation(Animation::Opacity)->run_state());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->GetAnimation(group_id, Animation::Opacity));
   EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity));
 }
@@ -1602,6 +1620,7 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
 
   controller_impl->AbortAnimations(Animation::Opacity);
@@ -1630,6 +1649,7 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
             controller->GetAnimation(Animation::Opacity)->run_state());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->GetAnimation(group_id, Animation::Opacity));
   EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity));
 }
@@ -1906,6 +1926,269 @@ TEST(LayerAnimationControllerTest, MaximumScale) {
   // MaximumScale.
   EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
   EXPECT_EQ(4.f, max_scale);
+}
+
+TEST(LayerAnimationControllerTest, NewlyPushedAnimationWaitsForActivation) {
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy_impl;
+  FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  controller_impl->AddValueObserver(&pending_dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  AddOpacityTransitionToController(controller.get(), 1, 0.5f, 1.f, false);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
+  EXPECT_EQ(
+      Animation::WaitingForTargetAvailability,
+      controller_impl->GetAnimation(group_id, Animation::Opacity)->run_state());
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_pending_observers());
+  EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                   ->affects_active_observers());
+
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, events.get());
+
+  // Since the animation hasn't been activated, it should still be Starting
+  // rather than Running.
+  EXPECT_EQ(
+      Animation::Starting,
+      controller_impl->GetAnimation(group_id, Animation::Opacity)->run_state());
+
+  // Since the animation hasn't been activated, only the pending observer
+  // should have been ticked.
+  EXPECT_EQ(0.5f, pending_dummy_impl.opacity());
+  EXPECT_EQ(0.f, dummy_impl.opacity());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_pending_observers());
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_active_observers());
+
+  controller_impl->Animate(kInitialTickTime + 1.0);
+  controller_impl->UpdateState(true, events.get());
+
+  // Since the animation has been activated, it should have reached the
+  // Running state and the active observer should start to get ticked.
+  EXPECT_EQ(
+      Animation::Running,
+      controller_impl->GetAnimation(group_id, Animation::Opacity)->run_state());
+  EXPECT_EQ(0.5f, pending_dummy_impl.opacity());
+  EXPECT_EQ(0.5f, dummy_impl.opacity());
+}
+
+TEST(LayerAnimationControllerTest, ActivationBetweenAnimateAndUpdateState) {
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy_impl;
+  FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  controller_impl->AddValueObserver(&pending_dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  AddOpacityTransitionToController(controller.get(), 1, 0.5f, 1.f, true);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
+  EXPECT_EQ(
+      Animation::WaitingForTargetAvailability,
+      controller_impl->GetAnimation(group_id, Animation::Opacity)->run_state());
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_pending_observers());
+  EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                   ->affects_active_observers());
+
+  controller_impl->Animate(kInitialTickTime);
+
+  // Since the animation hasn't been activated, only the pending observer
+  // should have been ticked.
+  EXPECT_EQ(0.5f, pending_dummy_impl.opacity());
+  EXPECT_EQ(0.f, dummy_impl.opacity());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_pending_observers());
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_active_observers());
+
+  controller_impl->UpdateState(true, events.get());
+
+  // Since the animation has been activated, it should have reached the
+  // Running state.
+  EXPECT_EQ(
+      Animation::Running,
+      controller_impl->GetAnimation(group_id, Animation::Opacity)->run_state());
+
+  controller_impl->Animate(kInitialTickTime + 0.5);
+
+  // Both observers should have been ticked.
+  EXPECT_EQ(0.75f, pending_dummy_impl.opacity());
+  EXPECT_EQ(0.75f, dummy_impl.opacity());
+}
+
+TEST(LayerAnimationControllerTest, PushedDeletedAnimationWaitsForActivation) {
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy_impl;
+  FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  controller_impl->AddValueObserver(&pending_dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  AddOpacityTransitionToController(controller.get(), 1, 0.5f, 1.f, true);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_EQ(
+      Animation::Running,
+      controller_impl->GetAnimation(group_id, Animation::Opacity)->run_state());
+  EXPECT_EQ(0.5f, pending_dummy_impl.opacity());
+  EXPECT_EQ(0.5f, dummy_impl.opacity());
+
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_pending_observers());
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_active_observers());
+
+  // Delete the animation on the main-thread controller.
+  controller->RemoveAnimation(
+      controller->GetAnimation(Animation::Opacity)->id());
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+
+  // The animation should no longer affect pending observers.
+  EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                   ->affects_pending_observers());
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity)
+                  ->affects_active_observers());
+
+  controller_impl->Animate(kInitialTickTime + 0.5);
+  controller_impl->UpdateState(true, events.get());
+
+  // Only the active observer should have been ticked.
+  EXPECT_EQ(0.5f, pending_dummy_impl.opacity());
+  EXPECT_EQ(0.75f, dummy_impl.opacity());
+
+  controller_impl->ActivateAnimations();
+
+  // Activation should cause the animation to be deleted.
+  EXPECT_FALSE(controller_impl->has_any_animation());
+}
+
+// Tests that an animation that affects only active observers won't block
+// an animation that affects only pending observers from starting.
+TEST(LayerAnimationControllerTest, StartAnimationsAffectingDifferentObservers) {
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy_impl;
+  FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  controller_impl->AddValueObserver(&pending_dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  AddOpacityTransitionToController(controller.get(), 1, 0.f, 1.f, true);
+  int first_animation_group_id =
+      controller->GetAnimation(Animation::Opacity)->group();
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  controller_impl->ActivateAnimations();
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, events.get());
+
+  // Remove the first animation from the main-thread controller, and add a
+  // new animation affecting the same property.
+  controller->RemoveAnimation(
+      controller->GetAnimation(Animation::Opacity)->id());
+  AddOpacityTransitionToController(controller.get(), 1, 1.f, 0.5f, true);
+  int second_animation_group_id =
+      controller->GetAnimation(Animation::Opacity)->group();
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+
+  // The original animation should only affect active observers, and the new
+  // animation should only affect pending observers.
+  EXPECT_FALSE(controller_impl->GetAnimation(first_animation_group_id,
+                                             Animation::Opacity)
+                   ->affects_pending_observers());
+  EXPECT_TRUE(controller_impl->GetAnimation(first_animation_group_id,
+                                            Animation::Opacity)
+                  ->affects_active_observers());
+  EXPECT_TRUE(controller_impl->GetAnimation(second_animation_group_id,
+                                            Animation::Opacity)
+                  ->affects_pending_observers());
+  EXPECT_FALSE(controller_impl->GetAnimation(second_animation_group_id,
+                                             Animation::Opacity)
+                   ->affects_active_observers());
+
+  controller_impl->Animate(kInitialTickTime + 0.5);
+  controller_impl->UpdateState(true, events.get());
+
+  // The original animation should still be running, and the new animation
+  // should be starting.
+  EXPECT_EQ(Animation::Running,
+            controller_impl->GetAnimation(first_animation_group_id,
+                                          Animation::Opacity)->run_state());
+  EXPECT_EQ(Animation::Starting,
+            controller_impl->GetAnimation(second_animation_group_id,
+                                          Animation::Opacity)->run_state());
+
+  // The active observer should have been ticked by the original animation,
+  // and the pending observer should have been ticked by the new animation.
+  EXPECT_EQ(1.f, pending_dummy_impl.opacity());
+  EXPECT_EQ(0.5f, dummy_impl.opacity());
+
+  controller_impl->ActivateAnimations();
+
+  // The original animation should have been deleted, and the new animation
+  // should now affect both observers.
+  EXPECT_FALSE(controller_impl->GetAnimation(first_animation_group_id,
+                                             Animation::Opacity));
+  EXPECT_TRUE(controller_impl->GetAnimation(second_animation_group_id,
+                                            Animation::Opacity)
+                  ->affects_pending_observers());
+  EXPECT_TRUE(controller_impl->GetAnimation(second_animation_group_id,
+                                            Animation::Opacity)
+                  ->affects_active_observers());
+
+  controller_impl->Animate(kInitialTickTime + 1.0);
+  controller_impl->UpdateState(true, events.get());
+
+  // The new animation should be running, and the active observer should have
+  // been ticked at the new animation's starting point.
+  EXPECT_EQ(Animation::Running,
+            controller_impl->GetAnimation(second_animation_group_id,
+                                          Animation::Opacity)->run_state());
+  EXPECT_EQ(1.f, pending_dummy_impl.opacity());
+  EXPECT_EQ(1.f, dummy_impl.opacity());
 }
 
 }  // namespace

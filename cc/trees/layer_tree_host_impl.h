@@ -173,6 +173,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void CommitComplete();
   virtual void Animate(base::TimeTicks monotonic_time);
   virtual void UpdateAnimationState(bool start_ready_animations);
+  void ActivateAnimations();
   void MainThreadHasStoppedFlinging();
   void UpdateBackgroundAnimateTicking(bool should_background_tick);
   void DidAnimateScrollOffset();

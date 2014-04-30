@@ -1693,6 +1693,7 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   active_tree_->DidBecomeActive();
   active_tree_->SetRootLayerScrollOffsetDelegate(
       root_layer_scroll_offset_delegate_);
+  ActivateAnimations();
 
   client_->OnCanDrawStateChanged(CanDraw());
   SetNeedsRedraw();
@@ -2797,6 +2798,20 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
   if (!events->empty()) {
     client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
   }
+}
+
+void LayerTreeHostImpl::ActivateAnimations() {
+  if (!settings_.accelerated_animation_enabled || !needs_animate_layers() ||
+      !active_tree_->root_layer())
+    return;
+
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ActivateAnimations");
+  AnimationRegistrar::AnimationControllerMap copy =
+      animation_registrar_->active_animation_controllers();
+  for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
+       iter != copy.end();
+       ++iter)
+    (*iter).second->ActivateAnimations();
 }
 
 base::TimeDelta LayerTreeHostImpl::LowFrequencyAnimationInterval() const {
