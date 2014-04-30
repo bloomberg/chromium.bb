@@ -335,34 +335,6 @@ static bool hasNonZeroTransformOrigin(const RenderObject* renderer)
         || (style->transformOriginY().type() == Fixed && style->transformOriginY().value());
 }
 
-static bool layerOrAncestorIsTransformedOrUsingCompositedScrolling(RenderLayer* layer)
-{
-    for (RenderLayer* curr = layer; curr; curr = curr->parent()) {
-        if (curr->hasTransform() || curr->needsCompositedScrolling())
-            return true;
-    }
-
-    return false;
-}
-
-bool CompositedLayerMapping::shouldClipCompositedBounds() const
-{
-    // Scrollbar layers use this layer for relative positioning, so don't clip.
-    if (layerForHorizontalScrollbar() || layerForVerticalScrollbar())
-        return false;
-
-    if (layerOrAncestorIsTransformedOrUsingCompositedScrolling(&m_owningLayer))
-        return false;
-
-    // Scrolled composited layers are clipped by their ancestor clipping layer,
-    // so don't clip these, either.
-    if (compositor()->clippedByNonAncestorInStackingTree(&m_owningLayer)
-        && m_owningLayer.renderer()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorScrollingLayer())
-        return false;
-
-    return true;
-}
-
 void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::UpdateType updateType)
 {
     if (!shouldUpdateGraphicsLayer(updateType))
@@ -373,29 +345,6 @@ void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::Update
     updateDrawsContent();
 
     LayoutRect layerBounds = m_owningLayer.boundingBoxForCompositing();
-
-    // Clip to the size of the document or enclosing overflow-scroll layer.
-    // If this or an ancestor is transformed, we can't currently compute the correct rect to intersect with.
-    // We'd need RenderObject::convertContainerToLocalQuad(), which doesn't yet exist.
-    if (shouldClipCompositedBounds()) {
-        RenderView* view = m_owningLayer.renderer()->view();
-        RenderLayer* rootLayer = view->layer();
-
-        LayoutRect clippingBounds;
-        if (renderer()->style()->position() == FixedPosition && renderer()->container() == view)
-            clippingBounds = view->frameView()->viewportConstrainedVisibleContentRect();
-        else
-            clippingBounds = view->unscaledDocumentRect();
-
-        if (&m_owningLayer != rootLayer)
-            clippingBounds.intersect(m_owningLayer.clipper().backgroundClipRect(ClipRectsContext(rootLayer, AbsoluteClipRects)).rect());
-
-        LayoutPoint delta;
-        m_owningLayer.convertToLayerCoords(rootLayer, delta);
-        clippingBounds.move(-delta.x(), -delta.y());
-
-        layerBounds.intersect(clippingBounds);
-    }
 
     // If the element has a transform-origin that has fixed lengths, and the renderer has zero size,
     // then we need to ensure that the compositing layer has non-zero size so that we can apply

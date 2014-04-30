@@ -272,8 +272,6 @@ private:
 
     bool hasVisibleNonCompositingDescendantLayers() const;
 
-    bool shouldClipCompositedBounds() const;
-
     void paintsIntoCompositedAncestorChanged();
 
     void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
