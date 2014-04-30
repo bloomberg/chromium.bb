@@ -731,6 +731,11 @@ void WebSettingsImpl::setUseSolidColorScrollbars(bool enabled)
     m_settings->setUseSolidColorScrollbars(enabled);
 }
 
+void WebSettingsImpl::setUseThreadedHTMLParserForDataURLs(bool enabled)
+{
+    m_settings->setUseThreadedHTMLParserForDataURLs(enabled);
+}
+
 void WebSettingsImpl::setMainFrameResizesAreOrientationChanges(bool enabled)
 {
     m_mainFrameResizesAreOrientationChanges = enabled;
