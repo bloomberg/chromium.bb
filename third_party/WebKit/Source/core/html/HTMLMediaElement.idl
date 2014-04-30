@@ -59,7 +59,7 @@
     // playback state
     // FIXME: generated bindings should check isfinite: http://crbug.com/354298
     [RaisesException=Setter] attribute double currentTime;
-    readonly attribute double duration;
+    readonly attribute unrestricted double duration;
     readonly attribute boolean paused;
     [RaisesException=Setter] attribute double defaultPlaybackRate;
     [RaisesException=Setter] attribute double playbackRate;
