@@ -192,7 +192,7 @@ void SearchTabHelper::InstantSupportChanged(bool instant_support) {
   model_.SetInstantSupportState(new_state);
 
   content::NavigationEntry* entry =
-      web_contents_->GetController().GetVisibleEntry();
+      web_contents_->GetController().GetLastCommittedEntry();
   if (entry) {
     chrome::SetInstantSupportStateInNavigationEntry(new_state, entry);
     if (delegate_ && !instant_support)
