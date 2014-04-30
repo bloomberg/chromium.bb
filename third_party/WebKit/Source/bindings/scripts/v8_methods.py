@@ -142,6 +142,7 @@ def generate_argument(interface, method, argument, index):
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
+
     return {
         'cpp_type': idl_type.cpp_type_args(used_in_cpp_sequence=is_variadic_wrapper_type),
         'cpp_value': this_cpp_value,
@@ -156,6 +157,10 @@ def generate_argument(interface, method, argument, index):
             (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
              has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
             idl_type.is_wrapper_type,
+        'has_type_checking_unrestricted':
+            (has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
+             has_extended_attribute_value(method, 'TypeChecking', 'Unrestricted')) and
+            idl_type.name in ('Float', 'Double'),
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
         'idl_type_object': idl_type,

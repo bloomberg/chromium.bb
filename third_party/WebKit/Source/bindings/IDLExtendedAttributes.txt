@@ -93,7 +93,7 @@ SpecialWrapFor=*
 TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString
-TypeChecking=Interface|Nullable
+TypeChecking=Interface|Nullable|Unrestricted
 URL
 Unforgeable
 WillBeGarbageCollected

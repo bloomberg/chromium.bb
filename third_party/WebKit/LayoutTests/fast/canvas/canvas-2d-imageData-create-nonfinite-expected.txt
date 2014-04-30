@@ -3,13 +3,13 @@ Test the argument bounds of canvas createImageData.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ctx.createImageData(Infinity, Infinity) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The source width is infinite..
-PASS ctx.createImageData(Infinity, 10) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The source width is infinite..
-PASS ctx.createImageData(-Infinity, 10) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The source width is infinite..
-PASS ctx.createImageData(10, Infinity) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The source height is infinite..
-PASS ctx.createImageData(10, -Infinity) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The source height is infinite..
-PASS ctx.createImageData(NaN, 10) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The source width is not a number..
-PASS ctx.createImageData(10, NaN) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The source height is not a number..
+PASS ctx.createImageData(Infinity, Infinity) threw exception TypeError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.createImageData(Infinity, 10) threw exception TypeError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.createImageData(-Infinity, 10) threw exception TypeError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.createImageData(10, Infinity) threw exception TypeError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.createImageData(10, -Infinity) threw exception TypeError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.createImageData(NaN, 10) threw exception TypeError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.createImageData(10, NaN) threw exception TypeError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
 PASS successfullyParsed is true
 
 TEST COMPLETE

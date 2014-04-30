@@ -1809,17 +1809,10 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::createImageData(Pass
 
 PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh, ExceptionState& exceptionState) const
 {
-    if (!sw || !sh)
+    if (!sw || !sh) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", sw ? "height" : "width"));
-    // FIXME: These exceptions will be thrown by generated bindings code once
-    // crbug.com/354298 is fixed.
-    else if (!std::isfinite(sw))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sw, "source width"));
-    else if (!std::isfinite(sh))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sh, "source height"));
-
-    if (exceptionState.hadException())
         return nullptr;
+    }
 
     FloatSize logicalSize(fabs(sw), fabs(sh));
     if (!logicalSize.isExpressibleAsIntSize())

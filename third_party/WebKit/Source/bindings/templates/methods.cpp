@@ -94,7 +94,7 @@ if (UNLIKELY(info.Length() <= {{argument.index}})) {
 {% endif %}
 {% if argument.has_type_checking_interface %}
 {# Type checking for wrapper interface types (if interface not implemented,
-   throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
+   throw a TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
 if (info.Length() > {{argument.index}} && {% if argument.is_nullable %}!isUndefinedOrNull(info[{{argument.index}}]) && {% endif %}!V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate())) {
     {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
                                (argument.index + 1, argument.idl_type)) | indent}}
@@ -110,6 +110,8 @@ RefPtr<{{argument.idl_type}}> {{argument.name}} = V8EventListenerList::getEventL
 RefPtr<{{argument.idl_type}}> {{argument.name}} = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
 {% endif %}{# method.name #}
 {% else %}
+{# Callback functions must be functions:
+   http://www.w3.org/TR/WebIDL/#es-callback-function #}
 {% if argument.is_optional %}
 OwnPtr<{{argument.idl_type}}> {{argument.name}};
 if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}])) {
@@ -156,8 +158,19 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
 {% else %}
 {{argument.v8_value_to_local_cpp_value}};
 {% endif %}
-{% if argument.enum_validation_expression %}
-{# Methods throw on invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
+{# Type checking, possibly throw a TypeError, per:
+   http://www.w3.org/TR/WebIDL/#es-type-mapping #}
+{% if argument.has_type_checking_unrestricted %}
+{# Non-finite floating point values (NaN, +Infinity or −Infinity), per:
+   http://heycam.github.io/webidl/#es-float
+   http://heycam.github.io/webidl/#es-double #}
+if (!std::isfinite({{argument.name}})) {
+    {{throw_type_error(method, '"%s parameter %s is non-finite."' %
+                               (argument.idl_type, argument.index + 1)) | indent}}
+    return;
+}
+{% elif argument.enum_validation_expression %}
+{# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
 String string = {{argument.name}};
 if (!({{argument.enum_validation_expression}})) {
     {{throw_type_error(method,
@@ -165,8 +178,11 @@ if (!({{argument.enum_validation_expression}})) {
               (argument.index + 1)) | indent}}
     return;
 }
-{% endif %}
-{% if argument.idl_type in ['Dictionary', 'Promise'] %}
+{% elif argument.idl_type in ['Dictionary', 'Promise'] %}
+{# Dictionaries must have type Undefined, Null or Object:
+http://heycam.github.io/webidl/#es-dictionary
+We also require this for our implementation of promises, though not in spec:
+http://heycam.github.io/webidl/#es-promise #}
 if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
     {{throw_type_error(method, '"parameter %s (\'%s\') is not an object."' %
                                (argument.index + 1, argument.name)) | indent}}

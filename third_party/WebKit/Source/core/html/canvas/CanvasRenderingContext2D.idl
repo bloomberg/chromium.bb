@@ -128,7 +128,7 @@ enum CanvasWindingRule { "nonzero", "evenodd" };
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLImageElement image, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLVideoElement image, [TreatNullAs=NullString] DOMString repetitionType);
     [TypeChecking=Interface|Nullable] ImageData createImageData(ImageData imagedata);
-    [RaisesException] ImageData createImageData(float sw, float sh);
+    [RaisesException, TypeChecking=Unrestricted] ImageData createImageData(float sw, float sh);
 
     [Custom] attribute object strokeStyle;
     [Custom] attribute object fillStyle;
