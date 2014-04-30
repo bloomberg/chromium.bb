@@ -36,7 +36,7 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
       AsRegisterProtocolHandlerInfoBarDelegate() OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
+  virtual bool OKButtonTriggersUACPrompt() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual base::string16 GetLinkText() const OVERRIDE;

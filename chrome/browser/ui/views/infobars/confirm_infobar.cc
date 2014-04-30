@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/views/elevation_icon_setter.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -66,16 +67,19 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     AddChildView(label_);
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
-      ok_button_ = CreateLabelButton(this,
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK),
-          delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_OK));
+      ok_button_ = CreateLabelButton(
+          this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+      if (delegate->OKButtonTriggersUACPrompt()) {
+        AddElevationIconToButton(ok_button_);
+        ok_button_->SizeToPreferredSize();
+      }
       AddChildView(ok_button_);
     }
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-      cancel_button_ = CreateLabelButton(this,
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL),
-          delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+      cancel_button_ = CreateLabelButton(
+          this,
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
       AddChildView(cancel_button_);
     }
 

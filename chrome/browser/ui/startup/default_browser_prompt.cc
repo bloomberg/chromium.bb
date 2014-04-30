@@ -76,7 +76,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual int GetIconID() const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
+  virtual bool OKButtonTriggersUACPrompt() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool ShouldExpireInternal(
@@ -148,8 +148,8 @@ base::string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
       IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
 }
 
-bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {
-  return button == BUTTON_OK;
+bool DefaultBrowserInfoBarDelegate::OKButtonTriggersUACPrompt() const {
+  return true;
 }
 
 bool DefaultBrowserInfoBarDelegate::Accept() {

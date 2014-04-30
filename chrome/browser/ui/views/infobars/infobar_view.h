@@ -65,8 +65,7 @@ class InfoBarView : public infobars::InfoBar,
   // Creates a button with an infobar-specific appearance.
   // NOTE: Subclasses must ignore button presses if we're unowned.
   static views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
-                                               const base::string16& text,
-                                               bool needs_elevation);
+                                               const base::string16& text);
 
   // Given |labels| and the total |available_width| to display them in, sets
   // each label's size so that the longest label shrinks until it reaches the

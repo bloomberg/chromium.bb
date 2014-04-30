@@ -4,14 +4,11 @@
 
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 
-#if defined(OS_WIN)
-#include <shellapi.h>
-#endif
-
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/views/elevation_icon_setter.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,15 +28,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "chrome/installer/util/google_update_util.h"
-#include "chrome/installer/util/install_util.h"
-#include "ui/gfx/icon_util.h"
 #endif
-
-using content::BrowserThread;
-using views::GridLayout;
 
 namespace {
 
@@ -61,36 +51,6 @@ const char kDownloadChromeUrl[] = "https://www.google.com/chrome/?&brand=CHWL"
 const int kMaxIgnored = 50;
 // The number of buckets we want the NumLaterPerReinstall histogram to use.
 const int kNumIgnoredBuckets = 5;
-
-// Adds an elevation icon to |button| when running a system level install.
-void AddElevationIconIfNeeded(views::LabelButton* button) {
-#if defined(OS_WIN)
-  if ((base::win::GetVersion() >= base::win::VERSION_VISTA) &&
-      base::win::UserAccountControlIsEnabled()) {
-    // This code was lifted from chrome/browser/ui/views/infobars/infobar_view.
-    // TODO(mad): Investigate the possibility of moving it to a common place.
-    SHSTOCKICONINFO icon_info = { sizeof(SHSTOCKICONINFO) };
-    // Even with the runtime guard above, we have to use GetProcAddress() here,
-    // because otherwise the loader will try to resolve the function address on
-    // startup, which will break on XP.
-    typedef HRESULT (STDAPICALLTYPE *GetStockIconInfo)(SHSTOCKICONID, UINT,
-                                                       SHSTOCKICONINFO*);
-    GetStockIconInfo func = reinterpret_cast<GetStockIconInfo>(
-        GetProcAddress(GetModuleHandle(L"shell32.dll"), "SHGetStockIconInfo"));
-    if (SUCCEEDED((*func)(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON,
-                          &icon_info))) {
-      scoped_ptr<SkBitmap> icon(IconUtil::CreateSkBitmapFromHICON(
-          icon_info.hIcon, gfx::Size(GetSystemMetrics(SM_CXSMICON),
-                                     GetSystemMetrics(SM_CYSMICON))));
-      if (icon.get()) {
-        button->SetImage(views::Button::STATE_NORMAL,
-                         gfx::ImageSkia::CreateFrom1xBitmap(*icon));
-      }
-      DestroyIcon(icon_info.hIcon);
-    }
-  }
-#endif
-}
 
 }  // namespace
 
@@ -148,7 +108,7 @@ void OutdatedUpgradeBubbleView::Init() {
   accept_button_->SetStyle(views::Button::STYLE_BUTTON);
   accept_button_->SetIsDefault(true);
   accept_button_->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
-  AddElevationIconIfNeeded(accept_button_);
+  AddElevationIconToButton(accept_button_);
 
   later_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_LATER));
@@ -168,35 +128,35 @@ void OutdatedUpgradeBubbleView::Init() {
   views::ImageView* image_view = new views::ImageView();
   image_view->SetImage(rb.GetImageSkiaNamed(IDR_UPDATE_MENU_SEVERITY_HIGH));
 
-  GridLayout* layout = new GridLayout(this);
+  views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
   const int kIconTitleColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kIconTitleColumnSetId);
 
   // Top (icon-title) row.
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+                views::GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+                views::GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
 
   // Middle (text) row.
   const int kTextColumnSetId = 1;
   cs = layout->AddColumnSet(kTextColumnSetId);
-  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                GridLayout::FIXED, kWidthOfDescriptionText, 0);
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                views::GridLayout::FIXED, kWidthOfDescriptionText, 0);
 
   // Bottom (buttons) row.
   const int kButtonsColumnSetId = 2;
   cs = layout->AddColumnSet(kButtonsColumnSetId);
   cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
-                GridLayout::USE_PREF, 0, 0);
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::TRAILING, 0,
+                views::GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, kButtonPadding);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
-                GridLayout::USE_PREF, 0, 0);
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::TRAILING, 0,
+                views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, kIconTitleColumnSetId);
   layout->AddView(image_view);
@@ -268,7 +228,8 @@ void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
       }
 
       // Re-enable updates by shelling out to setup.exe in the blocking pool.
-      BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      content::BrowserThread::PostBlockingPoolTask(
+          FROM_HERE,
           base::Bind(&google_update::ElevateIfNeededToReenableUpdates));
 #endif  // defined(OS_WIN)
     }

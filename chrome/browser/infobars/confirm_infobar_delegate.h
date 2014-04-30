@@ -31,15 +31,16 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
   // Returns the message string to be displayed for the InfoBar.
   virtual base::string16 GetMessageText() const = 0;
 
-  // Return the buttons to be shown for this InfoBar.
+  // Returns the buttons to be shown for this InfoBar.
   virtual int GetButtons() const;
 
-  // Return the label for the specified button. The default implementation
+  // Returns the label for the specified button. The default implementation
   // returns "OK" for the OK button and "Cancel" for the Cancel button.
   virtual base::string16 GetButtonLabel(InfoBarButton button) const;
 
-  // Return whether or not the specified button needs elevation.
-  virtual bool NeedElevation(InfoBarButton button) const;
+  // Returns whether or not the OK button will trigger a UAC elevation prompt on
+  // Windows.
+  virtual bool OKButtonTriggersUACPrompt() const;
 
   // Called when the OK button is pressed. If this function returns true, the
   // infobar is then immediately closed. Subclasses MUST NOT return true if in

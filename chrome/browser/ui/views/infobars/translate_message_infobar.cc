@@ -41,7 +41,7 @@ void TranslateMessageInfoBar::ViewHierarchyChanged(
 
     base::string16 button_text(delegate->GetMessageInfoBarButtonText());
     if (!button_text.empty()) {
-      button_ = CreateLabelButton(this, button_text, false);
+      button_ = CreateLabelButton(this, button_text);
       AddChildView(button_);
     }
   }

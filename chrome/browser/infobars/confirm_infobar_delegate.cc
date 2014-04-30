@@ -26,7 +26,7 @@ base::string16 ConfirmInfoBarDelegate::GetButtonLabel(
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_OK : IDS_CANCEL);
 }
 
-bool ConfirmInfoBarDelegate::NeedElevation(InfoBarButton button) const {
+bool ConfirmInfoBarDelegate::OKButtonTriggersUACPrompt() const {
   return false;
 }
 

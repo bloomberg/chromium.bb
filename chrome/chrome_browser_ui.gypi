@@ -1582,6 +1582,8 @@
         'browser/ui/views/dropdown_bar_view.h',
         'browser/ui/views/edit_search_engine_dialog.cc',
         'browser/ui/views/edit_search_engine_dialog.h',
+        'browser/ui/views/elevation_icon_setter.cc',
+        'browser/ui/views/elevation_icon_setter.h',
         'browser/ui/views/extensions/bookmark_app_bubble_view.cc',
         'browser/ui/views/extensions/bookmark_app_bubble_view.h',
         'browser/ui/views/extensions/browser_action_drag_data.cc',

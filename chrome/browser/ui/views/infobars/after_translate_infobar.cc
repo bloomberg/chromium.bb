@@ -118,8 +118,8 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(
       base::string16() : strings[2]);
   AddChildView(label_3_);
 
-  revert_button_ = CreateLabelButton(this,
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_REVERT), false);
+  revert_button_ = CreateLabelButton(
+      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_REVERT));
   AddChildView(revert_button_);
 
   options_menu_button_ = CreateMenuButton(

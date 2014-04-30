@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
-#if defined(OS_WIN)
-#include <shellapi.h>
-#endif
-
 #include <algorithm>
 
 #include "base/memory/scoped_ptr.h"
@@ -34,13 +30,6 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-
-#if defined(OS_WIN)
-#include "base/win/win_util.h"
-#include "base/win/windows_version.h"
-#include "ui/gfx/icon_util.h"
-#include "ui/gfx/win/hwnd_util.h"
-#endif
 
 
 // Helpers --------------------------------------------------------------------
@@ -151,8 +140,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
 // static
 views::LabelButton* InfoBarView::CreateLabelButton(
     views::ButtonListener* listener,
-    const base::string16& text,
-    bool needs_elevation) {
+    const base::string16& text) {
   scoped_ptr<views::LabelButtonBorder> label_button_border(
       new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
   const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
@@ -175,31 +163,6 @@ views::LabelButton* InfoBarView::CreateLabelButton(
   label_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   label_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-#if defined(OS_WIN)
-  if (needs_elevation &&
-      (base::win::GetVersion() >= base::win::VERSION_VISTA) &&
-      base::win::UserAccountControlIsEnabled()) {
-    SHSTOCKICONINFO icon_info = { sizeof(SHSTOCKICONINFO) };
-    // Even with the runtime guard above, we have to use GetProcAddress() here,
-    // because otherwise the loader will try to resolve the function address on
-    // startup, which will break on XP.
-    typedef HRESULT (STDAPICALLTYPE *GetStockIconInfo)(SHSTOCKICONID, UINT,
-                                                       SHSTOCKICONINFO*);
-    GetStockIconInfo func = reinterpret_cast<GetStockIconInfo>(
-        GetProcAddress(GetModuleHandle(L"shell32.dll"), "SHGetStockIconInfo"));
-    if (SUCCEEDED((*func)(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON,
-                          &icon_info))) {
-      scoped_ptr<SkBitmap> icon(IconUtil::CreateSkBitmapFromHICON(
-          icon_info.hIcon, gfx::Size(GetSystemMetrics(SM_CXSMICON),
-                                     GetSystemMetrics(SM_CYSMICON))));
-      if (icon.get()) {
-        label_button->SetImage(views::Button::STATE_NORMAL,
-                               gfx::ImageSkia::CreateFrom1xBitmap(*icon));
-      }
-      DestroyIcon(icon_info.hIcon);
-    }
-  }
-#endif
   label_button->SizeToPreferredSize();
   label_button->SetFocusable(true);
   return label_button;
