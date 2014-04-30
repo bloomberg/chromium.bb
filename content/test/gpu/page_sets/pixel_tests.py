@@ -50,5 +50,5 @@ class PixelTestsPageSet(page_set_module.PageSet):
       url='file://../../data/gpu/pixel_webgl.html',
       name='Pixel.WebGLGreenTriangle',
       test_rect=[0, 0, 400, 300],
-      revision=4,
+      revision=5,
       page_set=self))
