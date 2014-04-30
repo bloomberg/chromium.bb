@@ -34,7 +34,7 @@
 namespace WebCore {
 
 static bool s_isRunningLayoutTest = false;
-static bool s_isFontSmoothingEnabled = false;
+static bool s_isFontAntialiasingEnabled = false;
 
 bool isRunningLayoutTest()
 {
@@ -46,14 +46,14 @@ void setIsRunningLayoutTest(bool value)
     s_isRunningLayoutTest = value;
 }
 
-bool isFontSmoothingEnabledForTest()
+bool isFontAntialiasingEnabledForTest()
 {
-    return s_isFontSmoothingEnabled;
+    return s_isFontAntialiasingEnabled;
 }
 
-void setFontSmoothingEnabledForTest(bool value)
+void setFontAntialiasingEnabledForTest(bool value)
 {
-    s_isFontSmoothingEnabled = value;
+    s_isFontAntialiasingEnabled = value;
 }
 
 } // namespace WebCore

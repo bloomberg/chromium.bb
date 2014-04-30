@@ -112,7 +112,7 @@ static bool isWebFont(const String& familyName)
 static int computePaintTextFlags(String fontFamilyName)
 {
     if (isRunningLayoutTest())
-        return isFontSmoothingEnabledForTest() ? SkPaint::kAntiAlias_Flag : 0;
+        return isFontAntialiasingEnabledForTest() ? SkPaint::kAntiAlias_Flag : 0;
 
     int textFlags = getSystemTextFlags();
 

@@ -75,6 +75,9 @@ BLINK_EXPORT void setLayoutTestMode(bool);
 BLINK_EXPORT bool layoutTestMode();
 
 // Alters the rendering of fonts for layout tests.
+BLINK_EXPORT void setFontAntialiasingEnabledForTest(bool);
+BLINK_EXPORT bool fontAntialiasingEnabledForTest();
+// FIXME(dro): Remove after Chromium side change landed.
 BLINK_EXPORT void setFontSmoothingEnabledForTest(bool);
 BLINK_EXPORT bool fontSmoothingEnabledForTest();
 

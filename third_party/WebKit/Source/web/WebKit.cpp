@@ -241,14 +241,26 @@ bool layoutTestMode()
     return WebCore::isRunningLayoutTest();
 }
 
-void setFontSmoothingEnabledForTest(bool value)
+void setFontAntialiasingEnabledForTest(bool value)
 {
-    WebCore::setFontSmoothingEnabledForTest(value);
+    WebCore::setFontAntialiasingEnabledForTest(value);
 }
 
+bool fontAntialiasingEnabledForTest()
+{
+    return WebCore::isFontAntialiasingEnabledForTest();
+}
+
+// FIXME(dro): Remove after Chromium side rename landed.
+void setFontSmoothingEnabledForTest(bool value)
+{
+    setFontAntialiasingEnabledForTest(value);
+}
+
+// FIXME(dro): Remove after Chromium side rename landed.
 bool fontSmoothingEnabledForTest()
 {
-    return WebCore::isFontSmoothingEnabledForTest();
+    return fontAntialiasingEnabledForTest();
 }
 
 void enableLogChannel(const char* name)
