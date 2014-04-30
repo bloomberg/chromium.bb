@@ -17,9 +17,10 @@ base::LazyInstance<internal::DiscardableMemoryManager>::Leaky g_manager =
 
 namespace internal {
 
-DiscardableMemoryEmulated::DiscardableMemoryEmulated(size_t size)
-    : is_locked_(false) {
-  g_manager.Pointer()->Register(this, size);
+DiscardableMemoryEmulated::DiscardableMemoryEmulated(size_t bytes)
+    : bytes_(bytes),
+      is_locked_(false) {
+  g_manager.Pointer()->Register(this, bytes);
 }
 
 DiscardableMemoryEmulated::~DiscardableMemoryEmulated() {
@@ -71,11 +72,11 @@ void* DiscardableMemoryEmulated::Memory() const {
   return memory_.get();
 }
 
-bool DiscardableMemoryEmulated::AllocateAndAcquireLock(size_t bytes) {
+bool DiscardableMemoryEmulated::AllocateAndAcquireLock() {
   if (memory_)
     return true;
 
-  memory_.reset(new uint8[bytes]);
+  memory_.reset(new uint8[bytes_]);
   return false;
 }
 
