@@ -38,24 +38,16 @@ namespace {
 const char kAuthorizationHeader[] =
     "Authorization: Bearer %s";
 
-// URL requesting user info.
-const char kUserEntryURL[] =
-    "https://www.googleapis.com/oauth2/v1/userinfo?alt=json";
-
-// OAuth scope for the user info API.
-// For more info, see https://developers.google.com/accounts/docs/OAuth2LoginV1.
-const char kAPIScope[] = "https://www.googleapis.com/auth/userinfo.profile";
-
 // Path in JSON dictionary to user's photo thumbnail URL.
-const char kPhotoThumbnailURLPath[] = "picture";
+const char kPhotoThumbnailURLPath[] = "image.url";
 
 // From the user info API, this field corresponds to the full name of the user.
-const char kFullNamePath[] = "name";
+const char kFullNamePath[] = "displayName";
 
-const char kGivenNamePath[] = "given_name";
+const char kGivenNamePath[] = "name.givenName";
 
 // Path in JSON dictionary to user's preferred locale.
-const char kLocalePath[] = "locale";
+const char kLocalePath[] = "language";
 
 // Path format for specifying thumbnail's size.
 const char kThumbnailSizeFormat[] = "s%d-c";
@@ -133,7 +125,7 @@ bool GetImageURLWithSize(const GURL& old_url, int size, GURL* new_url) {
 // Parses the entry response and gets the name and profile image URL.
 // |data| should be the JSON formatted data return by the response.
 // Returns false to indicate a parsing error.
-bool ProfileDownloader::ParseProfileJSON(const std::string& data,
+bool ProfileDownloader::ParseProfileJSON(base::DictionaryValue* root_dictionary,
                                          base::string16* full_name,
                                          base::string16* given_name,
                                          std::string* url,
@@ -148,23 +140,6 @@ bool ProfileDownloader::ParseProfileJSON(const std::string& data,
   *given_name = base::string16();
   *url = std::string();
   *profile_locale = std::string();
-
-  int error_code = -1;
-  std::string error_message;
-  scoped_ptr<base::Value> root_value(base::JSONReader::ReadAndReturnError(
-      data, base::JSON_PARSE_RFC, &error_code, &error_message));
-  if (!root_value) {
-    LOG(ERROR) << "Error while parsing user entry response: "
-               << error_message;
-    return false;
-  }
-  if (!root_value->IsType(base::Value::TYPE_DICTIONARY)) {
-    LOG(ERROR) << "JSON root is not a dictionary: "
-               << root_value->GetType();
-    return false;
-  }
-  base::DictionaryValue* root_dictionary =
-      static_cast<base::DictionaryValue*>(root_value.get());
 
   root_dictionary->GetString(kFullNamePath, full_name);
   root_dictionary->GetString(kGivenNamePath, given_name);
@@ -273,24 +248,17 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
 }
 
 void ProfileDownloader::StartFetchingImage() {
+  DCHECK(!auth_token_.empty());
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
-  user_entry_fetcher_.reset(net::URLFetcher::Create(
-      GURL(kUserEntryURL), net::URLFetcher::GET, this));
-  user_entry_fetcher_->SetRequestContext(
-      delegate_->GetBrowserProfile()->GetRequestContext());
-  user_entry_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                    net::LOAD_DO_NOT_SAVE_COOKIES);
-  if (!auth_token_.empty()) {
-    user_entry_fetcher_->SetExtraRequestHeaders(
-        base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
-  }
-  user_entry_fetcher_->Start();
+  gaia_client_.reset(new gaia::GaiaOAuthClient(
+      delegate_->GetBrowserProfile()->GetRequestContext()));
+  gaia_client_->GetUserInfo(auth_token_, 0, this);
 }
 
 void ProfileDownloader::StartFetchingOAuth2AccessToken() {
   Profile* profile = delegate_->GetBrowserProfile();
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(kAPIScope);
+  scopes.insert(GaiaConstants::kGoogleUserInfoProfile);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   oauth2_access_token_request_ = token_service->StartRequest(
@@ -307,27 +275,10 @@ ProfileDownloader::~ProfileDownloader() {
     service->RemoveObserver(this);
 }
 
-void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string data;
-  source->GetResponseAsString(&data);
-  bool network_error =
-      source->GetStatus().status() != net::URLRequestStatus::SUCCESS;
-  if (network_error || source->GetResponseCode() != 200) {
-    LOG(WARNING) << "Fetching profile data failed";
-    DVLOG(1) << "  Status: " << source->GetStatus().status();
-    DVLOG(1) << "  Error: " << source->GetStatus().error();
-    DVLOG(1) << "  Response code: " << source->GetResponseCode();
-    DVLOG(1) << "  Url: " << source->GetURL().spec();
-    delegate_->OnProfileDownloadFailure(this, network_error ?
-        ProfileDownloaderDelegate::NETWORK_ERROR :
-        ProfileDownloaderDelegate::SERVICE_ERROR);
-    return;
-  }
-
-  if (source == user_entry_fetcher_.get()) {
+void ProfileDownloader::OnGetUserInfoResponse(
+    scoped_ptr<base::DictionaryValue> user_info) {
     std::string image_url;
-    if (!ParseProfileJSON(data,
+    if (!ParseProfileJSON(user_info.get(),
                           &profile_full_name_,
                           &profile_given_name_,
                           &image_url,
@@ -367,14 +318,45 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
           base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
     }
     profile_image_fetcher_->Start();
-  } else if (source == profile_image_fetcher_.get()) {
-    VLOG(1) << "Decoding the image...";
-    scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
-        this, data, ImageDecoder::DEFAULT_CODEC);
-    scoped_refptr<base::MessageLoopProxy> task_runner =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
-    image_decoder->Start(task_runner);
+}
+
+void ProfileDownloader::OnOAuthError() {
+  LOG(WARNING) << "OnOAuthError: Fetching profile data failed";
+  delegate_->OnProfileDownloadFailure(
+      this, ProfileDownloaderDelegate::SERVICE_ERROR);
+}
+
+void ProfileDownloader::OnNetworkError(int response_code) {
+  LOG(WARNING) << "OnNetworkError: Fetching profile data failed";
+  DVLOG(1) << "  Response code: " << response_code;
+  delegate_->OnProfileDownloadFailure(
+      this, ProfileDownloaderDelegate::NETWORK_ERROR);
+}
+
+void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string data;
+  source->GetResponseAsString(&data);
+  bool network_error =
+      source->GetStatus().status() != net::URLRequestStatus::SUCCESS;
+  if (network_error || source->GetResponseCode() != 200) {
+    LOG(WARNING) << "Fetching profile data failed";
+    DVLOG(1) << "  Status: " << source->GetStatus().status();
+    DVLOG(1) << "  Error: " << source->GetStatus().error();
+    DVLOG(1) << "  Response code: " << source->GetResponseCode();
+    DVLOG(1) << "  Url: " << source->GetURL().spec();
+    delegate_->OnProfileDownloadFailure(this, network_error ?
+        ProfileDownloaderDelegate::NETWORK_ERROR :
+        ProfileDownloaderDelegate::SERVICE_ERROR);
+    return;
   }
+
+  VLOG(1) << "Decoding the image...";
+  scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
+      this, data, ImageDecoder::DEFAULT_CODEC);
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  image_decoder->Start(task_runner);
 }
 
 void ProfileDownloader::OnImageDecoded(const ImageDecoder* decoder,

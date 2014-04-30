@@ -18,7 +18,7 @@ namespace {
 
 // Presence of this key in the userinfo response indicates whether the user is
 // on a hosted domain.
-const char kHostedDomainKey[] = "hd";
+const char kHostedDomainKey[] = "domain";
 
 // UMA histogram names.
 const char kUMADelayPolicyTokenFetch[] =

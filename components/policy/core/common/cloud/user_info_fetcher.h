@@ -8,6 +8,7 @@
 #include <string>
 #include "base/memory/scoped_ptr.h"
 #include "components/policy/policy_export.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GoogleServiceAuthError;
@@ -25,7 +26,7 @@ namespace policy {
 
 // Class that makes a UserInfo request, parses the response, and notifies
 // a provided Delegate when the request is complete.
-class POLICY_EXPORT UserInfoFetcher : public net::URLFetcherDelegate {
+class POLICY_EXPORT UserInfoFetcher {
  public:
   class POLICY_EXPORT Delegate {
    public:
@@ -48,13 +49,25 @@ class POLICY_EXPORT UserInfoFetcher : public net::URLFetcherDelegate {
   // Starts the UserInfo request, using the passed OAuth2 |access_token|.
   void Start(const std::string& access_token);
 
-  // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
  private:
-  Delegate* delegate_;
-  net::URLRequestContextGetter* context_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  class GaiaDelegate : public gaia::GaiaOAuthClient::Delegate {
+   public:
+    explicit GaiaDelegate(UserInfoFetcher::Delegate* delegate);
+
+   private:
+    // gaia::GaiaOAuthClient::Delegate implementation.
+    virtual void OnGetUserInfoResponse(
+        scoped_ptr<base::DictionaryValue> user_info) OVERRIDE;
+    virtual void OnOAuthError() OVERRIDE;
+    virtual void OnNetworkError(int response_code) OVERRIDE;
+
+    UserInfoFetcher::Delegate* delegate_;
+
+    DISALLOW_COPY_AND_ASSIGN(GaiaDelegate);
+  };
+
+  GaiaDelegate delegate_;
+  gaia::GaiaOAuthClient gaia_client_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInfoFetcher);
 };

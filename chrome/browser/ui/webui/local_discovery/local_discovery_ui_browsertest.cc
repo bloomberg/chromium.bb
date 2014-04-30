@@ -411,13 +411,13 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
         .Times(AnyNumber());
 
     fake_fetcher_factory().SetFakeResponse(
-        GaiaUrls::GetInstance()->oauth_user_info_url(),
+        GaiaUrls::GetInstance()->people_get_url(),
         kResponseGaiaId,
         net::HTTP_OK,
         net::URLRequestStatus::SUCCESS);
 
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        GaiaUrls::GetInstance()->oauth_user_info_url().spec()))
+        GaiaUrls::GetInstance()->people_get_url().spec()))
         .Times(AnyNumber());
 
     ProfileOAuth2TokenService* token_service =

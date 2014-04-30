@@ -56,6 +56,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -229,13 +230,15 @@ class UserImageManagerTest : public LoginManagerTest,
 
     static_cast<OAuth2TokenService::Consumer*>(profile_downloader)->
         OnGetTokenSuccess(NULL,
-                          std::string(),
+                          "token",
                           base::Time::Now() + base::TimeDelta::FromDays(1));
 
-    net::TestURLFetcher* fetcher = url_fetcher_factory->GetFetcherByID(0);
+    net::TestURLFetcher* fetcher =
+        url_fetcher_factory->GetFetcherByID(
+            gaia::GaiaOAuthClient::kUrlFetcherId);
     ASSERT_TRUE(fetcher);
     fetcher->SetResponseString(
-        "{ \"picture\": \"http://localhost/avatar.jpg\" }");
+        "{ \"image\": {\"url\": \"http://localhost/avatar.jpg\"} }");
     fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                               net::OK));
     fetcher->set_response_code(200);
