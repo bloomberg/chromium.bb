@@ -2655,7 +2655,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyWebkitWrapFlow:
             return cssValuePool().createValue(style->wrapFlow());
         case CSSPropertyShapeMargin:
-            return cssValuePool().createValue(style->shapeMargin());
+            return cssValuePool().createValue(style->shapeMargin(), *style);
         case CSSPropertyShapeImageThreshold:
             return cssValuePool().createValue(style->shapeImageThreshold(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyShapeOutside:
