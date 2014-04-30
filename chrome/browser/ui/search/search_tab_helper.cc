@@ -468,20 +468,29 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
+// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
+#if !defined(OS_ANDROID)
   NTPUserDataLogger::GetOrCreateFromWebContents(
       web_contents())->LogEvent(event);
+#endif
 }
 
 void SearchTabHelper::OnLogMostVisitedImpression(
     int position, const base::string16& provider) {
+// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
+#if !defined(OS_ANDROID)
   NTPUserDataLogger::GetOrCreateFromWebContents(
       web_contents())->LogMostVisitedImpression(position, provider);
+#endif
 }
 
 void SearchTabHelper::OnLogMostVisitedNavigation(
     int position, const base::string16& provider) {
+// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
+#if !defined(OS_ANDROID)
   NTPUserDataLogger::GetOrCreateFromWebContents(
       web_contents())->LogMostVisitedNavigation(position, provider);
+#endif
 }
 
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
