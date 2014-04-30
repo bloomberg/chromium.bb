@@ -64,7 +64,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
 
   // Not yet supported in single-process mode.
-  cl->AppendSwitch(switches::kDisableExperimentalWebGL);
   cl->AppendSwitch(switches::kDisableSharedWorkers);
 
 
