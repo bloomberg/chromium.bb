@@ -72,23 +72,9 @@ base::string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
 }
 
 bool SessionCrashedInfoBarDelegate::Accept() {
-  uint32 behavior = 0;
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser->tab_strip_model()->count() == 1) {
-    const content::WebContents* active_tab =
-        browser->tab_strip_model()->GetWebContentsAt(0);
-    if (active_tab->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
-        chrome::IsInstantNTP(active_tab)) {
-      // There is only one tab and its the new tab page, make session restore
-      // clobber it.
-      behavior = SessionRestore::CLOBBER_CURRENT_TAB;
-    }
-  }
-  SessionRestore::RestoreSession(browser->profile(), browser,
-                                 browser->host_desktop_type(), behavior,
-                                 std::vector<GURL>());
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      InfoBarService::WebContentsFromInfoBar(infobar()));
+  SessionRestore::RestoreSessionAfterCrash(browser);
   accepted_ = true;
   return true;
 }

@@ -1329,6 +1329,7 @@
         'browser/ui/startup/obsolete_system_infobar_delegate.h',
         'browser/ui/startup/session_crashed_infobar_delegate.cc',
         'browser/ui/startup/session_crashed_infobar_delegate.h',
+        'browser/ui/startup/session_crashed_bubble.h',
         'browser/ui/startup/startup_browser_creator.cc',
         'browser/ui/startup/startup_browser_creator.h',
         'browser/ui/startup/startup_browser_creator_impl.cc',
@@ -1864,6 +1865,8 @@
         'browser/ui/views/speech_recognition_bubble_views.cc',
         'browser/ui/views/ssl_client_certificate_selector.cc',
         'browser/ui/views/ssl_client_certificate_selector.h',
+        'browser/ui/views/session_crashed_bubble_view.cc',
+        'browser/ui/views/session_crashed_bubble_view.h',
         'browser/ui/views/status_bubble_views.cc',
         'browser/ui/views/status_bubble_views.h',
         'browser/ui/views/status_icons/status_icon_linux_wrapper.cc',
@@ -3155,6 +3158,15 @@
             'browser/ui/webui/local_discovery/local_discovery_ui.h',
             'browser/ui/webui/local_discovery/local_discovery_ui_handler.cc',
             'browser/ui/webui/local_discovery/local_discovery_ui_handler.h',
+          ],
+        }],
+        ['OS!="linux" and OS!="win"', {
+          'sources': [
+            'browser/ui/startup/session_crashed_bubble.cc'
+          ],
+          'sources!': [
+            'browser/ui/views/session_crashed_bubble_view.cc',
+            'browser/ui/views/session_crashed_bubble_view.h',
           ],
         }],
       ],

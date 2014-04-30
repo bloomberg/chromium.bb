@@ -626,6 +626,9 @@ const char kEnableSearchButtonInOmniboxForStr[] =
 const char kEnableSearchButtonInOmniboxForStrOrIip[] =
     "enable-search-button-in-omnibox-for-str-or-iip";
 
+// Enables using bubbles for session restore request instead of infobars.
+const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
+
 // Enable settings in a separate browser window per profile.
 const char kEnableSettingsWindow[]          = "enable-settings-window";
 

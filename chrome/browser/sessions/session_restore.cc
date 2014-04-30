@@ -25,6 +25,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1199,6 +1201,24 @@ Browser* SessionRestore::RestoreSession(
       (behavior & ALWAYS_CREATE_TABBED_BROWSER) != 0,
       urls_to_open);
   return restorer->Restore();
+}
+
+// static
+void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
+   uint32 behavior = 0;
+  if (browser->tab_strip_model()->count() == 1) {
+    const content::WebContents* active_tab =
+        browser->tab_strip_model()->GetWebContentsAt(0);
+    if (active_tab->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
+        chrome::IsInstantNTP(active_tab)) {
+      // There is only one tab and its the new tab page, make session restore
+      // clobber it.
+      behavior = SessionRestore::CLOBBER_CURRENT_TAB;
+    }
+  }
+  SessionRestore::RestoreSession(browser->profile(), browser,
+                                 browser->host_desktop_type(), behavior,
+                                 std::vector<GURL>());
 }
 
 // static

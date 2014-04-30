@@ -52,6 +52,10 @@ class SessionRestore {
                                  uint32 behavior,
                                  const std::vector<GURL>& urls_to_open);
 
+  // Restores the last session when the last session crashed. It's a wrapper
+  // of function RestoreSession.
+  static void RestoreSessionAfterCrash(Browser* browser);
+
   // Specifically used in the restoration of a foreign session.  This function
   // restores the given session windows to multiple browsers all of which
   // will be created on the desktop specified by |host_desktop_type|. Returns

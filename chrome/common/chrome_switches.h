@@ -180,6 +180,7 @@ extern const char kEnableSdchOverHttps[];
 extern const char kEnableSearchButtonInOmniboxAlways[];
 extern const char kEnableSearchButtonInOmniboxForStr[];
 extern const char kEnableSearchButtonInOmniboxForStrOrIip[];
+extern const char kEnableSessionCrashedBubble[];
 extern const char kEnableSettingsWindow[];
 extern const char kEnableSpdy4[];
 extern const char kEnableSpellingAutoCorrect[];

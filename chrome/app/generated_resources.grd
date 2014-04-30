@@ -7032,6 +7032,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">
         Restore
       </message>
+      <message name="IDS_SESSION_CRASHED_BUBBLE_TITLE" desc="Title of the session crashed bubble view.">
+        Restore pages?
+      </message>
+      <message name="IDS_SESSION_CRASHED_VIEW_UMA_OPTIN" desc="Text besides the checkbox to let users optin to UMA in the restore from previous crash bubble.">
+        Help make Google Chrome better by sending crash reports and usage statistics to Google
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_NAME" desc="Title for the flag to enable showing session restore request in bubbles.">
+        Enable session restore bubble UI.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_DESCRIPTION" desc="Description for the flag to enable showing session restore request in bubbles.">
+        If enabled, the session restore UI will be shown in a bubble instead of an info bar.
+      </message>
 
       <!-- Bad Flags Info Bar-->
       <message name="IDS_BAD_FLAGS_WARNING_MESSAGE" desc="Message shown when an unsupported command-line flag is used. [Keep it short so it fits in the infobar.]">
