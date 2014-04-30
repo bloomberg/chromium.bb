@@ -1073,7 +1073,7 @@ bool IsValidCrashReportId(const char* buf, size_t bytes_read,
 #if defined(OS_CHROMEOS)
   return my_strcmp(buf, "_sys_cr_finished") == 0;
 #else
-  for (size_t i = 0; i <= bytes_read; ++i) {
+  for (size_t i = 0; i < bytes_read; ++i) {
     if (!my_isxdigit(buf[i]))
       return false;
   }
