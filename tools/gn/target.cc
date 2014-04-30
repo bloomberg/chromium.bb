@@ -148,7 +148,6 @@ void Target::OnResolved() {
     PullDependentTargetInfo(&unique_configs);
   }
   PullForwardedDependentConfigs();
-  PullRecursiveHardDeps();
 }
 
 bool Target::IsLinkable() const {
@@ -203,15 +202,5 @@ void Target::PullForwardedDependentConfigs() {
         direct_dependent_configs_.end(),
         from_target->direct_dependent_configs().begin(),
         from_target->direct_dependent_configs().end());
-  }
-}
-
-void Target::PullRecursiveHardDeps() {
-  for (size_t dep_i = 0; dep_i < deps_.size(); dep_i++) {
-    const Target* dep = deps_[dep_i].ptr;
-    if (dep->hard_dep())
-      recursive_hard_deps_.insert(dep);
-    recursive_hard_deps_.insert(dep->recursive_hard_deps().begin(),
-                                dep->recursive_hard_deps().end());
   }
 }

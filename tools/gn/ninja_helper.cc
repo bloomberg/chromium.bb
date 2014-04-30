@@ -34,16 +34,15 @@ std::string NinjaHelper::GetTopleveOutputDir() const {
   return kObjectDirNoSlash;
 }
 
-OutputFile NinjaHelper::GetTargetOutputDir(const Target* target) const {
+std::string NinjaHelper::GetTargetOutputDir(const Target* target) const {
+  return kObjectDirNoSlash + target->label().dir().SourceAbsoluteWithOneSlash();
+}
+
+OutputFile NinjaHelper::GetNinjaFileForTarget(const Target* target) const {
   OutputFile ret(target->settings()->toolchain_output_subdir());
   ret.value().append(kObjectDirNoSlash);
   AppendStringPiece(&ret.value(),
                     target->label().dir().SourceAbsoluteWithOneSlash());
-  return ret;
-}
-
-OutputFile NinjaHelper::GetNinjaFileForTarget(const Target* target) const {
-  OutputFile ret = GetTargetOutputDir(target);
   ret.value().append(target->label().name());
   ret.value().append(".ninja");
   return ret;

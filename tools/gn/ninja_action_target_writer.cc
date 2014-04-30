@@ -25,14 +25,7 @@ NinjaActionTargetWriter::~NinjaActionTargetWriter() {
 void NinjaActionTargetWriter::Run() {
   FileTemplate args_template(target_->action_values().args());
   std::string custom_rule_name = WriteRuleDefinition(args_template);
-  // For ACTIONs this is a bit inefficient since it creates an input dep
-  // stamp file even though we're only going to use it once. It would save a
-  // build step to skip this and write the order-only deps directly on the
-  // build rule. This should probably be handled by WriteInputDepsStampAndGetDep
-  // automatically if we supply a count of sources (so it can optimize based on
-  // how many times things would be duplicated).
-  std::string implicit_deps = WriteInputDepsStampAndGetDep();
-  out_ << std::endl;
+  std::string implicit_deps = GetSourcesImplicitDeps();
 
   // Collects all output files for writing below.
   std::vector<OutputFile> output_files;
@@ -61,7 +54,19 @@ void NinjaActionTargetWriter::Run() {
       path_output_.WriteFile(out_, output_path);
     }
 
-    out_ << ": " << custom_rule_name << implicit_deps << std::endl;
+    out_ << ": " << custom_rule_name << implicit_deps;
+
+    // In the case of running the script once, we allow you to write the input
+    // dependencies in both sources and source_prereqs. source_prereqs are
+    // already in the implicit deps written above, but the sources aren't
+    // (since treating the sources this was is unique to an action).
+    const Target::FileList& sources = target_->sources();
+    for (size_t i = 0; i < sources.size(); i++) {
+      out_ << " ";
+      path_output_.WriteFile(out_, sources[i]);
+    }
+    out_ << std::endl;
+
     if (target_->action_values().has_depfile()) {
       out_ << "  depfile = ";
       WriteDepfile(SourceFile());
@@ -124,6 +129,7 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition(
     out_ << "  restat = 1" << std::endl;
   }
 
+  out_ << std::endl;
   return custom_rule_name;
 }
 

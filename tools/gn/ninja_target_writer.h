@@ -29,12 +29,11 @@ class NinjaTargetWriter {
   virtual void Run() = 0;
 
  protected:
-  // Writes to the output stream a stamp rule for input dependencies, and
-  // returns the string to be appended to source rules that encodes the
-  // order-only dependencies for the current target. This will include the "|"
-  // character so can just be appended to the source rules. If there are no
+  // Returns the string to be appended to source rules that encodes the
+  // order-only dependencies for the current target. This will include the
+  // "|" character so can just be appended to the source rules. If there are no
   // implicit dependencies, returns the empty string.
-  std::string WriteInputDepsStampAndGetDep() const;
+  std::string GetSourcesImplicitDeps() const;
 
   // Returns the FileTemplate constructed from the outputs variable. This is
   // like FileTemplate::GetForTargetOutputs except this additionally trims the

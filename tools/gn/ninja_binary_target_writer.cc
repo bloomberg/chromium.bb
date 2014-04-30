@@ -146,7 +146,7 @@ void NinjaBinaryTargetWriter::WriteSources(
   const Target::FileList& sources = target_->sources();
   object_files->reserve(sources.size());
 
-  std::string implicit_deps = WriteInputDepsStampAndGetDep();
+  std::string implicit_deps = GetSourcesImplicitDeps();
 
   for (size_t i = 0; i < sources.size(); i++) {
     const SourceFile& input_file = sources[i];
@@ -179,7 +179,7 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   // that case?
   OutputFile windows_manifest;
   if (settings_->IsWin()) {
-    windows_manifest = helper_.GetTargetOutputDir(target_);
+    windows_manifest.value().assign(helper_.GetTargetOutputDir(target_));
     windows_manifest.value().append(target_->label().name());
     windows_manifest.value().append(".intermediate.manifest");
     out_ << "manifests = ";
