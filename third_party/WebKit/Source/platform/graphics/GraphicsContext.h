@@ -230,7 +230,6 @@ public:
     // stroke color).
     void drawRect(const IntRect&);
     void drawLine(const IntPoint&, const IntPoint&);
-    void drawEllipse(const IntRect&);
     void drawConvexPolygon(size_t numPoints, const FloatPoint*, bool shouldAntialias = false);
 
     void fillPath(const Path&);

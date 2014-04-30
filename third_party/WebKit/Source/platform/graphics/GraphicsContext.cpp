@@ -581,19 +581,6 @@ void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* poin
         drawPath(path, immutableState()->strokePaint());
 }
 
-// This method is only used to draw the little circles used in lists.
-void GraphicsContext::drawEllipse(const IntRect& elipseRect)
-{
-    if (paintingDisabled())
-        return;
-
-    SkRect rect = elipseRect;
-    drawOval(rect, immutableState()->fillPaint());
-
-    if (strokeStyle() != NoStroke)
-        drawOval(rect, immutableState()->strokePaint());
-}
-
 void GraphicsContext::drawFocusRing(const Path& focusRingPath, int width, int offset, const Color& color)
 {
     // FIXME: Implement support for offset.

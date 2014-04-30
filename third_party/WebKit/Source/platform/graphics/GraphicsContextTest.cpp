@@ -602,7 +602,8 @@ TEST(GraphicsContextTest, trackOpaqueOvalTest)
     EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.drawEllipse(IntRect(10, 10, 90, 90));
+    context.fillEllipse(FloatRect(10, 10, 90, 90));
+    context.strokeEllipse(FloatRect(10, 10, 90, 90));
     EXPECT_EQ_RECT(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
@@ -615,24 +616,28 @@ TEST(GraphicsContextTest, trackOpaqueOvalTest)
     context.setShouldAntialias(false);
 
     context.setFillColor(opaque);
-    context.drawEllipse(IntRect(10, 10, 50, 30));
+    context.fillEllipse(FloatRect(10, 10, 50, 30));
+    context.strokeEllipse(FloatRect(10, 10, 50, 30));
     EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
     context.setFillColor(alpha);
-    context.drawEllipse(IntRect(10, 10, 30, 50));
+    context.fillEllipse(FloatRect(10, 10, 30, 50));
+    context.strokeEllipse(FloatRect(10, 10, 30, 50));
     EXPECT_EQ_RECT(IntRect(40, 10, 60, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
     context.setShouldAntialias(true);
 
     context.setFillColor(opaque);
-    context.drawEllipse(IntRect(10, 10, 50, 30));
+    context.fillEllipse(FloatRect(10, 10, 50, 30));
+    context.strokeEllipse(FloatRect(10, 10, 50, 30));
     EXPECT_EQ_RECT(IntRect(40, 41, 60, 59), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
     context.setFillColor(alpha);
-    context.drawEllipse(IntRect(20, 10, 30, 50));
+    context.fillEllipse(FloatRect(20, 10, 30, 50));
+    context.strokeEllipse(FloatRect(20, 10, 30, 50));
     EXPECT_EQ_RECT(IntRect(51, 41, 49, 59), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
