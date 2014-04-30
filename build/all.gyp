@@ -392,13 +392,6 @@
         }],
       ],
     }, # target_name: chromium_builder_tests
-    {
-      'target_name': 'chromium_2010_builder_tests',
-      'type': 'none',
-      'dependencies': [
-        'chromium_builder_tests',
-      ],
-    }, # target_name: chromium_2010_builder_tests
   ],
   'conditions': [
     ['OS!="ios"', {
