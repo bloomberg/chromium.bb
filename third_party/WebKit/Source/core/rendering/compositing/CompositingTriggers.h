@@ -25,7 +25,6 @@
 namespace WebCore {
 
 enum CompositingTrigger {
-    ThreeDTransformTrigger = 1 << 0,
     VideoTrigger = 1 << 1,
     PluginTrigger = 1 << 2,
     CanvasTrigger = 1 << 3,

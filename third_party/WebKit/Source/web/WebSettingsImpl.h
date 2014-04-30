@@ -54,7 +54,6 @@ public:
     virtual void setAccelerated2dCanvasEnabled(bool) OVERRIDE;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) OVERRIDE;
     virtual void setAcceleratedCompositingEnabled(bool) OVERRIDE;
-    virtual void setAcceleratedCompositingFor3DTransformsEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForAnimationEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForCanvasEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForFiltersEnabled(bool) OVERRIDE;

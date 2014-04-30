@@ -233,7 +233,7 @@ bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() con
 
 bool RenderLayerCompositor::canRender3DTransforms() const
 {
-    return hasAcceleratedCompositing() && m_compositingReasonFinder.has3DTransformTrigger();
+    return hasAcceleratedCompositing();
 }
 
 void RenderLayerCompositor::setCompositingLayersNeedRebuild()

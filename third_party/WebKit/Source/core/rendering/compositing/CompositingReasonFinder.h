@@ -27,7 +27,6 @@ public:
 
     void updateTriggers();
 
-    bool has3DTransformTrigger() const;
     bool hasAnimationTrigger() const;
     bool hasOverflowScrollTrigger() const;
     bool hasLegacyOverflowScrollTrigger() const;
