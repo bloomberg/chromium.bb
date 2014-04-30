@@ -424,14 +424,14 @@ void StyleEngine::appendActiveAuthorStyleSheets()
     ASSERT(isMaster());
 
     m_resolver->setBuildScopedStyleTreeInDocumentOrder(true);
-    m_resolver->appendAuthorStyleSheets(0, m_documentStyleSheetCollection.activeAuthorStyleSheets());
+    m_resolver->appendAuthorStyleSheets(m_documentStyleSheetCollection.activeAuthorStyleSheets());
 
     TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::iterator end = m_activeTreeScopes.end();
     for (TreeScopeSet::iterator it = begin; it != end; ++it) {
         if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it)) {
             m_resolver->setBuildScopedStyleTreeInDocumentOrder(!collection->scopingNodesForStyleScoped());
-            m_resolver->appendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
+            m_resolver->appendAuthorStyleSheets(collection->activeAuthorStyleSheets());
         }
     }
     m_resolver->finishAppendAuthorStyleSheets();
