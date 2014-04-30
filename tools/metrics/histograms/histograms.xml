@@ -23205,6 +23205,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ShortcutsProvider.QueryIndexTime" units="milliseconds">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    The time it takes for the ShortcutsProvider to perform a query after the
+    user has typed N characters.
+  </summary>
+</histogram>
+
 <histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -45058,6 +45066,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="4" label="N = 4"/>
   <suffix name="5" label="N = 5"/>
   <affected-histogram name="Omnibox.QueryTime"/>
+  <affected-histogram name="ShortcutsProvider.QueryIndexTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="QuicPortSelection" separator="">
