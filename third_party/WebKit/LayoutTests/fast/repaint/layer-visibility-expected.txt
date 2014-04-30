@@ -1,5 +1,7 @@
 (repaint rects
   (rect 100 0 100 100)
+  (rect 100 0 100 100)
+  (rect 100 0 100 100)
   (rect 0 0 100 100)
 )
 

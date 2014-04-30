@@ -1882,7 +1882,7 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
 
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to repaint (also
     // ignoring text nodes)
-    if ((contextSensitiveProperties & (ContextSensitivePropertyOpacity | ContextSensitivePropertyZIndex)) && !diff.needsLayout()) {
+    if (contextSensitiveProperties & (ContextSensitivePropertyOpacity | ContextSensitivePropertyZIndex)) {
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
             diff.setNeedsRepaintLayer();
         else
@@ -1890,7 +1890,7 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
     }
 
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to repaint.
-    if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer() && !diff.needsLayout()) {
+    if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer()) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
         if (!layer->hasDirectReasonsForCompositing() || layer->paintsWithFilters())
             diff.setNeedsRepaintLayer();
@@ -1898,14 +1898,14 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
             diff.setNeedsRecompositeLayer();
     }
 
-    if ((contextSensitiveProperties & ContextSensitivePropertyTextOrColor) && !diff.needsRepaint() && !diff.needsLayout()
+    if ((contextSensitiveProperties & ContextSensitivePropertyTextOrColor) && !diff.needsRepaint()
         && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor())
         diff.setNeedsRepaintObject();
 
     // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
     // layer status of one of these elements changes, we need to force a layout.
-    if (diff.hasNoChange() && style() && isLayerModelObject()) {
+    if (!diff.needsFullLayout() && style() && isLayerModelObject()) {
         bool requiresLayer = toRenderLayerModelObject(this)->layerTypeRequired() != NoLayer;
         if (hasLayer() != requiresLayer)
             diff.setNeedsFullLayout();
@@ -2030,7 +2030,11 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             toRenderBox(this)->updateLayerTransform();
     }
 
-    if (updatedDiff.needsRepaint()) {
+    // FIXME: The !needsFullLayout() check is temporary to keep the original StyleDifference
+    // behavior that we did't repaint here on StyleDifferenceLayout.
+    // In the next steps we will not always repaint on selfNeedsLayout(), and should force
+    // repaint here if needsRepaint is set.
+    if (updatedDiff.needsRepaint() && !updatedDiff.needsFullLayout()) {
         // Do a repaint with the new style now, e.g., for example if we go from
         // not having an outline to having an outline.
         repaint();
@@ -2070,8 +2074,13 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
             }
         }
 
-        if (m_parent && diff.needsRepaintObjectOnly())
+        // FIXME: The !needsFullLayout() check is temporary to keep the original StyleDifference
+        // behavior that we did't repaint here on StyleDifferenceLayout.
+        // In the next steps we will not always repaint on selfNeedsLayout(), and should force
+        // repaint here if needsRepaintObject is set.
+        if (m_parent && diff.needsRepaintObject() && !diff.needsFullLayout())
             repaint();
+
         if (isFloating() && (m_style->floating() != newStyle.floating()))
             // For changes in float styles, we need to conceivably remove ourselves
             // from the floating objects list.
@@ -2087,7 +2096,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
 
         // Clearing these bits is required to avoid leaving stale renderers.
         // FIXME: We shouldn't need that hack if our logic was totally correct.
-        if (diff.needsFullLayout() || diff.needsPositionedMovementLayout()) {
+        if (diff.needsLayout()) {
             setFloating(false);
             clearPositionedState();
         }

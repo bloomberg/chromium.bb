@@ -103,25 +103,10 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
             if (oldStyle->hasClip() != newStyle.hasClip()
                 || oldStyle->clip() != newStyle.clip())
                 layer()->clipper().clearClipRectsIncludingDescendants();
-        }
-
-        if (diff.needsFullLayout()) {
-            // When a layout hint happens, we go ahead and do a repaint of the layer, since the layer could
-            // end up being destroyed.
+        } else if (diff.needsFullLayout()) {
             if (hasLayer()) {
-                if (oldStyle->hasClip() != newStyle.hasClip()
-                    || oldStyle->clip() != newStyle.clip()) {
-                    // Composited layers don't need to be repainted when a parent's clip changes.
+                if (!layer()->hasCompositedLayerMapping() && oldStyle->position() != newStyle.position())
                     layer()->repainter().repaintIncludingNonCompositingDescendants(containerForRepaint());
-                } else if (!layer()->hasCompositedLayerMapping()) {
-                    if (oldStyle->position() != newStyle.position()
-                        || oldStyle->zIndex() != newStyle.zIndex()
-                        || oldStyle->hasAutoZIndex() != newStyle.hasAutoZIndex()
-                        || oldStyle->opacity() != newStyle.opacity()
-                        || oldStyle->transform() != newStyle.transform()
-                        || oldStyle->filter() != newStyle.filter())
-                        layer()->repainter().repaintIncludingNonCompositingDescendants(containerForRepaint());
-                }
             } else if (newStyle.hasTransform() || newStyle.opacity() < 1 || newStyle.hasFilter()) {
                 // If we don't have a layer yet, but we are going to get one because of transform or opacity,
                 //  then we need to repaint the old position of the object.

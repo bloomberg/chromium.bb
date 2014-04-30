@@ -5,13 +5,15 @@
 #ifndef StyleDifference_h
 #define StyleDifference_h
 
+#include "wtf/Assertions.h"
+
 namespace WebCore {
 
 // This class represents the difference between two computed styles (RenderStyle).
-// The difference can be of 3 types:
-// - Layout difference
-// - Repaint difference
-// - Recompositing difference
+// The difference can be combination of 3 types according to the actions needed:
+// - Difference needing layout
+// - Difference needing repaint
+// - Difference needing recompositing layers
 class StyleDifference {
 public:
     StyleDifference()
@@ -30,11 +32,11 @@ public:
     void clearNeedsRepaint() { m_repaintType = NoRepaint; }
 
     // The object just needs to be repainted.
-    bool needsRepaintObjectOnly() const { return m_repaintType == RepaintObjectOnly; }
+    bool needsRepaintObject() const { return m_repaintType == RepaintObject; }
     void setNeedsRepaintObject()
     {
-        if (!needsRepaintLayer())
-            m_repaintType = RepaintObjectOnly;
+        ASSERT(!needsRepaintLayer());
+        m_repaintType = RepaintObject;
     }
 
     // The layer and its descendant layers need to be repainted.
@@ -45,37 +47,30 @@ public:
     void clearNeedsLayout() { m_layoutType = NoLayout; }
 
     // The offset of this positioned object has been updated.
-    bool needsPositionedMovementLayout() const { return m_layoutType & PositionedMovement; }
+    bool needsPositionedMovementLayout() const { return m_layoutType == PositionedMovement; }
     void setNeedsPositionedMovementLayout()
     {
-        if (!needsFullLayout())
-            m_layoutType |= PositionedMovement;
-        // FIXME: This is temporary to keep the StyleDifferenceLegacy behavior.
-        m_repaintType = NoRepaint;
+        ASSERT(!needsFullLayout());
+        m_layoutType = PositionedMovement;
     }
 
     bool needsFullLayout() const { return m_layoutType == FullLayout; }
-    void setNeedsFullLayout()
-    {
-        m_layoutType = FullLayout;
-        // FIXME: This is temporary to keep the StyleDifferenceLegacy behavior.
-        m_repaintType = NoRepaint;
-    }
+    void setNeedsFullLayout() { m_layoutType = FullLayout; }
 
 private:
     unsigned m_needsRecompositeLayer : 1;
 
     enum RepaintType {
         NoRepaint = 0,
-        RepaintObjectOnly,
+        RepaintObject,
         RepaintLayer
     };
     unsigned m_repaintType : 2;
 
     enum LayoutType {
         NoLayout = 0,
-        PositionedMovement = 1 << 0,
-        FullLayout = 1 << 1
+        PositionedMovement,
+        FullLayout
     };
     unsigned m_layoutType : 2;
 };

@@ -1782,9 +1782,9 @@ private:
     void appendContent(PassOwnPtr<ContentData>);
 
     bool diffNeedsFullLayout(const RenderStyle& other) const;
-    bool diffNeedsRepaintLayerOnly(const RenderStyle& other) const;
-    bool diffNeedsRepaintObjectOnly(const RenderStyle& other) const;
-    bool diffNeedsRecompositeLayerOnly(const RenderStyle& other) const;
+    bool diffNeedsRepaintLayer(const RenderStyle& other) const;
+    bool diffNeedsRepaintObject(const RenderStyle& other) const;
+    bool diffNeedsRecompositeLayer(const RenderStyle& other) const;
     unsigned computeChangedContextSensitiveProperties(const RenderStyle& other, StyleDifference) const;
 };
 

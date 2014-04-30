@@ -124,7 +124,7 @@ StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
 
     if (diffNeedsLayout(other))
         styleDifference.setNeedsFullLayout();
-    else if (diffNeedsRepaintOnly(other))
+    if (diffNeedsRepaint(other))
         styleDifference.setNeedsRepaintObject();
 
     return styleDifference;
@@ -181,13 +181,10 @@ bool SVGRenderStyle::diffNeedsLayout(const SVGRenderStyle* other) const
     return false;
 }
 
-bool SVGRenderStyle::diffNeedsRepaintOnly(const SVGRenderStyle* other) const
+bool SVGRenderStyle::diffNeedsRepaint(const SVGRenderStyle* other) const
 {
-    if (stroke != other->stroke) {
-        // Only the stroke-opacity case remains, where we only need a repaint.
-        ASSERT(stroke->opacity != other->stroke->opacity);
+    if (stroke->opacity != other->stroke->opacity)
         return true;
-    }
 
     // Painting related properties only need repaints.
     if (misc != other->misc) {

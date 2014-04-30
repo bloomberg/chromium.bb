@@ -368,25 +368,18 @@ static bool positionedObjectMovedOnly(const LengthBox& a, const LengthBox& b, co
 
 StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, unsigned& changedContextSensitiveProperties) const
 {
-    changedContextSensitiveProperties = ContextSensitivePropertyNone;
-
     // Note, we use .get() on each DataRef below because DataRef::operator== will do a deep
     // compare, which is duplicate work when we're going to compare each property inside
     // this function anyway.
 
     StyleDifference diff;
-    if (m_svgStyle.get() != other.m_svgStyle.get()) {
+    if (m_svgStyle.get() != other.m_svgStyle.get())
         diff = m_svgStyle->diff(other.m_svgStyle.get());
-        if (diff.needsFullLayout())
-            return diff;
-    }
 
-    if (diffNeedsFullLayout(other)) {
+    if (!diff.needsFullLayout() && diffNeedsFullLayout(other))
         diff.setNeedsFullLayout();
-        return diff;
-    }
 
-    if (position() != StaticPosition && surround->offset != other.surround->offset) {
+    if (!diff.needsFullLayout() && position() != StaticPosition && surround->offset != other.surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
         if ((position() == AbsolutePosition || position() == FixedPosition)
             && positionedObjectMovedOnly(surround->offset, other.surround->offset, m_box->width())) {
@@ -396,29 +389,17 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, un
             // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
             // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
             diff.setNeedsFullLayout();
-            return diff;
         }
     }
 
-    if (diffNeedsRepaintLayerOnly(other))
+    if (diffNeedsRepaintLayer(other))
         diff.setNeedsRepaintLayer();
-    else if (diffNeedsRepaintObjectOnly(other))
+    else if (diffNeedsRepaintObject(other))
         diff.setNeedsRepaintObject();
 
     changedContextSensitiveProperties = computeChangedContextSensitiveProperties(other, diff);
 
-    if (diff.needsRepaint() && diff.needsPositionedMovementLayout()) {
-        // FIXME: When both repaint and positioned-movement-layout are needed, the original
-        // code promoted diff to StyleDifferenceLayout because the original enum can't express
-        // the exact needs in the case. The following code is temporary to keep the original
-        // behavior. Will remove in later changes when we optimize and change functionality,
-        // which may be just to rebaseline layout test expectations.
-        diff.clearNeedsRepaint();
-        diff.setNeedsFullLayout();
-        return diff;
-    }
-
-    if (diff.hasNoChange() && diffNeedsRecompositeLayerOnly(other))
+    if (diff.hasNoChange() && diffNeedsRecompositeLayer(other))
         diff.setNeedsRecompositeLayer();
 
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
@@ -622,7 +603,7 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
     return false;
 }
 
-bool RenderStyle::diffNeedsRepaintLayerOnly(const RenderStyle& other) const
+bool RenderStyle::diffNeedsRepaintLayer(const RenderStyle& other) const
 {
     if (position() != StaticPosition && (visual->clip != other.visual->clip || visual->hasClip != other.visual->hasClip))
         return true;
@@ -638,7 +619,7 @@ bool RenderStyle::diffNeedsRepaintLayerOnly(const RenderStyle& other) const
     return false;
 }
 
-bool RenderStyle::diffNeedsRepaintObjectOnly(const RenderStyle& other) const
+bool RenderStyle::diffNeedsRepaintObject(const RenderStyle& other) const
 {
     if (inherited_flags._visibility != other.inherited_flags._visibility
         || inherited_flags.m_printColorAdjust != other.inherited_flags.m_printColorAdjust
@@ -663,7 +644,7 @@ bool RenderStyle::diffNeedsRepaintObjectOnly(const RenderStyle& other) const
     return false;
 }
 
-bool RenderStyle::diffNeedsRecompositeLayerOnly(const RenderStyle& other) const
+bool RenderStyle::diffNeedsRecompositeLayer(const RenderStyle& other) const
 {
     if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
         if (rareNonInheritedData->m_transformStyle3D != other.rareNonInheritedData->m_transformStyle3D
