@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<!-- saved from url=(0029)chrome://net-internals/#proxy -->
+<html i18n-values=".style.fontFamily: fontfamily;" style="font-family: &#39;DejaVu Sans&#39;, Arial, sans-serif;"><!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+--><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <!-- Don't use automatic scaling on mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,
+                                   maximum-scale=1.0, user-scalable=no">
+    <style>/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Only common styles should be declared here. */
+
+* {
+  box-sizing: border-box;
+}
+
+ul {
+  padding-left: 2em;
+}
+
+/* This class is used to create the splitter widget in
+   ResizbleVerticalSplitView */
+.vertical-splitter {
+  -webkit-user-select: none;
+  border-left: 1px solid #afafaf;
+  cursor: ew-resize;
+  position: absolute;
+  width: 10px;
+}
+
+/* Needs to be wider on touch devices. */
+.touch .vertical-splitter {
+  width: 5mm;
+}
+
+.log-source-entry {
+  margin: 5px;
+}
+
+.log-source-entry * p {
+  font-size: 75%;
+  font-weight: bold;
+}
+
+.log-source-entry * td {
+  font-size: 62%;
+}
+
+/*
+ * This class should be given to top-level content boxes (like the view's main
+ * DIV). It gives them a consistent padding, and makes them scrollable.
+ */
+.content-box {
+  overflow: auto;
+  padding: 20px 10px 10px 20px;
+}
+
+.deindent-header,
+.content-box h1,
+.content-box h2,
+.content-box h3,
+.content-box h4,
+.content-box h5,
+.content-box h6 {
+  margin-left: -10px;
+}
+
+/*
+ * Styles for TABLE that uses a thin collapsed border.
+ */
+table.styled-table {
+  border-collapse: collapse;
+}
+
+table.styled-table,
+.styled-table th,
+.styled-table td {
+  border: 1px solid #777;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.styled-table th {
+  background: rgb(224,236,255);
+}
+
+.styled-table th.title {
+  background: rgb(255,217,217);
+}
+
+/**
+ * Styling for event logs.
+ */
+.event-log p {
+  white-space: nowrap;
+}
+
+.event-log h4 {
+  margin: 0;
+}
+
+.event-log a {
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/**
+ * Styling for text indicating a potential problem or error state.
+ */
+.warning-text {
+  color: rgb(238, 0, 0);
+}
+
+/**
+ * Styling for help windows that appear when mousing over an element.
+ */
+.mouse-over-help {
+  background: #EEE;
+  border: 1px solid black;
+  font-size: 80%;
+  padding: 5px;
+  z-index: 1;
+}
+
+/**
+ * Styling for elements that show a help window on mouse over.
+ */
+.mouse-over-help-hover {
+  color: blue;
+  cursor: help;
+}
+</style>
+    <style>/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.capture-status-view {
+  background: rgb(238, 0, 0);
+}
+
+.halted-status-view {
+  background: rgb(0, 138, 0);
+}
+
+.loaded-status-view {
+  background: rgb(113, 113, 171);
+}
+
+#capture-status-view {
+  -webkit-align-items: center;
+  display: -webkit-flex;
+}
+
+.capture-status-view-link,
+.capture-status-view-link:visited,
+.capture-status-view-link:active {
+  color: white;
+  text-decoration: none;
+}
+
+.capture-status-view-link:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+/* Completely un-style the SELECT. Will place an arrow over it manually. */
+#capture-status-view-actions {
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  height: 25px;
+  outline: none;
+  width: 30px;
+}
+
+.capture-status-view-arrow {
+  display: inline-block;
+  position: relative;
+}
+
+.capture-status-view-arrow::after {
+  color: black;
+  content: '\25bc';
+  font-size: 9px;
+  left: 0;
+  line-height: 25px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+</style>
+    <style>/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#events-view-filter-box {
+  background: #efefef;
+  border-bottom: 1px solid #aaa;
+  font-family: sans-serif;
+  font-size: 75%;
+  overflow: hidden;
+  padding: 5px;
+  white-space: nowrap;
+}
+
+#events-view-filter-box input {
+  width: 100%;
+}
+
+#events-view-action-box {
+  background: #efefef;
+  border-top: 1px solid gray;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#events-view-source-list {
+  overflow-x: hidden;
+  overflow-y: auto
+}
+
+#events-view-source-list-table {
+  cursor: pointer;
+}
+
+#events-view-source-list-table thead td {
+  background: rgb(229, 236, 249);
+  font-weight: bold;
+  text-align: left;
+}
+
+#events-view-source-list-table td {
+  border-bottom: 1px solid #afafaf;
+  border-left: 1px solid #afafaf;
+  font-size: 75%;
+  padding: 3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#events-view-source-list-tbody .mouseover {
+  background: rgb(244,244,255);
+}
+
+#events-view-source-list-tbody .selected {
+  background: rgb(195, 217, 255);
+}
+
+#events-view-source-list-tbody .error {
+  background: rgb(255, 245, 245);
+}
+
+#events-view-source-list-tbody .inactive {
+  background: rgb(245, 255, 245);
+}
+
+#events-view-source-list-tbody .source-connect-job {
+  color: blue;
+}
+
+#events-view-source-list-tbody .source-host-resolver-impl-job,
+#events-view-source-list-tbody .source-host-resolver-impl-request {
+  color: rgb(32, 96, 96);
+}
+
+#events-view-source-list-tbody .source-disk-cache-entry,
+#events-view-source-list-tbody .source-memory-cache-entry {
+  color: #707070;
+}
+
+#events-view-source-list-tbody .source-socket {
+  color: purple;
+}
+
+#events-view-source-list-tbody .source-udp-socket {
+  color: rgb(128, 48, 48);
+}
+
+#events-view-source-list-tbody .source-proxy-script-decider {
+  color: green;
+}
+
+#events-view-source-list-tbody .source-download {
+  color: rgb(112, 112, 0);
+}
+
+#events-view-source-list-tbody .source-filestream {
+  color: rgb(112, 0, 112);
+}
+
+#events-view-source-list-tbody .source-ipv6-probe-job {
+  color: rgb(235, 0, 0);
+}
+
+#events-view-source-list-tbody .source-none {
+  color: rgb(235, 0, 0);
+}
+</style>
+    <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#waterfall-view-controls {
+  background-color: #FFF;
+  border-color: #000;
+  border-style: solid;
+  border-width: 1px;
+  padding-left: 5px;
+  position: fixed;
+  top: 40px;
+  /* Displays above time bar and information tables. */
+  z-index: 3;
+}
+
+#waterfall-view-time-bar-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  position: absolute;
+  /* Displays above main tab and under information table. */
+  z-index: 1;
+}
+
+#waterfall-view-information-table {
+  background-color: #FFF;
+  border-collapse: collapse;
+  border-spacing: 0;
+  left: 0;
+  overflow: hidden;
+  position: fixed;
+  /* Displays above time bar table. */
+  z-index: 2;
+}
+
+.waterfall-view-information-row {
+  height: 25px;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.waterfall-view-url-cell {
+  display: inline-block;
+  font-size: 15px;
+  height: 25px;
+  overflow: hidden;
+  padding-bottom: 0;
+  padding-top: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 250px;
+}
+
+.waterfall-view-id-cell {
+  display: inline-block;
+  font-size: 15px;
+  height: 25px;
+  min-width: 30px;
+  overflow: hidden;
+  padding-bottom: 0;
+  padding-left: 5px;
+  padding-right: 2px;
+  padding-top: 0;
+}
+
+.waterfall-view-table-row {
+  white-space: nowrap;
+}
+
+.waterfall-view-row {
+  height: 25px;
+  padding: 0;
+}
+
+.waterfall-view-row * {
+  display: inline-block;
+  padding-top: 0;
+}
+
+.waterfall-view-bar-component {
+  height: 15px;
+}
+
+.waterfall-view-popup {
+  display: inline-block;
+  position: absolute;
+  /* Displays above info table and controls */
+  z-index: 4;
+}
+
+.waterfall-view-popup-list {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: #000;
+  border-style: solid;
+  border-width: 2px;
+  color: #000;
+  padding-right: 1em;
+}
+
+.waterfall-view-popup-list > li {
+  display: list-item;
+}
+.waterfall-view-popup-list-url-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waterfall-view-bar.error {
+  border-color: rgba(255, 0, 0, 0.8);
+  border-style: solid;
+  border-width: 1px;
+  height: 18px;
+}
+
+.waterfall-view-row .http-stream-request {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 0, 0, 0.5));
+}
+
+.waterfall-view-row .http-stream-request-bound-to-job {
+  background: -webkit-linear-gradient(top, #EEE, rgba(200, 200, 200, 0.5));
+}
+
+.waterfall-view-row .http-transaction-read-headers {
+  background: -webkit-linear-gradient(top, #EEE, rgba(255, 0, 0, 0.5));
+}
+
+.waterfall-view-row .url-request {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 0, 255, 0.5));
+}
+
+.waterfall-view-row .http-stream-job {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 255, 0, 0.5));
+}
+
+.waterfall-view-row .proxy-service {
+  background: -webkit-linear-gradient(top, #EEE, rgba(122, 122, 0, 0.5));
+}
+
+.waterfall-view-row .socket-pool-connect-job {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 122, 122, 0.5));
+}
+
+.waterfall-view-row .host-resolver-impl-request {
+  background: -webkit-linear-gradient(top, #EEE, rgba(122, 0, 122, 0.5));
+}
+
+.waterfall-view-row .socket {
+  background: -webkit-linear-gradient(top, #EEE, rgba(122, 178, 0, 0.5));
+}
+
+.waterfall-view-row .tcp-connect {
+  background: -webkit-linear-gradient(top, #EEE, rgba(0, 178, 122, 0.5));
+}
+
+.waterfall-view-row .ssl-connect {
+  background: -webkit-linear-gradient(top, #EEE, rgba(55, 122, 178, 0.5));
+}
+
+.waterfall-view-time-scale-row {
+  white-space: nowrap;
+}
+
+.waterfall-view-time-scale {
+  border-color: #000;
+  border-left-style: solid;
+  border-width: 1px;
+  box-sizing: border-box;
+  display: inline-block;
+  height: 15px;
+}
+
+/* Colors every fifth bar red. */
+.waterfall-view-time-scale-special {
+  border-color: rgb(255, 0, 0);
+}
+</style>
+    <style>/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#timeline-view-selection-div {
+  display: inline-block;
+  overflow-y: auto;
+}
+
+#timeline-view-selection-toggle {
+  background-color: #fff;
+  background-image: url(chrome://resources/images/select.png);
+  border: none;
+  height: 8px;
+  padding: none;
+  width: 19px;
+}
+
+.timeline-view-rotateleft {
+  -webkit-transform: rotate(90deg);
+}
+
+.timeline-view-rotateright {
+  -webkit-transform: rotate(270deg);
+}
+
+#timeline-view-selection-div ul {
+  margin-top: 0;
+  padding-left: 10px;
+}
+
+#timeline-view-selection-div li {
+  list-style: none;
+  white-space: nowrap;
+}
+
+.timeline-view-text {
+  color: black;
+}
+
+#timeline-view-open-sockets {
+  color: rgb(170, 0, 170);
+}
+
+#timeline-view-in-use-sockets {
+  color: rgb(255, 51, 204);
+}
+
+#timeline-view-url-requests {
+  color: black;
+}
+
+#timeline-view-dns-requests {
+  color: rgb(102, 187, 187);
+}
+
+#timeline-view-dns-jobs {
+  color: rgb(150, 20, 29);
+}
+
+#timeline-view-bytes-received {
+  color: rgb(0, 187, 0);
+}
+
+#timeline-view-bytes-sent {
+  color: red;
+}
+
+#timeline-view-disk-cache-bytes-read {
+  color: rgb(0, 0, 255);
+}
+
+#timeline-view-disk-cache-bytes-written {
+  color: #999;
+}
+
+/* Need the id in this rule to override the above color rules. */
+#timeline-view-selection-div .timeline-view-hidden {
+  color: white;
+}
+
+#timeline-view-graph-div {
+  background-color: white;
+}
+
+#timeline-view-graph-canvas {
+  cursor: pointer;
+  padding: 10px 10px 2px;
+}
+
+#timeline-view-scrollbar-div {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+#timeline-view-scrollbar-inner-div {
+  height: 1px;
+}
+</style>
+    <style>/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.logs-view-log-cell-text,
+.logs-view-log-cell-log {
+  background-color: white;
+}
+
+.logs-view-log-row-collapsed .logs-view-log-cell-log {
+  display: none;
+}
+
+.logs-view-log-row-expanded .logs-view-log-cell-log {
+  display: table-cell;
+}
+
+.logs-view-log-table-button-column {
+  text-align: center;
+}
+
+.logs-view-log-button {
+  width: 85px;
+}
+
+.logs-view-global-button {
+  float: left;
+  margin: 5px;
+  margin-top: 0;
+  width: 135px;
+}
+
+#logs-view-log-table td {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 17px;
+  padding: 3px 5px 0;
+  vertical-align: top;
+  white-space: pre;
+}
+
+#logs-view-log-table-header-row th {
+  text-align: left;
+}
+</style>
+    <style>/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#chromeos-view-password-div,
+#chromeos-view-parse-status {
+  margin-top: 20px;
+}
+</style>
+    <style> /* Copyright 2013 The Chromium Authors. All rights reserved.
+  * Use of this source code is governed by a BSD-style license that can be
+  * found in the LICENSE file.
+  */
+
+ #cros-log-visualizer-header {
+  margin-bottom: 20px;
+ }
+
+.cros-log-visualizer-container {
+  background-color: rgb(242, 242, 242);
+  border: 1px solid rgb(220, 220, 220);
+}
+
+#cros-log-visualizer-log-content {
+  border: 1px solid rgb(220, 220, 220);
+  font-size: 11px;
+  height: 300px;
+  line-height: 18px;
+  margin-bottom: -1px;
+  overflow: scroll;
+  padding: 10px;
+  width: 1000px;
+ }
+
+#cros-log-visualizer-filter-container {
+  font-size: 12px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
+  width: 1000px;
+}
+
+#cros-log-visualizer-filter-container p {
+  margin: 10px 0;
+}
+
+#cros-log-visualizer-log-table {
+  table-layout: fixed;
+  width: 950px;
+}
+
+#cros-log-visualizer-log-table td {
+  overflow: hidden;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+.cros-log-visualizer-td-time {
+  width: 100px;
+}
+
+#cros-log-visualizer-log-header-table {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: -1px;
+  text-align: center;
+  width: 1000px;
+}
+
+.cros-log-visualizer-td-pname {
+  text-align: center;
+  width: 120px;
+}
+
+.cros-log-visualizer-td-level {
+  width: 70px;
+}
+
+.cros-log-visualizer-td-level p {
+  border: 1px solid;
+  border-radius: 5px;
+  margin: 0 3px;
+  text-align: center;
+  width: 58px;
+}
+
+.cros-log-visualizer-td-level-error {
+  background-color: rgb(255, 153, 163);
+  color: rgb(238, 0, 0);
+}
+
+.cros-log-visualizer-td-level-info {
+  background-color: rgb(195, 227, 250);
+  color: rgb(10, 147, 245);
+  width: 120px;
+}
+
+.cros-log-visualizer-td-level-warning {
+  background-color: rgb(250, 229, 195);
+  color: darkorange;
+}
+
+.cros-log-visualizer-td-level-unknown {
+  color: gray;
+}
+
+.cros-log-visualizer-td-pid {
+  width: 60px;
+}
+
+#cros-log-visualizer-filter-pname {
+  border-bottom: 1px solid rgb(209, 209, 209);
+  padding: 5px 0 10px 0;
+}
+
+#cros-log-visualizer-filter-level {
+  padding: 5px 0 10px 0;
+}
+
+#cros-log-visualizer-search-container {
+  -webkit-margin-start: 760px;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-bottom: 5px;
+  margin-left: 720px;
+  margin-top: -40px;
+  padding: 5px;
+  width: 280px;
+}
+
+#cros-log-visualizer-search-container input {
+  border: 1px solid rgb(220, 220, 220);
+}
+
+#cros-log-visualizer-visualizer-container {
+  border: 1px solid rgb(211, 211, 211);
+  height: 100px;
+  position: relative;
+  width: 1002px;
+}
+
+#cros-log-visualizer-visualizer-timeline {
+  background: gray;
+  opacity: 0.5;
+  position: absolute;
+  top: 0;
+  width: 2px;
+}
+
+.cros-log-visualizer-visualizer-time-display {
+  font-size: 10px;
+  position: absolute;
+  width: 50px;
+}
+
+#cros-log-visualizer-visualizer-reset-btn {
+  border: 1px solid rgb(211, 211, 211);
+  border-radius: 2px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+#cros-log-visualizer-visualizer-tracking-layer {
+  background: none;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.cros-log-visualizer-visualizer-canvas {
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.cros-log-visualizer-flash {
+  -webkit-animation: fade 1s linear 1;
+}
+
+#cros-log-visualizer-marker-container {
+  background-color: rgb(242, 242, 242);
+  border: 1px solid rgb(211, 211, 211);
+  left: 1030px;
+  min-height: 320px;
+  padding: 10px;
+  position: absolute;
+  top: 63px;
+  width: 200px;
+}
+
+.cros-log-visualizer-marker-history-entry {
+  display: -webkit-flex;
+  height: 20px;
+}
+
+
+.cros-log-visualizer-marker-history-entry * {
+  display: block;
+}
+
+.cros-log-visualizer-marker-history-entry p {
+  font-size: 13px;
+  height: 15px;
+  margin: 0;
+  width: 98px;
+}
+
+.cros-log-visualizer-marker-history-entry a {
+  color: grey;
+  font-size: 11px;
+}
+
+.cros-log-visualizer-marker-history-color-tag {
+  border-radius: 10px;
+  height: 10px;
+  margin: 4px;
+  width: 10px;
+}
+
+.cros-log-visualizer-marker-highlight {
+  font-weight: bold;
+}
+
+#cros-log-visualizer-save-btn {
+  background-color: rgb(211, 211, 211);
+}
+
+@-webkit-keyframes fade {
+  0%
+  {
+    opacity: 1;
+  }
+  50%
+  {
+    opacity: 0;
+  }
+  100%
+  {
+    opacity: 1;
+  }
+}
+</style>
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://net-internals/index.js"></script>
+    <script src="chrome://net-internals/strings.js"></script>
+  </head>
+  <body id="import-view-drop-target">
+    <!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!-- Status bar at top of screen -->
+
+<style>
+
+/**
+ * This SELECT dropdown is styled so the dropdown arrow is hidden. This is
+ * necessary because it looks bad on Windows. Instead, an arrow is added
+ * manually by overlaying U+25BC over the dropdown and making it un-clickable.
+ **/
+#top-bar-view-tab-selecter {
+  -webkit-appearance: none;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  font-size: 13px;
+  height: 25px;
+  outline: none;
+  padding: 0 18px 2px 0.5em;
+}
+
+.top-bar-view-arrow {
+  display: inline-block;
+  margin-right: 10px;
+  position:relative;
+}
+
+.top-bar-view-arrow::after {
+  color: black;
+  content: '\25bc';
+  font-size: 9px;
+  line-height: 23px;
+  pointer-events: none;
+  position: absolute;
+  right: 12px;
+  top: 1px;
+}
+
+#top-bar-view-tab-selecter:focus {
+  box-shadow: 0 0 3px 4px rgba(255, 238, 0, 0.50);
+}
+
+#top-bar-view {
+  -webkit-align-items: center;
+  border-bottom: 1px solid gray;
+  color: #fff;
+  display: -webkit-flex;
+  padding: 2px 2px 4px 7px;
+}
+</style>
+
+<div id="top-bar-view" class="capture-status-view" style="position: absolute; left: 0px; top: 0px; width: 1695px; height: 32px;">
+  <span class="top-bar-view-arrow">
+    <select aria-label="Tab selector" id="top-bar-view-tab-selecter"><option value="tab-handle-capture">Capture</option><option value="tab-handle-export">Export</option><option value="tab-handle-import">Import</option><option value="tab-handle-proxy">Proxy</option><option value="tab-handle-events">Events</option><option value="tab-handle-waterfall">Waterfall</option><option value="tab-handle-timeline">Timeline</option><option value="tab-handle-dns">DNS</option><option value="tab-handle-sockets">Sockets</option><option value="tab-handle-spdy">SPDY</option><option value="tab-handle-quic">QUIC</option><option value="tab-handle-http-pipeline">Pipelining</option><option value="tab-handle-http-cache">Cache</option><option value="tab-handle-modules">Modules</option><option value="tab-handle-tests">Tests</option><option value="tab-handle-cros-log-visualizer" disabled="" style="display: none;">Log Visualizer</option><option value="tab-handle-hsts">HSTS</option><option value="tab-handle-logs" disabled="" style="display: none;">Logs</option><option value="tab-handle-bandwidth">Bandwidth</option><option value="tab-handle-prerender">Prerender</option><option value="tab-handle-chromeos" disabled="" style="display: none;">ChromeOS</option></select>
+  </span>
+  <div style="-webkit-flex-grow: 1">
+    <!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!-- Status bar at top of screen when in capture mode. -->
+<div id="capture-status-view">
+  <span style="-webkit-flex-grow: 1">
+    <a href="chrome://net-internals/#capture" class="capture-status-view-link">capturing</a>
+    <a href="chrome://net-internals/#events" class="capture-status-view-link">events
+    (<span id="capture-status-view-captured-events-count" title="Number of events captured to this window">544</span>)</a>
+  </span>
+  <span class="capture-status-view-arrow">
+    <select id="capture-status-view-actions" aria-label="Capture Actions">
+      <optgroup label="Capture">
+        <option value="stop">Stop</option>
+        <option value="reset">Reset</option>
+      </optgroup>
+      <optgroup label="Tools">
+        <option value="clear-cache">Clear cache</option>
+        <option value="flush-sockets">Flush sockets</option>
+      </optgroup>
+      <option value="switch-time-format">Switch time format</option>
+    </select>
+  </span>
+</div>
+
+<!-- Status bar at top of screen when capturing is stopped -->
+<div id="halted-status-view" style="display:none">
+  Capturing halted
+</div>
+
+<!-- Status bar at top of screen when displaying a loaded dump file -->
+<div id="loaded-status-view" style="display:none">
+  Displaying log file (<span id="loaded-status-view-dump-file-name"></span>)
+</div>
+
+  </div>
+</div>
+
+
+    <div id="main-tab-contents">
+      <!-- Proxy info -->
+
+<style>
+
+#proxy-view-tab-content td,
+#proxy-view-tab-content th {
+  font-size: 85%;
+}
+
+#proxy-view-socks-hints {
+  border: 1px solid orange;
+  padding: 1ex;
+}
+
+#proxy-view-socks-hints-flag {
+  margin: 1ex;
+}
+
+</style>
+
+<div id="proxy-view-tab-content" class="content-box" style="position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+ <input type="button" value="Re-apply settings" id="proxy-view-reload-settings" class="hide-when-not-capturing">
+
+  <div id="proxy-view-effective-content">
+    <h4>Effective proxy settings</h4>
+    <pre id="proxy-view-effective-settings">Proxy server for HTTP: [proxy.googlezip.net:443, compress.googlezip.net:80, direct://] </pre>
+  </div>
+
+  <div id="proxy-view-original-content" style="display: none;">
+    <h4>Original proxy settings</h4>
+    <pre id="proxy-view-original-settings"> Proxy server for HTTP: [proxy.googlezip.net:443, compress.googlezip.net:80, direct://] </pre>
+  </div>
+
+  <div id="proxy-view-socks-hints" style="display: none;">
+    Note that some traffic such as DNS prefetching will NOT go through the proxy
+    server. To prevent the browser from doing local DNS resolves try adding this
+    command line flag:
+    <pre id="proxy-view-socks-hints-flag"></pre>
+  </div>
+
+  <div id="proxy-view-bad-proxies-div">
+    <h4>
+      Recently failed proxies, marked as bad
+      <input type="button" value="Clear bad proxies" id="proxy-view-clear-bad-proxies" class="hide-when-not-capturing">
+    </h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Bad proxy server</th>
+          <th>Time for next retry</th>
+        </tr>
+      </thead>
+      <tbody id="proxy-view-bad-proxies-tbody">
+      <tr>
+      <td>compress.googlezip.net:80</td>
+      <td><span title="t=1397851426335">2014-04-18 13:03:46.335</span></td>
+      </tr>
+      <tr>
+      <td>proxy.googlezip.net:443</td>
+      <td><span title="t=1397851426335">2014-04-18 13:03:46.335</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+      <!-- Host resolver info -->
+<div id="dns-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <ul style="margin-top: 0">
+    <li><a href="chrome://net-internals/#events&q=type:HOST_RESOLVER_IMPL_REQUEST,HOST_RESOLVER_IMPL_JOB%20is:active">View pending lookups</a></li>
+    <li>Default address family: <span id="dns-view-default-family"></span>
+      <span id="dns-view-ipv6-disabled" class="warning-text" style="display: none;">
+        (IPv6 disabled)
+        <input type="button" value="Enable IPv6" id="dns-view-enable-ipv6" class="hide-when-not-capturing">
+      </span>
+    </li>
+  </ul>
+
+  <div>
+    <h4>Async DNS Configuration</h4>
+    <ul>
+      <li>Internal DNS client enabled:
+        <span id="dns-view-internal-dns-enabled"></span>
+        <span id="dns-view-internal-dns-invalid-config" class="warning-text" style="display: none;">
+          (No valid configuration found)</span>
+      </li>
+    </ul>
+    <table class="styled-table">
+      <tbody id="dns-view-internal-dns-config-tbody"></tbody>
+    </table>
+  </div>
+
+  <h4>
+    Host resolver cache
+    <input type="button" value="Clear host cache" id="dns-view-clear-cache" class="hide-when-not-capturing">
+  </h4>
+  <ul>
+    <li>Capacity: <span id="dns-view-cache-capacity"></span></li>
+  </ul>
+  <h4>Current State</h4>
+  <ul>
+    <li>Active entries: <span id="dns-view-cache-active"></span></li>
+    <li>Expired entries: <span id="dns-view-cache-expired"></span></li>
+  </ul>
+
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Hostname</th>
+        <th>Family</th>
+        <th>Addresses</th>
+        <th>Expires</th>
+      </tr>
+    </thead>
+    <tbody id="dns-view-cache-tbody">
+    </tbody>
+  </table>
+</div>
+
+      <div id="sockets-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <ul style="margin-top:0">
+    <li class="hide-when-not-capturing">
+      <input type="button" value="Close idle sockets" id="sockets-view-close-idle-button">
+    </li>
+    <li class="hide-when-not-capturing">
+      <input type="button" value="Flush socket pools" id="sockets-view-flush-button">
+      <span class="warning-text">May break pages with active connections</span>
+    </li>
+    <li><a href="chrome://net-internals/#events&q=type:SOCKET%20is:active">View live sockets</a>
+    </li>
+  </ul>
+  <p>
+    </p><div id="sockets-view-pool-div">
+    </div>
+  <p></p>
+  <p>
+    </p><div id="sockets-view-pool-groups-div">
+    </div>
+  <p></p>
+</div>
+
+      <div id="spdy-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <ul id="spdy-view-status" style="margin-top:0">
+    <li>SPDY Enabled: <span jscontent="spdy_enabled"></span></li>
+    <li>Use Alternate Protocol: <span jscontent="use_alternate_protocols"></span></li>
+    <li>Force SPDY Always: <span jscontent="force_spdy_always"></span></li>
+    <li>Force SPDY Over SSL: <span jscontent="force_spdy_over_ssl"></span></li>
+    <li>Next Protocols: <span jscontent="next_protos"></span></li>
+  </ul>
+
+  <h4>SPDY sessions</h4>
+  <div id="spdy-view-session-info">
+    <!-- Only one of these two are shown -->
+    <div jsdisplay="spdySessionInfo.length == 0">None</div>
+    <div jsdisplay="spdySessionInfo.length != 0">
+      <a href="chrome://net-internals/#events&q=type:SPDY_SESSION%20is:active">View live SPDY sessions</a>
+      <p>
+        </p><table class="styled-table">
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Proxy</th>
+              <th>ID</th>
+              <th>Protocol Negotiated</th>
+              <th>Active streams</th>
+              <th>Unclaimed pushed</th>
+              <th>Max</th>
+              <th>Initiated</th>
+              <th>Pushed</th>
+              <th>Pushed and claimed</th>
+              <th>Abandoned</th>
+              <th>Received frames</th>
+              <th>Secure</th>
+              <th>Sent settings</th>
+              <th>Received settings</th>
+              <th>Send window</th>
+              <th>Receive window</th>
+              <th>Unacked received data</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr jsselect="spdySessionInfo">
+              <td><span jscontent="host_port_pair"></span>
+                <span jscontent="$this.aliases ? $this.aliases.join(&#39; &#39;) : &#39;&#39;"></span>
+              </td>
+              <td jscontent="proxy"></td>
+              <td><a jsvalues=".href: &#39;#events&amp;q=id:&#39; + source_id" jscontent="source_id"></a></td>
+              <td jscontent="protocol_negotiated"></td>
+              <td jscontent="active_streams"></td>
+              <td jscontent="unclaimed_pushed_streams"></td>
+              <td jscontent="max_concurrent_streams"></td>
+              <td jscontent="streams_initiated_count"></td>
+              <td jscontent="streams_pushed_count"></td>
+              <td jscontent="streams_pushed_and_claimed_count"></td>
+              <td jscontent="streams_abandoned_count"></td>
+              <td jscontent="frames_received"></td>
+              <td jscontent="is_secure"></td>
+              <td jscontent="sent_settings"></td>
+              <td jscontent="received_settings"></td>
+              <td jscontent="send_window_size"></td>
+              <td jscontent="recv_window_size"></td>
+              <td jscontent="unacked_recv_window_bytes"></td>
+              <td jscontent="error"></td>
+            </tr>
+          </tbody>
+        </table>
+      <p></p>
+    </div>
+  </div>
+
+  <h4>Alternate Protocol Mappings</h4>
+  <div id="spdy-view-alternate-protocol-mappings">
+    <div jsdisplay="spdyAlternateProtocolMappings.length == 0">None</div>
+    <div jsdisplay="spdyAlternateProtocolMappings.length != 0">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Host</th>
+            <th>Alternate Protocol</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr jsselect="spdyAlternateProtocolMappings">
+            <td jscontent="host_port_pair"></td>
+            <td jscontent="alternate_protocol"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+      <div id="quic-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <ul style="margin-top:0">
+    <li>QUIC Enabled: <span jscontent="!!quic_enabled"></span></li>
+    <li>HTTPS Over QUIC Enabled: <span jscontent="!!quic_enabled_https"></span></li>
+    <li>Origin To Force QUIC On: <span jscontent="origin_to_force_quic_on"></span></li>
+    <li>Consistent Port Selection Enabled: <span jscontent="!!enable_quic_port_selection"></span></li>
+  </ul>
+
+  <h4>QUIC sessions</h4>
+    <!-- Only one of these two are shown -->
+    <div jsdisplay="!($this.sessions &amp;&amp; sessions.length &gt; 0)">None</div>
+    <div jsdisplay="$this.sessions &amp;&amp; sessions.length &gt; 0">
+      <a href="chrome://net-internals/#events&q=type:QUIC_SESSION%20is:active">View live QUIC sessions</a>
+      <p>
+        </p><table class="styled-table">
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Version</th>
+              <th>Peer address</th>
+              <th>GUID</th>
+              <th>Active streams</th>
+              <th>Total streams</th>
+              <th>Connected</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr jsselect="sessions">
+              <td jscontent="$this.aliases ? $this.aliases.join(&#39; &#39;) : &#39;&#39;"></td>
+              <td jscontent="version"></td>
+              <td jscontent="peer_address"></td>
+              <td jscontent="guid"></td>
+              <td jscontent="open_streams"></td>
+              <td jscontent="total_streams"></td>
+              <td jscontent="connected"></td>
+            </tr>
+          </tbody>
+        </table>
+      <p></p>
+    </div>
+</div>
+
+      <div id="http-pipeline-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <ul style="margin-top:0">
+    <li>HTTP Pipelining Enabled:
+      <span id="http-pipeline-view-enabled-span" jscontent="pipelining_enabled"></span></li>
+  </ul>
+
+  <h4>HTTP Pipelined Connections</h4>
+    <!-- Only one of these two are shown -->
+    <div jsdisplay="pipelined_connection_info.length == 0">None</div>
+    <div jsdisplay="pipelined_connection_info.length != 0">
+      <a href="chrome://net-internals/#events&q=type:HTTP_PIPELINED_CONNECTION%20is:active">View live HTTP pipelined connections</a>
+      <p>
+        </p><table class="styled-table">
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Forced</th>
+              <th>Depth</th>
+              <th>Capacity</th>
+              <th>Usable</th>
+              <th>Active</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr jsselect="Array.prototype.concat.apply([], pipelined_connection_info)">
+              <td jscontent="host"></td>
+              <td jscontent="!!$this.forced"></td>
+              <td jscontent="depth"></td>
+              <td jscontent="capacity"></td>
+              <td jscontent="usable"></td>
+              <td jscontent="active"></td>
+              <td><a jsvalues=".href: &#39;#events&amp;q=id:&#39; + source_id" jscontent="source_id"></a></td>
+            </tr>
+          </tbody>
+        </table>
+      <p></p>
+    </div>
+
+  <h4>Known Hosts</h4>
+    <!-- Only one of these two are shown -->
+    <div jsdisplay="pipelined_host_info.length == 0">None</div>
+    <div jsdisplay="pipelined_host_info.length != 0">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Host</th>
+            <th>Pipelining Capability</th>
+          </tr>
+        </thead>
+        <tbody id="http-pipeline-view-known-hosts-table">
+          <tr jsselect="pipelined_host_info">
+            <td jscontent="host"></td>
+            <td jscontent="capability"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+
+      <div id="http-cache-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <div class="hide-when-not-capturing">
+    <a href="chrome://view-http-cache/" target="_blank">Explore cache entries</a>
+  </div>
+
+  <h4>Statistics</h4>
+  <div id="http-cache-view-cache-stats">Nothing loaded yet.</div>
+</div>
+
+      <!-- Bandwidth info -->
+<div id="bandwidth-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Session</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr jsselect="rows">
+        <td jscontent="title"></td>
+        <td jscontent="sessionValue"></td>
+        <td jscontent="historicValue"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+      <style>
+
+#prerender-view-history-table tr.used {
+  background-color: #F0FFF0;
+}
+
+#prerender-view-history-table tr:not(.used) {
+  background-color: #FFF0F0;
+}
+
+</style>
+
+<div id="prerender-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <ul style="margin-top:0">
+    <li>Prerender Enabled:
+      <span jscontent="enabled"></span>
+      <span jscontent="enabled_note"></span></li>
+    <li>Prerender Omnibox Enabled:
+      <span jscontent="omnibox_enabled"></span></li>
+  </ul>
+  <h4>Active Prerender Pages</h4>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>URL</th>
+        <th>Duration</th>
+        <th>Loaded</th>
+      </tr>
+    </thead>
+    <tbody id="prerender-view-active-table">
+      <tr jsselect="active">
+        <td jscontent="url"></td>
+        <td jscontent="duration"></td>
+        <td jscontent="is_loaded"></td>
+      </tr>
+    </tbody>
+  </table>
+  <h4>Prerender History</h4>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Origin</th>
+        <th>URL</th>
+        <th>Final Status</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="prerender-view-history-table">
+      <tr jsselect="$this.history" jsvalues=".className: final_status.toLowerCase()">
+        <td jscontent="origin"></td>
+        <td jscontent="url"></td>
+        <td jscontent="final_status"></td>
+        <td jscontent="timeutil.dateToString(new Date(parseInt(end_time)))"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+      <style>
+
+.modules-view-extension-list tr.enabled {
+  background-color: #F0FFF0;
+}
+
+.modules-view-extension-list tr:not(.enabled) {
+  background-color: #FFF0F0;
+}
+
+</style>
+
+<div id="modules-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <h4 style="margin-top:0">Chrome Extensions</h4>
+  <div id="modules-view-extension-info">
+    <div jsdisplay="typeof extensionInfo == &#39;undefined&#39;">No information</div>
+    <div jsdisplay="typeof extensionInfo != &#39;undefined&#39; &amp;&amp; extensionInfo.length == 0">None</div>
+    <div jsdisplay="typeof extensionInfo != &#39;undefined&#39; &amp;&amp; extensionInfo.length != 0">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>App</th>
+            <th>Enabled</th>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody class="modules-view-extension-list">
+          <tr jsselect="extensionInfo" jsvalues=".className: enabled ? &#39;enabled&#39; : &#39;&#39;">
+            <td jscontent="id"></td>
+            <td jscontent="packagedApp"></td>
+            <td jscontent="enabled"></td>
+            <td jscontent="name"></td>
+            <td jscontent="version"></td>
+            <td jscontent="description"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Only shown for Windows log dumps -->
+  <div id="modules-view-windows-service-providers" style="display: none;" jsdisplay="typeof $this != &#39;undefined&#39;">
+    <h4>Layered Service Providers</h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Version</th>
+          <th>Type</th>
+          <th>Socket Type</th>
+          <th>Protocol</th>
+          <th>Path</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr jsselect="service_providers">
+          <td jscontent="name"></td>
+          <td jscontent="version"></td>
+          <td jscontent="ModulesView.getLayeredServiceProviderType($this)"></td>
+          <td jscontent="ModulesView.getLayeredServiceProviderSocketType($this)"></td>
+          <td jscontent="ModulesView.getLayeredServiceProviderProtocolType($this)"></td>
+          <td jscontent="path"></td>
+        </tr>
+      </tbody>
+    </table>
+    <h4>Namespace Providers</h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Version</th>
+          <th>Namespace</th>
+          <th>Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr jsselect="namespace_providers">
+          <td jscontent="name"></td>
+          <td jscontent="version"></td>
+          <td jscontent="ModulesView.getNamespaceProviderType($this)"></td>
+          <td jscontent="active"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+      <style>
+#import-view-command-line,
+#import-view-user-comments {
+  /* Wrap long lines inside of PREs */
+  white-space: pre-wrap;
+}
+
+#import-view-load-status-text {
+  /* Wrap long lines inside of PREs */
+  white-space: pre-wrap;
+}
+
+.import-view-pending-log {
+  color: blue;
+  font-weight: bold;
+}
+
+.import-view-success-log {
+  color: green;
+  font-weight: bold;
+}
+
+.import-view-error-log {
+  color: #e00;
+  padding: 5px;
+  border: 1px solid #e00;
+}
+
+.import-view-warning-log {
+  color: #e00;
+}
+
+</style>
+
+<div id="import-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <div>
+    <div style="margin-bottom:20px"><b>TIP</b>: Drag-and-drop files into this window.</div>
+    <input type="file" value="Load log from file" id="import-view-load-log-file">
+    <pre id="import-view-load-status-text"></pre>
+  </div>
+
+  <div id="import-view-loaded-div" style="display: none">
+    <h2>Data Loaded</h2>
+    <table class="styled-table">
+    <tbody><tr>
+      <th>Export date</th>
+      <td jscontent="timeutil.dateToString(new Date(constants.clientInfo.numericDate))"></td>
+    </tr>
+    <tr>
+      <th>Build</th>
+      <td><span jscontent="constants.clientInfo.name"></span>
+        <span jscontent="constants.clientInfo.version"></span>
+        (<span jscontent="constants.clientInfo.official"></span>
+          <span jscontent="constants.clientInfo.cl"></span>)
+        <span jscontent="constants.clientInfo.version_mod">
+      </span></td>
+    </tr>
+    <tr>
+      <th>OS type</th>
+      <td jscontent="constants.clientInfo.os_type"></td>
+    </tr>
+    <tr>
+      <th>Command line</th>
+      <td><pre jscontent="constants.clientInfo.command_line"></pre></td>
+    </tr>
+    <tr>
+      <th>User comments</th>
+      <td>
+        <pre id="import-view-user-comments" jscontent="userComments" jsdisplay="typeof userComments != &#39;undefined&#39;"></pre>
+      </td>
+    </tr>
+    </tbody></table>
+  </div>
+</div>
+
+      <style>
+
+.export-view-explanation-warning {
+  border: 2px solid #e00;
+}
+
+#export-view-privacy-warning {
+  padding: 5px;
+  color: #e00;
+  border: 1px solid #e00;
+}
+
+#export-view-save-log-file {
+  font-size: 100%;
+  font-weight: bold;
+}
+
+#export-view-user-comments {
+  max-width: 100%;
+}
+
+</style>
+
+<div id="export-view-tab-content" class="content-box" style="position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px; display: none;">
+  <div>
+    <input id="export-view-privacy-stripping-checkbox" type="checkbox" checked="yes">
+    <label for="export-view-privacy-stripping-checkbox">
+      Strip private information (cookies and credentials).
+    </label>
+    <div id="export-view-privacy-warning" style="display:none">
+      <b>WARNING</b>: Events were captured while full byte logging was enabled.
+      This means the dump may contain private information.
+    </div>
+
+    <div style="margin-top:10px; margin-bottom: 5px">
+      <textarea cols="50" rows="5" placeholder="Explain what went wrong here. (These notes will be included in the dump file. Be sure to mention the specific URLs, so investigators know what to look for!)" id="export-view-user-comments"></textarea>
+    </div>
+    <button id="export-view-save-log-file">Save to file</button>
+
+    <pre id="export-view-save-status-text"></pre>
+
+    <div style="margin-top: 10px; margin-left: 10px;">
+      <a href="https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details" target="_blank">
+        How to provide data for bug reports
+      </a>
+    </div>
+
+  </div>
+
+  <a style="display: none" id="export-view-download-anchor" download="net-internals-log.json"></a>
+
+</div>
+
+      <div id="capture-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <div>
+    <input id="capture-view-limit-checkbox" type="checkbox">
+    <label for="capture-view-limit-checkbox">
+      Discard old data under memory pressure.
+    </label>
+    <span id="capture-view-limit-help-hover" class="mouse-over-help-hover">(?)</span>
+    <!-- Inline filter help -->
+    <div id="capture-view-limit-help" class="mouse-over-help" style="display: none;">
+      If you capture all events for a long time, it is possible to exhaust memory
+      and crash. Throwing out older data avoids this problem.
+    </div>
+  </div>
+
+  <div>
+    <input id="capture-view-byte-logging-checkbox" type="checkbox">
+    <label for="capture-view-byte-logging-checkbox">
+      Include the actual bytes sent/received.
+    </label>
+    <span id="capture-view-byte-logging-help-hover" class="mouse-over-help-hover">(?)</span>
+    <div id="capture-view-byte-logging-help" class="mouse-over-help" style="display: none;">
+      This will result in huge log files, and can expose sensitive data.
+    </div>
+  </div>
+
+  <div style="margin-top: 20px">
+    <button id="capture-view-stop-button">Stop</button>
+    <button id="capture-view-reset-button">Reset</button>
+  </div>
+
+</div>
+
+      <!-- Connection tests -->
+<div id="test-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <div style="margin-bottom: 20px">
+    Input a URL which failed to load, and then click the button to run some
+    tests for why it failed.
+  </div>
+  <form id="test-view-connection-tests-form">
+    <label>URL: <input id="test-view-url-input" type="text"></label>
+    <input id="test-view-connection-tests-submit" type="submit" value="Start tests">
+  </form>
+  <div id="test-view-summary"></div>
+</div>
+
+      <style>
+  #hsts-view-tab-content tt {
+    word-wrap: break-word;
+  }
+</style>
+  
+<!-- HSTS tab -->
+<div id="hsts-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <div class="deindent-header">
+    HSTS is HTTPS Strict Transport Security: a way for sites to elect to
+    always use HTTPS. See <a href="http://dev.chromium.org/sts" target="_blank">
+    http://dev.chromium.org/sts</a>.</div>
+
+    <!-- This UI allows a user to query and update the browser's list of
+         HSTS domains. -->
+
+  <h4>Add domain</h4>
+
+  <p>Input a domain name to add it to the HSTS set:</p>
+  <form id="hsts-view-add-form">
+    Domain: <input type="text" id="hsts-view-add-input" placeholder="example.com"><br>
+    <label>Include subdomains for STS: <input type="checkbox" id="hsts-view-check-sts-input"></label><br>
+    <label>Include subdomains for PKP: <input type="checkbox" id="hsts-view-check-pkp-input"></label><br>
+    <label>Public key fingerprints: <input type="text" id="hsts-view-add-pins" style="width: 25em; max-width: 100%;"></label><br>
+    <p style="font-size: small; color: #767676; font-style: italic; margin-left: 2em; max-width: 40em; max-width: 100%;">(public key fingerprints are comma separated and consist of the hash function followed by a foreslash and the base64 encoded fingerprint, for example <tt>sha1/Guzek9lMwR3KeIS8wwS9gBvVtIg=</tt>)</p>
+    <input type="submit" value="Add" id="hsts-view-add-submit">
+  </form>
+
+  <h4>Delete domain</h4>
+
+  <p>
+    Input a domain name to delete it from the HSTS set
+    (<i>you cannot delete preloaded entries</i>):
+  </p>
+  <form id="hsts-view-delete-form">
+    Domain: <input type="text" id="hsts-view-delete-input" placeholder="example.com">
+    <input type="submit" value="Delete" id="hsts-view-delete-submit">
+  </form>
+
+  <h4>Query domain</h4>
+
+  <p>Input a domain name to query the current HSTS set:</p>
+  <form id="hsts-view-query-form">
+    Domain: <input type="text" id="hsts-view-query-input" placeholder="example.com">
+    <input type="submit" value="Query" id="hsts-view-query-submit">
+  </form>
+  <div style="margin-top: 1em; margin-left: 2em;" id="hsts-view-query-output"></div>
+</div>
+
+      <!-- ================= Events view =================== -->
+
+<!-- Filter Box: This the top bar which contains the search box.  -->
+<div id="events-view-filter-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 848px; height: 42px;">
+  <table width="100%">
+    <tbody><tr>
+      <td width="1%">
+        <span id="events-view-filter-help-hover" class="mouse-over-help-hover">(?)</span>
+      </td>
+      <td width="98%"><input type="search" incremental="" id="events-view-filter-input" title="Sort and filter"></td>
+      <td width="1%" id="events-view-filter-count">39 of 39</td>
+    </tr>
+  </tbody></table>
+</div>
+<!-- Inline filter help -->
+<div id="events-view-filter-help" class="mouse-over-help" style="display: none;">
+  Sort options:
+  <ul>
+    <li>sort:id (default)
+    </li><li>sort:desc
+    </li><li>sort:duration
+    </li><li>sort:type
+    </li><li>-sort:&lt;option&gt; Reverses sort order
+  </li></ul>
+
+  Additional filters:
+  <ul>
+    <li>id:#[,#]*
+    </li><li>type:&lt;type&gt;[,&lt;type&gt;]*
+    </li><li>is:active
+    </li><li>is:error
+    </li><li>-&lt;filter&gt; Inverts a filter.
+  </li></ul>
+</div>
+<!-- Events Box: This the panel on the left which lists the sources -->
+<div id="events-view-source-list" style="display: none; position: absolute; left: 0px; top: 74px; width: 848px; height: 685px;">
+  <table id="events-view-source-list-table" cellspacing="0" cellpadding="0" width="100%">
+    <thead>
+      <tr>
+        <td style="border-left:0"><input type="checkbox" id="events-view-select-all" title="Select all"></td>
+        <td id="events-view-sort-by-id">ID</td>
+        <td id="events-view-sort-by-source">Source Type</td>
+        <td id="events-view-sort-by-description" width="99%">Description</td>
+      </tr>
+    </thead>
+    <!-- Events table body: This is where request rows go into -->
+    <tbody id="events-view-source-list-tbody"><tr class="source-socket inactive"><td style="border-left-width: 0px;"><input title="1323057" type="checkbox"></td><td style="text-align: right;">1323057</td><td>SOCKET</td><td></td></tr><tr class="source-spdy-session inactive"><td style="border-left-width: 0px;"><input title="1323062" type="checkbox"></td><td style="text-align: right;">1323062</td><td>SPDY_SESSION</td><td></td></tr><tr class="source-socket inactive"><td style="border-left-width: 0px;"><input title="1326587" type="checkbox"></td><td style="text-align: right;">1326587</td><td>SOCKET</td><td></td></tr><tr class="source-spdy-session inactive"><td style="border-left-width: 0px;"><input title="1326592" type="checkbox"></td><td style="text-align: right;">1326592</td><td>SPDY_SESSION</td><td></td></tr><tr class="source-socket inactive"><td style="border-left-width: 0px;"><input title="1329673" type="checkbox"></td><td style="text-align: right;">1329673</td><td>SOCKET</td><td></td></tr><tr class="source-spdy-session inactive"><td style="border-left-width: 0px;"><input title="1329695" type="checkbox"></td><td style="text-align: right;">1329695</td><td>SPDY_SESSION</td><td></td></tr><tr class="source-socket inactive"><td style="border-left-width: 0px;"><input title="1331592" type="checkbox"></td><td style="text-align: right;">1331592</td><td>SOCKET</td><td></td></tr><tr class="source-spdy-session inactive"><td style="border-left-width: 0px;"><input title="1331596" type="checkbox"></td><td style="text-align: right;">1331596</td><td>SPDY_SESSION</td><td></td></tr><tr class="source-url-request"><td style="border-left-width: 0px;"><input title="1332387" type="checkbox"></td><td style="text-align: right;">1332387</td><td>URL_REQUEST</td><td>https://talkgadget.google.com/u/0/talkgadget/_/channel/bind?OSID=250A25F29B010A21&amp;OAID=3210&amp;VER=8&amp;clid=BDCDA4366F5CFB69&amp;prop=gmail&amp;ec=%5B%22ci%3Aec%22%2Ctrue%2Ctrue%2Cfalse%5D&amp;RID=rpc&amp;SID=AB666197300525A8&amp;CI=0&amp;AID=441&amp;gsessionid=LBT1MB7k5x0&amp;TYPE=xmlhttp&amp;zx=c90v7u8rwbp3&amp;t=1</td></tr><tr class="source-url-request"><td style="border-left-width: 0px;"><input title="1332390" type="checkbox"></td><td style="text-align: right;">1332390</td><td>URL_REQUEST</td><td>https://0.docs.google.com/a/google.com/document/d/1ByIrM94Degtn_spII_H4EiHc1-GYsDsn2ZOQCU02F-o/bind?id=1ByIrM94Degtn_spII_H4EiHc1-GYsDsn2ZOQCU02F-o&amp;sid=34070ac6018bf98a&amp;VER=8&amp;token=AC4w5VjPxE4koDsfZM07mr2GpAymmxMJZg%3A1397767538454&amp;lsq=1397767359108&amp;u=04901866189931632133&amp;c=1&amp;w=1&amp;gsi=0&amp;RID=rpc&amp;SID=5F28864E5CAEAC6C&amp;CI=0&amp;AID=495&amp;TYPE=xmlhttp&amp;zx=21wv86olxgro&amp;t=1</td></tr><tr class="source-url-request"><td style="border-left-width: 0px;"><input title="1332391" type="checkbox"></td><td style="text-align: right;">1332391</td><td>URL_REQUEST</td><td>https://0.drive.google.com/a/google.com/bind?id=ignored&amp;sid=40afdb3eb16f9b35&amp;VER=8&amp;lsq=1397771499484&amp;gsi=0&amp;RID=rpc&amp;SID=BEAB7DB7DA6FD3BB&amp;CI=0&amp;AID=499&amp;TYPE=xmlhttp&amp;zx=q4zfu0ksruey&amp;t=1</td></tr><tr class="source-udp-socket inactive"><td style="border-left-width: 0px;"><input title="1332474" type="checkbox"></td><td style="text-align: right;">1332474</td><td>UDP_SOCKET</td><td></td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332475" type="checkbox"></td><td style="text-align: right;">1332475</td><td>URL_REQUEST</td><td>https://talkgadget.google.com/u/0/_/diagnostics/?_reqid=63607137&amp;rt=j</td></tr><tr class="source-http-stream-job inactive"><td style="border-left-width: 0px;"><input title="1332476" type="checkbox"></td><td style="text-align: right;">1332476</td><td>HTTP_STREAM_JOB</td><td>https://talkgadget.google.com/</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332477" type="checkbox"></td><td style="text-align: right;">1332477</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/devtools.html?dockSide=undocked&amp;toolbarColor=rgba(242,241,240,1)&amp;textColor=rgba(76,76,76,1)&amp;can_dock=true&amp;updateAppcache</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332478" type="checkbox"></td><td style="text-align: right;">1332478</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/buildSystemOnly.js</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332479" type="checkbox"></td><td style="text-align: right;">1332479</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/inspector.css</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332480" type="checkbox"></td><td style="text-align: right;">1332480</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/inspector.js</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332481" type="checkbox"></td><td style="text-align: right;">1332481</td><td>URL_REQUEST</td><td>https://clients4.google.com/chrome-sync/command/?client=Google+Chrome&amp;client_id=Y9kAEnV8csZg%2BM50%2BsA/EA%3D%3D</td></tr><tr class="source-http-stream-job inactive"><td style="border-left-width: 0px;"><input title="1332482" type="checkbox"></td><td style="text-align: right;">1332482</td><td>HTTP_STREAM_JOB</td><td>https://clients4.google.com/</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332483" type="checkbox"></td><td style="text-align: right;">1332483</td><td>URL_REQUEST</td><td>https://clients4.google.com/chrome-sync/command/?client=Google+Chrome&amp;client_id=Y9kAEnV8csZg%2BM50%2BsA/EA%3D%3D</td></tr><tr class="source-http-stream-job inactive"><td style="border-left-width: 0px;"><input title="1332484" type="checkbox"></td><td style="text-align: right;">1332484</td><td>HTTP_STREAM_JOB</td><td>https://clients4.google.com/</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332485" type="checkbox"></td><td style="text-align: right;">1332485</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/splitView.css</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332486" type="checkbox"></td><td style="text-align: right;">1332486</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/Images/statusbarButtonGlyphs.png</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332487" type="checkbox"></td><td style="text-align: right;">1332487</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/Images/toolbarItemSelected.png</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332488" type="checkbox"></td><td style="text-align: right;">1332488</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/ElementsPanel.js</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332489" type="checkbox"></td><td style="text-align: right;">1332489</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/breadcrumbList.css</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332490" type="checkbox"></td><td style="text-align: right;">1332490</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/elementsPanel.css</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332491" type="checkbox"></td><td style="text-align: right;">1332491</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/textPrompt.css</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332492" type="checkbox"></td><td style="text-align: right;">1332492</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/sidebarPane.css</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332493" type="checkbox"></td><td style="text-align: right;">1332493</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/Images/paneElementStateButtons.png</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332494" type="checkbox"></td><td style="text-align: right;">1332494</td><td>URL_REQUEST</td><td>chrome-devtools://devtools/bundled/Images/paneAddButtons.png</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332495" type="checkbox"></td><td style="text-align: right;">1332495</td><td>URL_REQUEST</td><td>https://mail.google.com/mail/u/0/feed/atom/?timestamp=1397848439856</td></tr><tr class="source-disk-cache-entry inactive"><td style="border-left-width: 0px;"><input title="1332496" type="checkbox"></td><td style="text-align: right;">1332496</td><td>DISK_CACHE_ENTRY</td><td>https://mail.google.com/mail/u/0/feed/atom/?timestamp=1397848439856</td></tr><tr class="source-http-stream-job inactive"><td style="border-left-width: 0px;"><input title="1332497" type="checkbox"></td><td style="text-align: right;">1332497</td><td>HTTP_STREAM_JOB</td><td>https://mail.google.com/</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332498" type="checkbox"></td><td style="text-align: right;">1332498</td><td>URL_REQUEST</td><td>chrome-extension://oeopbcgkkoapgobdbedcemjljbihmemj/images/browserButtons/blue/new.png</td></tr><tr class="source-url-request inactive"><td style="border-left-width: 0px;"><input title="1332499" type="checkbox"></td><td style="text-align: right;">1332499</td><td>URL_REQUEST</td><td>https://talkgadget.google.com/u/0/_/diagnostics/?_reqid=63707137&amp;rt=j</td></tr><tr class="source-http-stream-job inactive"><td style="border-left-width: 0px;"><input title="1332500" type="checkbox"></td><td style="text-align: right;">1332500</td><td>HTTP_STREAM_JOB</td><td>https://talkgadget.google.com/</td></tr><tr class="source-download"><td style="border-left-width: 0px;"><input title="1332501" type="checkbox"></td><td style="text-align: right;">1332501</td><td>DOWNLOAD</td><td></td></tr></tbody>
+  </table>
+</div>
+<!-- Splitter Box: This is a handle to resize the vertical divider -->
+<div id="events-view-splitter-box" class="vertical-splitter" style="display: none; position: absolute; left: 848px; top: 32px; width: 10px; height: 727px;"></div>
+<!-- Details box: This is the panel on the right which shows information -->
+<div id="events-view-details-log-box" class="event-log content-box" style="display: none; position: absolute; left: 858px; top: 32px; width: 837px; height: 727px;"></div>
+
+      <!-- =============== Events Waterfall View ================= -->
+<div id="waterfall-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <div>
+    <div id="waterfall-view-controls">
+      Start Time: <input id="waterfall-view-start-input" type="number" min="0" value="0">
+      End Time: <input id="waterfall-view-end-input" type="number" min="0">
+      <input id="waterfall-view-adjust-to-window" type="button" value="Fit Range in Window">
+    </div>
+    <p>
+    <!-- Table that displays time bars -->
+    </p><table id="waterfall-view-time-bar-table" style="left: 0px;">
+      <thead>
+      <tr id="waterfall-view-table-header">
+        <td id="waterfall-view-time-scale-labels"><div class="waterfall-view-time-scale-row"></div></td>
+      </tr>
+      </thead>
+      <!-- Events Waterfall table body: This is where request rows go into -->
+      <tbody id="waterfall-view-time-bar-tbody"><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 0px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332387"><div class="url-request waterfall-view-bar-component" style="width: 3198px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 200px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332390"><div class="url-request waterfall-view-bar-component" style="width: 2433px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 200px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332391"><div class="url-request waterfall-view-bar-component" style="width: 2478px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1700px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332475"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332475"><div class="proxy-service waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332475"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332475"><div class="http-transaction-read-headers waterfall-view-bar-component" style="width: 11px;"></div></a><a href="chrome://net-internals/#events&s=1332475"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1982px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332477"><div class="url-request waterfall-view-bar-component" style="width: 1px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1983px;"></div><div class="waterfall-view-bar"></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1983px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332479"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1983px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332480"><div class="url-request waterfall-view-bar-component" style="width: 1px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1993px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332481"><div class="proxy-service waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332481"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332481"><div class="http-transaction-read-headers waterfall-view-bar-component" style="width: 1px;"></div></a><a href="chrome://net-internals/#events&s=1332481"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1995px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332483"><div class="proxy-service waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332483"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332483"><div class="http-transaction-read-headers waterfall-view-bar-component" style="width: 6px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1996px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332485"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 1997px;"></div><div class="waterfall-view-bar"></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2000px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332487"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2008px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332488"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2010px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332489"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2010px;"></div><div class="waterfall-view-bar"></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2010px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332491"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2010px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332492"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2011px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332493"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2011px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332494"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2115px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332495"><div class="url-request waterfall-view-bar-component" style="width: 1px;"></div></a><a href="chrome://net-internals/#events&s=1332495"><div class="proxy-service waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332495"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332495"><div class="http-transaction-read-headers waterfall-view-bar-component" style="width: 13px;"></div></a><a href="chrome://net-internals/#events&s=1332495"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 2130px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332498"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr><tr class="waterfall-view-table-row"><td class="waterfall-view-row"><div class="waterfall-view-padding" style="width: 3100px;"></div><div class="waterfall-view-bar"><a href="chrome://net-internals/#events&s=1332499"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332499"><div class="proxy-service waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332499"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a><a href="chrome://net-internals/#events&s=1332499"><div class="http-transaction-read-headers waterfall-view-bar-component" style="width: 11px;"></div></a><a href="chrome://net-internals/#events&s=1332499"><div class="url-request waterfall-view-bar-component" style="width: 0px;"></div></a></div></td></tr></tbody>
+    </table>
+    <!-- Fixed table that contains the id and url information. -->
+    <table id="waterfall-view-information-table" style="top: 0px;">
+      <thead id="waterfall-view-information-thead">
+        <tr>
+          <td class="waterfall-view-id-cell" id="waterfall-view-id-header">ID</td>
+          <td class="waterfall-view-url-cell" id="waterfall-view-url-header">URL</td>
+        </tr>
+      </thead>
+      <tbody id="waterfall-view-information-tbody"><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332387">1332387</a></td><td class="waterfall-view-url-cell">https://talkgadget.google.com/u/0/talkgadget/_/channel/bind?OSID=250A25F29B010A21&amp;OAID=3210&amp;VER=8&amp;clid=BDCDA4366F5CFB69&amp;prop=gmail&amp;ec=%5B%22ci%3Aec%22%2Ctrue%2Ctrue%2Cfalse%5D&amp;RID=rpc&amp;SID=AB666197300525A8&amp;CI=0&amp;AID=441&amp;gsessionid=LBT1MB7k5x0&amp;TYPE=xmlhttp&amp;zx=c90v7u8rwbp3&amp;t=1</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332390">1332390</a></td><td class="waterfall-view-url-cell">https://0.docs.google.com/a/google.com/document/d/1ByIrM94Degtn_spII_H4EiHc1-GYsDsn2ZOQCU02F-o/bind?id=1ByIrM94Degtn_spII_H4EiHc1-GYsDsn2ZOQCU02F-o&amp;sid=34070ac6018bf98a&amp;VER=8&amp;token=AC4w5VjPxE4koDsfZM07mr2GpAymmxMJZg%3A1397767538454&amp;lsq=1397767359108&amp;u=04901866189931632133&amp;c=1&amp;w=1&amp;gsi=0&amp;RID=rpc&amp;SID=5F28864E5CAEAC6C&amp;CI=0&amp;AID=495&amp;TYPE=xmlhttp&amp;zx=21wv86olxgro&amp;t=1</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332391">1332391</a></td><td class="waterfall-view-url-cell">https://0.drive.google.com/a/google.com/bind?id=ignored&amp;sid=40afdb3eb16f9b35&amp;VER=8&amp;lsq=1397771499484&amp;gsi=0&amp;RID=rpc&amp;SID=BEAB7DB7DA6FD3BB&amp;CI=0&amp;AID=499&amp;TYPE=xmlhttp&amp;zx=q4zfu0ksruey&amp;t=1</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332475">1332475</a></td><td class="waterfall-view-url-cell">https://talkgadget.google.com/u/0/_/diagnostics/?_reqid=63607137&amp;rt=j</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332477">1332477</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/devtools.html?dockSide=undocked&amp;toolbarColor=rgba(242,241,240,1)&amp;textColor=rgba(76,76,76,1)&amp;can_dock=true&amp;updateAppcache</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332478">1332478</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/buildSystemOnly.js</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332479">1332479</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/inspector.css</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332480">1332480</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/inspector.js</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332481">1332481</a></td><td class="waterfall-view-url-cell">https://clients4.google.com/chrome-sync/command/?client=Google+Chrome&amp;client_id=Y9kAEnV8csZg%2BM50%2BsA/EA%3D%3D</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332483">1332483</a></td><td class="waterfall-view-url-cell">https://clients4.google.com/chrome-sync/command/?client=Google+Chrome&amp;client_id=Y9kAEnV8csZg%2BM50%2BsA/EA%3D%3D</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332485">1332485</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/splitView.css</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332486">1332486</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/Images/statusbarButtonGlyphs.png</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332487">1332487</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/Images/toolbarItemSelected.png</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332488">1332488</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/ElementsPanel.js</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332489">1332489</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/breadcrumbList.css</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332490">1332490</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/elementsPanel.css</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332491">1332491</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/textPrompt.css</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332492">1332492</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/sidebarPane.css</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332493">1332493</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/Images/paneElementStateButtons.png</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332494">1332494</a></td><td class="waterfall-view-url-cell">chrome-devtools://devtools/bundled/Images/paneAddButtons.png</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332495">1332495</a></td><td class="waterfall-view-url-cell">https://mail.google.com/mail/u/0/feed/atom/?timestamp=1397848439856</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332498">1332498</a></td><td class="waterfall-view-url-cell">chrome-extension://oeopbcgkkoapgobdbedcemjljbihmemj/images/browserButtons/blue/new.png</td></tr><tr class="waterfall-view-information-row"><td class="waterfall-view-id-cell"><a href="chrome://net-internals/#events&s=1332499">1332499</a></td><td class="waterfall-view-url-cell">https://talkgadget.google.com/u/0/_/diagnostics/?_reqid=63707137&amp;rt=j</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+      <div id="timeline-view-selection-div" style="display: none; position: absolute; left: 0px; top: 32px; width: 247px; height: 727px;">
+  <div style="text-align: right">
+    <button id="timeline-view-selection-toggle" title="Toggle visibility of selection view" class="timeline-view-rotateleft"></button>
+  </div>
+<ul id="timeline-view-selection-ul">
+  <li id="timeline-view-open-sockets"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">Open sockets</span></label>
+  </li>
+  <li id="timeline-view-in-use-sockets"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">In use sockets</span></label>
+  </li>
+  <li id="timeline-view-url-requests"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">URL requests</span></label>
+  </li>
+  <li id="timeline-view-dns-requests"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">DNS requests</span></label>
+  </li>
+  <li id="timeline-view-dns-jobs"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">DNS jobs</span></label>
+  </li>
+  <li id="timeline-view-bytes-received"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">Bytes received</span></label>
+  </li>
+  <li id="timeline-view-bytes-sent"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">Bytes sent</span></label>
+  </li>
+  <li id="timeline-view-disk-cache-bytes-read"><label><input type="checkbox" checked="">
+    █ <span class="timeline-view-text">Disk cache bytes read</span></label>
+  </li>
+  <li id="timeline-view-disk-cache-bytes-written" class="timeline-view-hidden"><label><input type="checkbox">
+    █ <span class="timeline-view-text">Disk cache bytes written</span></label>
+  </li>
+</ul>
+</div>
+<div id="timeline-view-graph-div" style="display: none; position: absolute; left: 247px; top: 32px; width: 1448px; height: 711px;">
+  <canvas id="timeline-view-graph-canvas" width="1428" height="696">
+  </canvas>
+</div>
+<div id="timeline-view-scrollbar-div" style="display: none; position: absolute; left: 247px; top: 743px; width: 1448px; height: 16px;">
+  <div id="timeline-view-scrollbar-inner-div" style="width: 1448px;">
+  </div>
+</div>
+
+      <!-- ============================ Logs View ============================ -->
+
+<div id="logs-view-tab-content" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;" class="content-box">
+  <button id="logs-view-global-show-btn" class="logs-view-global-button">Show all...</button>
+  <button id="logs-view-global-hide-btn" class="logs-view-global-button">Hide all...</button>
+  <button id="logs-view-refresh-btn" class="logs-view-global-button">Refresh logs...</button>
+  <div style="clear: both"></div>
+  <table width="100%" class="styled-table">
+    <thead>
+      <tr id="logs-view-log-table-header-row">
+        <th width="10%">Log Name</th>
+        <th width="8%"></th>
+        <th width="82%">Log</th>
+      </tr>
+    </thead>
+    <tbody id="logs-view-log-table">
+    <tr class="logs-view-log-row-collapsed"><td class="logs-view-log-cell-text">syslog</td><td class="logs-view-log-table-button-column"><button class="logs-view-log-button">Show...</button></td><td class="logs-view-log-cell-text"><div class="logs-view-log-cell-log" id="logs-view.log-cell.0"></div></td></tr><tr class="logs-view-log-row-collapsed"><td class="logs-view-log-cell-text">ui_log</td><td class="logs-view-log-table-button-column"><button class="logs-view-log-button">Show...</button></td><td class="logs-view-log-cell-text"><div class="logs-view-log-cell-log" id="logs-view.log-cell.1"></div></td></tr><tr class="logs-view-log-row-collapsed"><td class="logs-view-log-cell-text">chrome_system_log</td><td class="logs-view-log-table-button-column"><button class="logs-view-log-button">Show...</button></td><td class="logs-view-log-cell-text"><div class="logs-view-log-cell-log" id="logs-view.log-cell.2"></div></td></tr><tr class="logs-view-log-row-collapsed"><td class="logs-view-log-cell-text">chrome_log</td><td class="logs-view-log-table-button-column"><button class="logs-view-log-button">Show...</button></td><td class="logs-view-log-cell-text"><div class="logs-view-log-cell-log" id="logs-view.log-cell.3"></div></td></tr></tbody>
+  </table>
+</div>
+
+      <div id="chromeos-view-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <h4 style="margin-top:0">Import ONC file</h4>
+  <div id="chromeos-view-import-div">
+    <input type="file" id="chromeos-view-import-onc">
+  </div>
+  <div id="chromeos-view-password-div" hidden="">
+    This onc file appears to be encrypted.  Please provide the decryption key:
+    <div>
+      <input type="password" id="chromeos-view-onc-password">
+    </div>
+  </div>
+  <div id="chromeos-view-parse-status" hidden="">
+  </div>
+  <div id="chromeos-view-store-debug-logs-div">
+    <h4>Store Logs</h4>
+    <input type="button" id="chromeos-view-store-debug-logs" value="Store Debug Logs">
+    <label for="chromeos-view-store-debug-logs" id="chromeos-view-store-debug-logs-status">
+    </label>
+  </div>
+  <div id="chromeos-view-network-debugging-div">
+    <h4>Network Debugging</h4>
+    <dl>
+      <dt>Select interface for debugging</dt>
+      <dd>
+        <input type="button" value="Wi-Fi" id="chromeos-view-network-debugging-wifi">
+        <input type="button" value="Ethernet" id="chromeos-view-network-debugging-ethernet">
+        <input type="button" value="Cellular" id="chromeos-view-network-debugging-cellular">
+        <input type="button" value="WiMAX" id="chromeos-view-network-debugging-wimax">
+        <input type="button" name="subsystem" value="None" id="chromeos-view-network-debugging-none">
+      </dd>
+    </dl>
+    <label id="chromeos-view-network-debugging-status">
+    </label>
+  </div>
+</div>
+
+      <!-- Log Visualizer -->
+<div id="cros-log-visualizer-tab-content" class="content-box" style="display: none; position: absolute; left: 0px; top: 32px; width: 1695px; height: 727px;">
+  <div id="cros-log-visualizer-header">
+    Network Log
+  </div>
+  <div id="cros-log-visualizer-search-container" class="cros-log-visualizer-container">
+    Search:
+    <input type="text" placeholder="Enter your keyword" id="cros-log-visualizer-search-input">
+    <span id="cros-log-visualizer-save-btn">Save</span>
+  </div>
+  <table id="cros-log-visualizer-log-header-table" class="cros-log-visualizer-container">
+    <tbody><tr>
+      <td class="cros-log-visualizer-td-level">Level</td>
+      <td class="cros-log-visualizer-td-time">Time</td>
+      <td class="cros-log-visualizer-td-pname">Process</td>
+      <td class="cros-log-visualizer-td-pid">PID</td>
+      <td class="cros-log-visualizer-td-description">Description</td>
+    </tr>
+  </tbody></table>
+  <div id="cros-log-visualizer-log-content">
+    <table id="cros-log-visualizer-log-table">
+    </table>
+  </div>
+  <div id="cros-log-visualizer-marker-container">
+  </div>
+  <div id="cros-log-visualizer-filter-container" class="cros-log-visualizer-container">
+    <div id="cros-log-visualizer-filter-pname">
+    </div>
+    <div id="cros-log-visualizer-filter-level">
+      Level:
+      <span class="cros-log-visualizer-filter-level-block">
+        <input type="checkbox" id="checkbox-error" checked="true">
+        <label for="checkbox-error">Error</label>
+      </span>
+      <span class="cros-log-visualizer-filter-level-block">
+        <input type="checkbox" id="checkbox-warning" checked="true">
+        <label for="checkbox-warning">Warning</label>
+      </span>
+      <span class="cros-log-visualizer-filter-level-block">
+        <input type="checkbox" id="checkbox-info" checked="true">
+        <label for="checkbox-info">Info</label>
+      </span>
+      <span class="cros-log-visualizer-filter-level-block">
+        <input type="checkbox" id="checkbox-unknown" checked="true">
+        <label for="checkbox-unknown">Unknown</label>
+      </span>
+    </div>
+  </div>
+  <div id="cros-log-visualizer-visualizer-container">
+    <div id="cros-log-visualizer-visualizer-tracking-layer"></div>
+  </div>
+</div>
+
+    </div>
+
+    <script src="chrome://resources/js/i18n_template.js"></script>
+    <script src="chrome://resources/js/i18n_process.js"></script>
+    <script src="chrome://resources/js/jstemplate_compiled.js"></script>
+  
+
+</body></html>

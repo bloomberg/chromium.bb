@@ -73,6 +73,18 @@ class ChromeProxySafeBrowsing(test.Test):
   page_set = 'page_sets/chrome_proxy/safebrowsing.py'
 
 
+class ChromeProxyHTTPFallbackProbeURL(test.Test):
+  tag = 'fallback-probe'
+  test = chrome_proxy.ChromeProxyHTTPFallbackProbeURL
+  page_set = 'page_sets/chrome_proxy/synthetic.py'
+
+
+class ChromeProxyHTTPFallbackViaHeader(test.Test):
+  tag = 'fallback-viaheader'
+  test = chrome_proxy.ChromeProxyHTTPFallbackViaHeader
+  page_set = 'page_sets/chrome_proxy/fallback_viaheader.py'
+
+
 class ChromeProxySmoke(test.Test):
   tag = 'smoke'
   test = chrome_proxy.ChromeProxySmoke
