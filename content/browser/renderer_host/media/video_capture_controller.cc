@@ -19,10 +19,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
-
-#if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
 #include "third_party/libyuv/include/libyuv.h"
-#endif
 
 using media::VideoCaptureFormat;
 
@@ -340,7 +337,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (!buffer)
     return;
   uint8* yplane = NULL;
-#if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
   bool flip = false;
   yplane = reinterpret_cast<uint8*>(buffer->data());
   uint8* uplane =
@@ -425,12 +421,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
                         frame_format.frame_size.height(),
                         rotation_mode,
                         origin_colorspace);
-#else
-  // Libyuv is not linked in for Android WebView builds, but video capture is
-  // not used in those builds either. Whenever libyuv is added in that build,
-  // address all these #ifdef parts, see http://crbug.com/299611 .
-  NOTREACHED();
-#endif  // if !defined(AVOID_LIBYUV_FOR_ANDROID_WEBVIEW)
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
