@@ -515,7 +515,7 @@ void SyncTest::SetupMockGaiaResponses() {
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->people_get_url(),
+      GaiaUrls::GetInstance()->oauth_user_info_url(),
       "{"
       "  \"id\": \"12345\""
       "}",

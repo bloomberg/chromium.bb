@@ -24,12 +24,12 @@ class GaiaUrls {
   const GURL& service_logout_url() const;
   const GURL& issue_auth_token_url() const;
   const GURL& get_user_info_url() const;
-  const GURL& people_get_url() const;
   const GURL& token_auth_url() const;
   const GURL& merge_session_url() const;
   const GURL& get_oauth_token_url() const;
   const GURL& oauth_get_access_token_url() const;
   const GURL& oauth_wrap_bridge_url() const;
+  const GURL& oauth_user_info_url() const;
   const GURL& oauth_revoke_token_url() const;
   const GURL& oauth1_login_url() const;
   const GURL& list_accounts_url() const;
@@ -65,12 +65,12 @@ class GaiaUrls {
   GURL service_logout_url_;
   GURL issue_auth_token_url_;
   GURL get_user_info_url_;
-  GURL people_get_url_;
   GURL token_auth_url_;
   GURL merge_session_url_;
   GURL get_oauth_token_url_;
   GURL oauth_get_access_token_url_;
   GURL oauth_wrap_bridge_url_;
+  GURL oauth_user_info_url_;
   GURL oauth_revoke_token_url_;
   GURL oauth1_login_url_;
   GURL list_accounts_url_;
