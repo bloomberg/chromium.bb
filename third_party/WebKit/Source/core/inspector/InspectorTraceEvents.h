@@ -104,6 +104,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
+class InspectorScrollLayerEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*);
+};
+
 } // namespace WebCore
 
 

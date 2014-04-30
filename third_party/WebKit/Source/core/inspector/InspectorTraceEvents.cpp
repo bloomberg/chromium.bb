@@ -244,4 +244,13 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorMarkLoadEvent::data(Lo
     return TracedValue::fromJSONValue(data);
 }
 
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data(RenderObject* renderer)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("frame", toHexString(renderer->frame()));
+    int nodeId = InspectorNodeIds::idForNode(renderer->generatingNode());
+    data->setNumber("nodeId", nodeId);
+    return TracedValue::fromJSONValue(data);
+}
+
 }
