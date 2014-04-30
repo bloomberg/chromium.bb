@@ -30,11 +30,6 @@ struct AX_EXPORT AXViewState {
   void AddStateFlag(ui::AXState state);
   bool HasStateFlag(ui::AXState state) const;
 
-  // The view's state, a bitmask containing fields such as checked
-  // (for a checkbox) and protected (for a password text box). This "state"
-  // should not be confused with the class's name.
-  uint32 state() { return state_; }
-
   // The view's role, like button or list box.
   AXRole role;
 
@@ -73,6 +68,8 @@ struct AX_EXPORT AXViewState {
   base::Callback<void(const base::string16&)> set_value_callback;
 
  private:
+  // The view's state, a bitmask containing fields such as checked
+  // (for a checkbox) and protected (for a password text box).
   uint32 state_;
 };
 

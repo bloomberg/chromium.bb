@@ -65,7 +65,6 @@ namespace ui {
     definition,
     description_list_detail,
     description_list_term,
-    desktop,
     dialog,
     directory,
     disclosure_triangle,
