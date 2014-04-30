@@ -17,6 +17,9 @@ Text was autosized. PASS
 Running: checkNotAutosizedWithDeviceMetrics
 Text was not autosized. PASS
 
+Running: checkAutosizedWithoutDeviceMetrics
+Text was autosized. PASS
+
 Running: checkNotAutosizedWithoutDeviceMetrics
 Text was not autosized. PASS
 

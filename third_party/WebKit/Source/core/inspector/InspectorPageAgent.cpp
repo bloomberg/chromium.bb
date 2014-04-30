@@ -1159,6 +1159,9 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
     if (m_deviceMetricsOverridden) {
         m_page->settings().setTextAutosizingEnabled(textAutosizingEnabled);
         m_page->settings().setDeviceScaleAdjustment(fontScaleFactor);
+    } else {
+        m_page->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
+        m_page->settings().setDeviceScaleAdjustment(m_embedderFontScaleFactor);
     }
 
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
