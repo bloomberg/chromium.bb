@@ -241,6 +241,21 @@ TEST(SafeBrowsingProtocolParsingTest, TestTruncatedHeader) {
   EXPECT_FALSE(result);
 }
 
+// Test to verify handling of a negative chunk length.
+TEST(SafeBrowsingProtocolParsingTest, TestNegativeChunkLength) {
+  std::string negative_chunk_length("a:1:4:-100000\naaaabbbbcc");
+
+  // Run the parser.
+  SafeBrowsingProtocolParser parser;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kDownloadWhiteList,
+      negative_chunk_length.data(),
+      static_cast<int>(negative_chunk_length.length()),
+      &chunks);
+  EXPECT_FALSE(result);
+}
+
 // Test parsing one sub chunk.
 TEST(SafeBrowsingProtocolParsingTest, TestSubChunk) {
   std::string sub_chunk("s:9:4:59\naaaaxkkkk1111\003"
