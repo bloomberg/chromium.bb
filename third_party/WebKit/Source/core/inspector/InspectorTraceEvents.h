@@ -13,7 +13,10 @@ namespace WebCore {
 class Document;
 class ExecutionContext;
 class FrameView;
+class GraphicsContext;
+class GraphicsLayer;
 class KURL;
+class LayoutRect;
 class LocalFrame;
 class RenderObject;
 class ResourceRequest;
@@ -89,6 +92,11 @@ public:
 class InspectorXhrLoadEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, XMLHttpRequest*);
+};
+
+class InspectorPaintEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*, const LayoutRect& clipRect, const GraphicsLayer*);
 };
 
 } // namespace WebCore

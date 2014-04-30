@@ -13,6 +13,7 @@
 #include "core/xml/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
@@ -205,6 +206,31 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorXhrLoadEvent::data(Exe
     data->setString("url", request->url().string());
     if (LocalFrame* frame = frameForExecutionContext(context))
         data->setString("frame", toHexString(frame));
+    return TracedValue::fromJSONValue(data);
+}
+
+static void localToPageQuad(const RenderObject& renderer, const LayoutRect& rect, FloatQuad* quad)
+{
+    LocalFrame* frame = renderer.frame();
+    FrameView* view = frame->view();
+    FloatQuad absolute = renderer.localToAbsoluteQuad(FloatQuad(rect));
+    quad->setP1(view->contentsToRootView(roundedIntPoint(absolute.p1())));
+    quad->setP2(view->contentsToRootView(roundedIntPoint(absolute.p2())));
+    quad->setP3(view->contentsToRootView(roundedIntPoint(absolute.p3())));
+    quad->setP4(view->contentsToRootView(roundedIntPoint(absolute.p4())));
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintEvent::data(RenderObject* renderer, const LayoutRect& clipRect, const GraphicsLayer* graphicsLayer)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("frame", toHexString(renderer->frame()));
+    FloatQuad quad;
+    localToPageQuad(*renderer, clipRect, &quad);
+    data->setArray("clip", createQuad(quad));
+    int nodeId = InspectorNodeIds::idForNode(renderer->generatingNode());
+    data->setNumber("nodeId", nodeId);
+    int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
+    data->setNumber("layerId", graphicsLayerId);
     return TracedValue::fromJSONValue(data);
 }
 
