@@ -96,6 +96,37 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   bool DeleteRegistration(int64 registration_id,
                           const GURL& origin);
 
+  // As new resources are put into the diskcache, they go into an uncommitted
+  // list. When a registration is saved that refers to those ids, they're
+  // removed from that list. When a resource no longer has any registrations or
+  // caches referring to it, it's added to the purgeable list. Periodically,
+  // the purgeable list can be purged from the diskcache. At system startup, all
+  // uncommitted ids are moved to the purgeable list.
+
+  // Reads uncommitted resource ids from the database. Returns true on success.
+  // Otherwise clears |ids| and returns false.
+  bool GetUncommittedResourceIds(std::set<int64>* ids);
+
+  // Writes |ids| into the database as uncommitted resources. Returns true on
+  // success. Otherwise writes nothing and returns false.
+  bool WriteUncommittedResourceIds(const std::set<int64>& ids);
+
+  // Deletes uncommitted resource ids specified by |ids| from the database.
+  // Returns true on success. Otherwise deletes nothing and returns false.
+  bool ClearUncommittedResourceIds(const std::set<int64>& ids);
+
+  // Reads purgeable resource ids from the database. Returns true on success.
+  // Otherwise clears |ids| and returns false.
+  bool GetPurgeableResourceIds(std::set<int64>* ids);
+
+  // Writes |ids| into the database as purgeable resources. Returns true on
+  // success. Otherwise writes nothing and returns false.
+  bool WritePurgeableResourceIds(const std::set<int64>& ids);
+
+  // Deletes purgeable resource ids specified by |ids| from the database.
+  // Returns true on success. Otherwise deletes nothing and returns false.
+  bool ClearPurgeableResourceIds(const std::set<int64>& ids);
+
   bool is_disabled() const { return is_disabled_; }
   bool was_corruption_detected() const { return was_corruption_detected_; }
 
@@ -111,6 +142,12 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   bool ReadRegistrationData(int64 registration_id,
                             const GURL& origin,
                             RegistrationData* registration);
+  bool ReadResourceIds(const char* id_key_prefix,
+                       std::set<int64>* ids);
+  bool WriteResourceIds(const char* id_key_prefix,
+                        const std::set<int64>& ids);
+  bool DeleteResourceIds(const char* id_key_prefix,
+                         const std::set<int64>& ids);
   bool ReadDatabaseVersion(int64* db_version);
 
   // Write a batch into the database.

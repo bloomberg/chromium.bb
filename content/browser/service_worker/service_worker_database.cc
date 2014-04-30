@@ -42,9 +42,15 @@
 //   key: "INITDATA_UNIQUE_ORIGIN:" + <GURL 'origin'>
 //   value: <empty>
 //
+//   key: "PRES:" + <int64 'purgeable_resource_id'>
+//   value: <empty>
+//
 //   key: "REG:" + <GURL 'origin'> + '\x00' + <int64 'registration_id'>
 //     (ex. "REG:http://example.com\x00123456")
 //   value: <ServiceWorkerRegistrationData serialized as a string>
+//
+//   key: "URES:" + <int64 'uncommitted_resource_id'>
+//   value: <empty>
 
 namespace content {
 
@@ -58,6 +64,9 @@ const char kUniqueOriginKey[] = "INITDATA_UNIQUE_ORIGIN:";
 
 const char kRegKeyPrefix[] = "REG:";
 const char kKeySeparator = '\x00';
+
+const char kUncommittedResIdKeyPrefix[] = "URES:";
+const char kPurgeableResIdKeyPrefix[] = "PRES:";
 
 const int64 kCurrentSchemaVersion = 1;
 
@@ -82,6 +91,11 @@ std::string CreateRegistrationKey(int64 registration_id,
 
 std::string CreateUniqueOriginKey(const GURL& origin) {
   return base::StringPrintf("%s%s", kUniqueOriginKey, origin.spec().c_str());
+}
+
+std::string CreateResourceIdKey(const char* key_prefix, int64 resource_id) {
+  return base::StringPrintf(
+      "%s%s", key_prefix, base::Int64ToString(resource_id).c_str());
 }
 
 void PutRegistrationDataToBatch(
@@ -350,6 +364,34 @@ bool ServiceWorkerDatabase::DeleteRegistration(int64 registration_id,
   return WriteBatch(&batch);
 }
 
+bool ServiceWorkerDatabase::GetUncommittedResourceIds(std::set<int64>* ids) {
+  return ReadResourceIds(kUncommittedResIdKeyPrefix, ids);
+}
+
+bool ServiceWorkerDatabase::WriteUncommittedResourceIds(
+    const std::set<int64>& ids) {
+  return WriteResourceIds(kUncommittedResIdKeyPrefix, ids);
+}
+
+bool ServiceWorkerDatabase::ClearUncommittedResourceIds(
+    const std::set<int64>& ids) {
+  return DeleteResourceIds(kUncommittedResIdKeyPrefix, ids);
+}
+
+bool ServiceWorkerDatabase::GetPurgeableResourceIds(std::set<int64>* ids) {
+  return ReadResourceIds(kPurgeableResIdKeyPrefix, ids);
+}
+
+bool ServiceWorkerDatabase::WritePurgeableResourceIds(
+    const std::set<int64>& ids) {
+  return WriteResourceIds(kPurgeableResIdKeyPrefix, ids);
+}
+
+bool ServiceWorkerDatabase::ClearPurgeableResourceIds(
+    const std::set<int64>& ids) {
+  return DeleteResourceIds(kPurgeableResIdKeyPrefix, ids);
+}
+
 bool ServiceWorkerDatabase::LazyOpen(bool create_if_needed) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (IsOpen())
@@ -449,6 +491,75 @@ bool ServiceWorkerDatabase::ReadRegistrationData(
 
   *registration = parsed;
   return true;
+}
+
+bool ServiceWorkerDatabase::ReadResourceIds(const char* id_key_prefix,
+                                            std::set<int64>* ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(id_key_prefix);
+  DCHECK(ids);
+
+  if (!LazyOpen(false) || is_disabled_)
+    return false;
+
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(id_key_prefix); itr->Valid(); itr->Next()) {
+    if (!itr->status().ok()) {
+      HandleError(FROM_HERE, itr->status());
+      ids->clear();
+      return false;
+    }
+
+    std::string unprefixed;
+    if (!RemovePrefix(itr->key().ToString(), id_key_prefix, &unprefixed))
+      break;
+
+    int64 resource_id;
+    if (!base::StringToInt64(unprefixed, &resource_id)) {
+      HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
+      ids->clear();
+      return false;
+    }
+    ids->insert(resource_id);
+  }
+  return true;
+}
+
+bool ServiceWorkerDatabase::WriteResourceIds(const char* id_key_prefix,
+                                             const std::set<int64>& ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(id_key_prefix);
+
+  if (!LazyOpen(true) || is_disabled_)
+    return false;
+  if (ids.empty())
+    return true;
+
+  leveldb::WriteBatch batch;
+  for (std::set<int64>::const_iterator itr = ids.begin();
+       itr != ids.end(); ++itr) {
+    // Value should be empty.
+    batch.Put(CreateResourceIdKey(id_key_prefix, *itr), "");
+  }
+  return WriteBatch(&batch);
+}
+
+bool ServiceWorkerDatabase::DeleteResourceIds(const char* id_key_prefix,
+                                              const std::set<int64>& ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(id_key_prefix);
+
+  if (!LazyOpen(true) || is_disabled_)
+    return false;
+  if (ids.empty())
+    return true;
+
+  leveldb::WriteBatch batch;
+  for (std::set<int64>::const_iterator itr = ids.begin();
+       itr != ids.end(); ++itr) {
+    batch.Delete(CreateResourceIdKey(id_key_prefix, *itr));
+  }
+  return WriteBatch(&batch);
 }
 
 bool ServiceWorkerDatabase::ReadDatabaseVersion(int64* db_version) {

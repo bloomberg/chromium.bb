@@ -266,4 +266,88 @@ TEST(ServiceWorkerDatabaseTest, Registration) {
       data.registration_id, origin, &data_out, &resources_out));
 }
 
+TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  // Write {1, 2, 3}.
+  std::set<int64> ids1;
+  ids1.insert(1);
+  ids1.insert(2);
+  ids1.insert(3);
+  EXPECT_TRUE(database->WriteUncommittedResourceIds(ids1));
+
+  std::set<int64> ids_out;
+  EXPECT_TRUE(database->GetUncommittedResourceIds(&ids_out));
+  EXPECT_EQ(ids1.size(), ids_out.size());
+  EXPECT_TRUE(base::STLIncludes(ids1, ids_out));
+
+  // Write {2, 4}.
+  std::set<int64> ids2;
+  ids2.insert(2);
+  ids2.insert(4);
+  EXPECT_TRUE(database->WriteUncommittedResourceIds(ids2));
+
+  ids_out.clear();
+  EXPECT_TRUE(database->GetUncommittedResourceIds(&ids_out));
+  EXPECT_EQ(4U, ids_out.size());
+  EXPECT_TRUE(ContainsKey(ids_out, 1));
+  EXPECT_TRUE(ContainsKey(ids_out, 2));
+  EXPECT_TRUE(ContainsKey(ids_out, 3));
+  EXPECT_TRUE(ContainsKey(ids_out, 4));
+
+  // Delete {2, 3}.
+  std::set<int64> ids3;
+  ids3.insert(2);
+  ids3.insert(3);
+  EXPECT_TRUE(database->ClearUncommittedResourceIds(ids3));
+
+  ids_out.clear();
+  EXPECT_TRUE(database->GetUncommittedResourceIds(&ids_out));
+  EXPECT_EQ(2U, ids_out.size());
+  EXPECT_TRUE(ContainsKey(ids_out, 1));
+  EXPECT_TRUE(ContainsKey(ids_out, 4));
+}
+
+TEST(ServiceWorkerDatabaseTest, PurgeableResourceIds) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  // Write {1, 2, 3}.
+  std::set<int64> ids1;
+  ids1.insert(1);
+  ids1.insert(2);
+  ids1.insert(3);
+  EXPECT_TRUE(database->WritePurgeableResourceIds(ids1));
+
+  std::set<int64> ids_out;
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&ids_out));
+  EXPECT_EQ(ids1.size(), ids_out.size());
+  EXPECT_TRUE(base::STLIncludes(ids1, ids_out));
+
+  // Write {2, 4}.
+  std::set<int64> ids2;
+  ids2.insert(2);
+  ids2.insert(4);
+  EXPECT_TRUE(database->WritePurgeableResourceIds(ids2));
+
+  ids_out.clear();
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&ids_out));
+  EXPECT_EQ(4U, ids_out.size());
+  EXPECT_TRUE(ContainsKey(ids_out, 1));
+  EXPECT_TRUE(ContainsKey(ids_out, 2));
+  EXPECT_TRUE(ContainsKey(ids_out, 3));
+  EXPECT_TRUE(ContainsKey(ids_out, 4));
+
+  // Delete {2, 3}.
+  std::set<int64> ids3;
+  ids3.insert(2);
+  ids3.insert(3);
+  EXPECT_TRUE(database->ClearPurgeableResourceIds(ids3));
+
+  ids_out.clear();
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&ids_out));
+  EXPECT_EQ(2U, ids_out.size());
+  EXPECT_TRUE(ContainsKey(ids_out, 1));
+  EXPECT_TRUE(ContainsKey(ids_out, 4));
+}
+
 }  // namespace content
