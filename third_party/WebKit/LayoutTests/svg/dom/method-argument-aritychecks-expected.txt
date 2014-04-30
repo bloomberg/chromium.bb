@@ -14,13 +14,6 @@ PASS animateElm.endElementAt() threw exception TypeError: Failed to execute 'end
 PASS animateElm.endElementAt(0) did not throw exception.
 
 
-SVGElementInstanceList
-
-item(unsigned long index)
-PASS useElm.instanceRoot.childNodes.item() threw exception TypeError: Failed to execute 'item' on 'SVGElementInstanceList': 1 argument required, but only 0 present..
-PASS useElm.instanceRoot.childNodes.item(0) did not throw exception.
-
-
 SVGFEDropShadowElement
 
 setStdDeviation(float stdDeviationX, float stdDeviationY)

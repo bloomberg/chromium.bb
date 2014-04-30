@@ -27,7 +27,6 @@
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGElementInstanceList.h"
 #include "core/svg/SVGUseElement.h"
 
 #include "wtf/RefCountedLeakCounter.h"
@@ -151,11 +150,6 @@ void SVGElementInstance::detach()
     m_correspondingUseElement = 0;
 
     removeDetachedChildrenInContainer<SVGElementInstance, SVGElementInstance>(*this);
-}
-
-PassRefPtr<SVGElementInstanceList> SVGElementInstance::childNodes()
-{
-    return SVGElementInstanceList::create(this);
 }
 
 void SVGElementInstance::setShadowTreeElement(SVGElement* element)

@@ -40,7 +40,6 @@ shouldBeDefined("SVGTitleElement");
 shouldBeDefined("SVGSymbolElement");
 shouldBeDefined("SVGUseElement");
 shouldBeDefined("SVGElementInstance");
-shouldBeDefined("SVGElementInstanceList");
 shouldBeDefined("SVGImageElement");
 shouldBeDefined("SVGSwitchElement");
 shouldBeDefined("SVGStyleElement");

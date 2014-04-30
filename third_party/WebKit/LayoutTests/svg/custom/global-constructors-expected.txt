@@ -37,7 +37,6 @@ PASS SVGTitleElement.toString() is 'function SVGTitleElement() { [native code] }
 PASS SVGSymbolElement.toString() is 'function SVGSymbolElement() { [native code] }'
 PASS SVGUseElement.toString() is 'function SVGUseElement() { [native code] }'
 PASS SVGElementInstance.toString() is 'function SVGElementInstance() { [native code] }'
-PASS SVGElementInstanceList.toString() is 'function SVGElementInstanceList() { [native code] }'
 PASS SVGImageElement.toString() is 'function SVGImageElement() { [native code] }'
 PASS SVGSwitchElement.toString() is 'function SVGSwitchElement() { [native code] }'
 PASS SVGStyleElement.toString() is 'function SVGStyleElement() { [native code] }'

@@ -292,7 +292,6 @@ SVGDescElement
 SVGDiscardElement
 SVGElement
 SVGElementInstance
-SVGElementInstanceList
 SVGEllipseElement
 SVGFEBlendElement
 SVGFEColorMatrixElement

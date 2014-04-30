@@ -36,7 +36,6 @@ PASS SVGDefsElement inherits SVGGraphicsElement
 PASS SVGDescElement inherits SVGElement
 PASS SVGElement inherits Element
 PASS SVGElementInstance inherits EventTarget
-PASS SVGElementInstanceList inherits Object
 PASS SVGEllipseElement inherits SVGGeometryElement
 PASS SVGFontElement inherits SVGElement
 PASS SVGFontFaceElement inherits SVGElement
