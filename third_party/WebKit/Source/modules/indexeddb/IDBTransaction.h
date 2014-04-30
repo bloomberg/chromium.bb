@@ -49,13 +49,18 @@ class IDBObjectStore;
 class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;
 
-class IDBTransaction FINAL : public ScriptWrappable, public RefCounted<IDBTransaction>, public EventTargetWithInlineData, public ActiveDOMObject {
-    REFCOUNTED_EVENT_TARGET(IDBTransaction);
+class IDBTransaction FINAL
+    : public RefCountedWillBeRefCountedGarbageCollected<IDBTransaction>
+    , public ScriptWrappable
+    , public EventTargetWithInlineData
+    , public ActiveDOMObject {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<IDBTransaction>);
 
 public:
-    static PassRefPtr<IDBTransaction> create(ExecutionContext*, int64_t, const Vector<String>& objectStoreNames, blink::WebIDBDatabase::TransactionMode, IDBDatabase*);
-    static PassRefPtr<IDBTransaction> create(ExecutionContext*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
+    static PassRefPtrWillBeRawPtr<IDBTransaction> create(ExecutionContext*, int64_t, const Vector<String>& objectStoreNames, blink::WebIDBDatabase::TransactionMode, IDBDatabase*);
+    static PassRefPtrWillBeRawPtr<IDBTransaction> create(ExecutionContext*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
     virtual ~IDBTransaction();
+    void trace(Visitor*);
 
     static const AtomicString& modeReadOnly();
     static const AtomicString& modeReadWrite();
@@ -121,14 +126,15 @@ private:
     int64_t m_id;
     RefPtr<IDBDatabase> m_database;
     const Vector<String> m_objectStoreNames;
-    IDBOpenDBRequest* m_openDBRequest;
+    RawPtrWillBeMember<IDBOpenDBRequest> m_openDBRequest;
     const blink::WebIDBDatabase::TransactionMode m_mode;
     State m_state;
     bool m_hasPendingActivity;
     bool m_contextStopped;
-    RefPtrWillBePersistent<DOMError> m_error;
+    RefPtrWillBeMember<DOMError> m_error;
 
-    ListHashSet<RefPtrWillBePersistent<IDBRequest> > m_requestList;
+    // FIXME: Oilpan: We should use HeapListHashSet if it is available.
+    ListHashSet<RefPtrWillBeMember<IDBRequest> > m_requestList;
 
     typedef HashMap<String, RefPtr<IDBObjectStore> > IDBObjectStoreMap;
     IDBObjectStoreMap m_objectStoreMap;

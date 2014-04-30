@@ -96,23 +96,40 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
-    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, blink::WebIDBDatabase::TransactionReadOnly, db.get());
+    RefPtrWillBeRawPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, blink::WebIDBDatabase::TransactionReadOnly, db.get());
+#if ENABLE(OILPAN)
+    PersistentHeapHashSet<WeakMember<IDBTransaction> > set;
+    set.add(transaction);
 
+    Heap::collectAllGarbage();
+    EXPECT_EQ(1u, set.size());
+#else
     // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
     EXPECT_EQ(3, transaction->refCount());
+#endif
 
-    RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(executionContext(), IDBAny::createUndefined(), transaction.get());
+    RefPtrWillBePersistent<IDBRequest> request = IDBRequest::create(executionContext(), IDBAny::createUndefined(), transaction.get());
     IDBPendingTransactionMonitor::from(*executionContext()).deactivateNewTransactions();
 
-    // Local reference, IDBDatabase's reference, and the IDBRequest's reference
+#if ENABLE(OILPAN)
+    Heap::collectAllGarbage();
+    EXPECT_EQ(1u, set.size());
+#else
+    // Local reference and  IDBDatabase's reference., and the IDBRequest's reference
     EXPECT_EQ(3, transaction->refCount());
+#endif
 
     // This will generate an abort() call to the back end which is dropped by the fake proxy,
     // so an explicit onAbort call is made.
     executionContext()->stopActiveDOMObjects();
     transaction->onAbort(DOMError::create(AbortError, "Aborted"));
 
+#if ENABLE(OILPAN)
+    Heap::collectAllGarbage();
+    EXPECT_EQ(0u, set.size());
+#else
     EXPECT_EQ(1, transaction->refCount());
+#endif
     request.clear();
 }
 
@@ -124,21 +141,40 @@ TEST_F(IDBTransactionTest, TransactionFinish)
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
-    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, blink::WebIDBDatabase::TransactionReadOnly, db.get());
+    RefPtrWillBeRawPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, blink::WebIDBDatabase::TransactionReadOnly, db.get());
+#if ENABLE(OILPAN)
+    PersistentHeapHashSet<WeakMember<IDBTransaction> > set;
+    set.add(transaction);
 
+    Heap::collectAllGarbage();
+    EXPECT_EQ(1u, set.size());
+#else
     // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
     EXPECT_EQ(3, transaction->refCount());
+#endif
 
     IDBPendingTransactionMonitor::from(*executionContext()).deactivateNewTransactions();
 
+#if ENABLE(OILPAN)
+    Heap::collectAllGarbage();
+    EXPECT_EQ(1u, set.size());
+#else
     // Local reference, IDBDatabase's reference
     EXPECT_EQ(2, transaction->refCount());
+#endif
 
+#if !ENABLE(OILPAN)
     IDBTransaction* transactionPtr = transaction.get();
+#endif
     transaction.clear();
 
+#if ENABLE(OILPAN)
+    Heap::collectAllGarbage();
+    EXPECT_EQ(1u, set.size());
+#else
     // IDBDatabase's reference
     EXPECT_EQ(1, transactionPtr->refCount());
+#endif
 
     // Stop the context, so events don't get queued (which would keep the transaction alive).
     executionContext()->stopActiveDOMObjects();
@@ -148,6 +184,10 @@ TEST_F(IDBTransactionTest, TransactionFinish)
     db->onAbort(transactionId, DOMError::create(AbortError, "Aborted"));
 
     // onAbort() should have cleared the transaction's reference to the database.
+#if ENABLE(OILPAN)
+    Heap::collectAllGarbage();
+    EXPECT_EQ(0u, set.size());
+#endif
     EXPECT_EQ(1, db->refCount());
 }
 

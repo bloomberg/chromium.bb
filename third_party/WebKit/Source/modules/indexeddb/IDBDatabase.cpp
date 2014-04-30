@@ -285,7 +285,7 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptio
     m_metadata.objectStores.remove(objectStoreId);
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::transaction");
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
@@ -326,11 +326,10 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
     int64_t transactionId = nextTransactionId();
     m_backend->createTransaction(transactionId, WebIDBDatabaseCallbacksImpl::create(m_databaseCallbacks).leakPtr(), objectStoreIds, mode);
 
-    RefPtr<IDBTransaction> transaction = IDBTransaction::create(context, transactionId, scope, mode, this);
-    return transaction.release();
+    return IDBTransaction::create(context, transactionId, scope, mode, this);
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const String& storeName, const String& mode, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const String& storeName, const String& mode, ExceptionState& exceptionState)
 {
     RefPtr<DOMStringList> storeNames = DOMStringList::create();
     storeNames->append(storeName);

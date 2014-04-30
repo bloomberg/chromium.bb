@@ -62,7 +62,7 @@ public:
     const String& name() const { return m_metadata.name; }
     ScriptValue keyPath(ScriptState*) const;
     PassRefPtr<DOMStringList> indexNames() const;
-    PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
+    IDBTransaction* transaction() const { return m_transaction.get(); }
     bool autoIncrement() const { return m_metadata.autoIncrement; }
 
     PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
@@ -117,7 +117,7 @@ private:
     }
 
     IDBObjectStoreMetadata m_metadata;
-    RefPtr<IDBTransaction> m_transaction;
+    RefPtrWillBePersistent<IDBTransaction> m_transaction;
     bool m_deleted;
 
     typedef HashMap<String, RefPtr<IDBIndex> > IDBIndexMap;

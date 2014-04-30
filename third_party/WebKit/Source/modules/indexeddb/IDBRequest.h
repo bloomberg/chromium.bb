@@ -76,7 +76,7 @@ public:
     ScriptValue result(ExceptionState&);
     PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;
     ScriptValue source() const;
-    PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
+    IDBTransaction* transaction() const { return m_transaction.get(); }
 
     bool isResultDirty() const { return m_resultDirty; }
     PassRefPtrWillBeRawPtr<IDBAny> resultAsAny() const { return m_result; }
@@ -154,7 +154,7 @@ protected:
     void setResult(PassRefPtrWillBeRawPtr<IDBAny>);
 
     bool m_contextStopped;
-    RefPtr<IDBTransaction> m_transaction;
+    RefPtrWillBeMember<IDBTransaction> m_transaction;
     ReadyState m_readyState;
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 

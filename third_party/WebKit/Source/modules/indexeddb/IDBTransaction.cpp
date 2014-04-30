@@ -43,17 +43,17 @@ using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-PassRefPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBDatabase::TransactionMode mode, IDBDatabase* db)
+PassRefPtrWillBeRawPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBDatabase::TransactionMode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
-    RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata())));
+    RefPtrWillBeRawPtr<IDBTransaction> transaction(adoptRefWillBeRefCountedGarbageCollected(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata())));
     transaction->suspendIfNeeded();
     return transaction.release();
 }
 
-PassRefPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
+PassRefPtrWillBeRawPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, Vector<String>(), WebIDBDatabase::TransactionVersionChange, db, openDBRequest, previousMetadata)));
+    RefPtrWillBeRawPtr<IDBTransaction> transaction(adoptRefWillBeRefCountedGarbageCollected(new IDBTransaction(context, id, Vector<String>(), WebIDBDatabase::TransactionVersionChange, db, openDBRequest, previousMetadata)));
     transaction->suspendIfNeeded();
     return transaction.release();
 }
@@ -94,8 +94,10 @@ IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vect
         m_state = Inactive;
     }
 
+#if !ENABLE(OILPAN)
     // We pass a reference of this object before it can be adopted.
     relaxAdoptionRequirement();
+#endif
     if (m_state == Active)
         IDBPendingTransactionMonitor::from(*context).addNewTransaction(*this);
     m_database->transactionCreated(this);
@@ -105,6 +107,13 @@ IDBTransaction::~IDBTransaction()
 {
     ASSERT(m_state == Finished || m_contextStopped);
     ASSERT(m_requestList.isEmpty() || m_contextStopped);
+}
+
+void IDBTransaction::trace(Visitor* visitor)
+{
+    visitor->trace(m_openDBRequest);
+    visitor->trace(m_error);
+    visitor->trace(m_requestList);
 }
 
 const String& IDBTransaction::mode() const
@@ -264,7 +273,7 @@ void IDBTransaction::onAbort(PassRefPtrWillBeRawPtr<DOMError> prpError)
     enqueueEvent(Event::createBubble(EventTypeNames::abort));
 
     // If script has stopped and GC has completed, database may have last reference to this object.
-    RefPtr<IDBTransaction> protect(this);
+    RefPtrWillBeRawPtr<IDBTransaction> protect(this);
     m_database->transactionFinished(this);
 }
 

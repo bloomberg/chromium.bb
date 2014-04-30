@@ -82,6 +82,7 @@ IDBRequest::~IDBRequest()
 
 void IDBRequest::trace(Visitor* visitor)
 {
+    visitor->trace(m_transaction);
     visitor->trace(m_source);
     visitor->trace(m_result);
     visitor->trace(m_error);
