@@ -696,7 +696,7 @@ class HWTestConfig(object):
     """Returns a default list of HWTestConfig's for a PFQ build,
     with overrides for optional args.
     """
-    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, timeout=120 * 60,
+    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, timeout=190 * 60,
                         file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
