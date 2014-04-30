@@ -107,6 +107,12 @@ const char PolicyWatcher::kHostAllowClientPairing[] =
 const char PolicyWatcher::kHostAllowGnubbyAuthPolicyName[] =
     "RemoteAccessHostAllowGnubbyAuth";
 
+const char PolicyWatcher::kRelayPolicyName[] =
+    "RemoteAccessHostAllowRelayedConnection";
+
+const char PolicyWatcher::kUdpPortRangePolicyName[] =
+    "RemoteAccessHostUdpPortRange";
+
 const char PolicyWatcher::kHostDebugOverridePoliciesName[] =
     "RemoteAccessHostDebugOverridePolicies";
 
@@ -130,6 +136,8 @@ PolicyWatcher::PolicyWatcher(
                              std::string());
   default_values_->SetBoolean(kHostAllowClientPairing, true);
   default_values_->SetBoolean(kHostAllowGnubbyAuthPolicyName, true);
+  default_values_->SetBoolean(kRelayPolicyName, true);
+  default_values_->SetString(kUdpPortRangePolicyName, "");
 #if !defined(NDEBUG)
   default_values_->SetString(kHostDebugOverridePoliciesName, std::string());
 #endif
@@ -138,6 +146,7 @@ PolicyWatcher::PolicyWatcher(
   // For most policies these match the defaults.
   bad_type_values_.reset(default_values_->DeepCopy());
   bad_type_values_->SetBoolean(kNatPolicyName, false);
+  bad_type_values_->SetBoolean(kRelayPolicyName, false);
 }
 
 PolicyWatcher::~PolicyWatcher() {

@@ -628,6 +628,8 @@ extern const char kRemoteAccessHostTalkGadgetPrefix[];
 extern const char kRemoteAccessHostRequireCurtain[];
 extern const char kRemoteAccessHostAllowClientPairing[];
 extern const char kRemoteAccessHostAllowGnubbyAuth[];
+extern const char kRemoteAccessHostAllowRelayedConnection[];
+extern const char kRemoteAccessHostUdpPortRange[];
 
 extern const char kPrintPreviewStickySettings[];
 extern const char kCloudPrintRoot[];

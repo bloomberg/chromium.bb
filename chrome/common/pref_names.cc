@@ -1883,6 +1883,17 @@ const char kRemoteAccessHostAllowClientPairing[] =
 const char kRemoteAccessHostAllowGnubbyAuth[] =
     "remote_access.host_allow_gnubby_auth";
 
+// Boolean that indicates whether the Chromoting host should allow connections
+// using relay servers.
+const char kRemoteAccessHostAllowRelayedConnection[] =
+    "remote_access.host_allow_relayed_connection";
+
+// String containing the UDP port range that the Chromoting host should used
+// when connecting to clients. The port range should be in the form:
+// <min_port>-<max_port>. E.g. 12400-12409.
+const char kRemoteAccessHostUdpPortRange[] =
+    "remote_access.host_udp_port_range";
+
 // The last used printer and its settings.
 const char kPrintPreviewStickySettings[] =
     "printing.print_preview_sticky_settings";

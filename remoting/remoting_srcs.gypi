@@ -73,6 +73,7 @@
       'jingle_glue/iq_sender.h',
       'jingle_glue/jingle_info_request.cc',
       'jingle_glue/jingle_info_request.h',
+      'jingle_glue/network_settings.cc',
       'jingle_glue/network_settings.h',
       'jingle_glue/signal_strategy.h',
       'jingle_glue/xmpp_signal_strategy.cc',

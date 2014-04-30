@@ -121,6 +121,7 @@
         'jingle_glue/iq_sender_unittest.cc',
         'jingle_glue/mock_objects.cc',
         'jingle_glue/mock_objects.h',
+        'jingle_glue/network_settings_unittest.cc',
         'protocol/authenticator_test_base.cc',
         'protocol/authenticator_test_base.h',
         'protocol/buffered_socket_writer_unittest.cc',
