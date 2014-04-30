@@ -22,7 +22,7 @@ unsigned SizesAttributeParser::findEffectiveSize(const String& attribute, PassRe
     return parser.effectiveSize();
 }
 
-bool SizesAttributeParser::calculateLengthInPixels(TokenIterator startToken, TokenIterator endToken, unsigned& result)
+bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, unsigned& result)
 {
     MediaQueryTokenType type = startToken->type();
     if (type == DimensionToken) {
@@ -38,16 +38,16 @@ bool SizesAttributeParser::calculateLengthInPixels(TokenIterator startToken, Tok
     return false;
 }
 
-static void reverseSkipIrrelevantTokens(TokenIterator& token, TokenIterator startToken)
+static void reverseSkipIrrelevantTokens(MediaQueryTokenIterator& token, MediaQueryTokenIterator startToken)
 {
-    TokenIterator endToken = token;
+    MediaQueryTokenIterator endToken = token;
     while (token != startToken && (token->type() == WhitespaceToken || token->type() == CommentToken || token->type() == EOFToken))
         --token;
     if (token != endToken)
         ++token;
 }
 
-static void reverseSkipUntilComponentStart(TokenIterator& token, TokenIterator startToken)
+static void reverseSkipUntilComponentStart(MediaQueryTokenIterator& token, MediaQueryTokenIterator startToken)
 {
     if (token == startToken)
         return;
@@ -75,10 +75,10 @@ bool SizesAttributeParser::mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQue
     return mediaQueryEvaluator.eval(mediaCondition.get());
 }
 
-bool SizesAttributeParser::parseMediaConditionAndLength(TokenIterator startToken, TokenIterator endToken)
+bool SizesAttributeParser::parseMediaConditionAndLength(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken)
 {
-    TokenIterator lengthTokenStart;
-    TokenIterator lengthTokenEnd;
+    MediaQueryTokenIterator lengthTokenStart;
+    MediaQueryTokenIterator lengthTokenEnd;
 
     reverseSkipIrrelevantTokens(endToken, startToken);
     lengthTokenEnd = endToken;
@@ -99,10 +99,10 @@ bool SizesAttributeParser::parse(Vector<MediaQueryToken>& tokens)
 {
     if (tokens.isEmpty())
         return false;
-    TokenIterator startToken = tokens.begin();
-    TokenIterator endToken;
+    MediaQueryTokenIterator startToken = tokens.begin();
+    MediaQueryTokenIterator endToken;
     // Split on a comma token, and send the result tokens to be parsed as (media-condition, length) pairs
-    for (TokenIterator token = tokens.begin(); token != tokens.end(); ++token) {
+    for (MediaQueryTokenIterator token = tokens.begin(); token != tokens.end(); ++token) {
         if (token->type() == CommaToken) {
             endToken = token;
             if (parseMediaConditionAndLength(startToken, endToken))

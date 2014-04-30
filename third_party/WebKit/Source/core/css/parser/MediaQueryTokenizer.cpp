@@ -134,6 +134,11 @@ MediaQueryToken MediaQueryTokenizer::plusOrFullStop(UChar cc)
     return MediaQueryToken(DelimiterToken, cc);
 }
 
+MediaQueryToken MediaQueryTokenizer::asterisk(UChar cc)
+{
+    return MediaQueryToken(DelimiterToken, cc);
+}
+
 MediaQueryToken MediaQueryTokenizer::comma(UChar cc)
 {
     return MediaQueryToken(CommaToken);

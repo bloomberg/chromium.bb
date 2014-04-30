@@ -25,9 +25,9 @@ private:
     }
 
     bool parse(Vector<MediaQueryToken>& tokens);
-    bool parseMediaConditionAndLength(TokenIterator startToken, TokenIterator endToken);
+    bool parseMediaConditionAndLength(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken);
     unsigned effectiveSize();
-    bool calculateLengthInPixels(TokenIterator startToken, TokenIterator endToken, unsigned& result);
+    bool calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, unsigned& result);
     bool mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition);
     unsigned effectiveSizeDefaultValue();
 

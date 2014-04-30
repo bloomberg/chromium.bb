@@ -20,7 +20,7 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const
     return MediaQueryParser(MediaQuerySetParser).parseImpl(tokens.begin(), tokens.end());
 }
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(TokenIterator token, TokenIterator endToken)
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(MediaQueryTokenIterator token, MediaQueryTokenIterator endToken)
 {
     return MediaQueryParser(MediaConditionParser).parseImpl(token, endToken);
 }
@@ -187,7 +187,7 @@ void MediaQueryParser::processToken(const MediaQueryToken& token)
 }
 
 // The state machine loop
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(TokenIterator token, TokenIterator endToken)
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(MediaQueryTokenIterator token, MediaQueryTokenIterator endToken)
 {
     for (; token != endToken; ++token)
         processToken(*token);

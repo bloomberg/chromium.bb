@@ -17,6 +17,7 @@ public:
     virtual PassRefPtr<MediaValues> copy() const OVERRIDE;
     virtual bool isSafeToSendToAnotherThread() const OVERRIDE;
     virtual bool computeLength(double value, CSSPrimitiveValue::UnitTypes, int& result) const OVERRIDE;
+    virtual bool computeLength(double value, CSSPrimitiveValue::UnitTypes, double& result) const OVERRIDE;
 
     virtual int viewportWidth() const OVERRIDE;
     virtual int viewportHeight() const OVERRIDE;

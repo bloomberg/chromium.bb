@@ -77,6 +77,11 @@ bool MediaValuesCached::computeLength(double value, CSSPrimitiveValue::UnitTypes
     return MediaValues::computeLength(value, type, m_data.defaultFontSize, m_data.viewportWidth, m_data.viewportHeight, result);
 }
 
+bool MediaValuesCached::computeLength(double value, CSSPrimitiveValue::UnitTypes type, double& result) const
+{
+    return MediaValues::computeLength(value, type, m_data.defaultFontSize, m_data.viewportWidth, m_data.viewportHeight, result);
+}
+
 bool MediaValuesCached::isSafeToSendToAnotherThread() const
 {
     return hasOneRef();

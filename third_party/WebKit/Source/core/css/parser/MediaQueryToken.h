@@ -12,25 +12,25 @@ namespace WebCore {
 
 enum MediaQueryTokenType {
     IdentToken = 0,
-    FunctionToken = 1,
-    DelimiterToken = 2,
-    NumberToken = 3,
-    PercentageToken = 4,
-    DimensionToken = 5,
-    WhitespaceToken = 6,
-    ColonToken = 7,
-    SemicolonToken = 8,
-    CommaToken = 9,
-    LeftParenthesisToken = 10,
-    RightParenthesisToken = 11,
-    LeftBracketToken = 12,
-    RightBracketToken = 13,
-    LeftBraceToken = 14,
-    RightBraceToken = 15,
-    StringToken = 15,
-    BadStringToken = 16,
-    EOFToken = 17,
-    CommentToken = 18,
+    FunctionToken,
+    DelimiterToken,
+    NumberToken,
+    PercentageToken,
+    DimensionToken,
+    WhitespaceToken,
+    ColonToken,
+    SemicolonToken,
+    CommaToken,
+    LeftParenthesisToken,
+    RightParenthesisToken,
+    LeftBracketToken,
+    RightBracketToken,
+    LeftBraceToken,
+    RightBraceToken,
+    StringToken,
+    BadStringToken,
+    EOFToken,
+    CommentToken,
 };
 
 enum NumericValueType {
@@ -62,11 +62,11 @@ public:
     String value() const { return m_value; }
     String textForUnitTests() const;
 
-    UChar delimiter() const { return m_delimiter; }
-    NumericValueType numericValueType() const { return m_numericValueType; }
-    double numericValue() const { return m_numericValue; }
-    CSSPrimitiveValue::UnitTypes unitType() const { return m_unit; }
+    UChar delimiter() const;
+    NumericValueType numericValueType() const;
+    double numericValue() const;
     BlockType blockType() const { return m_blockType; }
+    CSSPrimitiveValue::UnitTypes unitType() const { return m_unit; }
 
 private:
     MediaQueryTokenType m_type;
@@ -80,6 +80,8 @@ private:
 
     BlockType m_blockType;
 };
+
+typedef Vector<MediaQueryToken>::iterator MediaQueryTokenIterator;
 
 } // namespace
 

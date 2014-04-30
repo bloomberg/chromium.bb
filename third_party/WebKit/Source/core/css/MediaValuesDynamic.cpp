@@ -39,6 +39,16 @@ bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitType
         result);
 }
 
+bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitTypes type, double& result) const
+{
+    return MediaValues::computeLength(value,
+        type,
+        calculateDefaultFontSize(m_frame),
+        calculateViewportWidth(m_frame),
+        calculateViewportHeight(m_frame),
+        result);
+}
+
 bool MediaValuesDynamic::isSafeToSendToAnotherThread() const
 {
     return false;

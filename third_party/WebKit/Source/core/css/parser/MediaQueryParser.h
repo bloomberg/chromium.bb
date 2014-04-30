@@ -46,14 +46,11 @@ public:
     inline void setMediaFeature(const String& str) { m_mediaFeature = str; }
 };
 
-typedef Vector<MediaQueryToken> TokenList;
-typedef TokenList::iterator TokenIterator;
-
 class MediaQueryParser {
     STACK_ALLOCATED();
 public:
     static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaQuerySet(const String&);
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaCondition(TokenIterator, TokenIterator endToken);
+    static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaCondition(MediaQueryTokenIterator, MediaQueryTokenIterator endToken);
 
 private:
     enum ParserType {
@@ -64,7 +61,7 @@ private:
     MediaQueryParser(ParserType);
     virtual ~MediaQueryParser();
 
-    PassRefPtrWillBeRawPtr<MediaQuerySet> parseImpl(TokenIterator, TokenIterator endToken);
+    PassRefPtrWillBeRawPtr<MediaQuerySet> parseImpl(MediaQueryTokenIterator, MediaQueryTokenIterator endToken);
 
     void processToken(const MediaQueryToken&);
 

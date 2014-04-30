@@ -106,4 +106,22 @@ String MediaQueryToken::textForUnitTests() const
     return String();
 }
 
+UChar MediaQueryToken::delimiter() const
+{
+    ASSERT(m_type == DelimiterToken);
+    return m_delimiter;
+}
+
+NumericValueType MediaQueryToken::numericValueType() const
+{
+    ASSERT(m_type == NumberToken || m_type == PercentageToken || m_type == DimensionToken);
+    return m_numericValueType;
+}
+
+double MediaQueryToken::numericValue() const
+{
+    ASSERT(m_type == NumberToken || m_type == PercentageToken || m_type == DimensionToken);
+    return m_numericValue;
+}
+
 } // namespace WebCore

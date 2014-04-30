@@ -63,6 +63,7 @@ private:
     MediaQueryToken plusOrFullStop(UChar);
     MediaQueryToken comma(UChar);
     MediaQueryToken hyphenMinus(UChar);
+    MediaQueryToken asterisk(UChar);
     MediaQueryToken solidus(UChar);
     MediaQueryToken colon(UChar);
     MediaQueryToken semiColon(UChar);
