@@ -45,6 +45,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "sync/protocol/session_specifics.pb.h"
 
@@ -220,6 +221,51 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveRootWindow) {
   }
 }
 #endif  // USE_AURA
+
+// Verify that restored tabs have correct disposition. Only one tab should
+// have disposition->visibility state.
+// (http://crbug.com/155365 http://crbug.com/118269)
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+    RestoredTabsHaveCorrectVisibilityState) {
+  // Create tabs.
+  GURL test_page(ui_test_utils::GetTestUrl(base::FilePath(),
+      base::FilePath(FILE_PATH_LITERAL("tab-restore-visibilty.html"))));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), test_page, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), test_page, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Restart and session restore the tabs.
+  content::DOMMessageQueue message_queue;
+  Browser* restored = QuitBrowserAndRestore(browser(), 3);
+  for (int i = 0; i < 2; ++i) {
+    std::string message;
+    EXPECT_TRUE(message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"READY\"", message);
+  }
+
+  // There should be 3 restored tabs in the new browser.
+  TabStripModel* tab_strip_model = restored->tab_strip_model();
+  const int tabs = tab_strip_model->count();
+  ASSERT_EQ(3, tabs);
+
+  // The middle tab only should have visible disposition.
+  for (int i = 0; i < tabs; ++i) {
+    content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
+    std::string document_visibility_state;
+    const char kGetStateJS[] = "window.domAutomationController.send("
+        "window.document.visibilityState);";
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        contents, kGetStateJS, &document_visibility_state));
+    if (i == 1) {
+      EXPECT_EQ("visible", document_visibility_state);
+    } else {
+      EXPECT_EQ("hidden", document_visibility_state);
+    }
+  }
+}
 
 #if defined(OS_CHROMEOS)
 // Verify that session restore does not occur when a user opens a browser window
