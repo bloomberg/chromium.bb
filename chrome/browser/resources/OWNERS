@@ -10,4 +10,4 @@ xiyuan@chromium.org
 
 per-file component_extension_resources.grd=dgozman@chromium.org
 per-file sync_file_system_internals_resources.*=tzik@chromium.org
-per-file sync_setup_overlay.*=rsimha@chromium.org
+per-file sync_setup_overlay.*=tim@chromium.org
