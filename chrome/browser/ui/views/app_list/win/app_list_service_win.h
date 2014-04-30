@@ -6,42 +6,39 @@
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "chrome/browser/ui/app_list/app_list_service_views.h"
 
-namespace app_list{
-class AppListModel;
-}
+class ActivationTrackerWin;
 
-class AppListControllerDelegateWin;
-class AppListShower;
 template <typename T> struct DefaultSingletonTraits;
 
-class AppListServiceWin : public AppListServiceImpl {
+class AppListServiceWin : public AppListServiceViews {
  public:
-  AppListServiceWin();
   virtual ~AppListServiceWin();
 
   static AppListServiceWin* GetInstance();
-  void set_can_close(bool can_close);
-  void OnViewBeingDestroyed();
 
   // AppListService overrides:
   virtual void SetAppListNextPaintCallback(void (*callback)()) OVERRIDE;
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
   virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
-  virtual void DismissAppList() OVERRIDE;
-  virtual bool IsAppListVisible() const OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListServiceWin>;
+
+  // AppListServiceViews overrides:
+  virtual void OnViewBeingDestroyed();
+
+  // AppListShowerDelegate overrides:
+  virtual void OnViewCreated() OVERRIDE;
+  virtual void OnViewDismissed() OVERRIDE;
+  virtual void MoveNearCursor(app_list::AppListView* view) OVERRIDE;
+
+  AppListServiceWin();
 
   bool IsWarmupNeeded();
   void ScheduleWarmup();
@@ -54,11 +51,7 @@ class AppListServiceWin : public AppListServiceImpl {
   void OnLoadProfileForWarmup(Profile* initial_profile);
 
   bool enable_app_list_on_next_init_;
-
-  // Responsible for putting views on the screen.
-  scoped_ptr<AppListShower> shower_;
-
-  scoped_ptr<AppListControllerDelegateWin> controller_delegate_;
+  scoped_ptr<ActivationTrackerWin> activation_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceWin);
 };

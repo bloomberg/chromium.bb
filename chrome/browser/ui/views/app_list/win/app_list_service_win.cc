@@ -26,12 +26,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/app_list/app_list.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_factory.h"
-#include "chrome/browser/ui/app_list/app_list_shower.h"
-#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
@@ -47,7 +41,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/win/shell.h"
-#include "ui/gfx/screen.h"
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
@@ -249,43 +242,6 @@ void SetWindowAttributes(HWND hwnd) {
   ui::win::SetAppIconForWindow(icon_path, hwnd);
 }
 
-class AppListFactoryWin : public AppListFactory {
- public:
-  explicit AppListFactoryWin(AppListServiceWin* service)
-      : service_(service) {
-  }
-
-  virtual ~AppListFactoryWin() {
-  }
-
-  virtual AppList* CreateAppList(
-      Profile* profile,
-      AppListService* service,
-      const base::Closure& on_should_dismiss) OVERRIDE {
-    // The view delegate will be owned by the app list view. The app list view
-    // manages it's own lifetime.
-    AppListViewDelegate* view_delegate =
-        new AppListViewDelegate(profile,
-                                service->GetControllerDelegate());
-    app_list::AppListView* view = new app_list::AppListView(view_delegate);
-    gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-    view->InitAsBubbleAtFixedLocation(NULL,
-                                      &pagination_model_,
-                                      cursor,
-                                      views::BubbleBorder::FLOAT,
-                                      false /* border_accepts_events */);
-    SetWindowAttributes(view->GetHWND());
-    return new AppListWin(view, on_should_dismiss);
-  }
-
- private:
-  // PaginationModel that is shared across all views.
-  app_list::PaginationModel pagination_model_;
-  AppListServiceWin* service_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListFactoryWin);
-};
-
 }  // namespace
 
 // static
@@ -295,54 +251,18 @@ AppListServiceWin* AppListServiceWin::GetInstance() {
 }
 
 AppListServiceWin::AppListServiceWin()
-    : enable_app_list_on_next_init_(false),
-      shower_(new AppListShower(
-          scoped_ptr<AppListFactory>(new AppListFactoryWin(this)),
-          this)),
-      controller_delegate_(new AppListControllerDelegateWin(this)) {
+    : AppListServiceViews(scoped_ptr<AppListControllerDelegate>(
+          new AppListControllerDelegateWin(this))),
+      enable_app_list_on_next_init_(false) {
 }
 
 AppListServiceWin::~AppListServiceWin() {
 }
 
-void AppListServiceWin::set_can_close(bool can_close) {
-  shower_->set_can_close(can_close);
-}
-
-gfx::NativeWindow AppListServiceWin::GetAppListWindow() {
-  return shower_->GetWindow();
-}
-
-Profile* AppListServiceWin::GetCurrentAppListProfile() {
-  return shower_->profile();
-}
-
-AppListControllerDelegate* AppListServiceWin::GetControllerDelegate() {
-  return controller_delegate_.get();
-}
-
 void AppListServiceWin::ShowForProfile(Profile* requested_profile) {
-  DCHECK(requested_profile);
-  if (requested_profile->IsManaged())
-    return;
-
-  ScopedKeepAlive keep_alive;
-
+  AppListServiceViews::ShowForProfile(requested_profile);
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(SetDidRunForNDayActiveStats));
-
-  InvalidatePendingProfileLoads();
-  SetProfilePath(requested_profile->GetPath());
-  shower_->ShowForProfile(requested_profile);
-  RecordAppListLaunch();
-}
-
-void AppListServiceWin::DismissAppList() {
-  shower_->DismissAppList();
-}
-
-void AppListServiceWin::OnViewBeingDestroyed() {
-  shower_->HandleViewBeingDestroyed();
 }
 
 void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
@@ -350,7 +270,7 @@ void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
     return;
 
   base::Time before_warmup(base::Time::Now());
-  shower_->WarmupForProfile(initial_profile);
+  shower().WarmupForProfile(initial_profile);
   UMA_HISTOGRAM_TIMES("Apps.AppListWarmupDuration",
                       base::Time::Now() - before_warmup);
 }
@@ -380,15 +300,7 @@ void AppListServiceWin::Init(Profile* initial_profile) {
   ScheduleWarmup();
 
   MigrateAppLauncherEnabledPref();
-  PerformStartupChecks(initial_profile);
-}
-
-void AppListServiceWin::CreateForProfile(Profile* profile) {
-  shower_->CreateViewForProfile(profile);
-}
-
-bool AppListServiceWin::IsAppListVisible() const {
-  return shower_->IsAppListVisible();
+  AppListServiceViews::Init(initial_profile);
 }
 
 void AppListServiceWin::CreateShortcut() {
@@ -430,7 +342,7 @@ bool AppListServiceWin::IsWarmupNeeded() {
 
   // We only need to initialize the view if there's no view already created and
   // there's no profile loading to be shown.
-  return !shower_->HasView() && !profile_loader().IsAnyProfileLoading();
+  return !shower().HasView() && !profile_loader().IsAnyProfileLoading();
 }
 
 void AppListServiceWin::LoadProfileForWarmup() {
@@ -444,4 +356,22 @@ void AppListServiceWin::LoadProfileForWarmup() {
       profile_path,
       base::Bind(&AppListServiceWin::OnLoadProfileForWarmup,
                  base::Unretained(this)));
+}
+
+void AppListServiceWin::OnViewBeingDestroyed() {
+  activation_tracker_.reset();
+  AppListServiceViews::OnViewBeingDestroyed();
+}
+
+void AppListServiceWin::OnViewCreated() {
+  SetWindowAttributes(shower().app_list()->GetHWND());
+  activation_tracker_.reset(new ActivationTrackerWin(this));
+}
+
+void AppListServiceWin::OnViewDismissed() {
+  activation_tracker_->OnViewHidden();
+}
+
+void AppListServiceWin::MoveNearCursor(app_list::AppListView* view) {
+  AppListWin::MoveNearCursor(view);
 }
