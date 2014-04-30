@@ -106,10 +106,12 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
         sys.platform == 'android'):
       record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
       record_time_painting_disabled = data['record_time_painting_disabled_ms']
+      record_time_skrecord = data['record_time_skrecord_ms']
       results.Add('record_time_sk_null_canvas', 'ms',
           record_time_sk_null_canvas)
       results.Add('record_time_painting_disabled', 'ms',
           record_time_painting_disabled)
+      results.Add('record_time_skrecord', 'ms', record_time_skrecord)
 
     if self.options.report_detailed_results:
       pixels_rasterized_with_non_solid_color = \

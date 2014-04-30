@@ -483,7 +483,16 @@ TEST(PictureTest, RecordingModes) {
   EXPECT_EQ(NULL, content_layer_client.last_canvas());
   EXPECT_TRUE(picture);
 
-  EXPECT_EQ(3, Picture::RECORDING_MODE_COUNT);
+  picture = Picture::Create(layer_rect,
+                            &content_layer_client,
+                            tile_grid_info,
+                            false,
+                            0,
+                            Picture::RECORD_WITH_SKRECORD);
+  EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
+  EXPECT_TRUE(picture);
+
+  EXPECT_EQ(4, Picture::RECORDING_MODE_COUNT);
 }
 
 }  // namespace

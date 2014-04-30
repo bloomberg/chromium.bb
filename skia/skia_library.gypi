@@ -21,6 +21,7 @@
     '../third_party/skia/gyp/core.gypi',
     '../third_party/skia/gyp/effects.gypi',
     '../third_party/skia/gyp/pdf.gypi',
+    '../third_party/skia/gyp/record.gypi',
   ],
 
   'sources': [
@@ -127,6 +128,7 @@
     '../third_party/skia/include/pdf',
     '../third_party/skia/include/pipe',
     '../third_party/skia/include/ports',
+    '../third_party/skia/include/record',
     '../third_party/skia/include/utils',
     '../third_party/skia/src/core',
     '../third_party/skia/src/opts',

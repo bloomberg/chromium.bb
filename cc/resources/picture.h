@@ -22,6 +22,7 @@
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBBHFactory.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/record/SkRecording.h"
 #include "ui/gfx/rect.h"
 
 class SkPixelRef;
@@ -49,6 +50,7 @@ class CC_EXPORT Picture
     RECORD_NORMALLY,
     RECORD_WITH_SK_NULL_CANVAS,
     RECORD_WITH_PAINTING_DISABLED,
+    RECORD_WITH_SKRECORD,
     RECORDING_MODE_COUNT,  // Must be the last entry.
   };
 
@@ -156,6 +158,7 @@ class CC_EXPORT Picture
   gfx::Rect layer_rect_;
   gfx::Rect opaque_rect_;
   skia::RefPtr<SkPicture> picture_;
+  scoped_ptr<const EXPERIMENTAL::SkPlayback> playback_;
 
   typedef std::vector<scoped_refptr<Picture> > PictureVector;
   PictureVector clones_;

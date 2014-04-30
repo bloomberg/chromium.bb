@@ -25,7 +25,7 @@ namespace {
 const int kDefaultRecordRepeatCount = 100;
 
 const char* kModeSuffixes[Picture::RECORDING_MODE_COUNT] = {
-    "", "_sk_null_canvas", "_painting_disabled"};
+    "", "_sk_null_canvas", "_painting_disabled", "_skrecord"};
 
 base::TimeTicks Now() {
   return base::TimeTicks::IsThreadNowSupported()
