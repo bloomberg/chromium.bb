@@ -47,7 +47,7 @@ class PermissionMessage {
     kAudioCapture,
     kVideoCapture,
     kDownloads,
-    kFileSystemWrite,
+    kDeleted_FileSystemWrite,
     kMediaGalleriesAllGalleriesRead,
     kSerial,
     kSocketAnyHost,

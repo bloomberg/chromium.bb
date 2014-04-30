@@ -257,12 +257,8 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
   }
 
   // A special hack: If kFileSystemWriteDirectory would be displayed, hide
-  // kFileSystemDirectory and and kFileSystemWrite as the write directory
-  // message implies the other two.
+  // kFileSystemDirectory as the write directory message implies it.
   // TODO(sammc): Remove this. See http://crbug.com/284849.
-  SuppressMessage(messages,
-                  PermissionMessage::kFileSystemWriteDirectory,
-                  PermissionMessage::kFileSystemWrite);
   SuppressMessage(messages,
                   PermissionMessage::kFileSystemWriteDirectory,
                   PermissionMessage::kFileSystemDirectory);
@@ -335,17 +331,13 @@ bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
   PermissionMsgSet delta_warnings =
       base::STLSetDifference<PermissionMsgSet>(new_warnings, old_warnings);
 
-  // A special hack: kFileSystemWriteDirectory implies kFileSystemDirectory and
-  // kFileSystemWrite.
+  // A special hack: kFileSystemWriteDirectory implies kFileSystemDirectory.
   // TODO(sammc): Remove this. See http://crbug.com/284849.
   if (old_warnings.find(PermissionMessage(
           PermissionMessage::kFileSystemWriteDirectory, base::string16())) !=
       old_warnings.end()) {
     delta_warnings.erase(
         PermissionMessage(PermissionMessage::kFileSystemDirectory,
-                          base::string16()));
-    delta_warnings.erase(
-        PermissionMessage(PermissionMessage::kFileSystemWrite,
                           base::string16()));
   }
 

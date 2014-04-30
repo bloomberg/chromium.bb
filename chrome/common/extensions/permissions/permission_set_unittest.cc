@@ -754,6 +754,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kFileSystem);
   skip.insert(APIPermission::kFileSystemProvider);
   skip.insert(APIPermission::kFileSystemRetainEntries);
+  skip.insert(APIPermission::kFileSystemWrite);
   skip.insert(APIPermission::kSocket);
   skip.insert(APIPermission::kUsbDevice);
 
@@ -784,7 +785,7 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
   PermissionMessages messages =
       PermissionMessageProvider::Get()->GetPermissionMessages(
           permissions, Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(2u, messages.size());
+  ASSERT_EQ(1u, messages.size());
   std::sort(messages.begin(), messages.end());
   std::set<PermissionMessage::ID> ids;
   for (PermissionMessages::const_iterator it = messages.begin();
@@ -792,7 +793,6 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
     ids.insert(it->id());
   }
   EXPECT_TRUE(ContainsKey(ids, PermissionMessage::kFileSystemDirectory));
-  EXPECT_TRUE(ContainsKey(ids, PermissionMessage::kFileSystemWrite));
 }
 
 TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
@@ -891,9 +891,9 @@ TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
   EXPECT_TRUE(provider->IsPrivilegeIncrease(write_permissions,
                                             write_directory_permissions,
                                             Manifest::TYPE_PLATFORM_APP));
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(directory_permissions,
-                                            write_permissions,
-                                            Manifest::TYPE_PLATFORM_APP));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(directory_permissions,
+                                             write_permissions,
+                                             Manifest::TYPE_PLATFORM_APP));
   EXPECT_TRUE(provider->IsPrivilegeIncrease(directory_permissions,
                                             write_directory_permissions,
                                             Manifest::TYPE_PLATFORM_APP));

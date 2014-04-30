@@ -4382,9 +4382,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_DIRECTORY" desc="Permission string for read access to directories and their contents.">
         Read folders that you open in the application
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE" desc="Permission string for write access to the file system.">
-        Write to files that you open in the application
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE_DIRECTORY" desc="Permission string for write access to directories and their contents.">
         Write to files and folders that you open in the application
       </message>

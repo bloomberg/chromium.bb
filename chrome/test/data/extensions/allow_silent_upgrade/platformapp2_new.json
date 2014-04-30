@@ -6,6 +6,7 @@
   "permissions": [
     "http://example.com",
     "fileSystem",
+    "fileSystem.directory",
     "fileSystem.write"
   ]
 }
