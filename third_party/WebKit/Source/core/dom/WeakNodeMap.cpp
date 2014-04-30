@@ -64,7 +64,7 @@ WeakNodeMap::~WeakNodeMap()
     for (NodeToValue::iterator it = m_nodeToValue.begin(); it != m_nodeToValue.end(); ++it) {
         Node* node = it->key;
         if (allMaps.removedFromMap(node, this))
-            node->clearFlag(Node::HasWeakReferences);
+            node->clearFlag(Node::HasWeakReferencesFlag);
     }
 }
 
@@ -76,7 +76,7 @@ void WeakNodeMap::put(Node* node, int value)
 
     NodeToWeakNodeMaps& maps = NodeToWeakNodeMaps::instance();
     if (maps.addedToMap(node, this))
-        node->setFlag(Node::HasWeakReferences);
+        node->setFlag(Node::HasWeakReferencesFlag);
 }
 
 int WeakNodeMap::value(Node* node)

@@ -21,6 +21,8 @@ public:
     Node* node(int value);
 
 private:
+    // FIXME: This should not be friends with Node, we should expose a proper API and not
+    // let the map directly set flags.
     friend class Node;
     static void notifyNodeDestroyed(Node*);
 

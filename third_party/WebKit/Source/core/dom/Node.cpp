@@ -288,7 +288,7 @@ Node::~Node()
 
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
 
-    if (getFlag(HasWeakReferences))
+    if (getFlag(HasWeakReferencesFlag))
         WeakNodeMap::notifyNodeDestroyed(this);
 }
 
@@ -663,7 +663,7 @@ void Node::setIsLink(bool isLink)
 
 void Node::setNeedsStyleInvalidation()
 {
-    setFlag(NeedsStyleInvalidation);
+    setFlag(NeedsStyleInvalidationFlag);
     markAncestorsWithChildNeedsStyleInvalidation();
 }
 
@@ -2554,8 +2554,8 @@ void Node::setCustomElementState(CustomElementState newState)
     }
 
     ASSERT(isHTMLElement() || isSVGElement());
-    setFlag(CustomElement);
-    setFlag(newState == Upgraded, CustomElementUpgraded);
+    setFlag(CustomElementFlag);
+    setFlag(newState == Upgraded, CustomElementUpgradedFlag);
 
     if (oldState == NotCustomElement || newState == Upgraded)
         setNeedsStyleRecalc(SubtreeStyleChange); // :unresolved has changed
