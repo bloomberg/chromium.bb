@@ -7,11 +7,16 @@
 
 #include "base/macros.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
 class PrefService;
+class PrefValueMap;
 struct TemplateURLData;
 
 // DefaultSearchManager handles the loading and writing of the user's default
@@ -48,12 +53,17 @@ class DefaultSearchManager {
   static const char kAlternateURLs[];
   static const char kSearchTermsReplacementKey[];
   static const char kCreatedByPolicy[];
+  static const char kDisabledByPolicy[];
 
   explicit DefaultSearchManager(PrefService* pref_service);
   ~DefaultSearchManager();
 
   // Register prefs needed for tracking the default search provider.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Save default search provider pref values into the map provided.
+  static void AddPrefValueToMap(base::DictionaryValue* value,
+                                PrefValueMap* pref_value_map);
 
   // Read default search provider data from |pref_service_|.
   bool GetDefaultSearchEngine(TemplateURLData* url);

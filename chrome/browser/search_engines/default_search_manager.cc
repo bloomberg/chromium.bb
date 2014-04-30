@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/case_conversion.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/pref_value_map.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -67,6 +68,7 @@ const char DefaultSearchManager::kAlternateURLs[] = "alternate_urls";
 const char DefaultSearchManager::kSearchTermsReplacementKey[] =
     "search_terms_replacement_key";
 const char DefaultSearchManager::kCreatedByPolicy[] = "created_by_policy";
+const char DefaultSearchManager::kDisabledByPolicy[] = "disabled_by_policy";
 
 DefaultSearchManager::DefaultSearchManager(PrefService* pref_service)
     : pref_service_(pref_service) {
@@ -82,6 +84,12 @@ void DefaultSearchManager::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       kDefaultSearchProviderData,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+// static
+void DefaultSearchManager::AddPrefValueToMap(base::DictionaryValue* value,
+                                             PrefValueMap* pref_value_map) {
+  pref_value_map->SetValue(kDefaultSearchProviderData, value);
 }
 
 bool DefaultSearchManager::GetDefaultSearchEngine(TemplateURLData* data) {
