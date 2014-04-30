@@ -474,6 +474,7 @@
         'mac/scoped_sending_event_unittest.mm',
         'md5_unittest.cc',
         'memory/aligned_memory_unittest.cc',
+        'memory/discardable_memory_allocator_android_unittest.cc',
         'memory/discardable_memory_manager_unittest.cc',
         'memory/discardable_memory_unittest.cc',
         'memory/linked_ptr_unittest.cc',
@@ -753,11 +754,6 @@
             ['include', '^mac/objc_property_releaser_unittest\\.mm$'],
             ['include', '^mac/scoped_nsobject_unittest\\.mm$'],
             ['include', '^sys_string_conversions_mac_unittest\\.mm$'],
-          ],
-        }],
-        ['OS == "android" and _toolset == "target"', {
-          'sources': [
-            'memory/discardable_memory_ashmem_allocator_unittest.cc',
           ],
         }],
         ['OS == "android"', {

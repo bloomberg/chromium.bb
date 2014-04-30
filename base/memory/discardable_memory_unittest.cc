@@ -47,7 +47,7 @@ TEST_P(DiscardableMemoryTest, IsNamed) {
 
 bool IsNativeType(DiscardableMemoryType type) {
   return
-      type == DISCARDABLE_MEMORY_TYPE_ASHMEM ||
+      type == DISCARDABLE_MEMORY_TYPE_ANDROID ||
       type == DISCARDABLE_MEMORY_TYPE_MAC;
 }
 
@@ -91,8 +91,11 @@ TEST_P(DiscardableMemoryTest, DeleteWhileLocked) {
   ASSERT_TRUE(memory);
 }
 
+#if !defined(OS_ANDROID)
 // Test forced purging.
 TEST_P(DiscardableMemoryTest, Purge) {
+  ASSERT_TRUE(DiscardableMemory::PurgeForTestingSupported());
+
   const scoped_ptr<DiscardableMemory> memory(CreateLockedMemory(kSize));
   ASSERT_TRUE(memory);
   memory->Unlock();
@@ -100,6 +103,7 @@ TEST_P(DiscardableMemoryTest, Purge) {
   DiscardableMemory::PurgeForTesting();
   EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_PURGED, memory->Lock());
 }
+#endif  // !OS_ANDROID
 
 #if !defined(NDEBUG) && !defined(OS_ANDROID)
 // Death tests are not supported with Android APKs.

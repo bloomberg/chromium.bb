@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/discardable_memory_ashmem_allocator.h"
+#include "base/memory/discardable_memory_allocator_android.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -26,44 +26,43 @@ const size_t kPageSize = 4096;
 const size_t kMaxAllowedAllocationSize =
     std::numeric_limits<size_t>::max() - kPageSize + 1;
 
-class DiscardableMemoryAshmemAllocatorTest : public testing::Test {
+class DiscardableMemoryAllocatorTest : public testing::Test {
  protected:
-  DiscardableMemoryAshmemAllocatorTest()
+  DiscardableMemoryAllocatorTest()
       : allocator_(kAllocatorName, kAshmemRegionSizeForTesting) {
   }
 
-  DiscardableMemoryAshmemAllocator allocator_;
+  DiscardableMemoryAllocator allocator_;
 };
 
-void WriteToDiscardableAshmemChunk(DiscardableAshmemChunk* memory,
-                                   size_t size) {
+void WriteToDiscardableMemory(DiscardableMemory* memory, size_t size) {
   // Write to the first and the last pages only to avoid paging in up to 64
   // MBytes.
   static_cast<char*>(memory->Memory())[0] = 'a';
   static_cast<char*>(memory->Memory())[size - 1] = 'a';
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, Basic) {
+TEST_F(DiscardableMemoryAllocatorTest, Basic) {
   const size_t size = 128;
-  scoped_ptr<DiscardableAshmemChunk> memory(allocator_.Allocate(size));
+  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(size));
   ASSERT_TRUE(memory);
-  WriteToDiscardableAshmemChunk(memory.get(), size);
+  WriteToDiscardableMemory(memory.get(), size);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, ZeroAllocationIsNotSupported) {
-  scoped_ptr<DiscardableAshmemChunk> memory(allocator_.Allocate(0));
+TEST_F(DiscardableMemoryAllocatorTest, ZeroAllocationIsNotSupported) {
+  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(0));
   ASSERT_FALSE(memory);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, TooLargeAllocationFails) {
-  scoped_ptr<DiscardableAshmemChunk> memory(
+TEST_F(DiscardableMemoryAllocatorTest, TooLargeAllocationFails) {
+  scoped_ptr<DiscardableMemory> memory(
       allocator_.Allocate(kMaxAllowedAllocationSize + 1));
   // Page-alignment would have caused an overflow resulting in a small
   // allocation if the input size wasn't checked correctly.
   ASSERT_FALSE(memory);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest,
+TEST_F(DiscardableMemoryAllocatorTest,
        AshmemRegionsAreNotSmallerThanRequestedSize) {
   // The creation of the underlying ashmem region is expected to fail since
   // there should not be enough room in the address space. When ashmem creation
@@ -71,43 +70,43 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest,
   // size should not be smaller than the size the user requested so the
   // allocation here should just fail (and not succeed with the minimum ashmem
   // region size).
-  scoped_ptr<DiscardableAshmemChunk> memory(
+  scoped_ptr<DiscardableMemory> memory(
       allocator_.Allocate(kMaxAllowedAllocationSize));
   ASSERT_FALSE(memory);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest,
-       AshmemRegionsAreAlwaysPageAligned) {
+TEST_F(DiscardableMemoryAllocatorTest, AshmemRegionsAreAlwaysPageAligned) {
   // Use a separate allocator here so that we can override the ashmem region
   // size.
-  DiscardableMemoryAshmemAllocator allocator(
+  DiscardableMemoryAllocator allocator(
       kAllocatorName, kMaxAllowedAllocationSize);
-  scoped_ptr<DiscardableAshmemChunk> memory(allocator.Allocate(kPageSize));
+  scoped_ptr<DiscardableMemory> memory(allocator.Allocate(kPageSize));
   ASSERT_TRUE(memory);
   EXPECT_GT(kMaxAllowedAllocationSize, allocator.last_ashmem_region_size());
   ASSERT_TRUE(allocator.last_ashmem_region_size() % kPageSize == 0);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, LargeAllocation) {
+TEST_F(DiscardableMemoryAllocatorTest, LargeAllocation) {
+  // Note that large allocations should just use DiscardableMemoryAndroidSimple
+  // instead.
   const size_t size = 64 * 1024 * 1024;
-  scoped_ptr<DiscardableAshmemChunk> memory(allocator_.Allocate(size));
+  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(size));
   ASSERT_TRUE(memory);
-  WriteToDiscardableAshmemChunk(memory.get(), size);
+  WriteToDiscardableMemory(memory.get(), size);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, ChunksArePageAligned) {
-  scoped_ptr<DiscardableAshmemChunk> memory(allocator_.Allocate(kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, ChunksArePageAligned) {
+  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory);
   EXPECT_EQ(0U, reinterpret_cast<uint64_t>(memory->Memory()) % kPageSize);
-  WriteToDiscardableAshmemChunk(memory.get(), kPageSize);
+  WriteToDiscardableMemory(memory.get(), kPageSize);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, AllocateFreeAllocate) {
-  scoped_ptr<DiscardableAshmemChunk> memory(allocator_.Allocate(kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, AllocateFreeAllocate) {
+  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(kPageSize));
   // Extra allocation that prevents the region from being deleted when |memory|
   // gets deleted.
-  scoped_ptr<DiscardableAshmemChunk> memory_lock(
-      allocator_.Allocate(kPageSize));
+  scoped_ptr<DiscardableMemory> memory_lock(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory);
   void* const address = memory->Memory();
   memory->Unlock();  // Tests that the reused chunk is being locked correctly.
@@ -116,12 +115,11 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest, AllocateFreeAllocate) {
   ASSERT_TRUE(memory);
   // The previously freed chunk should be reused.
   EXPECT_EQ(address, memory->Memory());
-  WriteToDiscardableAshmemChunk(memory.get(), kPageSize);
+  WriteToDiscardableMemory(memory.get(), kPageSize);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest,
-       FreeingWholeAshmemRegionClosesAshmem) {
-  scoped_ptr<DiscardableAshmemChunk> memory(allocator_.Allocate(kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, FreeingWholeAshmemRegionClosesAshmem) {
+  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory);
   const int kMagic = 0xdeadbeef;
   *static_cast<int*>(memory->Memory()) = kMagic;
@@ -133,15 +131,12 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest,
   EXPECT_NE(kMagic, *static_cast<const int*>(memory->Memory()));
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, AllocateUsesBestFitAlgorithm) {
-  scoped_ptr<DiscardableAshmemChunk> memory1(
-      allocator_.Allocate(3 * kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, AllocateUsesBestFitAlgorithm) {
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(3 * kPageSize));
   ASSERT_TRUE(memory1);
-  scoped_ptr<DiscardableAshmemChunk> memory2(
-      allocator_.Allocate(2 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory2(allocator_.Allocate(2 * kPageSize));
   ASSERT_TRUE(memory2);
-  scoped_ptr<DiscardableAshmemChunk> memory3(
-      allocator_.Allocate(1 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory3(allocator_.Allocate(1 * kPageSize));
   ASSERT_TRUE(memory3);
   void* const address_3 = memory3->Memory();
   memory1.reset();
@@ -151,17 +146,17 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest, AllocateUsesBestFitAlgorithm) {
   ASSERT_TRUE(memory1);
   // The chunk whose size is closest to the requested size should be reused.
   EXPECT_EQ(address_3, memory1->Memory());
-  WriteToDiscardableAshmemChunk(memory1.get(), kPageSize);
+  WriteToDiscardableMemory(memory1.get(), kPageSize);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, MergeFreeChunks) {
-  scoped_ptr<DiscardableAshmemChunk> memory1(allocator_.Allocate(kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, MergeFreeChunks) {
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory1);
-  scoped_ptr<DiscardableAshmemChunk> memory2(allocator_.Allocate(kPageSize));
+  scoped_ptr<DiscardableMemory> memory2(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory2);
-  scoped_ptr<DiscardableAshmemChunk> memory3(allocator_.Allocate(kPageSize));
+  scoped_ptr<DiscardableMemory> memory3(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory3);
-  scoped_ptr<DiscardableAshmemChunk> memory4(allocator_.Allocate(kPageSize));
+  scoped_ptr<DiscardableMemory> memory4(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory4);
   void* const memory1_address = memory1->Memory();
   memory1.reset();
@@ -173,12 +168,10 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest, MergeFreeChunks) {
   EXPECT_EQ(memory1_address, memory1->Memory());
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, MergeFreeChunksAdvanced) {
-  scoped_ptr<DiscardableAshmemChunk> memory1(
-      allocator_.Allocate(4 * kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, MergeFreeChunksAdvanced) {
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory1);
-  scoped_ptr<DiscardableAshmemChunk> memory2(
-      allocator_.Allocate(4 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory2(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory2);
   void* const memory1_address = memory1->Memory();
   memory1.reset();
@@ -192,18 +185,15 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest, MergeFreeChunksAdvanced) {
       static_cast<const char*>(memory1_address) + 2 * kPageSize);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, MergeFreeChunksAdvanced2) {
-  scoped_ptr<DiscardableAshmemChunk> memory1(
-      allocator_.Allocate(4 * kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, MergeFreeChunksAdvanced2) {
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory1);
-  scoped_ptr<DiscardableAshmemChunk> memory2(
-      allocator_.Allocate(4 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory2(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory2);
   void* const memory1_address = memory1->Memory();
   memory1.reset();
   memory1 = allocator_.Allocate(2 * kPageSize);
-  scoped_ptr<DiscardableAshmemChunk> memory3(
-      allocator_.Allocate(2 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory3(allocator_.Allocate(2 * kPageSize));
   // At this point, the region should be in this state:
   // 8 KBytes (used), 8 KBytes (used), 16 KBytes (used).
   memory3.reset();
@@ -216,18 +206,14 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest, MergeFreeChunksAdvanced2) {
       static_cast<const char*>(memory1_address) + 2 * kPageSize);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest,
-       MergeFreeChunksAndDeleteAshmemRegion) {
-  scoped_ptr<DiscardableAshmemChunk> memory1(
-      allocator_.Allocate(4 * kPageSize));
+TEST_F(DiscardableMemoryAllocatorTest, MergeFreeChunksAndDeleteAshmemRegion) {
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory1);
-  scoped_ptr<DiscardableAshmemChunk> memory2(
-      allocator_.Allocate(4 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory2(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory2);
   memory1.reset();
   memory1 = allocator_.Allocate(2 * kPageSize);
-  scoped_ptr<DiscardableAshmemChunk> memory3(
-      allocator_.Allocate(2 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory3(allocator_.Allocate(2 * kPageSize));
   // At this point, the region should be in this state:
   // 8 KBytes (used), 8 KBytes (used), 16 KBytes (used).
   memory1.reset();
@@ -242,13 +228,13 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest,
   EXPECT_NE(kMagic, *static_cast<int*>(memory2->Memory()));
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest,
+TEST_F(DiscardableMemoryAllocatorTest,
      TooLargeFreeChunksDontCauseTooMuchFragmentationWhenRecycled) {
   // Keep |memory_1| below allocated so that the ashmem region doesn't get
   // closed when |memory_2| is deleted.
-  scoped_ptr<DiscardableAshmemChunk> memory_1(allocator_.Allocate(64 * 1024));
+  scoped_ptr<DiscardableMemory> memory_1(allocator_.Allocate(64 * 1024));
   ASSERT_TRUE(memory_1);
-  scoped_ptr<DiscardableAshmemChunk> memory_2(allocator_.Allocate(32 * 1024));
+  scoped_ptr<DiscardableMemory> memory_2(allocator_.Allocate(32 * 1024));
   ASSERT_TRUE(memory_2);
   void* const address = memory_2->Memory();
   memory_2.reset();
@@ -256,41 +242,40 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest,
   memory_2 = allocator_.Allocate(size);
   ASSERT_TRUE(memory_2);
   EXPECT_EQ(address, memory_2->Memory());
-  WriteToDiscardableAshmemChunk(memory_2.get(), size);
-  scoped_ptr<DiscardableAshmemChunk> memory_3(allocator_.Allocate(size));
+  WriteToDiscardableMemory(memory_2.get(), size);
+  scoped_ptr<DiscardableMemory> memory_3(allocator_.Allocate(size));
   // The unused tail (16 KBytes large) of the previously freed chunk should be
   // reused.
   EXPECT_EQ(static_cast<char*>(address) + size, memory_3->Memory());
-  WriteToDiscardableAshmemChunk(memory_3.get(), size);
+  WriteToDiscardableMemory(memory_3.get(), size);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest, UseMultipleAshmemRegions) {
+TEST_F(DiscardableMemoryAllocatorTest, UseMultipleAshmemRegions) {
   // Leave one page untouched at the end of the ashmem region.
   const size_t size = kAshmemRegionSizeForTesting - kPageSize;
-  scoped_ptr<DiscardableAshmemChunk> memory1(allocator_.Allocate(size));
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(size));
   ASSERT_TRUE(memory1);
-  WriteToDiscardableAshmemChunk(memory1.get(), size);
+  WriteToDiscardableMemory(memory1.get(), size);
 
-  scoped_ptr<DiscardableAshmemChunk> memory2(
+  scoped_ptr<DiscardableMemory> memory2(
       allocator_.Allocate(kAshmemRegionSizeForTesting));
   ASSERT_TRUE(memory2);
-  WriteToDiscardableAshmemChunk(memory2.get(), kAshmemRegionSizeForTesting);
+  WriteToDiscardableMemory(memory2.get(), kAshmemRegionSizeForTesting);
   // The last page of the first ashmem region should be used for this
   // allocation.
-  scoped_ptr<DiscardableAshmemChunk> memory3(allocator_.Allocate(kPageSize));
+  scoped_ptr<DiscardableMemory> memory3(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory3);
-  WriteToDiscardableAshmemChunk(memory3.get(), kPageSize);
+  WriteToDiscardableMemory(memory3.get(), kPageSize);
   EXPECT_EQ(memory3->Memory(), static_cast<char*>(memory1->Memory()) + size);
 }
 
-TEST_F(DiscardableMemoryAshmemAllocatorTest,
+TEST_F(DiscardableMemoryAllocatorTest,
        HighestAllocatedChunkPointerIsUpdatedWhenHighestChunkGetsSplit) {
   // Prevents the ashmem region from getting closed when |memory2| gets freed.
-  scoped_ptr<DiscardableAshmemChunk> memory1(allocator_.Allocate(kPageSize));
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory1);
 
-  scoped_ptr<DiscardableAshmemChunk> memory2(
-      allocator_.Allocate(4 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory2(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory2);
 
   memory2.reset();
@@ -303,8 +288,7 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest,
 
   // Allocate more than 3 * |kPageSize| so that the free chunk of size 3 *
   // |kPageSize| is not reused and |highest_allocated_chunk_| gets used instead.
-  scoped_ptr<DiscardableAshmemChunk> memory3(
-      allocator_.Allocate(4 * kPageSize));
+  scoped_ptr<DiscardableMemory> memory3(allocator_.Allocate(4 * kPageSize));
   ASSERT_TRUE(memory3);
 
   // Deleting |memory3| (whose size is 4 * |kPageSize|) should result in a merge

@@ -304,6 +304,8 @@
           'memory/aligned_memory.h',
           'memory/discardable_memory.cc',
           'memory/discardable_memory.h',
+          'memory/discardable_memory_allocator_android.cc',
+          'memory/discardable_memory_allocator_android.h',
           'memory/discardable_memory_android.cc',
           'memory/discardable_memory_emulated.cc',
           'memory/discardable_memory_emulated.h',
@@ -767,14 +769,6 @@
             'sources/': [
               ['include', '^threading/platform_thread_linux\\.cc$'],
             ],
-          }],
-          ['OS == "android" and _toolset == "target"', {
-           'sources': [
-             'memory/discardable_memory_ashmem_allocator.cc',
-             'memory/discardable_memory_ashmem_allocator.h',
-             'memory/discardable_memory_ashmem.cc',
-             'memory/discardable_memory_ashmem.h',
-           ],
           }],
           ['OS == "android" and >(nacl_untrusted_build)==0', {
             'sources!': [

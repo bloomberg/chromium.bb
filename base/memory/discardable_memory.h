@@ -17,7 +17,7 @@ namespace base {
 
 enum DiscardableMemoryType {
   DISCARDABLE_MEMORY_TYPE_NONE,
-  DISCARDABLE_MEMORY_TYPE_ASHMEM,
+  DISCARDABLE_MEMORY_TYPE_ANDROID,
   DISCARDABLE_MEMORY_TYPE_MAC,
   DISCARDABLE_MEMORY_TYPE_EMULATED,
   DISCARDABLE_MEMORY_TYPE_MALLOC
@@ -114,6 +114,10 @@ class BASE_EXPORT DiscardableMemory {
   virtual void* Memory() const = 0;
 
   // Testing utility calls.
+
+  // Check whether a purge of all discardable memory in the system is supported.
+  // Use only for testing!
+  static bool PurgeForTestingSupported();
 
   // Purge all discardable memory in the system. This call has global effects
   // across all running processes, so it should only be used for testing!

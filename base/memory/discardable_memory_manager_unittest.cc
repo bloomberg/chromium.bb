@@ -19,7 +19,7 @@ class TestAllocationImpl : public internal::DiscardableMemoryManagerAllocation {
   virtual ~TestAllocationImpl() { DCHECK(!is_locked_); }
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock() OVERRIDE {
+  virtual bool AllocateAndAcquireLock(size_t bytes) OVERRIDE {
     bool was_allocated = is_allocated_;
     is_allocated_ = true;
     DCHECK(!is_locked_);

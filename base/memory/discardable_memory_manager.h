@@ -21,7 +21,7 @@ class DiscardableMemoryManagerAllocation {
   // Allocate and acquire a lock that prevents the allocation from being purged
   // by the system. Returns true if memory was previously allocated and is still
   // resident.
-  virtual bool AllocateAndAcquireLock() = 0;
+  virtual bool AllocateAndAcquireLock(size_t bytes) = 0;
 
   // Release a previously acquired lock on the allocation so that it can be
   // purged by the system.
