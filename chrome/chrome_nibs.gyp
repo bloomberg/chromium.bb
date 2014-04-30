@@ -21,7 +21,6 @@
     'chromium_code': 1,
   },
   'includes': [
-    '../build/common.gypi',
     'chrome_nibs.gypi',
   ],
   'target_defaults': {
