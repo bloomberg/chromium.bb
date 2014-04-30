@@ -697,7 +697,7 @@ void MessagePumpCFRunLoopBase::EnterExitRunLoop(CFRunLoopActivity activity) {
 }
 
 // Base version returns a standard NSAutoreleasePool.
-NSAutoreleasePool* MessagePumpCFRunLoopBase::CreateAutoreleasePool() {
+AutoreleasePoolType* MessagePumpCFRunLoopBase::CreateAutoreleasePool() {
   return [[NSAutoreleasePool alloc] init];
 }
 
@@ -909,7 +909,7 @@ MessagePumpCrApplication::~MessagePumpCrApplication() {
 // CrApplication is responsible for setting handlingSendEvent to true just
 // before it sends the event through the event handling mechanism, and
 // returning it to its previous value once the event has been sent.
-NSAutoreleasePool* MessagePumpCrApplication::CreateAutoreleasePool() {
+AutoreleasePoolType* MessagePumpCrApplication::CreateAutoreleasePool() {
   if (MessagePumpMac::IsHandlingSendEvent())
     return nil;
   return MessagePumpNSApplication::CreateAutoreleasePool();

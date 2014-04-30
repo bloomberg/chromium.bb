@@ -38,9 +38,7 @@
 
 #include "base/memory/weak_ptr.h"
 
-#if !defined(__OBJC__)
-class NSAutoreleasePool;
-#else  // !defined(__OBJC__)
+#if defined(__OBJC__)
 #if defined(OS_IOS)
 #import <Foundation/Foundation.h>
 #else
@@ -55,13 +53,29 @@ class NSAutoreleasePool;
 - (BOOL)isHandlingSendEvent;
 @end
 #endif  // !defined(OS_IOS)
-#endif  // !defined(__OBJC__)
+#endif  // defined(__OBJC__)
 
 namespace base {
 
 class MessagePumpInstrumentation;
 class RunLoop;
 class TimeTicks;
+
+// AutoreleasePoolType is a proxy type for autorelease pools. Its definition
+// depends on the translation unit (TU) in which this header appears. In pure
+// C++ TUs, it is defined as a forward C++ class declaration (that is never
+// defined), because autorelease pools are an Objective-C concept. In Automatic
+// Reference Counting (ARC) Objective-C TUs, it is similarly defined as a
+// forward C++ class declaration, because clang will not allow the type
+// "NSAutoreleasePool" in such TUs. Finally, in Manual Retain Release (MRR)
+// Objective-C TUs, it is a type alias for NSAutoreleasePool. In all cases, a
+// method that takes or returns an NSAutoreleasePool* can use
+// AutoreleasePoolType* instead.
+#if !defined(__OBJC__) || __has_feature(objc_arc)
+class AutoreleasePoolType;
+#else   // !defined(__OBJC__) || __has_feature(objc_arc)
+typedef NSAutoreleasePool AutoreleasePoolType;
+#endif  // !defined(__OBJC__) || __has_feature(objc_arc)
 
 class MessagePumpCFRunLoopBase : public MessagePump {
   // Needs access to CreateAutoreleasePool.
@@ -94,7 +108,7 @@ class MessagePumpCFRunLoopBase : public MessagePump {
   // In some cases, CreateAutoreleasePool may return nil intentionally to
   // preventing an autorelease pool from being created, allowing any
   // objects autoreleased by work to fall into the current autorelease pool.
-  virtual NSAutoreleasePool* CreateAutoreleasePool();
+  virtual AutoreleasePoolType* CreateAutoreleasePool();
 
   // Enables instrumentation of the MessagePump. See MessagePumpInstrumentation
   // in the implementation for details.
@@ -296,7 +310,7 @@ class MessagePumpCrApplication : public MessagePumpNSApplication {
  protected:
   // Returns nil if NSApp is currently in the middle of calling
   // -sendEvent.  Requires NSApp implementing CrAppProtocol.
-  virtual NSAutoreleasePool* CreateAutoreleasePool() OVERRIDE;
+  virtual AutoreleasePoolType* CreateAutoreleasePool() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCrApplication);
