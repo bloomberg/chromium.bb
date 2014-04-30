@@ -30,6 +30,7 @@
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScopedWindowFocusAllowedIndicator.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/WebKit/public/web/WebUserGestureToken.h"
 #include "v8/include/v8.h"
 
 // Message passing API example (in a content script):
@@ -102,6 +103,12 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     dispatcher_->ClearPortData(port_id);
   }
 
+  bool ShouldForwardUserGesture() {
+    return blink::WebUserGestureIndicator::isProcessingUserGesture() &&
+           !blink::WebUserGestureIndicator::currentUserGestureToken()
+                .wasForwarded();
+  }
+
   // Sends a message along the given channel.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
     content::RenderView* renderview = context()->GetRenderView();
@@ -121,9 +128,9 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     }
 
     renderview->Send(new ExtensionHostMsg_PostMessage(
-        renderview->GetRoutingID(), port_id,
-        Message(*v8::String::Utf8Value(args[1]),
-                blink::WebUserGestureIndicator::isProcessingUserGesture())));
+        renderview->GetRoutingID(),
+        port_id,
+        Message(*v8::String::Utf8Value(args[1]), ShouldForwardUserGesture())));
   }
 
   // Forcefully disconnects a port.
@@ -357,6 +364,7 @@ void MessagingBindings::DeliverMessage(
   scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
   if (message.user_gesture) {
     web_user_gesture.reset(new blink::WebScopedUserGesture);
+    blink::WebUserGestureIndicator::currentUserGestureToken().setForwarded();
     allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator);
   }
 

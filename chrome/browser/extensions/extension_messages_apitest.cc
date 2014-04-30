@@ -929,6 +929,38 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingUserGesture) {
           "    window.domAutomationController.send('' + response.result);\n"
           "  });\n"
           "});", receiver->id().c_str())));
+
+  // Messges sent from a setTimeout handler should not forward the user gesture
+  // again.
+  EXPECT_EQ(
+      "false",
+      ExecuteScriptInBackgroundPage(
+          sender->id(),
+          base::StringPrintf(
+              "chrome.test.runWithUserGesture(function() {\n"
+              "  window.setTimeout(function() {\n"
+              "    chrome.runtime.sendMessage('%s', {}, function(response)  {\n"
+              "      window.domAutomationController.send('' + "
+              "          response.result);\n"
+              "    });\n"
+              "  }, 0);\n"
+              "});",
+              receiver->id().c_str())));
+
+  // The user gesture should not be send back with the reply message, gestures
+  // are only forwarded once.
+  EXPECT_EQ(
+      "false",
+      ExecuteScriptInBackgroundPage(
+          sender->id(),
+          base::StringPrintf(
+              "chrome.test.runWithUserGesture(function() {\n"
+              "  chrome.runtime.sendMessage('%s', {}, function(response)  {\n"
+              "    window.domAutomationController.send('' + "
+              "        chrome.test.isProcessingUserGesture());\n"
+              "  });\n"
+              "});",
+              receiver->id().c_str())));
 }
 
 // Tests that a hosted app on a connectable site doesn't interfere with the
