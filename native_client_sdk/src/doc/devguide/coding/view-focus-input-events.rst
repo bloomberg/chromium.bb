@@ -29,19 +29,17 @@ change events and 2D graphics.
 Overview
 ========
 
-When a user interacts with the web page using a keyboard, mouse or
-some other input device, the browser generates input events.
-In a traditional web application, these input events are
-passed to and handled in JavaScript, typically through event listeners
-and event handlers. In a Native Client application, user interaction
-with an instance of a module (e.g., clicking inside the rectangle
-managed by a module) also generates input events, which are passed to
-the module. The browser also passes view change and focus events that
-affect a module's instance to the module. Native Client modules can
+When a user interacts with the web page using a keyboard, mouse or some other
+input device, the browser generates input events.  In a traditional web
+application, these input events are passed to and handled in JavaScript,
+typically through event listeners and event handlers. In a Native Client
+application, user interaction with an instance of a module (e.g., clicking
+inside the rectangle managed by a module) also generates input events, which
+are passed to the module. The browser also passes view change and focus events
+that affect a module's instance to the module. Native Client modules can
 override certain functions in the `pp::Instance
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_instance>`_
-class to handle input and browser events. These functions are listed in
-the table below:
+</native-client/pepper_stable/cpp/classpp_1_1_instance>`_ class to handle input
+and browser events. These functions are listed in the table below:
 
 
 ======================  ===============================  ====================
@@ -111,8 +109,8 @@ Function                  Event                            Use
 
 
 These interfaces are found in the `pp::Instance class
-<https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_instance>`_.
-The sections below provide examples of how to handle these events.
+</native-client/pepper_stable/cpp/classpp_1_1_instance>`_.  The sections below
+provide examples of how to handle these events.
 
 
 Handling browser events
@@ -156,8 +154,10 @@ old graphics context and allocates a new one.
 
 For more information about graphics contexts and how to manipulate images, see:
 
-* `pp::ImageData class <https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_image_data>`_
-* `pp::Graphics2D class <https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_graphics2_d>`_
+* `pp::ImageData class
+  </native-client/pepper_stable/cpp/classpp_1_1_image_data>`_
+* `pp::Graphics2D class
+  </native-client/pepper_stable/cpp/classpp_1_1_graphics2_d>`_
 
 
 DidChangeFocus()
@@ -210,25 +210,25 @@ events and ``RequestFilteringInputEvents()`` for keyboard events. For the
 
 
 ``RequestInputEvents()`` and ``RequestFilteringInputEvents()`` accept a
-combination of flags that identify the class of events that the
-instance is requesting to receive. Input event classes are defined in
-the `PP_InputEvent_Class
-<https://developers.google.com/native-client/dev/pepperc/group___enums.html#gafe68e3c1031daa4a6496845ff47649cd>`_
+combination of flags that identify the class of events that the instance is
+requesting to receive. Input event classes are defined in the
+`PP_InputEvent_Class
+</native-client/pepper_stable/c/group___enums.html#gafe68e3c1031daa4a6496845ff47649cd>`_
 enumeration in `ppb_input_event.h
-<https://developers.google.com/native-client/dev/pepperc/ppb__input__event_8h>`_.
+</native-client/pepper_stable/c/ppb__input__event_8h>`_.
 
 
 Determining and branching on event types
 ----------------------------------------
 
-In a typical implementation, the ``HandleInputEvent()`` function
-determines the type of each event using the ``GetType()`` function found
-in the ``InputEvent`` class. The ``HandleInputEvent()`` function then uses a
-switch statement to branch on the type of input event. Input events
-are defined in the `PP_InputEvent_Type
-<https://developers.google.com/native-client/dev/pepperc/group___enums.html#gaca7296cfec99fcb6646b7144d1d6a0c5>`_
+In a typical implementation, the ``HandleInputEvent()`` function determines the
+type of each event using the ``GetType()`` function found in the ``InputEvent``
+class. The ``HandleInputEvent()`` function then uses a switch statement to
+branch on the type of input event. Input events are defined in the
+`PP_InputEvent_Type
+</native-client/pepper_stable/c/group___enums.html#gaca7296cfec99fcb6646b7144d1d6a0c5>`_
 enumeration in `ppb_input_event.h
-<https://developers.google.com/native-client/dev/pepperc/ppb__input__event_8h>`_.
+</native-client/pepper_stable/c/ppb__input__event_8h>`_.
 
 .. naclcode::
 
@@ -309,13 +309,16 @@ determined.  The event types handled in the example code are
 ``MouseInputEvent``, ``WheelInputEvent``, and ``KeyboardInputEvent``.
 There are also ``TouchInputEvents``.  For the latest list of event types,
 see the `InputEvent documentation
-<https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_input_event>`_.
+</native-client/pepper_stable/c/classpp_1_1_input_event>`_.
 For reference information related to the these event classes, see the
 following documentation:
 
-* `pp::MouseInputEvent class <https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_mouse_input_event>`_
-* `pp::WheelInputEvent class <https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_wheel_input_event>`_
-* `pp::KeyboardInputEvent class <https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_keyboard_input_event>`_
+* `pp::MouseInputEvent class
+  </native-client/pepper_stable/c/classpp_1_1_mouse_input_event>`_
+* `pp::WheelInputEvent class
+  </native-client/pepper_stable/c/classpp_1_1_wheel_input_event>`_
+* `pp::KeyboardInputEvent class
+  </native-client/pepper_stable/c/classpp_1_1_keyboard_input_event>`_
 
 
 Threading and blocking

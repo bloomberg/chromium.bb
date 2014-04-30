@@ -259,10 +259,10 @@ pushed to the public beta channel three weeks before each release. As with any
 software, each release of Chrome may include changes to Native Client and the
 Pepper interfaces that may require modification to existing applications.
 However, modules compiled for one version of Pepper/Chrome should work with
-subsequent versions of Pepper/Chrome. The SDK includes multiple `versions
-<https://developers.google.com/native-client/version>`_ of the Pepper APIs to
-help developers make adjustments to API changes and take advantage of new
-features.
+subsequent versions of Pepper/Chrome. The SDK includes multiple versions of the
+Pepper APIs to help developers make adjustments to API changes and take
+advantage of new features: `stable </native-client/pepper_stable>`_, `beta
+</native-client/pepper_beta>`_ and `dev </native-client/pepper_dev>`_.
 
 Where to start
 ==============

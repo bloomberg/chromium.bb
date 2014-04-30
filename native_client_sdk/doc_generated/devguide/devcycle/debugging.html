@@ -89,7 +89,7 @@ following <a class="reference external" href="http://en.wikipedia.org/wiki/Envir
 call in the <a class="reference internal" href="/native-client/devguide/coding/message-system.html"><em>Pepper messaging system</em></a>. When the
 JavaScript code receives a message, its message event handler can call
 <a class="reference external" href="https://developer.mozilla.org/en/DOM/console.log">console.log()</a> to write
-the message to the JavaScript <a class="reference external" href="https://developers.google.com/chrome-developer-tools/docs/console">console</a> in
+the message to the JavaScript <a class="reference external" href="/devtools/docs/console-api">console</a> in
 Chrome&#8217;s Developer Tools.</p>
 </section><section id="debugging-with-printf">
 <h3 id="debugging-with-printf">Debugging with printf</h3>
@@ -359,15 +359,14 @@ and settings).</p>
 </dd>
 <dt><code>--nacl-debug-mask=&lt;nmf_url_mask1,nmf_url_mask2,...&gt;</code></dt>
 <dd><p class="first last">Specifies a set of debug mask patterns. This allows you to selectively
-choose to debug certain applications and not debug others. For example,
-if you only want to debug the NMF files for your applications at
-<code>https://example.com/app</code>, and no other NaCl applications found
-on the web, specify <code>--nacl-debug-mask=https://example.com/app/*.nmf</code>.
-This helps prevent accidentally debugging other NaCl applications if
-you like to leave the <code>--enable-nacl-debug</code> flag turned on.
-The pattern language for the mask follows <a class="reference external" href="http://developer.chrome.com/extensions/match_patterns">chrome extension match patterns</a>.
-The pattern set can be inverted by prefixing the pattern set with
-the <code>!</code> character.</p>
+choose to debug certain applications and not debug others. For example, if
+you only want to debug the NMF files for your applications at
+<code>https://example.com/app</code>, and no other NaCl applications found on the
+web, specify <code>--nacl-debug-mask=https://example.com/app/*.nmf</code>.  This
+helps prevent accidentally debugging other NaCl applications if you like
+to leave the <code>--enable-nacl-debug</code> flag turned on.  The pattern language
+for the mask follows <a class="reference external" href="/extensions/match_patterns">chrome extension match patterns</a>.  The pattern set can be inverted by
+prefixing the pattern set with the <code>!</code> character.</p>
 </dd>
 <dt><code>&lt;URL&gt;</code></dt>
 <dd><p class="first last">Specifies the URL Chrome should open when it launches. The local server

@@ -219,8 +219,7 @@ Run the SDK examples as packaged apps
 Each example can also be launched as a packaged app. For more information about
 using Native Client for packaged apps, see :ref:`Packaged appliction
 <distributing_packaged>`.  For general information about packaged apps, see the
-`Chrome apps documentation
-<http://developer.chrome.com/apps/about_apps.html>`_.
+`Chrome apps documentation </apps/about_apps>`_.
 
 Some Pepper features, such as TCP/UDP socket access, are only allowed in
 packaged apps. The examples that use these features must be run as packaged

@@ -17,7 +17,7 @@
 
 </div><p>This document describes how to distribute Portable Native Client applications
 on the web, and Native Client applications through the
-<a class="reference external" href="/chrome/web-store/docs/">Chrome Web Store</a> (CWS).</p>
+<a class="reference external" href="/webstore">Chrome Web Store</a> (CWS).</p>
 <section id="portable-native-client">
 <h2 id="portable-native-client">Portable Native Client</h2>
 <p>Portable Native Client is enabled by default for web pages, so no separate
@@ -41,11 +41,11 @@ x86-64, or ARM).</p>
 through the Chrome Web Store apply to applications that contain NaCl modules as
 well. Here are a few pointers to relevant documentation:</p>
 <ul class="small-gap">
-<li><a class="reference external" href="https://developers.google.com/chrome/web-store/docs/">CWS Overview</a></li>
-<li><a class="reference external" href="https://developers.google.com/chrome/web-store/docs/choosing">Choosing an App Type</a></li>
-<li><a class="reference external" href="http://developer.chrome.com/apps/about_apps.html">Getting started with packaged apps</a></li>
+<li><a class="reference external" href="/webstore">CWS Overview</a></li>
+<li><a class="reference external" href="/webstore/choosing">Choosing an App Type</a></li>
+<li><a class="reference external" href="/apps/about_apps">Getting started with packaged apps</a></li>
 <li><a class="reference external" href="https://developers.google.com/chrome/apps/docs/developers_guide">Hosted apps</a></li>
-<li><a class="reference external" href="http://developer.chrome.com/extensions/index.html">Chrome extensions</a></li>
+<li><a class="reference external" href="/extensions">Chrome extensions</a></li>
 </ul>
 <p>In this document, we&#8217;ll focus only on distribution issues specific to
 applications that contain NaCl modules.</p>
@@ -55,7 +55,7 @@ applications that contain NaCl modules.</p>
 the Chrome Web Store. This file contains all of the application parts: A Chrome
 Web Store manifest file (manifest.json), an icon, and all of the regular Native
 Client application files. Refer to
-<a class="reference external" href="https://developer.chrome.com/apps/about_apps.html">Packaged Apps</a>
+<a class="reference external" href="/apps/about_apps">Packaged Apps</a>
 for more information about creating a packaged application.</p>
 <section id="reducing-the-size-of-the-user-download-package">
 <h4 id="reducing-the-size-of-the-user-download-package">Reducing the size of the user download package</h4>
@@ -221,7 +221,7 @@ does not support multi-platform zip files.</p>
 <li><p class="first">Modify your application as necessary so that it uses the files for the
 correct user architecture.</p>
 <p>To reference architecture-specific files, use the JavaScript API
-<a class="reference external" href="http://developer.chrome.com/trunk/extensions/runtime.html#method-getPlatformInfo">chrome.runtime.getPlatformInfo()</a>.
+<a class="reference external" href="/extensions/runtime.html#method-getPlatformInfo">chrome.runtime.getPlatformInfo()</a>.
 As an example, if you have architecture-specific files in the directories
 <code>x86-64</code>, <code>x86-32</code>, and <code>arm</code>, you can use the following JavaScript
 code to create a path for the files:</p>
@@ -260,9 +260,7 @@ Store manifest file, just as you would for a JavaScript application that
 uses the HTML5 File API.</li>
 <li>For packaged applications, you can only use in-app purchases.</li>
 <li>You can place your application in the Google Web Store with access only to
-certain people for testing. See
-<a class="reference external" href="https://developers.google.com/chrome/web-store/docs/publish">Publishing to test accounts</a>
-for more information.</li>
+certain people for testing. See <a class="reference external" href="/webstore/publish">Publishing to test accounts</a> for more information.</li>
 </ul>
 </section></section><section id="extension">
 <h3 id="extension">Extension</h3>

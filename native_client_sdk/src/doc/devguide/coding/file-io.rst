@@ -13,8 +13,8 @@ Introduction
 ============
 
 This chapter describes how to use the `FileIO API
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_file_i_o>`_
-to read and write files using a local secure data store.
+</native-client/pepper_stable/cpp/classpp_1_1_file_i_o>`_ to read and write
+files using a local secure data store.
 
 You might use the File IO API with the URL Loading APIs to create an overall
 data download and caching solution for your NaCl applications. For example:
@@ -36,15 +36,12 @@ Reference information
 
 For reference information related to FileIO, see the following documentation:
 
-* `file_io.h
-  <https://developers.google.com/native-client/peppercpp/file__io_8h>`_ - API
-  to create a FileIO object
-* `file_ref.h
-  <https://developers.google.com/native-client/peppercpp/file__ref_8h>`_ - API
-  to create a file reference or "weak pointer" to a file in a file system
-* `file_system.h
-  <https://developers.google.com/native-client/peppercpp/file__system_8h>`_ -
-  API to create a file system associated with a file
+* `file_io.h </native-client/pepper_stable/cpp/file__io_8h>`_ - API to create a
+  FileIO object
+* `file_ref.h </native-client/pepper_stable/cpp/file__ref_8h>`_ - API to create
+  a file reference or "weak pointer" to a file in a file system
+* `file_system.h </native-client/pepper_stable/cpp/file__system_8h>`_ - API to
+  create a file system associated with a file
 
 Local file I/O
 ==============
@@ -67,11 +64,10 @@ Enabling local file I/O
 
 The easiest way to enable the writing of persistent local data is to include
 the `unlimitedStorage permission
-<http://developer.chrome.com/extensions/declare_permissions.html#unlimitedStorage>`_
-in your Chrome Web Store manifest file. With this permission you can use the
-Pepper FileIO API without the need to request disk space at run time. When
-the user installs the app Chrome displays a message announcing that the app
-writes to the local disk.
+</extensions/declare_permissions#unlimitedStorage>`_ in your Chrome Web Store
+manifest file. With this permission you can use the Pepper FileIO API without
+the need to request disk space at run time. When the user installs the app
+Chrome displays a message announcing that the app writes to the local disk.
 
 If you do not use the ``unlimitedStorage`` permission you must include
 JavaScript code that calls the `HTML5 Quota Management API

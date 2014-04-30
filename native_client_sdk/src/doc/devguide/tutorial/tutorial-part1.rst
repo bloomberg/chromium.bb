@@ -238,9 +238,9 @@ Populate the member function with code, as follows:
 
 See the Pepper API documentation for additional information about the
 `pp::Instance.HandleMessage
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_instance.html#a5dce8c8b36b1df7cfcc12e42397a35e8>`_
+</native-client/pepper_stable/cpp/classpp_1_1_instance.html#a5dce8c8b36b1df7cfcc12e42397a35e8>`_
 and `pp::Instance.PostMessage
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_instance.html#a67e888a4e4e23effe7a09625e73ecae9>`_
+</native-client/pepper_stable/cpp/classpp_1_1_instance.html#a67e888a4e4e23effe7a09625e73ecae9>`_
 member functions.
 
 Step 8: Compile the Native Client module and run the application again
@@ -282,9 +282,8 @@ Next steps
 * See the :doc:`Application Structure </devguide/coding/application-structure>`
   chapter in the Developer's Guide for information about how to structure a
   Native Client module.
-* Check the `C++ Reference
-  <https://developers.google.com/native-client/peppercpp>`_ for details about
-  how to use the Pepper APIs.
+* Check the `C++ Reference </native-client/pepper_stable/cpp>`_ for details
+  about how to use the Pepper APIs.
 * Browse through the source code of the SDK examples (in the ``examples``
   directory) to learn additional techniques for writing Native Client
   applications and using the Pepper APIs.

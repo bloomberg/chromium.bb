@@ -129,18 +129,16 @@ command line switch, or via <code>about://flags</code>.</p>
 </pre>
 </section></section><section id="files">
 <h3 id="files">files</h3>
-<p>The <code>files</code> field specifies a dictionary of file resources to be
-used by a Native Client application. This is not supported and
-not needed by Portable Native Client applications (use the PPAPI
-<a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_u_r_l_loader">URL Loader interfaces</a>
-to load resources instead). However, the <code>files</code> manifest field
-is important for dynamically linked executables, which must
-load files before PPAPI is initialized. The <code>files</code> dictionary
-should include the main dynamic program and its dynamic libraries.
-There should be one file entry that corresponds to each a
-dynamic library. Each file entry is a dictionary of supported architectures
-and the URLs where the appropriate Native Client shared object
-(<code>.so</code>) for that architecture may be found.</p>
+<p>The <code>files</code> field specifies a dictionary of file resources to be used by a
+Native Client application. This is not supported and not needed by Portable
+Native Client applications (use the PPAPI <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_u_r_l_loader">URL Loader interfaces</a> to load resources
+instead). However, the <code>files</code> manifest field is important for dynamically
+linked executables, which must load files before PPAPI is initialized. The
+<code>files</code> dictionary should include the main dynamic program and its dynamic
+libraries.  There should be one file entry that corresponds to each a dynamic
+library. Each file entry is a dictionary of supported architectures and the
+URLs where the appropriate Native Client shared object (<code>.so</code>) for that
+architecture may be found.</p>
 <p>Since <code>program</code> is used to refer to the dynamic linker that comes
 with the NaCl port of glibc, the main program is specified in the
 <code>files</code> dictionary. The main program is specified under the

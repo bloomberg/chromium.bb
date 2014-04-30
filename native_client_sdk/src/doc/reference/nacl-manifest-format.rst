@@ -133,19 +133,17 @@ Example of a ``program`` for dynamically linked Native Client executables
 files
 -----
 
-The ``files`` field specifies a dictionary of file resources to be 
-used by a Native Client application. This is not supported and
-not needed by Portable Native Client applications (use the PPAPI
-`URL Loader interfaces
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_u_r_l_loader>`_
-to load resources instead). However, the ``files`` manifest field
-is important for dynamically linked executables, which must
-load files before PPAPI is initialized. The ``files`` dictionary
-should include the main dynamic program and its dynamic libraries.
-There should be one file entry that corresponds to each a
-dynamic library. Each file entry is a dictionary of supported architectures
-and the URLs where the appropriate Native Client shared object
-(``.so``) for that architecture may be found.
+The ``files`` field specifies a dictionary of file resources to be used by a
+Native Client application. This is not supported and not needed by Portable
+Native Client applications (use the PPAPI `URL Loader interfaces
+</native-client/pepper_stable/cpp/classpp_1_1_u_r_l_loader>`_ to load resources
+instead). However, the ``files`` manifest field is important for dynamically
+linked executables, which must load files before PPAPI is initialized. The
+``files`` dictionary should include the main dynamic program and its dynamic
+libraries.  There should be one file entry that corresponds to each a dynamic
+library. Each file entry is a dictionary of supported architectures and the
+URLs where the appropriate Native Client shared object (``.so``) for that
+architecture may be found.
 
 Since ``program`` is used to refer to the dynamic linker that comes
 with the NaCl port of glibc, the main program is specified in the

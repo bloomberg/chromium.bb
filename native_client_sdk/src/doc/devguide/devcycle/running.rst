@@ -278,10 +278,8 @@ placeholders:
 Put the icons in the same directory as the CWS manifest file. For more
 information about CWS manifest files and application icons, see:
 
-* `Chrome Web Store Tutorial: Getting Started
-  <https://developers.google.com/chrome/web-store/docs/get_started_simple>`_
-* `Chrome Web Store Formats: Manifest Files
-  <http://code.google.com/chrome/extensions/manifest.html>`_
+* `Chrome Web Store Tutorial: Getting Started </webstore/get_started_simple>`_
+* `Chrome Web Store Formats: Manifest Files </extensions/manifest>`_
 
 Technique 1: Local server
 =========================
@@ -336,8 +334,7 @@ extension:
 
 For additional information about how to create CWS metadata and load your
 application into Chrome (including troubleshooting information), see the
-`Chrome Web Store Tutorial: Getting Started
-<https://developers.google.com/chrome/web-store/docs/get_started_simple>`_.
+`Chrome Web Store Tutorial: Getting Started </webstore/get_started_simple>`_.
 
 See also :ref:`run_sdk_examples_as_packaged`.
 
@@ -387,8 +384,7 @@ extension:
 
 For additional information about how to create CWS metadata and load your
 application into Chrome (including troubleshooting information), see the
-`Chrome Web Store Tutorial: Getting Started
-<https://developers.google.com/chrome/web-store/docs/get_started_simple>`_.
+`Chrome Web Store Tutorial: Getting Started </webstore/get_started_simple>`_.
 
 Technique 4: Chrome Web Store application with trusted testers
 ==============================================================
@@ -467,10 +463,8 @@ is how to do so:
 
 To publish an application to the world after publishing it to test accounts,
 you must first unpublish the application. For additional information see
-`Publishing Your App
-<https://developers.google.com/chrome/web-store/docs/publish>`_, and in
-particular `Publishing to test accounts
-<https://developers.google.com/chrome/web-store/docs/publish#testaccounts>`_.
+`Publishing Your App </webstore/docs/publish>`_, and in particular `Publishing
+to test accounts </webstore/publish#testaccounts>`_.
 
 .. |menu-icon| image:: /images/menu-icon.png
 .. |extensions| image:: /images/extensions-management.png

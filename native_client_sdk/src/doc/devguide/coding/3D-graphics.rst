@@ -119,10 +119,9 @@ as well as texture and vertex data accordingly:
 Vetting the driver in the Chrome Web Store
 ------------------------------------------
 
-If you choose to place your application in the `Chrome Web
-Store <https://developers.google.com/chrome/web-store/docs/>`_, its Web Store
-`manifest file <http://code.google.com/chrome/extensions/manifest.html>`_ can
-include the ``webgl`` feature in the requirements parameter. It looks like this:
+If you choose to place your application in the `Chrome Web Store </webstore>`_,
+its Web Store `manifest file </extensions/manifest>`_ can include the ``webgl``
+feature in the requirements parameter. It looks like this:
 
 .. naclcode::
 
@@ -150,8 +149,7 @@ been disabled."
 
 The manifest-based check applies only to downloads directly from the Chrome Web
 Store. It is not performed when an application is loaded via `inline
-installation
-<https://developers.google.com/chrome/web-store/docs/inline_installation>`_.
+installation </webstore/inline_installation>`_.
 
 What to do when there are problems
 ----------------------------------
@@ -263,12 +261,11 @@ for more info.
 Use the Pepper API
 ------------------
 
-Your code can call the Pepper `PPB_OpenGLES2
-<https://developers.google.com/native-client/pepperc/struct_p_p_b___open_g_l_e_s2>`_
-API directly, as with any Pepper interface. When you write in this way, each
-invocation of an OpenGL ES 2.0 function must begin with a reference to the
-Pepper interface, and the first argument is the graphics context. To invoke the
-function ``glCompileShader``, your code might look like:
+Your code can call the Pepper PPB_OpenGLES2 API directly, as with any Pepper
+interface. When you write in this way, each invocation of an OpenGL ES 2.0
+function must begin with a reference to the Pepper interface, and the first
+argument is the graphics context. To invoke the function ``glCompileShader``,
+your code might look like:
 
 .. naclcode::
 
@@ -302,9 +299,9 @@ lengthy operations on the Native Client thread can steal cycles from Chrome, and
 performing blocking operations on the Native Client thread can bring your app to
 a standstill.
 
-Native Client uses callback functions to synchronize the main threads of the two
-processes. Only certain Pepper functions use callbacks; `SwapBuffers
-<https://developers.google.com/native-client/pepperc/struct_p_p_b___graphics3_d__1__0#a293c6941c0da084267ffba3954793497>`_
+Native Client uses callback functions to synchronize the main threads of the
+two processes. Only certain Pepper functions use callbacks; `SwapBuffers
+</native-client/pepper_stable/c/struct_p_p_b___graphics3_d__1__0#a293c6941c0da084267ffba3954793497>`_
 is one.
 
 ``SwapBuffers`` and its callback function

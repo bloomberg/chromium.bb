@@ -90,10 +90,10 @@ manifest file and a Native Client manifest file.
 
 A **Chrome Web Store manifest file** is a file with information about a web
 application that is published in the Chrome Web Store. This file, named
-``manifest.json``, is required for applications that are published in the Chrome
-Web Store. For more information about this file see :doc:`Distributing Your
-Application <../distributing>`.  and the `Chrome Web Store manifest file format
-<http://code.google.com/chrome/extensions/manifest.html>`_.
+``manifest.json``, is required for applications that are published in the
+Chrome Web Store. For more information about this file see :doc:`Distributing
+Your Application <../distributing>`.  and the `Chrome Web Store manifest file
+format </extensions/manifest>`_.
 
 A **Native Client manifest file** is a file that specifies which Native Client
 module (executable) to load. For PNaCl it specifies a single portable

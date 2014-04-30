@@ -32,10 +32,8 @@
 <h2 id="overview">Overview</h2>
 <p>This tutorial shows how to convert the finished PNaCl web application from
 <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html"><em>Part 1</em></a> to use the Native Client SDK build system and
-common JavaScript files. It also demonstrates some techniques to make your
-web application <cite>Content Security Policy (CSP)-compliant
-&lt;http://developer.chrome.com/apps/contentSecurityPolicy.html&gt;</cite>, which is
-necessary for <a class="reference external" href="https://developer.chrome.com/apps/about_apps.html">Chrome Apps</a>.</p>
+common JavaScript files. It also demonstrates some techniques to make your web
+application <a class="reference external" href="/apps/contentSecurityPolicy">Content Security Policy (CSP)-compliant</a>, which is necessary for <a class="reference external" href="/apps/about_apps">Chrome Apps</a>.</p>
 <p>Using the Native Client SDK build system makes it easy to build with all of the
 SDK toolchains, and switch between the Debug and Release configurations. It
 also simplifies the makefiles for your project, as we&#8217;ll see in the next
@@ -144,8 +142,8 @@ is called <code>part2_arm.nexe</code>.</dd>
 <dd>A list of libraries that this executable needs to link against. The library
 search path is already set up to only look in the directory for the current
 toolchain and architecture. In this example, we link against <code>ppapi_cpp</code>
-and <code>ppapi</code>. <code>ppapi_cpp</code> is needed to use the <a class="reference external" href="https://developers.google.com/native-client/peppercpp/">Pepper C++ interface</a>. <code>ppapi</code> is
-needed for communicating with the browser.</dd>
+and <code>ppapi</code>. <code>ppapi_cpp</code> is needed to use the <a class="reference external" href="/native-client/pepper_stable/cpp/">Pepper C++ interface</a>. <code>ppapi</code> is needed for communicating
+with the browser.</dd>
 <dt>CFLAGS</dt>
 <dd>A list of extra flags to pass to the compiler. In this example, we pass
 <code>-Wall</code>, which turns on all warnings.</dd>
@@ -209,13 +207,13 @@ $(eval $(call NMF_RULE,$(TARGET),))
 </pre>
 </section></section><section id="making-index-html-work-for-chrome-apps">
 <h2 id="making-index-html-work-for-chrome-apps">Making index.html work for Chrome Apps</h2>
-<p>This section describes the changes necessary to make the HTML and JavaScript
-in part1 CSP-compliant. This is required if you want to build a <a class="reference external" href="https://developer.chrome.com/apps/about_apps.html">Chrome App</a>, but is not necessary
-if you want to use PNaCl on the open web.</p>
+<p>This section describes the changes necessary to make the HTML and JavaScript in
+part1 CSP-compliant. This is required if you want to build a <a class="reference external" href="/apps/about_apps">Chrome App</a>, but is not necessary if you want to use PNaCl on the open
+web.</p>
 <section id="csp-rules">
 <h3 id="csp-rules">CSP rules</h3>
-<p><a class="reference external" href="http://developer.chrome.com/apps/contentSecurityPolicy.html#what">Chrome Apps CSP</a>
-restricts you from doing the following:</p>
+<p><a class="reference external" href="/apps/contentSecurityPolicy#what">Chrome Apps CSP</a> restricts you from doing
+the following:</p>
 <ul class="small-gap">
 <li>You can’t use inline scripting in your Chrome App pages. The restriction
 bans both <code>&lt;script&gt;</code> blocks and event handlers (<code>&lt;button onclick=&quot;...&quot;&gt;</code>).</li>

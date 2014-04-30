@@ -37,8 +37,8 @@
 
 </div><section id="introduction">
 <h2 id="introduction">Introduction</h2>
-<p>This chapter describes how to use the <a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_file_i_o">FileIO API</a>
-to read and write files using a local secure data store.</p>
+<p>This chapter describes how to use the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_file_i_o">FileIO API</a> to read and write
+files using a local secure data store.</p>
 <p>You might use the File IO API with the URL Loading APIs to create an overall
 data download and caching solution for your NaCl applications. For example:</p>
 <ol class="arabic simple">
@@ -57,12 +57,12 @@ application.</li>
 <h2 id="reference-information">Reference information</h2>
 <p>For reference information related to FileIO, see the following documentation:</p>
 <ul class="small-gap">
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/file__io_8h">file_io.h</a> - API
-to create a FileIO object</li>
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/file__ref_8h">file_ref.h</a> - API
-to create a file reference or &#8220;weak pointer&#8221; to a file in a file system</li>
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/file__system_8h">file_system.h</a> -
-API to create a file system associated with a file</li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/file__io_8h">file_io.h</a> - API to create a
+FileIO object</li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/file__ref_8h">file_ref.h</a> - API to create
+a file reference or &#8220;weak pointer&#8221; to a file in a file system</li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/file__system_8h">file_system.h</a> - API to
+create a file system associated with a file</li>
 </ul>
 </section><section id="local-file-i-o">
 <h2 id="local-file-i-o">Local file I/O</h2>
@@ -77,11 +77,10 @@ use, other than the actual space available on the local drive.</p>
 <section id="enabling-local-file-i-o">
 <span id="enabling-file-access"></span><span id="quota-management"></span><h3 id="enabling-local-file-i-o"><span id="enabling-file-access"></span><span id="quota-management"></span>Enabling local file I/O</h3>
 <p>The easiest way to enable the writing of persistent local data is to include
-the <a class="reference external" href="http://developer.chrome.com/extensions/declare_permissions.html#unlimitedStorage">unlimitedStorage permission</a>
-in your Chrome Web Store manifest file. With this permission you can use the
-Pepper FileIO API without the need to request disk space at run time. When
-the user installs the app Chrome displays a message announcing that the app
-writes to the local disk.</p>
+the <a class="reference external" href="/extensions/declare_permissions#unlimitedStorage">unlimitedStorage permission</a> in your Chrome Web Store
+manifest file. With this permission you can use the Pepper FileIO API without
+the need to request disk space at run time. When the user installs the app
+Chrome displays a message announcing that the app writes to the local disk.</p>
 <p>If you do not use the <code>unlimitedStorage</code> permission you must include
 JavaScript code that calls the <a class="reference external" href="http://updates.html5rocks.com/2011/11/Quota-Management-API-Fast-Facts">HTML5 Quota Management API</a> to
 explicitly request local disk space before using the FileIO API. In this case

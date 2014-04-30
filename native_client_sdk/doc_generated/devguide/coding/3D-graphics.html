@@ -94,10 +94,9 @@ than or equal to the number of simultaneous textures you need.</li>
 </ul>
 </section></section><section id="vetting-the-driver-in-the-chrome-web-store">
 <h3 id="vetting-the-driver-in-the-chrome-web-store">Vetting the driver in the Chrome Web Store</h3>
-<p>If you choose to place your application in the <a class="reference external" href="https://developers.google.com/chrome/web-store/docs/">Chrome Web
-Store</a>, its Web Store
-<a class="reference external" href="http://code.google.com/chrome/extensions/manifest.html">manifest file</a> can
-include the <code>webgl</code> feature in the requirements parameter. It looks like this:</p>
+<p>If you choose to place your application in the <a class="reference external" href="/webstore">Chrome Web Store</a>,
+its Web Store <a class="reference external" href="/extensions/manifest">manifest file</a> can include the <code>webgl</code>
+feature in the requirements parameter. It looks like this:</p>
 <pre class="prettyprint">
 &quot;requirements&quot;: {
   &quot;3D&quot;: {
@@ -119,7 +118,7 @@ the install page, and if there is a problem, the browser will display the
 message &#8220;This application is not supported on this computer. Installation has
 been disabled.&#8221;</p>
 <p>The manifest-based check applies only to downloads directly from the Chrome Web
-Store. It is not performed when an application is loaded via <a class="reference external" href="https://developers.google.com/chrome/web-store/docs/inline_installation">inline
+Store. It is not performed when an application is loaded via <a class="reference external" href="/webstore/inline_installation">inline
 installation</a>.</p>
 </section><section id="what-to-do-when-there-are-problems">
 <h3 id="what-to-do-when-there-are-problems">What to do when there are problems</h3>
@@ -214,11 +213,11 @@ hardware support exists). See <a class="reference external" href="http://www.alt
 for more info.</p>
 </section><section id="use-the-pepper-api">
 <h3 id="use-the-pepper-api">Use the Pepper API</h3>
-<p>Your code can call the Pepper <a class="reference external" href="https://developers.google.com/native-client/pepperc/struct_p_p_b___open_g_l_e_s2">PPB_OpenGLES2</a>
-API directly, as with any Pepper interface. When you write in this way, each
-invocation of an OpenGL ES 2.0 function must begin with a reference to the
-Pepper interface, and the first argument is the graphics context. To invoke the
-function <code>glCompileShader</code>, your code might look like:</p>
+<p>Your code can call the Pepper PPB_OpenGLES2 API directly, as with any Pepper
+interface. When you write in this way, each invocation of an OpenGL ES 2.0
+function must begin with a reference to the Pepper interface, and the first
+argument is the graphics context. To invoke the function <code>glCompileShader</code>,
+your code might look like:</p>
 <pre class="prettyprint">
 ppb_g3d_interface-&gt;CompileShader(graphicsContext, shader);
 </pre>
@@ -244,8 +243,8 @@ callbacks, for example), the Chrome main thread will block. This means that
 lengthy operations on the Native Client thread can steal cycles from Chrome, and
 performing blocking operations on the Native Client thread can bring your app to
 a standstill.</p>
-<p>Native Client uses callback functions to synchronize the main threads of the two
-processes. Only certain Pepper functions use callbacks; <a class="reference external" href="https://developers.google.com/native-client/pepperc/struct_p_p_b___graphics3_d__1__0#a293c6941c0da084267ffba3954793497">SwapBuffers</a>
+<p>Native Client uses callback functions to synchronize the main threads of the
+two processes. Only certain Pepper functions use callbacks; <a class="reference external" href="/native-client/pepper_stable/c/struct_p_p_b___graphics3_d__1__0#a293c6941c0da084267ffba3954793497">SwapBuffers</a>
 is one.</p>
 </section><section id="swapbuffers-and-its-callback-function">
 <h3 id="swapbuffers-and-its-callback-function"><code>SwapBuffers</code> and its callback function</h3>

@@ -13,9 +13,8 @@ Introduction
 ============
 
 This chapter describes how to use the `URLLoader API
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_u_r_l_loader>`_
-to load resources such as images and sound files from a server into your
-application.
+</native-client/pepper_stable/cpp/classpp_1_1_u_r_l_loader>`_ to load resources
+such as images and sound files from a server into your application.
 
 The example discussed in this chapter is included in the SDK in the directory
 ``examples/api/url_loader``.
@@ -26,15 +25,14 @@ Reference information
 For reference information related to loading data from URLs, see the
 following documentation:
 
-* `url_loader.h
-  <https://developers.google.com/native-client/peppercpp/url__loader_8h>`_ -
-  Contains ``URLLoader`` class for loading data from URLs
+* `url_loader.h </native-client/pepper_stable/cpp/url__loader_8h>`_ - Contains
+  ``URLLoader`` class for loading data from URLs
 * `url_request_info.h
-  <https://developers.google.com/native-client/peppercpp/url__request__info_8h>`_
-  - Contains ``URLRequest`` class for creating and manipulating URL requests
+  </native-client/pepper_stable/cpp/url__request__info_8h>`_ - Contains
+  ``URLRequest`` class for creating and manipulating URL requests
 * `url_response_info.h
-  <https://developers.google.com/native-client/peppercpp/url__response__info_8h>`_
-  - Contains ``URLResponse`` class for examaning URL responses
+  </native-client/pepper_stable/cpp/url__response__info_8h>`_ - Contains
+  ``URLResponse`` class for examaning URL responses
 
 Background
 ==========
@@ -49,9 +47,8 @@ application.
 After you've loaded assets into your application, Chrome will cache those
 assets. To avoid being at the whim of the Chrome cache, however, you may want
 to use the `Pepper FileIO API
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_file_i_o>`_
-to write those assets to a persistent, sandboxed location on the user's file
-system.
+</native-client/pepper_stable/cpp/classpp_1_1_file_i_o>`_ to write those assets
+to a persistent, sandboxed location on the user's file system.
 
 The ``url_loader`` example
 ==========================

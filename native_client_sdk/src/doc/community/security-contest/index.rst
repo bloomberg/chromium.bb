@@ -212,9 +212,8 @@ see the archived
 
 If you'd like to get involved with Native Client, you can:
 
-* Use the
-  `Native Client SDK <https://developers.google.com/native-client/sdk>`_
-  to build Native Client web applications.
+* Use the `Native Client SDK </native-client/sdk/download>`_ to build Native
+  Client web applications.
 * Submit `bugs <http://code.google.com/p/nativeclient/issues/list>`_
   and participate in the Native Client
   `discussion group <http://groups.google.com/group/native-client-discuss>`_.

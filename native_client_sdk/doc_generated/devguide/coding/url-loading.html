@@ -23,9 +23,8 @@
 
 </div><section id="introduction">
 <h2 id="introduction">Introduction</h2>
-<p>This chapter describes how to use the <a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_u_r_l_loader">URLLoader API</a>
-to load resources such as images and sound files from a server into your
-application.</p>
+<p>This chapter describes how to use the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_u_r_l_loader">URLLoader API</a> to load resources
+such as images and sound files from a server into your application.</p>
 <p>The example discussed in this chapter is included in the SDK in the directory
 <code>examples/api/url_loader</code>.</p>
 </section><section id="reference-information">
@@ -33,12 +32,12 @@ application.</p>
 <p>For reference information related to loading data from URLs, see the
 following documentation:</p>
 <ul class="small-gap">
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/url__loader_8h">url_loader.h</a> -
-Contains <code>URLLoader</code> class for loading data from URLs</li>
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/url__request__info_8h">url_request_info.h</a>
-- Contains <code>URLRequest</code> class for creating and manipulating URL requests</li>
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/url__response__info_8h">url_response_info.h</a>
-- Contains <code>URLResponse</code> class for examaning URL responses</li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/url__loader_8h">url_loader.h</a> - Contains
+<code>URLLoader</code> class for loading data from URLs</li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/url__request__info_8h">url_request_info.h</a> - Contains
+<code>URLRequest</code> class for creating and manipulating URL requests</li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/url__response__info_8h">url_response_info.h</a> - Contains
+<code>URLResponse</code> class for examaning URL responses</li>
 </ul>
 </section><section id="background">
 <h2 id="background">Background</h2>
@@ -50,9 +49,8 @@ Pepper APIs described in this chapter to load assets from a URL into your
 application.</p>
 <p>After you&#8217;ve loaded assets into your application, Chrome will cache those
 assets. To avoid being at the whim of the Chrome cache, however, you may want
-to use the <a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_file_i_o">Pepper FileIO API</a>
-to write those assets to a persistent, sandboxed location on the user&#8217;s file
-system.</p>
+to use the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_file_i_o">Pepper FileIO API</a> to write those assets
+to a persistent, sandboxed location on the user&#8217;s file system.</p>
 </section><section id="the-url-loader-example">
 <h2 id="the-url-loader-example">The <code>url_loader</code> example</h2>
 <p>The SDK includes an example called <code>url_loader</code> demonstrating downloading

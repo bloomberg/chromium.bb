@@ -32,18 +32,16 @@ For reference information related to the Pepper audio API, see the following
 documentation:
 
 * `pp::AudioConfig class
-  <https://developers.google.com/native-client/peppercpp/classpp_1_1_audio_config>`_
+  </native-client/pepper_stable/cpp/classpp_1_1_audio_config>`_
 
-* `pp::Audio class
-  <https://developers.google.com/native-client/peppercpp/classpp_1_1_audio>`_
+* `pp::Audio class </native-client/pepper_stable/cpp/classpp_1_1_audio>`_
 
-* `audio_config.h
-  <https://developers.google.com/native-client/peppercpp/audio__config_8h>`_
+* `audio_config.h </native-client/pepper_cpp/audio__config_8h>`_
 
-* `audio.h <https://developers.google.com/native-client/peppercpp/audio_8h>`_
+* `audio.h </native-client/pepper_stable/cpp/audio_8h>`_
 
 * `PP_AudioSampleRate
-  <https://developers.google.com/native-client/pepperc/group___enums.html#gaee750c350655f2fb0fe04c04029e0ff8>`_
+  </native-client/pepper_stable/c/group___enums#gaee750c350655f2fb0fe04c04029e0ff8>`_
 
 About the Pepper audio API
 ==========================

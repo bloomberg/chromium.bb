@@ -103,7 +103,7 @@ in the current <code>pepper_canary</code> bundle. Chrome 29 does not support .pe
 files produced by earlier versions of the pnacl toolchain (that is,
 executables compiled with the <code>pepper_28</code> bundle or earlier).</li>
 <li>To run an application with a PNaCl module, you must launch Chrome 29 with the
-<code>--enable-pnacl</code> flag (for <a class="reference external" href="http://developer.chrome.com/apps/about_apps.html">packaged apps</a>), or the
+<code>--enable-pnacl</code> flag (for <a class="reference external" href="/apps/about_apps">packaged apps</a>), or the
 <code>--enable-nacl</code> flag (for other apps).</li>
 <li>When you launch Chrome with the <code>--enable-pnacl</code> flag, Chrome loads a PNaCl
 translator in the background. Wait about a minute after you launch Chrome and
@@ -256,16 +256,16 @@ run <code>httpd.cmd</code> (in the <code>examples/</code> directory) to start th
 <h3 id="ppapi">PPAPI</h3>
 <p>Pepper 25 includes two new APIs:</p>
 <ul class="small-gap">
-<li>The <a class="reference external" href="https://developers.google.com/native-client/dev/pepperc/struct_p_p_b___console__1__0">Console API</a>
-lets your module log messages to the JavaScript console in the Chrome browser.</li>
-<li>The <a class="reference external" href="https://developers.google.com/native-client/dev/peppercpp/classpp_1_1_message_loop">MessageLoop</a>
-API lets your module make PPAPI calls on a background thread.  Once you&#8217;ve
-created a message loop resource, attached it to a thread, and run it, you can
-post work to the thread, including completion callbacks for asynchronous
-operations. For a C++ example of how to use the MessageLoop API,
-see <code>pepper_25/include/ppapi/utility/threading/simple_thread.h</code>. Note that
-you cannot make asynchronous PPAPI calls on a background thread without
-creating and using a message loop.</li>
+<li>The <a class="reference external" href="/native-client/pepper_stable/c/struct_p_p_b___console__1__0">Console API</a> lets your
+module log messages to the JavaScript console in the Chrome browser.</li>
+<li>The <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_message_loop">MessageLoop</a> API lets your
+module make PPAPI calls on a background thread.  Once you&#8217;ve created a
+message loop resource, attached it to a thread, and run it, you can post work
+to the thread, including completion callbacks for asynchronous operations.
+For a C++ example of how to use the MessageLoop API, see
+<code>pepper_25/include/ppapi/utility/threading/simple_thread.h</code>. Note that you
+cannot make asynchronous PPAPI calls on a background thread without creating
+and using a message loop.</li>
 </ul>
 </section><section id="id7">
 <h3 id="id7">Libraries</h3>
@@ -377,7 +377,7 @@ drawing to occur as quickly as possible.</li>
 </section><section id="id12">
 <h3 id="id12">PPAPI</h3>
 <ul class="small-gap">
-<li>When creating a 3D rendering context, the <a class="reference external" href="https://developers.google.com/native-client/dev/pepperc/group___enums#ga7df48e1c55f6401beea2a1b9c07967e8">attribute list</a>
+<li>When creating a 3D rendering context, the <a class="reference external" href="/native-client/pepper_stable/c/group___enums#ga7df48e1c55f6401beea2a1b9c07967e8">attribute list</a>
 for the context can specify whether to prefer low power or performance for
 the GPU. Contexts with a low power preference may be created on an integrated
 GPU; contexts with a performance preference may be created on a discrete GPU.</li>
@@ -400,8 +400,8 @@ file format.</p>
 <section id="tools">
 <h3 id="tools">Tools</h3>
 <ul class="small-gap">
-<li>The <a class="reference external" href="https://developers.google.com/native-client/pepper23/devguide/devcycle/debugging#gdb">nacl-gdb debugger</a>
-now works on all systems (Mac, Windows, and Linux).</li>
+<li>The <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html#using-gdb"><em>nacl-gdb debugger</em></a> now works on all systems (Mac,
+Windows, and Linux).</li>
 <li>The output of the SDK update utility has been simplified. When you run the
 command <code>naclsdk list</code>, the utility displays one line for each available
 bundle, annotated with an &#8220;<code>I</code>&#8221; if the bundle is already installed on your
@@ -459,22 +459,22 @@ toolchains: the Native Client glibc and newlib toolchains, and the native
 toolchain on the host system. Modules built with the native toolchain on the
 host system can only run as Pepper plugins.</li>
 <li>All examples in the SDK now comply with version 2 of the Chrome Web Store
-<a class="reference external" href="http://developer.chrome.com/extensions/manifest.html">manifest file format</a>. By default,
+<a class="reference external" href="/extensions/manifest">manifest file format</a>. By default,
 applications that use version 2 of the manifest file format apply a strict
-<a class="reference external" href="http://developer.chrome.com/extensions/contentSecurityPolicy.html">content security policy</a>, which
+<a class="reference external" href="/extensions/contentSecurityPolicy">content security policy</a>, which
 includes a restriction against inline JavaScript. This restriction prohibits
 both inline <code>&lt;script&gt;</code> blocks and inline event handlers (e.g., <code>&lt;button
-onclick=&quot;...&quot;&gt;</code>).  See <a class="reference external" href="http://developer.chrome.com/extensions/manifestVersion.html">Manifest Version</a> for a list of
-changes between version 1 and version 2 of the manifest file format, and a
-support schedule for applications that use version 1.</li>
+onclick=&quot;...&quot;&gt;</code>).  See <a class="reference external" href="/extensions/manifestVersion">Manifest Version</a> for
+a list of changes between version 1 and version 2 of the manifest file
+format, and a support schedule for applications that use version 1.</li>
 </ul>
 </section><section id="id14">
 <h3 id="id14">PPAPI</h3>
 <ul class="small-gap">
-<li><a class="reference external" href="https://developers.google.com/native-client/pepper23/pepperc/group___enums#ga21b811ac0484a214a8751aa3e1c959d9">PP_InputEvent_Modifier</a>
+<li><a class="reference external" href="/native-client/pepper_stable/c/group___enums#ga21b811ac0484a214a8751aa3e1c959d9">PP_InputEvent_Modifier</a>
 has two new enum values (_ISLEFT and _ISRIGHT).</li>
-<li>The memory leak in the <a class="reference external" href="https://developers.google.com/native-client/pepper23/pepperc/struct_p_p_b___web_socket__1__0">WebSocket</a>
-API has been fixed.</li>
+<li>The memory leak in the <a class="reference external" href="/native-client/pepper_stable/c/struct_p_p_b___web_socket__1__0">WebSocket</a> API has
+been fixed.</li>
 </ul>
 </section></section><section id="pepper-22-22-august-2012">
 <h2 id="pepper-22-22-august-2012">Pepper 22 (22 August 2012)</h2>
@@ -557,7 +557,7 @@ from the NaCl module to the JavaScript side of the application</li>
 <h3 id="id18">PPAPI</h3>
 <ul class="small-gap">
 <li>The <code>CompletionCallbackFactory</code> class template now takes a thread traits
-class as its second parameter. For details see the <a class="reference external" href="https://developers.google.com/native-client/pepper22/peppercpp/classpp_1_1_completion_callback_factory#details">CompletionCallbackFactory
+class as its second parameter. For details see the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_completion_callback_factory#details">CompletionCallbackFactory
 class template reference</a>.</li>
 </ul>
 </section></section></section>

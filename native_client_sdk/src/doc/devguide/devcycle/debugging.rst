@@ -69,8 +69,7 @@ You can send messages from your C/C++ code to JavaScript using the PostMessage
 call in the :doc:`Pepper messaging system <../coding/message-system>`. When the
 JavaScript code receives a message, its message event handler can call
 `console.log() <https://developer.mozilla.org/en/DOM/console.log>`_ to write
-the message to the JavaScript `console
-<https://developers.google.com/chrome-developer-tools/docs/console>`_ in
+the message to the JavaScript `console </devtools/docs/console-api>`_ in
 Chrome's Developer Tools.
 
 Debugging with printf
@@ -393,16 +392,15 @@ Follow the instructions below to debug your module with nacl-gdb:
 
    ``--nacl-debug-mask=<nmf_url_mask1,nmf_url_mask2,...>``
      Specifies a set of debug mask patterns. This allows you to selectively
-     choose to debug certain applications and not debug others. For example,
-     if you only want to debug the NMF files for your applications at
-     ``https://example.com/app``, and no other NaCl applications found
-     on the web, specify ``--nacl-debug-mask=https://example.com/app/*.nmf``.
-     This helps prevent accidentally debugging other NaCl applications if
-     you like to leave the ``--enable-nacl-debug`` flag turned on.
-     The pattern language for the mask follows `chrome extension match patterns
-     <http://developer.chrome.com/extensions/match_patterns>`_.
-     The pattern set can be inverted by prefixing the pattern set with
-     the ``!`` character.
+     choose to debug certain applications and not debug others. For example, if
+     you only want to debug the NMF files for your applications at
+     ``https://example.com/app``, and no other NaCl applications found on the
+     web, specify ``--nacl-debug-mask=https://example.com/app/*.nmf``.  This
+     helps prevent accidentally debugging other NaCl applications if you like
+     to leave the ``--enable-nacl-debug`` flag turned on.  The pattern language
+     for the mask follows `chrome extension match patterns
+     </extensions/match_patterns>`_.  The pattern set can be inverted by
+     prefixing the pattern set with the ``!`` character.
 
    ``<URL>``
      Specifies the URL Chrome should open when it launches. The local server

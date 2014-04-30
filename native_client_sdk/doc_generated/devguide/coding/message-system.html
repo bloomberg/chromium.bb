@@ -48,22 +48,22 @@ the <code>/getting_started/part2</code> directory in the Native Client SDK downl
 <p>For reference information related to the Pepper messaging API, see the
 following documentation:</p>
 <ul class="small-gap">
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_instance">pp::Instance class</a> HandleMessage(), PostMessage())</li>
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_module">pp::Module class</a></li>
-<li><a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_var">pp::Var class</a></li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_instance">pp::Instance class</a>
+HandleMessage(), PostMessage())</li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_module">pp::Module class</a></li>
+<li><a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_var">pp::Var class</a></li>
 </ul>
 </section><section id="introduction-to-the-messaging-system">
 <h2 id="introduction-to-the-messaging-system">Introduction to the messaging system</h2>
-<p>Native Client modules and JavaScript communicate by sending messages
-to each other. The most basic form of a message is a string.  Messages
-support many JavaScript types, including ints, arrays, array buffers,
-and dictionaries (see <a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_var">pp::Var</a>,
-<a class="reference external" href="https://developers.google.com/native-client/peppercpp/classpp_1_1_var_array_buffer">pp:VarArrayBuffer</a>,
-and the general <a class="reference external" href="https://developers.google.com/native-client/pepperc/struct_p_p_b___messaging__1__0">messaging system documentation</a>).
-It&#8217;s up to you to decide on the type of message and define how to
-process the messages on both the JavaScript and Native Client
-side. For the &#8220;Hello, World&#8221; example, we will work with string-typed
-messages only.</p>
+<p>Native Client modules and JavaScript communicate by sending messages to each
+other. The most basic form of a message is a string.  Messages support many
+JavaScript types, including ints, arrays, array buffers, and dictionaries (see
+<a class="reference external" href="h/native-client/pepper_stable/cpp/classpp_1_1_var">pp::Var</a>,
+<a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_var_array_buffer">pp:VarArrayBuffer</a>, and the
+general <a class="reference external" href="/native-client/pepper_stable/c/struct_p_p_b___messaging__1__0">messaging system documentation</a>).  It&#8217;s up to
+you to decide on the type of message and define how to process the messages on
+both the JavaScript and Native Client side. For the &#8220;Hello, World&#8221; example, we
+will work with string-typed messages only.</p>
 <p>When JavaScript posts a message to the Native Client module, the
 Pepper <code>HandleMessage()</code> function is invoked on the module
 side. Similarly, the Native Client module can post a message to
@@ -172,11 +172,10 @@ function moduleDidLoad() {
 by the JavaScript.</li>
 <li>Processes incoming messages. This example simply checks that JavaScript
 has sent a &#8220;hello&#8221; message and not some other message.</li>
-<li>Calls <code>PostMessage()</code> to send an acknowledgement back to the
-JavaScript code.  The acknowledgement is a string in the form of a <code>Var</code>
-that the JavaScript code can process.  In general, a <code>pp::Var</code> can be
-several JavaScript types, see the
-<a class="reference external" href="https://developers.google.com/native-client/pepperc/struct_p_p_b___messaging__1__0">messaging system documentation</a>.</li>
+<li>Calls <code>PostMessage()</code> to send an acknowledgement back to the JavaScript
+code.  The acknowledgement is a string in the form of a <code>Var</code> that the
+JavaScript code can process.  In general, a <code>pp::Var</code> can be several
+JavaScript types, see the <a class="reference external" href="/native-client/pepper_stable/c/struct_p_p_b___messaging__1__0">messaging system documentation</a>.</li>
 </ol>
 <pre class="prettyprint">
 class HelloTutorialInstance : public pp::Instance {

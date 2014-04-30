@@ -30,26 +30,25 @@ Reference information
 For reference information related to the Pepper messaging API, see the
 following documentation:
 
-* `pp::Instance class <https://developers.google.com/native-client/peppercpp/classpp_1_1_instance>`_ HandleMessage(), PostMessage())
-* `pp::Module class <https://developers.google.com/native-client/peppercpp/classpp_1_1_module>`_
-* `pp::Var class <https://developers.google.com/native-client/peppercpp/classpp_1_1_var>`_
+* `pp::Instance class </native-client/pepper_stable/cpp/classpp_1_1_instance>`_
+  HandleMessage(), PostMessage())
+* `pp::Module class </native-client/pepper_stable/cpp/classpp_1_1_module>`_
+* `pp::Var class </native-client/pepper_stable/cpp/classpp_1_1_var>`_
 
 Introduction to the messaging system
 ====================================
 
-Native Client modules and JavaScript communicate by sending messages
-to each other. The most basic form of a message is a string.  Messages
-support many JavaScript types, including ints, arrays, array buffers,
-and dictionaries (see `pp::Var
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_var>`_,
+Native Client modules and JavaScript communicate by sending messages to each
+other. The most basic form of a message is a string.  Messages support many
+JavaScript types, including ints, arrays, array buffers, and dictionaries (see
+`pp::Var </native-client/pepper_stable/cpp/classpp_1_1_var>`_,
 `pp:VarArrayBuffer
-<https://developers.google.com/native-client/peppercpp/classpp_1_1_var_array_buffer>`_,
-and the general `messaging system documentation
-<https://developers.google.com/native-client/pepperc/struct_p_p_b___messaging__1__0>`_).
-It's up to you to decide on the type of message and define how to
-process the messages on both the JavaScript and Native Client
-side. For the "Hello, World" example, we will work with string-typed
-messages only.
+</native-client/pepper_stable/cpp/classpp_1_1_var_array_buffer>`_, and the
+general `messaging system documentation
+</native-client/pepper_stable/c/struct_p_p_b___messaging__1__0>`_).  It's up to
+you to decide on the type of message and define how to process the messages on
+both the JavaScript and Native Client side. For the "Hello, World" example, we
+will work with string-typed messages only.
 
 When JavaScript posts a message to the Native Client module, the
 Pepper ``HandleMessage()`` function is invoked on the module
@@ -176,12 +175,11 @@ The C++ code in the Native Client module of the "Hello, World" example:
    by the JavaScript.
 #. Processes incoming messages. This example simply checks that JavaScript
    has sent a "hello" message and not some other message.
-#. Calls ``PostMessage()`` to send an acknowledgement back to the
-   JavaScript code.  The acknowledgement is a string in the form of a ``Var``
-   that the JavaScript code can process.  In general, a ``pp::Var`` can be
-   several JavaScript types, see the
-   `messaging system documentation
-   <https://developers.google.com/native-client/pepperc/struct_p_p_b___messaging__1__0>`_.
+#. Calls ``PostMessage()`` to send an acknowledgement back to the JavaScript
+   code.  The acknowledgement is a string in the form of a ``Var`` that the
+   JavaScript code can process.  In general, a ``pp::Var`` can be several
+   JavaScript types, see the `messaging system documentation
+   </native-client/pepper_stable/c/struct_p_p_b___messaging__1__0>`_.
 
 
 .. naclcode::

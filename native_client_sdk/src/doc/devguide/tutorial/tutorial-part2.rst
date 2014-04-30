@@ -14,11 +14,10 @@ Overview
 
 This tutorial shows how to convert the finished PNaCl web application from
 :doc:`Part 1 <tutorial-part1>` to use the Native Client SDK build system and
-common JavaScript files. It also demonstrates some techniques to make your
-web application `Content Security Policy (CSP)-compliant
-<http://developer.chrome.com/apps/contentSecurityPolicy.html>`, which is
-necessary for `Chrome Apps
-<https://developer.chrome.com/apps/about_apps.html>`_.
+common JavaScript files. It also demonstrates some techniques to make your web
+application `Content Security Policy (CSP)-compliant
+</apps/contentSecurityPolicy>`_, which is necessary for `Chrome Apps
+</apps/about_apps>`_.
 
 Using the Native Client SDK build system makes it easy to build with all of the
 SDK toolchains, and switch between the Debug and Release configurations. It
@@ -151,8 +150,8 @@ LIBS
   search path is already set up to only look in the directory for the current
   toolchain and architecture. In this example, we link against ``ppapi_cpp``
   and ``ppapi``. ``ppapi_cpp`` is needed to use the `Pepper C++ interface
-  <https://developers.google.com/native-client/peppercpp/>`_. ``ppapi`` is
-  needed for communicating with the browser.
+  </native-client/pepper_stable/cpp/>`_. ``ppapi`` is needed for communicating
+  with the browser.
 
 CFLAGS
   A list of extra flags to pass to the compiler. In this example, we pass
@@ -231,17 +230,16 @@ each executable generated in the previous step:
 Making index.html work for Chrome Apps
 ======================================
 
-This section describes the changes necessary to make the HTML and JavaScript
-in part1 CSP-compliant. This is required if you want to build a `Chrome App
-<https://developer.chrome.com/apps/about_apps.html>`_, but is not necessary
-if you want to use PNaCl on the open web.
+This section describes the changes necessary to make the HTML and JavaScript in
+part1 CSP-compliant. This is required if you want to build a `Chrome App
+</apps/about_apps>`_, but is not necessary if you want to use PNaCl on the open
+web.
 
 CSP rules
 ---------
 
-`Chrome Apps CSP
-<http://developer.chrome.com/apps/contentSecurityPolicy.html#what>`_
-restricts you from doing the following:
+`Chrome Apps CSP </apps/contentSecurityPolicy#what>`_ restricts you from doing
+the following:
 
 * You can’t use inline scripting in your Chrome App pages. The restriction
   bans both ``<script>`` blocks and event handlers (``<button onclick="...">``).

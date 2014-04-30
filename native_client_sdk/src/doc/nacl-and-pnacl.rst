@@ -15,14 +15,13 @@ This document describes the differences between **Native Client** and
 Native Client (NaCl)
 ====================
 
-Native Client enables the execution of native code
-securely inside web applications through the use of advanced
-`Software Fault Isolation (SFI) techniques <https://developers.google.com/native-client/community/talks#research>`_.
-Since its launch in 2011, Native Client has provided
-developers with the ability to harness a client machine's computational power
-to a much fuller extent than traditional web technologies, by running compiled C
-and C++ code at near-native speeds and taking advantage of multiple cores with
-shared memory.
+Native Client enables the execution of native code securely inside web
+applications through the use of advanced `Software Fault Isolation (SFI)
+techniques </native-client/community/talks#research>`_.  Since its launch in
+2011, Native Client has provided developers with the ability to harness a
+client machine's computational power to a much fuller extent than traditional
+web technologies, by running compiled C and C++ code at near-native speeds and
+taking advantage of multiple cores with shared memory.
 
 While Native Client provides operating system independence, it requires
 developers to generate architecture-specific executable modules

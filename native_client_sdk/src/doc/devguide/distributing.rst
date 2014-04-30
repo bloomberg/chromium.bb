@@ -11,7 +11,7 @@ Distributing Your Application
 
 This document describes how to distribute Portable Native Client applications
 on the web, and Native Client applications through the
-`Chrome Web Store </chrome/web-store/docs/>`_ (CWS).
+`Chrome Web Store </webstore>`_ (CWS).
 
 Portable Native Client
 ======================
@@ -43,11 +43,11 @@ In general, the considerations and guidelines for distributing applications
 through the Chrome Web Store apply to applications that contain NaCl modules as
 well. Here are a few pointers to relevant documentation:
 
-* `CWS Overview <https://developers.google.com/chrome/web-store/docs/>`_
-* `Choosing an App Type <https://developers.google.com/chrome/web-store/docs/choosing>`_
-* `Getting started with packaged apps <http://developer.chrome.com/apps/about_apps.html>`_
+* `CWS Overview </webstore>`_
+* `Choosing an App Type </webstore/choosing>`_
+* `Getting started with packaged apps </apps/about_apps>`_
 * `Hosted apps <https://developers.google.com/chrome/apps/docs/developers_guide>`_
-* `Chrome extensions <http://developer.chrome.com/extensions/index.html>`_
+* `Chrome extensions </extensions>`_
 
 In this document, we'll focus only on distribution issues specific to
 applications that contain NaCl modules.
@@ -61,7 +61,7 @@ A packaged application is a special zip file (with a .crx extension) hosted in
 the Chrome Web Store. This file contains all of the application parts: A Chrome
 Web Store manifest file (manifest.json), an icon, and all of the regular Native
 Client application files. Refer to
-`Packaged Apps <https://developer.chrome.com/apps/about_apps.html>`_
+`Packaged Apps </apps/about_apps>`_
 for more information about creating a packaged application.
 
 Reducing the size of the user download package
@@ -222,7 +222,7 @@ Here is how to use this feature:
    correct user architecture.
 
    To reference architecture-specific files, use the JavaScript API
-   `chrome.runtime.getPlatformInfo() <http://developer.chrome.com/trunk/extensions/runtime.html#method-getPlatformInfo>`_.
+   `chrome.runtime.getPlatformInfo() </extensions/runtime.html#method-getPlatformInfo>`_.
    As an example, if you have architecture-specific files in the directories
    ``x86-64``, ``x86-32``, and ``arm``, you can use the following JavaScript
    code to create a path for the files:
@@ -265,9 +265,8 @@ Additional considerations for a packaged application
   uses the HTML5 File API.
 * For packaged applications, you can only use in-app purchases.
 * You can place your application in the Google Web Store with access only to
-  certain people for testing. See
-  `Publishing to test accounts <https://developers.google.com/chrome/web-store/docs/publish>`_
-  for more information.
+  certain people for testing. See `Publishing to test accounts
+  </webstore/publish>`_ for more information.
 
 Extension
 ---------
