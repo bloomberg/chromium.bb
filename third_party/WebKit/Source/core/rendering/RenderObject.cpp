@@ -1244,22 +1244,23 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
         graphicsContext->endLayer();
 }
 
-IntRect RenderObject::absoluteBoundingBoxRect(bool useTransforms) const
+IntRect RenderObject::absoluteBoundingBoxRect() const
 {
-    if (useTransforms) {
-        Vector<FloatQuad> quads;
-        absoluteQuads(quads);
+    Vector<FloatQuad> quads;
+    absoluteQuads(quads);
 
-        size_t n = quads.size();
-        if (!n)
-            return IntRect();
+    size_t n = quads.size();
+    if (!n)
+        return IntRect();
 
-        IntRect result = quads[0].enclosingBoundingBox();
-        for (size_t i = 1; i < n; ++i)
-            result.unite(quads[i].enclosingBoundingBox());
-        return result;
-    }
+    IntRect result = quads[0].enclosingBoundingBox();
+    for (size_t i = 1; i < n; ++i)
+        result.unite(quads[i].enclosingBoundingBox());
+    return result;
+}
 
+IntRect RenderObject::absoluteBoundingBoxRectIgnoringTransforms() const
+{
     FloatPoint absPos = localToAbsolute();
     Vector<IntRect> rects;
     absoluteRects(rects, flooredLayoutPoint(absPos));

@@ -759,9 +759,9 @@ public:
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
 
-    // FIXME: useTransforms should go away eventually
-    IntRect absoluteBoundingBoxRect(bool useTransform = true) const;
-    IntRect absoluteBoundingBoxRectIgnoringTransforms() const { return absoluteBoundingBoxRect(false); }
+    IntRect absoluteBoundingBoxRect() const;
+    // FIXME: This function should go away eventually
+    IntRect absoluteBoundingBoxRectIgnoringTransforms() const;
 
     // Build an array of quads in absolute coords for line boxes
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* /*wasFixed*/ = 0) const { }
