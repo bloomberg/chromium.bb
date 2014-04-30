@@ -91,7 +91,7 @@ bool ServiceWorker::isReady()
 
 void ServiceWorker::dispatchStateChangeEvent()
 {
-    // FIXME: Add ASSERT(isReady()) when Chromium side change rolls in.
+    ASSERT(isReady());
     this->dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 

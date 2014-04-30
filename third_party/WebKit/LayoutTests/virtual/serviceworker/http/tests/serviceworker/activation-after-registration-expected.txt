@@ -1,3 +1,3 @@
 
-FAIL activation occurs after registration assert_equals: worker should be in the "parsed" state upon registration expected "parsed" but got "installing"
+PASS activation occurs after registration 
 

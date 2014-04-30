@@ -861,9 +861,6 @@ crbug.com/298045 [ Mac ] virtual/implsidepainting [ Skip ]
 
 crbug.com/267888 [ Android ] crypto [ Skip ]
 
-# Expected to be flaky until the three-sided patch for this bug finishes landing.
-crbug.com/365252 virtual/serviceworker/http/tests/serviceworker/activation-after-registration.html [ Pass Failure ]
-
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
