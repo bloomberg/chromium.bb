@@ -61,6 +61,9 @@ URL_OPEN_MAX_ATTEMPTS = 30
 # Default timeout when retrying.
 URL_OPEN_TIMEOUT = 6*60.
 
+# Default timeout when reading from open HTTP connection.
+URL_READ_TIMEOUT = 60
+
 # Content type for url encoded POST body.
 URL_ENCODED_FORM_CONTENT_TYPE = 'application/x-www-form-urlencoded'
 # Content type for JSON body.
@@ -403,7 +406,7 @@ class HttpService(object):
       retry_404=False,
       retry_50x=True,
       timeout=URL_OPEN_TIMEOUT,
-      read_timeout=None,
+      read_timeout=URL_READ_TIMEOUT,
       stream=True,
       method=None,
       headers=None):
@@ -567,7 +570,6 @@ class HttpService(object):
         headers=headers,
         max_attempts=max_attempts,
         method=method,
-        read_timeout=timeout,
         retry_404=False,
         retry_50x=True,
         stream=False,

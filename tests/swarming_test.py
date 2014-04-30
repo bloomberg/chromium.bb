@@ -906,7 +906,6 @@ class MainTest(TestCase):
           "headers": None,
           "max_attempts": 30,
           "method": "GET",
-          "read_timeout": 360.0,
           "retry_404": False,
           "retry_50x": True,
           "timeout": 360.0
@@ -931,7 +930,6 @@ class MainTest(TestCase):
           "headers": None,
           "max_attempts": 30,
           "method": "GET",
-          "read_timeout": 360.0,
           "retry_404": False,
           "retry_50x": True,
           "timeout": 360.0
@@ -952,7 +950,6 @@ class MainTest(TestCase):
           "headers": None,
           "max_attempts": 30,
           "method": "GET",
-          "read_timeout": 360.0,
           "retry_404": False,
           "retry_50x": True,
           "timeout": 360.0
@@ -980,7 +977,6 @@ class MainTest(TestCase):
           "headers": None,
           "max_attempts": 30,
           "method": "GET",
-          "read_timeout": 360.0,
           "retry_404": False,
           "retry_50x": True,
           "timeout": 360.0
@@ -1009,7 +1005,6 @@ class MainTest(TestCase):
           "headers": None,
           "max_attempts": 30,
           "method": "GET",
-          "read_timeout": 360.0,
           "retry_404": False,
           "retry_50x": True,
           "timeout": 360.0
