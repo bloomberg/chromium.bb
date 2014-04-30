@@ -200,6 +200,9 @@ bool IsImplSidePaintingEnabled() {
     return false;
   else if (command_line.HasSwitch(switches::kEnableImplSidePainting))
     return true;
+  else if (command_line.HasSwitch(
+      switches::kEnableBleedingEdgeRenderingFastPaths))
+    return true;
 
   return IsThreadedCompositingEnabled();
 }
