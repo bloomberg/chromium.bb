@@ -171,6 +171,9 @@ void IdleManager::OnListenerRemoved(const EventListenerInfo& details) {
   MonitorMap::iterator it = monitors_.find(details.extension_id);
   if (it != monitors_.end()) {
     DCHECK_GT(it->second.listeners, 0);
+    // Note: Deliberately leave the listener count as 0 rather than erase()ing
+    // this record so that the threshold doesn't get reset when all listeners
+    // are removed.
     --it->second.listeners;
   }
 }
@@ -259,24 +262,18 @@ void IdleManager::UpdateIdleStateCallback(int idle_time) {
 
   for (MonitorMap::iterator it = monitors_.begin();
        it != monitors_.end(); ++it) {
-    if (it->second.listeners < 1)
-      continue;
-
-    ++listener_count;
-
-    IdleState new_state = IdleTimeToIdleState(locked,
-                                              idle_time,
-                                              it->second.threshold);
-
-    if (new_state != it->second.last_state) {
-      it->second.last_state = new_state;
+    IdleMonitor& monitor = it->second;
+    IdleState new_state =
+        IdleTimeToIdleState(locked, idle_time, monitor.threshold);
+    // TODO(kalman): Use EventRouter::HasListeners for these sorts of checks.
+    if (monitor.listeners > 0 && monitor.last_state != new_state)
       event_delegate_->OnStateChanged(it->first, new_state);
-    }
+    monitor.last_state = new_state;
+    listener_count += monitor.listeners;
   }
 
-  if (listener_count == 0) {
+  if (listener_count == 0)
     StopPolling();
-  }
 }
 
 }  // namespace extensions

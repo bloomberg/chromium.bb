@@ -103,6 +103,7 @@ class IdleManager : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(IdleTest, LockedToActive);
   FRIEND_TEST_ALL_PREFIXES(IdleTest, LockedToIdle);
   FRIEND_TEST_ALL_PREFIXES(IdleTest, MultipleExtensions);
+  FRIEND_TEST_ALL_PREFIXES(IdleTest, ReAddListener);
   FRIEND_TEST_ALL_PREFIXES(IdleTest, SetDetectionInterval);
   FRIEND_TEST_ALL_PREFIXES(IdleTest, SetDetectionIntervalBeforeListener);
   FRIEND_TEST_ALL_PREFIXES(IdleTest, SetDetectionIntervalMaximum);

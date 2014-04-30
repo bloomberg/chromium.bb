@@ -550,4 +550,30 @@ TEST_F(IdleTest, UnloadWhileListening) {
       content::Details<UnloadedExtensionInfo>(&details));
 }
 
+// Verifies that re-adding a listener after a state change doesn't immediately
+// fire a change event. Regression test for http://crbug.com/366580.
+TEST_F(IdleTest, ReAddListener) {
+  idle_provider_->set_locked(false);
+
+  {
+    // Fire idle event.
+    ScopedListen listen(idle_manager_, "test");
+    idle_provider_->set_idle_time(60);
+    EXPECT_CALL(*event_delegate_, OnStateChanged("test", IDLE_STATE_IDLE));
+    idle_manager_->UpdateIdleState();
+    testing::Mock::VerifyAndClearExpectations(event_delegate_);
+  }
+
+  // Trigger active.
+  idle_provider_->set_idle_time(0);
+  idle_manager_->UpdateIdleState();
+
+  {
+    // Nothing should have fired, the listener wasn't added until afterward.
+    ScopedListen listen(idle_manager_, "test");
+    idle_manager_->UpdateIdleState();
+    testing::Mock::VerifyAndClearExpectations(event_delegate_);
+  }
+}
+
 }  // namespace extensions
