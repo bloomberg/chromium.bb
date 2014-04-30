@@ -41,7 +41,8 @@ class CONTENT_EXPORT IndexedDBFactory
 
   void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
                         const GURL& origin_url,
-                        const base::FilePath& data_directory);
+                        const base::FilePath& data_directory,
+                        net::URLRequestContext* request_context);
   void Open(const base::string16& name,
             const IndexedDBPendingConnection& connection,
             net::URLRequestContext* request_context,
@@ -88,6 +89,15 @@ class CONTENT_EXPORT IndexedDBFactory
       std::string* data_loss_reason,
       bool* disk_full);
 
+  virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
+      const GURL& origin_url,
+      const base::FilePath& data_directory,
+      net::URLRequestContext* request_context,
+      blink::WebIDBDataLoss* data_loss,
+      std::string* data_loss_message,
+      bool* disk_full,
+      bool first_time);
+
   void ReleaseBackingStore(const GURL& origin_url, bool immediate);
   void CloseBackingStore(const GURL& origin_url);
   IndexedDBContextImpl* context() const { return context_; }
@@ -132,6 +142,7 @@ class CONTENT_EXPORT IndexedDBFactory
 
   std::set<scoped_refptr<IndexedDBBackingStore> > session_only_backing_stores_;
   IndexedDBBackingStoreMap backing_stores_with_active_blobs_;
+  std::set<GURL> backends_opened_since_boot_;
 };
 
 }  // namespace content

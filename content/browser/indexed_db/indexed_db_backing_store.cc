@@ -549,7 +549,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
     bool* disk_full,
-    base::TaskRunner* task_runner) {
+    base::TaskRunner* task_runner,
+    bool clean_journal) {
   *data_loss = blink::WebIDBDataLossNone;
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::Open(indexed_db_factory,
@@ -560,7 +561,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                                      data_loss_message,
                                      disk_full,
                                      &leveldb_factory,
-                                     task_runner);
+                                     task_runner,
+                                     clean_journal);
 }
 
 static std::string OriginToCustomHistogramSuffix(const GURL& origin_url) {
@@ -701,7 +703,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     std::string* data_loss_message,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory,
-    base::TaskRunner* task_runner) {
+    base::TaskRunner* task_runner,
+    bool clean_journal) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
   *data_loss = blink::WebIDBDataLossNone;

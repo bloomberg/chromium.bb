@@ -171,7 +171,8 @@ void IndexedDBFactory::ReportOutstandingBlobs(const GURL& origin_url,
 void IndexedDBFactory::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const GURL& origin_url,
-    const base::FilePath& data_directory) {
+    const base::FilePath& data_directory,
+    net::URLRequestContext* request_context) {
   IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   blink::WebIDBDataLoss data_loss;
@@ -180,7 +181,7 @@ void IndexedDBFactory::GetDatabaseNames(
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(origin_url,
                        data_directory,
-                       NULL /* request_context */,
+                       request_context,
                        &data_loss,
                        &data_loss_message,
                        &disk_full);
@@ -317,6 +318,25 @@ bool IndexedDBFactory::IsBackingStorePendingClose(const GURL& origin_url)
   return it->second->close_timer()->IsRunning();
 }
 
+scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStoreHelper(
+    const GURL& origin_url,
+    const base::FilePath& data_directory,
+    net::URLRequestContext* request_context,
+    blink::WebIDBDataLoss* data_loss,
+    std::string* data_loss_message,
+    bool* disk_full,
+    bool first_time) {
+  return IndexedDBBackingStore::Open(this,
+                                     origin_url,
+                                     data_directory,
+                                     request_context,
+                                     data_loss,
+                                     data_loss_message,
+                                     disk_full,
+                                     context_->TaskRunner(),
+                                     first_time);
+}
+
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     const GURL& origin_url,
     const base::FilePath& data_directory,
@@ -333,21 +353,25 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
   }
 
   scoped_refptr<IndexedDBBackingStore> backing_store;
+  bool first_time = false;
   if (open_in_memory) {
     backing_store =
         IndexedDBBackingStore::OpenInMemory(origin_url, context_->TaskRunner());
   } else {
-    backing_store = IndexedDBBackingStore::Open(this,
-                                                origin_url,
-                                                data_directory,
-                                                request_context,
-                                                data_loss,
-                                                data_loss_message,
-                                                disk_full,
-                                                context_->TaskRunner());
+    first_time = !backends_opened_since_boot_.count(origin_url);
+
+    backing_store = OpenBackingStoreHelper(origin_url,
+                                           data_directory,
+                                           request_context,
+                                           data_loss,
+                                           data_loss_message,
+                                           disk_full,
+                                           first_time);
   }
 
   if (backing_store.get()) {
+    if (first_time)
+      backends_opened_since_boot_.insert(origin_url);
     backing_store_map_[origin_url] = backing_store;
     // If an in-memory database, bind lifetime to this factory instance.
     if (open_in_memory)

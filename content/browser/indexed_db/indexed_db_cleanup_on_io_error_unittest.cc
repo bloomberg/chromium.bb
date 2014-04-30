@@ -95,7 +95,8 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
                                   &data_loss_message,
                                   &disk_full,
                                   &mock_leveldb_factory,
-                                  task_runner);
+                                  task_runner,
+                                  false /* clean_journal */);
 }
 
 // TODO(dgrogan): Remove expect_destroy if we end up not using it again. It is
@@ -154,7 +155,8 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &data_loss_reason,
                                   &disk_full,
                                   &mock_leveldb_factory,
-                                  task_runner);
+                                  task_runner,
+                                  false /* clean_journal */);
 
   MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory2(
       base::File::FILE_ERROR_NO_MEMORY, false);
@@ -167,7 +169,8 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &data_loss_reason,
                                   &disk_full,
                                   &mock_leveldb_factory2,
-                                  task_runner);
+                                  task_runner,
+                                  false /* clean_journal */);
 
   MockErrorLevelDBFactory<int> mock_leveldb_factory3(EIO, false);
   scoped_refptr<IndexedDBBackingStore> backing_store3 =
@@ -179,7 +182,8 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &data_loss_reason,
                                   &disk_full,
                                   &mock_leveldb_factory3,
-                                  task_runner);
+                                  task_runner,
+                                  false /* clean_journal */);
 
   MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory4(
       base::File::FILE_ERROR_FAILED, false);
@@ -192,7 +196,8 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   &data_loss_reason,
                                   &disk_full,
                                   &mock_leveldb_factory4,
-                                  task_runner);
+                                  task_runner,
+                                  false /* clean_journal */);
 }
 
 }  // namespace

@@ -89,8 +89,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full,
-      base::TaskRunner* task_runner);
-
+      base::TaskRunner* task_runner,
+      bool clean_journal);
   static scoped_refptr<IndexedDBBackingStore> Open(
       IndexedDBFactory* indexed_db_factory,
       const GURL& origin_url,
@@ -100,7 +100,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
       std::string* data_loss_message,
       bool* disk_full,
       LevelDBFactory* leveldb_factory,
-      base::TaskRunner* task_runner);
+      base::TaskRunner* task_runner,
+      bool clean_journal);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
       const GURL& origin_url,
       base::TaskRunner* task_runner);

@@ -364,7 +364,8 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
   const bool expect_connection = false;
   scoped_refptr<MockIndexedDBCallbacks> callbacks(
       new MockIndexedDBCallbacks(expect_connection));
-  factory()->GetDatabaseNames(callbacks, origin, temp_directory.path());
+  factory()->GetDatabaseNames(
+      callbacks, origin, temp_directory.path(), NULL /* request_context */);
 
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
   EXPECT_TRUE(factory()->IsBackingStorePendingClose(origin));

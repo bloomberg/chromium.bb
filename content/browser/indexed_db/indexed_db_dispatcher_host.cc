@@ -287,7 +287,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
       new IndexedDBCallbacks(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
       origin_url,
-      indexed_db_path);
+      indexed_db_path,
+      request_context_);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
