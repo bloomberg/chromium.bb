@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/constants.h"
@@ -410,6 +411,7 @@ LibjingleTransportFactory::LibjingleTransportFactory(
     : signal_strategy_(signal_strategy),
       port_allocator_(port_allocator.Pass()),
       network_settings_(network_settings) {
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 }
 
 LibjingleTransportFactory::~LibjingleTransportFactory() {

@@ -189,11 +189,6 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path,
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  'HOST_PLUGIN_MIMETYPE', hostPluginMimeType)
 
-  # Set client plugin type.
-  client_plugin = 'pnacl' if webapp_type == 'v2_pnacl' else 'native'
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'CLIENT_PLUGIN_TYPE'", "'" + client_plugin + "'")
-
   # Allow host names for google services/apis to be overriden via env vars.
   oauth2AccountsHost = os.environ.get(
       'OAUTH2_ACCOUNTS_HOST', 'https://accounts.google.com')

@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/thread_task_runner_handle.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
@@ -44,10 +43,6 @@ namespace pp {
 class InputEvent;
 class Module;
 }  // namespace pp
-
-namespace jingle_glue {
-class JingleThreadWrapper;
-}  // namespace jingle_glue
 
 namespace webrtc {
 class DesktopRegion;
@@ -263,8 +258,6 @@ class ChromotingInstance :
 
   PepperPluginThreadDelegate plugin_thread_delegate_;
   scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
-  scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
-  scoped_ptr<jingle_glue::JingleThreadWrapper> thread_wrapper_;
   ClientContext context_;
   scoped_ptr<VideoRenderer> video_renderer_;
   scoped_ptr<PepperView> view_;
