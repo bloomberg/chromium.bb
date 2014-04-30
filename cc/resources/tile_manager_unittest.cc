@@ -829,13 +829,13 @@ TEST_F(TileManagerTileIteratorTest, RasterTileIterator) {
   TileManager::RasterTileIterator it(tile_manager,
                                      SAME_PRIORITY_FOR_BOTH_TREES);
   EXPECT_TRUE(it);
-  std::set<Tile*> all_tiles;
-  size_t tile_count = 0;
 
+  size_t tile_count = 0;
+  std::set<Tile*> all_tiles;
   for (; it; ++it) {
-    ++tile_count;
     EXPECT_TRUE(*it);
     all_tiles.insert(*it);
+    ++tile_count;
   }
 
   EXPECT_EQ(tile_count, all_tiles.size());
@@ -993,9 +993,9 @@ TEST_F(TileManagerTileIteratorTest, EvictionTileIterator) {
   tile_manager->GetPairedPictureLayers(&paired_layers);
   EXPECT_EQ(1u, paired_layers.size());
 
-  TileManager::EvictionTileIterator it(tile_manager,
-                                       SAME_PRIORITY_FOR_BOTH_TREES);
-  EXPECT_FALSE(it);
+  TileManager::EvictionTileIterator empty_it(tile_manager,
+                                             SAME_PRIORITY_FOR_BOTH_TREES);
+  EXPECT_FALSE(empty_it);
   std::set<Tile*> all_tiles;
   size_t tile_count = 0;
 
@@ -1014,16 +1014,12 @@ TEST_F(TileManagerTileIteratorTest, EvictionTileIterator) {
   tile_manager->InitializeTilesWithResourcesForTesting(
       std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
 
-  it = TileManager::EvictionTileIterator(tile_manager,
-                                         SAME_PRIORITY_FOR_BOTH_TREES);
+  TileManager::EvictionTileIterator it(tile_manager, SMOOTHNESS_TAKES_PRIORITY);
   EXPECT_TRUE(it);
 
   // Sanity check, all tiles should be visible.
   std::set<Tile*> smoothness_tiles;
-  for (TileManager::EvictionTileIterator it(tile_manager,
-                                            SMOOTHNESS_TAKES_PRIORITY);
-       it;
-       ++it) {
+  for (; it; ++it) {
     Tile* tile = *it;
     EXPECT_TRUE(tile);
     EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);

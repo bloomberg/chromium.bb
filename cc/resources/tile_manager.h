@@ -103,6 +103,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
     std::vector<PairedPictureLayerIterator*> iterator_heap_;
     TreePriority tree_priority_;
     RasterOrderComparator comparator_;
+
+    DISALLOW_COPY_AND_ASSIGN(RasterTileIterator);
   };
 
   struct CC_EXPORT EvictionTileIterator {
@@ -147,6 +149,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
     std::vector<PairedPictureLayerIterator*> iterator_heap_;
     TreePriority tree_priority_;
     EvictionOrderComparator comparator_;
+
+    DISALLOW_COPY_AND_ASSIGN(EvictionTileIterator);
   };
 
   static scoped_ptr<TileManager> Create(
