@@ -80,11 +80,13 @@ public class TestWebServer {
         final List<Pair<String, String>> mResponseHeaders;
         final boolean mIsRedirect;
         final Runnable mResponseAction;
+        final boolean mIsNotFound;
 
-        Response(byte[] resposneData, List<Pair<String, String>> responseHeaders,
-                boolean isRedirect, Runnable responseAction) {
+        Response(byte[] responseData, List<Pair<String, String>> responseHeaders,
+                boolean isRedirect, boolean isNotFound, Runnable responseAction) {
             mIsRedirect = isRedirect;
-            mResponseData = resposneData;
+            mIsNotFound = isNotFound;
+            mResponseData = responseData;
             mResponseHeaders = responseHeaders == null ?
                     new ArrayList<Pair<String, String>>() : responseHeaders;
             mResponseAction = responseAction;
@@ -166,16 +168,18 @@ public class TestWebServer {
 
     private static final int RESPONSE_STATUS_NORMAL = 0;
     private static final int RESPONSE_STATUS_MOVED_TEMPORARILY = 1;
+    private static final int RESPONSE_STATUS_NOT_FOUND = 2;
 
     private String setResponseInternal(
             String requestPath, byte[] responseData,
             List<Pair<String, String>> responseHeaders, Runnable responseAction,
             int status) {
         final boolean isRedirect = (status == RESPONSE_STATUS_MOVED_TEMPORARILY);
+        final boolean isNotFound = (status == RESPONSE_STATUS_NOT_FOUND);
 
         synchronized (mLock) {
             mResponseMap.put(requestPath, new Response(
-                    responseData, responseHeaders, isRedirect, responseAction));
+                    responseData, responseHeaders, isRedirect, isNotFound, responseAction));
             mResponseCountMap.put(requestPath, Integer.valueOf(0));
             mLastRequestMap.put(requestPath, null);
         }
@@ -192,6 +196,19 @@ public class TestWebServer {
      */
     public String getResponseUrl(String requestPath) {
         return mServerUri + requestPath;
+    }
+
+    /**
+     * Sets a 404 (not found) response to be returned when a particular request path is passed in.
+     *
+     * @param requestPath The path to respond to.
+     * @return The full URL including the path that should be requested to get the expected
+     *         response.
+     */
+    public String setResponseWithNotFoundStatus(
+            String requestPath) {
+        return setResponseInternal(requestPath, "".getBytes(), null, null,
+                RESPONSE_STATUS_NOT_FOUND);
     }
 
     /**
@@ -392,6 +409,9 @@ public class TestWebServer {
             httpResponse = createResponse(HttpStatus.SC_OK);
         } else if (response == null) {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
+        } else if (response.mIsNotFound) {
+            httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
+            servedResponseFor(path, request);
         } else if (response.mIsRedirect) {
             httpResponse = createResponse(HttpStatus.SC_MOVED_TEMPORARILY);
             for (Pair<String, String> header : response.mResponseHeaders) {

@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -16,6 +18,7 @@ import org.chromium.net.test.util.TestWebServer;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.concurrent.Callable;
 
 /**
  * Tests for the Favicon and TouchIcon related APIs.
@@ -39,6 +42,9 @@ public class AwContentsClientFaviconTest extends AwTestBase {
                     "<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"" + TOUCHICON_REL_URL_72
                     + "\" />",
                     "Body");
+
+    // Maximum number of milliseconds within which a request to web server is made.
+    private static final long MAX_REQUEST_WAITING_LIMIT_MS = scaleTimeout(500);
 
     private static class FaviconHelper extends CallbackHelper {
         private Bitmap mIcon;
@@ -112,11 +118,41 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
         mContentsClient.mFaviconHelper.waitForCallback(callCount);
+        assertEquals(1, mWebServer.getRequestCount(FAVICON1_URL));
         Object originalFaviconSource = (new URL(faviconUrl)).getContent();
         Bitmap originalFavicon = BitmapFactory.decodeStream((InputStream) originalFaviconSource);
         assertNotNull(originalFavicon);
         assertNotNull(mContentsClient.mFaviconHelper.mIcon);
         assertTrue(mContentsClient.mFaviconHelper.mIcon.sameAs(originalFavicon));
+
+        // Make sure the request counter for favicon is incremented when the page is loaded again
+        // successfully.
+        loadUrlAsync(mAwContents, pageUrl);
+        mContentsClient.mFaviconHelper.waitForCallback(callCount);
+        assertEquals(2, mWebServer.getRequestCount(FAVICON1_URL));
+    }
+
+    @SmallTest
+    public void testDoNotMakeRequestForFaviconAfter404() throws Throwable {
+        init(new TestAwContentsClientFavicon());
+
+        mWebServer.setResponseWithNotFoundStatus(FAVICON1_URL);
+        final String pageUrl = mWebServer.setResponse(FAVICON1_PAGE_URL, FAVICON1_PAGE_HTML,
+            CommonResources.getTextHtmlHeaders(true));
+
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        poll(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return mWebServer.getRequestCount(FAVICON1_URL) == 1;
+            }
+        });
+
+        // Make sure the request counter for favicon is not incremented, since we already got 404.
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        // If a request hasn't been done within this time period, we assume it won't be done.
+        Thread.sleep(MAX_REQUEST_WAITING_LIMIT_MS);
+        assertEquals(1, mWebServer.getRequestCount(FAVICON1_URL));
     }
 
     @SmallTest

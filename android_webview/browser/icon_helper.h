@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_ICON_HELPER_H_
 
 #include <string>
+#include "base/containers/hash_tables.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -43,6 +44,9 @@ class IconHelper : public content::WebContentsObserver {
   // From WebContentsObserver
   virtual void DidUpdateFaviconURL(int32 page_id,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
+  virtual void DidStartNavigationToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) OVERRIDE;
 
   void DownloadFaviconCallback(
       int id,
@@ -52,7 +56,14 @@ class IconHelper : public content::WebContentsObserver {
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
  private:
+  void MarkUnableToDownloadFavicon(const GURL& icon_url);
+  bool WasUnableToDownloadFavicon(const GURL& icon_url) const;
+  void ClearUnableToDownloadFavicons();
+
   Listener* listener_;
+
+  typedef uint32 MissingFaviconURLHash;
+  base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(IconHelper);
 };

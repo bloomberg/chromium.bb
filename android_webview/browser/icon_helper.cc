@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/hash.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -20,7 +21,8 @@ namespace android_webview {
 
 IconHelper::IconHelper(WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      listener_(NULL) {
+      listener_(NULL),
+      missing_favicon_urls_() {
 }
 
 IconHelper::~IconHelper() {
@@ -37,6 +39,11 @@ void IconHelper::DownloadFaviconCallback(
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (http_status_code == 404) {
+    MarkUnableToDownloadFavicon(image_url);
+    return;
+  }
+
   if (bitmaps.size() == 0) {
     return;
   }
@@ -60,7 +67,10 @@ void IconHelper::DidUpdateFaviconURL(int32 page_id,
 
     switch(i->icon_type) {
       case content::FaviconURL::FAVICON:
-        if (listener_ && !listener_->ShouldDownloadFavicon(i->icon_url)) break;
+        if ((listener_ && !listener_->ShouldDownloadFavicon(i->icon_url)) ||
+            WasUnableToDownloadFavicon(i->icon_url)) {
+          break;
+        }
         web_contents()->DownloadImage(i->icon_url,
             true,  // Is a favicon
             0,  // No maximum size
@@ -83,6 +93,27 @@ void IconHelper::DidUpdateFaviconURL(int32 page_id,
         break;
     }
   }
+}
+
+void IconHelper::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  if (reload_type == content::NavigationController::RELOAD_IGNORING_CACHE)
+    ClearUnableToDownloadFavicons();
+}
+
+void IconHelper::MarkUnableToDownloadFavicon(const GURL& icon_url) {
+  MissingFaviconURLHash url_hash = base::Hash(icon_url.spec());
+  missing_favicon_urls_.insert(url_hash);
+}
+
+bool IconHelper::WasUnableToDownloadFavicon(const GURL& icon_url) const {
+  MissingFaviconURLHash url_hash = base::Hash(icon_url.spec());
+  return missing_favicon_urls_.find(url_hash) != missing_favicon_urls_.end();
+}
+
+void IconHelper::ClearUnableToDownloadFavicons() {
+  missing_favicon_urls_.clear();
 }
 
 }  // namespace android_webview
