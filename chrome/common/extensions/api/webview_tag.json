@@ -52,7 +52,7 @@
           "code": {
             "type": "string",
             "optional": true,
-            "description": "JavaScript or CSS code to inject."
+            "description": "JavaScript or CSS code to inject.<br><br><b>Warning:</b><br>Be careful using the <code>code</code> parameter. Incorrect use of it may open your app to <a href=\"https://en.wikipedia.org/wiki/Cross-site_scripting\">cross site scripting</a> attacks."
           },
           "file": {
             "type": "string",
