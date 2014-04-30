@@ -1,0 +1,55 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# FFMpeg is dynamically loaded on all platforms but our code calls it
+# as if it were directly linked. To make this work, the build system needs
+# to generate stubs that indirect into the library calls.
+#
+# On Windows, this script calls the windows stub generator. Otherwise, assume
+# this is a POSIX platform and generate our own wrapper stubs.
+action("generate_stubs") {
+  stubs_filename_root = "ffmpeg_stubs"
+  extra_header = "chromium/ffmpeg_stub_headers.fragment"
+
+  script = "../../tools/generate_stubs/generate_stubs.py"
+  sources = [ "chromium/ffmpegsumo.sigs" ]
+  source_prereqs = [ extra_header ]
+  outputs = [
+    "$target_gen_dir/$stubs_filename_root.cc",
+    "$target_gen_dir/$stubs_filename_root.h",
+  ]
+
+  if (is_win) {
+    if (build_cpu_arch == "x64") {
+      outfile_type = "windows_lib_x64"
+    } else {
+      outfile_type = "windows_lib"
+    }
+
+    args = [
+      # TODO(ajwong): In gyp, this uses different directories for the
+      # windows build. We should think this through.
+      "-i", rebase_path(target_gen_dir, root_build_dir),
+      "-o", rebase_path(target_gen_dir, root_build_dir),
+      "-t", outfile_type,
+    ]
+  } else {
+    # If it's not windows, clearly it must be posix.
+    args = [
+      # TODO(ajwong): IN gyp, this used to output the .h file into a shared
+      # directory that other targets could reference. The .cc ends up in a
+      # special generated directory that gyp would guaranteed that no one else
+      # could look at. Now we're dumping both into the generated directory.
+      # Verify what the best + simplest behavior is here and use that.
+      "-i", rebase_path(target_gen_dir),
+      "-o", rebase_path(target_gen_dir),
+      "-t", "posix_stubs",
+      "-e", rebase_path("$extra_header", root_build_dir),
+      "-s", stubs_filename_root,
+      "-p", "third_party/ffmpeg",
+    ]
+  }
+
+  args += rebase_path(sources, root_build_dir)
+}
