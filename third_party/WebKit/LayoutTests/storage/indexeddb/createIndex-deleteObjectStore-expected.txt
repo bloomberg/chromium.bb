@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-PASS deleteDatabase success event type, existing DB 
+PASS Deleting an object store with a new index should complete 
 Harness: the test ran to completion.
 
