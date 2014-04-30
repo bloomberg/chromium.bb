@@ -161,7 +161,9 @@ cr.define('options', function() {
       PrefInputElement.prototype.decorate.call(this);
       this.type = 'checkbox';
 
-      if (this.dialogPref)
+      // Consider a checked dialog checkbox as a 'suggestion' which is committed
+      // once the user confirms the dialog.
+      if (this.dialogPref && this.checked)
         this.updatePrefFromState_();
     },
 
