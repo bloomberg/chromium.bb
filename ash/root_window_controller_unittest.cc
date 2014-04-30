@@ -714,8 +714,10 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   controller->NotifyKeyboardBoundsChanging(
       controller->proxy()->GetKeyboardWindow()->bounds());
 
-  gfx::Rect after = ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
-  EXPECT_LT(after, before);
+  if (!keyboard::IsKeyboardOverscrollEnabled()) {
+    gfx::Rect after = ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+    EXPECT_LT(after, before);
+  }
 
   // Mock a login user profile change to reinitialize the keyboard.
   ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
