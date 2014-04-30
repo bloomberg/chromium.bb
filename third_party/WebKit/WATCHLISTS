@@ -256,6 +256,10 @@
     'table_layout': {
       'filepath': 'Source/core/rendering/.*Table'
     },
+    'battery_status': {
+      'filepath': 'Source/modules/battery/' \
+                  '|LayoutTests/battery-status/'
+    },
   },
 
   'WATCHLISTS': {
@@ -386,5 +390,6 @@
     'css_grid_layout': [ 'svillar@igalia.com', 'jfernandez@igalia.com', 'rego@igalia.com' ],
     'fragment_layout': [ 'mstensho+blink@opera.com' ],
     'table_layout': [ 'mstensho+blink@opera.com' ],
+    'battery_status': [ 'timvolodine@chromium.org' ],
   },
 }
