@@ -18,7 +18,6 @@ class PortalDetectorStrategy {
     STRATEGY_ID_LOGIN_SCREEN,
     STRATEGY_ID_ERROR_SCREEN,
     STRATEGY_ID_SESSION,
-    STRATEGY_ID_COUNT
   };
 
   class Delegate {

@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace chromeos {
@@ -23,10 +22,22 @@ ErrorScreen::ErrorScreen(ScreenObserver* screen_observer,
       weak_factory_(this) {
   DCHECK(actor_);
   actor_->SetDelegate(this);
+  AddObserver(NetworkPortalDetector::Get());
 }
 
 ErrorScreen::~ErrorScreen() {
   actor_->SetDelegate(NULL);
+  RemoveObserver(NetworkPortalDetector::Get());
+}
+
+void ErrorScreen::AddObserver(Observer* observer) {
+  if (observer)
+    observers_.AddObserver(observer);
+}
+
+void ErrorScreen::RemoveObserver(Observer* observer) {
+  if (observer)
+    observers_.RemoveObserver(observer);
 }
 
 void ErrorScreen::PrepareToShow() {
@@ -47,13 +58,11 @@ std::string ErrorScreen::GetName() const {
 }
 
 void ErrorScreen::OnErrorShow() {
-  NetworkPortalDetector::Get()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
+  FOR_EACH_OBSERVER(Observer, observers_, OnErrorScreenShow());
 }
 
 void ErrorScreen::OnErrorHide() {
-  NetworkPortalDetector::Get()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
+  FOR_EACH_OBSERVER(Observer, observers_, OnErrorScreenHide());
 }
 
 void ErrorScreen::OnLaunchOobeGuestSession() {

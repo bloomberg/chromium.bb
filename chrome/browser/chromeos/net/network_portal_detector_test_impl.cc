@@ -8,9 +8,7 @@
 
 namespace chromeos {
 
-NetworkPortalDetectorTestImpl::NetworkPortalDetectorTestImpl()
-    : strategy_id_(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN) {
-}
+NetworkPortalDetectorTestImpl::NetworkPortalDetectorTestImpl() {}
 
 NetworkPortalDetectorTestImpl::~NetworkPortalDetectorTestImpl() {
 }
@@ -83,11 +81,6 @@ void NetworkPortalDetectorTestImpl::Enable(bool start_detection) {
 
 bool NetworkPortalDetectorTestImpl::StartDetectionIfIdle() {
   return false;
-}
-
-void NetworkPortalDetectorTestImpl::SetStrategy(
-    PortalDetectorStrategy::StrategyId id) {
-  strategy_id_ = id;
 }
 
 }  // namespace chromeos

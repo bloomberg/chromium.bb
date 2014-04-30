@@ -36,20 +36,14 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   virtual void Enable(bool start_detection) OVERRIDE;
   virtual bool StartDetectionIfIdle() OVERRIDE;
 
-  virtual void SetStrategy(PortalDetectorStrategy::StrategyId id) OVERRIDE;
-
-  PortalDetectorStrategy::StrategyId strategy_id() const {
-    return strategy_id_;
-  }
-
  private:
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
 
+
   ObserverList<Observer> observers_;
   scoped_ptr<NetworkState> default_network_;
   CaptivePortalStateMap portal_state_map_;
-  PortalDetectorStrategy::StrategyId strategy_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorTestImpl);
 };
