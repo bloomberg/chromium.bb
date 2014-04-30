@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 
-#include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
@@ -15,45 +13,38 @@
 #include "ui/base/resource/resource_bundle.h"
 
 ManagePasswordsIconView::ManagePasswordsIconView(
-    LocationBarView::Delegate* location_bar_delegate,
-    CommandUpdater* command_updater)
-    : BubbleIconView(command_updater, IDC_MANAGE_PASSWORDS_FOR_PAGE),
-      location_bar_delegate_(location_bar_delegate),
-      command_updater_(command_updater),
-      icon_id_(0),
-      tooltip_text_id_(0) {
+    LocationBarView::Delegate* location_bar_delegate)
+    : location_bar_delegate_(location_bar_delegate) {
   set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
   SetAccessibilityFocusable(true);
-  UpdateVisibleUI();
+  SetState(ManagePasswordsIcon::INACTIVE_STATE);
 }
 
 ManagePasswordsIconView::~ManagePasswordsIconView() {}
 
-void ManagePasswordsIconView::UpdateVisibleUI() {
-  // If the icon is inactive: clear out it's image and tooltip, hide the icon,
-  // close any active bubble, and exit early.
-  if (state() == ManagePasswordsIcon::INACTIVE_STATE) {
-    icon_id_ = 0;
-    tooltip_text_id_ = 0;
-
+void ManagePasswordsIconView::SetStateInternal(
+    ManagePasswordsIcon::State state) {
+  if (state == ManagePasswordsIcon::INACTIVE_STATE) {
     SetVisible(false);
     if (ManagePasswordsBubbleView::IsShowing())
       ManagePasswordsBubbleView::CloseBubble();
     return;
   }
 
-  // Otherwise, start with the correct values for MANAGE_STATE, and adjust
-  // things accordingly if we're either in BLACKLISTED_STATE or PENDING_STATE.
-  icon_id_ = IDR_SAVE_PASSWORD;
-  tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
-  if (state() == ManagePasswordsIcon::BLACKLISTED_STATE)
-    icon_id_ = IDR_SAVE_PASSWORD_BLACKLISTED;
-  else if (state() == ManagePasswordsIcon::PENDING_STATE)
-    tooltip_text_id_ = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
+  // Start with the correct values for ManagePasswordsIcon::MANAGE_STATE, and
+  // adjust things accordingly if we're either in BLACKLISTED_STATE or
+  // PENDING_STATE.
+  int which_icon = IDR_SAVE_PASSWORD;
+  int which_text = IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE;
+  if (state == ManagePasswordsIcon::BLACKLISTED_STATE)
+    which_icon = IDR_SAVE_PASSWORD_BLACKLISTED;
+  else if (state == ManagePasswordsIcon::PENDING_STATE)
+    which_text = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE;
 
   SetVisible(true);
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));
-  SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id_));
+  SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(which_icon));
+  SetTooltipText(l10n_util::GetStringUTF16(which_text));
 }
 
 void ManagePasswordsIconView::ShowBubbleWithoutUserInteraction() {
@@ -61,13 +52,36 @@ void ManagePasswordsIconView::ShowBubbleWithoutUserInteraction() {
   if (location_bar_delegate_->GetToolbarModel()->input_in_progress())
     return;
 
-  command_updater_->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE);
+  ManagePasswordsBubbleView::ShowBubble(
+      location_bar_delegate_->GetWebContents(),
+      ManagePasswordsBubbleView::AUTOMATIC);
 }
 
-bool ManagePasswordsIconView::IsBubbleShowing() const {
-  return ManagePasswordsBubbleView::IsShowing();
+bool ManagePasswordsIconView::GetTooltipText(const gfx::Point& p,
+                                             base::string16* tooltip) const {
+  // Don't show tooltip if the password bubble is displayed.
+  return !ManagePasswordsBubbleView::IsShowing() &&
+      ImageView::GetTooltipText(p, tooltip);
 }
 
-void ManagePasswordsIconView::OnExecuting(
-    BubbleIconView::ExecuteSource source) {
+void ManagePasswordsIconView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    ManagePasswordsBubbleView::ShowBubble(
+        location_bar_delegate_->GetWebContents(),
+        ManagePasswordsBubbleView::USER_ACTION);
+    event->SetHandled();
+  }
+}
+
+bool ManagePasswordsIconView::OnMousePressed(const ui::MouseEvent& event) {
+  // Do nothing until the mouse button is released.
+  return true;
+}
+
+void ManagePasswordsIconView::OnMouseReleased(const ui::MouseEvent& event) {
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
+    ManagePasswordsBubbleView::ShowBubble(
+        location_bar_delegate_->GetWebContents(),
+        ManagePasswordsBubbleView::USER_ACTION);
+  }
 }

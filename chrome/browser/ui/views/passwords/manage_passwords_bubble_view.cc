@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
@@ -47,24 +46,33 @@ int GetFieldWidth(FieldType type) {
                                                    : kPasswordFieldSize);
 }
 
+class SavePasswordRefusalComboboxModel : public ui::ComboboxModel {
+ public:
+  enum { INDEX_NOPE = 0, INDEX_NEVER_FOR_THIS_SITE = 1, };
+
+  SavePasswordRefusalComboboxModel() {
+    items_.push_back(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
+    items_.push_back(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON));
+  }
+  virtual ~SavePasswordRefusalComboboxModel() {}
+
+ private:
+  // Overridden from ui::ComboboxModel:
+  virtual int GetItemCount() const OVERRIDE { return items_.size(); }
+  virtual base::string16 GetItemAt(int index) OVERRIDE { return items_[index]; }
+  virtual bool IsItemSeparatorAt(int index) OVERRIDE {
+    return items_[index].empty();
+  }
+  virtual int GetDefaultIndex() const OVERRIDE { return 0; }
+
+  std::vector<base::string16> items_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePasswordRefusalComboboxModel);
+};
+
 }  // namespace
-
-
-// Globals --------------------------------------------------------------------
-
-namespace chrome {
-
-void ShowManagePasswordsBubble(content::WebContents* web_contents) {
-  ManagePasswordsBubbleUIController* controller =
-      ManagePasswordsBubbleUIController::FromWebContents(web_contents);
-  ManagePasswordsBubbleView::ShowBubble(
-      web_contents,
-      controller->manage_passwords_bubble_needs_showing() ?
-          ManagePasswordsBubbleView::AUTOMATIC :
-          ManagePasswordsBubbleView::USER_ACTION);
-}
-
-}  // namespace chrome
 
 
 // ManagePasswordsBubbleView --------------------------------------------------
@@ -255,8 +263,8 @@ void ManagePasswordsBubbleView::Init() {
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(item);
 
-    combobox_model_.reset(new SavePasswordRefusalComboboxModel());
-    refuse_combobox_.reset(new views::Combobox(combobox_model_.get()));
+    refuse_combobox_ =
+        new views::Combobox(new SavePasswordRefusalComboboxModel());
     refuse_combobox_->set_listener(this);
     refuse_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
 
@@ -266,7 +274,7 @@ void ManagePasswordsBubbleView::Init() {
     layout->StartRowWithPadding(
         0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
     layout->AddView(save_button_);
-    layout->AddView(refuse_combobox_.get());
+    layout->AddView(refuse_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   } else {
     // If we have a list of passwords to store for the current site, display
