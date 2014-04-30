@@ -1386,7 +1386,10 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     if (r.isEmpty())
         return;
 
-    ASSERT(isRooted());
+    // FIXME: This should be an assert, but editing/selection can trigger this case to invalidate
+    // the selection. crbug.com/368140
+    if (!isRooted())
+        return;
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintUsingContainer()",
         "object", this->debugName().ascii(),
