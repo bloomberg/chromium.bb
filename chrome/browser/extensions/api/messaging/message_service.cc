@@ -272,11 +272,17 @@ void MessageService::OpenChannelToExtension(
 
   if (context->IsOffTheRecord() &&
       !util::IsIncognitoEnabled(target_extension_id, context)) {
-    // Give the user a chance to accept an incognito connection if they haven't
-    // already - but only for spanning-mode incognito. We don't want the
-    // complication of spinning up an additional process here which might need
-    // to do some setup that we're not expecting.
+    // Give the user a chance to accept an incognito connection from the web if
+    // they haven't already, with the conditions:
+    // - Only for spanning-mode incognito. We don't want the complication of
+    //   spinning up an additional process here which might need to do some
+    //   setup that we're not expecting.
+    // - Only for extensions that can't normally be enabled in incognito, since
+    //   that surface (e.g. chrome://extensions) should be the only one for
+    //   enabling in incognito. In practice this means platform apps only.
     if (!is_web_connection || IncognitoInfo::IsSplitMode(target_extension) ||
+        target_extension->can_be_incognito_enabled() ||
+        // This check may show a dialog.
         !IncognitoConnectability::Get(context)
              ->Query(target_extension, source_contents, source_url)) {
       DispatchOnDisconnect(

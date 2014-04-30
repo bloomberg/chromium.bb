@@ -102,20 +102,23 @@ function checkLastError(reply) {
   return false;
 }
 
-function checkResponse(response, reply, expectedMessage) {
+function checkResponse(response, reply, expectedMessage, isApp) {
   // The response will be an echo of both the original message *and* the
   // MessageSender (with the tab field stripped down).
   //
   // First check the sender was correct.
   var incorrectSender = false;
-  if (!hasOwnProperty.call(response.sender, 'tab')) {
-    console.warn('Expected a tab, got none');
-    incorrectSender = true;
-  }
-  if (response.sender.tab.url != tabLocationHref) {
-    console.warn('Expected tab url ' + tabLocationHref + ' got ' +
-                 response.sender.tab.url);
-    incorrectSender = true;
+  if (!isApp) {
+    // Only extensions get access to a 'tab' property.
+    if (!hasOwnProperty.call(response.sender, 'tab')) {
+      console.warn('Expected a tab, got none');
+      incorrectSender = true;
+    }
+    if (response.sender.tab.url != tabLocationHref) {
+      console.warn('Expected tab url ' + tabLocationHref + ' got ' +
+                   response.sender.tab.url);
+      incorrectSender = true;
+    }
   }
   if (hasOwnProperty.call(response.sender, 'id')) {
     console.warn('Expected no id, got "' + response.sender.id + '"');
@@ -204,20 +207,19 @@ window.actions = {
 };
 
 window.assertions = {
-  canConnectAndSendMessages: function(extensionId, message) {
+  canConnectAndSendMessages: function(extensionId, isApp, message) {
     if (!checkRuntime())
       return;
 
     if (!message)
       message = kMessage;
 
-    if (!message)
-      message = kMessage;
-
     function canSendMessage(reply) {
       chrome.runtime.sendMessage(extensionId, message, function(response) {
-        if (checkLastError(reply) && checkResponse(response, reply, message))
+        if (checkLastError(reply) &&
+            checkResponse(response, reply, message, isApp)) {
           reply(results.OK);
+        }
       });
     }
 
@@ -234,7 +236,7 @@ window.assertions = {
       port.onMessage.addListener(function(response) {
         pendingResponses--;
         ok = ok && checkLastError(reply) &&
-            checkResponse(response, reply, message);
+            checkResponse(response, reply, message, isApp);
         if (pendingResponses == 0 && ok)
           reply(results.OK);
       });
