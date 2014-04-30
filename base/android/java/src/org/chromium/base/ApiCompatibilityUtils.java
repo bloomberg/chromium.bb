@@ -8,16 +8,12 @@ import android.app.PendingIntent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Utility class to use new APIs that were added after ICS (API level 14).
@@ -177,28 +173,16 @@ public class ApiCompatibilityUtils {
      */
     public static void setCompoundDrawablesRelative(TextView textView, Drawable start, Drawable top,
             Drawable end, Drawable bottom) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // On JB MR1, setCompoundDrawablesRelative() is a no-op if the view has ever been
-            // measured: due to a bug, it doesn't call resetResolvedDrawables(). Unfortunately,
-            // resetResolvedDrawables() is a hidden method so we can't call it directly. Instead,
-            // we use reflection.
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                try {
-                    Method resetResolvedDrawables = TextView.class.getDeclaredMethod(
-                            "resetResolvedDrawables");
-                    resetResolvedDrawables.setAccessible(true);
-                    resetResolvedDrawables.invoke(textView);
-                } catch (NoSuchMethodException e) {
-                    Log.w(TAG, e);
-                } catch (IllegalAccessException e) {
-                    Log.w(TAG, e);
-                } catch (InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            textView.setCompoundDrawablesRelative(start, top, bottom, end);
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // On JB MR1, due to a platform bug, setCompoundDrawablesRelative() is a no-op if the
+            // view has ever been measured. As a workaround, use setCompoundDrawables() directly.
+            // See: http://crbug.com/368196 and http://crbug.com/361709
+            boolean isRtl = isLayoutRtl(textView);
+            textView.setCompoundDrawables(isRtl ? end : start, top, isRtl ? start : end, bottom);
+        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            textView.setCompoundDrawablesRelative(start, top, end, bottom);
         } else {
-            textView.setCompoundDrawables(start, top, bottom, end);
+            textView.setCompoundDrawables(start, top, end, bottom);
         }
     }
 
@@ -208,10 +192,15 @@ public class ApiCompatibilityUtils {
      */
     public static void setCompoundDrawablesRelativeWithIntrinsicBounds(TextView textView,
             Drawable start, Drawable top, Drawable end, Drawable bottom) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, bottom, end);
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // Work around the platform bug described in setCompoundDrawablesRelative() above.
+            boolean isRtl = isLayoutRtl(textView);
+            textView.setCompoundDrawablesWithIntrinsicBounds(isRtl ? end : start, top,
+                    isRtl ? start : end, bottom);
+        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, end, bottom);
         } else {
-            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, bottom, end);
+            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, end, bottom);
         }
     }
 
@@ -221,10 +210,15 @@ public class ApiCompatibilityUtils {
      */
     public static void setCompoundDrawablesRelativeWithIntrinsicBounds(TextView textView,
             int start, int top, int end, int bottom) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, bottom, end);
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // Work around the platform bug described in setCompoundDrawablesRelative() above.
+            boolean isRtl = isLayoutRtl(textView);
+            textView.setCompoundDrawablesWithIntrinsicBounds(isRtl ? end : start, top,
+                    isRtl ? start : end, bottom);
+        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, end, bottom);
         } else {
-            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, bottom, end);
+            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, end, bottom);
         }
     }
 
