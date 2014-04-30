@@ -35,8 +35,6 @@ public:
 private:
     explicit SVGTextElement(Document&);
 
-    virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
-
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 

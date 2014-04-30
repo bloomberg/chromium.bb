@@ -60,8 +60,6 @@ private:
 
     virtual bool isStructurallyExternal() const OVERRIDE { return !hrefString().isNull() && isExternalURIReference(hrefString(), document()); }
 
-    virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
-
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 

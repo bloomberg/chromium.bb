@@ -33,6 +33,8 @@
     [MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
 
     readonly attribute CSSStyleDeclaration style;
+
+    [CustomElementCallbacks] attribute long tabIndex;
 };
 
 SVGElement implements GlobalEventHandlers;

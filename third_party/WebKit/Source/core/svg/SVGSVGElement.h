@@ -49,8 +49,6 @@ public:
     using SVGGraphicsElement::ref;
     using SVGGraphicsElement::deref;
 
-    virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
-
     // 'SVGSVGElement' functions
     PassRefPtr<SVGRectTearOff> viewport() const;
 

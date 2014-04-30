@@ -306,21 +306,11 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
 
 void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == dirAttr)
+    if (name == tabindexAttr)
+        return Element::parseAttribute(name, value);
+
+    if (name == dirAttr) {
         dirAttributeChanged(value);
-    else if (name == tabindexAttr) {
-        int tabindex = 0;
-        if (value.isEmpty()) {
-            clearTabIndexExplicitlyIfNeeded();
-            if (treeScope().adjustedFocusedElement() == this) {
-                // We might want to call blur(), but it's dangerous to dispatch
-                // events here.
-                document().setNeedsFocusedElementCheck();
-            }
-        } else if (parseHTMLInteger(value, tabindex)) {
-            // Clamp tabindex to the range of 'short' to match Firefox's behavior.
-            setTabIndexExplicitly(max(static_cast<int>(std::numeric_limits<short>::min()), min(tabindex, static_cast<int>(std::numeric_limits<short>::max()))));
-        }
     } else {
         const AtomicString& eventName = eventNameForAttributeName(name);
         if (!eventName.isNull())
@@ -495,33 +485,6 @@ bool HTMLElement::hasCustomFocusLogic() const
     return false;
 }
 
-bool HTMLElement::supportsSpatialNavigationFocus() const
-{
-    // This function checks whether the element satisfies the extended criteria
-    // for the element to be focusable, introduced by spatial navigation feature,
-    // i.e. checks if click or keyboard event handler is specified.
-    // This is the way to make it possible to navigate to (focus) elements
-    // which web designer meant for being active (made them respond to click events).
-
-    if (!document().settings() || !document().settings()->spatialNavigationEnabled())
-        return false;
-    return hasEventListeners(EventTypeNames::click)
-        || hasEventListeners(EventTypeNames::keydown)
-        || hasEventListeners(EventTypeNames::keypress)
-        || hasEventListeners(EventTypeNames::keyup);
-}
-
-bool HTMLElement::supportsFocus() const
-{
-    // FIXME: supportsFocus() can be called when layout is not up to date.
-    // Logic that deals with the renderer should be moved to rendererIsFocusable().
-    // But supportsFocus must return true when the element is editable, or else
-    // it won't be focusable. Furthermore, supportsFocus cannot just return true
-    // always or else tabIndex() will change for all HTML elements.
-    return Element::supportsFocus() || (rendererIsEditable() && parentNode() && !parentNode()->rendererIsEditable())
-        || supportsSpatialNavigationFocus();
-}
-
 String HTMLElement::contentEditable() const
 {
     const AtomicString& value = fastGetAttribute(contenteditableAttr);
@@ -593,11 +556,6 @@ short HTMLElement::tabIndex() const
     if (supportsFocus())
         return Element::tabIndex();
     return -1;
-}
-
-void HTMLElement::setTabIndex(int value)
-{
-    setIntegralAttribute(tabindexAttr, value);
 }
 
 TranslateAttributeMode HTMLElement::translateAttributeMode() const

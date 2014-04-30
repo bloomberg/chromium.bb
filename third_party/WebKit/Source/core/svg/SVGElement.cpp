@@ -36,6 +36,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
@@ -120,6 +121,13 @@ SVGElement::~SVGElement()
     document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
 #endif
+}
+
+short SVGElement::tabIndex() const
+{
+    if (supportsFocus())
+        return Element::tabIndex();
+    return -1;
 }
 
 void SVGElement::willRecalcStyle(StyleRecalcChange change)
@@ -617,6 +625,26 @@ bool SVGElement::inUseShadowTree() const
     return false;
 }
 
+bool SVGElement::supportsSpatialNavigationFocus() const
+{
+    // This function checks whether the element satisfies the extended criteria
+    // for the element to be focusable, introduced by spatial navigation feature,
+    // i.e. checks if click or keyboard event handler is specified.
+    // This is the way to make it possible to navigate to (focus) elements
+    // which web designer meant for being active (made them respond to click events).
+
+    if (!document().settings() || !document().settings()->spatialNavigationEnabled())
+        return false;
+    return hasEventListeners(EventTypeNames::click)
+        || hasEventListeners(EventTypeNames::keydown)
+        || hasEventListeners(EventTypeNames::keypress)
+        || hasEventListeners(EventTypeNames::keyup)
+        || hasEventListeners(EventTypeNames::focus)
+        || hasEventListeners(EventTypeNames::blur)
+        || hasEventListeners(EventTypeNames::focusin)
+        || hasEventListeners(EventTypeNames::focusout);
+}
+
 void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == HTMLNames::classAttr) {
@@ -628,6 +656,8 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         m_className->setBaseValueAsString(value, parseError);
         reportAttributeParsingError(parseError, name, value);
     } else if (name.matches(XMLNames::langAttr) || name.matches(XMLNames::spaceAttr)) {
+    } else if (name == tabindexAttr) {
+        Element::parseAttribute(name, value);
     } else {
         // standard events
         const AtomicString& eventName = HTMLElement::eventNameForAttributeName(name);
@@ -1008,12 +1038,8 @@ RenderStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
 
 bool SVGElement::hasFocusEventListeners() const
 {
-    return hasEventListeners(EventTypeNames::focusin) || hasEventListeners(EventTypeNames::focusout);
-}
-
-bool SVGElement::isKeyboardFocusable() const
-{
-    return isFocusable();
+    return hasEventListeners(EventTypeNames::focusin) || hasEventListeners(EventTypeNames::focusout)
+        || hasEventListeners(EventTypeNames::focus) || hasEventListeners(EventTypeNames::blur);
 }
 
 #ifndef NDEBUG

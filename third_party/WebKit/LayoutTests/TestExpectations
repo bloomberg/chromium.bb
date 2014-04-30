@@ -1371,3 +1371,7 @@ crbug.com/367903 web-animations-api/timeline-time.html [ Pass Failure ]
 crbug.com/169282 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsRebaseline ]
 
 crbug.com/367817 fast/frames/location-observe-callback-crash.html [ Pass Failure ]
+
+# Text selections on svg:a is no longer possible, same as for html:a, we no longer get a caret in this test:
+crbug.com/352175 svg/custom/linking-uri-01-b.svg [ NeedsRebaseline ]
+crbug.com/352175 svg/repaint/focus-element.html [ NeedsRebaseline ]

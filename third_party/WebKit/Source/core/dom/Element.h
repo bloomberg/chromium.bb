@@ -291,7 +291,7 @@ public:
 
     // This method is called whenever an attribute is added, changed or removed.
     virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) { }
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&);
 
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
     virtual const QualifiedName& subResourceAttributeName() const;
@@ -374,7 +374,7 @@ public:
     // focusable but some elements, such as form controls and links, are. Unlike
     // rendererIsFocusable(), this method may be called when layout is not up to
     // date, so it must not use the renderer to determine focusability.
-    virtual bool supportsFocus() const { return hasElementFlag(TabIndexWasSetExplicitly); }
+    virtual bool supportsFocus() const;
     // Whether the node can actually be focused.
     bool isFocusable() const;
     virtual bool isKeyboardFocusable() const;
@@ -510,6 +510,9 @@ public:
     MutableStylePropertySet& ensureMutableInlineStyle();
     void clearMutableInlineStyleIfEmpty();
 
+    void setTabIndex(int);
+    virtual short tabIndex() const OVERRIDE;
+
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)
         : ContainerNode(document, type)
@@ -533,9 +536,10 @@ protected:
     virtual bool shouldRegisterAsNamedItem() const { return false; }
     virtual bool shouldRegisterAsExtraNamedItem() const { return false; }
 
+    virtual bool supportsSpatialNavigationFocus() const;
+
     void clearTabIndexExplicitlyIfNeeded();
     void setTabIndexExplicitly(short);
-    virtual short tabIndex() const OVERRIDE;
     // Subclasses may override this method to affect focusability. Unlike
     // supportsFocus, this method must be called on an up-to-date layout, so it
     // may use the renderer to reason about focusability. This method cannot be

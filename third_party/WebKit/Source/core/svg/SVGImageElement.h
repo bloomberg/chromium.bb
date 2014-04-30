@@ -48,7 +48,6 @@ private:
     explicit SVGImageElement(Document&);
 
     virtual bool isStructurallyExternal() const OVERRIDE { return !hrefString().isNull(); }
-    virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

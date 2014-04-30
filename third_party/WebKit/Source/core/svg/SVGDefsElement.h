@@ -30,11 +30,12 @@ class SVGDefsElement FINAL : public SVGGraphicsElement {
 public:
     static PassRefPtr<SVGDefsElement> create(Document&);
 
+    virtual bool supportsFocus() const OVERRIDE { return false; }
+
 private:
     explicit SVGDefsElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-
 };
 
 } // namespace WebCore

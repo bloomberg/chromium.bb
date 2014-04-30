@@ -42,8 +42,6 @@ public:
 private:
     explicit SVGRectElement(Document&);
 
-    virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
-
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;

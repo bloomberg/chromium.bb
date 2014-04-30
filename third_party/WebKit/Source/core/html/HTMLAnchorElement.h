@@ -88,9 +88,9 @@ protected:
     HTMLAnchorElement(const QualifiedName&, Document&);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual bool supportsFocus() const OVERRIDE;
 
 private:
-    virtual bool supportsFocus() const OVERRIDE;
     virtual bool isMouseFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE FINAL;

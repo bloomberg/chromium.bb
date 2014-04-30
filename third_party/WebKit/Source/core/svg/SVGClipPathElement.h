@@ -36,6 +36,8 @@ public:
     static PassRefPtr<SVGClipPathElement> create(Document&);
     SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() { return m_clipPathUnits.get(); }
 
+    virtual bool supportsFocus() const OVERRIDE { return false; }
+
 private:
     explicit SVGClipPathElement(Document&);
 

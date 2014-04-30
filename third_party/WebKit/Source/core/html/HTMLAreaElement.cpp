@@ -239,11 +239,4 @@ void HTMLAreaElement::updateFocusAppearance(bool restorePreviousSelection)
     imageElement->updateFocusAppearance(restorePreviousSelection);
 }
 
-bool HTMLAreaElement::supportsFocus() const
-{
-    // If the AREA element was a link, it should support focus.
-    // FIXME: This means that an AREA that is not a link cannot be made focusable through contenteditable or tabindex. Is it correct?
-    return isLink();
-}
-
 }
