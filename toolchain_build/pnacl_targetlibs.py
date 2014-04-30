@@ -339,6 +339,7 @@ def BitcodeLibs(host, bias_arch):
                    '-DCMAKE_BUILD_TYPE=Release',
                    '-DCMAKE_C_COMPILER=' + PnaclTool('clang'),
                    '-DCMAKE_CXX_COMPILER=' + PnaclTool('clang++'),
+                   '-DCMAKE_SYSTEM_NAME=nacl',
                    '-DCMAKE_AR=' + PnaclTool('ar'),
                    '-DCMAKE_NM=' + PnaclTool('nm'),
                    '-DCMAKE_RANLIB=' + PnaclTool('ranlib'),

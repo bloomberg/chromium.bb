@@ -1255,6 +1255,7 @@ lib-cpp-configure() {
       cmake -G "Unix Makefiles" \
       -DCMAKE_CXX_COMPILER_WORKS=1 \
       -DCMAKE_C_COMPILER_WORKS=1 \
+      -DCMAKE_SYSTEM_NAME=nacl \
       -DCMAKE_INSTALL_PREFIX="${LIB_CPP_INSTALL_DIR}" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_COMPILER="${PNACL_CC}" \
