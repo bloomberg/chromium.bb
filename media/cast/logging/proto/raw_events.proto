@@ -107,6 +107,9 @@ message BasePacketEvent {
   // LogMetadata.reference_timestamp_ms_at_unix_epoch to relate to a real time
   // and date.
   repeated int64 event_timestamp_ms = 3 [packed = true];
+
+  // Size of the packet.
+  optional int32 size = 4;
 }
 
 message AggregatedPacketEvent {

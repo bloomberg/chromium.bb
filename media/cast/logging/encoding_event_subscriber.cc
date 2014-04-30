@@ -31,6 +31,14 @@ bool IsRtpTimestampLessThan(const ProtoPtr& lhs, const ProtoPtr& rhs) {
   return lhs->relative_rtp_timestamp() < rhs->relative_rtp_timestamp();
 }
 
+BasePacketEvent* GetNewBasePacketEvent(AggregatedPacketEvent* event_proto,
+    int packet_id, int size) {
+  BasePacketEvent* base = event_proto->add_base_packet_event();
+  base->set_packet_id(packet_id);
+  base->set_size(size);
+  return base;
+}
+
 }
 
 namespace media {
@@ -121,8 +129,8 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
     event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
     packet_event_map_.insert(
         std::make_pair(relative_rtp_timestamp, event_proto));
-    base_packet_event_proto = event_proto->add_base_packet_event();
-    base_packet_event_proto->set_packet_id(packet_event.packet_id);
+    base_packet_event_proto = GetNewBasePacketEvent(
+        event_proto.get(), packet_event.packet_id, packet_event.size);
   } else {
     // Found existing entry, now look up existing BasePacketEvent using packet
     // ID. If not found, create a new entry and add to proto.
@@ -149,8 +157,8 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
         it->second = event_proto;
       }
 
-      base_packet_event_proto = event_proto->add_base_packet_event();
-      base_packet_event_proto->set_packet_id(packet_event.packet_id);
+      base_packet_event_proto = GetNewBasePacketEvent(
+          event_proto.get(), packet_event.packet_id, packet_event.size);
     } else if (base_packet_event_proto->event_type_size() >=
                kMaxEventsPerProto) {
       DVLOG(3) << "Too many events in packet "
@@ -160,8 +168,8 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
       event_proto.reset(new AggregatedPacketEvent);
       event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
       it->second = event_proto;
-      base_packet_event_proto = event_proto->add_base_packet_event();
-      base_packet_event_proto->set_packet_id(packet_event.packet_id);
+      base_packet_event_proto = GetNewBasePacketEvent(
+          event_proto.get(), packet_event.packet_id, packet_event.size);
     }
   }
 

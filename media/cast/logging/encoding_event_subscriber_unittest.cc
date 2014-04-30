@@ -331,6 +331,7 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
             base_event.event_type(0));
   ASSERT_EQ(1, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now), base_event.event_timestamp_ms(0));
+  EXPECT_EQ(size, base_event.size());
 
   GetEventsAndReset();
   EXPECT_TRUE(packet_events_.empty());
