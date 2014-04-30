@@ -14,6 +14,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/fake_renderer_client.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/render_pass_test_common.h"
@@ -123,24 +124,6 @@ namespace {
 #if !defined(OS_ANDROID)
 TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
 #endif
-
-class FakeRendererClient : public RendererClient {
- public:
-  FakeRendererClient() : set_full_root_layer_damage_count_(0) {}
-
-  // RendererClient methods.
-  virtual void SetFullRootLayerDamage() OVERRIDE {
-    set_full_root_layer_damage_count_++;
-  }
-
-  // Methods added for test.
-  int set_full_root_layer_damage_count() const {
-    return set_full_root_layer_damage_count_;
-  }
-
- private:
-  int set_full_root_layer_damage_count_;
-};
 
 class FakeRendererGL : public GLRenderer {
  public:

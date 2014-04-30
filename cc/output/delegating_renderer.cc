@@ -45,8 +45,7 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
                                        ResourceProvider* resource_provider)
     : Renderer(client, settings),
       output_surface_(output_surface),
-      resource_provider_(resource_provider),
-      visible_(true) {
+      resource_provider_(resource_provider) {
   DCHECK(resource_provider_);
 
   capabilities_.using_partial_swap = false;
@@ -137,23 +136,21 @@ bool DelegatingRenderer::IsContextLost() {
   return context_provider->IsContextLost();
 }
 
-void DelegatingRenderer::SetVisible(bool visible) {
-  if (visible == visible_)
-    return;
-
-  visible_ = visible;
+void DelegatingRenderer::DidChangeVisibility() {
   ContextProvider* context_provider = output_surface_->context_provider();
-  if (!visible_) {
+  if (!visible()) {
     TRACE_EVENT0("cc", "DelegatingRenderer::SetVisible dropping resources");
     resource_provider_->ReleaseCachedData();
-    if (context_provider)
+    if (context_provider) {
+      context_provider->DeleteCachedResources();
       context_provider->ContextGL()->Flush();
+    }
   }
   // We loop visibility to the GPU process, since that's what manages memory.
   // That will allow it to feed us with memory allocations that we can act
   // upon.
   if (context_provider)
-    context_provider->ContextSupport()->SetSurfaceVisible(visible);
+    context_provider->ContextSupport()->SetSurfaceVisible(visible());
 }
 
 void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,

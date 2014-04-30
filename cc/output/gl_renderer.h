@@ -70,8 +70,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   virtual bool IsContextLost() OVERRIDE;
 
-  virtual void SetVisible(bool visible) OVERRIDE;
-
   virtual void SendManagedMemoryStats(size_t bytes_visible,
                                       size_t bytes_visible_and_nearby,
                                       size_t bytes_allocated) OVERRIDE;
@@ -88,6 +86,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
              ResourceProvider* resource_provider,
              TextureMailboxDeleter* texture_mailbox_deleter,
              int highp_threshold_min);
+
+  virtual void DidChangeVisibility() OVERRIDE;
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
   void InitializeGrContext();
@@ -421,7 +421,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   gfx::Rect viewport_;
   bool is_backbuffer_discarded_;
   bool is_using_bind_uniform_;
-  bool visible_;
   bool is_scissor_enabled_;
   bool scissor_rect_needs_reset_;
   bool stencil_shadow_;

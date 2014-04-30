@@ -14,6 +14,14 @@ bool Renderer::IsContextLost() {
   return false;
 }
 
+void Renderer::SetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+
+  visible_ = visible;
+  DidChangeVisibility();
+}
+
 RendererCapabilitiesImpl::RendererCapabilitiesImpl()
     : best_texture_format(RGBA_8888),
       allow_partial_texture_updates(false),

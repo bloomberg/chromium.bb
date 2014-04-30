@@ -44,6 +44,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   virtual Capabilities ContextCapabilities() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
+  virtual void DeleteCachedResources() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) OVERRIDE;

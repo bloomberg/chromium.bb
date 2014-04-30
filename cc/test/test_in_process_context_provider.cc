@@ -115,6 +115,11 @@ bool TestInProcessContextProvider::IsContextLost() { return false; }
 
 void TestInProcessContextProvider::VerifyContexts() {}
 
+void TestInProcessContextProvider::DeleteCachedResources() {
+  if (gr_context_)
+    gr_context_->freeGpuResources();
+}
+
 bool TestInProcessContextProvider::DestroyedOnMainThread() { return false; }
 
 void TestInProcessContextProvider::SetLostContextCallback(

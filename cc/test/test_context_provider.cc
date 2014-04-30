@@ -111,6 +111,9 @@ void TestContextProvider::VerifyContexts() {
   }
 }
 
+void TestContextProvider::DeleteCachedResources() {
+}
+
 bool TestContextProvider::DestroyedOnMainThread() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 

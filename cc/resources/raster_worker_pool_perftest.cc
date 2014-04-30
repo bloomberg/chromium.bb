@@ -59,6 +59,7 @@ class PerfContextProvider : public ContextProvider {
   virtual class GrContext* GrContext() OVERRIDE { return NULL; }
   virtual bool IsContextLost() OVERRIDE { return false; }
   virtual void VerifyContexts() OVERRIDE {}
+  virtual void DeleteCachedResources() OVERRIDE {}
   virtual bool DestroyedOnMainThread() OVERRIDE { return false; }
   virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE {}
   virtual void SetMemoryPolicyChangedCallback(

@@ -164,6 +164,13 @@ void ContextProviderInProcess::VerifyContexts() {
     OnLostContext();
 }
 
+void ContextProviderInProcess::DeleteCachedResources() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  if (gr_context_)
+    gr_context_->FreeGpuResources();
+}
+
 void ContextProviderInProcess::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   {

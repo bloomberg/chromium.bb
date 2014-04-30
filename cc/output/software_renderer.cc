@@ -115,7 +115,6 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
                                    OutputSurface* output_surface,
                                    ResourceProvider* resource_provider)
     : DirectRenderer(client, settings, output_surface, resource_provider),
-      visible_(true),
       is_scissor_enabled_(false),
       is_backbuffer_discarded_(false),
       output_device_(output_surface->software_device()),
@@ -655,12 +654,8 @@ void SoftwareRenderer::GetFramebufferPixels(void* pixels,
   output_device_->CopyToPixels(frame_rect, pixels);
 }
 
-void SoftwareRenderer::SetVisible(bool visible) {
-  if (visible_ == visible)
-    return;
-  visible_ = visible;
-
-  if (visible_)
+void SoftwareRenderer::DidChangeVisibility() {
+  if (visible())
     EnsureBackbuffer();
   else
     DiscardBackbuffer();

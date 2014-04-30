@@ -34,6 +34,7 @@ class TestContextProvider : public ContextProvider {
   virtual class GrContext* GrContext() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
+  virtual void DeleteCachedResources() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE;
   virtual void SetMemoryPolicyChangedCallback(

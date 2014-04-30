@@ -50,6 +50,9 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // one.
   virtual void VerifyContexts() = 0;
 
+  // Delete all cached gpu resources.
+  virtual void DeleteCachedResources() = 0;
+
   // A method to be called from the main thread that should return true if
   // the context inside the provider is no longer valid.
   virtual bool DestroyedOnMainThread() = 0;

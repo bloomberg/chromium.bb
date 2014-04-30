@@ -78,7 +78,8 @@ class CC_EXPORT Renderer {
 
   virtual bool IsContextLost();
 
-  virtual void SetVisible(bool visible) = 0;
+  bool visible() const { return visible_; }
+  void SetVisible(bool visible);
 
   virtual void SendManagedMemoryStats(size_t bytes_visible,
                                       size_t bytes_visible_and_nearby,
@@ -86,10 +87,13 @@ class CC_EXPORT Renderer {
 
  protected:
   explicit Renderer(RendererClient* client, const LayerTreeSettings* settings)
-      : client_(client), settings_(settings) {}
+      : client_(client), settings_(settings), visible_(true) {}
+
+  virtual void DidChangeVisibility() = 0;
 
   RendererClient* client_;
   const LayerTreeSettings* settings_;
+  bool visible_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Renderer);

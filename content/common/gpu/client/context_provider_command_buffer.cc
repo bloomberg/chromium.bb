@@ -154,6 +154,13 @@ void ContextProviderCommandBuffer::VerifyContexts() {
     OnLostContext();
 }
 
+void ContextProviderCommandBuffer::DeleteCachedResources() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  if (gr_context_)
+    gr_context_->FreeGpuResources();
+}
+
 void ContextProviderCommandBuffer::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   {
@@ -172,11 +179,6 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
     const gpu::MemoryAllocation& allocation) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  if (gr_context_) {
-    bool nonzero_allocation = !!allocation.bytes_limit_when_visible;
-    gr_context_->SetMemoryLimit(nonzero_allocation);
-  }
-
   if (memory_policy_changed_callback_.is_null())
     return;
 
@@ -194,7 +196,6 @@ void ContextProviderCommandBuffer::InitializeCapabilities() {
 
   capabilities_ = caps;
 }
-
 
 bool ContextProviderCommandBuffer::DestroyedOnMainThread() {
   DCHECK(main_thread_checker_.CalledOnValidThread());

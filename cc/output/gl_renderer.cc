@@ -302,7 +302,6 @@ GLRenderer::GLRenderer(RendererClient* client,
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
       is_backbuffer_discarded_(false),
-      visible_(true),
       is_scissor_enabled_(false),
       scissor_rect_needs_reset_(true),
       stencil_shadow_(false),
@@ -374,14 +373,10 @@ void GLRenderer::DebugGLCall(GLES2Interface* gl,
                << static_cast<int>(error) << "\n";
 }
 
-void GLRenderer::SetVisible(bool visible) {
-  if (visible_ == visible)
-    return;
-  visible_ = visible;
-
+void GLRenderer::DidChangeVisibility() {
   EnforceMemoryPolicy();
 
-  context_support_->SetSurfaceVisible(visible);
+  context_support_->SetSurfaceVisible(visible());
 }
 
 void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,
@@ -2289,11 +2284,12 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
 }
 
 void GLRenderer::EnforceMemoryPolicy() {
-  if (!visible_) {
+  if (!visible()) {
     TRACE_EVENT0("cc", "GLRenderer::EnforceMemoryPolicy dropping resources");
     ReleaseRenderPassTextures();
     DiscardBackbuffer();
     resource_provider_->ReleaseCachedData();
+    output_surface_->context_provider()->DeleteCachedResources();
     GLC(gl_, gl_->Flush());
   }
 }
