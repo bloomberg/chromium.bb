@@ -332,25 +332,27 @@ void FEComposite::applySoftware()
         if (destinationRect.isEmpty())
             break;
         IntPoint destinationPoint(destinationRect.x() - absolutePaintRect().x(), destinationRect.y() - absolutePaintRect().y());
-        IntRect sourceRect(IntPoint(destinationRect.x() - in->absolutePaintRect().x(),
+        FloatRect sourceRect(IntPoint(destinationRect.x() - in->absolutePaintRect().x(),
                                     destinationRect.y() - in->absolutePaintRect().y()), destinationRect.size());
-        IntRect source2Rect(IntPoint(destinationRect.x() - in2->absolutePaintRect().x(),
+        FloatRect source2Rect(IntPoint(destinationRect.x() - in2->absolutePaintRect().x(),
                                      destinationRect.y() - in2->absolutePaintRect().y()), destinationRect.size());
-        filterContext->drawImageBuffer(imageBuffer2, destinationPoint, source2Rect);
-        filterContext->drawImageBuffer(imageBuffer, destinationPoint, sourceRect, CompositeSourceIn);
+        filterContext->drawImageBuffer(imageBuffer2,
+            FloatRect(destinationPoint, imageBuffer2->size()), &source2Rect);
+        filterContext->drawImageBuffer(imageBuffer,
+            FloatRect(destinationPoint, imageBuffer->size()), &sourceRect, CompositeSourceIn);
         break;
     }
     case FECOMPOSITE_OPERATOR_OUT:
         filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()));
-        filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()), IntRect(IntPoint(), imageBuffer2->size()), CompositeDestinationOut);
+        filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()), 0, CompositeDestinationOut);
         break;
     case FECOMPOSITE_OPERATOR_ATOP:
         filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
-        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), IntRect(IntPoint(), imageBuffer->size()), CompositeSourceAtop);
+        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeSourceAtop);
         break;
     case FECOMPOSITE_OPERATOR_XOR:
         filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
-        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), IntRect(IntPoint(), imageBuffer->size()), CompositeXOR);
+        filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeXOR);
         break;
     default:
         break;

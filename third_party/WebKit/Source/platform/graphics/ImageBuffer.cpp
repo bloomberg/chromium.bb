@@ -231,11 +231,12 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
         GL_UNSIGNED_BYTE, 0, true, false);
 }
 
-void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator op, blink::WebBlendMode blendMode)
+void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, CompositeOperator op)
 {
     if (!isSurfaceValid())
         return;
 
+    FloatRect srcRect = srcPtr ? *srcPtr : FloatRect(FloatPoint(), size());
     SkBitmap bitmap = m_surface->bitmap();
     // For ImageBufferSurface that enables cachedBitmap, Use the cached Bitmap for CPU side usage
     // if it is available, otherwise generate and use it.
@@ -246,7 +247,7 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
 
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
 
-    context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation);
+    context->drawImage(image.get(), destRect, srcRect, op, blink::WebBlendModeNormal, DoNotRespectImageOrientation);
 }
 
 void ImageBuffer::flush()

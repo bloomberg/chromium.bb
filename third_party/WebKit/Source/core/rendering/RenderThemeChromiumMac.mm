@@ -1106,7 +1106,8 @@ bool RenderThemeChromiumMac::paintProgressBar(RenderObject* renderObject, const 
         paintInfo.context->scale(FloatSize(-1, 1));
     }
 
-    paintInfo.context->drawImageBuffer(imageBuffer.get(), inflatedRect.location());
+    paintInfo.context->drawImageBuffer(imageBuffer.get(),
+        FloatRect(inflatedRect.location(), imageBuffer->size()));
     return false;
 }
 

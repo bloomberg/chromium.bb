@@ -326,7 +326,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
             if (m_presentedImage)
                 context->drawImage(m_presentedImage.get(), pixelSnappedIntRect(r), compositeOperator, DoNotRespectImageOrientation);
             else
-                context->drawImageBuffer(imageBuffer, pixelSnappedIntRect(r), compositeOperator, blink::WebBlendModeNormal);
+                context->drawImageBuffer(imageBuffer, pixelSnappedIntRect(r), 0, compositeOperator);
         }
     } else {
         // When alpha is false, we should draw to opaque black.

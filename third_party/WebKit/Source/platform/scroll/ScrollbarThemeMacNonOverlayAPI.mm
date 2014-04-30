@@ -170,8 +170,11 @@ bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, Grap
             scrollbarInfo);
     }
 
-    if (!canDrawDirectly)
-        context->drawImageBuffer(imageBuffer.get(), scrollbar->frameRect().location());
+    if (!canDrawDirectly) {
+        ASSERT(imageBuffer);
+        context->drawImageBuffer(imageBuffer.get(),
+            FloatRect(scrollbar->frameRect().location(), imageBuffer->size()));
+    }
 
     return true;
 }

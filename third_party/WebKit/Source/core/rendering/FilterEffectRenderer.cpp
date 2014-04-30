@@ -387,7 +387,7 @@ GraphicsContext* FilterEffectRendererHelper::applyFilterEffect()
     filter->apply();
 
     // Get the filtered output and draw it in place.
-    m_savedGraphicsContext->drawImageBuffer(filter->output(), filter->outputRect(), CompositeSourceOver);
+    m_savedGraphicsContext->drawImageBuffer(filter->output(), filter->outputRect());
 
     filter->clearIntermediateResults();
 

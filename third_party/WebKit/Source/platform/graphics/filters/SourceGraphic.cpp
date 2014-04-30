@@ -56,9 +56,10 @@ void SourceGraphic::applySoftware()
         return;
 
     IntRect srcRect = filter->sourceImageRect();
-    resultImage->context()->drawImageBuffer(
-        filter->sourceImage(),
-        IntPoint(srcRect.location() - absolutePaintRect().location()));
+    if (ImageBuffer* sourceImageBuffer = filter->sourceImage()) {
+        resultImage->context()->drawImageBuffer(sourceImageBuffer,
+            FloatRect(IntPoint(srcRect.location() - absolutePaintRect().location()), sourceImageBuffer->size()));
+    }
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

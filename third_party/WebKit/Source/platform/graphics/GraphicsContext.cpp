@@ -1070,42 +1070,13 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const In
     image->drawTiled(this, dest, srcRect, tileScaleFactor, hRule, vRule, op);
 }
 
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& p, CompositeOperator op, WebBlendMode blendMode)
-{
-    if (!image)
-        return;
-    drawImageBuffer(image, FloatRect(IntRect(p, image->size())), FloatRect(FloatPoint(), FloatSize(image->size())), op, blendMode);
-}
-
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntRect& r, CompositeOperator op, WebBlendMode blendMode)
-{
-    if (!image)
-        return;
-    drawImageBuffer(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->size())), op, blendMode);
-}
-
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& dest, const IntRect& srcRect, CompositeOperator op, WebBlendMode blendMode)
-{
-    drawImageBuffer(image, FloatRect(IntRect(dest, srcRect.size())), FloatRect(srcRect), op, blendMode);
-}
-
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntRect& dest, const IntRect& srcRect, CompositeOperator op, WebBlendMode blendMode)
-{
-    drawImageBuffer(image, FloatRect(dest), FloatRect(srcRect), op, blendMode);
-}
-
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest)
-{
-    if (!image)
-        return;
-    drawImageBuffer(image, dest, FloatRect(IntRect(IntPoint(), image->size())));
-}
-
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)
+void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
+    const FloatRect* src, CompositeOperator op)
 {
     if (paintingDisabled() || !image)
         return;
-    image->draw(this, dest, src, op, blendMode);
+
+    image->draw(this, dest, src, op);
 }
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)

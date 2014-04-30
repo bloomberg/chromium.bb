@@ -268,12 +268,7 @@ public:
         const FloatSize& tileScaleFactor, Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
         CompositeOperator = CompositeSourceOver);
 
-    void drawImageBuffer(ImageBuffer*, const IntPoint&, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
-    void drawImageBuffer(ImageBuffer*, const IntRect&, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
-    void drawImageBuffer(ImageBuffer*, const IntPoint& destPoint, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
-    void drawImageBuffer(ImageBuffer*, const IntRect& destRect, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
-    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect);
-    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
+    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect* srcRect = 0, CompositeOperator = CompositeSourceOver);
 
     // These methods write to the canvas and modify the opaque region, if tracked.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect

@@ -80,7 +80,9 @@ void FETile::applySoftware()
     GraphicsContext* tileImageContext = tileImage->context();
     tileImageContext->scale(FloatSize(intTileSize.width() / tileRect.width(), intTileSize.height() / tileRect.height()));
     tileImageContext->translate(-inMaxEffectLocation.x(), -inMaxEffectLocation.y());
-    tileImageContext->drawImageBuffer(in->asImageBuffer(), in->absolutePaintRect().location());
+
+    if (ImageBuffer* tileImageBuffer = in->asImageBuffer())
+        tileImageContext->drawImageBuffer(tileImageBuffer, IntRect(in->absolutePaintRect().location(), tileImageBuffer->size()));
 
     RefPtr<Pattern> pattern = Pattern::create(tileImage->copyImage(CopyBackingStore), true, true);
 
