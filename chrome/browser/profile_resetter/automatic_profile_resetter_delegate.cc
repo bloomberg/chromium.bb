@@ -43,6 +43,12 @@ scoped_ptr<base::DictionaryValue> BuildSubTreeFromTemplateURL(
     const TemplateURL* template_url) {
   scoped_ptr<base::DictionaryValue> tree(new base::DictionaryValue);
   tree->SetString("search_url", template_url->url());
+  // If this value contains a placeholder in the pre-populated data, it will
+  // have been replaced as it was loaded into a TemplateURL.
+  // BuildSubTreeFromTemplateURL works with TemplateURL (not TemplateURLData)
+  // in order to maintain this behaviour.
+  // TODO(engedy): Confirm the expected behaviour and convert to use
+  // TemplateURLData if possible."
   tree->SetString("search_terms_replacement_key",
                   template_url->search_terms_replacement_key());
   tree->SetString("suggest_url", template_url->suggestions_url());
@@ -234,13 +240,16 @@ bool AutomaticProfileResetterDelegateImpl::
 scoped_ptr<base::ListValue> AutomaticProfileResetterDelegateImpl::
     GetPrepopulatedSearchProvidersDetails() const {
   size_t default_search_index = 0;
-  ScopedVector<TemplateURL> engines(
+  ScopedVector<TemplateURLData> engines(
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
-          template_url_service_->profile(), &default_search_index));
+          profile_->GetPrefs(), &default_search_index));
   scoped_ptr<base::ListValue> engines_details_list(new base::ListValue);
-  for (ScopedVector<TemplateURL>::const_iterator it = engines.begin();
-       it != engines.end(); ++it)
-    engines_details_list->Append(BuildSubTreeFromTemplateURL(*it).release());
+  for (ScopedVector<TemplateURLData>::const_iterator it = engines.begin();
+       it != engines.end(); ++it) {
+    TemplateURL template_url(profile_, **it);
+    engines_details_list->Append(
+        BuildSubTreeFromTemplateURL(&template_url).release());
+  }
   return engines_details_list.Pass();
 }
 

@@ -35,8 +35,8 @@ TemplateURL* FindURLByPrepopulateID(
 
 // Modifies |prepopulated_url| so that it contains user-modified fields from
 // |original_turl|. Both URLs must have the same prepopulate_id.
-void MergeIntoPrepopulatedEngineData(TemplateURLData* prepopulated_url,
-                                     const TemplateURL* original_turl);
+void MergeIntoPrepopulatedEngineData(const TemplateURL* original_turl,
+                                     TemplateURLData* prepopulated_url);
 
 // CreateActionsFromCurrentPrepopulateData() (see below) takes in the current
 // prepopulated URLs as well as the user's current URLs, and returns an instance
@@ -63,7 +63,7 @@ struct ActionsFromPrepopulateData {
 
   TemplateURLService::TemplateURLVector removed_engines;
   EditedEngines edited_engines;
-  TemplateURLService::TemplateURLVector added_engines;
+  std::vector<TemplateURLData> added_engines;
 };
 
 // Given the user's current URLs and the current set of prepopulated URLs,
@@ -73,7 +73,7 @@ struct ActionsFromPrepopulateData {
 //
 // NOTE: Takes ownership of, and clears, |prepopulated_urls|.
 ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
-    ScopedVector<TemplateURL>* prepopulated_urls,
+    ScopedVector<TemplateURLData>* prepopulated_urls,
     const TemplateURLService::TemplateURLVector& existing_urls,
     const TemplateURL* default_search_provider);
 
@@ -126,7 +126,7 @@ bool DeDupeEncodings(std::vector<std::string>* encodings);
 // so it's accessible by unittests.
 void RemoveDuplicatePrepopulateIDs(
     WebDataService* service,
-    const ScopedVector<TemplateURL>& prepopulated_urls,
+    const ScopedVector<TemplateURLData>& prepopulated_urls,
     TemplateURL* default_search_provider,
     TemplateURLService::TemplateURLVector* template_urls,
     std::set<std::string>* removed_keyword_guids);

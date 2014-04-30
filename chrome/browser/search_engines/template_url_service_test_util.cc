@@ -144,6 +144,10 @@ void TemplateURLServiceTestUtilBase::SetManagedDefaultSearchPreferences(
     const std::string& encodings,
     const std::string& alternate_url,
     const std::string& search_terms_replacement_key) {
+  if (enabled) {
+    EXPECT_FALSE(keyword.empty());
+    EXPECT_FALSE(search_url.empty());
+  }
   TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
                                base::Value::CreateBooleanValue(enabled));

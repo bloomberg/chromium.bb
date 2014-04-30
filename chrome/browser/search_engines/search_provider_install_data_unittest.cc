@@ -183,6 +183,8 @@ void SearchProviderInstallDataTest::SimulateDefaultSearchIsManaged(
                           base::Value::CreateStringValue(url));
   service->SetManagedPref(prefs::kDefaultSearchProviderName,
                           base::Value::CreateStringValue("managed"));
+  service->SetManagedPref(prefs::kDefaultSearchProviderKeyword,
+                          new base::StringValue("managed"));
   // Clear the IDs that are not specified via policy.
   service->SetManagedPref(prefs::kDefaultSearchProviderID,
                           new base::StringValue(std::string()));

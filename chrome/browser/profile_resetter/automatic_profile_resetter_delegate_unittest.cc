@@ -118,6 +118,7 @@ void ExpectDetailsMatch(const base::DictionaryValue& expected_details,
     const base::Value* expected_value = &it.value();
     const base::Value* actual_value = NULL;
     ASSERT_TRUE(details.Get(it.key(), &actual_value));
+
     if (it.key() == "id") {
       // Ignore ID as it is dynamically assigned by the TemplateURLService.
     } else if (it.key() == "encodings") {
@@ -137,7 +138,8 @@ void ExpectDetailsMatch(const base::DictionaryValue& expected_details,
       EXPECT_EQ(expected_encodings, JoinString(actual_encodings_vector, ';'));
     } else {
       // Everything else is the same format.
-      EXPECT_TRUE(actual_value->Equals(expected_value));
+      EXPECT_TRUE(actual_value->Equals(expected_value))
+          << "Expected: " << *expected_value << ". Actual: " << *actual_value;
     }
   }
 }
@@ -410,7 +412,7 @@ TEST_F(AutomaticProfileResetterDelegateTest,
   // disabled by policy.
   RemoveManagedDefaultSearchPreferences();
   SetManagedDefaultSearchPreferences(
-      true, std::string(), std::string(), std::string(), std::string(),
+      false, std::string(), std::string(), std::string(), std::string(),
       std::string(), std::string(), std::string(), std::string());
 
   dsp_details = resetter_delegate()->GetDefaultSearchProviderDetails();

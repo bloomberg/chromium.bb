@@ -1140,10 +1140,10 @@ bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword() const {
                                     google_util::DISALLOW_SUBDOMAIN);
 }
 
-bool TemplateURL::HasSameKeywordAs(const TemplateURL& other) const {
-  return (data_.keyword() == other.data_.keyword()) ||
+bool TemplateURL::HasSameKeywordAs(const TemplateURLData& other) const {
+  return (data_.keyword() == other.keyword()) ||
       (IsGoogleSearchURLWithReplaceableKeyword() &&
-       other.IsGoogleSearchURLWithReplaceableKeyword());
+       TemplateURL(NULL, other).IsGoogleSearchURLWithReplaceableKeyword());
 }
 
 TemplateURL::Type TemplateURL::GetType() const {

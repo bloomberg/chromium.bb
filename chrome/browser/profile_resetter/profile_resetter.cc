@@ -152,7 +152,8 @@ void ProfileResetter::ResetDefaultSearchEngine() {
   if (template_url_service_->loaded()) {
     PrefService* prefs = profile_->GetPrefs();
     DCHECK(prefs);
-    TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(profile_);
+    TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(
+        profile_->GetPrefs());
     scoped_ptr<base::ListValue> search_engines(
         master_settings_->GetSearchProviderOverrides());
     if (search_engines) {

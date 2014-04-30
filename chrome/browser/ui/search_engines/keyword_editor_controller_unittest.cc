@@ -77,6 +77,8 @@ class KeywordEditorControllerTest : public testing::Test,
                             new base::StringValue(url));
     service->SetManagedPref(prefs::kDefaultSearchProviderName,
                             new base::StringValue("managed"));
+    service->SetManagedPref(prefs::kDefaultSearchProviderKeyword,
+                            new base::StringValue("managed"));
     // Clear the IDs that are not specified via policy.
     service->SetManagedPref(prefs::kDefaultSearchProviderID,
                             new base::StringValue(std::string()));

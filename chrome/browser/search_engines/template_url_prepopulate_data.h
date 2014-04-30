@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
@@ -17,6 +18,7 @@ class GURL;
 class PrefService;
 class Profile;
 class TemplateURL;
+struct TemplateURLData;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -48,18 +50,18 @@ int GetDataVersion(PrefService* prefs);
 // Loads the set of TemplateURLs from the prepopulate data. On return,
 // |default_search_provider_index| is set to the index of the default search
 // provider.
-ScopedVector<TemplateURL> GetPrepopulatedEngines(
-    Profile* profile,
+ScopedVector<TemplateURLData> GetPrepopulatedEngines(
+    PrefService* prefs,
     size_t* default_search_provider_index);
 
 // Removes prepopulated engines and their version stored in user prefs.
-void ClearPrepopulatedEnginesInPrefs(Profile* profile);
+void ClearPrepopulatedEnginesInPrefs(PrefService* prefs);
 
-// Returns the default search provider specified by the prepopulate data.
-// The caller owns the returned value, which may be NULL.
-// If |profile| is NULL, any search provider overrides from the preferences are
+// Returns the default search provider specified by the prepopulate data, which
+// may be NULL.
+// If |prefs| is NULL, any search provider overrides from the preferences are
 // not used.
-TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile);
+scoped_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(PrefService* prefs);
 
 // Returns the type of the provided engine, or SEARCH_ENGINE_OTHER if no engines
 // match.  This checks the TLD+1 for the most part, but will report the type as

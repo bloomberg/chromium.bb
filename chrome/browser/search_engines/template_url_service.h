@@ -30,6 +30,8 @@ class PrefService;
 class Profile;
 class SearchHostToURLsMap;
 class SearchTermsData;
+class TemplateURL;
+struct TemplateURLData;
 class TemplateURLServiceObserver;
 
 namespace syncer {
@@ -462,14 +464,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   // preferences on start up.
   void SaveDefaultSearchProviderToPrefs(const TemplateURL* url);
 
-  // Creates a TemplateURL that was previously saved to prefs via
+  // Creates a TemplateURLData that was previously saved to prefs via
   // SaveDefaultSearchProviderToPrefs or set via policy.
   // Returns true if successful, false otherwise.
   // If the user or the policy has opted for no default search, this
   // returns true but default_provider is set to NULL.
   // |*is_managed| specifies whether the default is managed via policy.
   bool LoadDefaultSearchProviderFromPrefs(
-      scoped_ptr<TemplateURL>* default_provider,
+      scoped_ptr<TemplateURLData>* default_provider,
       bool* is_managed);
 
   // Clears user preferences describing the default search engine.
@@ -575,7 +577,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   void RemoveProvidersCreatedByPolicy(
       TemplateURLVector* template_urls,
       TemplateURL** default_search_provider,
-      TemplateURL* default_from_prefs);
+      TemplateURLData* default_from_prefs);
 
   // Resets the sync GUID of the specified TemplateURL and persists the change
   // to the database. This does not notify observers.

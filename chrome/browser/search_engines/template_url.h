@@ -651,8 +651,9 @@ class TemplateURL {
   bool IsGoogleSearchURLWithReplaceableKeyword() const;
 
   // Returns true if the keywords match or if
-  // IsGoogleSearchURLWithReplaceableKeyword() is true for both TemplateURLs.
-  bool HasSameKeywordAs(const TemplateURL& other) const;
+  // IsGoogleSearchURLWithReplaceableKeyword() is true for both |this| and
+  // |other|.
+  bool HasSameKeywordAs(const TemplateURLData& other) const;
 
   Type GetType() const;
 

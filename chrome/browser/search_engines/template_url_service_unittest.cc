@@ -311,16 +311,17 @@ TemplateURL* TemplateURLServiceTest::CreateReplaceablePreloadedTemplateURL(
     size_t index_offset_from_default,
     base::string16* prepopulated_display_url) {
   size_t default_search_provider_index = 0;
-  ScopedVector<TemplateURL> prepopulated_urls =
+  ScopedVector<TemplateURLData> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
-          test_util_.profile(), &default_search_provider_index);
+          test_util_.profile()->GetPrefs(), &default_search_provider_index);
   EXPECT_LT(index_offset_from_default, prepopulated_urls.size());
   size_t prepopulated_index = (default_search_provider_index +
       index_offset_from_default) % prepopulated_urls.size();
   TemplateURL* t_url = CreatePreloadedTemplateURL(safe_for_autoreplace,
-      prepopulated_urls[prepopulated_index]->prepopulate_id());
+      prepopulated_urls[prepopulated_index]->prepopulate_id);
   *prepopulated_display_url =
-      prepopulated_urls[prepopulated_index]->url_ref().DisplayURL();
+      TemplateURL(NULL, *prepopulated_urls[prepopulated_index]).url_ref().
+          DisplayURL();
   return t_url;
 }
 

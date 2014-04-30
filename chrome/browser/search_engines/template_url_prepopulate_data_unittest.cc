@@ -22,11 +22,17 @@
 using base::ASCIIToUTF16;
 
 namespace {
+
 SearchEngineType GetEngineType(const std::string& url) {
   TemplateURLData data;
   data.SetURL(url);
   return TemplateURLPrepopulateData::GetEngineType(TemplateURL(NULL, data));
 }
+
+std::string GetHostFromTemplateURLData(const TemplateURLData& data) {
+  return TemplateURL(NULL, data).url_ref().GetHost();
+}
+
 }  // namespace
 
 typedef testing::Test TemplateURLPrepopulateDataTest;
@@ -89,14 +95,14 @@ TEST(TemplateURLPrepopulateDataTest, UniqueIDs) {
   for (size_t i = 0; i < arraysize(kCountryIds); ++i) {
     profile.GetPrefs()->SetInteger(prefs::kCountryIDAtInstall, kCountryIds[i]);
     size_t default_index;
-    ScopedVector<TemplateURL> urls =
-        TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile,
+    ScopedVector<TemplateURLData> urls =
+        TemplateURLPrepopulateData::GetPrepopulatedEngines(profile.GetPrefs(),
                                                            &default_index);
     std::set<int> unique_ids;
     for (size_t turl_i = 0; turl_i < urls.size(); ++turl_i) {
-      ASSERT_TRUE(unique_ids.find(urls[turl_i]->prepopulate_id()) ==
+      ASSERT_TRUE(unique_ids.find(urls[turl_i]->prepopulate_id) ==
                   unique_ids.end());
-      unique_ids.insert(urls[turl_i]->prepopulate_id());
+      unique_ids.insert(urls[turl_i]->prepopulate_id);
     }
   }
 }
@@ -124,21 +130,20 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_EQ(1, version);
 
   size_t default_index;
-  ScopedVector<TemplateURL> t_urls =
-      TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile,
-                                                         &default_index);
+  ScopedVector<TemplateURLData> t_urls =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(prefs, &default_index);
 
   ASSERT_EQ(1u, t_urls.size());
-  EXPECT_EQ(ASCIIToUTF16("foo"), t_urls[0]->short_name());
+  EXPECT_EQ(ASCIIToUTF16("foo"), t_urls[0]->short_name);
   EXPECT_EQ(ASCIIToUTF16("fook"), t_urls[0]->keyword());
-  EXPECT_EQ("foo.com", t_urls[0]->url_ref().GetHost());
-  EXPECT_EQ("foi.com", t_urls[0]->favicon_url().host());
-  EXPECT_EQ(1u, t_urls[0]->input_encodings().size());
-  EXPECT_EQ(1001, t_urls[0]->prepopulate_id());
-  EXPECT_TRUE(t_urls[0]->suggestions_url().empty());
-  EXPECT_TRUE(t_urls[0]->instant_url().empty());
-  EXPECT_EQ(0u, t_urls[0]->alternate_urls().size());
-  EXPECT_TRUE(t_urls[0]->search_terms_replacement_key().empty());
+  EXPECT_EQ("foo.com", GetHostFromTemplateURLData(*t_urls[0]));
+  EXPECT_EQ("foi.com", t_urls[0]->favicon_url.host());
+  EXPECT_EQ(1u, t_urls[0]->input_encodings.size());
+  EXPECT_EQ(1001, t_urls[0]->prepopulate_id);
+  EXPECT_TRUE(t_urls[0]->suggestions_url.empty());
+  EXPECT_TRUE(t_urls[0]->instant_url.empty());
+  EXPECT_EQ(0u, t_urls[0]->alternate_urls.size());
+  EXPECT_TRUE(t_urls[0]->search_terms_replacement_key.empty());
 
   // Test the optional settings too.
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
@@ -151,23 +156,23 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   overrides->Append(entry->DeepCopy());
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
-  t_urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile,
-                                                              &default_index);
+  t_urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(
+      profile.GetPrefs(), &default_index);
   ASSERT_EQ(1u, t_urls.size());
-  EXPECT_EQ(ASCIIToUTF16("foo"), t_urls[0]->short_name());
+  EXPECT_EQ(ASCIIToUTF16("foo"), t_urls[0]->short_name);
   EXPECT_EQ(ASCIIToUTF16("fook"), t_urls[0]->keyword());
-  EXPECT_EQ("foo.com", t_urls[0]->url_ref().GetHost());
-  EXPECT_EQ("foi.com", t_urls[0]->favicon_url().host());
-  EXPECT_EQ(1u, t_urls[0]->input_encodings().size());
-  EXPECT_EQ(1001, t_urls[0]->prepopulate_id());
+  EXPECT_EQ("foo.com", GetHostFromTemplateURLData(*t_urls[0]));
+  EXPECT_EQ("foi.com", t_urls[0]->favicon_url.host());
+  EXPECT_EQ(1u, t_urls[0]->input_encodings.size());
+  EXPECT_EQ(1001, t_urls[0]->prepopulate_id);
   EXPECT_EQ("http://foo.com/suggest?q={searchTerms}",
-            t_urls[0]->suggestions_url());
+            t_urls[0]->suggestions_url);
   EXPECT_EQ("http://foo.com/instant?q={searchTerms}",
-            t_urls[0]->instant_url());
-  ASSERT_EQ(1u, t_urls[0]->alternate_urls().size());
+            t_urls[0]->instant_url);
+  ASSERT_EQ(1u, t_urls[0]->alternate_urls.size());
   EXPECT_EQ("http://foo.com/alternate?q={searchTerms}",
-            t_urls[0]->alternate_urls()[0]);
-  EXPECT_EQ("espv", t_urls[0]->search_terms_replacement_key());
+            t_urls[0]->alternate_urls[0]);
+  EXPECT_EQ("espv", t_urls[0]->search_terms_replacement_key);
 
   // Test that subsequent providers are loaded even if an intermediate
   // provider has an incomplete configuration.
@@ -185,8 +190,8 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   overrides->Append(entry->DeepCopy());
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
-  t_urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile,
-                                                              &default_index);
+  t_urls =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(prefs, &default_index);
   EXPECT_EQ(2u, t_urls.size());
 }
 
@@ -211,32 +216,32 @@ TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   EXPECT_EQ(1, version);
 
   // This call removes the above search engine.
-  TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(&profile);
+  TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(prefs);
 
   version = TemplateURLPrepopulateData::GetDataVersion(prefs);
   EXPECT_EQ(TemplateURLPrepopulateData::kCurrentDataVersion, version);
 
   size_t default_index;
-  ScopedVector<TemplateURL> t_urls =
-      TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile,
-                                                         &default_index);
+  ScopedVector<TemplateURLData> t_urls =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(prefs, &default_index);
   ASSERT_FALSE(t_urls.empty());
   for (size_t i = 0; i < t_urls.size(); ++i) {
-    EXPECT_NE(ASCIIToUTF16("foo"), t_urls[i]->short_name());
+    EXPECT_NE(ASCIIToUTF16("foo"), t_urls[i]->short_name);
     EXPECT_NE(ASCIIToUTF16("fook"), t_urls[i]->keyword());
-    EXPECT_NE("foi.com", t_urls[i]->favicon_url().host());
-    EXPECT_NE("foo.com", t_urls[i]->url_ref().GetHost());
-    EXPECT_NE(1001, t_urls[i]->prepopulate_id());
+    EXPECT_NE("foi.com", t_urls[i]->favicon_url.host());
+    EXPECT_NE("foo.com", GetHostFromTemplateURLData(*t_urls[i]));
+    EXPECT_NE(1001, t_urls[i]->prepopulate_id);
   }
   // Ensures the default URL is Google and has the optional fields filled.
-  EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
-  EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->image_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->new_tab_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->image_url_post_params().empty());
+  EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name);
+  EXPECT_FALSE(t_urls[default_index]->suggestions_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->instant_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->new_tab_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url_post_params.empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
-            TemplateURLPrepopulateData::GetEngineType(*t_urls[default_index]));
+            TemplateURLPrepopulateData::GetEngineType(
+                TemplateURL(NULL, *t_urls[default_index])));
 }
 
 // Verifies that built-in search providers are processed correctly.
@@ -245,36 +250,37 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   // Use United States.
   profile.GetPrefs()->SetInteger(prefs::kCountryIDAtInstall, 'U'<<8|'S');
   size_t default_index;
-  ScopedVector<TemplateURL> t_urls =
-      TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile,
+  ScopedVector<TemplateURLData> t_urls =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(profile.GetPrefs(),
                                                          &default_index);
 
   // Ensure all the URLs have the required fields populated.
   ASSERT_FALSE(t_urls.empty());
   for (size_t i = 0; i < t_urls.size(); ++i) {
-    ASSERT_FALSE(t_urls[i]->short_name().empty());
+    ASSERT_FALSE(t_urls[i]->short_name.empty());
     ASSERT_FALSE(t_urls[i]->keyword().empty());
-    ASSERT_FALSE(t_urls[i]->favicon_url().host().empty());
-    ASSERT_FALSE(t_urls[i]->url_ref().GetHost().empty());
-    ASSERT_FALSE(t_urls[i]->input_encodings().empty());
-    EXPECT_GT(t_urls[i]->prepopulate_id(), 0);
+    ASSERT_FALSE(t_urls[i]->favicon_url.host().empty());
+    ASSERT_FALSE(GetHostFromTemplateURLData(*t_urls[i]).empty());
+    ASSERT_FALSE(t_urls[i]->input_encodings.empty());
+    EXPECT_GT(t_urls[i]->prepopulate_id, 0);
   }
 
   // Ensures the default URL is Google and has the optional fields filled.
-  EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
-  EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->image_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->new_tab_url().empty());
-  EXPECT_FALSE(t_urls[default_index]->image_url_post_params().empty());
+  EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name);
+  EXPECT_FALSE(t_urls[default_index]->suggestions_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->instant_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->new_tab_url.empty());
+  EXPECT_FALSE(t_urls[default_index]->image_url_post_params.empty());
   // Expect at least 2 alternate_urls.
   // This caught a bug with static initialization of arrays, so leave this in.
-  EXPECT_GT(t_urls[default_index]->alternate_urls().size(), 1u);
-  for (size_t i = 0; i < t_urls[default_index]->alternate_urls().size(); ++i)
-    EXPECT_FALSE(t_urls[default_index]->alternate_urls()[i].empty());
+  EXPECT_GT(t_urls[default_index]->alternate_urls.size(), 1u);
+  for (size_t i = 0; i < t_urls[default_index]->alternate_urls.size(); ++i)
+    EXPECT_FALSE(t_urls[default_index]->alternate_urls[i].empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
-            TemplateURLPrepopulateData::GetEngineType(*t_urls[default_index]));
-  EXPECT_FALSE(t_urls[default_index]->search_terms_replacement_key().empty());
+            TemplateURLPrepopulateData::GetEngineType(
+                TemplateURL(NULL, *t_urls[default_index])));
+  EXPECT_FALSE(t_urls[default_index]->search_terms_replacement_key.empty());
 }
 
 TEST(TemplateURLPrepopulateDataTest, GetEngineTypeBasic) {
