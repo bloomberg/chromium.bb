@@ -1,34 +1,43 @@
 {
   "package_name": "pnacl_newlib",
   "package_targets": {
-    "linux_x86": [
-      {
-        "extract_dir": "",
-        "hash": "b701faf589009556cd2875c14ce59f6587eab143",
-        "name": "pnacl-toolchain.tgz",
-        "tar_src_dir": "",
-        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13072/naclsdk_pnacl_linux_x86.tgz"
-      }
-    ],
-    "mac_x86": [
-      {
-        "extract_dir": "",
-        "hash": "7a9224b5f36d724c06629824c7fb3f12a2c8ee8f",
-        "name": "pnacl-toolchain.tgz",
-        "tar_src_dir": "",
-        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13072/naclsdk_pnacl_mac_x86.tgz"
-      }
-    ],
-    "win_x86": [
-      {
-        "extract_dir": "",
-        "hash": "1dffdbb2b3002c0a5045f4481ca66403360d0b79",
-        "name": "pnacl-toolchain.tgz",
-        "tar_src_dir": "",
-        "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13072/naclsdk_pnacl_win_x86.tgz"
-      }
-    ]
+    "linux_x86": {
+      "archives": [
+        {
+          "extract_dir": "",
+          "hash": "080669ed4cfe8fab58e43e63e2d376b0d66c0cc5",
+          "name": "pnacl-toolchain.tgz",
+          "tar_src_dir": "",
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13104/naclsdk_pnacl_linux_x86.tgz"
+        }
+      ],
+      "version": 1
+    },
+    "mac_x86": {
+      "archives": [
+        {
+          "extract_dir": "",
+          "hash": "227b8870533e3a560172c0d6a001f50c95e23e96",
+          "name": "pnacl-toolchain.tgz",
+          "tar_src_dir": "",
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13104/naclsdk_pnacl_mac_x86.tgz"
+        }
+      ],
+      "version": 1
+    },
+    "win_x86": {
+      "archives": [
+        {
+          "extract_dir": "",
+          "hash": "28887ad8f6ebe1eec0618b7df39e922237154b28",
+          "name": "pnacl-toolchain.tgz",
+          "tar_src_dir": "",
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13104/naclsdk_pnacl_win_x86.tgz"
+        }
+      ],
+      "version": 1
+    }
   },
-  "revision": 13072,
-  "revision_hash": "ce0926b8a91773d6b7a8e1dacfeda42434603919"
+  "revision": 13104,
+  "revision_hash": "55e835e470b10e41decf0cf434a821872d139910"
 }
