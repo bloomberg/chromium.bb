@@ -324,7 +324,7 @@ public:
     PassRefPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionState&);
     PassRefPtr<Attr> createAttribute(const AtomicString& name, ExceptionState&);
     PassRefPtr<Attr> createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&, bool shouldIgnoreNamespaceChecks = false);
-    PassRefPtr<Node> importNode(Node* importedNode, ExceptionState& ec) { return importNode(importedNode, true, ec); }
+    PassRefPtr<Node> importNode(Node* importedNode, ExceptionState&);
     PassRefPtr<Node> importNode(Node* importedNode, bool deep, ExceptionState&);
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&);
     PassRefPtr<Element> createElement(const QualifiedName&, bool createdByParser);

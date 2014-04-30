@@ -42,7 +42,7 @@ var foreignFoo = foreignDoc.createElement('x-foo');
 foreignFoo.appendChild(foreignDoc.createElement('div', 'x-bar'));
 shouldBeTrue("foreignFoo.callbacksCalled");
 shouldBeTrue("foreignFoo.firstChild.callbacksCalled");
-importedFoo = document.importNode(foreignFoo)
+importedFoo = document.importNode(foreignFoo, true)
 shouldBeTrue("importedFoo.callbacksCalled");
 shouldBeTrue("importedFoo.firstChild.callbacksCalled");
 
@@ -51,7 +51,7 @@ var foreignBar = foreignDoc.createElement('div', 'x-bar');
 foreignBar.appendChild(foreignDoc.createElement('x-foo'));
 shouldBe("window.callbacksCalled", "['div', 'x-foo']");
 window.callbacksCalled = [];
-importedBar = document.importNode(foreignBar);
+importedBar = document.importNode(foreignBar, true);
 shouldBeTrue("importedBar.callbacksCalled");
 shouldBeTrue("importedBar.firstChild.callbacksCalled");
 shouldBe("window.callbacksCalled", "['DIV', 'X-FOO']");
