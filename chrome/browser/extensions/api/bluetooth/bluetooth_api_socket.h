@@ -23,16 +23,15 @@ namespace extensions {
 // class. All methods must be called on the |kThreadId| thread.
 class BluetoothApiSocket : public ApiResource {
  public:
-  enum ErrorReason { kSystemError, kIOPending, kDisconnected };
+  enum ErrorReason { kSystemError, kNotConnected, kIOPending, kDisconnected };
 
   typedef base::Callback<void(int)> SendCompletionCallback;
   typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
       ReceiveCompletionCallback;
-  typedef base::Callback<void(const std::string& error_message)>
-      ErrorCompletionCallback;
   typedef base::Callback<void(ErrorReason, const std::string& error_message)>
-      ReceiveErrorCompletionCallback;
+      ErrorCompletionCallback;
 
+  explicit BluetoothApiSocket(const std::string& owner_extension_id);
   BluetoothApiSocket(const std::string& owner_extension_id,
                      scoped_refptr<device::BluetoothSocket> socket,
                      const std::string& device_address,
@@ -49,7 +48,7 @@ class BluetoothApiSocket : public ApiResource {
   // |kIOPending| error.
   virtual void Receive(int count,
                        const ReceiveCompletionCallback& success_callback,
-                       const ReceiveErrorCompletionCallback& error_callback);
+                       const ErrorCompletionCallback& error_callback);
 
   // Sends |buffer| to the socket and calls |success_callback| when data has
   // been successfully sent. |buffer_size| is the numberof bytes contained in
@@ -80,6 +79,8 @@ class BluetoothApiSocket : public ApiResource {
   bool paused() const { return paused_; }
   void set_paused(bool paused) { paused_ = paused; }
 
+  bool IsConnected() const { return connected_; }
+
   // Platform specific implementations of |BluetoothSocket| require being called
   // on the UI thread.
   static const content::BrowserThread::ID kThreadId =
@@ -90,8 +91,12 @@ class BluetoothApiSocket : public ApiResource {
   static const char* service_name() { return "BluetoothApiSocketManager"; }
 
   static void OnSocketReceiveError(
-      const ReceiveErrorCompletionCallback& error_callback,
+      const ErrorCompletionCallback& error_callback,
       device::BluetoothSocket::ErrorReason reason,
+      const std::string& message);
+
+  static void OnSocketSendError(
+      const ErrorCompletionCallback& error_callback,
       const std::string& message);
 
   // The underlying device socket instance.
@@ -116,6 +121,9 @@ class BluetoothApiSocket : public ApiResource {
   // Flag indicating whether a connected socket blocks its peer from sending
   // more data - see bluetooth.idl.
   bool paused_;
+
+  // Flag indicating whether a socket is connected.
+  bool connected_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothApiSocket);
 };

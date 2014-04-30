@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_private_api.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
+#include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
@@ -163,6 +164,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   TokenCacheServiceFactory::GetInstance();
   extensions::ExtensionGCMAppHandler::GetFactoryInstance();
+  extensions::api::BluetoothSocketEventDispatcher::GetFactoryInstance();
 }
 
 }  // namespace chrome_extensions

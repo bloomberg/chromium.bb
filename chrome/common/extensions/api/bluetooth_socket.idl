@@ -51,9 +51,7 @@ namespace bluetoothSocket {
   callback ListenCallback = void (long result);
 
   // Callback from the <code>connect</code> method.
-  // |result| : The result code returned from the underlying network call.
-  // A negative value indicates an error.
-  callback ConnectCallback = void (long result);
+  callback ConnectCallback = void ();
 
   // Callback from the <code>disconnect</code> method.
   callback DisconnectCallback = void ();
@@ -61,32 +59,9 @@ namespace bluetoothSocket {
   // Callback from the <code>close</code> method.
   callback CloseCallback = void ();
 
-  enum SendError {
-    // No error occurred.
-    success,
-
-    // The connection was disconnected.
-    disconnected,
-
-    // A system error occurred and the connection may be unrecoverable.
-    system_error
-  };
-
-  // Result of the <code>send</code> method.
-  dictionary SendInfo {
-    // The error message.
-    DOMString errorMessage;
-
-    // An error code indicating what went wrong.
-    SendError error;
-
-    // The number of bytes sent (if result == 0)
-    long? bytesSent;
-  };
-
   // Callback from the <code>send</code> method.
-  // |sendInfo| : Result of the <code>send</code> method.
-  callback SendCallback = void (SendInfo sendInfo);
+  // |bytesSent| : The number of bytes sent.
+  callback SendCallback = void (long bytesSent);
 
   // Result of the <code>getInfo</code> method.
   dictionary SocketInfo {
@@ -149,7 +124,10 @@ namespace bluetoothSocket {
 
   enum AcceptError {
     // A system error occurred and the connection may be unrecoverable.
-    system_error
+    system_error,
+
+    // The socket is not listening.
+    not_listening
   };
 
   // Data from an <code>onAcceptError</code> event.
@@ -178,7 +156,10 @@ namespace bluetoothSocket {
     disconnected,
 
     // A system error occurred and the connection may be unrecoverable.
-    system_error
+    system_error,
+
+    // The socket has not been connected.
+    not_connected
   };
 
   // Data from an <code>onReceiveError</code> event.
