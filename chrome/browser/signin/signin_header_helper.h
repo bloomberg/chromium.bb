@@ -18,6 +18,15 @@ class ProfileIOData;
 // and let Chrome handles signin with native UI.
 namespace signin {
 
+// Profile mode flags.
+enum PROFILE_MODE {
+  PROFILE_MODE_DEFAULT = 0,
+  // Incognito mode disabled by enterprise policy or by parental controls.
+  PROFILE_MODE_INCOGNITO_DISABLED = 1 << 0,
+  // Adding account disabled in the Android-for-EDU mode.
+  PROFILE_MODE_ADD_ACCOUNT_DISABLED = 1 << 1
+};
+
 // Add X-Chrome-Connected header to all Gaia requests from a connected profile,
 // with the exception of requests from gaia webview. Must be called on IO
 // thread.

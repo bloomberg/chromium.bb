@@ -460,6 +460,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   }
 #endif
 
+  incognito_availibility_pref_.Init(
+      prefs::kIncognitoModeAvailability, pref_service);
+  incognito_availibility_pref_.MoveToThread(io_message_loop_proxy);
+
   initialized_on_UI_thread_ = true;
 
   // We need to make sure that content initializes its own data structures that
@@ -1125,6 +1129,7 @@ void ProfileIOData::ShutdownOnUIThread() {
 #endif
   if (chrome_http_user_agent_settings_)
     chrome_http_user_agent_settings_->CleanupOnUIThread();
+  incognito_availibility_pref_.Destroy();
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)
     delete this;

@@ -195,6 +195,10 @@ class ProfileIOData {
 
   bool IsOffTheRecord() const;
 
+  IntegerPrefMember* incognito_availibility() const {
+    return &incognito_availibility_pref_;
+  }
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::PolicyHeaderIOHelper* policy_header_helper() const {
     return policy_header_helper_.get();
@@ -497,6 +501,7 @@ class ProfileIOData {
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
   mutable BooleanPrefMember quick_check_enabled_;
+  mutable IntegerPrefMember incognito_availibility_pref_;
 
   // The state of metrics reporting in the browser that this profile runs on.
   // Unfortunately, since ChromeOS has a separate representation of this state,
