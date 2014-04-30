@@ -50,7 +50,7 @@ base::string16 ConvertPathToUTF16(const std::string& path) {
   }
 
   // Use system native encoding as the last resort.
-  return base::WideToUTF16Hack(base::SysNativeMBToWide(path));
+  return base::WideToUTF16(base::SysNativeMBToWide(path));
 }
 
 }  // namespace
@@ -85,7 +85,7 @@ void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
     return;
   }
   for (size_t i = 0; i < entries.size(); i++) {
-    FtpDirectoryListingEntry entry = entries[i];
+    const FtpDirectoryListingEntry& entry = entries[i];
 
     // Skip the current and parent directory entries in the listing. Our header
     // always includes them.
