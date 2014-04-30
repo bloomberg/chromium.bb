@@ -10,15 +10,12 @@
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
+#include "ui/events/ozone/device/device_event.h"
+#include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
-#include "ui/events/ozone/evdev/device_manager_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/key_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
-
-#if defined(USE_UDEV)
-#include "ui/events/ozone/evdev/device_manager_udev.h"
-#endif
 
 #if defined(USE_EVDEV_GESTURES)
 #include "ui/events/ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h"
@@ -133,7 +130,9 @@ void CloseInputDevice(const base::FilePath& path,
 }  // namespace
 
 EventFactoryEvdev::EventFactoryEvdev()
-    : ui_task_runner_(base::MessageLoopProxy::current()),
+    : device_manager_(NULL),
+      has_started_processing_events_(false),
+      ui_task_runner_(base::MessageLoopProxy::current()),
       file_task_runner_(base::MessageLoopProxy::current()),
       cursor_(NULL),
       dispatch_callback_(
@@ -141,8 +140,12 @@ EventFactoryEvdev::EventFactoryEvdev()
                      base::Unretained(this))),
       weak_ptr_factory_(this) {}
 
-EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor)
-    : ui_task_runner_(base::MessageLoopProxy::current()),
+EventFactoryEvdev::EventFactoryEvdev(
+    CursorDelegateEvdev* cursor,
+    DeviceManager* device_manager)
+    : device_manager_(device_manager),
+      has_started_processing_events_(false),
+      ui_task_runner_(base::MessageLoopProxy::current()),
       file_task_runner_(base::MessageLoopProxy::current()),
       cursor_(cursor),
       dispatch_callback_(
@@ -172,21 +175,35 @@ void EventFactoryEvdev::AttachInputDevice(
   converters_[path]->Start();
 }
 
-void EventFactoryEvdev::OnDeviceAdded(const base::FilePath& path) {
-  TRACE_EVENT1("ozone", "OnDeviceAdded", "path", path.value());
+void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
+  if (event.device_type() != DeviceEvent::INPUT)
+    return;
 
-  // Dispatch task to open on FILE thread, since open may block.
-  file_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&OpenInputDevice,
-                 path,
-                 &modifiers_,
-                 cursor_,
-                 ui_task_runner_,
-                 dispatch_callback_,
-                 base::Bind(&EventFactoryEvdev::AttachInputDevice,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            path)));
+  switch (event.action_type()) {
+    case DeviceEvent::ADD:
+    case DeviceEvent::CHANGE: {
+      TRACE_EVENT1("ozone", "OnDeviceAdded", "path", event.path().value());
+
+      // Dispatch task to open on FILE thread, since open may block.
+      file_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&OpenInputDevice,
+                     event.path(),
+                     &modifiers_,
+                     cursor_,
+                     ui_task_runner_,
+                     dispatch_callback_,
+                     base::Bind(&EventFactoryEvdev::AttachInputDevice,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                event.path())));
+    }
+      break;
+    case DeviceEvent::REMOVE: {
+      TRACE_EVENT1("ozone", "OnDeviceRemoved", "path", event.path().value());
+      DetachInputDevice(event.path());
+    }
+      break;
+  }
 }
 
 void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
@@ -209,26 +226,15 @@ void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   }
 }
 
-void EventFactoryEvdev::OnDeviceRemoved(const base::FilePath& path) {
-  TRACE_EVENT1("ozone", "OnDeviceRemoved", "path", path.value());
-  DetachInputDevice(path);
-}
-
 void EventFactoryEvdev::StartProcessingEvents() {
   CHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
-#if defined(USE_UDEV)
-  // Scan for input devices using udev.
-  device_manager_ = CreateDeviceManagerUdev();
-#else
-  // No udev support. Scan devices manually in /dev/input.
-  device_manager_ = CreateDeviceManagerManual();
-#endif
-
-  // Scan & monitor devices.
-  device_manager_->ScanAndStartMonitoring(
-      base::Bind(&EventFactoryEvdev::OnDeviceAdded, base::Unretained(this)),
-      base::Bind(&EventFactoryEvdev::OnDeviceRemoved, base::Unretained(this)));
+  if (device_manager_ && !has_started_processing_events_) {
+    has_started_processing_events_ = true;
+    // Scan & monitor devices.
+    device_manager_->AddObserver(this);
+    device_manager_->ScanDevices(this);
+  }
 }
 
 void EventFactoryEvdev::SetFileTaskRunner(

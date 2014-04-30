@@ -4,6 +4,10 @@
 
 #include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
 
+#include "base/bind.h"
+#include "ui/display/types/chromeos/native_display_observer.h"
+#include "ui/events/ozone/device/device_event.h"
+#include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/platform/dri/chromeos/display_mode_dri.h"
 #include "ui/ozone/platform/dri/chromeos/display_snapshot_dri.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
@@ -17,10 +21,13 @@ const size_t kMaxDisplayCount = 2;
 }  // namespace
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
-    DriSurfaceFactory* surface_factory)
-    : surface_factory_(surface_factory) {}
+    DriSurfaceFactory* surface_factory, DeviceManager* device_manager)
+    : surface_factory_(surface_factory),
+      device_manager_(device_manager) {}
 
-NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {}
+NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {
+  device_manager_->RemoveObserver(this);
+}
 
 void NativeDisplayDelegateDri::Initialize() {
   gfx::SurfaceFactoryOzone::HardwareState state =
@@ -28,6 +35,8 @@ void NativeDisplayDelegateDri::Initialize() {
 
   CHECK_EQ(gfx::SurfaceFactoryOzone::INITIALIZED, state)
       << "Failed to initialize hardware";
+
+  device_manager_->AddObserver(this);
 }
 
 void NativeDisplayDelegateDri::GrabServer() {}
@@ -152,6 +161,14 @@ void NativeDisplayDelegateDri::AddObserver(NativeDisplayObserver* observer) {
 
 void NativeDisplayDelegateDri::RemoveObserver(NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void NativeDisplayDelegateDri::OnDeviceEvent(const DeviceEvent& event) {
+  if (event.device_type() != DeviceEvent::DISPLAY)
+    return;
+
+  if (event.action_type() == DeviceEvent::CHANGE)
+    NOTIMPLEMENTED();
 }
 
 }  // namespace ui

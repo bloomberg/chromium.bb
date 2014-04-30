@@ -5,18 +5,23 @@
 #ifndef UI_OZONE_PLATFORM_DRI_CHROMEOS_NATIVE_DISPLAY_DELEGATE_DRI_H_
 #define UI_OZONE_PLATFORM_DRI_CHROMEOS_NATIVE_DISPLAY_DELEGATE_DRI_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/display/types/chromeos/native_display_delegate.h"
+#include "ui/events/ozone/device/device_event_observer.h"
 
 namespace ui {
 
+class DeviceManager;
 class DisplaySnapshotDri;
 class DriSurfaceFactory;
 
-class NativeDisplayDelegateDri : public NativeDisplayDelegate {
+class NativeDisplayDelegateDri
+    : public NativeDisplayDelegate, DeviceEventObserver {
  public:
-  NativeDisplayDelegateDri(DriSurfaceFactory* surface_factory);
+  NativeDisplayDelegateDri(DriSurfaceFactory* surface_factory,
+                           DeviceManager* device_manager);
   virtual ~NativeDisplayDelegateDri();
 
   // NativeDisplayDelegate overrides:
@@ -46,8 +51,12 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
   virtual void AddObserver(NativeDisplayObserver* observer) OVERRIDE;
   virtual void RemoveObserver(NativeDisplayObserver* observer) OVERRIDE;
 
+  // DeviceEventObserver overrides:
+  virtual void OnDeviceEvent(const DeviceEvent& event) OVERRIDE;
+
  private:
   DriSurfaceFactory* surface_factory_;  // Not owned.
+  DeviceManager* device_manager_;  // Not owned.
   ScopedVector<const DisplayMode> cached_modes_;
   ScopedVector<DisplaySnapshotDri> cached_displays_;
   ObserverList<NativeDisplayObserver> observers_;

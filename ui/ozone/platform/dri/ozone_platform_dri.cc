@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/dri/ozone_platform_dri.h"
 
+#include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/ime/input_method_context_factory_ozone.h"
@@ -26,8 +27,9 @@ namespace {
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : cursor_factory_ozone_(&surface_factory_ozone_),
-        event_factory_ozone_(&cursor_factory_ozone_) {}
+      : device_manager_(CreateDeviceManager()),
+        cursor_factory_ozone_(&surface_factory_ozone_),
+        event_factory_ozone_(&cursor_factory_ozone_, device_manager_.get()) {}
   virtual ~OzonePlatformDri() {}
 
   // OzonePlatform:
@@ -48,11 +50,14 @@ class OzonePlatformDri : public OzonePlatform {
   virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
     return scoped_ptr<ui::NativeDisplayDelegate>(
-        new NativeDisplayDelegateDri(&surface_factory_ozone_));
+        new NativeDisplayDelegateDri(&surface_factory_ozone_,
+                                     device_manager_.get()));
   }
 #endif
 
  private:
+  scoped_ptr<DeviceManager> device_manager_;
+
   ui::DriSurfaceFactory surface_factory_ozone_;
   ui::CursorFactoryEvdevDri cursor_factory_ozone_;
   ui::EventFactoryEvdev event_factory_ozone_;

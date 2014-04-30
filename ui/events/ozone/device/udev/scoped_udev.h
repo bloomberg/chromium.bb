@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_SCOPED_UDEV_H_
-#define UI_EVENTS_OZONE_EVDEV_SCOPED_UDEV_H_
+#ifndef UI_EVENTS_OZONE_DEVICE_UDEV_SCOPED_UDEV_H_
+#define UI_EVENTS_OZONE_DEVICE_UDEV_SCOPED_UDEV_H_
 
 #include <libudev.h>
 
@@ -47,4 +47,4 @@ typedef scoped_ptr<struct udev_monitor, UdevMonitorDeleter> scoped_udev_monitor;
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_SCOPED_UDEV_H_
+#endif  // UI_EVENTS_OZONE_DEVICE_UDEV_SCOPED_UDEV_H_

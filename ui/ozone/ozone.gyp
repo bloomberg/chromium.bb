@@ -126,6 +126,11 @@
             '<(DEPTH)/ui/display/display.gyp:display_types',
           ],
         }],
+        ['use_udev == 0', {
+          'sources/': [
+            ['exclude', '_udev\\.(h|cc)$'],
+          ],
+        }],
       ]
     },
   ],

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "ui/events/events_export.h"
+#include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/event_factory_ozone.h"
@@ -18,13 +19,15 @@
 namespace ui {
 
 class CursorDelegateEvdev;
-class DeviceManagerEvdev;
+class DeviceManager;
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
+class EVENTS_EXPORT EventFactoryEvdev
+    : public EventFactoryOzone, DeviceEventObserver {
  public:
   EventFactoryEvdev();
-  explicit EventFactoryEvdev(CursorDelegateEvdev* cursor);
+  EventFactoryEvdev(CursorDelegateEvdev* cursor,
+                    DeviceManager* device_manager);
   virtual ~EventFactoryEvdev();
 
   void DispatchUiEvent(Event* event);
@@ -44,17 +47,24 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   // Close device at path (on UI thread).
   void DetachInputDevice(const base::FilePath& file_path);
 
+  // DeviceEventObserver overrides:
+  //
   // Callback for device add (on UI thread).
-  void OnDeviceAdded(const base::FilePath& path);
-
-  // Callback for device remove (on UI thread).
-  void OnDeviceRemoved(const base::FilePath& path);
+  virtual void OnDeviceEvent(const DeviceEvent& event) OVERRIDE;
 
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
 
   // Interface for scanning & monitoring input devices.
-  scoped_ptr<DeviceManagerEvdev> device_manager_;
+  DeviceManager* device_manager_;  // Not owned.
+
+  // True if this was registered with |device_manager_|. This is needed since
+  // StartProcessingEvents() is called multiple times (when a
+  // WindowTreeHostOzone is created) but we shouldn't register this multiple
+  // times.
+  // TODO(dnicoara) Remove once event processing is refactored and we no longer
+  // rely on WTH for starting event processing.
+  bool has_started_processing_events_;
 
   // Task runner for event dispatch.
   scoped_refptr<base::TaskRunner> ui_task_runner_;
