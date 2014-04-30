@@ -237,6 +237,7 @@ public:
     template<typename T>
     void trace(const Member<T>& t)
     {
+        t.verifyTypeIsGarbageCollected();
         mark(t.get());
     }
 

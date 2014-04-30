@@ -279,32 +279,21 @@ class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAcces
     WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Persistent);
     WTF_DISALLOW_ZERO_ASSIGNMENT(Persistent);
 public:
-    Persistent() : m_raw(0)
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
-    }
+    Persistent() : m_raw(0) { }
 
-    Persistent(std::nullptr_t) : m_raw(0)
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
-    }
+    Persistent(std::nullptr_t) : m_raw(0) { }
 
     Persistent(T* raw) : m_raw(raw)
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
         ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
     }
 
     explicit Persistent(T& raw) : m_raw(&raw)
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
         ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
     }
 
-    Persistent(const Persistent& other) : m_raw(other)
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
-    }
+    Persistent(const Persistent& other) : m_raw(other) { }
 
     template<typename U>
     Persistent(const Persistent<U, RootsAccessor>& other) : m_raw(other) { }
@@ -343,6 +332,7 @@ public:
 
     void trace(Visitor* visitor)
     {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
 #if ENABLE(GC_TRACING)
         visitor->setHostInfo(this, "Persistent");
 #endif
@@ -484,34 +474,27 @@ class Member {
 public:
     Member() : m_raw(0)
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
     }
 
     Member(std::nullptr_t) : m_raw(0)
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
     }
 
     Member(T* raw) : m_raw(raw)
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
     }
 
     explicit Member(T& raw) : m_raw(&raw)
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
     }
 
     template<typename U>
     Member(const RawPtr<U>& other) : m_raw(other.get())
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(U, NonGarbageCollectedObjectInMember);
     }
 
     Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
     {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
     }
 
     bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
@@ -586,9 +569,15 @@ public:
     void clear() { m_raw = 0; }
 
 protected:
+    void verifyTypeIsGarbageCollected() const
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    }
+
     T* m_raw;
 
     template<bool x, bool y, ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
+    friend class Visitor;
 };
 
 template<typename T>
@@ -662,25 +651,13 @@ class WeakMember : public Member<T> {
     WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(WeakMember);
     WTF_DISALLOW_ZERO_ASSIGNMENT(WeakMember);
 public:
-    WeakMember() : Member<T>()
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
-    }
+    WeakMember() : Member<T>() { }
 
-    WeakMember(std::nullptr_t) : Member<T>(nullptr)
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
-    }
+    WeakMember(std::nullptr_t) : Member<T>(nullptr) { }
 
-    WeakMember(T* raw) : Member<T>(raw)
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
-    }
+    WeakMember(T* raw) : Member<T>(raw) { }
 
-    WeakMember(WTF::HashTableDeletedValueType x) : Member<T>(x)
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
-    }
+    WeakMember(WTF::HashTableDeletedValueType x) : Member<T>(x) { }
 
     template<typename U>
     WeakMember(const Persistent<U>& other) : Member<T>(other) { }
