@@ -48,7 +48,7 @@ AppResult::AppResult(Profile* profile,
       extension,
       extensions::IconsInfo::GetIcons(extension),
       extension_misc::EXTENSION_ICON_SMALL,
-      extensions::IconsInfo::GetDefaultAppIcon(),
+      extensions::util::GetDefaultAppIcon(),
       this));
   UpdateIcon();
   StartObservingInstall();

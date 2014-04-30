@@ -22,6 +22,8 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
 namespace util {
@@ -238,6 +240,16 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
   }
 
   return false;
+}
+
+const gfx::ImageSkia& GetDefaultAppIcon() {
+  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_APP_DEFAULT_ICON);
+}
+
+const gfx::ImageSkia& GetDefaultExtensionIcon() {
+  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_EXTENSION_DEFAULT_ICON);
 }
 
 }  // namespace util

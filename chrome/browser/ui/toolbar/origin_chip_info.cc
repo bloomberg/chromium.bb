@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
@@ -121,7 +122,7 @@ bool OriginChipInfo::Update(const content::WebContents* web_contents,
                                   extension,
                                   extensions::IconsInfo::GetIcons(extension),
                                   extension_misc::EXTENSION_ICON_BITTY,
-                                  extensions::IconsInfo::GetDefaultAppIcon(),
+                                  extensions::util::GetDefaultAppIcon(),
                                   owner_));
 
     // Forces load of the image.

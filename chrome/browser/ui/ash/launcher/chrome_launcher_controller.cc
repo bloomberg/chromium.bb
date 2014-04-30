@@ -1714,7 +1714,7 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
 
   ash::ShelfItem item;
   item.type = shelf_item_type;
-  item.image = extensions::IconsInfo::GetDefaultAppIcon();
+  item.image = extensions::util::GetDefaultAppIcon();
 
   ash::ShelfItemStatus new_state = GetAppState(app_id);
   if (new_state != ash::STATUS_CLOSED)

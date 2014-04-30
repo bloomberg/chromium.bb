@@ -16,8 +16,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler_helpers.h"
 #include "grit/extensions_strings.h"
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
 namespace extensions {
@@ -32,18 +30,6 @@ const ExtensionIconSet& IconsInfo::GetIcons(const Extension* extension) {
   IconsInfo* info = static_cast<IconsInfo*>(
       extension->GetManifestData(keys::kIcons));
   return info ? info->icons : g_empty_icon_set.Get();
-}
-
-// static
-const gfx::ImageSkia& IconsInfo::GetDefaultAppIcon() {
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_APP_DEFAULT_ICON);
-}
-
-// static
-const gfx::ImageSkia& IconsInfo::GetDefaultExtensionIcon() {
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_EXTENSION_DEFAULT_ICON);
 }
 
 // static

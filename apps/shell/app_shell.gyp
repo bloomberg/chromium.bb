@@ -14,8 +14,6 @@
         # Need extension related resources in common_resources.pak and
         # renderer_resources_100_percent.pak
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
-        # Need app related resources in theme_resources_100_percent.pak
-        '<(DEPTH)/chrome/chrome_resources.gyp:theme_resources',
         # Need dev-tools related resources in shell_resources.pak and
         # devtools_resources.pak.
         '<(DEPTH)/content/content_shell_and_tests.gyp:generate_content_shell_resources',
@@ -32,11 +30,9 @@
               '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.pak',
               # TODO(jamescook): Extract the extension/app related resources
-              # from generated_resources_en-US.pak and
-              # theme_resources_100_percent.pak.
+              # from generated_resources_en-US.pak.
               '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',

@@ -287,8 +287,8 @@ void ExtensionStorageMonitor::OnImageLoaded(
   gfx::Image notification_image(image);
   if (notification_image.IsEmpty()) {
     notification_image =
-        extension->is_app() ? gfx::Image(IconsInfo::GetDefaultAppIcon())
-                            : gfx::Image(IconsInfo::GetDefaultExtensionIcon());
+        extension->is_app() ? gfx::Image(util::GetDefaultAppIcon())
+                            : gfx::Image(util::GetDefaultExtensionIcon());
   }
 
   scoped_ptr<message_center::Notification> notification;

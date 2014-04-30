@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -204,8 +205,8 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
     icon_ = gfx::Image(
         gfx::ImageSkiaOperations::CreateResizedImage(
             extension_->is_app() ?
-                extensions::IconsInfo::GetDefaultAppIcon() :
-                extensions::IconsInfo::GetDefaultExtensionIcon(),
+                extensions::util::GetDefaultAppIcon() :
+                extensions::util::GetDefaultExtensionIcon(),
             skia::ImageOperations::RESIZE_BEST,
             gfx::Size(kIconSize, kIconSize)));
   }

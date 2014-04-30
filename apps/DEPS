@@ -24,6 +24,9 @@ include_rules = [
   "+chrome/browser/sessions/session_id.h",
   "+chrome/common/chrome_switches.h",
 
+  # For default app icon.
+  "!grit/theme_resources.h",
+
   # Pieces of the extensions system that need to move to src/extensions.
   # See http://crbug.com/162530 for details.
   "+chrome/browser/extensions/api/file_handlers/app_file_handler_util.h",
@@ -33,7 +36,6 @@ include_rules = [
   "+chrome/browser/extensions/suggest_permission_util.h",
   "+chrome/browser/extensions/unpacked_installer.h",
   "+chrome/common/extensions/api/app_window.h",
-  "+chrome/common/extensions/manifest_handlers/icons_handler.h",
 ]
 
 specific_include_rules = {

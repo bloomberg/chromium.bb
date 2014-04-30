@@ -15,9 +15,6 @@
         # api resources compiled into the chrome resource bundle.
         # http://crbug.com/162530
         '../chrome/chrome_resources.gyp:chrome_resources',
-        # Need default icons in theme_resources.grd
-        '../chrome/chrome_resources.gyp:theme_resources',
-
         # TODO(tfarina): This dep here is for extensions/common/constants.*
         # We should find a way to compile this module within extensions_common.
         '../chrome/common_constants.gyp:common_constants',

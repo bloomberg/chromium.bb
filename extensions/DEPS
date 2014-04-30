@@ -16,7 +16,6 @@ include_rules = [
   "!chrome/renderer/extensions/extension_helper.h",
   "!grit/common_resources.h",
   "!grit/extensions_api_resources.h",
-  "!grit/theme_resources.h",
 ]
 
 specific_include_rules = {

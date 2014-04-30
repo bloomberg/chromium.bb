@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -76,7 +77,7 @@ ToolbarOriginChipExtensionIcon::ToolbarOriginChipExtensionIcon(
           extension,
           extensions::IconsInfo::GetIcons(extension),
           extension_misc::EXTENSION_ICON_BITTY,
-          extensions::IconsInfo::GetDefaultAppIcon(),
+          extensions::util::GetDefaultAppIcon(),
           this)) {
   // Forces load of the image.
   icon_image_->image_skia().GetRepresentation(1.0f);

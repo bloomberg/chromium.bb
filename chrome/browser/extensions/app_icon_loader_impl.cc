@@ -60,7 +60,7 @@ void AppIconLoaderImpl::FetchImage(const std::string& id) {
       extension,
       extensions::IconsInfo::GetIcons(extension),
       icon_size_,
-      extensions::IconsInfo::GetDefaultAppIcon(),
+      extensions::util::GetDefaultAppIcon(),
       this);
   // |map_| takes ownership of |image|.
   map_[image] = id;

@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,8 +41,8 @@ int GetSizeForMaxScaleFactor(int size_in_dip) {
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
   const gfx::ImageSkia& image = is_app ?
-      extensions::IconsInfo::GetDefaultAppIcon() :
-      extensions::IconsInfo::GetDefaultExtensionIcon();
+      extensions::util::GetDefaultAppIcon() :
+      extensions::util::GetDefaultExtensionIcon();
   return image.GetRepresentation(
       gfx::ImageSkia::GetMaxSupportedScale()).sk_bitmap();
 }

@@ -14,10 +14,6 @@
 
 class GURL;
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace extensions {
 
 struct IconsInfo : public Extension::ManifestData {
@@ -26,11 +22,6 @@ struct IconsInfo : public Extension::ManifestData {
 
   // Return the icon set for the given |extension|.
   static const ExtensionIconSet& GetIcons(const Extension* extension);
-
-  // Returns the default extension/app icon (for extensions or apps that don't
-  // have one).
-  static const gfx::ImageSkia& GetDefaultExtensionIcon();
-  static const gfx::ImageSkia& GetDefaultAppIcon();
 
   // Get an extension icon as a resource or URL.
   static ExtensionResource GetIconResource(

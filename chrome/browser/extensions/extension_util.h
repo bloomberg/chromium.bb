@@ -18,6 +18,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace extensions {
 
 class Extension;
@@ -90,6 +94,11 @@ bool HasIsolatedStorage(const ExtensionInfo& info);
 // isolated storage.
 bool SiteHasIsolatedStorage(const GURL& extension_site_url,
                             content::BrowserContext* context);
+
+// Returns the default extension/app icon (for extensions or apps that don't
+// have one).
+const gfx::ImageSkia& GetDefaultExtensionIcon();
+const gfx::ImageSkia& GetDefaultAppIcon();
 
 }  // namespace util
 }  // namespace extensions
