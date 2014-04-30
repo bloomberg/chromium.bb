@@ -297,6 +297,8 @@ class AndroidCommands(object):
         'command': None,
         'cached': False,
     }
+    self._protected_file_access_method_initialized = None
+    self._privileged_command_runner = None
 
   @property
   def system_properties(self):
@@ -1105,28 +1107,58 @@ class AndroidCommands(object):
     return self.RunShellCommand('su -c %s' % command, timeout_time, log_result)
 
   def CanAccessProtectedFileContents(self):
-    """Returns True if Get/SetProtectedFileContents would work via "su".
+    """Returns True if Get/SetProtectedFileContents would work via "su" or adb
+    shell running as root.
 
     Devices running user builds don't have adb root, but may provide "su" which
     can be used for accessing protected files.
     """
-    r = self.RunShellCommandWithSU('cat /dev/null')
-    return r == [] or r[0].strip() == ''
+    return (self._GetProtectedFileCommandRunner() != None)
+
+  def _GetProtectedFileCommandRunner(self):
+    """Finds the best method to access protected files on the device.
+
+    Returns:
+      1. None when privileged files cannot be accessed on the device.
+      2. Otherwise: A function taking a single parameter: a string with command
+         line arguments. Running that function executes the command with
+         the appropriate method.
+    """
+    if self._protected_file_access_method_initialized:
+      return self._privileged_command_runner
+
+    self._privileged_command_runner = None
+    self._protected_file_access_method_initialized = True
+
+    for cmd in [self.RunShellCommand, self.RunShellCommandWithSU]:
+      # Get contents of the auxv vector for the init(8) process from a small
+      # binary file that always exists on linux and is always read-protected.
+      contents = cmd('cat /proc/1/auxv')
+      # The leading 4 or 8-bytes of auxv vector is a_type. There are not many
+      # reserved a_type values, hence byte 2 must always be '\0' for a realistic
+      # auxv. See /usr/include/elf.h.
+      if len(contents) > 0 and (contents[0][2] == '\0'):
+        self._privileged_command_runner = cmd
+        break
+    return self._privileged_command_runner
 
   def GetProtectedFileContents(self, filename):
     """Gets contents from the protected file specified by |filename|.
 
-    This is less efficient than GetFileContents, but will work for protected
-    files and device files.
+    This is potentially less efficient than GetFileContents.
     """
-    # Run the script as root
-    return self.RunShellCommandWithSU('cat "%s" 2> /dev/null' % filename)
+    command = 'cat "%s" 2> /dev/null' % filename
+    command_runner = self._GetProtectedFileCommandRunner()
+    if command_runner:
+      return command_runner(command)
+    else:
+      logging.warning('Could not access protected file: %s' % filename)
+      return []
 
   def SetProtectedFileContents(self, filename, contents):
     """Writes |contents| to the protected file specified by |filename|.
 
-    This is less efficient than SetFileContents, but will work for protected
-    files and device files.
+    This is less efficient than SetFileContents.
     """
     temp_file = self._GetDeviceTempFileName(AndroidCommands._TEMP_FILE_BASE_FMT)
     temp_script = self._GetDeviceTempFileName(
@@ -1136,8 +1168,14 @@ class AndroidCommands(object):
     self.SetFileContents(temp_file, contents)
     # Create a script to copy the file contents to its final destination
     self.SetFileContents(temp_script, 'cat %s > %s' % (temp_file, filename))
-    # Run the script as root
-    self.RunShellCommandWithSU('sh %s' % temp_script)
+
+    command = 'sh %s' % temp_script
+    command_runner = self._GetProtectedFileCommandRunner()
+    if command_runner:
+      return command_runner(command)
+    else:
+      logging.warning('Could not set contents of protected file: %s' % filename)
+
     # And remove the temporary files
     self.RunShellCommand('rm ' + temp_file)
     self.RunShellCommand('rm ' + temp_script)
