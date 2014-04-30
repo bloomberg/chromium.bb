@@ -525,21 +525,6 @@ crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-dy-prop.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-lengthAdjust-prop.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-requiredFeatures.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-textLength-prop.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-transform-prop.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-x-prop.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGTextElement-svgdom-y-prop.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGUseElement-dom-requiredFeatures.html [ NeedsRebaseline ]
-crbug.com/320139 svg/dynamic-updates/SVGUseElement-svgdom-requiredFeatures.html [ NeedsRebaseline ]
-crbug.com/320139 svg/repaint/add-outline-property-on-root.html [ NeedsRebaseline ]
-crbug.com/320139 svg/repaint/remove-outline-property-on-root.html [ NeedsRebaseline ]
-crbug.com/320139 virtual/softwarecompositing/repaint/invalidations-on-composited-layers.html [ NeedsRebaseline ]
-crbug.com/320139 virtual/softwarecompositing/repaint/resize-repaint.html [ NeedsRebaseline ]
-
 # Exceeds the number of file descriptors allowed when allocating shared bitmaps.
 crbug.com/351897 [ Mac ] virtual/softwarecompositing/overflow/universal-accelerated-overflow-scroll.html [ Crash Pass ]
 
