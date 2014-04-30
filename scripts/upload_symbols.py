@@ -74,6 +74,11 @@ DEDUPE_LIMIT = 100
 # second per item max.
 DEDUPE_TIMEOUT = DEDUPE_LIMIT
 
+# How long to wait for the notification to finish (in minutes).  If it takes
+# longer than this, we'll stop notifiying, but that's not a big deal as we
+# will be able to recover in later runs.
+DEDUPE_NOTIFY_TIMEOUT = 20
+
 # The unique namespace in the dedupe server that only we use.  Helps avoid
 # collisions with all the hashed values and unrelated content.
 OFFICIAL_DEDUPE_NAMESPACE = 'chromium-os-upload-symbols'
@@ -682,7 +687,22 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     cros_build_lib.Info('finished uploading; joining background process')
     if dedupe_queue:
       dedupe_queue.put(None)
-    storage_notify_proc.join()
+
+    # The notification might be slow going, so give it some time to finish.
+    # We have to poll here as the process monitor is watching for output and
+    # will kill us if we go silent for too long.
+    wait_minutes = DEDUPE_NOTIFY_TIMEOUT
+    while storage_notify_proc.is_alive() and wait_minutes > 0:
+      cros_build_lib.Info('waiting up to %i minutes for ~%i notifications',
+                          wait_minutes, dedupe_queue.qsize())
+      storage_notify_proc.join(60)
+      wait_minutes -= 1
+
+    # The process is taking too long, so kill it and complain.
+    if storage_notify_proc.is_alive():
+      storage_notify_proc.terminate()
+      cros_build_lib.Warning('notification process took too long')
+      cros_build_lib.PrintBuildbotStepWarnings()
 
   cros_build_lib.Info('uploaded %i symbols (%i were deduped) which took: %s',
                       counters.uploaded_count, counters.deduped_count,
