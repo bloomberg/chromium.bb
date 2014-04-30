@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/accessibility_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -150,6 +151,11 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
   shell->GetScreen()->AddObserver(this);
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   HideAndTrackNonOverviewWindows();
+  // Send an a11y alert only if the overview was activated by the user.
+  if (window_selector_->mode() == WindowSelector::OVERVIEW) {
+    shell->accessibility_delegate()->TriggerAccessibilityAlert(
+        A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+  }
 }
 
 WindowOverview::~WindowOverview() {

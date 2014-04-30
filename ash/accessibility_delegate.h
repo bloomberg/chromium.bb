@@ -18,7 +18,8 @@ enum AccessibilityNotificationVisibility {
 
 enum AccessibilityAlert {
   A11Y_ALERT_NONE,
-  A11Y_ALERT_WINDOW_NEEDED
+  A11Y_ALERT_WINDOW_NEEDED,
+  A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED
 };
 
 // A delegate class to control and query accessibility features.

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/accessibility_delegate.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -251,6 +252,19 @@ class WindowSelectorTest : public test::AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };
+
+// Tests that an a11y alert is sent on entering overview mode.
+TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  AccessibilityDelegate* delegate =
+      ash::Shell::GetInstance()->accessibility_delegate();
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  EXPECT_NE(delegate->GetLastAccessibilityAlert(),
+            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+  ToggleOverview();
+  EXPECT_EQ(delegate->GetLastAccessibilityAlert(),
+            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+}
 
 // Tests entering overview mode with two windows and selecting one.
 TEST_F(WindowSelectorTest, Basic) {

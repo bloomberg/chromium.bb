@@ -183,6 +183,14 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
               ui::AX_EVENT_ALERT, &event);
           break;
         }
+        case ash::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
+          AccessibilityAlertInfo event(
+              profile, l10n_util::GetStringUTF8(
+                  IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
+          SendControlAccessibilityNotification(
+              ui::AX_EVENT_ALERT, &event);
+          break;
+        }
         case ash::A11Y_ALERT_NONE:
           break;
       }
