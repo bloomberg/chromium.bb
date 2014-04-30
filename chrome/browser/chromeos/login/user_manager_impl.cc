@@ -40,6 +40,8 @@
 #include "chrome/browser/chromeos/login/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
@@ -1570,6 +1572,11 @@ void UserManagerImpl::NotifyOnLogin() {
     // Indicate to DeviceSettingsService that the owner key may have become
     // available.
     DeviceSettingsService::Get()->SetUsername(active_user_->email());
+
+    if (NetworkPortalDetector::IsInitialized()) {
+      NetworkPortalDetector::Get()->SetStrategy(
+          PortalDetectorStrategy::STRATEGY_ID_SESSION);
+    }
   }
 }
 
