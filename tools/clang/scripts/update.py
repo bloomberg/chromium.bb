@@ -66,18 +66,10 @@ def DeleteFiles(dir, pattern):
 def ClobberChromiumBuildFiles():
   """Clobber Chomium build files."""
   print 'Clobbering Chromium build files...'
-  n = 0
-  dirs = [
-    os.path.join(CHROMIUM_DIR, 'out/Debug'),
-    os.path.join(CHROMIUM_DIR, 'out/Release'),
-  ]
-  for d in dirs:
-    if not os.path.exists(d):
-      continue
-    n += DeleteFiles(d, r'.*\.o')
-    n += DeleteFiles(d, r'.*\.obj')
-    n += DeleteFiles(d, r'stamp.untar')
-  print 'Removed %d files.' % (n)
+  out_dir = os.path.join(CHROMIUM_DIR, 'out')
+  if os.path.isdir(out_dir):
+    shutil.rmtree(out_dir)
+    print 'Removed Chromium out dir: %s.' % (out_dir)
 
 
 def RunCommand(command, tries=1):

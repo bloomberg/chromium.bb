@@ -171,30 +171,17 @@ fi
 rm -f "${STAMP_FILE}"
 
 
-# Clobber build files. PCH files only work with the compiler that created them.
-# We delete .o files to make sure all files are built with the new compiler.
+# Clobber all output files. PCH files only work with the compiler that created
+# them, so we need clobber the output files to make sure they are rebuilt
+# using the new compiler.
 echo "Clobbering build files"
 MAKE_DIR="${THIS_DIR}/../../../out"
 XCODEBUILD_DIR="${THIS_DIR}/../../../xcodebuild"
-for DIR in "${XCODEBUILD_DIR}" "${MAKE_DIR}/Debug" "${MAKE_DIR}/Release"; do
+for DIR in "${XCODEBUILD_DIR}" "${MAKE_DIR}"; do
   if [[ -d "${DIR}" ]]; then
-    find "${DIR}" -name '*.o' -exec rm {} +
-    find "${DIR}" -name '*.o.d' -exec rm {} +
-    find "${DIR}" -name '*.gch' -exec rm {} +
-    find "${DIR}" -name '*.dylib' -exec rm -rf {} +
-    find "${DIR}" -name 'SharedPrecompiledHeaders' -exec rm -rf {} +
+    rm -rf "${DIR}"
   fi
 done
-
-# Clobber NaCl toolchain stamp files, see http://crbug.com/159793
-if [[ -d "${MAKE_DIR}" ]]; then
-  find "${MAKE_DIR}" -name 'stamp.untar' -exec rm {} +
-fi
-if [[ "${OS}" = "Darwin" ]]; then
-  if [[ -d "${XCODEBUILD_DIR}" ]]; then
-    find "${XCODEBUILD_DIR}" -name 'stamp.untar' -exec rm {} +
-  fi
-fi
 
 if [[ -z "$force_local_build" ]]; then
   # Check if there's a prebuilt binary and if so just fetch that. That's faster,
