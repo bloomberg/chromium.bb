@@ -422,8 +422,9 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
 // the scheduler was in the middle of processing a previous BeginFrame.
 void Scheduler::BeginRetroFrame() {
   TRACE_EVENT0("cc", "Scheduler::BeginRetroFrame");
-  DCHECK(begin_retro_frame_posted_);
   DCHECK(!settings_.using_synchronous_renderer_compositor);
+  DCHECK(begin_retro_frame_posted_);
+  begin_retro_frame_posted_ = false;
 
   // If there aren't any retroactive BeginFrames, then we've lost the
   // OutputSurface and should abort.
@@ -453,8 +454,6 @@ void Scheduler::BeginRetroFrame() {
     BeginImplFrame(begin_retro_frame_args_.front());
     begin_retro_frame_args_.pop_front();
   }
-
-  begin_retro_frame_posted_ = false;
 }
 
 // There could be a race between the posted BeginRetroFrame and a new
@@ -690,8 +689,18 @@ scoped_ptr<base::Value> Scheduler::StateAsValue() const {
   scheduler_state->SetDouble(
       "time_until_anticipated_draw_time_ms",
       (AnticipatedDrawTime() - base::TimeTicks::Now()).InMillisecondsF());
+  scheduler_state->SetDouble("vsync_interval_ms",
+                             vsync_interval_.InMillisecondsF());
+  scheduler_state->SetDouble("estimated_parent_draw_time_ms",
+                             estimated_parent_draw_time_.InMillisecondsF());
   scheduler_state->SetBoolean("last_set_needs_begin_frame_",
                               last_set_needs_begin_frame_);
+  scheduler_state->SetBoolean("begin_unthrottled_frame_posted_",
+                              begin_unthrottled_frame_posted_);
+  scheduler_state->SetBoolean("begin_retro_frame_posted_",
+                              begin_retro_frame_posted_);
+  scheduler_state->SetInteger("begin_retro_frame_args_",
+                              begin_retro_frame_args_.size());
   scheduler_state->SetBoolean("begin_impl_frame_deadline_task_",
                               !begin_impl_frame_deadline_task_.IsCancelled());
   scheduler_state->SetBoolean("poll_for_draw_triggers_task_",
