@@ -132,6 +132,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
     return;
 
   if (username.empty()) {
+#if !defined(OS_ANDROID)
     // The user isn't signed in, show the sign in promo.
     if (signin::ShouldShowPromo(profile)) {
       signin::Source source =
@@ -141,6 +142,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
       chrome::ShowBrowserSignin(browser, source);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
+#endif
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
     double x = 0;
@@ -221,8 +223,12 @@ void NTPLoginHandler::UpdateLogin() {
       }
     }
   } else {
-#if !defined(OS_CHROMEOS)
-    // Chromeos does not show this status header.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+    // Android uses a custom sign in promo. Don't call the function
+    // signin::ShouldShowPromo() since it does a bunch of checks that are not
+    // required here.  We only want to suppress this login status for users that
+    // are not allowed to sign in.  Chromeos does not show this status header
+    // at all.
     SigninManager* signin = SigninManagerFactory::GetForProfile(
         profile->GetOriginalProfile());
     if (!profile->IsManaged() && signin->IsSigninAllowed()) {

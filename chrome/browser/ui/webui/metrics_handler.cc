@@ -116,9 +116,6 @@ void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {
 }
 
 void MetricsHandler::HandleLogMouseover(const base::ListValue* args) {
-#if !defined(OS_ANDROID)
-  // Android uses native UI for NTP.
   NTPUserDataLogger::GetOrCreateFromWebContents(
       web_ui()->GetWebContents())->LogEvent(NTP_MOUSEOVER);
-#endif  // !defined(OS_ANDROID)
 }

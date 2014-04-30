@@ -1,0 +1,239 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.list-item {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-transition: 300ms linear;
+  -webkit-transition-property: background;
+  background: transparent;
+  height: 50px;
+  padding-bottom: auto;
+  padding-top: auto;
+  position: relative; /* So the fader can be positioned at the end */
+}
+
+.list-item-active,
+.session-header .list-item.list-item-active {
+  -webkit-tap-highlight-color: transparent;
+  background: rgba(51, 181, 229, 0.4);
+}
+
+.list-item-active.no-active-delay {
+  -webkit-transition: none;
+}
+
+.list-item.standard-divider {
+  border-bottom: 1px solid #c1c1c1;
+}
+
+.list-item .section-divider {
+  background-color: #777;
+  bottom: 0;
+  height: 2px;
+  position: absolute;
+  width: 100%;
+}
+
+.list-item .icon {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 24px;
+  height: 48px;
+  position: absolute;
+  width: 48px;
+}
+
+html[dir='ltr'] .list-item .icon {
+  left: 0;
+}
+
+html[dir='rtl'] .list-item .icon {
+  right: 0;
+}
+
+.list-item .title {
+  -webkit-box-align: center;
+  color: #4c4c4c;
+  display: -webkit-box;
+  font-size: 16px;
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+html[dir='ltr'] .list-item .title {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,1),
+    rgba(0,0,0,1) 85%,
+    rgba(0,0,0,0) 95%,
+    rgba(0,0,0,0))
+  );
+  left: 50px;
+  right: 0;
+}
+
+html[dir='rtl'] .list-item .title {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0)),
+    rgba(0,0,0,0) 5%,
+    rgba(0,0,0,1) 15%,
+    rgba(0,0,0,1))
+  );
+  left: 0;
+  right: 50px;
+}
+
+.list-item .session_container {
+  width: 100%;
+}
+
+.list-item .session_title {
+  display: inline-block;
+  line-height: 50px;
+}
+
+.session-header .list-item {
+  background: #ebebeb;
+}
+
+.title .session-name {
+  color: #4c4c4c;
+  font-weight: bold;
+}
+
+.title .session-last-synced {
+  color: #8f8f8f;
+  font-weight: bold;
+}
+
+.session-children-container {
+  -webkit-transition: height 200ms ease-in-out;
+  height: 100%; /* needed for collapse animation */
+  overflow: hidden;
+}
+
+.session-header {
+  position: relative;
+}
+
+.expando {
+  background-size: 100%;
+  height: 13px;
+  margin-top: -6.5px;
+  position: absolute;
+  top: 50%;
+  width: 14px;
+}
+
+html[dir='ltr'] .expando {
+  right: 18.5px;
+}
+
+html[dir='rtl'] .expando {
+  left: 18.5px;
+}
+
+.expando.open {
+  background-image: url(images/disclosure_open_mdpi.png);
+}
+
+html[dir='rtl'] .expando.open {
+  -webkit-transform: scaleX(-1);
+}
+
+.expando.closed {
+  background-image: url(images/disclosure_closed_mdpi.png);
+}
+
+html[dir='rtl'] .expando.closed {
+  -webkit-transform: scaleX(-1);
+}
+
+.session-icon.laptop {
+  background-image: url(../../../../ui/webui/resources/images/laptop.png);
+}
+
+html[dir='rtl'] .session-icon.laptop {
+  -webkit-transform: scaleX(-1);
+}
+
+.session-icon.tablet {
+  background-image: url(../../../../ui/webui/resources/images/tablet.png);
+}
+
+html[dir='rtl'] .session-icon.tablet {
+  -webkit-transform: scaleX(-1);
+}
+
+.session-icon.phone {
+  background-image: url(../../../../ui/webui/resources/images/phone.png);
+}
+
+html[dir='rtl'] .session-icon.phone {
+  -webkit-transform: scaleX(-1);
+}
+
+.session-icon.documents {
+  background-image: url(images/sent_mdpi.png);
+}
+
+html[dir='rtl'] .session-icon.documents {
+  -webkit-transform: scaleX(-1);
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 1.5) {
+  .expando.open {
+    background-image: url(images/disclosure_open_hdpi.png);
+  }
+  .expando.closed {
+    background-image: url(images/disclosure_closed_hdpi.png);
+  }
+  .session-icon.laptop {
+    background-image:
+        url(../../../../ui/webui/resources/images/1.5x/laptop.png);
+  }
+  .session-icon.tablet {
+    background-image:
+        url(../../../../ui/webui/resources/images/1.5x/tablet.png);
+  }
+  .session-icon.phone {
+    background-image: url(../../../../ui/webui/resources/images/1.5x/phone.png);
+  }
+  .session-icon.documents {
+    background-image: url(images/sent_hdpi.png);
+  }
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 2.0) {
+  .expando.open {
+    background-image: url(images/disclosure_open_xhdpi.png);
+  }
+  .expando.closed {
+    background-image: url(images/disclosure_closed_xhdpi.png);
+  }
+  .session-icon.laptop {
+    background-image: url(../../../../ui/webui/resources/images/2x/laptop.png);
+  }
+  .session-icon.tablet {
+    background-image: url(../../../../ui/webui/resources/images/2x/tablet.png);
+  }
+  .session-icon.phone {
+    background-image: url(../../../../ui/webui/resources/images/2x/phone.png);
+  }
+  .session-icon.documents {
+    background-image: url(images/sent_xhdpi.png);
+  }
+}
+
+.session-icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 32px 32px;
+  height: 48px;
+  width: 48px;
+}

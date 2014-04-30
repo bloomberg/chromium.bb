@@ -1021,6 +1021,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     ThemeSource* theme_source = new ThemeSource(profile_);
     content::URLDataSource::Add(profile_, theme_source);
   }
+#endif
 
   // Same for chrome://thumb/ resources.
   if (extensions::PermissionsData::HasHostPermission(
@@ -1028,7 +1029,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_, false);
     content::URLDataSource::Add(profile_, thumbnail_source);
   }
-#endif
 }
 
 void ExtensionService::NotifyExtensionUnloaded(

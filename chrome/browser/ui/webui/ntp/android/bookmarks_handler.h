@@ -1,0 +1,176 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_BOOKMARKS_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_BOOKMARKS_HANDLER_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
+#include "base/values.h"
+#include "chrome/browser/android/bookmarks/managed_bookmarks_shim.h"
+#include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
+#include "chrome/browser/favicon/favicon_service.h"
+#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
+#include "content/public/browser/web_ui_message_handler.h"
+
+// The handler for Javascript messages related to the bookmarks.
+//
+// In Javascript if getBookmarks() is called without any parameter, the 'Other
+// Bookmark' folder and bookmark bar's bookmarks and folders are returned.
+// If getBookmarks() is called with a valid bookmark folder id, the given
+// folder's bookmarks and sub folders of it are returned.
+//
+// All bookmarks and subfolder is returned by bookmarks() javascript callback
+// function.
+// The returned field 'folder' indicates whether the data is a folder. The
+// returned field 'root' indicates whether or not the bookmark list that was
+// returned is the root list or not.  Besides these fields, a folder has id
+// and title fields; A bookmark has url and title fields.
+//
+// A sample result looks like:
+// {
+//   title: 'Bookmark Bar',
+//   id: '1',
+//   root: true,
+//   bookmarks: [
+//     {
+//       title: 'Cake',
+//       url: 'http://www.google.com',
+//       folder: false
+//     },
+//     {
+//       title: 'Puppies',
+//       folder: true,
+//       id: '2'
+//     }
+//   ]
+// }
+class BookmarksHandler : public content::WebUIMessageHandler,
+                         public BaseBookmarkModelObserver,
+                         public PartnerBookmarksShim::Observer,
+                         public ManagedBookmarksShim::Observer {
+ public:
+  BookmarksHandler();
+  virtual ~BookmarksHandler();
+
+  // WebUIMessageHandler override and implementation.
+  virtual void RegisterMessages() OVERRIDE;
+
+  // Callback for the "getBookmarks" message.
+  void HandleGetBookmarks(const base::ListValue* args);
+  // Callback for the "deleteBookmark" message.
+  void HandleDeleteBookmark(const base::ListValue* args);
+  // Callback for the "editBookmark" message.
+  void HandleEditBookmark(const base::ListValue* args);
+  // Callback for the "createHomeScreenBookmarkShortcut" message.  Used when
+  // creating a shortcut on the home screen that should open the bookmark
+  // specified in |args|.
+  void HandleCreateHomeScreenBookmarkShortcut(const base::ListValue* args);
+
+  // Override the methods of BookmarkModelObserver
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkNodeAdded(
+      BookmarkModel* model, const BookmarkNode* parent, int index) OVERRIDE;
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) OVERRIDE;
+
+  // Override the methods of PartnerBookmarksShim::Observer
+  virtual void PartnerShimChanged(PartnerBookmarksShim* shim) OVERRIDE;
+  virtual void PartnerShimLoaded(PartnerBookmarksShim* shim) OVERRIDE;
+  virtual void ShimBeingDeleted(PartnerBookmarksShim* shim) OVERRIDE;
+
+  // Override the methods of ManagedBookmarksShim::Observer
+  virtual void OnManagedBookmarksChanged() OVERRIDE;
+
+ private:
+  // The bookmark model being observed (if it has been attached).
+  BookmarkModel* bookmark_model_;
+
+  // Information about the Partner bookmarks (must check for IsLoaded())
+  PartnerBookmarksShim* partner_bookmarks_shim_;
+
+  // Contains the bookmarks managed via enterprise policy.
+  scoped_ptr<ManagedBookmarksShim> managed_bookmarks_shim_;
+
+  // Whether the bookmark data has been requested by the UI yet.
+  bool bookmark_data_requested_;
+
+  // Indicates that extensive changes to the BookmarkModel is on-going.
+  bool extensive_changes_;
+
+  // Used for loading bookmark node.
+  base::CancelableTaskTracker cancelable_task_tracker_;
+
+  // Returns true iff bookmark model and partner bookmarks shim are loaded.
+  bool AreModelsLoaded() const;
+
+  // Notify the UI that a change occurred to the bookmark model.
+  void NotifyModelChanged(const base::DictionaryValue& status);
+
+  // Generates the string encoded ID to be used by the NTP.
+  std::string GetBookmarkIdForNtp(const BookmarkNode* node);
+
+  // Sets the necessary parent information in the response object to be sent
+  // to the UI renderer.
+  void SetParentInBookmarksResult(const BookmarkNode* parent,
+                                  base::DictionaryValue* result);
+
+  // Convert the given bookmark |node| into a dictionary format to be returned
+  // to JavaScript.
+  void PopulateBookmark(const BookmarkNode* node, base::ListValue* result);
+
+  // Given a bookmark folder node, |folder|, populate the |result| with the
+  // structured JavaScript-formatted data regarding the folder.
+  void PopulateBookmarksInFolder(const BookmarkNode* folder,
+                                 base::DictionaryValue* result);
+
+  // Sends all bookmarks and sub folders in the given folder back to the NTP.
+  void QueryBookmarkFolder(const BookmarkNode* node);
+
+  // Sends bookmark bar's bookmarks and sub folders and other folders back to
+  // NTP.
+  void QueryInitialBookmarks();
+
+  // Sends the result back to Javascript
+  void SendResult(const base::DictionaryValue& result);
+
+  // Called once the favicon is loaded during creation of the bookmark shortcuts
+  // and is available for use.
+  void OnShortcutFaviconDataAvailable(
+      const BookmarkNode* node,
+      const favicon_base::FaviconBitmapResult& bitmap_result);
+
+  // Looks at an optional bookmark ID in |args| and returns the corresponding
+  // node if found, otherwise returns NULL.
+  const BookmarkNode* GetNodeByID(const base::ListValue* args) const;
+
+  // Returns the parent of |node|, or NULL if it's the root node.
+  const BookmarkNode* GetParentOf(const BookmarkNode* node) const;
+
+  // Returns the title of |node|, possibly remapped (if a partner bookmark).
+  base::string16 GetTitle(const BookmarkNode* node) const;
+
+  // Returns true if the node is reachable.
+  bool IsReachable(const BookmarkNode* node) const;
+
+  // Returns true if |node| can be modified by the user.
+  bool IsEditable(const BookmarkNode* node) const;
+
+  // Returns true if |node| is the real root node (not the root node of the
+  // partner bookmarks shim nor the managed bookmark shim root).
+  bool IsRoot(const BookmarkNode* node) const;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
+};
+
+#endif  // CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_BOOKMARKS_HANDLER_H_

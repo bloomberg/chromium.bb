@@ -61,6 +61,9 @@
         <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
       </if>
+      <if expr="is_android">
+        <structure name="IDR_NEW_TAB_ANDROID_HTML" file="resources\ntp_android\new_tab.html" flattenhtml="true" type="chrome_html" />
+      </if>
       <if expr="chromeos">
         <structure name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="chrome_html" variables="OOBE=oobe" expand_variables="true"/>
         <structure name="IDR_OOBE_JS" file="resources\chromeos\login\oobe.js" flattenhtml="true" type="chrome_html" />

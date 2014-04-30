@@ -84,6 +84,11 @@ void MostVisitedHandler::RegisterMessages() {
   // Set up our sources for top-sites data.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
 
+#if defined(OS_ANDROID)
+  // Register chrome://touch-icon as a data source for touch icons or favicons.
+  content::URLDataSource::Add(profile,
+                              new FaviconSource(profile, FaviconSource::ANY));
+#endif
   // Register chrome://favicon as a data source for favicons.
   content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
@@ -270,6 +275,9 @@ std::string MostVisitedHandler::GetDictionaryKeyForUrl(const std::string& url) {
 }
 
 void MostVisitedHandler::MaybeRemovePageValues() {
+// The code below uses APIs not available on Android and the experiment should
+// not run there.
+#if !defined(OS_ANDROID)
   if (!history::MostVisitedTilesExperiment::IsDontShowOpenURLsEnabled())
     return;
 
@@ -286,6 +294,7 @@ void MostVisitedHandler::MaybeRemovePageValues() {
   history::MostVisitedTilesExperiment::RemovePageValuesMatchingOpenTabs(
       open_urls,
       pages_value_.get());
+#endif
 }
 
 // static

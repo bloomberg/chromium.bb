@@ -76,6 +76,7 @@ class NTPResourceCache : public content::NotificationObserver,
 
   scoped_refptr<base::RefCountedMemory> new_tab_html_;
 
+#if !defined(OS_ANDROID)
   // Returns a message describing any newly-added sync types, or an empty
   // string if all types have already been acknowledged.
   base::string16 GetSyncTypeMessage();
@@ -96,6 +97,7 @@ class NTPResourceCache : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar profile_pref_change_registrar_;
   PrefChangeRegistrar local_state_pref_change_registrar_;
+#endif
 
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;

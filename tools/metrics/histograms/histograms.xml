@@ -15820,9 +15820,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="NewTabPage.BookmarkActionAndroid"
     enum="NewTabPageBookmarkActionAndroid">
-  <obsolete>
-    Deprecated on M33 with the change to native NTP.
-  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Actions taken by users on partner bookmarks (editing / renaming) on the NTP
@@ -15852,9 +15849,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NewTabPage.MobilePromo" enum="NewTabPageMobilePromo">
-  <obsolete>
-    Deprecated on M33 with the change to native NTP.
-  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Android: Tallies counts for how the user interacted with the NTP promo page.

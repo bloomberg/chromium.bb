@@ -1,0 +1,18 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Don't apply tablet styles to TVDPI devices */
+@media only screen and (-webkit-min-device-pixel-ratio: 1.35),
+       only screen and (-webkit-max-device-pixel-ratio: 1.30) {
+  body[device='tablet'] .favicon-cell {
+    height: 120px;
+    padding-left: 36px;
+    padding-right: 36px;
+    width: 98px;
+  }
+  body[device='tablet'] #bookmarks_title_wrapper .title-crumb {
+    margin: 0 25px;
+  }
+}
+

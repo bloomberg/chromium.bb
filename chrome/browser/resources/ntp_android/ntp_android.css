@@ -1,0 +1,87 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  -webkit-user-select: none;
+  background: #fff;
+  font-family: Droid Sans;
+  margin: 0;
+  padding: 0;
+  padding-bottom: 44px;
+  width: 100%;
+}
+
+.welcome-to-chrome {
+  background: url(images/welcome_thumb.png);
+}
+
+.center-empty-container {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.center-empty-content {
+  font-size: 14pt;
+  width: 275px;
+}
+
+.promo-action-target {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.promo-message {
+  font-family: Arial, sans-serif;
+  font-size: 12pt;
+  margin: 16px 24px;
+  text-align: center;
+}
+
+.promo-button {
+  background: linear-gradient(
+      to bottom, #f5f5f5, #f1f1f1);
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08),
+      inset 0 0 2px rgba(255, 255, 255, 0.6);
+  font-size: 12pt;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+  text-align: center;
+}
+
+.promo-button-active {
+  -webkit-tap-highlight-color: transparent;
+  background: rgba(51, 181, 229, 0.4);
+}
+
+.promo-sync-graphic {
+  background-image: -webkit-image-set(
+      url('images/syncfographic_mdpi.png') 1x,
+      url('images/syncfographic_hdpi.png') 1.5x,
+      url('images/syncfographic_xhdpi.png') 2x);
+  background-repeat: no-repeat;
+  height: 130px;
+}
+
+body[device='tablet'] .promo-sync-graphic {
+  background-image: -webkit-image-set(
+      url('images/syncfographic_sw600dp_mdpi.png') 1x,
+      url('images/syncfographic_sw600dp_hdpi.png') 1.5x,
+      url('images/syncfographic_sw600dp_xhdpi.png') 2x);
+  background-repeat: no-repeat;
+  height: 260px;
+  zoom: 0.5;
+}
