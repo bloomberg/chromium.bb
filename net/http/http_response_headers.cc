@@ -627,62 +627,21 @@ HttpResponseHeaders::~HttpResponseHeaders() {
 
 // Note: this implementation implicitly assumes that line_end points at a valid
 // sentinel character (such as '\0').
-// static
-HttpVersion HttpResponseHeaders::ParseVersion(
-    std::string::const_iterator line_begin,
-    std::string::const_iterator line_end) {
-  std::string::const_iterator p = line_begin;
-
-  // RFC2616 sec 3.1: HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
-  // TODO: (1*DIGIT apparently means one or more digits, but we only handle 1).
-  // TODO: handle leading zeros, which is allowed by the rfc1616 sec 3.1.
-
-  if ((line_end - p < 4) || !LowerCaseEqualsASCII(p, p + 4, "http")) {
-    DVLOG(1) << "missing status line";
-    return HttpVersion();
-  }
-
-  p += 4;
-
-  if (p >= line_end || *p != '/') {
-    DVLOG(1) << "missing version";
-    return HttpVersion();
-  }
-
-  std::string::const_iterator dot = std::find(p, line_end, '.');
-  if (dot == line_end) {
-    DVLOG(1) << "malformed version";
-    return HttpVersion();
-  }
-
-  ++p;  // from / to first digit.
-  ++dot;  // from . to second digit.
-
-  if (!(*p >= '0' && *p <= '9' && *dot >= '0' && *dot <= '9')) {
-    DVLOG(1) << "malformed version number";
-    return HttpVersion();
-  }
-
-  uint16 major = *p - '0';
-  uint16 minor = *dot - '0';
-
-  return HttpVersion(major, minor);
-}
-
-// Note: this implementation implicitly assumes that line_end points at a valid
-// sentinel character (such as '\0').
 void HttpResponseHeaders::ParseStatusLine(
     std::string::const_iterator line_begin,
     std::string::const_iterator line_end,
     bool has_headers) {
   // Extract the version number
-  parsed_http_version_ = ParseVersion(line_begin, line_end);
+  std::string::const_iterator first_space =
+      std::find(line_begin, line_end, ' ');
+  std::string version(line_begin, first_space);
+  bool success = HttpUtil::ParseVersion(version, &parsed_http_version_);
 
   // Clamp the version number to one of: {0.9, 1.0, 1.1}
-  if (parsed_http_version_ == HttpVersion(0, 9) && !has_headers) {
+  if (success && parsed_http_version_ == HttpVersion(0, 9) && !has_headers) {
     http_version_ = HttpVersion(0, 9);
     raw_headers_ = "HTTP/0.9";
-  } else if (parsed_http_version_ >= HttpVersion(1, 1)) {
+  } else if (success && parsed_http_version_ >= HttpVersion(1, 1)) {
     http_version_ = HttpVersion(1, 1);
     raw_headers_ = "HTTP/1.1";
   } else {
@@ -696,7 +655,7 @@ void HttpResponseHeaders::ParseStatusLine(
   }
 
   // TODO(eroman): this doesn't make sense if ParseVersion failed.
-  std::string::const_iterator p = std::find(line_begin, line_end, ' ');
+  std::string::const_iterator p = first_space;
 
   if (p == line_end) {
     DVLOG(1) << "missing response status; assuming 200 OK";

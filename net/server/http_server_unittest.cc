@@ -218,9 +218,21 @@ TEST_F(HttpServerTest, Request) {
   ASSERT_EQ("/test", GetRequest(0).path);
   ASSERT_EQ("", GetRequest(0).data);
   ASSERT_EQ(0u, GetRequest(0).headers.size());
+  ASSERT_EQ(HttpVersion(1, 1), GetRequest(0).http_version);
   ASSERT_TRUE(StartsWithASCII(GetRequest(0).peer.ToString(),
                               "127.0.0.1",
                               true));
+}
+
+TEST_F(HttpServerTest, InvalidHttpVersion) {
+  TestHttpClient client;
+  ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
+  client.Send("GET /test HTTP//1\r\n\r\n");
+  ASSERT_TRUE(RunUntilRequestsReceived(1));
+  ASSERT_EQ("GET", GetRequest(0).method);
+  ASSERT_EQ("/test", GetRequest(0).path);
+  ASSERT_EQ("", GetRequest(0).data);
+  ASSERT_EQ(HttpVersion(1, 0), GetRequest(0).http_version);
 }
 
 TEST_F(HttpServerTest, RequestWithHeaders) {

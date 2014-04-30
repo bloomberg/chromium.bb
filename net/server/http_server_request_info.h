@@ -9,6 +9,7 @@
 #include <string>
 
 #include "net/base/ip_endpoint.h"
+#include "net/http/http_version.h"
 
 namespace net {
 
@@ -27,6 +28,9 @@ class HttpServerRequestInfo {
 
   // Request peer address.
   IPEndPoint peer;
+
+  // Request protocol/version
+  HttpVersion http_version;
 
   // Request method.
   std::string method;

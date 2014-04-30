@@ -40,6 +40,12 @@ class NET_EXPORT HttpUtil {
                               size_t search_start,
                               char delimiter);
 
+  // Parses an "HTTP/X.Y" version from a string, such as:
+  //   "HTTP/1.1"
+  // Returns whether or not the version string was successfully parsed.
+  static bool ParseVersion(const std::string& version_str,
+                           HttpVersion* version);
+
   // Parses the value of a Content-Type header.  The resulting mime_type and
   // charset values are normalized to lowercase.  The mime_type and charset
   // output values are only modified if the content_type_str contains a mime
