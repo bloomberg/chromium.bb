@@ -1167,7 +1167,7 @@ void WebMediaPlayerImpl::StartPipeline() {
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
         base::Bind(&LogMediaSourceError, media_log_),
-        false);
+        true);
     demuxer_.reset(chunk_demuxer_);
   }
 

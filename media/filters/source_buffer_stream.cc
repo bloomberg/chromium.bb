@@ -359,6 +359,7 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       memory_limit_(kDefaultAudioMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
+      pre_splice_complete_(false),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
@@ -384,6 +385,7 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       memory_limit_(kDefaultVideoMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
+      pre_splice_complete_(false),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
@@ -410,6 +412,7 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       memory_limit_(kDefaultAudioMemoryLimit),
       config_change_pending_(false),
       splice_buffers_index_(0),
+      pre_splice_complete_(false),
       splice_frames_enabled_(splice_frames_enabled) {}
 
 SourceBufferStream::~SourceBufferStream() {
@@ -691,6 +694,7 @@ void SourceBufferStream::ResetSeekState() {
   last_output_buffer_timestamp_ = kNoTimestamp();
   splice_buffers_index_ = 0;
   splice_buffer_ = NULL;
+  pre_splice_complete_ = false;
 }
 
 bool SourceBufferStream::ShouldSeekToStartOfBuffered(
@@ -1170,8 +1174,9 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
   }
 
   // Did we hand out the last pre-splice buffer on the previous call?
-  if (splice_buffers_index_ == last_splice_buffer_index) {
-    splice_buffers_index_++;
+  if (!pre_splice_complete_) {
+    DCHECK_EQ(splice_buffers_index_, last_splice_buffer_index);
+    pre_splice_complete_ = true;
     config_change_pending_ = true;
     DVLOG(1) << "Config change (forced for fade in of splice frame).";
     return SourceBufferStream::kConfigChange;
@@ -1181,11 +1186,13 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
   // so hand out the final buffer for fade in.  Because a config change is
   // always issued prior to handing out this buffer, any changes in config id
   // have been inherently handled.
-  DCHECK_GE(splice_buffers_index_, splice_buffers.size());
+  DCHECK(pre_splice_complete_);
+  DCHECK_EQ(splice_buffers_index_, splice_buffers.size() - 1);
   DCHECK(splice_buffers.back()->splice_timestamp() == kNoTimestamp());
   *out_buffer = splice_buffers.back();
   splice_buffer_ = NULL;
   splice_buffers_index_ = 0;
+  pre_splice_complete_ = false;
   return SourceBufferStream::kSuccess;
 }
 

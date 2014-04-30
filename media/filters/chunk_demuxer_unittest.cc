@@ -2569,12 +2569,6 @@ TEST_P(ChunkDemuxerTest, ConfigChange_Audio) {
   ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
   ASSERT_EQ(status, DemuxerStream::kConfigChanged);
   EXPECT_EQ(last_timestamp.InMilliseconds(), 524);
-  ASSERT_TRUE(audio_config_1.Matches(audio->audio_decoder_config()));
-
-  // The next is due to a typical config difference.
-  ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
-  ASSERT_EQ(status, DemuxerStream::kConfigChanged);
-  EXPECT_EQ(last_timestamp.InMilliseconds(), 527);
 
   // Fetch the new decoder config.
   const AudioDecoderConfig& audio_config_2 = audio->audio_decoder_config();
@@ -2587,14 +2581,6 @@ TEST_P(ChunkDemuxerTest, ConfigChange_Audio) {
   ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
   ASSERT_EQ(status, DemuxerStream::kConfigChanged);
   EXPECT_EQ(last_timestamp.InMilliseconds(), 782);
-  ASSERT_TRUE(audio_config_2.Matches(audio->audio_decoder_config()));
-
-  ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
-
-  ASSERT_EQ(status, DemuxerStream::kConfigChanged);
-  EXPECT_EQ(last_timestamp.InMilliseconds(), 779);
-
-  // Get the new config and verify that it matches the first one.
   ASSERT_TRUE(audio_config_1.Matches(audio->audio_decoder_config()));
 
   // Read until the end of the stream just to make sure there aren't any other

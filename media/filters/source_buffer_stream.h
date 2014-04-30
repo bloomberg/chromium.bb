@@ -398,6 +398,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // handled out next.
   size_t splice_buffers_index_;
 
+  // Indicates that all pre splice buffers have been handed out.
+  bool pre_splice_complete_;
+
   // Indicates that splice frame generation is enabled.
   const bool splice_frames_enabled_;
 
