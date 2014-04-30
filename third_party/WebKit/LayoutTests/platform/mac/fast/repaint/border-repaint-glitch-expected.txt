@@ -6,11 +6,11 @@ TEST FAIL: The boxes will resize, but the borders will break. The first box will
 
 
 (repaint rects
+  (rect 19 245 200 20)
   (rect 33 191 172 60)
   (rect 33 191 172 40)
-  (rect 19 245 200 20)
+  (rect 19 405 200 20)
   (rect 33 351 172 40)
   (rect 33 351 172 60)
-  (rect 19 405 200 20)
 )
 

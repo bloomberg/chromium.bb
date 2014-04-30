@@ -7,6 +7,6 @@ TEST FAIL: The square will remain red and will only change to green when the win
  
 (repaint rects
   (rect 8 148 784 18)
-  (rect 8 166 100 100)
+  (rect 8 34 100 100)
 )
 

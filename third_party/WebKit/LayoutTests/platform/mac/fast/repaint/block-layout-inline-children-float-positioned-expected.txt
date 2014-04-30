@@ -2,7 +2,6 @@ This is a test for regression against https://bugs.webkit.org/show_bug.cgi?id=40
 
 the quick brown fox jumped over the lazy dogthe quick brown fox jumped over the lazy dog
 (repaint rects
-  (rect 0 34 292 18)
   (rect 309 35 292 18)
   (rect 155 35 292 18)
 )

@@ -8,10 +8,10 @@ TEST FAIL: The boxes will resize, but the background images will leave artifacts
 (repaint rects
   (rect 19 157 200 60)
   (rect 19 157 200 40)
-  (rect 19 319 200 40)
-  (rect 19 319 200 60)
   (rect 29 157 180 60)
   (rect 29 157 180 40)
+  (rect 19 319 200 40)
+  (rect 19 319 200 60)
   (rect 29 319 180 40)
   (rect 29 319 180 60)
 )

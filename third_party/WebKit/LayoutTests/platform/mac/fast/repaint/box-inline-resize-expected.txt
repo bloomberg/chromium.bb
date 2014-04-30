@@ -6,8 +6,7 @@ You should see an invalidation at x=40 of the h2 or this test is broken.
 Chromium
 
 (repaint rects
-  (rect 8 98 32 32)
-  (rect 8 84 32 36)
+  (rect 8 84 32 68)
   (rect 8 84 32 36)
   (rect 8 104 113 28)
   (rect 40 104 113 28)

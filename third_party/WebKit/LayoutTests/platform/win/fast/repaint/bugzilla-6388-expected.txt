@@ -7,5 +7,6 @@ TEST FAIL: The blue square will NOT change to green.
 
 (repaint rects
   (rect 8 136 100 100)
+  (rect 8 136 100 100)
 )
 

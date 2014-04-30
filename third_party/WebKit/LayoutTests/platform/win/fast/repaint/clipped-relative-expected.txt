@@ -3,5 +3,6 @@ This is a repaint test for http://bugzilla.opendarwin.org/show_bug.cgi?id=9121 R
 
 (repaint rects
   (rect 102 74 110 232)
+  (rect 102 74 110 232)
 )
 
