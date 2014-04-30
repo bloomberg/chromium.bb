@@ -1267,6 +1267,7 @@ def GetTryServerMasterForBot(bot):
   Assumes that most Try Servers are on the tryserver.chromium master."""
   non_default_master_map = {
       'linux_gpu': 'tryserver.chromium.gpu',
+      'win_gpu': 'tryserver.chromium.gpu',
   }
   return non_default_master_map.get(bot, 'tryserver.chromium')
 
@@ -1357,6 +1358,7 @@ def GetDefaultTryConfigs(bots=None):
       'win_chromium_dbg': ['defaulttests'],
       'win_chromium_rel': ['defaulttests'],
       'win_chromium_x64_rel': ['defaulttests'],
+      'win_gpu': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
       'win_rel': standard_tests + [
           'app_list_unittests',
@@ -1475,6 +1477,7 @@ def GetPreferredTryMasters(project, change):
       'win_chromium_compile_dbg',
       'win_chromium_rel',
       'win_chromium_x64_rel',
+      'win_gpu',
   ]
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
