@@ -63,13 +63,13 @@ blink::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
 #endif
 #if defined(OS_WIN)
 blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
-    base::NativeEvent native_event);
+    const base::NativeEvent& native_event);
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
-    base::NativeEvent native_event);
+    const base::NativeEvent& native_event);
 blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
-    base::NativeEvent native_event);
+    const base::NativeEvent& native_event);
 blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
-    base::NativeEvent native_event);
+    const base::NativeEvent& native_event);
 #elif defined(USE_X11)
 blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event);

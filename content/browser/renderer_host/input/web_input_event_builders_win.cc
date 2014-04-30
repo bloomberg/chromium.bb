@@ -102,15 +102,15 @@ static void SetToggleKeyState(WebInputEvent* event) {
     event->modifiers |= WebInputEvent::CapsLockOn;
 }
 
-WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd, UINT message,
-                                                WPARAM wparam, LPARAM lparam) {
+WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
+                                                UINT message,
+                                                WPARAM wparam,
+                                                LPARAM lparam,
+                                                DWORD time_ms) {
   WebKeyboardEvent result;
 
-  // TODO(pkasting): http://b/1117926 Are we guaranteed that the message that
-  // GetMessageTime() refers to is the same one that we're passed in? Perhaps
-  // one of the construction parameters should be the time passed by the
-  // caller, who would know for sure.
-  result.timeStampSeconds = ::GetMessageTime() / 1000.0;
+  DCHECK(time_ms);
+  result.timeStampSeconds = time_ms / 1000.0;
 
   result.windowsKeyCode = static_cast<int>(wparam);
   // Record the scan code (along with other context bits) for this key event.
@@ -181,8 +181,11 @@ static LPARAM GetRelativeCursorPos(HWND hwnd) {
   return MAKELPARAM(pos.x, pos.y);
 }
 
-WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd, UINT message,
-                                          WPARAM wparam, LPARAM lparam) {
+WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
+                                          UINT message,
+                                          WPARAM wparam,
+                                          LPARAM lparam,
+                                          DWORD time_ms) {
   WebMouseEvent result;
 
   switch (message) {
@@ -235,11 +238,8 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd, UINT message,
     NOTREACHED();
   }
 
-  // TODO(pkasting): http://b/1117926 Are we guaranteed that the message that
-  // GetMessageTime() refers to is the same one that we're passed in? Perhaps
-  // one of the construction parameters should be the time passed by the
-  // caller, who would know for sure.
-  result.timeStampSeconds = ::GetMessageTime() / 1000.0;
+  DCHECK(time_ms);
+  result.timeStampSeconds = time_ms / 1000.0;
 
   // set position fields:
 
@@ -312,18 +312,17 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd, UINT message,
 
 // WebMouseWheelEvent ---------------------------------------------------------
 
-WebMouseWheelEvent
-WebMouseWheelEventBuilder::Build(HWND hwnd, UINT message,
-                                 WPARAM wparam, LPARAM lparam) {
+WebMouseWheelEvent WebMouseWheelEventBuilder::Build(HWND hwnd,
+                                                    UINT message,
+                                                    WPARAM wparam,
+                                                    LPARAM lparam,
+                                                    DWORD time_ms) {
   WebMouseWheelEvent result;
 
   result.type = WebInputEvent::MouseWheel;
 
-  // TODO(pkasting): http://b/1117926 Are we guaranteed that the message that
-  // GetMessageTime() refers to is the same one that we're passed in? Perhaps
-  // one of the construction parameters should be the time passed by the
-  // caller, who would know for sure.
-  result.timeStampSeconds = ::GetMessageTime() / 1000.0;
+  DCHECK(time_ms);
+  result.timeStampSeconds = time_ms / 1000.0;
 
   result.button = WebMouseEvent::ButtonNone;
 

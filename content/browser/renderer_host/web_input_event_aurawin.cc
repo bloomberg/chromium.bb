@@ -14,31 +14,34 @@ namespace content {
 // construct our pre-translated events.
 
 blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
-    base::NativeEvent native_event) {
+    const base::NativeEvent& native_event) {
   return WebMouseEventBuilder::Build(native_event.hwnd,
                                      native_event.message,
                                      native_event.wParam,
-                                     native_event.lParam);
+                                     native_event.lParam,
+                                     native_event.time);
 }
 
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
-    base::NativeEvent native_event) {
+    const base::NativeEvent& native_event) {
   return WebMouseWheelEventBuilder::Build(native_event.hwnd,
                                           native_event.message,
                                           native_event.wParam,
-                                          native_event.lParam);
+                                          native_event.lParam,
+                                          native_event.time);
 }
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
-    base::NativeEvent native_event) {
+    const base::NativeEvent& native_event) {
   return WebKeyboardEventBuilder::Build(native_event.hwnd,
                                         native_event.message,
                                         native_event.wParam,
-                                        native_event.lParam);
+                                        native_event.lParam,
+                                        native_event.time);
 }
 
 blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
-    base::NativeEvent native_event) {
+    const base::NativeEvent& native_event) {
   // TODO: Create gestures from native event.
   NOTIMPLEMENTED();
   return  blink::WebGestureEvent();
