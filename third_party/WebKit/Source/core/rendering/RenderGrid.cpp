@@ -713,15 +713,15 @@ bool RenderGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection dire
 void RenderGrid::growGrid(GridTrackSizingDirection direction, size_t maximumPositionIndex)
 {
     if (direction == ForColumns) {
-        ASSERT(maximumPositionIndex >= m_grid[0].size());
-        for (size_t row = 0; row < m_grid.size(); ++row)
+        ASSERT(maximumPositionIndex >= gridColumnCount());
+        for (size_t row = 0; row < gridRowCount(); ++row)
             m_grid[row].grow(maximumPositionIndex + 1);
     } else {
-        ASSERT(maximumPositionIndex >= m_grid.size());
-        const size_t oldRowSize = m_grid.size();
+        ASSERT(maximumPositionIndex >= gridRowCount());
+        const size_t oldRowSize = gridRowCount();
         m_grid.grow(maximumPositionIndex + 1);
-        for (size_t row = oldRowSize; row < m_grid.size(); ++row)
-            m_grid[row].grow(m_grid[0].size());
+        for (size_t row = oldRowSize; row < gridRowCount(); ++row)
+            m_grid[row].grow(gridColumnCount());
     }
 }
 
@@ -827,7 +827,7 @@ void RenderGrid::placeSpecifiedMajorAxisItemsOnGrid(const Vector<RenderBox*>& au
             continue;
         }
 
-        growGrid(autoPlacementMinorAxisDirection(), autoPlacementMinorAxisDirection() == ForColumns ? m_grid[0].size() : m_grid.size());
+        growGrid(autoPlacementMinorAxisDirection(), autoPlacementMinorAxisDirection() == ForColumns ? gridColumnCount() : gridRowCount());
         OwnPtr<GridCoordinate> emptyGridArea = iterator.nextEmptyGridArea();
         ASSERT(emptyGridArea);
         insertItemIntoGrid(autoGridItems[i], emptyGridArea->rows.resolvedInitialPosition, emptyGridArea->columns.resolvedInitialPosition);
@@ -864,9 +864,9 @@ void RenderGrid::placeAutoMajorAxisItemOnGrid(RenderBox* gridItem)
     }
 
     // We didn't find an empty grid area so we need to create an extra major axis line and insert our gridItem in it.
-    const size_t columnIndex = (autoPlacementMajorAxisDirection() == ForColumns) ? m_grid[0].size() : minorAxisIndex;
-    const size_t rowIndex = (autoPlacementMajorAxisDirection() == ForColumns) ? minorAxisIndex : m_grid.size();
-    growGrid(autoPlacementMajorAxisDirection(), autoPlacementMajorAxisDirection() == ForColumns ? m_grid[0].size() : m_grid.size());
+    const size_t columnIndex = (autoPlacementMajorAxisDirection() == ForColumns) ? gridColumnCount() : minorAxisIndex;
+    const size_t rowIndex = (autoPlacementMajorAxisDirection() == ForColumns) ? minorAxisIndex : gridRowCount();
+    growGrid(autoPlacementMajorAxisDirection(), autoPlacementMajorAxisDirection() == ForColumns ? gridColumnCount() : gridRowCount());
     insertItemIntoGrid(gridItem, rowIndex, columnIndex);
 }
 
