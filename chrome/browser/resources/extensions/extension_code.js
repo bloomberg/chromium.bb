@@ -39,7 +39,8 @@ cr.define('extensions', function() {
       this.appendChild(sourceDiv);
 
       // If there's no code, then display an appropriate message.
-      if (!code) {
+      if (!code ||
+          (!code.highlight && !code.beforeHighlight && !code.afterHighlight)) {
         var span = document.createElement('span');
         span.textContent = emptyMessage;
         sourceDiv.appendChild(span);
