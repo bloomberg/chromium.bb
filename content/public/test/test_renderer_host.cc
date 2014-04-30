@@ -25,7 +25,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/wm/core/default_activation_client.h"
 #endif
 
 namespace content {
@@ -175,7 +174,6 @@ void RenderViewHostTestHarness::SetUp() {
   aura_test_helper_.reset(
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
-  new wm::DefaultActivationClient(aura_test_helper_->root_window());
 #endif
 
   DCHECK(!browser_context_);

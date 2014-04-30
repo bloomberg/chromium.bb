@@ -12,7 +12,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/public/activation_client.h"
 
 #if !defined(OS_WIN) && !defined(USE_X11)
@@ -47,8 +46,6 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
 // the root window.
 TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
-  new wm::DefaultActivationClient(root_window());
-
   CompoundEventFilter root_filter;
   root_window()->AddPreTargetHandler(&root_filter);
 

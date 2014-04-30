@@ -305,7 +305,6 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura_test_support',
             '../ui/resources/ui_resources.gyp:ui_test_pak',
-            '../ui/wm/wm.gyp:wm',
           ],
         }],
         ['use_aura==1 or OS=="mac"', {
@@ -860,7 +859,6 @@
         ['use_aura==1', {
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
-            '../ui/wm/wm.gyp:wm',
           ]
         }],
         ['use_aura==1 or toolkit_views==1', {

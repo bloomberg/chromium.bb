@@ -36,6 +36,8 @@
         'client/cursor_client.h',
         'client/cursor_client_observer.h',
         'client/cursor_client_observer.cc',
+        'client/default_activation_client.cc',
+        'client/default_activation_client.h',
         'client/default_capture_client.cc',
         'client/default_capture_client.h',
         'client/event_client.cc',

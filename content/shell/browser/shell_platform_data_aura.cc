@@ -6,6 +6,7 @@
 
 #include "content/shell/browser/shell.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -17,7 +18,6 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/gfx/screen.h"
-#include "ui/wm/core/default_activation_client.h"
 
 namespace content {
 
@@ -121,7 +121,8 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   focus_client_.reset(new aura::test::TestFocusClient());
   aura::client::SetFocusClient(host_->window(), focus_client_.get());
 
-  new wm::DefaultActivationClient(host_->window());
+  activation_client_.reset(
+      new aura::client::DefaultActivationClient(host_->window()));
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(host_->window()));
   window_tree_client_.reset(

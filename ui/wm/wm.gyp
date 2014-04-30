@@ -34,8 +34,6 @@
         'core/compound_event_filter.h',
         'core/cursor_manager.cc',
         'core/cursor_manager.h',
-        'core/default_activation_client.cc',
-        'core/default_activation_client.h',
         'core/easy_resize_window_targeter.cc',
         'core/easy_resize_window_targeter.h',
         'core/focus_controller.cc',
