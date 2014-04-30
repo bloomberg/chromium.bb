@@ -7,7 +7,6 @@
 
 import fnmatch
 import os
-import re
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -206,7 +205,7 @@ def BuildLibgccEhCmd(sourcefile, output, arch):
 
 
 
-def TargetLibsSrc(GitSyncCmd):
+def TargetLibsSrc(GitSyncCmds):
   newlib_sys_nacl = command.path.join('%(output)s',
                                       'newlib', 'libc', 'sys', 'nacl')
   source = {
@@ -216,8 +215,8 @@ def TargetLibsSrc(GitSyncCmd):
           'commands': [
               # Clean any headers exported from the NaCl tree before syncing.
               command.CleanGitWorkingDir(
-                  '%(output)s', os.path.join('newlib', 'libc', 'include')),
-              GitSyncCmd('nacl-newlib')] +
+                  '%(output)s', os.path.join('newlib', 'libc', 'include'))] +
+              GitSyncCmds('nacl-newlib') +
               # Remove newlib versions of headers that will be replaced by
               # headers from the NaCl tree.
               [command.RemoveDirectory(command.path.join(newlib_sys_nacl,
@@ -243,30 +242,22 @@ def TargetLibsSrc(GitSyncCmd):
       'libcxx_src': {
           'type': 'source',
           'output_dirname': 'libcxx',
-          'commands': [
-              GitSyncCmd('libcxx'),
-          ]
+          'commands': GitSyncCmds('libcxx'),
       },
       'libcxxabi_src': {
           'type': 'source',
           'output_dirname': 'libcxxabi',
-          'commands': [
-              GitSyncCmd('libcxxabi'),
-          ]
+          'commands': GitSyncCmds('libcxxabi'),
       },
       'compiler_rt_src': {
           'type': 'source',
           'output_dirname': 'compiler-rt',
-          'commands': [
-              GitSyncCmd('compiler-rt'),
-          ]
+          'commands': GitSyncCmds('compiler-rt'),
       },
       'gcc_src': {
           'type': 'source',
           'output_dirname': 'pnacl-gcc',
-          'commands': [
-              GitSyncCmd('gcc'),
-          ]
+          'commands': GitSyncCmds('gcc'),
       },
   }
   return source

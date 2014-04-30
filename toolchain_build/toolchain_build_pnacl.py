@@ -12,14 +12,10 @@
    The real entry plumbing and CLI flags are also in toolchain_main.py.
 """
 
-import base64
 import fnmatch
 import logging
 import os
-import re
 import shutil
-import stat
-import subprocess
 import sys
 import zipfile
 
@@ -209,27 +205,27 @@ def CopyWindowsHostLibs(host):
                   os.path.join('%(output)s', 'bin', lib))
                for lib in libs]
 
-def GetGitSyncCmdCallback(revisions):
-  """Return a callback which returns the git sync command for a component.
+def GetGitSyncCmdsCallback(revisions):
+  """Return a callback which returns the git sync commands for a component.
 
      This allows all the revision information to be processed here while giving
      other modules like pnacl_targetlibs.py the ability to define their own
      source targets with minimal boilerplate.
   """
-  def GetGitSyncCmd(component):
-    return command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS[component],
-                             '%(output)s',
-                             revisions[component])
-  return GetGitSyncCmd
+  def GetGitSyncCmds(component):
+    return [command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS[component],
+                                '%(output)s',
+                                revisions[component]),
+            command.Runnable(pnacl_commands.CmdCheckoutGitBundleForTrybot,
+                             component, '%(output)s')]
+  return GetGitSyncCmds
 
-def HostToolsSources(GetGitSyncCmd):
+def HostToolsSources(GetGitSyncCmds):
   sources = {
       'binutils_pnacl_src': {
           'type': 'source',
           'output_dirname': 'binutils',
-          'commands': [
-              GetGitSyncCmd('binutils'),
-          ],
+          'commands': GetGitSyncCmds('binutils'),
       },
       # For some reason, the llvm build using --with-clang-srcdir chokes if the
       # clang source directory is named something other than 'clang', so don't
@@ -237,29 +233,23 @@ def HostToolsSources(GetGitSyncCmd):
       'clang_src': {
           'type': 'source',
           'output_dirname': 'clang',
-          'commands': [
-              GetGitSyncCmd('clang'),
-          ],
+          'commands': GetGitSyncCmds('clang'),
       },
       'llvm_src': {
           'type': 'source',
           'output_dirname': 'llvm',
-          'commands': [
-              GetGitSyncCmd('llvm'),
-          ],
+          'commands': GetGitSyncCmds('llvm'),
       },
   }
   return sources
 
 
-def TestsuiteSources(GetGitSyncCmd):
+def TestsuiteSources(GetGitSyncCmds):
   sources = {
       'llvm_testsuite_src': {
           'type': 'source',
           'output_dirname': 'llvm-test-suite',
-          'commands': [
-              GetGitSyncCmd('llvm-test-suite'),
-          ],
+          'commands': GetGitSyncCmds('llvm-test-suite'),
       },
   }
   return sources
@@ -478,32 +468,7 @@ def SyncPNaClRepos(revisions):
         clean=is_newlib
     )
 
-    # For testing LLVM, Clang, etc. changes on the trybots, look for a
-    # Git bundle file created by llvm_change_try_helper.sh.
-    bundle_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
-                               '%s_bundle' % repo)
-    base64_file = '%s.b64' % bundle_file
-    if os.path.exists(base64_file):
-      input_fh = open(base64_file, 'r')
-      output_fh = open(bundle_file, 'wb')
-      base64.decode(input_fh, output_fh)
-      input_fh.close()
-      output_fh.close()
-      subprocess.check_call(
-          pynacl.repo_tools.GitCmd() + ['fetch'],
-          cwd=destination
-      )
-      subprocess.check_call(
-          pynacl.repo_tools.GitCmd() + ['bundle', 'unbundle', bundle_file],
-          cwd=destination
-      )
-      commit_id_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
-                                    '%s_commit_id' % repo)
-      commit_id = open(commit_id_file, 'r').readline().strip()
-      subprocess.check_call(
-          pynacl.repo_tools.GitCmd() + ['checkout', commit_id],
-          cwd=destination
-      )
+    pnacl_commands.CheckoutGitBundleForTrybot(repo, destination)
 
 
 def InstallMinGWHostCompiler():
@@ -633,9 +598,9 @@ if __name__ == '__main__':
     InstallMinGWHostCompiler()
 
   packages = {}
-  packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
+  packages.update(HostToolsSources(GetGitSyncCmdsCallback(revisions)))
   if args.testsuite_sync:
-    packages.update(TestsuiteSources(GetGitSyncCmdCallback(revisions)))
+    packages.update(TestsuiteSources(GetGitSyncCmdsCallback(revisions)))
 
 
   if pynacl.platform.IsLinux64():
@@ -658,7 +623,7 @@ if __name__ == '__main__':
   # TODO(dschuff): Figure out a better way to test things on toolchain bots.
   if pynacl.platform.IsLinux64():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
-      GetGitSyncCmdCallback(revisions)))
+      GetGitSyncCmdsCallback(revisions)))
     for bias in BITCODE_BIASES:
       packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
     for arch in ALL_ARCHES:

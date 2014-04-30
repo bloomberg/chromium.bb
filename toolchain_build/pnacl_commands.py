@@ -6,6 +6,7 @@
 """Runnables for toolchain_build_pnacl.py
 """
 
+import base64
 import os
 import shutil
 import stat
@@ -69,3 +70,35 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
       url, rev = pynacl.repo_tools.SvnRevInfo(NACL_DIR)
       repotype = 'SVN'
     print >> f, '[%s] %s: %s' % (repotype, url, rev)
+
+
+def CheckoutGitBundleForTrybot(repo, destination):
+  # For testing LLVM, Clang, etc. changes on the trybots, look for a
+  # Git bundle file created by llvm_change_try_helper.sh.
+  bundle_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
+                             '%s_bundle' % repo)
+  base64_file = '%s.b64' % bundle_file
+  if os.path.exists(base64_file):
+    input_fh = open(base64_file, 'r')
+    output_fh = open(bundle_file, 'wb')
+    base64.decode(input_fh, output_fh)
+    input_fh.close()
+    output_fh.close()
+    subprocess.check_call(
+        pynacl.repo_tools.GitCmd() + ['fetch'],
+        cwd=destination
+    )
+    subprocess.check_call(
+        pynacl.repo_tools.GitCmd() + ['bundle', 'unbundle', bundle_file],
+        cwd=destination
+    )
+    commit_id_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
+                                  '%s_commit_id' % repo)
+    commit_id = open(commit_id_file, 'r').readline().strip()
+    subprocess.check_call(
+        pynacl.repo_tools.GitCmd() + ['checkout', commit_id],
+        cwd=destination
+    )
+
+def CmdCheckoutGitBundleForTrybot(subst, repo, destination):
+  return CheckoutGitBundleForTrybot(repo, subst.SubstituteAbsPaths(destination))
