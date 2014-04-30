@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/common/page_zoom.h"
 #include "content/shell/renderer/test_runner/MockSpellCheck.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
@@ -335,6 +336,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void TextZoomOut();
   void ZoomPageIn();
   void ZoomPageOut();
+  void SetPageZoomFactor(gin::Arguments* args);
   void SetPageScaleFactor(gin::Arguments* args);
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
@@ -455,6 +457,7 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("textZoomOut", &EventSenderBindings::TextZoomOut)
       .SetMethod("zoomPageIn", &EventSenderBindings::ZoomPageIn)
       .SetMethod("zoomPageOut", &EventSenderBindings::ZoomPageOut)
+      .SetMethod("setPageZoomFactor", &EventSenderBindings::SetPageZoomFactor)
       .SetMethod("setPageScaleFactor", &EventSenderBindings::SetPageScaleFactor)
       .SetMethod("clearTouchPoints", &EventSenderBindings::ClearTouchPoints)
       .SetMethod("releaseTouchPoint", &EventSenderBindings::ReleaseTouchPoint)
@@ -581,6 +584,16 @@ void EventSenderBindings::ZoomPageIn() {
 void EventSenderBindings::ZoomPageOut() {
   if (sender_)
     sender_->ZoomPageOut();
+}
+
+void EventSenderBindings::SetPageZoomFactor(gin::Arguments* args) {
+  if (!sender_)
+    return;
+  double zoom_factor;
+  if (args->PeekNext().IsEmpty())
+    return;
+  args->GetNext(&zoom_factor);
+  sender_->SetPageZoomFactor(zoom_factor);
 }
 
 void EventSenderBindings::SetPageScaleFactor(gin::Arguments* args) {
@@ -1381,6 +1394,15 @@ void EventSender::ZoomPageOut() {
   for (size_t i = 0; i < window_list.size(); ++i) {
     window_list.at(i)->webView()->setZoomLevel(
         window_list.at(i)->webView()->zoomLevel() - 1);
+  }
+}
+
+void EventSender::SetPageZoomFactor(double zoom_factor) {
+  const std::vector<WebTestProxyBase*>& window_list = interfaces_->windowList();
+
+  for (size_t i = 0; i < window_list.size(); ++i) {
+    window_list.at(i)->webView()->setZoomLevel(
+        content::ZoomFactorToZoomLevel(zoom_factor));
   }
 }
 

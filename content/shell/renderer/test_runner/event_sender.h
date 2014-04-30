@@ -99,6 +99,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void ZoomPageIn();
   void ZoomPageOut();
+  void SetPageZoomFactor(double zoom_factor);
 
   void SetPageScaleFactor(float scale_factor, int x, int y);
 
