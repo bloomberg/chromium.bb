@@ -94,7 +94,7 @@ fi
 chromeos_dev_list="libbluetooth-dev"
 
 # Packages needed for development
-dev_list="apache2.2-bin bison curl dpkg-dev elfutils fakeroot flex
+dev_list="apache2.2-bin bison curl dpkg-dev elfutils devscripts fakeroot flex
           fonts-thai-tlwg g++ git-core gperf language-pack-da language-pack-fr
           language-pack-he language-pack-zh-hant libapache2-mod-php5
           libasound2-dev libbrlapi-dev libbz2-dev libcairo2-dev libcap-dev
@@ -106,7 +106,7 @@ dev_list="apache2.2-bin bison curl dpkg-dev elfutils fakeroot flex
           libxslt1-dev libxss-dev libxt-dev libxtst-dev mesa-common-dev openbox
           patch perl php5-cgi pkg-config python python-cherrypy3 python-dev
           python-psutil rpm ruby subversion ttf-dejavu-core ttf-indic-fonts
-          ttf-kochi-gothic ttf-kochi-mincho wdiff xfonts-mathml
+          ttf-kochi-gothic ttf-kochi-mincho wdiff xfonts-mathml zip
           $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
