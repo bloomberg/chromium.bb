@@ -183,6 +183,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 }
 
 - (void)setOneshotFrameRect:(NSRect)frameRect {
+  [super setFrame:frameRect];
   overrideNextSetFrame_ = YES;
   overrideFrame_ = frameRect;
 }

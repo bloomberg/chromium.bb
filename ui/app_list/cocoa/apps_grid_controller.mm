@@ -73,8 +73,7 @@ NSTimeInterval g_scroll_duration = 0.18;
 // Create any new pages after updating |items_|.
 - (void)updatePages:(size_t)startItemIndex;
 
-- (void)updatePageContent:(size_t)pageIndex
-               resetModel:(BOOL)resetModel;
+- (void)updatePageContent:(size_t)pageIndex;
 
 // Bridged methods for AppListItemListObserver.
 - (void)listItemAdded:(size_t)index
@@ -459,23 +458,18 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 
   const size_t startPage = startItemIndex / kItemsPerPage;
   // All pages on or after |startPage| may need items added or removed.
-  for (size_t pageIndex = startPage; pageIndex < targetPages; ++pageIndex) {
-    [self updatePageContent:pageIndex
-                 resetModel:YES];
-  }
+  for (size_t pageIndex = startPage; pageIndex < targetPages; ++pageIndex)
+    [self updatePageContent:pageIndex];
 }
 
-- (void)updatePageContent:(size_t)pageIndex
-               resetModel:(BOOL)resetModel {
+- (void)updatePageContent:(size_t)pageIndex {
   NSCollectionView* pageView = [self collectionViewAtPageIndex:pageIndex];
-  if (resetModel) {
-    // Clear the models first, otherwise removed items could be autoreleased at
-    // an unknown point in the future, when the model owner may have gone away.
-    for (size_t i = 0; i < [[pageView content] count]; ++i) {
-      AppsGridViewItem* gridItem = base::mac::ObjCCastStrict<AppsGridViewItem>(
-          [pageView itemAtIndex:i]);
-      [gridItem setModel:NULL];
-    }
+  // Clear the models first, otherwise removed items could be autoreleased at
+  // an unknown point in the future, when the model owner may have gone away.
+  for (size_t i = 0; i < [[pageView content] count]; ++i) {
+    AppsGridViewItem* gridItem =
+        base::mac::ObjCCastStrict<AppsGridViewItem>([pageView itemAtIndex:i]);
+    [gridItem setModel:NULL];
   }
 
   NSRange inPageRange = NSIntersectionRange(
@@ -483,8 +477,6 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
       NSMakeRange(0, [items_ count]));
   NSArray* pageContent = [items_ subarrayWithRange:inPageRange];
   [pageView setContent:pageContent];
-  if (!resetModel)
-    return;
 
   for (size_t i = 0; i < [pageContent count]; ++i) {
     AppsGridViewItem* gridItem = base::mac::ObjCCastStrict<AppsGridViewItem>(
@@ -506,8 +498,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   size_t fromPageIndex = fromIndex / kItemsPerPage;
   size_t toPageIndex = toIndex / kItemsPerPage;
   if (fromPageIndex == toPageIndex) {
-    [self updatePageContent:fromPageIndex
-                 resetModel:NO];  // Just reorder items.
+    [self updatePageContent:fromPageIndex];
     return;
   }
 
@@ -515,8 +506,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
     std::swap(fromPageIndex, toPageIndex);
 
   for (size_t i = fromPageIndex; i <= toPageIndex; ++i) {
-    [self updatePageContent:i
-                 resetModel:YES];
+    [self updatePageContent:i];
   }
 }
 
