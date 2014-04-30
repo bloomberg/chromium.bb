@@ -209,9 +209,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       largest_seen_packet_with_ack_(0),
       largest_seen_packet_with_stop_waiting_(0),
       pending_version_negotiation_packet_(false),
-      received_packet_manager_(
-          FLAGS_quic_congestion_control_inter_arrival ? kInterArrival : kTCP,
-          &stats_),
+      received_packet_manager_(kTCP, &stats_),
       ack_queued_(false),
       stop_waiting_count_(0),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
@@ -230,8 +228,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_sent_packet_(0),
       sent_packet_manager_(
-          is_server, clock_, &stats_,
-          FLAGS_quic_congestion_control_inter_arrival ? kInterArrival : kTCP,
+          is_server, clock_, &stats_, kTCP,
           FLAGS_quic_use_time_loss_detection ? kTime : kNack),
       version_negotiation_state_(START_NEGOTIATION),
       is_server_(is_server),
@@ -792,19 +789,6 @@ void QuicConnection::OnPacketComplete() {
            << " stream frames for "
            << last_header_.public_header.connection_id;
 
-  // Discard the packet if the visitor will not accept the stream frames.
-  // TODO(jri): Now that we have flow control, this is not required for data
-  // streams. Since header and crypto streams are still not flow controlled,
-  // we need to have this check. Add stream-level flow control to both crypto
-  // and header streams (the right thing to do), and keep them out of the
-  // connection-level flow control, to avoid deadlock.
-  // Also, check if stream_sequencer is checking anywhere for a reasonable
-  // limit; if not, remove entire code path under WillAcceptStreamFrames.
-  if (!last_stream_frames_.empty() &&
-      !visitor_->WillAcceptStreamFrames(last_stream_frames_)) {
-    return;
-  }
-
   // Call MaybeQueueAck() before recording the received packet, since we want
   // to trigger an ack if the newly received packet was previously missing.
   MaybeQueueAck();
@@ -1267,6 +1251,16 @@ void QuicConnection::RetransmitUnackedPackets(
   WriteIfNotBlocked();
 }
 
+void QuicConnection::NeuterUnencryptedPackets() {
+  sent_packet_manager_.NeuterUnencryptedPackets();
+  // This may have changed the retransmission timer, so re-arm it.
+  retransmission_alarm_->Cancel();
+  QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
+  if (retransmission_time != QuicTime::Zero()) {
+    retransmission_alarm_->Set(retransmission_time);
+  }
+}
+
 bool QuicConnection::ShouldGeneratePacket(
     TransmissionType transmission_type,
     HasRetransmittableData retransmittable,
@@ -1477,7 +1471,8 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   pending_write_.reset();
 
   if (result.status == WRITE_STATUS_ERROR) {
-    DVLOG(1) << "Write failed with error code: " << result.error_code;
+    DVLOG(1) << "Write failed with error: " << result.error_code << " ("
+             << ErrorToString(result.error_code) << ")";
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
     return false;

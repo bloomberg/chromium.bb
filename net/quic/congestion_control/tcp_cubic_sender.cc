@@ -275,7 +275,8 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   }
 }
 
-void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
+void TcpCubicSender::OnRttUpdated(
+    QuicPacketSequenceNumber /*largest_observed*/) {
   if (InSlowStart() &&
       hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_->latest_rtt(),
                                              rtt_stats_->min_rtt(),

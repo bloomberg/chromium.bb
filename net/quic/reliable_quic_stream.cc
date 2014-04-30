@@ -137,24 +137,16 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
 ReliableQuicStream::~ReliableQuicStream() {
 }
 
-bool ReliableQuicStream::WillAcceptStreamFrame(
-    const QuicStreamFrame& frame) const {
-  if (read_side_closed_) {
-    return true;
-  }
-  if (frame.stream_id != id_) {
-    LOG(ERROR) << "Error!";
-    return false;
-  }
-  return sequencer_.WillAcceptStreamFrame(frame);
-}
-
 bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
-  DCHECK_EQ(frame.stream_id, id_);
   if (read_side_closed_) {
     DVLOG(1) << ENDPOINT << "Ignoring frame " << frame.stream_id;
     // We don't want to be reading: blackhole the data.
     return true;
+  }
+
+  if (frame.stream_id != id_) {
+    LOG(ERROR) << "Error!";
+    return false;
   }
 
   // This count include duplicate data received.

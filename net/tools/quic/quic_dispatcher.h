@@ -104,12 +104,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
  protected:
   // Instantiates a new low-level packet writer. Caller takes ownership of the
   // returned object.
-  QuicPacketWriter* CreateWriter(int fd);
-
-  // Instantiates a new top-level writer wrapper. Takes ownership of |writer|.
-  // Caller takes ownership of the returned object.
-  virtual QuicPacketWriterWrapper* CreateWriterWrapper(
-      QuicPacketWriter* writer);
+  virtual QuicPacketWriter* CreateWriter(int fd);
 
   virtual QuicSession* CreateQuicSession(QuicConnectionId connection_id,
                                          const IPEndPoint& server_address,
@@ -130,7 +125,9 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   virtual QuicTimeWaitListManager* CreateQuicTimeWaitListManager();
 
   // Replaces the packet writer with |writer|. Takes ownership of |writer|.
-  void set_writer(QuicPacketWriter* writer);
+  void set_writer(QuicPacketWriter* writer) {
+    writer_.reset(writer);
+  }
 
   QuicTimeWaitListManager* time_wait_list_manager() {
     return time_wait_list_manager_.get();
@@ -164,7 +161,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   QuicEpollConnectionHelper* helper() { return helper_.get(); }
 
-  QuicPacketWriterWrapper* writer() { return writer_.get(); }
+  QuicPacketWriter* writer() { return writer_.get(); }
 
   const uint32 initial_flow_control_window_bytes() const {
     return initial_flow_control_window_bytes_;
@@ -207,10 +204,8 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   // The helper used for all connections.
   scoped_ptr<QuicEpollConnectionHelper> helper_;
 
-  // The writer to write to the socket with. We require a writer wrapper to
-  // allow replacing writer implementation without disturbing running
-  // connections.
-  scoped_ptr<QuicPacketWriterWrapper> writer_;
+  // The writer to write to the socket with.
+  scoped_ptr<QuicPacketWriter> writer_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/congestion_control/fix_rate_receiver.h"
 #include "net/quic/congestion_control/fix_rate_sender.h"
+#include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,12 +30,13 @@ class FixRateReceiverPeer : public FixRateReceiver {
 class FixRateTest : public ::testing::Test {
  protected:
   FixRateTest()
-      : sender_(new FixRateSender(&clock_)),
+      : sender_(new FixRateSender(&rtt_stats_)),
         receiver_(new FixRateReceiverPeer()),
         start_(clock_.Now()) {
     // Make sure clock does not start at 0.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
   }
+  RttStats rtt_stats_;
   MockClock clock_;
   scoped_ptr<FixRateSender> sender_;
   scoped_ptr<FixRateReceiverPeer> receiver_;

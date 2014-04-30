@@ -27,7 +27,8 @@ QuicFlowController::QuicFlowController(QuicVersion version,
         bytes_sent_(0),
         send_window_offset_(send_window_offset),
         receive_window_offset_(receive_window_offset),
-        max_receive_window_(max_receive_window) {
+        max_receive_window_(max_receive_window),
+        last_blocked_send_window_offset_(0) {
   DVLOG(1) << ENDPOINT << "Created flow controller for stream " << id_
            << ", setting initial receive window offset to: "
            << receive_window_offset_
@@ -98,8 +99,6 @@ bool QuicFlowController::FlowControlViolation() {
   }
 
   if (receive_window_offset_ < TotalReceivedBytes()) {
-    // TODO(rjshade): Lower severity from ERROR once we have established that
-    //                flow control is working correctly.
     LOG(ERROR)
         << ENDPOINT << "Flow control violation on stream " << id_
         << ", receive window: " << receive_window_offset_
@@ -142,7 +141,8 @@ void QuicFlowController::MaybeSendBlocked(QuicConnection* connection) {
     return;
   }
 
-  if (SendWindowSize() == 0) {
+  if (SendWindowSize() == 0 &&
+      last_blocked_send_window_offset_ < send_window_offset_) {
     DVLOG(1) << ENDPOINT << "Stream " << id_ << " is flow control blocked. "
              << "Send window: " << SendWindowSize()
              << ", bytes sent: " << bytes_sent_
@@ -150,6 +150,10 @@ void QuicFlowController::MaybeSendBlocked(QuicConnection* connection) {
     // The entire send_window has been consumed, we are now flow control
     // blocked.
     connection->SendBlocked(id_);
+
+    // Keep track of when we last sent a BLOCKED frame so that we only send one
+    // at a given send offset.
+    last_blocked_send_window_offset_ = send_window_offset_;
   }
 }
 

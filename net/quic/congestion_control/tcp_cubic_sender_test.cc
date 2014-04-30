@@ -75,8 +75,8 @@ class TcpCubicSenderTest : public ::testing::Test {
   }
 
   void UpdateRtt(QuicTime::Delta rtt) {
-    sender_->rtt_stats_.UpdateRtt(rtt, QuicTime::Delta::Zero());
-    sender_->UpdateRtt(rtt);
+    sender_->rtt_stats_.UpdateRtt(rtt, QuicTime::Delta::Zero(), clock_.Now());
+    sender_->OnRttUpdated(acked_sequence_number_ + 1);
   }
 
   // Normal is that TCP acks every other segment.

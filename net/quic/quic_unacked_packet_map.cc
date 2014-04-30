@@ -193,6 +193,10 @@ void QuicUnackedPacketMap::NeuterPacket(
     transmission_info->all_transmissions->insert(sequence_number);
   }
   if (transmission_info->retransmittable_frames != NULL) {
+    if (transmission_info->retransmittable_frames->HasCryptoHandshake()
+            == IS_HANDSHAKE) {
+      --pending_crypto_packet_count_;
+    }
     delete transmission_info->retransmittable_frames;
     transmission_info->retransmittable_frames = NULL;
   }

@@ -544,7 +544,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
-  // TODO(ianswett): Add a VerifyCleanConnection call once this is clean.
+  VerifyCleanConnection(true);
 }
 
 TEST_P(EndToEndTest, LargePostWithPacketLossAndBlockedSocket) {
@@ -625,6 +625,7 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
   EXPECT_EQ(2, client_->client()->session()->GetNumSentClientHellos());
+  VerifyCleanConnection(false);
 }
 
 TEST_P(EndToEndTest, LargePostFEC) {

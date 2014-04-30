@@ -94,6 +94,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Requests retransmission of all unacked packets of |retransmission_type|.
   void RetransmitUnackedPackets(RetransmissionType retransmission_type);
 
+  // Removes the retransmittable frames from all unencrypted packets to ensure
+  // they don't get retransmitted.
+  void NeuterUnencryptedPackets();
+
   // Returns true if the unacked packet |sequence_number| has retransmittable
   // frames.  This will only return false if the packet has been acked, if a
   // previous transmission of this packet was ACK'd, or if this packet has been

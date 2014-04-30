@@ -228,6 +228,24 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
   }
 }
 
+void QuicSentPacketManager::NeuterUnencryptedPackets() {
+  QuicUnackedPacketMap::const_iterator unacked_it = unacked_packets_.begin();
+  while (unacked_it != unacked_packets_.end()) {
+    const RetransmittableFrames* frames =
+        unacked_it->second.retransmittable_frames;
+    if (frames != NULL && frames->encryption_level() == ENCRYPTION_NONE) {
+      // Since once you're forward secure, no unencrypted packets will be sent,
+      // crypto or otherwise. Unencrypted packets are neutered and abandoned, to
+      // ensure they are not retransmitted or considered lost from a congestion
+      // control perspective.
+      pending_retransmissions_.erase(unacked_it->first);
+      unacked_packets_.NeuterPacket(unacked_it->first);
+      OnPacketAbandoned(unacked_it->first);
+    }
+    ++unacked_it;
+  }
+}
+
 void QuicSentPacketManager::MarkForRetransmission(
     QuicPacketSequenceNumber sequence_number,
     TransmissionType transmission_type) {
@@ -628,8 +646,9 @@ void QuicSentPacketManager::MaybeUpdateRTT(
 
   QuicTime::Delta send_delta =
       ack_receive_time.Subtract(transmission_info.sent_time);
-  rtt_stats_.UpdateRtt(send_delta, received_info.delta_time_largest_observed);
-  send_algorithm_->UpdateRtt(rtt_stats_.latest_rtt());
+  rtt_stats_.UpdateRtt(
+      send_delta, received_info.delta_time_largest_observed, ack_receive_time);
+  send_algorithm_->OnRttUpdated(received_info.largest_observed);
 }
 
 QuicTime::Delta QuicSentPacketManager::TimeUntilSend(

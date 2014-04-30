@@ -24,6 +24,5 @@ bool FLAGS_enable_quic_pacing = true;
 bool FLAGS_enable_quic_stream_flow_control_2 = true;
 
 bool FLAGS_quic_allow_oversized_packets_for_test = false;
-bool FLAGS_quic_congestion_control_inter_arrival = false;
 // When true, the use time based loss detection instead of nack.
 bool FLAGS_quic_use_time_loss_detection = false;

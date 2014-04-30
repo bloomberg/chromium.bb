@@ -19,70 +19,18 @@ namespace net {
 QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
     : stream_(quic_stream),
       num_bytes_consumed_(0),
-      max_frame_memory_(numeric_limits<size_t>::max()),
       close_offset_(numeric_limits<QuicStreamOffset>::max()),
       blocked_(false),
       num_bytes_buffered_(0),
       num_frames_received_(0),
       num_duplicate_frames_received_(0) {
-}
-
-QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
-                                         ReliableQuicStream* quic_stream)
-    : stream_(quic_stream),
-      num_bytes_consumed_(0),
-      max_frame_memory_(max_frame_memory),
-      close_offset_(numeric_limits<QuicStreamOffset>::max()),
-      blocked_(false),
-      num_bytes_buffered_(0),
-      num_frames_received_(0),
-      num_duplicate_frames_received_(0) {
-  if (max_frame_memory < kMaxPacketSize) {
-    LOG(DFATAL) << "Setting max frame memory to " << max_frame_memory
-                << ".  Some frames will be impossible to handle.";
-  }
 }
 
 QuicStreamSequencer::~QuicStreamSequencer() {
 }
 
-bool QuicStreamSequencer::WillAcceptStreamFrame(
-    const QuicStreamFrame& frame) const {
-  size_t data_len = frame.data.TotalBufferSize();
-  if (data_len > max_frame_memory_) {
-    LOG(DFATAL) << "data_len: " << data_len << " > max_frame_memory_: "
-                << max_frame_memory_;
-    return false;
-  }
-
-  if (IsDuplicate(frame)) {
-    return true;
-  }
-  QuicStreamOffset byte_offset = frame.offset;
-  if (data_len > max_frame_memory_) {
-    // We're never going to buffer this frame and we can't pass it up.
-    // The stream might only consume part of it and we'd need a partial ack.
-    //
-    // Ideally this should never happen, as we check that
-    // max_frame_memory_ > kMaxPacketSize and lower levels should reject
-    // frames larger than that.
-    return false;
-  }
-  if (byte_offset + data_len - num_bytes_consumed_ > max_frame_memory_) {
-    // We can buffer this but not right now.  Toss it.
-    // It might be worth trying an experiment where we try best-effort buffering
-    return false;
-  }
-  return true;
-}
-
 bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   ++num_frames_received_;
-  if (!WillAcceptStreamFrame(frame)) {
-    // This should not happen, as WillAcceptFrame should be called before
-    // OnStreamFrame.  Error handling should be done by the caller.
-    return false;
-  }
   if (IsDuplicate(frame)) {
     ++num_duplicate_frames_received_;
     // Silently ignore duplicates.

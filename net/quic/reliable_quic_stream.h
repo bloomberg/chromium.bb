@@ -36,8 +36,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   virtual ~ReliableQuicStream();
 
-  bool WillAcceptStreamFrame(const QuicStreamFrame& frame) const;
-
   // Called when a (potentially duplicate) stream frame has been received
   // for this stream.  Returns false if this frame can not be accepted
   // because there is too much data already buffered.

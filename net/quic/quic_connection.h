@@ -61,10 +61,6 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
  public:
   virtual ~QuicConnectionVisitorInterface() {}
 
-  // A simple method to determine if all frames will be accepted by the visitor.
-  virtual bool WillAcceptStreamFrames(
-      const std::vector<QuicStreamFrame>& frames) = 0;
-
   // A simple visitor interface for dealing with data frames.
   virtual void OnStreamFrames(const std::vector<QuicStreamFrame>& frames) = 0;
 
@@ -417,6 +413,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // from what was initially assumed and when the visitor wants to re-transmit
   // initially encrypted packets when the initial encrypter changes.
   void RetransmitUnackedPackets(RetransmissionType retransmission_type);
+
+  // Calls |sent_packet_manager_|'s NeuterUnencryptedPackets. Used when the
+  // connection becomes forward secure and hasn't received acks for all packets.
+  void NeuterUnencryptedPackets();
 
   // Changes the encrypter used for level |level| to |encrypter|. The function
   // takes ownership of |encrypter|.

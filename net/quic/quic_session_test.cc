@@ -529,12 +529,14 @@ TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
   QuicStreamFrame data1(stream_id1, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
-  EXPECT_TRUE(session_.WillAcceptStreamFrames(frames));
+  session_.OnStreamFrames(frames);
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
 
   QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenStreams());
+  // Connection should remain alive.
+  EXPECT_TRUE(connection_->connected());
 }
 
 TEST_P(QuicSessionTest, MultipleRstStreamsCauseSingleConnectionClose) {
@@ -547,7 +549,7 @@ TEST_P(QuicSessionTest, MultipleRstStreamsCauseSingleConnectionClose) {
   QuicStreamFrame data1(kStreamId, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
-  EXPECT_TRUE(session_.WillAcceptStreamFrames(frames));
+  session_.OnStreamFrames(frames);
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
 
   // Process first invalid stream reset, resulting in the connection being

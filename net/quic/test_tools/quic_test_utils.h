@@ -185,8 +185,6 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MockConnectionVisitor();
   virtual ~MockConnectionVisitor();
 
-  MOCK_METHOD1(WillAcceptStreamFrames, bool(
-      const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD1(OnStreamFrames, void(const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD1(OnWindowUpdateFrames,
                void(const std::vector<QuicWindowUpdateFrame>& frame));
@@ -415,7 +413,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD2(TimeUntilSend, QuicTime::Delta(QuicTime now,
                                               HasRetransmittableData));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
-  MOCK_METHOD1(UpdateRtt, void(QuicTime::Delta rtt_sample));
+  MOCK_METHOD1(OnRttUpdated, void(QuicPacketSequenceNumber));
   MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());
 

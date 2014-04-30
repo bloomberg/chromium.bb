@@ -123,9 +123,8 @@ TEST_F(PacingSenderTest, VariousSending) {
   }
 
   // Now update the RTT and verify that packets are actually paced.
-  QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(1);
-  EXPECT_CALL(*mock_sender_, UpdateRtt(rtt));
-  pacing_sender_->UpdateRtt(rtt);
+  EXPECT_CALL(*mock_sender_, OnRttUpdated(1));
+  pacing_sender_->OnRttUpdated(1);
 
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();

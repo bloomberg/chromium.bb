@@ -22,12 +22,11 @@ class QuicDispatcherPeer {
       QuicDispatcher* dispatcher,
       QuicTimeWaitListManager* time_wait_list_manager);
 
-  // Injects |writer| into |dispatcher| beneath the top-level wrapper (to avoid
-  // messing up existing connections).
+  // Injects |writer| into |dispatcher| as the top level writer.
   static void UseWriter(QuicDispatcher* dispatcher,
                         QuicPacketWriterWrapper* writer);
 
-  static QuicPacketWriterWrapper* GetWriter(QuicDispatcher* dispatcher);
+  static QuicPacketWriter* GetWriter(QuicDispatcher* dispatcher);
 
   static QuicEpollConnectionHelper* GetHelper(QuicDispatcher* dispatcher);
 

@@ -106,9 +106,9 @@ class QuicTestClient : public SimpleClient,
   virtual bool response_complete() const OVERRIDE;
   virtual bool response_headers_complete() const OVERRIDE;
   virtual const BalsaHeaders* response_headers() const OVERRIDE;
-  virtual int response_size() const OVERRIDE;
+  virtual int64 response_size() const OVERRIDE;
   virtual int response_header_size() const OVERRIDE;
-  virtual int response_body_size() const OVERRIDE;
+  virtual int64 response_body_size() const OVERRIDE;
   virtual size_t bytes_read() const OVERRIDE;
   virtual size_t bytes_written() const OVERRIDE;
   virtual bool buffer_body() const OVERRIDE;
@@ -121,8 +121,7 @@ class QuicTestClient : public SimpleClient,
   virtual ssize_t SendAndWaitForResponse(const void *buffer,
                                          size_t size) OVERRIDE;
   virtual void Bind(IPEndPoint* local_address) OVERRIDE;
-  virtual string SerializeMessage(
-      const HTTPMessage& message) OVERRIDE;
+  virtual string SerializeMessage(const HTTPMessage& message) OVERRIDE;
   virtual IPAddressNumber bind_to_address() const OVERRIDE;
   virtual void set_bind_to_address(IPAddressNumber address) OVERRIDE;
   virtual const IPEndPoint& address() const OVERRIDE;
@@ -182,7 +181,7 @@ class QuicTestClient : public SimpleClient,
   // The number of uncompressed HTTP header bytes received.
   int response_header_size_;
   // The number of HTTP body bytes received.
-  int response_body_size_;
+  int64 response_body_size_;
   // True if we tried to connect already since the last call to Disconnect().
   bool connect_attempted_;
   bool secure_;

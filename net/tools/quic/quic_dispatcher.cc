@@ -14,7 +14,6 @@
 #include "net/quic/quic_utils.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
-#include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 
@@ -185,7 +184,7 @@ QuicDispatcher::~QuicDispatcher() {
 
 void QuicDispatcher::Initialize(int fd) {
   DCHECK(writer_ == NULL);
-  writer_.reset(CreateWriterWrapper(CreateWriter(fd)));
+  writer_.reset(CreateWriter(fd));
   time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
 
   // Remove all versions > QUIC_VERSION_16 from the
@@ -362,11 +361,6 @@ QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {
   return new QuicDefaultPacketWriter(fd);
 }
 
-QuicPacketWriterWrapper* QuicDispatcher::CreateWriterWrapper(
-    QuicPacketWriter* writer) {
-  return new QuicPacketWriterWrapper(writer);
-}
-
 QuicSession* QuicDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
@@ -406,10 +400,6 @@ QuicConnection* QuicDispatcher::CreateQuicConnection(
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
   return new QuicTimeWaitListManager(
       writer_.get(), this, epoll_server(), supported_versions());
-}
-
-void QuicDispatcher::set_writer(QuicPacketWriter* writer) {
-  writer_->set_writer(writer);
 }
 
 bool QuicDispatcher::HandlePacketForTimeWait(

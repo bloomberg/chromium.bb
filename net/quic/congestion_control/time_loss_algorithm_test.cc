@@ -20,7 +20,8 @@ class TimeLossAlgorithmTest : public ::testing::Test {
   TimeLossAlgorithmTest()
       : unacked_packets_() {
     rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(100),
-                         QuicTime::Delta::Zero());
+                         QuicTime::Delta::Zero(),
+                         clock_.Now());
   }
 
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {

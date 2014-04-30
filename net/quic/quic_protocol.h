@@ -83,9 +83,6 @@ const size_t kQuicVersionSize = 4;
 const size_t kPrivateFlagsSize = 1;
 // Number of bytes reserved for FEC group in the packet header.
 const size_t kFecGroupSize = 1;
-// TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
-// Number of bytes reserved for the nonce proof in public reset packet.
-const size_t kPublicResetNonceSize = 8;
 
 // Signifies that the QuicPacket will contain version of the protocol.
 const bool kIncludeVersion = true;

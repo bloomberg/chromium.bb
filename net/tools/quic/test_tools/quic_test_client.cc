@@ -284,7 +284,7 @@ int QuicTestClient::response_header_size() const {
   return response_header_size_;
 }
 
-int QuicTestClient::response_body_size() const {
+int64 QuicTestClient::response_body_size() const {
   return response_body_size_;
 }
 
@@ -468,7 +468,7 @@ const BalsaHeaders* QuicTestClient::response_headers() const {
   }
 }
 
-int QuicTestClient::response_size() const {
+int64 QuicTestClient::response_size() const {
   return bytes_read_;
 }
 

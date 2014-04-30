@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/quic_protocol.h"
 
 using std::max;
@@ -20,8 +21,9 @@ namespace {
 
 namespace net {
 
-FixRateSender::FixRateSender(const QuicClock* clock)
-    : bitrate_(QuicBandwidth::FromBytesPerSecond(kInitialBitrate)),
+FixRateSender::FixRateSender(const RttStats* rtt_stats)
+    : rtt_stats_(rtt_stats),
+      bitrate_(QuicBandwidth::FromBytesPerSecond(kInitialBitrate)),
       max_segment_size_(kDefaultMaxPacketSize),
       fix_rate_leaky_bucket_(bitrate_),
       paced_sender_(bitrate_, max_segment_size_),
@@ -111,13 +113,7 @@ QuicBandwidth FixRateSender::BandwidthEstimate() const {
   return bitrate_;
 }
 
-void FixRateSender::UpdateRtt(QuicTime::Delta rtt_sample) {
-  // RTT can't be negative.
-  DCHECK_LE(0, rtt_sample.ToMicroseconds());
-  if (rtt_sample.IsInfinite()) {
-    return;
-  }
-  latest_rtt_ = rtt_sample;
+void FixRateSender::OnRttUpdated(QuicPacketSequenceNumber largest_observed) {
 }
 
 QuicTime::Delta FixRateSender::RetransmissionDelay() const {

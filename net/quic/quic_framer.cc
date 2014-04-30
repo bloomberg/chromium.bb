@@ -672,24 +672,6 @@ bool QuicFramer::ProcessPublicResetPacket(
     const QuicPacketPublicHeader& public_header) {
   QuicPublicResetPacket packet(public_header);
 
-  if (public_header.sequence_number_length == PACKET_6BYTE_SEQUENCE_NUMBER) {
-    // An old-style public reset packet has the
-    // PACKET_PUBLIC_FLAGS_6BYTE_SEQUENCE bits set in the public flags.
-    // TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
-    if (!reader_->ReadUInt64(&packet.nonce_proof)) {
-      set_detailed_error("Unable to read nonce proof.");
-      return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
-    }
-
-    if (!reader_->ReadUInt48(&packet.rejected_sequence_number)) {
-      set_detailed_error("Unable to read rejected sequence number.");
-      return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
-    }
-
-    visitor_->OnPublicResetPacket(packet);
-    return true;
-  }
-
   scoped_ptr<CryptoHandshakeMessage> reset(
       CryptoFramer::ParseMessage(reader_->ReadRemainingPayload()));
   if (!reset.get()) {

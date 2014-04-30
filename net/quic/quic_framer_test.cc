@@ -101,17 +101,6 @@ size_t GetFecGroupOffset(bool include_version,
 const size_t kPublicResetPacketMessageTagOffset =
     kConnectionIdOffset + PACKET_8BYTE_CONNECTION_ID;
 
-// TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
-// Index into the nonce proof of the public reset packet.
-// Public resets always have full connection_ids.
-const size_t kPublicResetPacketNonceProofOffset =
-    kConnectionIdOffset + PACKET_8BYTE_CONNECTION_ID;
-
-// TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
-// Index into the rejected sequence number of the public reset packet.
-const size_t kPublicResetPacketRejectedSequenceNumberOffset =
-    kPublicResetPacketNonceProofOffset + kPublicResetNonceSize;
-
 class TestEncrypter : public QuicEncrypter {
  public:
   virtual ~TestEncrypter() {}
@@ -3140,61 +3129,6 @@ TEST_P(QuicFramerTest, PublicResetPacketWithClientAddress) {
                            QUIC_INVALID_PACKET_HEADER);
     } else {
       expected_error = "Unable to read reset message.";
-      CheckProcessingFails(packet, i, expected_error,
-                           QUIC_INVALID_PUBLIC_RST_PACKET);
-    }
-  }
-}
-
-// TODO(wtc): remove this test when we drop support for QUIC_VERSION_13.
-TEST_P(QuicFramerTest, PublicResetPacketOld) {
-  unsigned char packet[] = {
-    // public flags (public reset, 8 byte connection_id)
-    0x3E,
-    // connection_id
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // nonce proof
-    0x89, 0x67, 0x45, 0x23,
-    0x01, 0xEF, 0xCD, 0xAB,
-    // rejected sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-  ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.public_reset_packet_.get());
-  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
-            visitor_.public_reset_packet_->public_header.connection_id);
-  EXPECT_TRUE(visitor_.public_reset_packet_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
-  EXPECT_EQ(GG_UINT64_C(0xABCDEF0123456789),
-            visitor_.public_reset_packet_->nonce_proof);
-  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
-            visitor_.public_reset_packet_->rejected_sequence_number);
-  EXPECT_TRUE(
-      visitor_.public_reset_packet_->client_address.address().empty());
-
-  // Now test framing boundaries
-  for (size_t i = 0; i < arraysize(packet); ++i) {
-    string expected_error;
-    DVLOG(1) << "iteration: " << i;
-    if (i < kConnectionIdOffset) {
-      expected_error = "Unable to read public flags.";
-      CheckProcessingFails(packet, i, expected_error,
-                           QUIC_INVALID_PACKET_HEADER);
-    } else if (i < kPublicResetPacketNonceProofOffset) {
-      expected_error = "Unable to read ConnectionId.";
-      CheckProcessingFails(packet, i, expected_error,
-                           QUIC_INVALID_PACKET_HEADER);
-    } else if (i < kPublicResetPacketRejectedSequenceNumberOffset) {
-      expected_error = "Unable to read nonce proof.";
-      CheckProcessingFails(packet, i, expected_error,
-                           QUIC_INVALID_PUBLIC_RST_PACKET);
-    } else {
-      expected_error = "Unable to read rejected sequence number.";
       CheckProcessingFails(packet, i, expected_error,
                            QUIC_INVALID_PUBLIC_RST_PACKET);
     }

@@ -219,7 +219,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(1);
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _)).Times(1);
   manager_.OnIncomingAck(received_info, clock_.Now());
 
@@ -239,7 +239,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   // Ack 1.
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _)).Times(1);
   manager_.OnIncomingAck(received_info, clock_.Now());
 
@@ -259,7 +259,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   clock_.AdvanceTime(rtt);
 
   // Ack 1 but not 2.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(1));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
@@ -283,7 +283,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitAndSendThenAckPrevious) {
   clock_.AdvanceTime(rtt);
 
   // Ack 1 but not 2.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(1));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
@@ -309,7 +309,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   clock_.AdvanceTime(rtt);
 
   // First, ACK packet 1 which makes packet 2 non-retransmittable.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(1));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
@@ -323,17 +323,17 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   // Next, NACK packet 2 three times.
   received_info.largest_observed = 3;
   received_info.missing_packets.insert(2);
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(3));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _));
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   received_info.largest_observed = 4;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(4));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _));
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   received_info.largest_observed = 5;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(5));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _));
   EXPECT_CALL(*send_algorithm_, OnPacketLost(2, _));
@@ -363,7 +363,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
   // send algorithm is not informed that it has been ACK'd.
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(1));
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   // Since 2 was marked for retransmit, when 1 is acked, 2 is discarded.
@@ -384,7 +384,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   clock_.AdvanceTime(rtt);
 
   // Ack 1 but not 2 or 3.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(1));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
@@ -400,7 +400,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   SendDataPacket(4);
   received_info.largest_observed = 4;
   received_info.missing_packets.insert(2);
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(4));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _));
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
@@ -411,7 +411,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
 
   SendDataPacket(5);
   received_info.largest_observed = 5;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(5));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
   EXPECT_CALL(*send_algorithm_, OnPacketLost(2, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _));
@@ -433,7 +433,7 @@ TEST_F(QuicSentPacketManagerTest, LoseButDontRetransmitRevivedPacket) {
   received_info.largest_observed = 3;
   received_info.missing_packets.insert(1);
   received_info.revived_packets.insert(1);
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(2);
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
@@ -446,7 +446,7 @@ TEST_F(QuicSentPacketManagerTest, LoseButDontRetransmitRevivedPacket) {
 
   // Ack the 4th packet and expect the 1st to be considered lost.
   received_info.largest_observed = 4;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _));
@@ -467,7 +467,7 @@ TEST_F(QuicSentPacketManagerTest, MarkLostThenReviveAndDontRetransmitPacket) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 4;
   received_info.missing_packets.insert(1);
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(3);
   EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
@@ -483,7 +483,7 @@ TEST_F(QuicSentPacketManagerTest, MarkLostThenReviveAndDontRetransmitPacket) {
   // removed from pending retransmissions map.
   received_info.largest_observed = 5;
   received_info.revived_packets.insert(1);
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
@@ -506,7 +506,7 @@ TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
   received_info.missing_packets.insert(3);
   received_info.missing_packets.insert(4);
   received_info.is_truncated = true;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
   manager_.OnIncomingAck(received_info, clock_.Now());
@@ -534,7 +534,7 @@ TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
     ReceivedPacketInfo received_info;
     received_info.largest_observed = 2;
     received_info.missing_packets.insert(1);
-    EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+    EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
     EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _));
     manager_.OnIncomingAck(received_info, clock_.Now());
     EXPECT_TRUE(manager_.IsUnacked(4));
@@ -666,7 +666,7 @@ TEST_F(QuicSentPacketManagerTest, FackRetransmit17Packets) {
   for (size_t i = 1; i < kLargestObserved; ++i) {
     received_info.missing_packets.insert(i);
   }
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_,
               OnPacketAcked(kLargestObserved, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(17);
@@ -706,7 +706,7 @@ TEST_F(QuicSentPacketManagerTest, FackRetransmit14PacketsAlternateAcks) {
   for (size_t i = 1; i < kNumSentPackets; ++i) {
     received_info.missing_packets.insert(i);
   }
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(14);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(14);
   manager_.OnIncomingAck(received_info, clock_.Now());
@@ -736,7 +736,7 @@ TEST_F(QuicSentPacketManagerTest, AckAckAndUpdateRtt) {
   received_info.delta_time_largest_observed =
       QuicTime::Delta::FromMilliseconds(5);
 
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _)).Times(1);
   manager_.OnIncomingAck(received_info, clock_.Now());
 
@@ -745,7 +745,7 @@ TEST_F(QuicSentPacketManagerTest, AckAckAndUpdateRtt) {
   // Now ack the ack and expect only an RTT update.
   received_info.largest_observed = 3;
 
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   manager_.OnIncomingAck(received_info, clock_.Now());
 }
 
@@ -755,7 +755,7 @@ TEST_F(QuicSentPacketManagerTest, Rtt) {
   SendDataPacket(sequence_number);
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(expected_rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(sequence_number));
   EXPECT_CALL(*send_algorithm_,
               OnPacketAcked(sequence_number, _)).Times(1);
   ReceivedPacketInfo received_info;
@@ -776,7 +776,7 @@ TEST_F(QuicSentPacketManagerTest, RttWithInvalidDelta) {
   SendDataPacket(sequence_number);
   clock_.AdvanceTime(expected_rtt);
 
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(expected_rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(sequence_number));
   EXPECT_CALL(*send_algorithm_,
               OnPacketAcked(sequence_number, _)).Times(1);
   ReceivedPacketInfo received_info;
@@ -796,7 +796,7 @@ TEST_F(QuicSentPacketManagerTest, RttWithInfiniteDelta) {
   SendDataPacket(sequence_number);
   clock_.AdvanceTime(expected_rtt);
 
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(expected_rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(sequence_number));
   EXPECT_CALL(*send_algorithm_,
               OnPacketAcked(sequence_number, _)).Times(1);
   ReceivedPacketInfo received_info;
@@ -815,7 +815,7 @@ TEST_F(QuicSentPacketManagerTest, RttZeroDelta) {
   SendDataPacket(sequence_number);
   clock_.AdvanceTime(expected_rtt);
 
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(expected_rtt));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(sequence_number));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(sequence_number, _))
       .Times(1);
   ReceivedPacketInfo received_info;
@@ -844,7 +844,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Ack the third and ensure the first two are still pending.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 3;
@@ -926,7 +926,7 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
 
   // Now ack the two crypto packets and the speculatively encrypted request,
   // and ensure the first four crypto packets get abandoned, but not lost.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(5);
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 9;
@@ -991,7 +991,7 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
 
   // Now ack the first crypto packet, and ensure the second gets abandoned and
   // removed from unacked_packets.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
@@ -1134,7 +1134,9 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
 
 TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
   QuicSentPacketManagerPeer::GetRttStats(&manager_)->UpdateRtt(
-      QuicTime::Delta::FromMilliseconds(100), QuicTime::Delta::Zero());
+      QuicTime::Delta::FromMilliseconds(100),
+      QuicTime::Delta::Zero(),
+      QuicTime::Zero());
 
   SendDataPacket(1);
   SendDataPacket(2);
@@ -1161,7 +1163,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(1);
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   expected_time = clock_.Now().Add(expected_rto_delay);
@@ -1222,7 +1224,7 @@ TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
 
   // Handle an ack which causes the loss algorithm to be evaluated and
   // set the loss timeout.
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnRttUpdated(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _));
   EXPECT_CALL(*loss_algorithm, DetectLostPackets(_, _, _, _))
       .WillOnce(Return(SequenceNumberSet()));

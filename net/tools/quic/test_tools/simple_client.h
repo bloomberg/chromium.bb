@@ -113,7 +113,7 @@ class SimpleClient {
   virtual bool response_complete() const = 0;
 
   // Returns the number of bytes read from the server during this request.
-  virtual int response_size() const = 0;
+  virtual int64 response_size() const = 0;
 
   // Returns the number of header bytes received during this request, if
   // meaningful for the protocol.
@@ -121,7 +121,7 @@ class SimpleClient {
 
   // Returns the number of body bytes received during this request, if
   // meaningful for the protocol.
-  virtual int response_body_size() const;
+  virtual int64 response_body_size() const;
 
   // Returns the response body, if there was one. If there was no response, or
   // if buffer_body() is false, returns an empty string.

@@ -31,11 +31,6 @@ class VisitorShim : public QuicConnectionVisitorInterface {
  public:
   explicit VisitorShim(QuicSession* session) : session_(session) {}
 
-  virtual bool WillAcceptStreamFrames(
-      const vector<QuicStreamFrame>& frames) OVERRIDE {
-    return session_->WillAcceptStreamFrames(frames);
-  }
-
   virtual void OnStreamFrames(const vector<QuicStreamFrame>& frames) OVERRIDE {
     session_->OnStreamFrames(frames);
     session_->PostProcessAfterData();
@@ -131,27 +126,9 @@ QuicSession::~QuicSession() {
   STLDeleteValues(&stream_map_);
 }
 
-bool QuicSession::WillAcceptStreamFrames(
-    const vector<QuicStreamFrame>& frames) {
-  for (size_t i = 0; i < frames.size(); ++i) {
-    // TODO(rch) deal with the error case of stream id 0
-    if (IsClosedStream(frames[i].stream_id)) {
-      continue;
-    }
-
-    ReliableQuicStream* stream = GetStream(frames[i].stream_id);
-    if (stream == NULL) return false;
-    if (!stream->WillAcceptStreamFrame(frames[i])) return false;
-
-    // TODO(alyssar) check against existing connection address: if changed, make
-    // sure we update the connection.
-  }
-
-  return true;
-}
-
 void QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
   for (size_t i = 0; i < frames.size(); ++i) {
+    // TODO(rch) deal with the error case of stream id 0.
     QuicStreamId stream_id = frames[i].stream_id;
     ReliableQuicStream* stream = GetStream(stream_id);
     if (!stream) {
@@ -427,6 +404,9 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     case HANDSHAKE_CONFIRMED:
       LOG_IF(DFATAL, !config_.negotiated()) << ENDPOINT
           << "Handshake confirmed without parameter negotiation.";
+      // Discard originally encrypted packets, since they can't be decrypted by
+      // the peer.
+      connection_->NeuterUnencryptedPackets();
       connection_->SetOverallConnectionTimeout(QuicTime::Delta::Infinite());
       max_open_streams_ = config_.max_streams_per_connection();
       break;

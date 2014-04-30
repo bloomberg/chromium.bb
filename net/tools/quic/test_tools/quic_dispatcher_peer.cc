@@ -21,13 +21,12 @@ void QuicDispatcherPeer::SetTimeWaitListManager(
 // static
 void QuicDispatcherPeer::UseWriter(QuicDispatcher* dispatcher,
                                    QuicPacketWriterWrapper* writer) {
-  writer->set_writer(dispatcher->writer_->release_writer());
-  dispatcher->writer_->set_writer(writer);
+  writer->set_writer(dispatcher->writer_.release());
+  dispatcher->writer_.reset(writer);
 }
 
 // static
-QuicPacketWriterWrapper* QuicDispatcherPeer::GetWriter(
-    QuicDispatcher* dispatcher) {
+QuicPacketWriter* QuicDispatcherPeer::GetWriter(QuicDispatcher* dispatcher) {
   return dispatcher->writer_.get();
 }
 

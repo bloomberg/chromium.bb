@@ -64,7 +64,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   // Called when a packet is timed out.
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
-                                QuicByteCount abandoned_bytes) = 0;
+                                 QuicByteCount abandoned_bytes) = 0;
 
   // Calculate the time until we can send the next packet.
   virtual QuicTime::Delta TimeUntilSend(
@@ -75,10 +75,10 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Returns 0 when it does not have an estimate.
   virtual QuicBandwidth BandwidthEstimate() const = 0;
 
-  // Updates the smoothed RTT based on a new sample.
+  // Notifies the send algorithm of a new rtt sample and |largest_observed|.
   // TODO(ianswett): Now that the RTT is managed by RTTStats, it may be
   // possible to remove this method.
-  virtual void UpdateRtt(QuicTime::Delta rtt_sample) = 0;
+  virtual void OnRttUpdated(QuicPacketSequenceNumber largest_observed) = 0;
 
   // Get the send algorithm specific retransmission delay, called RTO in TCP,
   // Note 1: the caller is responsible for sanity checking this value.

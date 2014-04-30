@@ -117,9 +117,9 @@ QuicBandwidth PacingSender::BandwidthEstimate() const {
   return sender_->BandwidthEstimate();
 }
 
-void PacingSender::UpdateRtt(QuicTime::Delta rtt_sample) {
+void PacingSender::OnRttUpdated(QuicPacketSequenceNumber largest_observed) {
   updated_rtt_= true;
-  sender_->UpdateRtt(rtt_sample);
+  sender_->OnRttUpdated(largest_observed);
 }
 
 QuicTime::Delta PacingSender::RetransmissionDelay() const {

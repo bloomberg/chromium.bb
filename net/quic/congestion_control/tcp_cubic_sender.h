@@ -62,7 +62,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
       QuicTime now,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
-  virtual void UpdateRtt(QuicTime::Delta rtt_sample) OVERRIDE;
+  virtual void OnRttUpdated(QuicPacketSequenceNumber largest_observed) OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.

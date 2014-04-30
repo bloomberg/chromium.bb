@@ -15,6 +15,10 @@
 
 namespace net {
 
+namespace test {
+class RttStatsPeer;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE RttStats {
  public:
   RttStats();
@@ -24,7 +28,9 @@ class NET_EXPORT_PRIVATE RttStats {
 
   // Updates the RTT from an incoming ack which is received |send_delta| after
   // the packet is sent and the peer reports the ack being delayed |ack_delay|.
-  void UpdateRtt(QuicTime::Delta send_delta, QuicTime::Delta ack_delay);
+  void UpdateRtt(QuicTime::Delta send_delta,
+                 QuicTime::Delta ack_delay,
+                 QuicTime now);
 
   // Forces RttStats to sample a new recent min rtt within the next
   // |num_samples| UpdateRtt calls.
@@ -53,17 +59,35 @@ class NET_EXPORT_PRIVATE RttStats {
   // Returns the min_rtt since SampleNewRecentMinRtt has been called, or the
   // min_rtt for the entire connection if SampleNewMinRtt was never called.
   QuicTime::Delta recent_min_rtt() const {
-    return recent_min_rtt_;
+    return recent_min_rtt_.rtt;
   }
 
   QuicTime::Delta mean_deviation() const {
     return mean_deviation_;
   }
 
+  // Sets how old a recent min rtt sample can be.
+  void set_recent_min_rtt_window(QuicTime::Delta recent_min_rtt_window) {
+    recent_min_rtt_window_ = recent_min_rtt_window;
+  }
+
  private:
+  friend class test::RttStatsPeer;
+
+  // Used to track a sampled RTT window.
+  struct RttSample {
+    RttSample() : rtt(QuicTime::Delta::Zero()), time(QuicTime::Zero()) { }
+    RttSample(QuicTime::Delta rtt, QuicTime time) : rtt(rtt), time(time) { }
+
+    QuicTime::Delta rtt;
+    QuicTime time;  // Time the rtt sample was recorded.
+  };
+
+  // Implements the resampling algorithm and the windowed min rtt algorithm.
+  void UpdateRecentMinRtt(QuicTime::Delta rtt_sample, QuicTime now);
+
   QuicTime::Delta latest_rtt_;
   QuicTime::Delta min_rtt_;
-  QuicTime::Delta recent_min_rtt_;
   QuicTime::Delta smoothed_rtt_;
   // Mean RTT deviation during this session.
   // Approximation of standard deviation, the error is roughly 1.25 times
@@ -71,8 +95,14 @@ class NET_EXPORT_PRIVATE RttStats {
   QuicTime::Delta mean_deviation_;
   int64 initial_rtt_us_;
 
-  QuicTime::Delta new_min_rtt_;
+  RttSample new_min_rtt_;
   uint32 num_min_rtt_samples_remaining_;
+
+  // State variables for Kathleen Nichols MinRTT algorithm.
+  QuicTime::Delta recent_min_rtt_window_;
+  RttSample recent_min_rtt_;  // a in the windowed algorithm.
+  RttSample half_window_rtt_;  // b in the sampled algorithm.
+  RttSample quarter_window_rtt_;  // c in the sampled algorithm.
 
   DISALLOW_COPY_AND_ASSIGN(RttStats);
 };
