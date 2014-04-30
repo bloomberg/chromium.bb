@@ -14,6 +14,7 @@
 #include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -21,6 +22,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -162,6 +164,8 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     if (!embedded_test_server()->Started())
       ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
+    ASSERT_FALSE(CommandLine::ForCurrentProcess()->HasSwitch(
+        password_manager::switches::kEnableAutomaticPasswordSaving));
     NavigationObserver observer(WebContents());
     GURL url = embedded_test_server()->GetURL(path);
     ui_test_utils::NavigateToURL(browser(), url);
@@ -646,4 +650,52 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   NavigateToFile("/password/done.html");
   observer.Wait();
   EXPECT_FALSE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptWhenEnableAutomaticPasswordSavingSwitchIsNotSet) {
+  NavigateToFile("/password/password_form.html");
+
+  // Fill a form and submit through a <input type="submit"> button.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('input_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       DontPromptWhenEnableAutomaticPasswordSavingSwitchIsSet) {
+  password_manager::TestPasswordStore* password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                              Profile::IMPLICIT_ACCESS).get());
+
+  EXPECT_EQ(0U, password_store->stored_passwords().size());
+
+  NavigateToFile("/password/password_form.html");
+
+  // Enable the enable-automatic-password-saving switch
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      password_manager::switches::kEnableAutomaticPasswordSaving);
+
+  // Fill a form and submit through a <input type="submit"> button.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('input_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  if (chrome::VersionInfo::GetChannel() ==
+      chrome::VersionInfo::CHANNEL_UNKNOWN) {
+    EXPECT_FALSE(observer.infobar_shown());
+    EXPECT_EQ(1U, password_store->stored_passwords().size());
+  } else {
+    EXPECT_TRUE(observer.infobar_shown());
+    EXPECT_EQ(0U, password_store->stored_passwords().size());
+  }
 }

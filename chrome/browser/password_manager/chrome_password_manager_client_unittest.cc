@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/password_manager/core/browser/password_manager_logger.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -113,4 +117,19 @@ TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNotifyRenderer) {
   client->SetLogger(NULL);
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
   EXPECT_FALSE(logging_active);
+}
+
+TEST_F(ChromePasswordManagerClientTest,
+       IsAutomaticPasswordSavingEnabledDefaultBehaviourTest) {
+  EXPECT_FALSE(GetClient()->IsAutomaticPasswordSavingEnabled());
+}
+
+TEST_F(ChromePasswordManagerClientTest,
+       IsAutomaticPasswordSavingEnabledWhenFlagIsSetTest) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      password_manager::switches::kEnableAutomaticPasswordSaving);
+  if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_UNKNOWN)
+    EXPECT_TRUE(GetClient()->IsAutomaticPasswordSavingEnabled());
+  else
+    EXPECT_FALSE(GetClient()->IsAutomaticPasswordSavingEnabled());
 }

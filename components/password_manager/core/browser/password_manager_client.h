@@ -25,6 +25,12 @@ class PasswordManagerClient {
   PasswordManagerClient() {}
   virtual ~PasswordManagerClient() {}
 
+  // For automated testing, the save password prompt should sometimes not be
+  // shown, and password immediately saved instead. That can be enforced by
+  // a command-line flag. If auto-saving is enforced, this method returns true.
+  // The default return value is false.
+  virtual bool IsAutomaticPasswordSavingEnabled() const;
+
   // Informs the embedder of a password form that can be saved if the user
   // allows it. The embedder is not required to prompt the user if it decides
   // that this form doesn't need to be saved.

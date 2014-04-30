@@ -1089,6 +1089,14 @@ const Experiment kExperiments[] = {
                               autofill::switches::kDisablePasswordGeneration)
   },
   {
+    "enable-automatic-password-saving",
+    IDS_FLAGS_ENABLE_AUTOMATIC_PASSWORD_SAVING_NAME,
+    IDS_FLAGS_ENABLE_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(
+        password_manager::switches::kEnableAutomaticPasswordSaving)
+  },
+  {
     "password-manager-reauthentication",
     IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_NAME,
     IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_DESCRIPTION,

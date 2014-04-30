@@ -6,6 +6,10 @@
 
 namespace password_manager {
 
+bool PasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
+  return false;
+}
+
 base::FieldTrial::Probability
 PasswordManagerClient::GetProbabilityForExperiment(
     const std::string& experiment_name) {

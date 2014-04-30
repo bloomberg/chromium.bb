@@ -25,6 +25,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_logger.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -76,6 +77,13 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       logger_(NULL) {}
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
+
+bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+             password_manager::switches::kEnableAutomaticPasswordSaving) &&
+         chrome::VersionInfo::GetChannel() ==
+             chrome::VersionInfo::CHANNEL_UNKNOWN;
+}
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(
     password_manager::PasswordFormManager* form_to_save) {

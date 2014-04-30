@@ -6325,6 +6325,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PASSWORD_GENERATION_DESCRIPTION" desc="Description of flag to enable password generation.">
         Allow the user to have Chrome generate passwords when it detects account creation pages.
       </message>
+      <message name="IDS_FLAGS_ENABLE_AUTOMATIC_PASSWORD_SAVING_NAME" desc="Name of the flag to automatically save password.">
+        Save passwords automatically.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION" desc="Description of the flag to automatically save password.">
+        Skip the passwords prompt and save passwords automatically.
+      </message>
       <message name="IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_NAME" desc="Name of the flag for public suffix domain matching for autofill of passwords.">
         Public suffix domain matching for autofill of passwords.
       </message>

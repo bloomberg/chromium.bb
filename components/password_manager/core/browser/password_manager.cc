@@ -333,7 +333,8 @@ void PasswordManager::OnPasswordFormsParsed(
 }
 
 bool PasswordManager::ShouldPromptUserToSavePassword() const {
-  return provisional_save_manager_->IsNewLogin() &&
+  return !client_->IsAutomaticPasswordSavingEnabled() &&
+         provisional_save_manager_->IsNewLogin() &&
          !provisional_save_manager_->HasGeneratedPassword() &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
