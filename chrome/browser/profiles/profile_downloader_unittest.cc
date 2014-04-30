@@ -4,38 +4,31 @@
 
 #include "chrome/browser/profiles/profile_downloader.h"
 
+#include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-std::string GetJSonData(const std::string& full_name,
-                        const std::string& given_name,
-                        const std::string& url,
-                        const std::string& locale) {
-  std::stringstream stream;
-  bool started = false;
+void GetJSonData(const std::string& full_name,
+                 const std::string& given_name,
+                 const std::string& url,
+                 const std::string& locale,
+                 base::DictionaryValue* dict) {
+  if (!full_name.empty())
+    dict->SetString("displayName", full_name);
 
-  stream << "{ ";
-  if (!full_name.empty()) {
-    stream << "\"name\": \"" << full_name << "\"";
-    started = true;
-  }
-  if (!given_name.empty()) {
-    stream << (started ? ", " : "") << "\"given_name\": \"" << given_name
-           << "\"";
-    started = true;
-  }
-  if (!url.empty()) {
-    stream << (started ? ", " : "") << "\"picture\": \"" << url << "\"";
-    started = true;
-  }
+  if (!given_name.empty())
+    dict->SetString("name.givenName", given_name);
+
+  if (!url.empty())
+    dict->SetString("image.url", url);
 
   if (!locale.empty())
-    stream << (started ? ", " : "") << "\"locale\": \"" << locale << "\"";
-
-  stream << " }";
-  return stream.str();
+    dict->SetString("language", locale);
 }
 
 } // namespace
@@ -58,8 +51,10 @@ class ProfileDownloaderTest : public testing::Test {
     base::string16 parsed_given_name;
     std::string parsed_url;
     std::string parsed_locale;
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    GetJSonData(full_name, given_name, url, locale, dict.get());
     bool result = ProfileDownloader::ParseProfileJSON(
-        GetJSonData(full_name, given_name, url, locale),
+        dict.get(),
         &parsed_full_name,
         &parsed_given_name,
         &parsed_url,
