@@ -62,15 +62,11 @@ public:
         // Do not change assigned numbers of existing items: add new features
         // to the end of the list.
         PageDestruction = 0,
-        LegacyNotifications = 1,
         PrefixedIndexedDB = 3,
         WorkerStart = 4,
         SharedWorkerStart = 5,
-        LegacyWebAudio = 6,
-        WebAudioStart = 7,
         UnprefixedIndexedDB = 9,
         OpenWebDatabase = 10,
-        LegacyTextNotifications = 12,
         UnprefixedRequestAnimationFrame = 13,
         PrefixedRequestAnimationFrame = 14,
         ContentSecurityPolicy = 15,
@@ -139,7 +135,6 @@ public:
         SubFrameBeforeUnloadRegistered = 97,
         SubFrameBeforeUnloadFired = 98,
         TextReplaceWholeText = 100,
-        PrefixedShadowRootConstructor = 101,
         ConsoleMarkTimeline = 102,
         CSSPseudoElementUserAgentCustomPseudo = 103,
         DocumentTypeInternalSubset = 105, // Removed from DOM4.
@@ -173,7 +168,6 @@ public:
         PrefixedAndUnprefixedAnimationIterationEvent = 136,
         EventReturnValue = 137, // Legacy IE extension.
         SVGSVGElement = 138,
-        SVGAnimateColorElement = 139,
         InsertAdjacentText = 140,
         InsertAdjacentElement = 141,
         HasAttributes = 142, // Removed from DOM4.
@@ -259,7 +253,6 @@ public:
         PrefixedViewModeMediaFeature = 239,
         PrefixedStorageQuota = 240,
         ContentSecurityPolicyReportOnlyInMeta = 241,
-        PrefixedMediaSourceOpen = 242,
         ResetReferrerPolicy = 243,
         CaseInsensitiveAttrSelectorMatch = 244, // Case-insensitivity dropped from specification.
         CaptureAttributeAsBoolean = 245,
@@ -291,7 +284,6 @@ public:
         TextAutosizing = 274,
         TextAutosizingLayout = 275,
         HTMLAnchorElementPingAttribute = 276,
-        JavascriptExhaustedMemory = 277,
         InsertAdjacentHTML = 278,
         SVGClassName = 279,
         HTMLAppletElement = 280,

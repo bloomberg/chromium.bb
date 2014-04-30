@@ -679,9 +679,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedVideoExitFullScreen:
         return "'HTMLVideoElement.webkitExitFullScreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.";
 
-    case PrefixedMediaSourceOpen:
-        return "'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.";
-
     case MediaErrorEncrypted:
         return "'MediaError.MEDIA_ERR_ENCRYPTED' is deprecated. This error code is never used.";
 
