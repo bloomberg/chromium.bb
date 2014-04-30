@@ -65,6 +65,7 @@ namespace sandbox {
 
 ErrorCode RestrictCloneToThreadsAndEPERMFork(SandboxBPF* sandbox) {
   // Glibc's pthread.
+  // TODO(jln): fix this on ASAN.
   if (!RunningOnASAN()) {
     return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                          CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
@@ -212,18 +213,35 @@ ErrorCode RestrictSocketcallCommand(SandboxBPF* sandbox) {
 #endif
 
 ErrorCode RestrictKillTarget(pid_t target_pid, SandboxBPF* sandbox, int sysno) {
-  switch (sysno) {
-    case __NR_kill:
-    case __NR_tgkill:
-      return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                           target_pid,
-                           ErrorCode(ErrorCode::ERR_ALLOWED),
-                           sandbox->Trap(SIGSYSKillFailure, NULL));
-    case __NR_tkill:
-      return sandbox->Trap(SIGSYSKillFailure, NULL);
-    default:
-      NOTREACHED();
-      return sandbox->Trap(CrashSIGSYS_Handler, NULL);
+  if (!RunningOnASAN()) {
+    switch (sysno) {
+      case __NR_kill:
+      case __NR_tgkill:
+        return sandbox->Cond(0,
+                             ErrorCode::TP_32BIT,
+                             ErrorCode::OP_EQUAL,
+                             target_pid,
+                             ErrorCode(ErrorCode::ERR_ALLOWED),
+                             sandbox->Trap(SIGSYSKillFailure, NULL));
+      case __NR_tkill:
+        return sandbox->Trap(SIGSYSKillFailure, NULL);
+      default:
+        NOTREACHED();
+        return sandbox->Trap(CrashSIGSYS_Handler, NULL);
+    }
+  } else {
+    switch (sysno) {
+      case __NR_kill:
+      case __NR_tgkill:
+      case __NR_tkill:
+        // On ASAN, fork() is not properly denied. This could lead to the
+        // strange failures we're observing with this policy on ASAN.
+        // TODO(jln): fix this.
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+      default:
+        NOTREACHED();
+        return sandbox->Trap(CrashSIGSYS_Handler, NULL);
+    }
   }
 }
 
