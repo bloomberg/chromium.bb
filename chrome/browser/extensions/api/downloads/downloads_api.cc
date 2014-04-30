@@ -113,6 +113,8 @@ const char kUserGesture[] = "User gesture required";
 
 namespace errors = download_extension_errors;
 
+namespace extensions {
+
 namespace {
 
 namespace downloads = extensions::api::downloads;
@@ -1900,3 +1902,5 @@ void ExtensionDownloadsEventRouter::OnExtensionUnloaded(
   if (iter != shelf_disabling_extensions_.end())
     shelf_disabling_extensions_.erase(iter);
 }
+
+}  // namespace extensions

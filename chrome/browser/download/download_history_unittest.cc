@@ -438,7 +438,8 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_CALL(item(index), RemoveObserver(_));
     EXPECT_CALL(item(index), IsTemporary()).WillRepeatedly(Return(false));
 #if !defined(OS_ANDROID)
-    new DownloadedByExtension(&item(index), by_extension_id, by_extension_name);
+    new extensions::DownloadedByExtension(
+        &item(index), by_extension_id, by_extension_name);
 #endif
 
     std::vector<content::DownloadItem*> items;
@@ -463,7 +464,7 @@ class DownloadHistoryTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryTest);
 };
 
-}  // anonymous namespace
+}  // namespace
 
 // Test loading an item from the database, changing it, saving it back, removing
 // it.

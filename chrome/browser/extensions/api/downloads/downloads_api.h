@@ -66,6 +66,7 @@ extern const char kUserGesture[];
 
 }  // namespace download_extension_errors
 
+namespace extensions {
 
 class DownloadedByExtension : public base::SupportsUserData::Data {
  public:
@@ -401,5 +402,7 @@ class ExtensionDownloadsEventRouter
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_

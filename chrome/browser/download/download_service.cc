@@ -48,8 +48,8 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
   manager_delegate_->SetDownloadManager(manager);
 
 #if !defined(OS_ANDROID)
-  extension_event_router_.reset(new ExtensionDownloadsEventRouter(
-      profile_, manager));
+  extension_event_router_.reset(
+      new extensions::ExtensionDownloadsEventRouter(profile_, manager));
 #endif
 
   if (!profile_->IsOffTheRecord()) {

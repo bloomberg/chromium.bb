@@ -102,7 +102,8 @@ history::DownloadRow GetDownloadRow(
     content::DownloadItem* item) {
   std::string by_ext_id, by_ext_name;
 #if !defined(OS_ANDROID)
-  DownloadedByExtension* by_ext = DownloadedByExtension::Get(item);
+  extensions::DownloadedByExtension* by_ext =
+      extensions::DownloadedByExtension::Get(item);
   if (by_ext) {
     by_ext_id = by_ext->id();
     by_ext_name = by_ext->name();
@@ -247,7 +248,8 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
         it->opened);
 #if !defined(OS_ANDROID)
     if (!it->by_ext_id.empty() && !it->by_ext_name.empty()) {
-      new DownloadedByExtension(item, it->by_ext_id, it->by_ext_name);
+      new extensions::DownloadedByExtension(
+          item, it->by_ext_id, it->by_ext_name);
       item->UpdateObservers();
     }
 #endif

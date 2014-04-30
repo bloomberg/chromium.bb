@@ -135,7 +135,8 @@ base::DictionaryValue* CreateDownloadItemValue(
   file_value->SetString("file_url",
                         net::FilePathToFileURL(download_path).spec());
 
-  DownloadedByExtension* by_ext = DownloadedByExtension::Get(download_item);
+  extensions::DownloadedByExtension* by_ext =
+      extensions::DownloadedByExtension::Get(download_item);
   if (by_ext) {
     file_value->SetString("by_ext_id", by_ext->id());
     file_value->SetString("by_ext_name", by_ext->name());
