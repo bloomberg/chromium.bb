@@ -76,18 +76,18 @@ bool WebIDBKeyRange::upperOpen() const
     return m_private.get() && m_private->upperOpen();
 }
 
-WebIDBKeyRange::WebIDBKeyRange(const PassRefPtr<IDBKeyRange>& value)
+WebIDBKeyRange::WebIDBKeyRange(const PassRefPtrWillBeRawPtr<IDBKeyRange>& value)
     : m_private(value)
 {
 }
 
-WebIDBKeyRange& WebIDBKeyRange::operator=(const PassRefPtr<IDBKeyRange>& value)
+WebIDBKeyRange& WebIDBKeyRange::operator=(const PassRefPtrWillBeRawPtr<IDBKeyRange>& value)
 {
     m_private = value;
     return *this;
 }
 
-WebIDBKeyRange::operator PassRefPtr<IDBKeyRange>() const
+WebIDBKeyRange::operator PassRefPtrWillBeRawPtr<IDBKeyRange>() const
 {
     return m_private.get();
 }

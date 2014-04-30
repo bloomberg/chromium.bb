@@ -55,7 +55,7 @@ bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBK
 ScriptValue idbAnyToScriptValue(ScriptState*, PassRefPtrWillBeRawPtr<IDBAny>);
 ScriptValue idbKeyToScriptValue(ScriptState*, PassRefPtrWillBeRawPtr<IDBKey>);
 PassRefPtrWillBeRawPtr<IDBKey> scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
-PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
+PassRefPtrWillBeRawPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 
 #ifndef NDEBUG
 void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtrWillBeRawPtr<IDBKey>, const IDBKeyPath&);

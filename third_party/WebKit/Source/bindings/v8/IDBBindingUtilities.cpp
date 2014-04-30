@@ -424,7 +424,7 @@ PassRefPtrWillBeRawPtr<IDBKey> scriptValueToIDBKey(v8::Isolate* isolate, const S
     return createIDBKeyFromValue(isolate, v8Value);
 }
 
-PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate* isolate, const ScriptValue& scriptValue)
+PassRefPtrWillBeRawPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate* isolate, const ScriptValue& scriptValue)
 {
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> value(scriptValue.v8Value());

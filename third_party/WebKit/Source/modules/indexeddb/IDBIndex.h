@@ -67,7 +67,7 @@ public:
     bool isDeleted() const;
 
     // Used internally and by InspectorIndexedDBAgent:
-    PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, blink::WebIDBCursor::Direction);
+    PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBKeyRange>, blink::WebIDBCursor::Direction);
 
     blink::WebIDBDatabase* backendDB() const;
 

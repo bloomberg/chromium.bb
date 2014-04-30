@@ -84,7 +84,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* contex
     if (exceptionState.hadException())
         return nullptr;
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -96,7 +96,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* contex
     return openCursor(context, keyRange.release(), direction);
 }
 
-PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, WebIDBCursor::Direction direction)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBKeyRange> keyRange, WebIDBCursor::Direction direction)
 {
     RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
@@ -120,7 +120,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, co
         return nullptr;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -153,7 +153,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* con
     if (exceptionState.hadException())
         return nullptr;
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!backendDB()) {
@@ -194,7 +194,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBIndex::getInternal(ExecutionContext* conte
         return nullptr;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!keyRange) {

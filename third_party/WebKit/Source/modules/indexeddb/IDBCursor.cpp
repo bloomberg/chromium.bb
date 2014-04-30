@@ -287,7 +287,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* c
         return nullptr;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
     ASSERT(!exceptionState.hadException());
 
     RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());

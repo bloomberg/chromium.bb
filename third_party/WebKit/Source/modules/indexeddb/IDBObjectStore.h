@@ -90,7 +90,7 @@ public:
     PassRefPtrWillBeRawPtr<IDBRequest> put(ExecutionContext*, blink::WebIDBDatabase::PutMode, PassRefPtrWillBeRawPtr<IDBAny> source, ScriptValue&, PassRefPtrWillBeRawPtr<IDBKey>, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
-    PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
+    PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtrWillBeRawPtr<IDBKeyRange>, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const { return m_deleted; }

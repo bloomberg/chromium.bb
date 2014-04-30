@@ -359,7 +359,7 @@ static PassRefPtrWillBeRawPtr<IDBKey> idbKeyFromInspectorObject(JSONObject* key)
     return idbKey.release();
 }
 
-static PassRefPtr<IDBKeyRange> idbKeyRangeFromKeyRange(JSONObject* keyRange)
+static PassRefPtrWillBeRawPtr<IDBKeyRange> idbKeyRangeFromKeyRange(JSONObject* keyRange)
 {
     RefPtr<JSONObject> lower = keyRange->getObject("lower");
     RefPtrWillBeRawPtr<IDBKey> idbLower = lower ? idbKeyFromInspectorObject(lower.get()) : nullptr;
@@ -381,8 +381,7 @@ static PassRefPtr<IDBKeyRange> idbKeyRangeFromKeyRange(JSONObject* keyRange)
         return nullptr;
     IDBKeyRange::UpperBoundType upperBoundType = upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed;
 
-    RefPtr<IDBKeyRange> idbKeyRange = IDBKeyRange::create(idbLower, idbUpper, lowerBoundType, upperBoundType);
-    return idbKeyRange.release();
+    return IDBKeyRange::create(idbLower, idbUpper, lowerBoundType, upperBoundType);
 }
 
 class DataLoader;
@@ -481,7 +480,7 @@ private:
 
 class DataLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DataLoader> create(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    static PassRefPtr<DataLoader> create(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtrWillBeRawPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
     {
         return adoptRef(new DataLoader(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
     }
@@ -514,15 +513,15 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), blink::WebIDBCursor::Next);
+            idbRequest = idbIndex->openCursor(context(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
         } else {
-            idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), blink::WebIDBCursor::Next);
+            idbRequest = idbObjectStore->openCursor(context(), m_idbKeyRange.get(), blink::WebIDBCursor::Next);
         }
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
-    DataLoader(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    DataLoader(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtrWillBeRawPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
         : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback)
         , m_objectStoreName(objectStoreName)
@@ -536,7 +535,7 @@ public:
     RefPtr<RequestDataCallback> m_requestCallback;
     String m_objectStoreName;
     String m_indexName;
-    RefPtr<IDBKeyRange> m_idbKeyRange;
+    RefPtrWillBePersistent<IDBKeyRange> m_idbKeyRange;
     int m_skipCount;
     unsigned m_pageSize;
 };
@@ -663,7 +662,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     if (!idbFactory)
         return;
 
-    RefPtr<IDBKeyRange> idbKeyRange = keyRange ? idbKeyRangeFromKeyRange(keyRange->get()) : nullptr;
+    RefPtrWillBeRawPtr<IDBKeyRange> idbKeyRange = keyRange ? idbKeyRangeFromKeyRange(keyRange->get()) : nullptr;
     if (keyRange && !idbKeyRange) {
         *errorString = "Can not parse key range.";
         return;

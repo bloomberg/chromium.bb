@@ -36,7 +36,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class IDBKeyRange : public ScriptWrappable, public RefCounted<IDBKeyRange> {
+class IDBKeyRange : public RefCountedWillBeGarbageCollectedFinalized<IDBKeyRange>, public ScriptWrappable {
 public:
     enum LowerBoundType {
         LowerBoundOpen,
@@ -47,14 +47,15 @@ public:
         UpperBoundClosed
     };
 
-    static PassRefPtr<IDBKeyRange> create(PassRefPtrWillBeRawPtr<IDBKey> lower, PassRefPtrWillBeRawPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType)
+    static PassRefPtrWillBeRawPtr<IDBKeyRange> create(PassRefPtrWillBeRawPtr<IDBKey> lower, PassRefPtrWillBeRawPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType)
     {
-        return adoptRef(new IDBKeyRange(lower, upper, lowerType, upperType));
+        return adoptRefWillBeNoop(new IDBKeyRange(lower, upper, lowerType, upperType));
     }
     // Null if the script value is null or undefined, the range if it is one, otherwise tries to convert to a key and throws if it fails.
-    static PassRefPtr<IDBKeyRange> fromScriptValue(ExecutionContext*, const ScriptValue&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<IDBKeyRange> fromScriptValue(ExecutionContext*, const ScriptValue&, ExceptionState&);
 
     ~IDBKeyRange() { }
+    void trace(Visitor*);
 
     // Implement the IDBKeyRange IDL
     IDBKey* lower() const { return m_lower.get(); }
@@ -65,18 +66,18 @@ public:
     bool lowerOpen() const { return m_lowerType == LowerBoundOpen; }
     bool upperOpen() const { return m_upperType == UpperBoundOpen; }
 
-    static PassRefPtr<IDBKeyRange> only(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    static PassRefPtr<IDBKeyRange> lowerBound(ExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
-    static PassRefPtr<IDBKeyRange> upperBound(ExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
-    static PassRefPtr<IDBKeyRange> bound(ExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<IDBKeyRange> only(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<IDBKeyRange> lowerBound(ExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<IDBKeyRange> upperBound(ExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<IDBKeyRange> bound(ExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionState&);
 
-    static PassRefPtr<IDBKeyRange> only(PassRefPtrWillBeRawPtr<IDBKey> value, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<IDBKeyRange> only(PassRefPtrWillBeRawPtr<IDBKey> value, ExceptionState&);
 
 private:
     IDBKeyRange(PassRefPtrWillBeRawPtr<IDBKey> lower, PassRefPtrWillBeRawPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType);
 
-    RefPtrWillBePersistent<IDBKey> m_lower;
-    RefPtrWillBePersistent<IDBKey> m_upper;
+    RefPtrWillBeMember<IDBKey> m_lower;
+    RefPtrWillBeMember<IDBKey> m_upper;
     LowerBoundType m_lowerType;
     UpperBoundType m_upperType;
 };

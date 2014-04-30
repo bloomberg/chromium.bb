@@ -91,7 +91,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::get(ExecutionContext* context
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return nullptr;
     }
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!keyRange) {
@@ -257,7 +257,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::deleteFunction(ExecutionConte
         return nullptr;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!keyRange) {
@@ -551,7 +551,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* 
     if (exceptionState.hadException())
         return nullptr;
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -563,7 +563,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* 
     return openCursor(context, keyRange, direction, WebIDBDatabase::NormalTask);
 }
 
-PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> range, WebIDBCursor::Direction direction, WebIDBDatabase::TaskType taskType)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, PassRefPtrWillBeRawPtr<IDBKeyRange> range, WebIDBCursor::Direction direction, WebIDBDatabase::TaskType taskType)
 {
     RefPtrWillBeRawPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
@@ -592,7 +592,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::openKeyCursor(ExecutionContex
     if (exceptionState.hadException())
         return nullptr;
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -624,7 +624,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::count(ExecutionContext* conte
         return nullptr;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    RefPtrWillBeRawPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
