@@ -14,5 +14,7 @@ TEST COMPLETE
 (repaint rects
   (rect 8 209 73 18)
   (rect 8 9 73 18)
+  (rect 8 209 73 18)
+  (rect 8 9 73 18)
 )
 

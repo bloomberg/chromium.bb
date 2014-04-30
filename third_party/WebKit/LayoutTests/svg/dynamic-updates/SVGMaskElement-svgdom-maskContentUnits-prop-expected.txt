@@ -10,8 +10,4 @@ PASS maskElement.maskContentUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_USERSPAC
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 30 30 151 151)
-  (rect 30 30 151 151)
-)
 

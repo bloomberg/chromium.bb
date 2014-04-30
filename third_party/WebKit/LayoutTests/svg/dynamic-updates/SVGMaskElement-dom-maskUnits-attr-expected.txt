@@ -10,8 +10,4 @@ PASS maskElement.getAttribute('maskUnits') is "userSpaceOnUse"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-(repaint rects
-  (rect 58 58 100 100)
-  (rect 58 58 100 100)
-)
 
