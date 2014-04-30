@@ -37,19 +37,15 @@ class CoreImpl implements Core {
      */
     private static final int FLAG_SIZE = 4;
 
-    /**
-     * The singleton instance.
-     */
-    private static Core sINSTANCE = null;
+    private static class LazyHolder {
+      private static final Core INSTANCE = new CoreImpl();
+    }
 
     /**
      * @return the instance.
      */
-    static synchronized Core getInstance() {
-        if (sINSTANCE == null) {
-            sINSTANCE = new CoreImpl();
-        }
-        return sINSTANCE;
+    public static Core getInstance() {
+        return LazyHolder.INSTANCE;
     }
 
     private CoreImpl() {
@@ -107,7 +103,7 @@ class CoreImpl implements Core {
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        return Pair.create(
+        return Pair.<MessagePipeHandle, MessagePipeHandle>create(
                 new MessagePipeHandleImpl(this, result.getMojoHandle1()),
                 new MessagePipeHandleImpl(this, result.getMojoHandle2()));
     }
@@ -129,7 +125,7 @@ class CoreImpl implements Core {
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        return Pair.create(
+        return Pair.<ProducerHandle, ConsumerHandle>create(
                 new DataPipeProducerHandleImpl(this, result.getMojoHandle1()),
                 new DataPipeConsumerHandleImpl(this, result.getMojoHandle2()));
     }

@@ -79,7 +79,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'webview:android_webview/test/data/device_files'),
     ])
 
-VALID_TESTS = set(['chromedriver', 'gpu', 'telemetry_perf_unittests',
+VALID_TESTS = set(['chromedriver', 'gpu', 'mojo', 'telemetry_perf_unittests',
                    'ui', 'unit', 'webkit', 'webkit_layout', 'webrtc_chromium',
                    'webrtc_native'])
 
@@ -182,6 +182,20 @@ def RunTelemetryPerfUnitTests(options):
   RunCmd(['tools/perf/run_tests'] + args)
 
 
+def RunMojoTests(options):
+  """Runs the mojo unit tests.
+
+  Args:
+    options: options object.
+  """
+  test = I('MojoTest',
+           None,
+           'org.chromium.mojo.tests',
+           'MojoTest',
+           None)
+  RunInstrumentationSuite(options, test)
+
+
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.
 
@@ -213,9 +227,11 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
   """
   bb_annotations.PrintNamedStep('%s_instrumentation_tests' % test.name.lower())
 
-  InstallApk(options, test)
-  args = ['--test-apk', test.test_apk, '--test_data', test.test_data,
-          '--verbose']
+  if test.apk:
+    InstallApk(options, test)
+  args = ['--test-apk', test.test_apk, '--verbose']
+  if test.test_data:
+    args.extend(['--test_data', test.test_data])
   if options.target == 'Release':
     args.append('--release')
   if options.asan:
@@ -498,6 +514,7 @@ def GetTestStepCmds():
   return [
       ('chromedriver', RunChromeDriverTests),
       ('gpu', RunGPUTests),
+      ('mojo', RunMojoTests),
       ('telemetry_perf_unittests', RunTelemetryPerfUnitTests),
       ('unit', RunUnitTests),
       ('ui', RunInstrumentationTests),

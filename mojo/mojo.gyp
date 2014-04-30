@@ -706,6 +706,13 @@
             'resource_dir': '<(DEPTH)/mojo/android/javatests/apk',
             'native_lib_target': 'libmojo_java_unittest',
             'is_test_apk': 1,
+            # Given that this apk tests itself, it needs to bring emma with it
+            # when instrumented.
+            'conditions': [
+              ['emma_coverage != 0', {
+                'emma_instrument': 1,
+              }],
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

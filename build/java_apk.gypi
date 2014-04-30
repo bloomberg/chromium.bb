@@ -133,9 +133,9 @@
           'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
         }],
         ['is_test_apk == 0 and emma_coverage != 0', {
-          'emma_instrument': 1,
+          'emma_instrument%': 1,
         },{
-          'emma_instrument': 0,
+          'emma_instrument%': 0,
         }],
       ],
     },
@@ -143,7 +143,7 @@
     'native_lib_version_name%': '',
     'use_chromium_linker%' : 0,
     'enable_chromium_linker_tests%': 0,
-    'emma_instrument': '<(emma_instrument)',
+    'emma_instrument%': '<(emma_instrument)',
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
     'extra_native_libs': [],
@@ -654,8 +654,6 @@
         'conditions': [
           ['emma_instrument != 0', {
             'dex_no_locals': 1,
-          }],
-          ['emma_instrument != 0 and is_test_apk == 0', {
             'dex_input_paths': [ '<(emma_device_jar)' ],
           }],
         ],

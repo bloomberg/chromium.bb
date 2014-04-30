@@ -4,7 +4,6 @@
 
 package org.chromium.mojo.system;
 
-import java.util.Objects;
 
 /**
  * A pair of object.
@@ -29,6 +28,13 @@ public class Pair<F, S> {
     }
 
     /**
+     * equals() that handles null values.
+     */
+    private boolean equals(Object o1, Object o2) {
+        return o1 == null ? o2 == null : o1.equals(o2);
+    }
+
+    /**
      * @see Object#equals(Object)
      */
     @Override
@@ -37,7 +43,7 @@ public class Pair<F, S> {
             return false;
         }
         Pair<?, ?> p = (Pair<?, ?>) o;
-        return Objects.equals(p.first, first) && Objects.equals(p.second, second);
+        return equals(first, p.first) && equals(second, p.second);
     }
 
     /**
@@ -55,7 +61,7 @@ public class Pair<F, S> {
      * @param b the second element of the pair.
      * @return the pair containing a and b.
      */
-    public static <A, B, C extends A, D extends B> Pair<A, B> create(C a, D b) {
+    public static <A, B> Pair<A, B> create(A a, B b) {
         return new Pair<A, B>(a, b);
     }
 }
