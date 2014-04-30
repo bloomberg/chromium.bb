@@ -67,6 +67,89 @@ bool operator!=(const content::webcrypto::Status& a,
 
 namespace {
 
+// -----------------------------------------------------------------------------
+// TODO(eroman): Remove these helpers and convert all of the tests to using the
+//               std::vector<> flavor of functions directly.
+// -----------------------------------------------------------------------------
+
+blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
+                                        unsigned int data_size) {
+  blink::WebArrayBuffer buffer = blink::WebArrayBuffer::create(data_size, 1);
+  DCHECK(!buffer.isNull());
+  if (data_size)  // data_size == 0 might mean the data pointer is invalid
+    memcpy(buffer.data(), data, data_size);
+  return buffer;
+}
+
+void AssignWebArrayBuffer(const std::vector<uint8>& in,
+                          blink::WebArrayBuffer* out) {
+  *out = CreateArrayBuffer(Uint8VectorStart(in), in.size());
+}
+
+Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
+               const blink::WebCryptoKey& key,
+               const CryptoData& data,
+               blink::WebArrayBuffer* web_buffer) {
+  std::vector<uint8> buffer;
+  Status status = Encrypt(algorithm, key, data, &buffer);
+  AssignWebArrayBuffer(buffer, web_buffer);
+  return status;
+}
+
+Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
+               const blink::WebCryptoKey& key,
+               const CryptoData& data,
+               blink::WebArrayBuffer* web_buffer) {
+  std::vector<uint8> buffer;
+  Status status = Decrypt(algorithm, key, data, &buffer);
+  AssignWebArrayBuffer(buffer, web_buffer);
+  return status;
+}
+
+Status Digest(const blink::WebCryptoAlgorithm& algorithm,
+              const CryptoData& data,
+              blink::WebArrayBuffer* web_buffer) {
+  std::vector<uint8> buffer;
+  Status status = Digest(algorithm, data, &buffer);
+  AssignWebArrayBuffer(buffer, web_buffer);
+  return status;
+}
+
+Status ExportKey(blink::WebCryptoKeyFormat format,
+                 const blink::WebCryptoKey& key,
+                 blink::WebArrayBuffer* web_buffer) {
+  std::vector<uint8> buffer;
+  Status status = webcrypto::ExportKey(format, key, &buffer);
+  AssignWebArrayBuffer(buffer, web_buffer);
+  return status;
+}
+
+Status Sign(const blink::WebCryptoAlgorithm& algorithm,
+            const blink::WebCryptoKey& key,
+            const CryptoData& data,
+            blink::WebArrayBuffer* web_buffer) {
+  std::vector<uint8> buffer;
+
+  Status status = Sign(algorithm, key, data, &buffer);
+  AssignWebArrayBuffer(buffer, web_buffer);
+  return status;
+}
+
+Status WrapKey(blink::WebCryptoKeyFormat format,
+               const blink::WebCryptoKey& wrapping_key,
+               const blink::WebCryptoKey& key_to_wrap,
+               const blink::WebCryptoAlgorithm& wrapping_algorithm,
+               blink::WebArrayBuffer* web_buffer) {
+  std::vector<uint8> buffer;
+
+  Status status = webcrypto::WrapKey(
+      format, wrapping_key, key_to_wrap, wrapping_algorithm, &buffer);
+  AssignWebArrayBuffer(buffer, web_buffer);
+  return status;
+}
+
+// -----------------------------------------------------------------------------
+
 // TODO(eroman): For Linux builds using system NSS, AES-GCM support is a
 // runtime dependency. Test it by trying to import a key.
 // TODO(padolph): Consider caching the result of the import key test.
@@ -1875,6 +1958,45 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkSymmetricKey)) {
   }
 }
 
+TEST_F(SharedCryptoTest, MAYBE(ExportJwkEmptySymmetricKey)) {
+  const blink::WebCryptoAlgorithm import_algorithm =
+      webcrypto::CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1);
+
+  blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageSign;
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+  // Import a zero-byte HMAC key.
+  const char key_data_hex[] = "";
+  key = ImportSecretKeyFromRaw(
+      HexStringToBytes(key_data_hex), import_algorithm, usages);
+  EXPECT_EQ(0u, key.algorithm().hmacParams()->lengthBits());
+
+  // Export the key in JWK format and validate.
+  blink::WebArrayBuffer json;
+  ASSERT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatJwk, key, &json));
+  EXPECT_TRUE(VerifySecretJwk(json, "HS1", key_data_hex, usages));
+
+  // Now try re-importing the JWK key.
+  key = blink::WebCryptoKey::createNull();
+  EXPECT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatJwk,
+                      CryptoData(json),
+                      import_algorithm,
+                      true,
+                      usages,
+                      &key));
+
+  EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+  EXPECT_EQ(0u, key.algorithm().hmacParams()->lengthBits());
+
+  blink::WebArrayBuffer exported_key_data;
+  EXPECT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatRaw, key, &exported_key_data));
+
+  EXPECT_EQ(0u, exported_key_data.byteLength());
+}
+
 TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
   // Passing case: Import a valid RSA key in SPKI format.
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
@@ -2128,11 +2250,12 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
 
-  // Successful WebCryptoAlgorithmIdRsaOaep key generation.
-  algorithm = CreateRsaHashedKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaOaep,
-                                             blink::WebCryptoAlgorithmIdSha256,
-                                             modulus_length,
-                                             public_exponent);
+  // Successful WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 key generation (sha256)
+  algorithm =
+      CreateRsaHashedKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha256,
+                                     modulus_length,
+                                     public_exponent);
   EXPECT_EQ(Status::Success(),
             GenerateKeyPair(
                 algorithm, extractable, usage_mask, &public_key, &private_key));

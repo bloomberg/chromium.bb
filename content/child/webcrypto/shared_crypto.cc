@@ -20,6 +20,17 @@ namespace content {
 
 namespace webcrypto {
 
+// ------------
+// Threading:
+// ------------
+//
+// All functions in this file are called from the webcrypto worker pool except
+// for:
+//
+//   * SerializeKeyForClone()
+//   * DeserializeKeyForClone()
+//   * ImportKey() // TODO(eroman): Change this.
+
 namespace {
 
 // TODO(eroman): Move this helper to WebCryptoKey.
@@ -66,7 +77,7 @@ Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
-                            blink::WebArrayBuffer* buffer) {
+                            std::vector<uint8>* buffer) {
   platform::SymKey* sym_key;
   Status status = ToPlatformSymKey(key, &sym_key);
   if (status.IsError())
@@ -87,7 +98,7 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
-                            blink::WebArrayBuffer* buffer) {
+                            std::vector<uint8>* buffer) {
   platform::SymKey* sym_key;
   Status status = ToPlatformSymKey(key, &sym_key);
   if (status.IsError())
@@ -119,7 +130,7 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
 Status EncryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
                              const blink::WebCryptoKey& key,
                              const CryptoData& data,
-                             blink::WebArrayBuffer* buffer) {
+                             std::vector<uint8>* buffer) {
   platform::PublicKey* public_key;
   Status status = ToPlatformPublicKey(key, &public_key);
   if (status.IsError())
@@ -135,7 +146,7 @@ Status EncryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
 Status DecryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
                              const blink::WebCryptoKey& key,
                              const CryptoData& data,
-                             blink::WebArrayBuffer* buffer) {
+                             std::vector<uint8>* buffer) {
   platform::PrivateKey* private_key;
   Status status = ToPlatformPrivateKey(key, &private_key);
   if (status.IsError())
@@ -151,7 +162,7 @@ Status DecryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
 Status SignHmac(const blink::WebCryptoAlgorithm& algorithm,
                 const blink::WebCryptoKey& key,
                 const CryptoData& data,
-                blink::WebArrayBuffer* buffer) {
+                std::vector<uint8>* buffer) {
   platform::SymKey* sym_key;
   Status status = ToPlatformSymKey(key, &sym_key);
   if (status.IsError())
@@ -166,16 +177,16 @@ Status VerifyHmac(const blink::WebCryptoAlgorithm& algorithm,
                   const CryptoData& signature,
                   const CryptoData& data,
                   bool* signature_match) {
-  blink::WebArrayBuffer result;
+  std::vector<uint8> result;
   Status status = SignHmac(algorithm, key, data, &result);
   if (status.IsError())
     return status;
 
   // Do not allow verification of truncated MACs.
   *signature_match =
-      result.byteLength() == signature.byte_length() &&
+      result.size() == signature.byte_length() &&
       crypto::SecureMemEqual(
-          result.data(), signature.bytes(), signature.byte_length());
+          Uint8VectorStart(result), signature.bytes(), signature.byte_length());
 
   return Status::Success();
 }
@@ -183,7 +194,7 @@ Status VerifyHmac(const blink::WebCryptoAlgorithm& algorithm,
 Status SignRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
                            const blink::WebCryptoKey& key,
                            const CryptoData& data,
-                           blink::WebArrayBuffer* buffer) {
+                           std::vector<uint8>* buffer) {
   platform::PrivateKey* private_key;
   Status status = ToPlatformPrivateKey(key, &private_key);
   if (status.IsError())
@@ -211,6 +222,7 @@ Status VerifyRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
       signature_match);
 }
 
+// Note that this function may be called from the target Blink thread.
 Status ImportKeyRaw(const CryptoData& key_data,
                     const blink::WebCryptoAlgorithm& algorithm,
                     bool extractable,
@@ -273,40 +285,40 @@ blink::WebCryptoAlgorithm KeyAlgorithmToImportAlgorithm(
 //
 // A failure here implies either a bug in the code, or that the serialized data
 // was corrupted.
-Status ValidateDeserializedKey(const blink::WebCryptoKey& key,
-                               const blink::WebCryptoKeyAlgorithm& algorithm,
-                               blink::WebCryptoKeyType type) {
+bool ValidateDeserializedKey(const blink::WebCryptoKey& key,
+                             const blink::WebCryptoKeyAlgorithm& algorithm,
+                             blink::WebCryptoKeyType type) {
   if (algorithm.id() != key.algorithm().id())
-    return Status::ErrorUnexpected();
+    return false;
 
   if (key.type() != type)
-    return Status::ErrorUnexpected();
+    return false;
 
   switch (algorithm.paramsType()) {
     case blink::WebCryptoKeyAlgorithmParamsTypeAes:
       if (algorithm.aesParams()->lengthBits() !=
           key.algorithm().aesParams()->lengthBits())
-        return Status::ErrorUnexpected();
+        return false;
       break;
     case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
     case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
       if (algorithm.rsaParams()->modulusLengthBits() !=
           key.algorithm().rsaParams()->modulusLengthBits())
-        return Status::ErrorUnexpected();
+        return false;
       if (algorithm.rsaParams()->publicExponent().size() !=
           key.algorithm().rsaParams()->publicExponent().size())
-        return Status::ErrorUnexpected();
+        return false;
       if (memcmp(algorithm.rsaParams()->publicExponent().data(),
                  key.algorithm().rsaParams()->publicExponent().data(),
                  key.algorithm().rsaParams()->publicExponent().size()) != 0)
-        return Status::ErrorUnexpected();
+        return false;
       break;
     case blink::WebCryptoKeyAlgorithmParamsTypeNone:
     case blink::WebCryptoKeyAlgorithmParamsTypeHmac:
       break;
   }
 
-  return Status::Success();
+  return true;
 }
 
 // Validates the size of data input to AES-KW. AES-KW requires the input data
@@ -366,7 +378,7 @@ Status UnwrapKeyRaw(const CryptoData& wrapped_key_data,
 Status WrapKeyRaw(const blink::WebCryptoKey& wrapping_key,
                   const blink::WebCryptoKey& key_to_wrap,
                   const blink::WebCryptoAlgorithm& wrapping_algorithm,
-                  blink::WebArrayBuffer* buffer) {
+                  std::vector<uint8>* buffer) {
   // A raw key is always a symmetric key.
   platform::SymKey* platform_key;
   Status status = ToPlatformSymKey(key_to_wrap, &platform_key);
@@ -399,7 +411,7 @@ Status WrapKeyRaw(const blink::WebCryptoKey& wrapping_key,
 Status DecryptAesKw(const blink::WebCryptoAlgorithm& algorithm,
                     const blink::WebCryptoKey& key,
                     const CryptoData& data,
-                    blink::WebArrayBuffer* buffer) {
+                    std::vector<uint8>* buffer) {
   platform::SymKey* sym_key;
   Status status = ToPlatformSymKey(key, &sym_key);
   if (status.IsError())
@@ -413,7 +425,7 @@ Status DecryptAesKw(const blink::WebCryptoAlgorithm& algorithm,
 Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
                                 const blink::WebCryptoKey& key,
                                 const CryptoData& data,
-                                blink::WebArrayBuffer* buffer) {
+                                std::vector<uint8>* buffer) {
   if (algorithm.id() != key.algorithm().id())
     return Status::ErrorUnexpected();
   switch (algorithm.id()) {
@@ -433,7 +445,7 @@ Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
 Status EncryptDontCheckUsage(const blink::WebCryptoAlgorithm& algorithm,
                              const blink::WebCryptoKey& key,
                              const CryptoData& data,
-                             blink::WebArrayBuffer* buffer) {
+                             std::vector<uint8>* buffer) {
   if (algorithm.id() != key.algorithm().id())
     return Status::ErrorUnexpected();
   switch (algorithm.id()) {
@@ -457,7 +469,7 @@ Status UnwrapKeyDecryptAndImport(
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) {
-  blink::WebArrayBuffer buffer;
+  std::vector<uint8> buffer;
   Status status = DecryptDontCheckKeyUsage(
       wrapping_algorithm, wrapping_key, wrapped_key_data, &buffer);
   if (status.IsError())
@@ -475,8 +487,8 @@ Status WrapKeyExportAndEncrypt(
     const blink::WebCryptoKey& wrapping_key,
     const blink::WebCryptoKey& key_to_wrap,
     const blink::WebCryptoAlgorithm& wrapping_algorithm,
-    blink::WebArrayBuffer* buffer) {
-  blink::WebArrayBuffer exported_data;
+    std::vector<uint8>* buffer) {
+  std::vector<uint8> exported_data;
   Status status = ExportKey(format, key_to_wrap, &exported_data);
   if (status.IsError())
     return status;
@@ -506,7 +518,7 @@ void Init() { platform::Init(); }
 Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                const CryptoData& data,
-               blink::WebArrayBuffer* buffer) {
+               std::vector<uint8>* buffer) {
   if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageEncrypt))
     return Status::ErrorUnexpected();
   return EncryptDontCheckUsage(algorithm, key, data, buffer);
@@ -515,7 +527,7 @@ Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
 Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                const CryptoData& data,
-               blink::WebArrayBuffer* buffer) {
+               std::vector<uint8>* buffer) {
   if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageDecrypt))
     return Status::ErrorUnexpected();
   return DecryptDontCheckKeyUsage(algorithm, key, data, buffer);
@@ -523,7 +535,7 @@ Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
 
 Status Digest(const blink::WebCryptoAlgorithm& algorithm,
               const CryptoData& data,
-              blink::WebArrayBuffer* buffer) {
+              std::vector<uint8>* buffer) {
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdSha1:
     case blink::WebCryptoAlgorithmIdSha256:
@@ -626,6 +638,7 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
   }
 }
 
+// Note that this function may be called from the target Blink thread.
 Status ImportKey(blink::WebCryptoKeyFormat format,
                  const CryptoData& key_data,
                  const blink::WebCryptoAlgorithm& algorithm,
@@ -651,7 +664,7 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
 // TODO(eroman): Move this to anonymous namespace.
 Status ExportKeyDontCheckExtractability(blink::WebCryptoKeyFormat format,
                                         const blink::WebCryptoKey& key,
-                                        blink::WebArrayBuffer* buffer) {
+                                        std::vector<uint8>* buffer) {
   switch (format) {
     case blink::WebCryptoKeyFormatRaw: {
       platform::SymKey* sym_key;
@@ -683,7 +696,7 @@ Status ExportKeyDontCheckExtractability(blink::WebCryptoKeyFormat format,
 
 Status ExportKey(blink::WebCryptoKeyFormat format,
                  const blink::WebCryptoKey& key,
-                 blink::WebArrayBuffer* buffer) {
+                 std::vector<uint8>* buffer) {
   if (!key.extractable())
     return Status::ErrorKeyNotExtractable();
   return ExportKeyDontCheckExtractability(format, key, buffer);
@@ -692,7 +705,7 @@ Status ExportKey(blink::WebCryptoKeyFormat format,
 Status Sign(const blink::WebCryptoAlgorithm& algorithm,
             const blink::WebCryptoKey& key,
             const CryptoData& data,
-            blink::WebArrayBuffer* buffer) {
+            std::vector<uint8>* buffer) {
   if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageSign))
     return Status::ErrorUnexpected();
   if (algorithm.id() != key.algorithm().id())
@@ -741,7 +754,7 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
                const blink::WebCryptoKey& wrapping_key,
                const blink::WebCryptoKey& key_to_wrap,
                const blink::WebCryptoAlgorithm& wrapping_algorithm,
-               blink::WebArrayBuffer* buffer) {
+               std::vector<uint8>* buffer) {
   if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageWrapKey))
     return Status::ErrorUnexpected();
   if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
@@ -802,24 +815,28 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   }
 }
 
-Status SerializeKeyForClone(const blink::WebCryptoKey& key,
-                            blink::WebVector<unsigned char>* data) {
-  blink::WebArrayBuffer buffer;
-  Status status = ExportKeyDontCheckExtractability(
-      GetCloneFormatForKeyType(key.type()), key, &buffer);
-  if (status.IsError())
-    return status;
-  data->assign(
-      reinterpret_cast<unsigned char*>(buffer.data()), buffer.byteLength());
-  return Status::Success();
+// Note that this function is called from the target Blink thread.
+bool SerializeKeyForClone(const blink::WebCryptoKey& key,
+                          blink::WebVector<uint8>* key_data) {
+  return static_cast<webcrypto::platform::Key*>(key.handle())
+      ->ThreadSafeSerializeForClone(key_data);
 }
 
-Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
-                              blink::WebCryptoKeyType type,
-                              bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
-                              const CryptoData& key_data,
-                              blink::WebCryptoKey* key) {
+// Note that this function is called from the target Blink thread.
+bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
+                            blink::WebCryptoKeyType type,
+                            bool extractable,
+                            blink::WebCryptoKeyUsageMask usage_mask,
+                            const CryptoData& key_data,
+                            blink::WebCryptoKey* key) {
+  // TODO(eroman): This should not call into the platform crypto layer.
+  // Otherwise it runs the risk of stalling while the NSS/OpenSSL global locks
+  // are held.
+  //
+  // An alternate approach is to defer the key import until the key is used.
+  // However this means that any deserialization errors would have to be
+  // surfaced as WebCrypto errors, leading to slightly different behaviors. For
+  // instance you could clone a key which fails to be deserialized.
   Status status = ImportKey(GetCloneFormatForKeyType(type),
                             key_data,
                             KeyAlgorithmToImportAlgorithm(algorithm),
@@ -827,8 +844,7 @@ Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                             usage_mask,
                             key);
   if (status.IsError())
-    return status;
-
+    return false;
   return ValidateDeserializedKey(*key, algorithm, type);
 }
 
