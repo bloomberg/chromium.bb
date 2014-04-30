@@ -44,6 +44,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
@@ -185,6 +186,8 @@ void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& sc
 
     ExecutionContext* executionContext = scriptState->executionContext();
     LocalFrame* frame = toDocument(executionContext)->frame();
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt()));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie;
     if (frame)
         cookie = InspectorInstrumentation::willEvaluateScript(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt());

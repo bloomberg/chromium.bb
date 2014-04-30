@@ -40,6 +40,7 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {
@@ -78,6 +79,28 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ExecutionContext* context, Ev
     invokeEventHandler(context, event, v8::Local<v8::Value>::New(isolate, jsEvent));
 }
 
+static void devtoolsFunctionInfo(v8::Handle<v8::Function> handlerFunction, v8::Isolate* isolate, int& scriptId, String& resourceName, int& lineNumber)
+{
+    lineNumber = 1;
+    v8::Handle<v8::Function> originalFunction = getBoundFunction(handlerFunction);
+    v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
+    if (!origin.ResourceName().IsEmpty()) {
+        resourceName = NativeValueTraits<String>::nativeValue(origin.ResourceName(), isolate);
+        lineNumber = originalFunction->GetScriptLineNumber() + 1;
+    }
+    if (resourceName.isEmpty())
+        resourceName = "undefined";
+}
+
+static PassRefPtr<TraceEvent::ConvertableToTraceFormat> devtoolsTraceEventData(ExecutionContext* context, v8::Handle<v8::Function> handlerFunction, v8::Isolate* isolate)
+{
+    int scriptId = 0;
+    String resourceName;
+    int lineNumber = 1;
+    devtoolsFunctionInfo(handlerFunction, isolate, scriptId, resourceName, lineNumber);
+    return InspectorFunctionCallEvent::data(context, scriptId, resourceName, lineNumber);
+}
+
 v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
 {
     v8::Local<v8::Function> handlerFunction = getListenerFunction(context);
@@ -85,21 +108,18 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
+    v8::Isolate* isolate = toIsolate(context);
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", devtoolsTraceEventData(context, handlerFunction, isolate));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
-        String resourceName("undefined");
+        int scriptId = 0;
+        String resourceName;
         int lineNumber = 1;
-        v8::Handle<v8::Function> originalFunction = getBoundFunction(handlerFunction);
-        v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
-        if (!origin.ResourceName().IsEmpty()) {
-            TOSTRING_DEFAULT(V8StringResource<>, stringResourceName, origin.ResourceName(), v8::Local<v8::Value>());
-            resourceName = stringResourceName;
-            lineNumber = originalFunction->GetScriptLineNumber() + 1;
-        }
-        cookie = InspectorInstrumentation::willCallFunction(context, originalFunction->ScriptId(), resourceName, lineNumber);
+        devtoolsFunctionInfo(handlerFunction, isolate, scriptId, resourceName, lineNumber);
+        cookie = InspectorInstrumentation::willCallFunction(context, scriptId, resourceName, lineNumber);
     }
 
-    v8::Isolate* isolate = toIsolate(context);
     v8::Handle<v8::Value> parameters[1] = { jsEvent };
     v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, context, receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
 

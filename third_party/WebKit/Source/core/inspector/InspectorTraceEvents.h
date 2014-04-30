@@ -21,6 +21,7 @@ class LocalFrame;
 class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
+class ScriptSourceCode;
 class XMLHttpRequest;
 
 class InspectorLayoutEvent {
@@ -107,6 +108,16 @@ public:
 class InspectorScrollLayerEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*);
+};
+
+class InspectorEvaluateScriptEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*, const String& url, int lineNumber);
+};
+
+class InspectorFunctionCallEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
 };
 
 } // namespace WebCore

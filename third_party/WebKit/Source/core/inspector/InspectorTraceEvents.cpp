@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/inspector/InspectorTraceEvents.h"
 
+#include "bindings/v8/ScriptSourceCode.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -250,6 +251,26 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data
     data->setString("frame", toHexString(renderer->frame()));
     int nodeId = InspectorNodeIds::idForNode(renderer->generatingNode());
     data->setNumber("nodeId", nodeId);
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEvaluateScriptEvent::data(LocalFrame* frame, const String& url, int lineNumber)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("frame", toHexString(frame));
+    data->setString("url", url);
+    data->setNumber("lineNumber", lineNumber);
+    return TracedValue::fromJSONValue(data);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorFunctionCallEvent::data(ExecutionContext* context, int scriptId, const String& scriptName, int scriptLine)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("scriptId", String::number(scriptId));
+    data->setString("scriptName", scriptName);
+    data->setNumber("scriptLine", scriptLine);
+    if (LocalFrame* frame = frameForExecutionContext(context))
+        data->setString("frame", toHexString(frame));
     return TracedValue::fromJSONValue(data);
 }
 
