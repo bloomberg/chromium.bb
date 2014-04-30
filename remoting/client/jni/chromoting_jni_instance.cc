@@ -332,7 +332,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       net::ClientSocketFactory::GetDefaultFactory(),
       jni_runtime_->url_requester(), xmpp_config_));
 
-  NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_ENABLED);
+  NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_FULL);
 
   // Use Chrome's network stack to allocate ports for peer-to-peer channels.
   scoped_ptr<ChromiumPortAllocator> port_allocator(

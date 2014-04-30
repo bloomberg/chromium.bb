@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 262
+#   For your editing convenience: highest ID currently used: 264
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -542,7 +542,7 @@
           'example_value': False,
           'id': 95,
           'caption': '''Enable firewall traversal from remote access host''',
-          'desc': '''Enables usage of STUN and relay servers when remote clients are trying to establish a connection to this machine.
+          'desc': '''Enables usage of STUN servers when remote clients are trying to establish a connection to this machine.
 
           If this setting is enabled, then remote clients can discover and connect to this machines even if they are separated by a firewall.
 
@@ -657,6 +657,42 @@
           'desc': '''If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.''',
+        },
+        {
+          'name': 'RemoteAccessHostAllowRelayedConnection',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.*:36-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': False,
+          'id': 263,
+          'caption': '''Enable the use of relay servers by the remote access host''',
+          'desc': '''Enables usage of relay servers when remote clients are trying to establish a connection to this machine.
+
+          If this setting is enabled, then remote clients can use relay servers to connect to this machine when a direct connection is not available (e.g. due to firewall restrictions).
+
+          Note that if the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, this policy will be ignored.
+
+          If this policy is left not set the setting will be enabled.''',
+        },
+        {
+          'name': 'RemoteAccessHostUdpPortRange',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:36-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': '12400-12409',
+          'id': 264,
+          'caption': '''Restrict the UDP port range used by the remote access host''',
+          'desc': '''Restricts the UDP port range used by the remote access host in this machine.
+
+          If this policy is left not set, or if it is set to an empty string, the remote access host will be allowed to use any available port, unless the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME">RemoteAccessHostFirewallTraversal</ph> is disabled, in which case the remote access host will use UDP ports in the 12400-12409 range.''',
         },
       ],
     },
