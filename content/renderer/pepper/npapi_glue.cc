@@ -343,6 +343,8 @@ void TryCatch::SetException(const char* message) {
   if (!has_exception()) {
     has_exception_ = true;
     if (exception_) {
+      if (!message)
+        message = "Unknown exception.";
       *exception_ = ppapi::StringVar::StringToPPVar(message, strlen(message));
     }
   }
