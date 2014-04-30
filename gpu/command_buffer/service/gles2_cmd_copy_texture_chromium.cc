@@ -21,12 +21,15 @@
 #define SHADER_2D(src)              \
   "#define SamplerType sampler2D\n" \
   "#define TextureLookup texture2D\n" SHADER(src)
+#define SHADER_RECTANGLE_ARB(src)     \
+  "#define SamplerType samplerRect\n" \
+  "#define TextureLookup textureRect\n" SHADER(src)
 #define SHADER_EXTERNAL_OES(src)                     \
   "#extension GL_OES_EGL_image_external : require\n" \
   "#define SamplerType samplerExternalOES\n"         \
   "#define TextureLookup texture2D\n" SHADER(src)
 #define FRAGMENT_SHADERS(src) \
-  SHADER_2D(src), SHADER_EXTERNAL_OES(src)
+  SHADER_2D(src), SHADER_RECTANGLE_ARB(src), SHADER_EXTERNAL_OES(src)
 
 namespace {
 
@@ -38,10 +41,13 @@ enum VertexShaderId {
 
 enum FragmentShaderId {
   FRAGMENT_SHADER_COPY_TEXTURE_2D,
+  FRAGMENT_SHADER_COPY_TEXTURE_RECTANGLE_ARB,
   FRAGMENT_SHADER_COPY_TEXTURE_EXTERNAL_OES,
   FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_2D,
+  FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_RECTANGLE_ARB,
   FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_EXTERNAL_OES,
   FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_2D,
+  FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_RECTANGLE_ARB,
   FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_EXTERNAL_OES,
   NUM_FRAGMENT_SHADERS,
 };
@@ -50,20 +56,24 @@ const char* vertex_shader_source[NUM_VERTEX_SHADERS] = {
   // VERTEX_SHADER_COPY_TEXTURE
   SHADER(
     uniform mat4 u_matrix;
+    uniform vec2 u_half_size;
     attribute vec4 a_position;
     varying TexCoordPrecision vec2 v_uv;
     void main(void) {
       gl_Position = u_matrix * a_position;
-      v_uv = a_position.xy * vec2(0.5, 0.5) + vec2(0.5, 0.5);
+      v_uv = a_position.xy * vec2(u_half_size.s, u_half_size.t) +
+             vec2(u_half_size.s, u_half_size.t);
     }),
   // VERTEX_SHADER_COPY_TEXTURE_FLIP_Y
   SHADER(
     uniform mat4 u_matrix;
+    uniform vec2 u_half_size;
     attribute vec4 a_position;
     varying TexCoordPrecision vec2 v_uv;
     void main(void) {
       gl_Position = u_matrix * a_position;
-      v_uv = a_position.xy * vec2(0.5, -0.5) + vec2(0.5, 0.5);
+      v_uv = a_position.xy * vec2(u_half_size.s, -u_half_size.t) +
+             vec2(u_half_size.s, u_half_size.t);
     }),
 };
 
@@ -114,6 +124,7 @@ FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
                                      GLenum target) {
   enum {
     SAMPLER_2D,
+    SAMPLER_RECTANGLE_ARB,
     SAMPLER_EXTERNAL_OES,
     NUM_SAMPLERS
   };
@@ -123,18 +134,22 @@ FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
   static FragmentShaderId shader_ids[][NUM_SAMPLERS] = {
       {
        FRAGMENT_SHADER_COPY_TEXTURE_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_RECTANGLE_ARB,
        FRAGMENT_SHADER_COPY_TEXTURE_EXTERNAL_OES,
       },
       {
        FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_RECTANGLE_ARB,
        FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_EXTERNAL_OES,
       },
       {
        FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_RECTANGLE_ARB,
        FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_EXTERNAL_OES,
       },
       {
        FRAGMENT_SHADER_COPY_TEXTURE_2D,
+       FRAGMENT_SHADER_COPY_TEXTURE_RECTANGLE_ARB,
        FRAGMENT_SHADER_COPY_TEXTURE_EXTERNAL_OES,
       }};
 
@@ -144,6 +159,8 @@ FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
   switch (target) {
     case GL_TEXTURE_2D:
       return shader_ids[index][SAMPLER_2D];
+    case GL_TEXTURE_RECTANGLE_ARB:
+      return shader_ids[index][SAMPLER_RECTANGLE_ARB];
     case GL_TEXTURE_EXTERNAL_OES:
       return shader_ids[index][SAMPLER_EXTERNAL_OES];
     default:
@@ -261,6 +278,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     bool unpremultiply_alpha,
     const GLfloat transform_matrix[16]) {
   DCHECK(source_target == GL_TEXTURE_2D ||
+         source_target == GL_TEXTURE_RECTANGLE_ARB ||
          source_target == GL_TEXTURE_EXTERNAL_OES);
   if (!initialized_) {
     DLOG(ERROR) << "CopyTextureCHROMIUM: Uninitialized manager.";
@@ -300,6 +318,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
       DLOG(ERROR) << "CopyTextureCHROMIUM: program link failure.";
 #endif
     info->matrix_handle = glGetUniformLocation(info->program, "u_matrix");
+    info->half_size_handle = glGetUniformLocation(info->program, "u_half_size");
     info->sampler_handle = glGetUniformLocation(info->program, "u_sampler");
   }
   glUseProgram(info->program);
@@ -315,6 +334,10 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
 #endif
 
   glUniformMatrix4fv(info->matrix_handle, 1, GL_FALSE, transform_matrix);
+  if (source_target == GL_TEXTURE_RECTANGLE_ARB)
+    glUniform2f(info->half_size_handle, width / 2.0f, height / 2.0f);
+  else
+    glUniform2f(info->half_size_handle, 0.5f, 0.5f);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, dest_id);
   // NVidia drivers require texture settings to be a certain way

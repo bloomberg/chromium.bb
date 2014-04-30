@@ -50,10 +50,15 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
 
  private:
   struct ProgramInfo {
-    ProgramInfo() : program(0u), matrix_handle(0u), sampler_handle(0u) {}
+    ProgramInfo()
+        : program(0u),
+          matrix_handle(0u),
+          half_size_handle(0u),
+          sampler_handle(0u) {}
 
     GLuint program;
     GLuint matrix_handle;
+    GLuint half_size_handle;
     GLuint sampler_handle;
   };
 

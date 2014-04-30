@@ -9948,7 +9948,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   Texture* dest_texture = dest_texture_ref->texture();
   if (dest_texture->target() != GL_TEXTURE_2D ||
       (source_texture->target() != GL_TEXTURE_2D &&
-      source_texture->target() != GL_TEXTURE_EXTERNAL_OES)) {
+       source_texture->target() != GL_TEXTURE_RECTANGLE_ARB &&
+       source_texture->target() != GL_TEXTURE_EXTERNAL_OES)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
                        "glCopyTextureCHROMIUM",
                        "invalid texture target binding");
