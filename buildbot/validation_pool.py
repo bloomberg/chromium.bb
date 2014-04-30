@@ -1150,7 +1150,13 @@ class CalculateSuspects(object):
 
   @classmethod
   def _FindPackageBuildFailureSuspects(cls, changes, messages):
-    """Figure out what CLs are at fault for a set of build failures."""
+    """Figure out what CLs are at fault for a set of build failures.
+
+    Args:
+        changes: A list of cros_patch.GerritPatch instances to consider.
+        messages: A list of build failure messages, of type
+                  ValidationFailedMessage.
+    """
     suspects = set()
     for message in messages:
       suspects.update(message.FindPackageBuildFailureSuspects(changes))
@@ -1158,10 +1164,16 @@ class CalculateSuspects(object):
 
   @classmethod
   def _MightBeFlakyFailure(cls, messages):
-    """Check if there is a good chance this is a flaky failure."""
+    """Check if there is a good chance this is a flaky failure.
+
+    Args:
+        messages: A list of build failure messages, of type
+                  ValidationFailedMessage or of type NoneType.
+    """
     # We consider a failed commit queue run to be flaky if only one builder
     # failed, and that failure is flaky.
-    return len(messages) == 1 and messages[0].MightBeFlakyFailure()
+    return (len(messages) == 1 and messages[0] and
+            messages[0].MightBeFlakyFailure())
 
   @classmethod
   def _FindPreviouslyFailedChanges(cls, candidates):
@@ -1186,17 +1198,25 @@ class CalculateSuspects(object):
     external failures are at fault. Otherwise, this function just defers to
     _FindPackagedBuildFailureSuspects and FindPreviouslyFailedChanges as needed.
     If the failures don't match either case, just fail everything.
+
+    Args:
+        changes: A list of cros_patch.GerritPatch instances to consider.
+        messages: A list of build failure messages, of type
+                  ValidationFailedMessage or of type NoneType.
     """
 
     suspects = set()
 
     # If there were no internal failures, only kick out external changes.
-    if any(message.internal for message in messages):
+    # Treat None messages as external for this purpose.
+    if any(message and message.internal for message in messages):
       candidates = changes
     else:
       candidates = [change for change in changes if not change.internal]
 
-    if all(message.IsPackageBuildFailure() for message in messages):
+    if all(message and message.IsPackageBuildFailure()
+           for message in messages):
+      # If we are here, there are no None messages.
       suspects = cls._FindPackageBuildFailureSuspects(candidates, messages)
     elif cls._MightBeFlakyFailure(messages):
       suspects = cls._FindPreviouslyFailedChanges(changes)
@@ -2402,7 +2422,7 @@ class ValidationPool(object):
 
     Args:
       messages: A list of build failure messages from supporting builders.
-          These must be ValidationFailedMessage objects.
+          These must be ValidationFailedMessage objects or NoneType objects.
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
         By default, mark all of the changes as failed.
       sanity: A boolean indicating whether the build was considered sane by

@@ -1506,6 +1506,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     if self._run.config.master:
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
+
+      # messages is a list of ValidationFailedMessage or NoneType objects.
       messages = [self._slave_statuses[x].message for x in failing]
 
       if failing and not inflight:
