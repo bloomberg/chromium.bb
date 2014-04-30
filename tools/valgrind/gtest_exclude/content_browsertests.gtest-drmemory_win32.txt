@@ -14,3 +14,5 @@ RenderViewImplTest.DontIgnoreBackAfterNavEntryLimit
 RenderViewImplTest.SendSwapOutACK
 ResourceFetcherTests.ResourceFetcherDidFail
 OpenedByDOMTest.CrossProcessPopup
+# Dr.Memory-i#1528-c#4
+RenderViewImplTest.StaleNavigationsIgnored
