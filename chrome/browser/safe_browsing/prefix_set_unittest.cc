@@ -26,6 +26,10 @@ namespace {
 const SBPrefix kHighBitClear = 1000u * 1000u * 1000u;
 const SBPrefix kHighBitSet = 3u * 1000u * 1000u * 1000u;
 
+}  // namespace
+
+namespace safe_browsing {
+
 class PrefixSetTest : public PlatformTest {
  protected:
   // Constants for the v1 format.
@@ -67,7 +71,7 @@ class PrefixSetTest : public PlatformTest {
   // Check that all elements of |prefixes| are in |prefix_set|, and
   // that nearby elements are not (for lack of a more sensible set of
   // items to check for absence).
-  static void CheckPrefixes(const safe_browsing::PrefixSet& prefix_set,
+  static void CheckPrefixes(const PrefixSet& prefix_set,
                             const std::vector<SBPrefix> &prefixes) {
     // The set can generate the prefixes it believes it has, so that's
     // a good starting point.
@@ -99,7 +103,7 @@ class PrefixSetTest : public PlatformTest {
 
     base::FilePath filename = temp_dir_.path().AppendASCII("PrefixSetTest");
 
-    safe_browsing::PrefixSetBuilder builder(shared_prefixes_);
+    PrefixSetBuilder builder(shared_prefixes_);
     if (!builder.GetPrefixSet()->WriteFile(filename))
       return false;
 
@@ -206,15 +210,15 @@ std::vector<SBPrefix> PrefixSetTest::shared_prefixes_;
 
 // Test that a small sparse random input works.
 TEST_F(PrefixSetTest, Baseline) {
-  safe_browsing::PrefixSetBuilder builder(shared_prefixes_);
+  PrefixSetBuilder builder(shared_prefixes_);
   CheckPrefixes(*builder.GetPrefixSet(), shared_prefixes_);
 }
 
 // Test that the empty set doesn't appear to have anything in it.
 TEST_F(PrefixSetTest, Empty) {
   const std::vector<SBPrefix> empty;
-  safe_browsing::PrefixSetBuilder builder(empty);
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set = builder.GetPrefixSet();
+  PrefixSetBuilder builder(empty);
+  scoped_ptr<PrefixSet> prefix_set = builder.GetPrefixSet();
   for (size_t i = 0; i < shared_prefixes_.size(); ++i) {
     EXPECT_FALSE(prefix_set->Exists(shared_prefixes_[i]));
   }
@@ -223,8 +227,8 @@ TEST_F(PrefixSetTest, Empty) {
 // Single-element set should work fine.
 TEST_F(PrefixSetTest, OneElement) {
   const std::vector<SBPrefix> prefixes(100, 0u);
-  safe_browsing::PrefixSetBuilder builder(prefixes);
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set = builder.GetPrefixSet();
+  PrefixSetBuilder builder(prefixes);
+  scoped_ptr<PrefixSet> prefix_set = builder.GetPrefixSet();
   EXPECT_FALSE(prefix_set->Exists(static_cast<SBPrefix>(-1)));
   EXPECT_TRUE(prefix_set->Exists(prefixes[0]));
   EXPECT_FALSE(prefix_set->Exists(1u));
@@ -253,8 +257,8 @@ TEST_F(PrefixSetTest, IntMinMax) {
   prefixes.push_back(0xFFFFFFFF);
 
   std::sort(prefixes.begin(), prefixes.end());
-  safe_browsing::PrefixSetBuilder builder(prefixes);
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set = builder.GetPrefixSet();
+  PrefixSetBuilder builder(prefixes);
+  scoped_ptr<PrefixSet> prefix_set = builder.GetPrefixSet();
 
   // Check that |GetPrefixes()| returns the same set of prefixes as
   // was passed in.
@@ -276,8 +280,8 @@ TEST_F(PrefixSetTest, AllBig) {
   }
 
   std::sort(prefixes.begin(), prefixes.end());
-  safe_browsing::PrefixSetBuilder builder(prefixes);
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set = builder.GetPrefixSet();
+  PrefixSetBuilder builder(prefixes);
+  scoped_ptr<PrefixSet> prefix_set = builder.GetPrefixSet();
 
   // Check that |GetPrefixes()| returns the same set of prefixes as
   // was passed in.
@@ -331,8 +335,8 @@ TEST_F(PrefixSetTest, EdgeCases) {
   }
 
   std::sort(prefixes.begin(), prefixes.end());
-  safe_browsing::PrefixSetBuilder builder(prefixes);
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set = builder.GetPrefixSet();
+  PrefixSetBuilder builder(prefixes);
+  scoped_ptr<PrefixSet> prefix_set = builder.GetPrefixSet();
 
   // Check that |GetPrefixes()| returns the same set of prefixes as
   // was passed in.
@@ -366,8 +370,7 @@ TEST_F(PrefixSetTest, ReadWrite) {
   // the prefixes.  Leaves the path in |filename|.
   {
     ASSERT_TRUE(GetPrefixSetFile(&filename));
-    scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-        safe_browsing::PrefixSet::LoadFile(filename);
+    scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
     ASSERT_TRUE(prefix_set.get());
     CheckPrefixes(*prefix_set, shared_prefixes_);
   }
@@ -378,11 +381,10 @@ TEST_F(PrefixSetTest, ReadWrite) {
     prefixes.push_back(kHighBitClear);
     prefixes.push_back(kHighBitSet);
 
-    safe_browsing::PrefixSetBuilder builder(prefixes);
+    PrefixSetBuilder builder(prefixes);
     ASSERT_TRUE(builder.GetPrefixSet()->WriteFile(filename));
 
-    scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-        safe_browsing::PrefixSet::LoadFile(filename);
+    scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
     ASSERT_TRUE(prefix_set.get());
     CheckPrefixes(*prefix_set, prefixes);
   }
@@ -390,11 +392,10 @@ TEST_F(PrefixSetTest, ReadWrite) {
   // Test writing and reading an empty set.
   {
     std::vector<SBPrefix> prefixes;
-    safe_browsing::PrefixSetBuilder builder(prefixes);
+    PrefixSetBuilder builder(prefixes);
     ASSERT_TRUE(builder.GetPrefixSet()->WriteFile(filename));
 
-    scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-        safe_browsing::PrefixSet::LoadFile(filename);
+    scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
     ASSERT_TRUE(prefix_set.get());
     CheckPrefixes(*prefix_set, prefixes);
   }
@@ -409,8 +410,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
   base::ScopedFILE file(base::OpenFile(filename, "r+b"));
   IncrementIntAt(file.get(), kPayloadOffset, 1);
   file.reset();
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 
   // Fix up the checksum and it will read successfully (though the
@@ -418,7 +418,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
   file.reset(base::OpenFile(filename, "r+b"));
   CleanChecksum(file.get());
   file.reset();
-  prefix_set = safe_browsing::PrefixSet::LoadFile(filename);
+  prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_TRUE(prefix_set.get());
 }
 
@@ -429,8 +429,7 @@ TEST_F(PrefixSetTest, CorruptionMagic) {
 
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kMagicOffset, 1));
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -441,8 +440,7 @@ TEST_F(PrefixSetTest, CorruptionVersion) {
 
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kVersionOffset, 10));
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -453,8 +451,7 @@ TEST_F(PrefixSetTest, CorruptionIndexSize) {
 
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kIndexSizeOffset, 1));
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -465,8 +462,7 @@ TEST_F(PrefixSetTest, CorruptionDeltasSize) {
 
   ASSERT_NO_FATAL_FAILURE(
       ModifyAndCleanChecksum(filename, kDeltasSizeOffset, 1));
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -479,8 +475,7 @@ TEST_F(PrefixSetTest, CorruptionPayload) {
   base::ScopedFILE file(base::OpenFile(filename, "r+b"));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), 666, 1));
   file.reset();
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -495,8 +490,7 @@ TEST_F(PrefixSetTest, CorruptionDigest) {
   long digest_offset = static_cast<long>(size_64 - sizeof(base::MD5Digest));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), digest_offset, 1));
   file.reset();
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -510,8 +504,7 @@ TEST_F(PrefixSetTest, CorruptionExcess) {
   const char buf[] = "im in ur base, killing ur d00dz.";
   ASSERT_EQ(strlen(buf), fwrite(buf, 1, strlen(buf), file.get()));
   file.reset();
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -553,8 +546,7 @@ TEST_F(PrefixSetTest, SizeTRecovery) {
   CleanChecksum(file.get());
   file.reset();  // Flush updates.
 
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
 }
 
@@ -599,8 +591,7 @@ TEST_F(PrefixSetTest, ReadWriteSigned) {
   CleanChecksum(file.get());
   file.reset();  // Flush updates.
 
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(filename);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(filename);
   ASSERT_TRUE(prefix_set.get());
 
   // |Exists()| uses |std::upper_bound()| to find a starting point, which
@@ -635,11 +626,10 @@ TEST_F(PrefixSetTest, Version2) {
   golden_path = golden_path.AppendASCII("SafeBrowsing");
   golden_path = golden_path.AppendASCII(kBasename);
 
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
-      safe_browsing::PrefixSet::LoadFile(golden_path);
+  scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(golden_path);
   ASSERT_TRUE(prefix_set.get());
   CheckPrefixes(*prefix_set, ref_prefixes);
 }
 #endif
 
-}  // namespace
+}  // namespace safe_browsing

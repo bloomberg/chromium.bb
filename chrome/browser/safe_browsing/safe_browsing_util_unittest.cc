@@ -16,8 +16,6 @@ bool VectorContains(const std::vector<std::string>& data,
   return std::find(data.begin(), data.end(), str) != data.end();
 }
 
-}
-
 // Tests that we generate the required host/path combinations for testing
 // according to the Safe Browsing spec.
 // See section 6.2 in
@@ -334,3 +332,15 @@ TEST(SafeBrowsingUtilTest, StringToSBFullHashAndSBFullHashToString) {
   std::string hash_final = safe_browsing_util::SBFullHashToString(hash_out);
   EXPECT_EQ(hash_in, hash_final);
 }
+
+TEST(SafeBrowsingUtilTest, FullHashOperators) {
+  const SBFullHash kHash1 = SBFullHashForString("one");
+  const SBFullHash kHash2 = SBFullHashForString("two");
+
+  EXPECT_TRUE(SBFullHashEqual(kHash1, kHash1));
+  EXPECT_TRUE(SBFullHashEqual(kHash2, kHash2));
+  EXPECT_FALSE(SBFullHashEqual(kHash1, kHash2));
+  EXPECT_FALSE(SBFullHashEqual(kHash2, kHash1));
+}
+
+}  // namespace

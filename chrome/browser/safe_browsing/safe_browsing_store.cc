@@ -21,19 +21,16 @@ bool sorted(CTI beg, CTI end, LESS less) {
   return true;
 }
 
-// Find items matching between |subs| and |adds|, and remove them,
-// recording the item from |adds| in |adds_removed|.  To minimize
-// copies, the inputs are processing in parallel, so |subs| and |adds|
-// should be compatibly ordered (either by SBAddPrefixLess or
-// SBAddPrefixHashLess).
+// Find items matching between |subs| and |adds|, and remove them.  To minimize
+// copies, the inputs are processing in parallel, so |subs| and |adds| should be
+// compatibly ordered (either by SBAddPrefixLess or SBAddPrefixHashLess).
 //
-// |predAddSub| provides add < sub, |predSubAdd| provides sub < add,
-// for the tightest compare appropriate (see calls in SBProcessSubs).
+// |predAddSub| provides add < sub, |predSubAdd| provides sub < add, for the
+// tightest compare appropriate (see calls in SBProcessSubs).
 template <typename SubsT, typename AddsT,
           typename PredAddSubT, typename PredSubAddT>
 void KnockoutSubs(SubsT* subs, AddsT* adds,
-                  PredAddSubT predAddSub, PredSubAddT predSubAdd,
-                  AddsT* adds_removed) {
+                  PredAddSubT predAddSub, PredSubAddT predSubAdd) {
   // Keep a pair of output iterators for writing kept items.  Due to
   // deletions, these may lag the main iterators.  Using erase() on
   // individual items would result in O(N^2) copies.  Using std::list
@@ -62,9 +59,8 @@ void KnockoutSubs(SubsT* subs, AddsT* adds,
       ++add_out;
       ++add_iter;
 
-      // Record equal items and drop them.
+      // Drop equal items.
     } else {
-      adds_removed->push_back(*add_iter);
       ++add_iter;
       ++sub_iter;
     }
@@ -73,45 +69,6 @@ void KnockoutSubs(SubsT* subs, AddsT* adds,
   // Erase any leftover gap.
   adds->erase(add_out, add_iter);
   subs->erase(sub_out, sub_iter);
-}
-
-// Remove items in |removes| from |full_hashes|.  |full_hashes| and
-// |removes| should be ordered by SBAddPrefix component.
-template <typename HashesT, typename AddsT>
-void RemoveMatchingPrefixes(const AddsT& removes, HashesT* full_hashes) {
-  // This is basically an inline of std::set_difference().
-  // Unfortunately, that algorithm requires that the two iterator
-  // pairs use the same value types.
-
-  // Where to store kept items.
-  typename HashesT::iterator out = full_hashes->begin();
-
-  typename HashesT::iterator hash_iter = full_hashes->begin();
-  typename AddsT::const_iterator remove_iter = removes.begin();
-
-  while (hash_iter != full_hashes->end() && remove_iter != removes.end()) {
-    // Keep items less than |*remove_iter|.
-    if (SBAddPrefixLess(*hash_iter, *remove_iter)) {
-      *out = *hash_iter;
-      ++out;
-      ++hash_iter;
-
-      // No hit for |*remove_iter|, bump it forward.
-    } else if (SBAddPrefixLess(*remove_iter, *hash_iter)) {
-      ++remove_iter;
-
-      // Drop equal items, there may be multiple hits.
-    } else {
-      do {
-        ++hash_iter;
-      } while (hash_iter != full_hashes->end() &&
-               !SBAddPrefixLess(*remove_iter, *hash_iter));
-      ++remove_iter;
-    }
-  }
-
-  // Erase any leftover gap.
-  full_hashes->erase(out, hash_iter);
 }
 
 // Remove deleted items (|chunk_id| in |del_set|) from the container.
@@ -155,25 +112,14 @@ void SBProcessSubs(SBAddPrefixes* add_prefixes,
                 SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>));
 
   // Factor out the prefix subs.
-  SBAddPrefixes removed_adds;
   KnockoutSubs(sub_prefixes, add_prefixes,
                SBAddPrefixLess<SBAddPrefix,SBSubPrefix>,
-               SBAddPrefixLess<SBSubPrefix,SBAddPrefix>,
-               &removed_adds);
-
-  // Remove the full-hashes corrosponding to the adds which
-  // KnockoutSubs() removed.  Processing these w/in KnockoutSubs()
-  // would make the code more complicated, and they are very small
-  // relative to the prefix lists so the gain would be modest.
-  RemoveMatchingPrefixes(removed_adds, add_full_hashes);
-  RemoveMatchingPrefixes(removed_adds, sub_full_hashes);
+               SBAddPrefixLess<SBSubPrefix,SBAddPrefix>);
 
   // Factor out the full-hash subs.
-  std::vector<SBAddFullHash> removed_full_adds;
   KnockoutSubs(sub_full_hashes, add_full_hashes,
                SBAddPrefixHashLess<SBAddFullHash,SBSubFullHash>,
-               SBAddPrefixHashLess<SBSubFullHash,SBAddFullHash>,
-               &removed_full_adds);
+               SBAddPrefixHashLess<SBSubFullHash,SBAddFullHash>);
 
   // Remove items from the deleted chunks.  This is done after other
   // processing to allow subs to knock out adds (and be removed) even

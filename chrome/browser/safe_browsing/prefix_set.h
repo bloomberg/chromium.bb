@@ -51,6 +51,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
@@ -71,12 +72,24 @@ class PrefixSet {
   static scoped_ptr<PrefixSet> LoadFile(const base::FilePath& filter_name);
   bool WriteFile(const base::FilePath& filter_name) const;
 
-  // Regenerate the vector of prefixes passed to the constructor into
-  // |prefixes|.  Prefixes will be added in sorted order.
-  void GetPrefixes(std::vector<SBPrefix>* prefixes) const;
-
  private:
   friend class PrefixSetBuilder;
+
+  friend class PrefixSetTest;
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, AllBig);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, EdgeCases);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, IntMinMax);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, OneElement);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, ReadWriteSigned);
+
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, BasicStore);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, DeleteChunks);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, DetectsCorruption);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, Empty);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, PrefixMinMax);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, SubKnockout);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, Version7);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, Version8);
 
   // Maximum number of consecutive deltas to encode before generating
   // a new index entry.  This helps keep the worst-case performance
@@ -92,6 +105,10 @@ class PrefixSet {
   // added to |index_|, with the other elements added into |deltas_|.
   void AddRun(SBPrefix index_prefix,
               const uint16* run_begin, const uint16* run_end);
+
+  // Regenerate the vector of prefixes passed to the constructor into
+  // |prefixes|.  Prefixes will be added in sorted order.  Useful for testing.
+  void GetPrefixes(std::vector<SBPrefix>* prefixes) const;
 
   // Used by |PrefixSetBuilder|.
   PrefixSet();

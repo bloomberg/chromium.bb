@@ -8,6 +8,51 @@
 
 namespace {
 
+const SBFullHash kHash1 = SBFullHashForString("one");
+const SBFullHash kHash2 = SBFullHashForString("two");
+const SBFullHash kHash3 = SBFullHashForString("three");
+const SBFullHash kHash4 = SBFullHashForString("four");
+const SBFullHash kHash5 = SBFullHashForString("five");
+const SBFullHash kHash6 = SBFullHashForString("six");
+const SBFullHash kHash7 = SBFullHashForString("seven");
+
+const int kAddChunk1 = 1;  // Use different chunk numbers just in case.
+const int kSubChunk1 = 2;
+const int kAddChunk2 = 3;
+const int kSubChunk2 = 4;
+const int kAddChunk3 = 5;
+const int kSubChunk3 = 6;
+const int kAddChunk4 = 7;
+const int kSubChunk4 = 8;
+const int kAddChunk5 = 9;
+const int kSubChunk5 = 10;
+const int kAddChunk6 = 11;
+const int kAddChunk7 = 12;
+
+SBFullHash ModifyHashAfterPrefix(SBFullHash hash, unsigned char mask) {
+  hash.full_hash[sizeof(hash.full_hash) - 1] ^= mask;
+  return hash;
+}
+
+void ProcessHelper(SBAddPrefixes* add_prefixes,
+                   SBSubPrefixes* sub_prefixes,
+                   std::vector<SBAddFullHash>* add_full_hashes,
+                   std::vector<SBSubFullHash>* sub_full_hashes,
+                   const base::hash_set<int32>& add_chunks_deleted,
+                   const base::hash_set<int32>& sub_chunks_deleted) {
+  std::sort(add_prefixes->begin(), add_prefixes->end(),
+            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+  std::sort(sub_prefixes->begin(), sub_prefixes->end(),
+            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+  std::sort(add_full_hashes->begin(), add_full_hashes->end(),
+            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+  std::sort(sub_full_hashes->begin(), sub_full_hashes->end(),
+            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+
+  SBProcessSubs(add_prefixes, sub_prefixes, add_full_hashes, sub_full_hashes,
+                add_chunks_deleted, sub_chunks_deleted);
+}
+
 TEST(SafeBrowsingStoreTest, SBAddPrefixLess) {
   // prefix dominates.
   EXPECT_TRUE(SBAddPrefixLess(SBAddPrefix(11, 1), SBAddPrefix(10, 2)));
@@ -130,175 +175,122 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsEmpty) {
 // Test that subs knock out adds.
 TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   const base::Time kNow = base::Time::Now();
-  const SBFullHash kHash1(SBFullHashForString("one"));
-  const SBFullHash kHash2(SBFullHashForString("two"));
-  const SBFullHash kHash3(SBFullHashForString("three"));
-  const SBFullHash kHash4(SBFullHashForString("four"));
-  const int kAddChunk1 = 1;  // Use different chunk numbers just in case.
-  const int kSubChunk1 = 2;
 
-  // Construct some full hashes which share prefix with another.
-  SBFullHash kHash1mod1 = kHash1;
-  kHash1mod1.full_hash[sizeof(kHash1mod1.full_hash) - 1] ++;
-  SBFullHash kHash1mod2 = kHash1mod1;
-  kHash1mod2.full_hash[sizeof(kHash1mod2.full_hash) - 1] ++;
-  SBFullHash kHash1mod3 = kHash1mod2;
-  kHash1mod3.full_hash[sizeof(kHash1mod3.full_hash) - 1] ++;
+  // A full hash which shares prefix with another.
+  const SBFullHash kHash1mod = ModifyHashAfterPrefix(kHash1, 1);
 
   // A second full-hash for the full-hash-sub test.
-  SBFullHash kHash4mod = kHash4;
-  kHash4mod.full_hash[sizeof(kHash4mod.full_hash) - 1] ++;
+  const SBFullHash kHash4mod = ModifyHashAfterPrefix(kHash4, 1);
 
   SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
   SBSubPrefixes sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
 
-  // An add with prefix and a couple hashes, plus a sub for the prefix
-  // and a couple sub hashes.  The sub should knock all of them out.
-  add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash1.prefix));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1mod1));
-  sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash1.prefix));
-  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod2));
-  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod3));
+  // An add prefix plus a sub to knock it out.
+  add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash5.prefix));
+  sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash5.prefix));
 
-  // An add with no corresponding sub.  Both items should be retained.
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash2));
-  add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash2.prefix));
+  // Add hashes with same prefix, plus subs to knock them out.
+  add_hashes.push_back(SBAddFullHash(kAddChunk2, kNow, kHash1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk2, kNow, kHash1mod));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk2, kAddChunk2, kHash1));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk2, kAddChunk2, kHash1mod));
 
-  // A sub with no corresponding add.  Both items should be retained.
-  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash3));
-  sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash3.prefix));
+  // Adds with no corresponding sub.  Both items should be retained.
+  add_hashes.push_back(SBAddFullHash(kAddChunk6, kNow, kHash6));
+  add_prefixes.push_back(SBAddPrefix(kAddChunk7, kHash2.prefix));
 
-  // An add with prefix and a couple hashes, plus a sub for one of the
-  // hashes.
-  add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash4.prefix));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash4));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash4mod));
-  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash4mod));
+  // Subs with no corresponding add.  Both items should be retained.
+  sub_hashes.push_back(SBSubFullHash(kSubChunk3, kAddChunk3, kHash7));
+  sub_prefixes.push_back(SBSubPrefix(kSubChunk4, kAddChunk4, kHash3.prefix));
 
-  std::sort(add_prefixes.begin(), add_prefixes.end(),
-            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
-  std::sort(sub_prefixes.begin(), sub_prefixes.end(),
-            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
-  std::sort(add_hashes.begin(), add_hashes.end(),
-            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
-  std::sort(sub_hashes.begin(), sub_hashes.end(),
-            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+  // Add hashes with the same prefix, with a sub that will knock one of them
+  // out.
+  add_hashes.push_back(SBAddFullHash(kAddChunk5, kNow, kHash4));
+  add_hashes.push_back(SBAddFullHash(kAddChunk5, kNow, kHash4mod));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk5, kAddChunk5, kHash4mod));
 
   const base::hash_set<int32> no_deletions;
-  SBProcessSubs(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
+  ProcessHelper(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 no_deletions, no_deletions);
 
-  ASSERT_LE(2U, add_prefixes.size());
-  EXPECT_EQ(2U, add_prefixes.size());
-  EXPECT_EQ(kAddChunk1, add_prefixes[0].chunk_id);
-  EXPECT_EQ(kHash4.prefix, add_prefixes[0].prefix);
-  EXPECT_EQ(kAddChunk1, add_prefixes[1].chunk_id);
-  EXPECT_EQ(kHash2.prefix, add_prefixes[1].prefix);
+  ASSERT_EQ(1U, add_prefixes.size());
+  EXPECT_EQ(kAddChunk7, add_prefixes[0].chunk_id);
+  EXPECT_EQ(kHash2.prefix, add_prefixes[0].prefix);
 
-  ASSERT_LE(2U, add_hashes.size());
-  EXPECT_EQ(2U, add_hashes.size());
-  EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
+  ASSERT_EQ(2U, add_hashes.size());
+  EXPECT_EQ(kAddChunk5, add_hashes[0].chunk_id);
   EXPECT_TRUE(SBFullHashEqual(kHash4, add_hashes[0].full_hash));
-  EXPECT_EQ(kAddChunk1, add_hashes[1].chunk_id);
-  EXPECT_TRUE(SBFullHashEqual(kHash2, add_hashes[1].full_hash));
+  EXPECT_EQ(kAddChunk6, add_hashes[1].chunk_id);
+  EXPECT_TRUE(SBFullHashEqual(kHash6, add_hashes[1].full_hash));
 
-  ASSERT_LE(1U, sub_prefixes.size());
-  EXPECT_EQ(1U, sub_prefixes.size());
-  EXPECT_EQ(kSubChunk1, sub_prefixes[0].chunk_id);
-  EXPECT_EQ(kAddChunk1, sub_prefixes[0].add_chunk_id);
+  ASSERT_EQ(1U, sub_prefixes.size());
+  EXPECT_EQ(kSubChunk4, sub_prefixes[0].chunk_id);
+  EXPECT_EQ(kAddChunk4, sub_prefixes[0].add_chunk_id);
   EXPECT_EQ(kHash3.prefix, sub_prefixes[0].add_prefix);
 
-  ASSERT_LE(1U, sub_hashes.size());
-  EXPECT_EQ(1U, sub_hashes.size());
-  EXPECT_EQ(kSubChunk1, sub_hashes[0].chunk_id);
-  EXPECT_EQ(kAddChunk1, sub_hashes[0].add_chunk_id);
-  EXPECT_TRUE(SBFullHashEqual(kHash3, sub_hashes[0].full_hash));
+  ASSERT_EQ(1U, sub_hashes.size());
+  EXPECT_EQ(kSubChunk3, sub_hashes[0].chunk_id);
+  EXPECT_EQ(kAddChunk3, sub_hashes[0].add_chunk_id);
+  EXPECT_TRUE(SBFullHashEqual(kHash7, sub_hashes[0].full_hash));
 }
 
 // Test chunk deletions, and ordering of deletions WRT subs knocking
 // out adds.
 TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   const base::Time kNow = base::Time::Now();
-  const SBFullHash kHash1(SBFullHashForString("one"));
-  const SBFullHash kHash2(SBFullHashForString("two"));
-  const SBFullHash kHash3(SBFullHashForString("three"));
-  const int kAddChunk1 = 1;  // Use different chunk numbers just in case.
-  const int kSubChunk1 = 2;
 
-  // Construct some full hashes which share prefix with another.
-  SBFullHash kHash1mod1 = kHash1;
-  kHash1mod1.full_hash[sizeof(kHash1mod1.full_hash) - 1] ++;
-  SBFullHash kHash1mod2 = kHash1mod1;
-  kHash1mod2.full_hash[sizeof(kHash1mod2.full_hash) - 1] ++;
-  SBFullHash kHash1mod3 = kHash1mod2;
-  kHash1mod3.full_hash[sizeof(kHash1mod3.full_hash) - 1] ++;
+  // A full hash which shares prefix with another.
+  const SBFullHash kHash1mod = ModifyHashAfterPrefix(kHash1, 1);
 
   SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
   SBSubPrefixes sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
 
-  // An add with prefix and a couple hashes, plus a sub for the prefix
-  // and a couple sub hashes.  The sub should knock all of them out.
-  add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash1.prefix));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1mod1));
-  sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash1.prefix));
-  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod2));
-  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod3));
 
-  // An add with no corresponding sub.  Both items should be retained.
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash2));
+  // An add prefix plus a sub to knock it out.
+  add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash5.prefix));
+  sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash5.prefix));
+
+  // Add hashes with same prefix, plus subs to knock them out.
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1mod));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod));
+
+  // Adds with no corresponding sub.  Both items should be retained.
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash6));
   add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash2.prefix));
 
-  // A sub with no corresponding add.  Both items should be retained.
-  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash3));
+  // Subs with no corresponding add.  Both items should be retained.
+  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash7));
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash3.prefix));
 
-  std::sort(add_prefixes.begin(), add_prefixes.end(),
-            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
-  std::sort(sub_prefixes.begin(), sub_prefixes.end(),
-            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
-  std::sort(add_hashes.begin(), add_hashes.end(),
-            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
-  std::sort(sub_hashes.begin(), sub_hashes.end(),
-            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
-
+  // Subs apply before being deleted.
   const base::hash_set<int32> no_deletions;
-  base::hash_set<int32> add_deletions;
-  add_deletions.insert(kAddChunk1);
-  SBProcessSubs(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
-                add_deletions, no_deletions);
-
-  EXPECT_TRUE(add_prefixes.empty());
-  EXPECT_TRUE(add_hashes.empty());
-
-  EXPECT_EQ(1U, sub_prefixes.size());
-  EXPECT_EQ(kSubChunk1, sub_prefixes[0].chunk_id);
-  EXPECT_EQ(kAddChunk1, sub_prefixes[0].add_chunk_id);
-  EXPECT_EQ(kHash3.prefix, sub_prefixes[0].add_prefix);
-
-  EXPECT_EQ(1U, sub_hashes.size());
-  EXPECT_EQ(kSubChunk1, sub_hashes[0].chunk_id);
-  EXPECT_EQ(kAddChunk1, sub_hashes[0].add_chunk_id);
-  EXPECT_TRUE(SBFullHashEqual(kHash3, sub_hashes[0].full_hash));
-
-  std::sort(add_prefixes.begin(), add_prefixes.end(),
-            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
-  std::sort(sub_prefixes.begin(), sub_prefixes.end(),
-            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
-  std::sort(add_hashes.begin(), add_hashes.end(),
-            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
-  std::sort(sub_hashes.begin(), sub_hashes.end(),
-            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
-
   base::hash_set<int32> sub_deletions;
   sub_deletions.insert(kSubChunk1);
-  SBProcessSubs(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
+  ProcessHelper(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 no_deletions, sub_deletions);
+
+  ASSERT_EQ(1U, add_prefixes.size());
+  EXPECT_EQ(kAddChunk1, add_prefixes[0].chunk_id);
+  EXPECT_EQ(kHash2.prefix, add_prefixes[0].prefix);
+
+  ASSERT_EQ(1U, add_hashes.size());
+  EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
+  EXPECT_TRUE(SBFullHashEqual(kHash6, add_hashes[0].full_hash));
+
+  EXPECT_TRUE(sub_prefixes.empty());
+  EXPECT_TRUE(sub_hashes.empty());
+
+  // Delete the adds, also.
+  base::hash_set<int32> add_deletions;
+  add_deletions.insert(kAddChunk1);
+  ProcessHelper(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
+                add_deletions, no_deletions);
 
   EXPECT_TRUE(add_prefixes.empty());
   EXPECT_TRUE(add_hashes.empty());

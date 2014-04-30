@@ -29,9 +29,14 @@ const SBFullHash kHash2 = SBFullHashForString("two");
 const SBFullHash kHash3 = SBFullHashForString("three");
 const SBFullHash kHash4 = SBFullHashForString("four");
 const SBFullHash kHash5 = SBFullHashForString("five");
+const SBFullHash kHash6 = SBFullHashForString("six");
 
 const SBPrefix kMinSBPrefix = 0u;
 const SBPrefix kMaxSBPrefix = ~kMinSBPrefix;
+
+}  // namespace
+
+namespace safe_browsing {
 
 class SafeBrowsingStoreFileTest : public PlatformTest {
  public:
@@ -70,18 +75,26 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     EXPECT_TRUE(store_->CheckAddChunk(kAddChunk1));
     EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash1.prefix));
     EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash2.prefix));
-    EXPECT_TRUE(store_->WriteAddHash(kAddChunk1, now, kHash2));
+    EXPECT_TRUE(store_->FinishChunk());
 
+    EXPECT_TRUE(store_->BeginChunk());
     store_->SetSubChunk(kSubChunk1);
     EXPECT_TRUE(store_->CheckSubChunk(kSubChunk1));
     EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk1, kAddChunk3, kHash3.prefix));
     EXPECT_TRUE(store_->WriteSubHash(kSubChunk1, kAddChunk3, kHash3));
     EXPECT_TRUE(store_->FinishChunk());
 
+    EXPECT_TRUE(store_->BeginChunk());
+    store_->SetAddChunk(kAddChunk2);
+    EXPECT_TRUE(store_->CheckAddChunk(kAddChunk2));
+    EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, now, kHash4));
+    EXPECT_TRUE(store_->FinishChunk());
+
     // Chunk numbers shouldn't leak over.
     EXPECT_FALSE(store_->CheckAddChunk(kSubChunk1));
     EXPECT_FALSE(store_->CheckAddChunk(kAddChunk3));
     EXPECT_FALSE(store_->CheckSubChunk(kAddChunk1));
+    EXPECT_FALSE(store_->CheckSubChunk(kAddChunk2));
 
     safe_browsing::PrefixSetBuilder builder;
     std::vector<SBAddFullHash> add_full_hashes_result;
@@ -135,9 +148,9 @@ TEST_F(SafeBrowsingStoreFileTest, Empty) {
   EXPECT_TRUE(prefixes_result.empty());
 }
 
-// Write some prefix data to the store and verify that it looks like
-// it is still there after the transaction completes.
-TEST_F(SafeBrowsingStoreFileTest, StorePrefix) {
+// Write some prefix and hash data to the store, add more data in another
+// transaction, then verify that the union of all the data is present.
+TEST_F(SafeBrowsingStoreFileTest, BasicStore) {
   const base::Time now = base::Time::Now();
   PopulateStore(now);
 
@@ -145,37 +158,9 @@ TEST_F(SafeBrowsingStoreFileTest, StorePrefix) {
 
   std::vector<int> chunks;
   store_->GetAddChunks(&chunks);
-  ASSERT_EQ(1U, chunks.size());
+  ASSERT_EQ(2U, chunks.size());
   EXPECT_EQ(kAddChunk1, chunks[0]);
-
-  store_->GetSubChunks(&chunks);
-  ASSERT_EQ(1U, chunks.size());
-  EXPECT_EQ(kSubChunk1, chunks[0]);
-
-  {
-    safe_browsing::PrefixSetBuilder builder;
-    std::vector<SBAddFullHash> add_full_hashes_result;
-    EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
-
-    std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
-    ASSERT_EQ(2U, prefixes_result.size());
-    EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
-    EXPECT_EQ(kHash2.prefix, prefixes_result[1]);
-
-    ASSERT_EQ(1U, add_full_hashes_result.size());
-    EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].chunk_id);
-    // EXPECT_TRUE(add_full_hashes_result[0].received == now)?
-    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
-    EXPECT_TRUE(SBFullHashEqual(kHash2, add_full_hashes_result[0].full_hash));
-  }
-
-  ASSERT_TRUE(store_->BeginUpdate());
-
-  // Still has the chunks expected in the next update.
-  store_->GetAddChunks(&chunks);
-  ASSERT_EQ(1U, chunks.size());
-  EXPECT_EQ(kAddChunk1, chunks[0]);
+  EXPECT_EQ(kAddChunk2, chunks[1]);
 
   store_->GetSubChunks(&chunks);
   ASSERT_EQ(1U, chunks.size());
@@ -184,22 +169,29 @@ TEST_F(SafeBrowsingStoreFileTest, StorePrefix) {
   EXPECT_TRUE(store_->CheckAddChunk(kAddChunk1));
   EXPECT_TRUE(store_->CheckSubChunk(kSubChunk1));
 
+  EXPECT_TRUE(store_->BeginChunk());
+  store_->SetAddChunk(kAddChunk3);
+  EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk3, kHash5.prefix));
+  EXPECT_TRUE(store_->FinishChunk());
+
+  // Still has the chunks expected in the next update.
   {
     safe_browsing::PrefixSetBuilder builder;
     std::vector<SBAddFullHash> add_full_hashes_result;
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
-    // Still has the expected contents.
     std::vector<SBPrefix> prefixes_result;
     builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
-    ASSERT_EQ(2U, prefixes_result.size());
+    ASSERT_EQ(3U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
-    EXPECT_EQ(kHash2.prefix, prefixes_result[1]);
+    EXPECT_EQ(kHash5.prefix, prefixes_result[1]);
+    EXPECT_EQ(kHash2.prefix, prefixes_result[2]);
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
-    EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].chunk_id);
+    EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
+    // EXPECT_TRUE(add_full_hashes_result[0].received == now)?
     EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
-    EXPECT_TRUE(SBFullHashEqual(kHash2, add_full_hashes_result[0].full_hash));
+    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 }
 
@@ -211,9 +203,9 @@ TEST_F(SafeBrowsingStoreFileTest, PrefixMinMax) {
   ASSERT_TRUE(store_->BeginUpdate());
 
   EXPECT_TRUE(store_->BeginChunk());
-  store_->SetAddChunk(kAddChunk2);
-  EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk2, kMinSBPrefix));
-  EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk2, kMaxSBPrefix));
+  store_->SetAddChunk(kAddChunk3);
+  EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk3, kMinSBPrefix));
+  EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk3, kMaxSBPrefix));
   EXPECT_TRUE(store_->FinishChunk());
 
   {
@@ -234,8 +226,8 @@ TEST_F(SafeBrowsingStoreFileTest, PrefixMinMax) {
 
   EXPECT_TRUE(store_->BeginChunk());
   store_->SetAddChunk(kSubChunk2);
-  EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk2, kAddChunk2, kMinSBPrefix));
-  EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk2, kAddChunk2, kMaxSBPrefix));
+  EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk2, kAddChunk3, kMinSBPrefix));
+  EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk2, kAddChunk3, kMaxSBPrefix));
   EXPECT_TRUE(store_->FinishChunk());
 
   {
@@ -261,8 +253,14 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
   store_->SetAddChunk(kAddChunk1);
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash1.prefix));
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash2.prefix));
-  EXPECT_TRUE(store_->WriteAddHash(kAddChunk1, now, kHash2));
+  EXPECT_TRUE(store_->FinishChunk());
 
+  EXPECT_TRUE(store_->BeginChunk());
+  store_->SetAddChunk(kAddChunk2);
+  EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, now, kHash4));
+  EXPECT_TRUE(store_->FinishChunk());
+
+  EXPECT_TRUE(store_->BeginChunk());
   store_->SetSubChunk(kSubChunk1);
   EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk1, kAddChunk3, kHash3.prefix));
   EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk1, kAddChunk1, kHash2.prefix));
@@ -278,7 +276,11 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
     builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
-    EXPECT_TRUE(add_full_hashes_result.empty());
+
+    ASSERT_EQ(1U, add_full_hashes_result.size());
+    EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
+    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
+    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 
   ASSERT_TRUE(store_->BeginUpdate());
@@ -296,9 +298,13 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     std::vector<SBPrefix> prefixes_result;
     builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
-    EXPECT_EQ(1U, prefixes_result.size());
+    ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
-    EXPECT_TRUE(add_full_hashes_result.empty());
+
+    ASSERT_EQ(1U, add_full_hashes_result.size());
+    EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
+    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
+    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 
   ASSERT_TRUE(store_->BeginUpdate());
@@ -319,7 +325,11 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
     ASSERT_EQ(2U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
     EXPECT_EQ(kHash3.prefix, prefixes_result[1]);
-    EXPECT_TRUE(add_full_hashes_result.empty());
+
+    ASSERT_EQ(1U, add_full_hashes_result.size());
+    EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
+    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
+    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 }
 
@@ -329,28 +339,32 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
 
   const base::Time now = base::Time::Now();
 
-  // A chunk which will be deleted.
+  // A prefix chunk which will be deleted.
   EXPECT_FALSE(store_->CheckAddChunk(kAddChunk1));
   store_->SetAddChunk(kAddChunk1);
   EXPECT_TRUE(store_->BeginChunk());
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash1.prefix));
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash2.prefix));
-  EXPECT_TRUE(store_->WriteAddHash(kAddChunk1, now, kHash2));
   EXPECT_TRUE(store_->FinishChunk());
 
-  // Another which won't.
+  // A prefix chunk which won't be deleted.
   EXPECT_FALSE(store_->CheckAddChunk(kAddChunk2));
   store_->SetAddChunk(kAddChunk2);
   EXPECT_TRUE(store_->BeginChunk());
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk2, kHash3.prefix));
-  EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, now, kHash3));
+  EXPECT_TRUE(store_->FinishChunk());
+
+  // A full-hash chunk which won't be deleted.
+  EXPECT_FALSE(store_->CheckAddChunk(kAddChunk3));
+  store_->SetAddChunk(kAddChunk3);
+  EXPECT_TRUE(store_->BeginChunk());
+  EXPECT_TRUE(store_->WriteAddHash(kAddChunk3, now, kHash6));
   EXPECT_TRUE(store_->FinishChunk());
 
   // A sub chunk to delete.
   EXPECT_FALSE(store_->CheckSubChunk(kSubChunk1));
   store_->SetSubChunk(kSubChunk1);
   EXPECT_TRUE(store_->BeginChunk());
-  EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk1, kAddChunk3, kHash4.prefix));
   EXPECT_TRUE(store_->WriteSubHash(kSubChunk1, kAddChunk3, kHash4));
   EXPECT_TRUE(store_->FinishChunk());
 
@@ -358,7 +372,6 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
   EXPECT_FALSE(store_->CheckSubChunk(kSubChunk2));
   store_->SetSubChunk(kSubChunk2);
   EXPECT_TRUE(store_->BeginChunk());
-  EXPECT_TRUE(store_->WriteSubPrefix(kSubChunk2, kAddChunk4, kHash5.prefix));
   EXPECT_TRUE(store_->WriteSubHash(kSubChunk2, kAddChunk4, kHash5));
   EXPECT_TRUE(store_->FinishChunk());
 
@@ -368,6 +381,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
   // Not actually deleted until finish.
   EXPECT_TRUE(store_->CheckAddChunk(kAddChunk1));
   EXPECT_TRUE(store_->CheckAddChunk(kAddChunk2));
+  EXPECT_TRUE(store_->CheckAddChunk(kAddChunk3));
   EXPECT_TRUE(store_->CheckSubChunk(kSubChunk1));
   EXPECT_TRUE(store_->CheckSubChunk(kSubChunk2));
 
@@ -378,36 +392,44 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
 
     std::vector<SBPrefix> prefixes_result;
     builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
-    EXPECT_EQ(1U, prefixes_result.size());
+    ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash3.prefix, prefixes_result[0]);
 
-    EXPECT_EQ(1U, add_full_hashes_result.size());
-    EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
+    ASSERT_EQ(1U, add_full_hashes_result.size());
+    EXPECT_EQ(kAddChunk3, add_full_hashes_result[0].chunk_id);
     EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
-    EXPECT_TRUE(SBFullHashEqual(kHash3, add_full_hashes_result[0].full_hash));
+    EXPECT_TRUE(SBFullHashEqual(kHash6, add_full_hashes_result[0].full_hash));
   }
 
   // Expected chunks are there in another update.
   ASSERT_TRUE(store_->BeginUpdate());
   EXPECT_FALSE(store_->CheckAddChunk(kAddChunk1));
   EXPECT_TRUE(store_->CheckAddChunk(kAddChunk2));
+  EXPECT_TRUE(store_->CheckAddChunk(kAddChunk3));
   EXPECT_FALSE(store_->CheckSubChunk(kSubChunk1));
   EXPECT_TRUE(store_->CheckSubChunk(kSubChunk2));
 
   // Delete them, too.
   store_->DeleteAddChunk(kAddChunk2);
+  store_->DeleteAddChunk(kAddChunk3);
   store_->DeleteSubChunk(kSubChunk2);
 
   {
     safe_browsing::PrefixSetBuilder builder;
     std::vector<SBAddFullHash> add_full_hashes_result;
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
+
+    std::vector<SBPrefix> prefixes_result;
+    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    EXPECT_TRUE(prefixes_result.empty());
+    EXPECT_TRUE(add_full_hashes_result.empty());
   }
 
   // Expect no more chunks.
   ASSERT_TRUE(store_->BeginUpdate());
   EXPECT_FALSE(store_->CheckAddChunk(kAddChunk1));
   EXPECT_FALSE(store_->CheckAddChunk(kAddChunk2));
+  EXPECT_FALSE(store_->CheckAddChunk(kAddChunk3));
   EXPECT_FALSE(store_->CheckSubChunk(kSubChunk1));
   EXPECT_FALSE(store_->CheckSubChunk(kSubChunk2));
 
@@ -606,7 +628,13 @@ TEST_F(SafeBrowsingStoreFileTest, GetAddPrefixesAndHashes) {
   EXPECT_TRUE(store_->CheckAddChunk(kAddChunk1));
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash1.prefix));
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash2.prefix));
-  EXPECT_TRUE(store_->WriteAddHash(kAddChunk1, now, kHash2));
+  EXPECT_TRUE(store_->FinishChunk());
+
+  EXPECT_TRUE(store_->BeginChunk());
+  store_->SetAddChunk(kAddChunk2);
+  EXPECT_TRUE(store_->CheckAddChunk(kAddChunk2));
+  EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, now, kHash4));
+  EXPECT_TRUE(store_->FinishChunk());
 
   store_->SetSubChunk(kSubChunk1);
   EXPECT_TRUE(store_->CheckSubChunk(kSubChunk1));
@@ -621,8 +649,9 @@ TEST_F(SafeBrowsingStoreFileTest, GetAddPrefixesAndHashes) {
 
   std::vector<int> chunks;
   store_->GetAddChunks(&chunks);
-  ASSERT_EQ(1U, chunks.size());
+  ASSERT_EQ(2U, chunks.size());
   EXPECT_EQ(kAddChunk1, chunks[0]);
+  EXPECT_EQ(kAddChunk2, chunks[1]);
 
   store_->GetSubChunks(&chunks);
   ASSERT_EQ(1U, chunks.size());
@@ -643,8 +672,8 @@ TEST_F(SafeBrowsingStoreFileTest, GetAddPrefixesAndHashes) {
   std::vector<SBAddFullHash> add_hashes;
   EXPECT_TRUE(store_->GetAddFullHashes(&add_hashes));
   ASSERT_EQ(1U, add_hashes.size());
-  EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
-  EXPECT_TRUE(SBFullHashEqual(kHash2, add_hashes[0].full_hash));
+  EXPECT_EQ(kAddChunk2, add_hashes[0].chunk_id);
+  EXPECT_TRUE(SBFullHashEqual(kHash4, add_hashes[0].full_hash));
 }
 
 // Test that the database handles resharding correctly, both when growing and
@@ -867,4 +896,4 @@ TEST_F(SafeBrowsingStoreFileTest, Version8) {
 }
 #endif
 
-}  // namespace
+}  // namespace safe_browsing
