@@ -209,7 +209,9 @@ GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
               url.path().substr(1).c_str()));
 }
 
-DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+DevToolsUI::DevToolsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui),
+      bindings_(web_ui->GetWebContents()) {
   web_ui->SetBindings(0);
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(

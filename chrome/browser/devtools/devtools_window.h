@@ -7,7 +7,7 @@
 
 #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
-#include "chrome/browser/devtools/devtools_window_base.h"
+#include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 class Browser;
@@ -25,7 +25,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class DevToolsWindow : public DevToolsWindowBase,
+class DevToolsWindow : public DevToolsUIBindings::Delegate,
                        public content::WebContentsDelegate {
  public:
   static const char kDevToolsApp[];
@@ -88,6 +88,8 @@ class DevToolsWindow : public DevToolsWindowBase,
 
   static void InspectElement(
       content::RenderViewHost* inspected_rvh, int x, int y);
+
+  content::WebContents* web_contents() { return web_contents_; }
 
   Browser* browser() { return browser_; }  // For tests.
 
@@ -228,9 +230,6 @@ class DevToolsWindow : public DevToolsWindowBase,
       bool force_open,
       const DevToolsToggleAction& action);
 
-  // content::DevToolsFrontendHostDelegate override:
-  virtual void InspectedContentsClosing() OVERRIDE;
-
   // content::WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
@@ -268,7 +267,7 @@ class DevToolsWindow : public DevToolsWindowBase,
       content::WebContents* source,
       const blink::WebGestureEvent& event) OVERRIDE;
 
-  // DevToolsEmbedderMessageDispatcher::Delegate overrides:
+  // content::DevToolsUIBindings::Delegate overrides
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void SetContentsInsets(
@@ -280,10 +279,8 @@ class DevToolsWindow : public DevToolsWindowBase,
   virtual void SetIsDocked(bool is_docked) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;
   virtual void SetWhitelistedShortcuts(const std::string& message) OVERRIDE;
-
-  // DevToolsWindowBase overrides
-  virtual void AddDevToolsExtensionsToClient() OVERRIDE;
-  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
+  virtual void InspectedContentsClosing() OVERRIDE;
+  virtual void OnLoadCompleted() OVERRIDE;
 
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();
@@ -298,6 +295,9 @@ class DevToolsWindow : public DevToolsWindowBase,
   class InspectedWebContentsObserver;
   scoped_ptr<InspectedWebContentsObserver> inspected_contents_observer_;
 
+  Profile* profile_;
+  content::WebContents* web_contents_;
+  DevToolsUIBindings* bindings_;
   Browser* browser_;
   bool is_docked_;
   const bool can_dock_;

@@ -1,9 +1,9 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_WINDOW_BASE_H_
-#define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_WINDOW_BASE_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_UI_BINDINGS_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_UI_BINDINGS_H_
 
 #include <string>
 #include <vector>
@@ -32,15 +32,48 @@ class WebContents;
 }
 
 // Base implementation of DevTools bindings around front-end.
-class DevToolsWindowBase : public content::NotificationObserver,
+class DevToolsUIBindings : public content::NotificationObserver,
                            public content::DevToolsFrontendHostDelegate,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener {
  public:
-  virtual ~DevToolsWindowBase();
+  static DevToolsUIBindings* ForWebContents(
+      content::WebContents* web_contents);
+  static GURL ApplyThemeToURL(Profile* profile, const GURL& base_url);
+
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void ActivateWindow() = 0;
+    virtual void CloseWindow() = 0;
+    virtual void SetContentsInsets(
+        int left, int top, int right, int bottom) = 0;
+    virtual void SetContentsResizingStrategy(
+        const gfx::Insets& insets, const gfx::Size& min_size) = 0;
+    virtual void InspectElementCompleted() = 0;
+    virtual void MoveWindow(int x, int y) = 0;
+    virtual void SetIsDocked(bool is_docked) = 0;
+    virtual void OpenInNewTab(const std::string& url) = 0;
+    virtual void SetWhitelistedShortcuts(const std::string& message) = 0;
+
+    virtual void InspectedContentsClosing() = 0;
+    virtual void OnLoadCompleted() = 0;
+  };
+
+  explicit DevToolsUIBindings(content::WebContents* web_contents);
+  virtual ~DevToolsUIBindings();
 
   content::WebContents* web_contents() { return web_contents_; }
+  Profile* profile() { return profile_; }
+  content::DevToolsClientHost* frontend_host() { return frontend_host_.get(); }
 
+  void SetDelegate(Delegate* delegate);
+  void CallClientFunction(const std::string& function_name,
+                          const base::Value* arg1,
+                          const base::Value* arg2,
+                          const base::Value* arg3);
+
+ private:
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -94,21 +127,7 @@ class DevToolsWindowBase : public content::NotificationObserver,
   virtual void PopulateRemoteDevices(const std::string& source,
                                      scoped_ptr<base::ListValue> targets);
 
- protected:
-  DevToolsWindowBase(content::WebContents* web_contents,
-                     const GURL& frontend_url);
-
-  virtual void AddDevToolsExtensionsToClient();
-  virtual void DocumentOnLoadCompletedInMainFrame();
-  void CallClientFunction(const std::string& function_name,
-                          const base::Value* arg1,
-                          const base::Value* arg2,
-                          const base::Value* arg3);
-  Profile* profile() { return profile_; }
-  content::DevToolsClientHost* frontend_host() { return frontend_host_.get(); }
-
- private:
-  typedef base::Callback<void(bool)> InfoBarCallback;
+  void DocumentOnLoadCompletedInMainFrame();
 
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);
@@ -127,12 +146,13 @@ class DevToolsWindowBase : public content::NotificationObserver,
   void SearchCompleted(int request_id,
                        const std::string& file_system_path,
                        const std::vector<std::string>& file_paths);
+  typedef base::Callback<void(bool)> InfoBarCallback;
   void ShowDevToolsConfirmInfoBar(const base::string16& message,
                                   const InfoBarCallback& callback);
 
   // Theme and extensions support.
-  GURL ApplyThemeToURL(const GURL& base_url);
   void UpdateTheme();
+  void AddDevToolsExtensionsToClient();
 
   class FrontendWebContentsObserver;
   friend class FrontendWebContentsObserver;
@@ -140,6 +160,7 @@ class DevToolsWindowBase : public content::NotificationObserver,
 
   Profile* profile_;
   content::WebContents* web_contents_;
+  scoped_ptr<Delegate> delegate_;
   bool device_listener_enabled_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<content::DevToolsClientHost> frontend_host_;
@@ -153,9 +174,9 @@ class DevToolsWindowBase : public content::NotificationObserver,
 
   scoped_ptr<DevToolsRemoteTargetsUIHandler> remote_targets_handler_;
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
-  base::WeakPtrFactory<DevToolsWindowBase> weak_factory_;
+  base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsWindowBase);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindings);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_WINDOW_BASE_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_UI_BINDINGS_H_
