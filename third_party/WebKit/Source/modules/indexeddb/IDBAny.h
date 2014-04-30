@@ -80,7 +80,7 @@ public:
     {
         return adoptRefWillBeNoop(new IDBAny(value));
     }
-    static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
+    static PassRefPtrWillBeRawPtr<IDBAny> create(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtrWillBeRawPtr<IDBKey> key, const IDBKeyPath& keyPath)
     {
         return adoptRefWillBeNoop(new IDBAny(value, blobInfo, key, keyPath));
     }
@@ -130,11 +130,11 @@ private:
     explicit IDBAny(PassRefPtr<IDBIndex>);
     explicit IDBAny(PassRefPtr<IDBObjectStore>);
     explicit IDBAny(PassRefPtr<IDBTransaction>);
-    explicit IDBAny(PassRefPtr<IDBKey>);
+    explicit IDBAny(PassRefPtrWillBeRawPtr<IDBKey>);
     explicit IDBAny(const IDBKeyPath&);
     explicit IDBAny(const String&);
     IDBAny(PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*);
-    IDBAny(PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtr<IDBKey>, const IDBKeyPath&);
+    IDBAny(PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, PassRefPtrWillBeRawPtr<IDBKey>, const IDBKeyPath&);
     explicit IDBAny(int64_t);
 
     const Type m_type;
@@ -146,7 +146,7 @@ private:
     const RefPtr<IDBIndex> m_idbIndex;
     const RefPtr<IDBObjectStore> m_idbObjectStore;
     const RefPtr<IDBTransaction> m_idbTransaction;
-    const RefPtr<IDBKey> m_idbKey;
+    const RefPtrWillBeMember<IDBKey> m_idbKey;
     const IDBKeyPath m_idbKeyPath;
     const RefPtr<SharedBuffer> m_buffer;
     const Vector<blink::WebBlobInfo>* m_blobInfo;

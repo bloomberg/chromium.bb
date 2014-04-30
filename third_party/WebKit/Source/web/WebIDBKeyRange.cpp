@@ -56,14 +56,14 @@ WebIDBKey WebIDBKeyRange::lower() const
 {
     if (!m_private.get())
         return WebIDBKey::createInvalid();
-    return m_private->lower();
+    return WebIDBKey(m_private->lower());
 }
 
 WebIDBKey WebIDBKeyRange::upper() const
 {
     if (!m_private.get())
         return WebIDBKey::createInvalid();
-    return m_private->upper();
+    return WebIDBKey(m_private->upper());
 }
 
 bool WebIDBKeyRange::lowerOpen() const

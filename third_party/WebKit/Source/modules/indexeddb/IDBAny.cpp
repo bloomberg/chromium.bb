@@ -196,7 +196,7 @@ IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>*
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
+IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, PassRefPtrWillBeRawPtr<IDBKey> key, const IDBKeyPath& keyPath)
     : m_type(BufferKeyAndKeyPathType)
     , m_idbKey(key)
     , m_idbKeyPath(keyPath)
@@ -206,7 +206,7 @@ IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>*
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<IDBKey> key)
+IDBAny::IDBAny(PassRefPtrWillBeRawPtr<IDBKey> key)
     : m_type(KeyType)
     , m_idbKey(key)
     , m_integer(0)
@@ -236,6 +236,7 @@ IDBAny::IDBAny(int64_t value)
 void IDBAny::trace(Visitor* visitor)
 {
     visitor->trace(m_idbCursor);
+    visitor->trace(m_idbKey);
 }
 
 } // namespace WebCore

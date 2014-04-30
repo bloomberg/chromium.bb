@@ -313,9 +313,9 @@ private:
     RefPtr<RequestDatabaseCallback> m_requestCallback;
 };
 
-static PassRefPtr<IDBKey> idbKeyFromInspectorObject(JSONObject* key)
+static PassRefPtrWillBeRawPtr<IDBKey> idbKeyFromInspectorObject(JSONObject* key)
 {
-    RefPtr<IDBKey> idbKey;
+    RefPtrWillBeRawPtr<IDBKey> idbKey;
 
     String type;
     if (!key->getString("type", &type))
@@ -362,12 +362,12 @@ static PassRefPtr<IDBKey> idbKeyFromInspectorObject(JSONObject* key)
 static PassRefPtr<IDBKeyRange> idbKeyRangeFromKeyRange(JSONObject* keyRange)
 {
     RefPtr<JSONObject> lower = keyRange->getObject("lower");
-    RefPtr<IDBKey> idbLower = lower ? idbKeyFromInspectorObject(lower.get()) : nullptr;
+    RefPtrWillBeRawPtr<IDBKey> idbLower = lower ? idbKeyFromInspectorObject(lower.get()) : nullptr;
     if (lower && !idbLower)
         return nullptr;
 
     RefPtr<JSONObject> upper = keyRange->getObject("upper");
-    RefPtr<IDBKey> idbUpper = upper ? idbKeyFromInspectorObject(upper.get()) : nullptr;
+    RefPtrWillBeRawPtr<IDBKey> idbUpper = upper ? idbKeyFromInspectorObject(upper.get()) : nullptr;
     if (upper && !idbUpper)
         return nullptr;
 

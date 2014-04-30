@@ -104,6 +104,8 @@ void IDBCursor::trace(Visitor* visitor)
 {
     visitor->trace(m_request);
     visitor->trace(m_source);
+    visitor->trace(m_key);
+    visitor->trace(m_primaryKey);
 }
 
 PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::update(ExecutionContext* executionContext, ScriptValue& value, ExceptionState& exceptionState)
@@ -139,7 +141,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBCursor::update(ExecutionContext* execution
     const IDBKeyPath& keyPath = objectStore->metadata().keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
     if (usesInLineKeys) {
-        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
+        RefPtrWillBeRawPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
         if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
             exceptionState.throwDOMException(DataError, "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.");
             return nullptr;
@@ -182,7 +184,7 @@ void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
 void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continue");
-    RefPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(toIsolate(context), keyValue);
+    RefPtrWillBeRawPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(toIsolate(context), keyValue);
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
@@ -193,8 +195,8 @@ void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& k
 void IDBCursor::continuePrimaryKey(ExecutionContext* context, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
-    RefPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), keyValue);
-    RefPtr<IDBKey> primaryKey = scriptValueToIDBKey(toIsolate(context), primaryKeyValue);
+    RefPtrWillBeRawPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), keyValue);
+    RefPtrWillBeRawPtr<IDBKey> primaryKey = scriptValueToIDBKey(toIsolate(context), primaryKeyValue);
     if (!key->isValid() || !primaryKey->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
@@ -202,7 +204,7 @@ void IDBCursor::continuePrimaryKey(ExecutionContext* context, const ScriptValue&
     continueFunction(key.release(), primaryKey.release(), exceptionState);
 }
 
-void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, ExceptionState& exceptionState)
+void IDBCursor::continueFunction(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, ExceptionState& exceptionState)
 {
     ASSERT(!primaryKey || (key && primaryKey));
 
@@ -363,7 +365,7 @@ ScriptValue IDBCursor::source(ScriptState* scriptState) const
     return idbAnyToScriptValue(scriptState, m_source);
 }
 
-void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
+void IDBCursor::setValueReady(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     m_key = key;
     m_keyDirty = true;

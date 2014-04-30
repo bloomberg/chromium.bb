@@ -42,7 +42,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::fromScriptValue(ExecutionContext* context, 
     if (range)
         return range.release();
 
-    RefPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), value);
+    RefPtrWillBeRawPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), value);
     if (!key || !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return nullptr;
@@ -51,7 +51,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::fromScriptValue(ExecutionContext* context, 
     return adoptRef(new IDBKeyRange(key, key, LowerBoundClosed, UpperBoundClosed));
 }
 
-IDBKeyRange::IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType)
+IDBKeyRange::IDBKeyRange(PassRefPtrWillBeRawPtr<IDBKey> lower, PassRefPtrWillBeRawPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType)
     : m_lower(lower)
     , m_upper(upper)
     , m_lowerType(lowerType)
@@ -70,9 +70,9 @@ ScriptValue IDBKeyRange::upperValue(ScriptState* scriptState) const
     return idbKeyToScriptValue(scriptState, m_upper);
 }
 
-PassRefPtr<IDBKeyRange> IDBKeyRange::only(PassRefPtr<IDBKey> prpKey, ExceptionState& exceptionState)
+PassRefPtr<IDBKeyRange> IDBKeyRange::only(PassRefPtrWillBeRawPtr<IDBKey> prpKey, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> key = prpKey;
+    RefPtrWillBeRawPtr<IDBKey> key = prpKey;
     if (!key || !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return nullptr;
@@ -83,7 +83,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(PassRefPtr<IDBKey> prpKey, ExceptionSt
 
 PassRefPtr<IDBKeyRange> IDBKeyRange::only(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), keyValue);
+    RefPtrWillBeRawPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), keyValue);
     if (!key || !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return nullptr;
@@ -94,7 +94,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(ExecutionContext* context, const Scrip
 
 PassRefPtr<IDBKeyRange> IDBKeyRange::lowerBound(ExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> bound = scriptValueToIDBKey(toIsolate(context), boundValue);
+    RefPtrWillBeRawPtr<IDBKey> bound = scriptValueToIDBKey(toIsolate(context), boundValue);
     if (!bound || !bound->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return nullptr;
@@ -105,7 +105,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::lowerBound(ExecutionContext* context, const
 
 PassRefPtr<IDBKeyRange> IDBKeyRange::upperBound(ExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> bound = scriptValueToIDBKey(toIsolate(context), boundValue);
+    RefPtrWillBeRawPtr<IDBKey> bound = scriptValueToIDBKey(toIsolate(context), boundValue);
     if (!bound || !bound->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return nullptr;
@@ -116,8 +116,8 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::upperBound(ExecutionContext* context, const
 
 PassRefPtr<IDBKeyRange> IDBKeyRange::bound(ExecutionContext* context, const ScriptValue& lowerValue, const ScriptValue& upperValue, bool lowerOpen, bool upperOpen, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> lower = scriptValueToIDBKey(toIsolate(context), lowerValue);
-    RefPtr<IDBKey> upper = scriptValueToIDBKey(toIsolate(context), upperValue);
+    RefPtrWillBeRawPtr<IDBKey> lower = scriptValueToIDBKey(toIsolate(context), lowerValue);
+    RefPtrWillBeRawPtr<IDBKey> upper = scriptValueToIDBKey(toIsolate(context), upperValue);
 
     if (!lower || !lower->isValid() || !upper || !upper->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);

@@ -77,9 +77,9 @@ public:
     BLINK_EXPORT double number() const; // Only valid for NumberType.
 
 #if BLINK_IMPLEMENTATION
-    WebIDBKey(const WTF::PassRefPtr<WebCore::IDBKey>&);
-    WebIDBKey& operator=(const WTF::PassRefPtr<WebCore::IDBKey>&);
-    operator WTF::PassRefPtr<WebCore::IDBKey>() const;
+    WebIDBKey(const PassRefPtrWillBeRawPtr<WebCore::IDBKey>&);
+    WebIDBKey& operator=(const PassRefPtrWillBeRawPtr<WebCore::IDBKey>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::IDBKey>() const;
 #endif
 
 private:

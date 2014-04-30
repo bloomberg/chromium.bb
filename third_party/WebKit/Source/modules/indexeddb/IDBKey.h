@@ -27,6 +27,7 @@
 #define IDBKey_h
 
 #include "platform/SharedBuffer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -34,36 +35,36 @@
 
 namespace WebCore {
 
-class IDBKey : public RefCounted<IDBKey> {
+class IDBKey : public RefCountedWillBeGarbageCollectedFinalized<IDBKey> {
 public:
-    typedef Vector<RefPtr<IDBKey> > KeyArray;
+    typedef WillBeHeapVector<RefPtrWillBeMember<IDBKey> > KeyArray;
 
-    static PassRefPtr<IDBKey> createInvalid()
+    static PassRefPtrWillBeRawPtr<IDBKey> createInvalid()
     {
-        return adoptRef(new IDBKey());
+        return adoptRefWillBeNoop(new IDBKey());
     }
 
-    static PassRefPtr<IDBKey> createNumber(double number)
+    static PassRefPtrWillBeRawPtr<IDBKey> createNumber(double number)
     {
-        return adoptRef(new IDBKey(NumberType, number));
+        return adoptRefWillBeNoop(new IDBKey(NumberType, number));
     }
 
-    static PassRefPtr<IDBKey> createBinary(PassRefPtr<SharedBuffer> binary)
+    static PassRefPtrWillBeRawPtr<IDBKey> createBinary(PassRefPtr<SharedBuffer> binary)
     {
-        return adoptRef(new IDBKey(binary));
+        return adoptRefWillBeNoop(new IDBKey(binary));
     }
 
-    static PassRefPtr<IDBKey> createString(const String& string)
+    static PassRefPtrWillBeRawPtr<IDBKey> createString(const String& string)
     {
-        return adoptRef(new IDBKey(string));
+        return adoptRefWillBeNoop(new IDBKey(string));
     }
 
-    static PassRefPtr<IDBKey> createDate(double date)
+    static PassRefPtrWillBeRawPtr<IDBKey> createDate(double date)
     {
-        return adoptRef(new IDBKey(DateType, date));
+        return adoptRefWillBeNoop(new IDBKey(DateType, date));
     }
 
-    static PassRefPtr<IDBKey> createMultiEntryArray(const KeyArray& array)
+    static PassRefPtrWillBeRawPtr<IDBKey> createMultiEntryArray(const KeyArray& array)
     {
         KeyArray result;
 
@@ -82,17 +83,18 @@ public:
                 result.append(array[i]);
             }
         }
-        RefPtr<IDBKey> idbKey = adoptRef(new IDBKey(result));
+        RefPtrWillBeRawPtr<IDBKey> idbKey = adoptRefWillBeNoop(new IDBKey(result));
         ASSERT(idbKey->isValid());
         return idbKey.release();
     }
 
-    static PassRefPtr<IDBKey> createArray(const KeyArray& array)
+    static PassRefPtrWillBeRawPtr<IDBKey> createArray(const KeyArray& array)
     {
-        return adoptRef(new IDBKey(array));
+        return adoptRefWillBeNoop(new IDBKey(array));
     }
 
     ~IDBKey();
+    void trace(Visitor*);
 
     // In order of the least to the highest precedent in terms of sort order.
     enum Type {
@@ -141,9 +143,6 @@ public:
     int compare(const IDBKey* other) const;
     bool isLessThan(const IDBKey* other) const;
     bool isEqual(const IDBKey* other) const;
-
-    using RefCounted<IDBKey>::ref;
-    using RefCounted<IDBKey>::deref;
 
 private:
     IDBKey() : m_type(InvalidType), m_number(0) { }

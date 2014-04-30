@@ -87,6 +87,8 @@ void IDBRequest::trace(Visitor* visitor)
     visitor->trace(m_error);
     visitor->trace(m_enqueuedEvents);
     visitor->trace(m_pendingCursor);
+    visitor->trace(m_cursorKey);
+    visitor->trace(m_cursorPrimaryKey);
 }
 
 ScriptValue IDBRequest::result(ExceptionState& exceptionState)
@@ -192,7 +194,7 @@ IDBCursor* IDBRequest::getResultCursor() const
     return 0;
 }
 
-void IDBRequest::setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor> cursor, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
+void IDBRequest::setResultCursor(PassRefPtrWillBeRawPtr<IDBCursor> cursor, PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     ASSERT(m_readyState == PENDING);
     m_cursorKey = key;
@@ -263,7 +265,7 @@ void IDBRequest::onSuccess(const Vector<String>& stringList)
     onSuccessInternal(IDBAny::create(domStringList.release()));
 }
 
-void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
+void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     IDB_TRACE("IDBRequest::onSuccess(IDBCursor)");
     if (!shouldEnqueueEvent())
@@ -284,7 +286,7 @@ void IDBRequest::onSuccess(PassOwnPtr<blink::WebIDBCursor> backend, PassRefPtr<I
     setResultCursor(cursor, key, primaryKey, value, blobInfo);
 }
 
-void IDBRequest::onSuccess(PassRefPtr<IDBKey> idbKey)
+void IDBRequest::onSuccess(PassRefPtrWillBeRawPtr<IDBKey> idbKey)
 {
     IDB_TRACE("IDBRequest::onSuccess(IDBKey)");
     if (!shouldEnqueueEvent())
@@ -328,7 +330,7 @@ static PassRefPtr<IDBObjectStore> effectiveObjectStore(PassRefPtrWillBeRawPtr<ID
 }
 #endif
 
-void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo, PassRefPtr<IDBKey> prpPrimaryKey, const IDBKeyPath& keyPath)
+void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo, PassRefPtrWillBeRawPtr<IDBKey> prpPrimaryKey, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("IDBRequest::onSuccess(SharedBuffer, IDBKey, IDBKeyPath)");
     if (!shouldEnqueueEvent())
@@ -339,7 +341,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<V
 #endif
 
     RefPtr<SharedBuffer> valueBuffer = prpValueBuffer;
-    RefPtr<IDBKey> primaryKey = prpPrimaryKey;
+    RefPtrWillBeRawPtr<IDBKey> primaryKey = prpPrimaryKey;
     ASSERT(!m_blobInfo.get());
     m_blobInfo = blobInfo;
 
@@ -380,7 +382,7 @@ void IDBRequest::setResult(PassRefPtrWillBeRawPtr<IDBAny> result)
     m_resultDirty = true;
 }
 
-void IDBRequest::onSuccess(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
+void IDBRequest::onSuccess(PassRefPtrWillBeRawPtr<IDBKey> key, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
 {
     IDB_TRACE("IDBRequest::onSuccess(key, primaryKey, value)");
     if (!shouldEnqueueEvent())

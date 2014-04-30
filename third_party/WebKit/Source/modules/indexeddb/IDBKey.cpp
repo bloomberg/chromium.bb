@@ -32,6 +32,11 @@ IDBKey::~IDBKey()
 {
 }
 
+void IDBKey::trace(Visitor* visitor)
+{
+    visitor->trace(m_array);
+}
+
 bool IDBKey::isValid() const
 {
     if (m_type == InvalidType)

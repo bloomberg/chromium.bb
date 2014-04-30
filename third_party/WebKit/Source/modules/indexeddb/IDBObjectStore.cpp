@@ -111,7 +111,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::get(ExecutionContext* context
 static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetadata& indexMetadata, const ScriptValue& objectValue, IDBObjectStore::IndexKeys* indexKeys)
 {
     ASSERT(indexKeys);
-    RefPtr<IDBKey> indexKey = createIDBKeyFromScriptValueAndKeyPath(isolate, objectValue, indexMetadata.keyPath);
+    RefPtrWillBeRawPtr<IDBKey> indexKey = createIDBKeyFromScriptValueAndKeyPath(isolate, objectValue, indexMetadata.keyPath);
 
     if (!indexKey)
         return;
@@ -145,13 +145,13 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executi
 
 PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDatabase::PutMode putMode, PassRefPtrWillBeRawPtr<IDBAny> source, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(toIsolate(executionContext), keyValue);
+    RefPtrWillBeRawPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(toIsolate(executionContext), keyValue);
     return put(executionContext, putMode, source, value, key.release(), exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDatabase::PutMode putMode, PassRefPtrWillBeRawPtr<IDBAny> source, ScriptValue& value, PassRefPtr<IDBKey> prpKey, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDatabase::PutMode putMode, PassRefPtrWillBeRawPtr<IDBAny> source, ScriptValue& value, PassRefPtrWillBeRawPtr<IDBKey> prpKey, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> key = prpKey;
+    RefPtrWillBeRawPtr<IDBKey> key = prpKey;
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
         return nullptr;
@@ -192,7 +192,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executi
         return nullptr;
     }
     if (usesInLineKeys) {
-        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
+        RefPtrWillBeRawPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
         if (keyPathKey && !keyPathKey->isValid()) {
             exceptionState.throwDOMException(DataError, "Evaluating the object store's key path yielded a value that is not a valid key.");
             return nullptr;
@@ -221,7 +221,7 @@ PassRefPtrWillBeRawPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executi
     }
 
     Vector<int64_t> indexIds;
-    Vector<IndexKeys> indexKeys;
+    WillBeHeapVector<IndexKeys> indexKeys;
     for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
         IndexKeys keys;
         generateIndexKeysForValue(toIsolate(executionContext), it->value, value, &keys);
@@ -351,13 +351,13 @@ private:
         if (cursor && !cursor->isDeleted()) {
             cursor->continueFunction(static_cast<IDBKey*>(0), static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
 
-            RefPtr<IDBKey> primaryKey = cursor->idbPrimaryKey();
+            RefPtrWillBeRawPtr<IDBKey> primaryKey = cursor->idbPrimaryKey();
             ScriptValue value = cursor->value(m_scriptState.get());
 
             IDBObjectStore::IndexKeys indexKeys;
             generateIndexKeysForValue(toIsolate(context), m_indexMetadata, value, &indexKeys);
 
-            Vector<IDBObjectStore::IndexKeys> indexKeysList;
+            WillBeHeapVector<IDBObjectStore::IndexKeys> indexKeysList;
             indexKeysList.append(indexKeys);
 
             m_database->backend()->setIndexKeys(m_transactionId, m_objectStoreId, primaryKey.release(), indexIds, indexKeysList);

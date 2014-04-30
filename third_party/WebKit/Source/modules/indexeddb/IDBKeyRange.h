@@ -47,7 +47,7 @@ public:
         UpperBoundClosed
     };
 
-    static PassRefPtr<IDBKeyRange> create(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType)
+    static PassRefPtr<IDBKeyRange> create(PassRefPtrWillBeRawPtr<IDBKey> lower, PassRefPtrWillBeRawPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType)
     {
         return adoptRef(new IDBKeyRange(lower, upper, lowerType, upperType));
     }
@@ -57,8 +57,8 @@ public:
     ~IDBKeyRange() { }
 
     // Implement the IDBKeyRange IDL
-    PassRefPtr<IDBKey> lower() const { return m_lower; }
-    PassRefPtr<IDBKey> upper() const { return m_upper; }
+    IDBKey* lower() const { return m_lower.get(); }
+    IDBKey* upper() const { return m_upper.get(); }
 
     ScriptValue lowerValue(ScriptState*) const;
     ScriptValue upperValue(ScriptState*) const;
@@ -70,13 +70,13 @@ public:
     static PassRefPtr<IDBKeyRange> upperBound(ExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
     static PassRefPtr<IDBKeyRange> bound(ExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionState&);
 
-    static PassRefPtr<IDBKeyRange> only(PassRefPtr<IDBKey> value, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> only(PassRefPtrWillBeRawPtr<IDBKey> value, ExceptionState&);
 
 private:
-    IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType);
+    IDBKeyRange(PassRefPtrWillBeRawPtr<IDBKey> lower, PassRefPtrWillBeRawPtr<IDBKey> upper, LowerBoundType lowerType, UpperBoundType upperType);
 
-    RefPtr<IDBKey> m_lower;
-    RefPtr<IDBKey> m_upper;
+    RefPtrWillBePersistent<IDBKey> m_lower;
+    RefPtrWillBePersistent<IDBKey> m_upper;
     LowerBoundType m_lowerType;
     UpperBoundType m_upperType;
 };

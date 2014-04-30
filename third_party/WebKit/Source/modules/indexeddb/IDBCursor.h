@@ -88,12 +88,12 @@ public:
     bool isPrimaryKeyDirty() const { return m_primaryKeyDirty; }
     bool isValueDirty() const { return m_valueDirty; }
 
-    void continueFunction(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, ExceptionState&);
+    void continueFunction(PassRefPtrWillBeRawPtr<IDBKey>, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, ExceptionState&);
     void postSuccessHandlerCallback();
     bool isDeleted() const;
     void close();
-    void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> >);
-    PassRefPtr<IDBKey> idbPrimaryKey() const { return m_primaryKey; }
+    void setValueReady(PassRefPtrWillBeRawPtr<IDBKey>, PassRefPtrWillBeRawPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    PassRefPtrWillBeRawPtr<IDBKey> idbPrimaryKey() const { return m_primaryKey; }
     IDBRequest* request() const { return m_request.get(); }
     virtual bool isKeyCursor() const { return true; }
     virtual bool isCursorWithValue() const { return false; }
@@ -128,8 +128,8 @@ private:
     bool m_keyDirty;
     bool m_primaryKeyDirty;
     bool m_valueDirty;
-    RefPtr<IDBKey> m_key;
-    RefPtr<IDBKey> m_primaryKey;
+    RefPtrWillBeMember<IDBKey> m_key;
+    RefPtrWillBeMember<IDBKey> m_primaryKey;
     RefPtr<SharedBuffer> m_value;
     OwnPtr<Vector<blink::WebBlobInfo> > m_blobInfo;
 };

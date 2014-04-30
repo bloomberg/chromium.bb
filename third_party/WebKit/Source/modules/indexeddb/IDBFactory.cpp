@@ -172,8 +172,8 @@ PassRefPtrWillBeRawPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionCon
 
 short IDBFactory::cmp(ExecutionContext* context, const ScriptValue& firstValue, const ScriptValue& secondValue, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> first = scriptValueToIDBKey(toIsolate(context), firstValue);
-    RefPtr<IDBKey> second = scriptValueToIDBKey(toIsolate(context), secondValue);
+    RefPtrWillBeRawPtr<IDBKey> first = scriptValueToIDBKey(toIsolate(context), firstValue);
+    RefPtrWillBeRawPtr<IDBKey> second = scriptValueToIDBKey(toIsolate(context), secondValue);
 
     ASSERT(first);
     ASSERT(second);

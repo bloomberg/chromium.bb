@@ -87,7 +87,7 @@ public:
     PassRefPtrWillBeRawPtr<IDBRequest> count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
 
     // Used by IDBCursor::update():
-    PassRefPtrWillBeRawPtr<IDBRequest> put(ExecutionContext*, blink::WebIDBDatabase::PutMode, PassRefPtrWillBeRawPtr<IDBAny> source, ScriptValue&, PassRefPtr<IDBKey>, ExceptionState&);
+    PassRefPtrWillBeRawPtr<IDBRequest> put(ExecutionContext*, blink::WebIDBDatabase::PutMode, PassRefPtrWillBeRawPtr<IDBAny> source, ScriptValue&, PassRefPtrWillBeRawPtr<IDBKey>, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
     PassRefPtrWillBeRawPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
@@ -99,8 +99,7 @@ public:
     const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
     void setMetadata(const IDBObjectStoreMetadata& metadata) { m_metadata = metadata; }
 
-    typedef Vector<RefPtr<IDBKey> > IndexKeys;
-    typedef HashMap<String, IndexKeys> IndexKeyMap;
+    typedef WillBeHeapVector<RefPtrWillBeMember<IDBKey> > IndexKeys;
 
     blink::WebIDBDatabase* backendDB() const;
 
