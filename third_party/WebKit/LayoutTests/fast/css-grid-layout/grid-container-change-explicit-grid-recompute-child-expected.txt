@@ -1,4 +1,4 @@
-This test checks that grid-definition-{rows|columns} dynamic updates recomputes the positions of automatically placed grid items.
+This test checks that grid-template-{rows|columns} dynamic updates recomputes the positions of automatically placed grid items.
 PASS
 PASS
 PASS

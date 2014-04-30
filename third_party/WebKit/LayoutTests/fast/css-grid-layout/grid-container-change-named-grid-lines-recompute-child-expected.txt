@@ -1,4 +1,4 @@
-This test checks that updating the named grid lines definitions in grid-definition-{rows|columns} recomputes the positions of automatically placed grid items.
+This test checks that updating the named grid lines definitions in grid-template-{rows|columns} recomputes the positions of automatically placed grid items.
 PASS
 PASS
 PASS
