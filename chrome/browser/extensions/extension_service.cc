@@ -662,10 +662,9 @@ void ExtensionService::ReloadExtension(const std::string extension_id) {
   SetBeingReloaded(extension_id, false);
 }
 
-bool ExtensionService::UninstallExtension(
-    std::string extension_id,
-    bool external_uninstall,
-    base::string16* error) {
+bool ExtensionService::UninstallExtension(const std::string& extension_id,
+                                          bool external_uninstall,
+                                          base::string16* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_refptr<const Extension> extension(GetInstalledExtension(extension_id));

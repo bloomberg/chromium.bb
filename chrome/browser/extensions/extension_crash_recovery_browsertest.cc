@@ -54,19 +54,21 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
         process_manager();
   }
 
+  ExtensionRegistry* GetExtensionRegistry() {
+    return ExtensionRegistry::Get(browser()->profile());
+  }
+
   size_t GetEnabledExtensionCount() {
-    ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
-    return registry->enabled_extensions().size();
+    return GetExtensionRegistry()->enabled_extensions().size();
   }
 
   size_t GetTerminatedExtensionCount() {
-    ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
-    return registry->terminated_extensions().size();
+    return GetExtensionRegistry()->terminated_extensions().size();
   }
 
-  void CrashExtension(std::string extension_id) {
-    const Extension* extension =
-        GetExtensionService()->GetExtensionById(extension_id, false);
+  void CrashExtension(const std::string& extension_id) {
+    const Extension* extension = GetExtensionRegistry()->GetExtensionById(
+        extension_id, ExtensionRegistry::ENABLED);
     ASSERT_TRUE(extension);
     extensions::ExtensionHost* extension_host = GetProcessManager()->
         GetBackgroundHostForExtension(extension_id);
@@ -82,9 +84,9 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  void CheckExtensionConsistency(std::string extension_id) {
-    const Extension* extension =
-        GetExtensionService()->extensions()->GetByID(extension_id);
+  void CheckExtensionConsistency(const std::string& extension_id) {
+    const Extension* extension = GetExtensionRegistry()->GetExtensionById(
+        extension_id, ExtensionRegistry::ENABLED);
     ASSERT_TRUE(extension);
     extensions::ExtensionHost* extension_host = GetProcessManager()->
         GetBackgroundHostForExtension(extension_id);

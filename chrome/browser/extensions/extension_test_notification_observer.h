@@ -71,7 +71,8 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
   const std::string& last_loaded_extension_id() {
     return last_loaded_extension_id_;
   }
-  void set_last_loaded_extension_id(std::string last_loaded_extension_id) {
+  void set_last_loaded_extension_id(
+      const std::string& last_loaded_extension_id) {
     last_loaded_extension_id_ = last_loaded_extension_id;
   }
 

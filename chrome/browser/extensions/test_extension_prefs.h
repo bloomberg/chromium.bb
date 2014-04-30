@@ -55,10 +55,10 @@ class TestExtensionPrefs {
 
   // Creates a new Extension with the given name in our temp dir, adds it to
   // our ExtensionPrefs, and returns it.
-  scoped_refptr<Extension> AddExtension(std::string name);
+  scoped_refptr<Extension> AddExtension(const std::string& name);
 
   // As above, but the extension is an app.
-  scoped_refptr<Extension> AddApp(std::string name);
+  scoped_refptr<Extension> AddApp(const std::string& name);
 
   // Similar to AddExtension, but takes a dictionary with manifest values.
   scoped_refptr<Extension> AddExtensionWithManifest(
@@ -75,7 +75,7 @@ class TestExtensionPrefs {
   // Similar to AddExtension, this adds a new test Extension. This is useful for
   // cases when you don't need the Extension object, but just the id it was
   // assigned.
-  std::string AddExtensionAndReturnId(std::string name);
+  std::string AddExtensionAndReturnId(const std::string& name);
 
   PrefService* CreateIncognitoPrefService() const;
 

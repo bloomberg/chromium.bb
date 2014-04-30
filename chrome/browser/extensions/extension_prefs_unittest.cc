@@ -471,7 +471,7 @@ TEST_F(ExtensionPrefsAcknowledgment, Acknowledgment) {}
 class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
  public:
   // Sets idle install information for one test extension.
-  void SetIdleInfo(std::string id, int num) {
+  void SetIdleInfo(const std::string& id, int num) {
     base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kName, "test");
     manifest.SetString(manifest_keys::kVersion, "1." + base::IntToString(num));
@@ -492,7 +492,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
 
   // Verifies that we get back expected idle install information previously
   // set by SetIdleInfo.
-  void VerifyIdleInfo(std::string id, int num) {
+  void VerifyIdleInfo(const std::string& id, int num) {
     scoped_ptr<ExtensionInfo> info(prefs()->GetDelayedInstallInfo(id));
     ASSERT_TRUE(info);
     std::string version;

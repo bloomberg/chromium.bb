@@ -51,7 +51,7 @@ syncer::SyncChange AppSyncBundle::CreateSyncChangeToDelete(
   return sync_data.GetSyncChange(syncer::SyncChange::ACTION_DELETE);
 }
 
-void AppSyncBundle::ProcessDeletion(std::string extension_id,
+void AppSyncBundle::ProcessDeletion(const std::string& extension_id,
                                     const syncer::SyncChange& sync_change) {
   RemoveApp(extension_id);
   sync_processor_->ProcessSyncChanges(FROM_HERE,

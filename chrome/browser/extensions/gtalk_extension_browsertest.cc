@@ -53,7 +53,7 @@ class GtalkExtensionTest : public ExtensionBrowserTest {
     return "chrome-extension://" + GetInstalledExtensionId() + "/viewer.html";
   }
 
-  std::vector<RenderViewHost*> GetMatchingViews(std::string url_query) {
+  std::vector<RenderViewHost*> GetMatchingViews(const std::string& url_query) {
     extensions::ProcessManager* manager = GetProcessManager();
     extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
     std::vector<RenderViewHost*> matching_views;

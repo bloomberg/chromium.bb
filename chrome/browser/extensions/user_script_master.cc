@@ -242,7 +242,7 @@ void UserScriptMaster::ScriptReloader::LoadUserScripts(
 }
 
 SubstitutionMap* UserScriptMaster::ScriptReloader::GetLocalizationMessages(
-    std::string extension_id) {
+    const std::string& extension_id) {
   if (extensions_info_.find(extension_id) == extensions_info_.end()) {
     return NULL;
   }

@@ -206,7 +206,7 @@ class ExtensionService
   //
   // TODO(aa): Remove |external_uninstall| -- this information should be passed
   // to ExtensionPrefs some other way.
-  virtual bool UninstallExtension(std::string extension_id,
+  virtual bool UninstallExtension(const std::string& extension_id,
                                   bool external_uninstall,
                                   base::string16* error);
 

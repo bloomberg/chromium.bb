@@ -83,7 +83,7 @@ class MenuManagerTest : public testing::Test {
 
   // Creates and returns a test Extension. The caller does *not* own the return
   // value.
-  Extension* AddExtension(std::string name) {
+  Extension* AddExtension(const std::string& name) {
     scoped_refptr<Extension> extension = prefs_.AddExtension(name);
     extensions_.push_back(extension);
     return extension.get();

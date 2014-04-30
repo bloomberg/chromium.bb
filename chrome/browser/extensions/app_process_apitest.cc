@@ -46,7 +46,7 @@ class AppApiTest : public ExtensionApiTest {
   // Gets the base URL for files for a specific test, making sure that it uses
   // "localhost" as the hostname, since that is what the extent is declared
   // as in the test apps manifests.
-  GURL GetTestBaseURL(std::string test_directory) {
+  GURL GetTestBaseURL(const std::string& test_directory) {
     GURL::Replacements replace_host;
     std::string host_str("localhost");  // must stay in scope with replace_host
     replace_host.SetHostStr(host_str);
@@ -66,7 +66,7 @@ class AppApiTest : public ExtensionApiTest {
 
   // Helper function to test that independent tabs of the named app are loaded
   // into separate processes.
-  void TestAppInstancesHelper(std::string app_name) {
+  void TestAppInstancesHelper(const std::string& app_name) {
     LOG(INFO) << "Start of test.";
 
     extensions::ProcessMap* process_map =

@@ -52,7 +52,8 @@ class ManifestFetchData {
   // Returns true if this extension information was successfully added. If the
   // return value is false it means the full_url would have become too long, and
   // this ManifestFetchData object remains unchanged.
-  bool AddExtension(std::string id, std::string version,
+  bool AddExtension(const std::string& id,
+                    const std::string& version,
                     const PingData* ping_data,
                     const std::string& update_url_data,
                     const std::string& install_source);
@@ -67,7 +68,7 @@ class ManifestFetchData {
 
   // Returns true if a ping parameter for |type| was added to full_url for this
   // extension id.
-  bool DidPing(std::string extension_id, PingType type) const;
+  bool DidPing(const std::string& extension_id, PingType type) const;
 
   // Assuming that both this ManifestFetchData and |other| have the same
   // full_url, this method merges the other information associated with the

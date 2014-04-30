@@ -113,7 +113,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
     // Uses extensions_info_ to build a map of localization messages.
     // Returns NULL if |extension_id| is invalid.
-    SubstitutionMap* GetLocalizationMessages(std::string extension_id);
+    SubstitutionMap* GetLocalizationMessages(const std::string& extension_id);
 
     // A pointer back to our master.
     // May be NULL if DisownMaster() is called.

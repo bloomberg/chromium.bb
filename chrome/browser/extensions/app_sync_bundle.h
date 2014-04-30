@@ -47,8 +47,8 @@ class AppSyncBundle : public SyncBundle {
   syncer::SyncChange CreateSyncChangeToDelete(const Extension* extension) const;
 
   // Process the sync deletion of the given application.
-  void ProcessDeletion(
-      std::string extension_id, const syncer::SyncChange& sync_change);
+  void ProcessDeletion(const std::string& extension_id,
+                       const syncer::SyncChange& sync_change);
 
   // Create a sync change based on |sync_data|.
   syncer::SyncChange CreateSyncChange(const syncer::SyncData& sync_data);
