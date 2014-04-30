@@ -43,6 +43,10 @@ class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
   // local cryptohome.
   bool logged_in_;
 
+  // Indicates that cryptohome is mounted and OAuth2 token is validated.
+  // Used to avoid multiple notifications.
+  bool session_started_;
+
   Profile* manager_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationFlow);

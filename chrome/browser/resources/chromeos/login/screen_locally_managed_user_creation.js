@@ -370,6 +370,14 @@ login.createScreen('LocallyManagedUserCreationScreen',
       return this.children;
     },
 
+    /**
+     * Returns selected pod.
+     * @type {Node}
+     */
+    get selectedPod() {
+      return this.selectedPod_;
+    },
+
     addPod: function(user) {
       var importPod = new ImportPod({user: user});
       this.appendChild(importPod);
@@ -835,6 +843,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       if (this.disabled)
         return;
       this.disabled = true;
+
       this.context_.managedName = userName;
       chrome.send('specifyLocallyManagedUserCreationFlowUserData',
           [userName, firstPassword]);
@@ -1301,6 +1310,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
         control.disabled = value;
       }
       $('login-header-bar').disabled = value;
+      $('cancel-add-user-button').disabled = false;
     },
 
     /**
@@ -1542,8 +1552,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     setExistingManagedUsers: function(users) {
-      var userList = users;
+      var selectedUser = null;
+      // Store selected user
+      if (this.importList_.selectedPod)
+        selectedUser = this.importList_.selectedPod.user.id;
 
+      var userList = users;
       userList.sort(function(a, b) {
         // Put existing users last.
         if (a.exists != b.exists)
@@ -1553,14 +1567,21 @@ login.createScreen('LocallyManagedUserCreationScreen',
       });
 
       this.importList_.clearPods();
-      for (var i = 0; i < userList.length; ++i)
+      var selectedIndex = -1;
+      for (var i = 0; i < userList.length; ++i) {
         this.importList_.addPod(userList[i]);
+        if (selectedUser == userList[i].id)
+          selectedIndex = i;
+      }
 
       if (userList.length == 1)
-        this.importList_.selectPod(this.managerList_.pods[0]);
+        this.importList_.selectPod(this.importList_.pods[0]);
 
-      if (userList.length > 0 && this.currentPage_ == 'username')
-        this.getScreenElement('import-link').hidden = false;
+      if (selectedIndex >= 0)
+        this.importList_.selectPod(this.importList_.pods[selectedIndex]);
+
+      if (this.currentPage_ == 'username')
+        this.getScreenElement('import-link').hidden = (userList.length == 0);
     },
   };
 });

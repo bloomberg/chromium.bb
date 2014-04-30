@@ -89,6 +89,7 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
       actor_(actor),
       on_error_screen_(false),
       last_page_(kNameOfIntroScreen),
+      sync_service_(NULL),
       image_decoder_(NULL),
       apply_photo_after_decoding_(false),
       selected_image_(0) {
@@ -99,6 +100,8 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
 
 LocallyManagedUserCreationScreen::~LocallyManagedUserCreationScreen() {
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
   if (actor_)
     actor_->SetDelegate(NULL);
   if (image_decoder_.get())
@@ -332,6 +335,7 @@ void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
 
 void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
     Profile* manager_profile) {
+  LOG(ERROR) << "-----------------------------OnManagerFullyAuthenticated";
   DCHECK(controller_.get());
   // For manager user, move desktop to locked container so that windows created
   // during the user image picker step are below it.
@@ -343,11 +347,17 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
     actor_->ShowUsernamePage();
 
   last_page_ = kNameOfNewUserParametersScreen;
+  CHECK(!sync_service_);
+  sync_service_ = ManagedUserSyncServiceFactory::GetForProfile(manager_profile);
+  sync_service_->AddObserver(this);
+  OnManagedUsersChanged();
+}
 
-  ManagedUserSyncServiceFactory::GetForProfile(manager_profile)->
-      GetManagedUsersAsync(base::Bind(
-          &LocallyManagedUserCreationScreen::OnGetManagedUsers,
-          weak_factory_.GetWeakPtr()));
+void LocallyManagedUserCreationScreen::OnManagedUsersChanged() {
+  CHECK(sync_service_);
+  sync_service_->GetManagedUsersAsync(
+      base::Bind(&LocallyManagedUserCreationScreen::OnGetManagedUsers,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void LocallyManagedUserCreationScreen::OnManagerCryptohomeAuthenticated() {

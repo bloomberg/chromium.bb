@@ -30,6 +30,7 @@ LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
         : ExtendedUserFlow(manager_id),
         token_validated_(false),
         logged_in_(false),
+        session_started_(false),
         manager_profile_(NULL) {}
 
 LocallyManagedUserCreationFlow::~LocallyManagedUserCreationFlow() {}
@@ -63,8 +64,11 @@ void LocallyManagedUserCreationFlow::HandleOAuthTokenStatusChange(
   // authentication happens before oauth token validation).
   token_validated_ = true;
 
-  if (token_validated_ && logged_in_)
-    GetScreen(host())->OnManagerFullyAuthenticated(manager_profile_);
+  if (token_validated_ && logged_in_) {
+    if (!session_started_)
+      GetScreen(host())->OnManagerFullyAuthenticated(manager_profile_);
+    session_started_ = true;
+  }
 }
 
 
@@ -93,10 +97,13 @@ void LocallyManagedUserCreationFlow::LaunchExtraSteps(
       profile,
       true);
 
-  if (token_validated_ && logged_in_)
-    GetScreen(host())->OnManagerFullyAuthenticated(manager_profile_);
-  else
+  if (token_validated_ && logged_in_) {
+    if (!session_started_)
+      GetScreen(host())->OnManagerFullyAuthenticated(manager_profile_);
+    session_started_ = true;
+  } else {
     GetScreen(host())->OnManagerCryptohomeAuthenticated();
+  }
 }
 
 }  // namespace chromeos
