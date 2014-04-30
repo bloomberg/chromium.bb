@@ -17,16 +17,32 @@ class X11EventSourceLibevent : public X11EventSource,
                                public base::MessagePumpLibevent::Watcher {
  public:
   explicit X11EventSourceLibevent(XDisplay* display)
-      : X11EventSource(display) {
-    int fd = ConnectionNumber(display);
-    base::MessageLoopForUI::current()->WatchFileDescriptor(fd, true,
-        base::MessagePumpLibevent::WATCH_READ, &watcher_controller_, this);
+      : X11EventSource(display),
+        initialized_(false) {
+    AddEventWatcher();
   }
 
   virtual ~X11EventSourceLibevent() {
   }
 
  private:
+  void AddEventWatcher() {
+    if (initialized_)
+      return;
+    if (!base::MessageLoop::current())
+      return;
+
+    int fd = ConnectionNumber(display());
+    base::MessageLoopForUI::current()->WatchFileDescriptor(fd, true,
+        base::MessagePumpLibevent::WATCH_READ, &watcher_controller_, this);
+    initialized_ = true;
+  }
+
+  // PlatformEventSource:
+  virtual void OnDispatcherListChanged() OVERRIDE {
+    AddEventWatcher();
+  }
+
   // base::MessagePumpLibevent::Watcher:
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
     DispatchXEvents();
@@ -37,6 +53,7 @@ class X11EventSourceLibevent : public X11EventSource,
   }
 
   base::MessagePumpLibevent::FileDescriptorWatcher watcher_controller_;
+  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSourceLibevent);
 };

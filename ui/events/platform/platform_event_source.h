@@ -70,6 +70,10 @@ class EVENTS_EXPORT PlatformEventSource {
   friend class ScopedEventDispatcher;
   static PlatformEventSource* instance_;
 
+  // This is invoked when the list of dispatchers changes (i.e. a new dispatcher
+  // is added, or a dispatcher is removed).
+  virtual void OnDispatcherListChanged();
+
   void OnOverriddenDispatcherRestored();
 
   // Use an ObserverList<> instead of an std::vector<> to store the list of

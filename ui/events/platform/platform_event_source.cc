@@ -35,11 +35,13 @@ void PlatformEventSource::AddPlatformEventDispatcher(
     PlatformEventDispatcher* dispatcher) {
   CHECK(dispatcher);
   dispatchers_.AddObserver(dispatcher);
+  OnDispatcherListChanged();
 }
 
 void PlatformEventSource::RemovePlatformEventDispatcher(
     PlatformEventDispatcher* dispatcher) {
   dispatchers_.RemoveObserver(dispatcher);
+  OnDispatcherListChanged();
 }
 
 scoped_ptr<ScopedEventDispatcher> PlatformEventSource::OverrideDispatcher(
@@ -104,6 +106,9 @@ uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
   overridden_dispatcher_restored_ = false;
 
   return action;
+}
+
+void PlatformEventSource::OnDispatcherListChanged() {
 }
 
 void PlatformEventSource::OnOverriddenDispatcherRestored() {
