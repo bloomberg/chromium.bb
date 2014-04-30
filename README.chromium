@@ -26,9 +26,10 @@ This directory contains the source code of ICU 52.1 for C/C++
 2. Apply the following patch for platform related headers (putilimpl.h and 
    others).
 
-  - patches/putil.patch for Android and QNX
+  - patches/putil.patch for Android, QNX and newlib(NaCl-newlib).
     Upstream bug for Android : http://bugs.icu-project.org/trac/ticket/10478
     Upstream bug for QNX : http://bugs.icu-project.org/trac/ticket/10811
+    Upstream bug for newlib : http://bugs.icu-project.org/trac/ticket/10873
 
 
 3. Breakiterator patches
