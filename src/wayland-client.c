@@ -329,7 +329,7 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 		      void (**implementation)(void), void *data)
 {
 	if (proxy->object.implementation || proxy->dispatcher) {
-		fprintf(stderr, "proxy already has listener\n");
+		wl_log("proxy %p already has listener\n", proxy);
 		return -1;
 	}
 
@@ -382,7 +382,7 @@ wl_proxy_add_dispatcher(struct wl_proxy *proxy,
 			const void *implementation, void *data)
 {
 	if (proxy->object.implementation || proxy->dispatcher) {
-		fprintf(stderr, "proxy already has listener\n");
+		wl_log("proxy %p already has listener\n");
 		return -1;
 	}
 
@@ -465,7 +465,7 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 
 	closure = wl_closure_marshal(&proxy->object, opcode, args, message);
 	if (closure == NULL) {
-		fprintf(stderr, "Error marshalling request\n");
+		wl_log("Error marshalling request: %m\n");
 		abort();
 	}
 
@@ -473,7 +473,7 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 		wl_closure_print(closure, &proxy->object, true);
 
 	if (wl_closure_send(closure, proxy->display->connection)) {
-		fprintf(stderr, "Error sending request: %m\n");
+		wl_log("Error sending request: %m\n");
 		abort();
 	}
 
@@ -635,9 +635,7 @@ connect_to_socket(const char *name)
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
 	if (!runtime_dir) {
-		fprintf(stderr,
-			"error: XDG_RUNTIME_DIR not set in the environment.\n");
-
+		wl_log("error: XDG_RUNTIME_DIR not set in the environment.\n");
 		/* to prevent programs reporting
 		 * "failed to create display: Success" */
 		errno = ENOENT;
@@ -661,8 +659,7 @@ connect_to_socket(const char *name)
 
 	assert(name_size > 0);
 	if (name_size > (int)sizeof addr.sun_path) {
-		fprintf(stderr,
-		       "error: socket path \"%s/%s\" plus null terminator"
+		wl_log("error: socket path \"%s/%s\" plus null terminator"
 		       " exceeds 108 bytes\n", runtime_dir, name);
 		close(fd);
 		/* to prevent programs reporting
