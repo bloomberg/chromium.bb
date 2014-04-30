@@ -1263,11 +1263,6 @@ crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
-# These tests don't work when force compositing mode is enabled.
-crbug.com/364960 fast/multicol/newmulticol/hide-box-horizontal-bt.html [ Skip ]
-crbug.com/364960 fast/multicol/newmulticol/hide-box-vertical-rl.html [ Skip ]
-crbug.com/364960 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
-
 crbug.com/27987 fast/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
 crbug.com/27987 fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
 crbug.com/27987 virtual/deferred/fast/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]

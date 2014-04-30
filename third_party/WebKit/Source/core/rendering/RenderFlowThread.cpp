@@ -315,31 +315,6 @@ LayoutUnit RenderFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offs
     return remainingHeight;
 }
 
-RenderRegion* RenderFlowThread::mapFromFlowToRegion(TransformState& transformState) const
-{
-    if (!hasValidRegionInfo())
-        return 0;
-
-    LayoutRect boxRect = transformState.mappedQuad().enclosingBoundingBox();
-    flipForWritingMode(boxRect);
-
-    // FIXME: We need to refactor RenderObject::absoluteQuads to be able to split the quads across regions,
-    // for now we just take the center of the mapped enclosing box and map it to a region.
-    // Note: Using the center in order to avoid rounding errors.
-
-    LayoutPoint center = boxRect.center();
-    RenderRegion* renderRegion = regionAtBlockOffset(isHorizontalWritingMode() ? center.y() : center.x());
-    if (!renderRegion)
-        return 0;
-
-    LayoutRect flippedRegionRect(renderRegion->flowThreadPortionRect());
-    flipForWritingMode(flippedRegionRect);
-
-    transformState.move(renderRegion->contentBoxRect().location() - flippedRegionRect.location());
-
-    return renderRegion;
-}
-
 RenderRegion* RenderFlowThread::firstRegion() const
 {
     if (!hasValidRegionInfo())
@@ -556,20 +531,6 @@ void RenderFlowThread::RegionSearchAdapter::collectIfNeeded(const RegionInterval
         return;
     if (interval.low() <= m_offset && interval.high() > m_offset)
         m_result = interval.data();
-}
-
-void RenderFlowThread::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
-{
-    if (this == repaintContainer)
-        return;
-
-    if (RenderRegion* region = mapFromFlowToRegion(transformState)) {
-        // FIXME: The cast below is probably not the best solution, we may need to find a better way.
-        static_cast<const RenderObject*>(region)->mapLocalToContainer(region->containerForRepaint(), transformState, mode, wasFixed);
-    } else {
-        // This will happen for multicol when the flow thread is empty.
-        RenderBlockFlow::mapLocalToContainer(repaintContainer, transformState, mode, wasFixed);
-    }
 }
 
 CurrentRenderFlowThreadMaintainer::CurrentRenderFlowThreadMaintainer(RenderFlowThread* renderFlowThread)

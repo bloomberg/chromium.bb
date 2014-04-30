@@ -123,6 +123,20 @@ void RenderMultiColumnFlowThread::evacuateAndDestroy()
     destroy();
 }
 
+LayoutSize RenderMultiColumnFlowThread::columnOffset(const LayoutPoint& point) const
+{
+    if (!hasValidRegionInfo())
+        return LayoutSize(0, 0);
+
+    LayoutPoint flowThreadPoint(point);
+    flipForWritingMode(flowThreadPoint);
+    LayoutUnit blockOffset = isHorizontalWritingMode() ? flowThreadPoint.y() : flowThreadPoint.x();
+    RenderRegion* renderRegion = regionAtBlockOffset(blockOffset);
+    if (!renderRegion)
+        return LayoutSize(0, 0);
+    return toRenderMultiColumnSet(renderRegion)->flowThreadTranslationAtOffset(blockOffset);
+}
+
 void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     // Update the dimensions of our regions before we lay out the flow thread.

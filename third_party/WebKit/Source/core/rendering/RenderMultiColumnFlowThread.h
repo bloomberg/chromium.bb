@@ -78,6 +78,8 @@ public:
     void setColumnHeightAvailable(LayoutUnit available) { m_columnHeightAvailable = available; }
     bool requiresBalancing() const { return !columnHeightAvailable() || multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance; }
 
+    virtual LayoutSize columnOffset(const LayoutPoint&) const OVERRIDE FINAL;
+
     void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);
     bool computeColumnCountAndWidth();
     bool recalculateColumnHeights();

@@ -63,6 +63,16 @@ RenderMultiColumnSet* RenderMultiColumnSet::nextSiblingMultiColumnSet() const
     return 0;
 }
 
+LayoutSize RenderMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset) const
+{
+    unsigned columnIndex = columnIndexAtOffset(blockOffset);
+    LayoutRect portionRect(flowThreadPortionRectAt(columnIndex));
+    flipForWritingMode(portionRect);
+    LayoutRect columnRect(columnRectAt(columnIndex));
+    flipForWritingMode(columnRect);
+    return contentBoxRect().location() + columnRect.location() - portionRect.location();
+}
+
 LayoutUnit RenderMultiColumnSet::heightAdjustedForSetOffset(LayoutUnit height) const
 {
     RenderBlockFlow* multicolBlock = multiColumnBlockFlow();

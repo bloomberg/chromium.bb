@@ -1882,8 +1882,18 @@ LayoutSize RenderBox::offsetFromContainer(RenderObject* o, const LayoutPoint& po
 
             if (offsetDependsOnPoint)
                 *offsetDependsOnPoint = true;
-        } else
+        } else {
             offset += topLeftLocationOffset();
+            if (o->isRenderFlowThread()) {
+                // So far the point has been in flow thread coordinates (i.e. as if everything in
+                // the fragmentation context lived in one tall single column). Convert it to a
+                // visual point now.
+                LayoutPoint pointInContainer = point + offset;
+                offset += o->columnOffset(pointInContainer);
+                if (offsetDependsOnPoint)
+                    *offsetDependsOnPoint = true;
+            }
+        }
     }
 
     if (o->hasOverflowClip())
@@ -1891,9 +1901,6 @@ LayoutSize RenderBox::offsetFromContainer(RenderObject* o, const LayoutPoint& po
 
     if (style()->position() == AbsolutePosition && o->isInFlowPositioned() && o->isRenderInline())
         offset += toRenderInline(o)->offsetForInFlowPositionedInline(*this);
-
-    if (offsetDependsOnPoint)
-        *offsetDependsOnPoint |= o->isRenderFlowThread();
 
     return offset;
 }

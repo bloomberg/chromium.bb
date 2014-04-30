@@ -70,6 +70,10 @@ public:
         m_computedColumnCount = count;
     }
 
+    // Find the column that contains the given block offset, and return the translation needed to
+    // get from flow thread coordinates to visual coordinates.
+    LayoutSize flowThreadTranslationAtOffset(LayoutUnit) const;
+
     LayoutUnit heightAdjustedForSetOffset(LayoutUnit height) const;
 
     void updateMinimumColumnHeight(LayoutUnit height) { m_minimumColumnHeight = std::max(height, m_minimumColumnHeight); }

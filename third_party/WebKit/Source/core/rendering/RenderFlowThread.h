@@ -95,8 +95,6 @@ public:
 
     bool regionsHaveUniformLogicalHeight() const { return m_regionsHaveUniformLogicalHeight; }
 
-    RenderRegion* mapFromFlowToRegion(TransformState&) const;
-
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
 
@@ -125,8 +123,6 @@ protected:
     // Overridden by columns/pages to set up an initial logical width of the page width even when
     // no regions have been generated yet.
     virtual LayoutUnit initialLogicalWidth() const { return 0; };
-
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE FINAL;
 
     void updateRegionsFlowThreadPortionRect();
     bool shouldRepaint(const LayoutRect&) const;
