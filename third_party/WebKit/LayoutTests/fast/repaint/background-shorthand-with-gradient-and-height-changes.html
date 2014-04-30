@@ -1,7 +1,6 @@
 <html>
 <head>
-<script>jsTestIsAsync = true;</script>
-<script src="../../resources/js-test.js"></script>
+<script src="resources/text-based-repaint.js"></script>
 
 <style>
 #outer {
@@ -21,34 +20,14 @@
 </style>
 
 <script>
-description("This test verifies that gradient background gets repainted properly after child box height change.");
+//This test verifies that gradient background gets repainted properly after child box height change.
 
-function start() {
-    window.setTimeout(function() { 
-        document.getElementById('inner').style.height = 300 + 'px'; 
-        window.setTimeout(logRepaints, 200);
-    }, 0); 
-
-    if (!window.testRunner || !window.internals)
-        return;
-        
-    window.internals.startTrackingRepaints(document);
-    var dummy = document.body.offsetTop;
-}
-
-function logRepaints() {
-    if (!window.internals)
-        return;
-        
-    repaintRects = window.internals.repaintRectsAsText(document);
-    window.internals.stopTrackingRepaints(document);
-    shouldNotBe("repaintRects.indexOf('500')", "-1");
-    finishJSTest();
+function repaintTest() {
+    document.getElementById('inner').style.height = 300 + 'px';
 }
 </script>
 </head>
-
-<body onload='start();'>
+<body onload='runRepaintTest();'>
 <div id='outer'>
     <div id='inner'>
     </div>

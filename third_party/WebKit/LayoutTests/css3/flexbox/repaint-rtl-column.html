@@ -21,6 +21,7 @@
     background-color: orange;
 }
 </style>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
 // This test makes sure that we repaint the right region of a flexbox when
 // changing the flex values. Only the middle of the test page should be
@@ -31,27 +32,15 @@ function setFlex(value)
     document.getElementById("content").style.webkitFlex = value;
 }
 
-window.onload = function() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        document.body.offsetTop;
-        window.internals.startTrackingRepaints(document);
-        testRunner.waitUntilDone();
-    }
+window.testIsAsync = true;
+window.onload = runRepaintTest;
+
+function repaintTest() {
     setTimeout(function() {
         setFlex(4.6);
         setTimeout(function() {
             setFlex(5);
-            if (window.testRunner) {
-                document.body.offsetTop;
-                var repaintRects = window.internals.repaintRectsAsText(document);
-                window.internals.stopTrackingRepaints(document);
-                var pre = document.createElement('pre');
-                document.body.appendChild(pre);
-                pre.textContent += repaintRects;
-
-                testRunner.notifyDone();
-            }
+            finishRepaintTest();
         })
     })
 };

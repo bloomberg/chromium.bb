@@ -1,8 +1,7 @@
 <html>
 <head>
-<script>jsTestIsAsync = true;</script>
-<script src="../../resources/js-test.js"></script>
 <script src="../../resources/run-after-display.js"></script>
+<script src="resources/text-based-repaint.js"></script>
 <style type="text/css">
     #test1 div {
         height: 100px;
@@ -46,21 +45,13 @@
     }
 </style>
 <script>
-    description("Test that obscured animated gif does not trigger repaints. This test requires DRT.");
-    function startTrackingRepaints()
+    // Test that obscured animated gif does not trigger repaints.
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    window.testIsAsync = true;
+    function repaintTest()
     {
-        document.body.offsetTop;
-        window.internals.startTrackingRepaints(document);
-        runAfterDisplay(logRepaints);
-    }
-
-    function logRepaints() {
-        repaintRects = window.internals.repaintRectsAsText(document);
-        window.internals.stopTrackingRepaints(document);
-
-        shouldBeEqualToString("repaintRects", "");
-
-        finishJSTest();
+        runAfterDisplay(finishRepaintTest);
     }
 
     function start() {
@@ -68,7 +59,7 @@
             return;
 
         var img = new Image();
-        img.onload = startTrackingRepaints;
+        img.onload = runRepaintTest;
         img.src = "resources/animated.gif";
     }
 </script>
