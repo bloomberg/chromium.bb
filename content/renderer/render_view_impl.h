@@ -272,12 +272,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool ScheduleFileChooser(const FileChooserParams& params,
                            blink::WebFileChooserCompletion* completion);
 
-  void LoadNavigationErrorPage(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& failed_request,
-      const blink::WebURLError& error,
-      bool replace);
-
 #if defined(OS_ANDROID)
   void DismissDateTimeDialog();
 #endif
@@ -693,8 +687,6 @@ class CONTENT_EXPORT RenderViewImpl
   void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
   void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
-  void didFinishResourceLoad(blink::WebLocalFrame* frame,
-                             unsigned identifier);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);
   void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame*);
   void didChangeContentsSize(blink::WebLocalFrame* frame,

@@ -468,6 +468,11 @@ class CONTENT_EXPORT RenderFrameImpl
                             const GURL& frame_url,
                             base::string16* result);
 
+  // Loads the appropriate error page for the specified failure into the frame.
+  void LoadNavigationErrorPage(const blink::WebURLRequest& failed_request,
+                               const blink::WebURLError& error,
+                               bool replace);
+
   // Stores the WebLocalFrame we are associated with.
   blink::WebLocalFrame* frame_;
 

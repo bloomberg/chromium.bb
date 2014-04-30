@@ -1402,23 +1402,6 @@ void RenderViewImpl::SendUpdateState(const WebHistoryItem& item) {
       routing_id_, page_id_, HistoryItemToPageState(item)));
 }
 
-// WebViewDelegate ------------------------------------------------------------
-
-void RenderViewImpl::LoadNavigationErrorPage(
-    WebFrame* frame,
-    const WebURLRequest& failed_request,
-    const WebURLError& error,
-    bool replace) {
-  std::string error_html;
-  GetContentClient()->renderer()->GetNavigationErrorStrings(
-      this, frame, failed_request, error, &error_html, NULL);
-
-  frame->loadHTMLString(error_html,
-                        GURL(kUnreachableWebDataURL),
-                        error.unreachableURL,
-                        replace);
-}
-
 bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   // Before WebKit asks us to show an alert (etc.), it takes care of doing the
   // equivalent of WebView::willEnterModalLoop.  In the case of showModalDialog
@@ -2367,30 +2350,6 @@ void RenderViewImpl::didHandleOnloadEvents(WebLocalFrame* frame) {
 
 void RenderViewImpl::didUpdateCurrentHistoryItem(WebLocalFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
-}
-
-void RenderViewImpl::didFinishResourceLoad(WebLocalFrame* frame,
-                                           unsigned identifier) {
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDataSource(frame->dataSource());
-  if (!internal_data->use_error_page())
-    return;
-
-  // Do not show error page when DevTools is attached.
-  if (devtools_agent_->IsAttached())
-    return;
-
-  // Display error page, if appropriate.
-  std::string error_domain = "http";
-  int http_status_code = internal_data->http_status_code();
-  if (GetContentClient()->renderer()->HasErrorPage(
-          http_status_code, &error_domain)) {
-    WebURLError error;
-    error.unreachableURL = frame->document().url();
-    error.domain = WebString::fromUTF8(error_domain);
-    error.reason = http_status_code;
-    LoadNavigationErrorPage(frame, frame->dataSource()->request(), error, true);
-  }
 }
 
 void RenderViewImpl::CheckPreferredSize() {
