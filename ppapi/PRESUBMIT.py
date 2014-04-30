@@ -66,8 +66,6 @@ def CheckTODO(input_api, output_api):
     # Only examine public stable interfaces.
     if name_parts[2] in ['dev', 'private', 'trusted']:
       continue
-    if name_parts[2] == 'extensions' and name_parts[3] == 'dev':
-      continue
 
     filepath = os.path.join('..', filename)
     if RE_TODO.search(open(filepath, 'rb').read()):

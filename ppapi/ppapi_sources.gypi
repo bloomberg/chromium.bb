@@ -147,9 +147,6 @@
       'c/trusted/ppb_file_chooser_trusted.h',
       'c/trusted/ppb_url_loader_trusted.h',
       'c/trusted/ppp_broker.h',
-
-      # Extensions dev interfaces.
-      'c/extensions/dev/ppb_ext_socket_dev.h',
     ],
     'cpp_source_files': [
       'cpp/array_output.cc',
@@ -374,17 +371,6 @@
       'cpp/trusted/browser_font_trusted.h',
       'cpp/trusted/file_chooser_trusted.cc',
       'cpp/trusted/file_chooser_trusted.h',
-
-      # Extensions interfaces.
-      'cpp/extensions/dict_field.h',
-      'cpp/extensions/ext_output_traits.h',
-      'cpp/extensions/from_var_converter.h',
-      'cpp/extensions/optional.h',
-      'cpp/extensions/to_var_converter.h',
-
-      # Extensions dev interfaces.
-      'cpp/extensions/dev/socket_dev.cc',
-      'cpp/extensions/dev/socket_dev.h',
 
       # Utility sources.
       'utility/completion_callback_factory.h',

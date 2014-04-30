@@ -116,12 +116,6 @@
       ],
       'DEST': 'include/ppapi/c/dev',
     },
-    {
-      'FILES': [
-        'ppb_ext_socket_dev.h',
-      ],
-      'DEST': 'include/ppapi/c/extensions/dev',
-    },
   ],
   'DEST': 'src',
   'NAME': 'ppapi',

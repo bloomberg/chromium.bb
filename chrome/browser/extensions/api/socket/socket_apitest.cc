@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/dns/mock_host_resolver_creator.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -18,12 +17,6 @@
 #include "extensions/browser/api/socket/socket_api.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-
-#if !defined(DISABLE_NACL)
-#include "base/command_line.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "ppapi/shared_impl/ppapi_switches.h"
-#endif
 
 using extensions::Extension;
 
@@ -60,50 +53,6 @@ class SocketApiTest : public ExtensionApiTest {
   // But that's fine; it's good practice.
   scoped_refptr<extensions::MockHostResolverCreator> resolver_creator_;
 };
-
-#if !defined(DISABLE_NACL)
-// TODO(yzshen): Build testing framework for all extensions APIs in Pepper. And
-// move these Pepper API tests there.
-class SocketPpapiTest : public SocketApiTest {
- public:
-  SocketPpapiTest() {
-  }
-  virtual ~SocketPpapiTest() {
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    SocketApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePepperTesting);
-  }
-
-  virtual void SetUpOnMainThread() OVERRIDE {
-    SocketApiTest::SetUpOnMainThread();
-
-    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_));
-    app_dir_ = app_dir_.AppendASCII("ppapi")
-                       .AppendASCII("tests")
-                       .AppendASCII("extensions")
-                       .AppendASCII("socket")
-                       .AppendASCII("newlib");
-  }
-
- protected:
-  void LaunchTestingApp() {
-    const Extension* extension = LoadExtension(app_dir_);
-    ASSERT_TRUE(extension);
-
-    AppLaunchParams params(browser()->profile(),
-                           extension,
-                           extensions::LAUNCH_CONTAINER_NONE,
-                           NEW_WINDOW);
-    params.command_line = *CommandLine::ForCurrentProcess();
-    OpenApplication(params);
-  }
-
- private:
-  base::FilePath app_dir_;
-};
-#endif  // !defined(DISABLE_NACL)
 
 }  // namespace
 
@@ -254,113 +203,3 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketMulticast) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
-
-#if !defined(DISABLE_NACL)
-
-// TODO(jschuh): Hanging plugin tests. crbug.com/244653
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-#define MAYBE_UDP DISABLED_UDP
-#else
-#define MAYBE_UDP UDP
-#endif
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE_UDP) {
-  scoped_ptr<net::SpawnedTestServer> test_server(
-      new net::SpawnedTestServer(
-          net::SpawnedTestServer::TYPE_UDP_ECHO,
-          net::SpawnedTestServer::kLocalhost,
-          base::FilePath(FILE_PATH_LITERAL("net/data"))));
-  EXPECT_TRUE(test_server->Start());
-
-  net::HostPortPair host_port_pair = test_server->host_port_pair();
-  int port = host_port_pair.port();
-  ASSERT_GT(port, 0);
-
-  // Test that sendTo() is properly resolving hostnames.
-  host_port_pair.set_host("LOCALhost");
-
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  ExtensionTestMessageListener listener("info_please", true);
-
-  LaunchTestingApp();
-
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(
-      base::StringPrintf("udp:%s:%d", host_port_pair.host().c_str(), port));
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-// TODO(jschuh): Hanging plugin tests. crbug.com/244653
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-#define MAYBE_TCP DISABLED_TCP
-#else
-#define MAYBE_TCP TCP
-#endif
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE_TCP) {
-  scoped_ptr<net::SpawnedTestServer> test_server(
-      new net::SpawnedTestServer(
-          net::SpawnedTestServer::TYPE_TCP_ECHO,
-          net::SpawnedTestServer::kLocalhost,
-          base::FilePath(FILE_PATH_LITERAL("net/data"))));
-  EXPECT_TRUE(test_server->Start());
-
-  net::HostPortPair host_port_pair = test_server->host_port_pair();
-  int port = host_port_pair.port();
-  ASSERT_GT(port, 0);
-
-  // Test that connect() is properly resolving hostnames.
-  host_port_pair.set_host("lOcAlHoSt");
-
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  ExtensionTestMessageListener listener("info_please", true);
-
-  LaunchTestingApp();
-
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(
-      base::StringPrintf("tcp:%s:%d", host_port_pair.host().c_str(), port));
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-// TODO(jschuh): Hanging plugin tests. crbug.com/244653
-// Also fails on official Mac builds. See http://crbug.com/312916
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
-    (defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD))
-#define MAYBE_TCPServer DISABLED_TCPServer
-#else
-#define MAYBE_TCPServer TCPServer
-#endif
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE_TCPServer) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-  ExtensionTestMessageListener listener("info_please", true);
-
-  LaunchTestingApp();
-
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(
-      base::StringPrintf("tcp_server:%s:%d", kHostname.c_str(), kPort));
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-// Disabled due to flakiness: http://crbug.com/314899
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, DISABLED_Multicast) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-  ExtensionTestMessageListener listener("info_please", true);
-
-  LaunchTestingApp();
-
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(
-      base::StringPrintf("multicast:%s:%d", kHostname.c_str(), kPort));
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-#endif

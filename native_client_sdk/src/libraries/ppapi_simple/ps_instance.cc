@@ -32,6 +32,8 @@
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/touch_point.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array.h"
+#include "ppapi/cpp/var_dictionary.h"
 
 #include "ppapi_simple/ps_event.h"
 #include "ppapi_simple/ps_instance.h"

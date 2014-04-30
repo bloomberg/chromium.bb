@@ -3,8 +3,6 @@
   'SEARCH': [
       '../../../../ppapi/cpp',
       '../../../../ppapi/cpp/dev',
-      '../../../../ppapi/cpp/extensions',
-      '../../../../ppapi/cpp/extensions/dev',
       '../../../../ppapi/utility',
       '../../../../ppapi/utility/graphics',
       '../../../../ppapi/utility/threading',
@@ -74,9 +72,6 @@
         'truetype_font_dev.cc',
         'view_dev.cc',
         'zoom_dev.cc',
-
-        # ppapi/cpp/extensions/dev
-        'socket_dev.cc',
 
         # ppapi/utility/graphics
         'paint_aggregator.cc',
@@ -173,22 +168,6 @@
         'zoom_dev.h',
       ],
       'DEST': 'include/ppapi/cpp/dev',
-    },
-    {
-      'FILES': [
-        'dict_field.h',
-        'ext_output_traits.h',
-        'from_var_converter.h',
-        'optional.h',
-        'to_var_converter.h',
-      ],
-      'DEST': 'include/ppapi/cpp/extensions',
-    },
-    {
-      'FILES': [
-        'socket_dev.h',
-      ],
-      'DEST': 'include/ppapi/cpp/extensions/dev',
     },
     {
       'FILES': [

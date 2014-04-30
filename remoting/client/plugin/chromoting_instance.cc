@@ -28,6 +28,8 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/var_array_buffer.h"
+#include "ppapi/cpp/var_dictionary.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/client/chromoting_client.h"

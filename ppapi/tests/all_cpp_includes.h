@@ -38,7 +38,6 @@
 #include "ppapi/cpp/dev/widget_dev.h"
 #include "ppapi/cpp/dev/zoom_dev.h"
 #include "ppapi/cpp/directory_entry.h"
-#include "ppapi/cpp/extensions/dev/socket_dev.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"

@@ -187,33 +187,31 @@ class TestCompletionCallback {
   pp::MessageLoop target_loop_;
 };
 
-namespace internal {
-
-template <typename OutputT, typename CallbackT>
-class TestCompletionCallbackWithOutputBase {
+template <typename OutputT>
+class TestCompletionCallbackWithOutput {
  public:
-  explicit TestCompletionCallbackWithOutputBase(PP_Instance instance)
+  explicit TestCompletionCallbackWithOutput(PP_Instance instance)
       : callback_(instance),
         output_storage_() {
-    CallbackT::TraitsType::Initialize(&output_storage_);
+    pp::internal::CallbackOutputTraits<OutputT>::Initialize(&output_storage_);
   }
 
-  TestCompletionCallbackWithOutputBase(PP_Instance instance, bool force_async)
+  TestCompletionCallbackWithOutput(PP_Instance instance, bool force_async)
       : callback_(instance, force_async),
         output_storage_() {
-    CallbackT::TraitsType::Initialize(&output_storage_);
+    pp::internal::CallbackOutputTraits<OutputT>::Initialize(&output_storage_);
   }
 
-  TestCompletionCallbackWithOutputBase(PP_Instance instance,
-                                       CallbackType callback_type)
+  TestCompletionCallbackWithOutput(PP_Instance instance,
+                                   CallbackType callback_type)
       : callback_(instance, callback_type),
         output_storage_() {
-    CallbackT::TraitsType::Initialize(&output_storage_);
+    pp::internal::CallbackOutputTraits<OutputT>::Initialize(&output_storage_);
   }
 
-  CallbackT GetCallback();
+  pp::CompletionCallbackWithOutput<OutputT> GetCallback();
   OutputT output() {
-    return CallbackT::TraitsType::StorageToPluginArg(
+    return pp::internal::CallbackOutputTraits<OutputT>::StorageToPluginArg(
         output_storage_);
   }
 
@@ -229,78 +227,34 @@ class TestCompletionCallbackWithOutputBase {
   const std::string& errors() { return callback_.errors(); }
   int32_t result() const { return callback_.result(); }
   void Reset() {
-    CallbackT::TraitsType::Initialize(&output_storage_);
+    pp::internal::CallbackOutputTraits<OutputT>::Initialize(&output_storage_);
     return callback_.Reset();
   }
 
  private:
   TestCompletionCallback callback_;
-  typename CallbackT::OutputStorageType output_storage_;
+  typename pp::CompletionCallbackWithOutput<OutputT>::OutputStorageType
+      output_storage_;
 };
 
-template <typename OutputT, typename CallbackT>
-CallbackT
-TestCompletionCallbackWithOutputBase<OutputT, CallbackT>::GetCallback() {
+template <typename OutputT>
+pp::CompletionCallbackWithOutput<OutputT>
+TestCompletionCallbackWithOutput<OutputT>::GetCallback() {
   this->Reset();
   if (callback_.callback_type() == PP_BLOCKING) {
-    CallbackT cc(&output_storage_);
+    pp::CompletionCallbackWithOutput<OutputT> cc(&output_storage_);
     return cc;
   }
 
   callback_.set_target_loop(pp::MessageLoop::GetCurrent());
-  CallbackT cc(&TestCompletionCallback::Handler, this, &output_storage_);
+  pp::CompletionCallbackWithOutput<OutputT> cc(
+      &TestCompletionCallback::Handler,
+      this,
+      &output_storage_);
   if (callback_.callback_type() == PP_OPTIONAL)
     cc.set_flags(PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
   return cc;
 }
-
-}  // namespace internal
-
-template <typename OutputT>
-class TestCompletionCallbackWithOutput
-    : public internal::TestCompletionCallbackWithOutputBase<
-        OutputT, pp::CompletionCallbackWithOutput<OutputT> > {
- public:
-  explicit TestCompletionCallbackWithOutput(PP_Instance instance)
-      : BaseType(instance) {
-  }
-
-  TestCompletionCallbackWithOutput(PP_Instance instance, bool force_async)
-      : BaseType(instance, force_async) {
-  }
-
-  TestCompletionCallbackWithOutput(PP_Instance instance,
-                                   CallbackType callback_type)
-      : BaseType(instance, callback_type) {
-  }
-
- private:
-  typedef internal::TestCompletionCallbackWithOutputBase<
-      OutputT, pp::CompletionCallbackWithOutput<OutputT> > BaseType;
-};
-
-template <typename OutputT>
-class TestExtCompletionCallbackWithOutput
-    : public internal::TestCompletionCallbackWithOutputBase<
-        OutputT, pp::ext::ExtCompletionCallbackWithOutput<OutputT> > {
- public:
-  explicit TestExtCompletionCallbackWithOutput(PP_Instance instance)
-      : BaseType(instance) {
-  }
-
-  TestExtCompletionCallbackWithOutput(PP_Instance instance, bool force_async)
-      : BaseType(instance, force_async) {
-  }
-
-  TestExtCompletionCallbackWithOutput(PP_Instance instance,
-                                      CallbackType callback_type)
-      : BaseType(instance, callback_type) {
-  }
-
- private:
-  typedef internal::TestCompletionCallbackWithOutputBase<
-      OutputT, pp::ext::ExtCompletionCallbackWithOutput<OutputT> > BaseType;
-};
 
 // Verifies that the callback didn't record any errors. If the callback is run
 // in an unexpected way (e.g., if it's invoked asynchronously when the call

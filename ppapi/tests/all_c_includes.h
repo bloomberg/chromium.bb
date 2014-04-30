@@ -41,7 +41,6 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
-#include "ppapi/c/extensions/dev/ppb_ext_socket_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"

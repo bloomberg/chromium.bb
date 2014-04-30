@@ -8,6 +8,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/platform_verification.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 

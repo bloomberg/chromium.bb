@@ -73,11 +73,9 @@ include/pnacl/netinet6/*
 include/pnacl/sys/*
 include/ppapi/c/*
 include/ppapi/c/dev/*
-include/ppapi/c/extensions/dev/*
 include/ppapi/c/private/*
 include/ppapi/cpp/*
 include/ppapi/cpp/dev/*
-include/ppapi/cpp/extensions/*
 include/ppapi/cpp/private/*
 include/ppapi/gles2/*
 include/ppapi/lib/gl/gles2/*

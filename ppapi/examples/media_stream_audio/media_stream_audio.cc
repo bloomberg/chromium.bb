@@ -18,6 +18,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 // When compiling natively on Windows, PostMessage can be #define-d to

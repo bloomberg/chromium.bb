@@ -18,6 +18,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/cpp/video_frame.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 #include "ppapi/utility/completion_callback_factory.h"
