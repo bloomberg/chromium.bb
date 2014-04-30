@@ -356,13 +356,11 @@ bool CompositedLayerMapping::shouldClipCompositedBounds() const
 
     // Scrolled composited layers are clipped by their ancestor clipping layer,
     // so don't clip these, either.
-    if (!compositor()->clippedByAncestor(&m_owningLayer))
-        return true;
+    if (compositor()->clippedByNonAncestorInStackingTree(&m_owningLayer)
+        && m_owningLayer.renderer()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorScrollingLayer())
+        return false;
 
-    if (m_owningLayer.renderer()->containingBlock()->enclosingLayer() != m_owningLayer.ancestorScrollingLayer())
-        return true;
-
-    return false;
+    return true;
 }
 
 void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::UpdateType updateType)
@@ -460,7 +458,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
         needsDescendantsClippingLayer = false;
 
     RenderLayer* scrollParent = compositor->acceleratedCompositingForOverflowScrollEnabled() ? m_owningLayer.scrollParent() : 0;
-    bool needsAncestorClip = compositor->clippedByAncestor(&m_owningLayer);
+    bool needsAncestorClip = compositor->clippedByNonAncestorInStackingTree(&m_owningLayer);
     if (scrollParent) {
         // If our containing block is our ancestor scrolling layer, then we'll already be clipped
         // to it via our scroll parent and we don't need an ancestor clipping layer.

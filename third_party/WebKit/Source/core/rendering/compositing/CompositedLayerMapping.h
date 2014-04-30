@@ -285,7 +285,7 @@ private:
     //  + m_ancestorClippingLayer [OPTIONAL]
     //     + m_graphicsLayer
     //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL] <-OR-> m_childTransformLayer
-    //                                                     + m_scrollingContentsLayer [OPTIONAL]
+    //                                                     + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
     //
     // We need an ancestor clipping layer if our clipping ancestor is not our ancestor in the
     // clipping tree. Here's what that might look like.
@@ -351,7 +351,7 @@ private:
 
     // A squashing CLM has two possible squashing-related structures.
     //
-    // If m_clippingAncestorLayer is present:
+    // If m_ancestorClippingLayer is present:
     //
     // m_ancestorClippingLayer
     //   + m_graphicsLayer

@@ -1718,7 +1718,7 @@ RenderLayer* RenderLayer::scrollParent() const
 
 RenderLayer* RenderLayer::clipParent() const
 {
-    if (compositingReasons() & CompositingReasonOutOfFlowClipping && !compositor()->clippedByAncestor(this)) {
+    if (compositingReasons() & CompositingReasonOutOfFlowClipping && !compositor()->clippedByNonAncestorInStackingTree(this)) {
         if (RenderObject* containingBlock = renderer()->containingBlock())
             return containingBlock->enclosingLayer()->enclosingCompositingLayer();
     }

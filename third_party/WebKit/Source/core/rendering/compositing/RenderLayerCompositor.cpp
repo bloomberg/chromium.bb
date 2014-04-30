@@ -1209,7 +1209,7 @@ bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
 // according to the z-order hierarchy, yet clipping goes down the renderer hierarchy.
 // Thus, a RenderLayer can be clipped by a RenderLayer that is an ancestor in the renderer hierarchy,
 // but a sibling in the z-order hierarchy.
-bool RenderLayerCompositor::clippedByAncestor(const RenderLayer* layer) const
+bool RenderLayerCompositor::clippedByNonAncestorInStackingTree(const RenderLayer* layer) const
 {
     if (!layer->hasCompositedLayerMapping() || !layer->parent())
         return false;
