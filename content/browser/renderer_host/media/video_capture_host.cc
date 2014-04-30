@@ -27,7 +27,7 @@ void VideoCaptureHost::OnChannelClosing() {
     if (controller) {
       VideoCaptureControllerID controller_id(it->first);
       media_stream_manager_->video_capture_manager()->StopCaptureForClient(
-          controller.get(), controller_id, this);
+          controller.get(), controller_id, this, false);
       ++it;
     } else {
       // Remove the entry for this controller_id so that when the controller
@@ -177,7 +177,7 @@ void VideoCaptureHost::DoHandleErrorOnIOThread(
 
   Send(new VideoCaptureMsg_StateChanged(controller_id.device_id,
                                         VIDEO_CAPTURE_STATE_ERROR));
-  DeleteVideoCaptureControllerOnIOThread(controller_id);
+  DeleteVideoCaptureControllerOnIOThread(controller_id, true);
 }
 
 void VideoCaptureHost::DoEndedOnIOThread(
@@ -189,7 +189,7 @@ void VideoCaptureHost::DoEndedOnIOThread(
 
   Send(new VideoCaptureMsg_StateChanged(controller_id.device_id,
                                         VIDEO_CAPTURE_STATE_ENDED));
-  DeleteVideoCaptureControllerOnIOThread(controller_id);
+  DeleteVideoCaptureControllerOnIOThread(controller_id, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -261,7 +261,7 @@ void VideoCaptureHost::DoControllerAddedOnIOThread(
   if (it == entries_.end()) {
     if (controller) {
       media_stream_manager_->video_capture_manager()->StopCaptureForClient(
-          controller.get(), controller_id, this);
+          controller.get(), controller_id, this, false);
     }
     return;
   }
@@ -285,7 +285,7 @@ void VideoCaptureHost::OnStopCapture(int device_id) {
 
   Send(new VideoCaptureMsg_StateChanged(device_id,
                                         VIDEO_CAPTURE_STATE_STOPPED));
-  DeleteVideoCaptureControllerOnIOThread(controller_id);
+  DeleteVideoCaptureControllerOnIOThread(controller_id, false);
 }
 
 void VideoCaptureHost::OnPauseCapture(int device_id) {
@@ -344,7 +344,7 @@ void VideoCaptureHost::OnGetDeviceFormatsInUse(
 }
 
 void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(
-    const VideoCaptureControllerID& controller_id) {
+    const VideoCaptureControllerID& controller_id, bool on_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   EntryMap::iterator it = entries_.find(controller_id);
@@ -353,7 +353,7 @@ void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(
 
   if (it->second) {
     media_stream_manager_->video_capture_manager()->StopCaptureForClient(
-        it->second.get(), controller_id, this);
+        it->second.get(), controller_id, this, on_error);
   }
   entries_.erase(it);
 }

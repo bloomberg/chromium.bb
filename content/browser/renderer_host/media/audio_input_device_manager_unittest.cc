@@ -33,7 +33,7 @@ class MockAudioInputDeviceManagerListener
   MOCK_METHOD2(Closed, void(MediaStreamType, const int));
   MOCK_METHOD2(DevicesEnumerated, void(MediaStreamType,
                                        const StreamDeviceInfoArray&));
-  MOCK_METHOD3(Error, void(MediaStreamType, int, MediaStreamProviderError));
+  MOCK_METHOD2(Aborted, void(MediaStreamType, int));
 
   StreamDeviceInfoArray devices_;
 

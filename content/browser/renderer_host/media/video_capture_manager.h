@@ -79,7 +79,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // function.
   void StopCaptureForClient(VideoCaptureController* controller,
                             VideoCaptureControllerID client_id,
-                            VideoCaptureControllerEventHandler* client_handler);
+                            VideoCaptureControllerEventHandler* client_handler,
+                            bool aborted_due_to_error);
 
   // Retrieves all capture supported formats for a particular device. Returns
   // false if the |capture_session_id| is not found. The supported formats are
@@ -147,7 +148,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   // Find the DeviceEntry that owns a particular controller pointer.
   DeviceEntry* GetDeviceEntryForController(
-      const VideoCaptureController* controller);
+      const VideoCaptureController* controller) const;
 
   bool IsOnDeviceThread() const;
 
@@ -189,11 +190,12 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   MediaStreamProviderListener* listener_;
   media::VideoCaptureSessionId new_capture_session_id_;
 
+  typedef std::map<media::VideoCaptureSessionId, MediaStreamDevice> SessionMap;
   // An entry is kept in this map for every session that has been created via
   // the Open() entry point. The keys are session_id's. This map is used to
   // determine which device to use when StartCaptureForClient() occurs. Used
   // only on the IO thread.
-  std::map<media::VideoCaptureSessionId, MediaStreamDevice> sessions_;
+  SessionMap sessions_;
 
   // An entry, kept in a map, that owns a VideoCaptureDevice and its associated
   // VideoCaptureController. VideoCaptureManager owns all VideoCaptureDevices

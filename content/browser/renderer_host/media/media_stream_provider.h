@@ -50,6 +50,10 @@ class CONTENT_EXPORT MediaStreamProviderListener {
   virtual void DevicesEnumerated(MediaStreamType stream_type,
                                  const StreamDeviceInfoArray& devices) = 0;
 
+  // Called by a MediaStreamProvider when the device has been aborted due to
+  // device error.
+  virtual void Aborted(MediaStreamType stream_type, int capture_session_id) = 0;
+
  protected:
   virtual ~MediaStreamProviderListener() {}
 };

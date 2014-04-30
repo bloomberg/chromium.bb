@@ -38,8 +38,7 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
   MOCK_METHOD2(Closed, void(MediaStreamType, int));
   MOCK_METHOD2(DevicesEnumerated, void(MediaStreamType,
                                        const StreamDeviceInfoArray&));
-  MOCK_METHOD3(Error, void(MediaStreamType, int,
-                           MediaStreamProviderError));
+  MOCK_METHOD2(Aborted, void(MediaStreamType, int));
 };  // class MockMediaStreamProviderListener
 
 // Needed as an input argument to StartCaptureForClient().
@@ -131,7 +130,7 @@ class VideoCaptureManagerTest : public testing::Test {
   void StopClient(VideoCaptureControllerID client_id) {
     ASSERT_TRUE(1 == controllers_.count(client_id));
     vcm_->StopCaptureForClient(controllers_[client_id], client_id,
-                               frame_observer_.get());
+                               frame_observer_.get(), false);
     controllers_.erase(client_id);
   }
 
@@ -170,6 +169,35 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
 
   StopClient(client_id);
   vcm_->Close(video_session_id);
+
+  // Wait to check callbacks before removing the listener.
+  message_loop_->RunUntilIdle();
+  vcm_->Unregister();
+}
+
+// Try to open, start, and abort a device.
+TEST_F(VideoCaptureManagerTest, CreateAndAbort) {
+  StreamDeviceInfoArray devices;
+
+  InSequence s;
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .WillOnce(SaveArg<1>(&devices));
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*listener_, Aborted(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  // Wait to get device callback.
+  message_loop_->RunUntilIdle();
+
+  int video_session_id = vcm_->Open(devices.front());
+  VideoCaptureControllerID client_id = StartClient(video_session_id, true);
+
+  // Wait for device opened.
+  message_loop_->RunUntilIdle();
+
+  vcm_->StopCaptureForClient(controllers_[client_id], client_id,
+                             frame_observer_.get(), true);
 
   // Wait to check callbacks before removing the listener.
   message_loop_->RunUntilIdle();
