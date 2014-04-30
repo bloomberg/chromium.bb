@@ -1458,9 +1458,9 @@ def load_files(options, args):
       files = scm.SVN.CaptureStatus([], options.root)
   elif change_scm == 'git':
     change_class = GitChange
-    # TODO(maruel): Get upstream.
+    upstream = options.upstream or None
     if not files:
-      files = scm.GIT.CaptureStatus([], options.root, None)
+      files = scm.GIT.CaptureStatus([], options.root, upstream)
   else:
     logging.info('Doesn\'t seem under source control. Got %d files' % len(args))
     if not files:
@@ -1532,6 +1532,9 @@ def Main(argv):
                     "If inherit-review-settings-ok is present in this "
                     "directory, parent directories up to the root file "
                     "system directories will also be searched.")
+  parser.add_option("--upstream",
+                    help="Git only: the base ref or upstream branch against "
+                    "which the diff should be computed.")
   parser.add_option("--default_presubmit")
   parser.add_option("--may_prompt", action='store_true', default=False)
   parser.add_option("--skip_canned", action='append', default=[],
