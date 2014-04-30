@@ -82,7 +82,6 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
-#include "modules/geolocation/GeolocationController.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/push_messaging/PushController.h"
 #include "platform/ContextMenu.h"
@@ -130,7 +129,6 @@
 #include "web/ContextFeaturesClientImpl.h"
 #include "web/DatabaseClientImpl.h"
 #include "web/FullscreenController.h"
-#include "web/GeolocationClientProxy.h"
 #include "web/GraphicsLayerFactoryChromium.h"
 #include "web/LinkHighlight.h"
 #include "web/LocalFileSystemClient.h"
@@ -394,7 +392,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeViewCommitsDeferred(false)
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_recreatingGraphicsContext(false)
-    , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
     , m_flingModifier(0)
     , m_flingSourceDevice(false)
     , m_fullscreenController(FullscreenController::create(this))
@@ -430,8 +427,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
     if (RuntimeEnabledFeatures::deviceOrientationEnabled())
         DeviceOrientationInspectorAgent::provideTo(*m_page);
-    provideGeolocationTo(*m_page, m_geolocationClientProxy.get());
-    m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
 
     provideLocalFileSystemTo(*m_page, LocalFileSystemClient::create());
     provideDatabaseClientTo(*m_page, DatabaseClientImpl::create());

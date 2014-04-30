@@ -63,6 +63,7 @@ class WebCookieJar;
 class WebDataSource;
 class WebDOMEvent;
 class WebFormElement;
+class WebGeolocationClient;
 class WebInputEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -437,6 +438,12 @@ public:
 
     // A WebSocket object is going to open new stream connection.
     virtual void willOpenSocketStream(WebSocketStreamHandle*) { }
+
+
+    // Geolocation ---------------------------------------------------------
+
+    // Access the embedder API for (client-based) geolocation client .
+    virtual WebGeolocationClient* geolocationClient() { return 0; }
 
 
     // MediaStream -----------------------------------------------------

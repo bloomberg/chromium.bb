@@ -287,16 +287,11 @@ LocalFrame* Geolocation::frame() const
     return document() ? document()->frame() : 0;
 }
 
-Page* Geolocation::page() const
-{
-    return document() ? document()->page() : 0;
-}
-
 void Geolocation::stop()
 {
-    Page* page = this->page();
-    if (page && m_allowGeolocation == InProgress)
-        GeolocationController::from(page)->cancelPermissionRequest(this);
+    LocalFrame* frame = this->frame();
+    if (frame && m_allowGeolocation == InProgress)
+        GeolocationController::from(frame)->cancelPermissionRequest(this);
     // The frame may be moving to a new page and we want to get the permissions from the new page's client.
     m_allowGeolocation = Unknown;
     cancelAllRequests();
@@ -306,11 +301,11 @@ void Geolocation::stop()
 
 Geoposition* Geolocation::lastPosition()
 {
-    Page* page = this->page();
-    if (!page)
+    LocalFrame* frame = this->frame();
+    if (!frame)
         return 0;
 
-    m_lastPosition = createGeoposition(GeolocationController::from(page)->lastPosition());
+    m_lastPosition = createGeoposition(GeolocationController::from(frame)->lastPosition());
 
     return m_lastPosition.get();
 }
@@ -613,14 +608,14 @@ void Geolocation::requestPermission()
     if (m_allowGeolocation > Unknown)
         return;
 
-    Page* page = this->page();
-    if (!page)
+    LocalFrame* frame = this->frame();
+    if (!frame)
         return;
 
     m_allowGeolocation = InProgress;
 
     // Ask the embedder: it maintains the geolocation challenge policy itself.
-    GeolocationController::from(page)->requestPermission(this);
+    GeolocationController::from(frame)->requestPermission(this);
 }
 
 void Geolocation::makeSuccessCallbacks()
@@ -669,21 +664,21 @@ void Geolocation::setError(GeolocationError* error)
 
 bool Geolocation::startUpdating(GeoNotifier* notifier)
 {
-    Page* page = this->page();
-    if (!page)
+    LocalFrame* frame = this->frame();
+    if (!frame)
         return false;
 
-    GeolocationController::from(page)->addObserver(this, notifier->options()->enableHighAccuracy());
+    GeolocationController::from(frame)->addObserver(this, notifier->options()->enableHighAccuracy());
     return true;
 }
 
 void Geolocation::stopUpdating()
 {
-    Page* page = this->page();
-    if (!page)
+    LocalFrame* frame = this->frame();
+    if (!frame)
         return;
 
-    GeolocationController::from(page)->removeObserver(this);
+    GeolocationController::from(frame)->removeObserver(this);
 }
 
 void Geolocation::handlePendingPermissionNotifiers()
