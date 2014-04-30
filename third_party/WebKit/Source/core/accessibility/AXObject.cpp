@@ -260,7 +260,11 @@ bool AXObject::isExpanded() const
 
 bool AXObject::accessibilityIsIgnored() const
 {
-    AXComputedObjectAttributeCache* attributeCache = axObjectCache()->computedObjectAttributeCache();
+    AXObjectCache* cache = axObjectCache();
+    if (!cache)
+        return true;
+
+    AXComputedObjectAttributeCache* attributeCache = cache->computedObjectAttributeCache();
     if (attributeCache) {
         AXObjectInclusion ignored = attributeCache->getIgnored(axObjectID());
         switch (ignored) {
