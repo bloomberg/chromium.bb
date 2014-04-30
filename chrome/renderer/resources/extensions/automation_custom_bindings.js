@@ -28,7 +28,7 @@ var createAutomationTreeID = function(pid, rid) {
 automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  // TODO(aboxhall/dtseng): Re-work once 'desktop' object is fully specced
+  // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
   apiFunctions.setHandleRequest('getTree', function(callback) {
     // enableCurrentTab() ensures the renderer for the current tab has
     // accessibility enabled, and fetches its process and routing ids to use as

@@ -1421,6 +1421,7 @@
         'browser/translate/translate_service_unittest.cc',
         'browser/ui/android/tab_model/tab_model_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
+        'browser/ui/ash/accessibility/ax_tree_source_views_unittest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
         'browser/ui/ash/launcher/launcher_context_menu_unittest.cc',
         'browser/ui/ash/multi_user/multi_user_context_menu_chromeos_unittest.cc',

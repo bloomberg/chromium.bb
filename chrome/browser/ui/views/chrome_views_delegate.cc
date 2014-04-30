@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
-#include "chrome/browser/ui/views/accessibility/automation_manager_views.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -51,6 +50,7 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_views.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
@@ -199,8 +199,10 @@ void ChromeViewsDelegate::NotifyAccessibilityEvent(
   AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
       view, event_type);
 
+#if defined(USE_ASH)
   AutomationManagerViews::GetInstance()->HandleEvent(
       GetProfileForWindow(view->GetWidget()), view, event_type);
+#endif
 }
 
 void ChromeViewsDelegate::NotifyMenuItemFocused(

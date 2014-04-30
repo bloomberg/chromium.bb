@@ -47,8 +47,15 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
-        'accessibility/ax_tree_source_views.cc',
-        'accessibility/ax_tree_source_views.h',
+        'accessibility/ax_aura_obj_cache.cc',
+        'accessibility/ax_aura_obj_cache.h',
+        'accessibility/ax_aura_obj_wrapper.h',
+        'accessibility/ax_view_obj_wrapper.cc',
+        'accessibility/ax_view_obj_wrapper.h',
+        'accessibility/ax_widget_obj_wrapper.cc',
+        'accessibility/ax_widget_obj_wrapper.h',
+        'accessibility/ax_window_obj_wrapper.cc',
+        'accessibility/ax_window_obj_wrapper.h',
         'accessibility/native_view_accessibility.cc',
         'accessibility/native_view_accessibility.h',
         'accessibility/native_view_accessibility_win.cc',
@@ -597,7 +604,6 @@
         '..',
       ],
       'sources': [
-        'accessibility/ax_tree_source_views_unittest.cc',
         'accessibility/native_view_accessibility_win_unittest.cc',
         'accessible_pane_view_unittest.cc',
         'animation/bounds_animator_unittest.cc',
