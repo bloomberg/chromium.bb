@@ -337,9 +337,6 @@ interface PPB_NaCl_Private {
    */
   str_t GetSandboxArch();
 
-  /* Returns the scheme type for a given url. */
-  PP_UrlSchemeType GetUrlScheme([in] PP_Var url);
-
   /* Logs the message to the console. */
   void LogToConsole([in] PP_Instance instance,
                     [in] str_t message);

@@ -123,10 +123,6 @@ void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
                      LOAD_STATUS_UNKNOWN);
 }
 
-void Plugin::HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
-  HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2, -1);
-}
-
 void Plugin::HistogramHTTPStatusCode(const std::string& name, int status) {
   // Log the status codes in rough buckets - 1XX, 2XX, etc.
   int sample = status / 100;
@@ -712,7 +708,6 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
                            "manifest file too large.");
       ReportLoadError(error_info);
     } else {
-      // TODO(teravest): Does this have to be async for any reason?
       ProcessNaClManifest(nmf_data.AsString());
     }
   } else {
@@ -932,18 +927,6 @@ void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,
 
 bool Plugin::OpenURLFast(const nacl::string& url,
                          FileDownloader* downloader) {
-  // Fast path only works for installed file URLs.
-  pp::Var url_var(url);
-  if (nacl_interface_->GetUrlScheme(url_var.pp_var()) !=
-      PP_SCHEME_CHROME_EXTENSION)
-    return false;
-  // IMPORTANT: Make sure the document can request the given URL. If we don't
-  // check, a malicious app could probe the extension system. This enforces a
-  // same-origin policy which prevents the app from requesting resources from
-  // another app.
-  if (!DocumentCanRequest(url))
-    return false;
-
   uint64_t file_token_lo = 0;
   uint64_t file_token_hi = 0;
   PP_FileHandle file_handle =

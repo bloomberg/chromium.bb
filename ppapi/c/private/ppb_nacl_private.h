@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Apr 23 12:20:47 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Apr 25 15:10:15 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -346,8 +346,6 @@ struct PPB_NaCl_Private_1_0 {
    * platform.
    */
   const char* (*GetSandboxArch)(void);
-  /* Returns the scheme type for a given url. */
-  PP_UrlSchemeType (*GetUrlScheme)(struct PP_Var url);
   /* Logs the message to the console. */
   void (*LogToConsole)(PP_Instance instance, const char* message);
   /* Returns the NaCl readiness status for this instance. */

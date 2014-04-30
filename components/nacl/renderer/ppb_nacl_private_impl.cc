@@ -37,6 +37,10 @@
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 namespace nacl {
 namespace {
@@ -546,6 +550,22 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
                                  const char* file_url,
                                  uint64_t* nonce_lo,
                                  uint64_t* nonce_hi) {
+  // Fast path only works for installed file URLs.
+  GURL gurl(file_url);
+  if (!gurl.SchemeIs("chrome-extension"))
+    return PP_kInvalidFileHandle;
+
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  // IMPORTANT: Make sure the document can request the given URL. If we don't
+  // check, a malicious app could probe the extension system. This enforces a
+  // same-origin policy which prevents the app from requesting resources from
+  // another app.
+  blink::WebSecurityOrigin security_origin =
+      plugin_instance->GetContainer()->element().document().securityOrigin();
+  if (!security_origin.canRequest(gurl))
+    return PP_kInvalidFileHandle;
+
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
@@ -554,10 +574,10 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
   base::FilePath file_path;
   if (!sender->Send(
       new NaClHostMsg_OpenNaClExecutable(GetRoutingID(instance),
-                                               GURL(file_url),
-                                               &out_fd,
-                                               nonce_lo,
-                                               nonce_hi))) {
+                                         GURL(file_url),
+                                         &out_fd,
+                                         nonce_lo,
+                                         nonce_hi))) {
     return base::kInvalidPlatformFileValue;
   }
 
@@ -693,19 +713,6 @@ PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
     return PP_FALSE;
   }
   return PP_FromBool(should_debug);
-}
-
-PP_UrlSchemeType GetUrlScheme(PP_Var url) {
-  scoped_refptr<ppapi::StringVar> url_string = ppapi::StringVar::FromPPVar(url);
-  if (!url_string)
-    return PP_SCHEME_OTHER;
-
-  GURL gurl(url_string->value());
-  if (gurl.SchemeIs("chrome-extension"))
-    return PP_SCHEME_CHROME_EXTENSION;
-  if (gurl.SchemeIs("data"))
-    return PP_SCHEME_DATA;
-  return PP_SCHEME_OTHER;
 }
 
 void LogToConsole(PP_Instance instance, const char* message) {
@@ -867,7 +874,6 @@ const PPB_NaCl_Private nacl_interface = {
   &InstanceDestroyed,
   &NaClDebugEnabledForURL,
   &GetSandboxArch,
-  &GetUrlScheme,
   &LogToConsole,
   &GetNaClReadyState,
   &GetIsInstalled,
