@@ -1081,6 +1081,10 @@
           ],
           'sources/': [
             ['exclude', '^browser/chromeos/events/'],
+            ['include', '^browser/chromeos/events/event_rewriter_controller.cc'],
+            ['include', '^browser/chromeos/events/event_rewriter_controller.h'],
+            ['include', '^browser/chromeos/events/keyboard_driven_event_rewriter.cc'],
+            ['include', '^browser/chromeos/events/keyboard_driven_event_rewriter.h'],
           ],
         }],
       ],
