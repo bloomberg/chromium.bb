@@ -67,6 +67,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
   virtual void SetNeedsRedrawRectOnImplThread(
       const gfx::Rect& dirty_rect) OVERRIDE;
+  virtual void SetNeedsAnimateOnImplThread() OVERRIDE;
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;

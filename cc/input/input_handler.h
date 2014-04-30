@@ -125,7 +125,7 @@ class CC_EXPORT InputHandler {
                                        base::TimeDelta duration) = 0;
 
   // Request another callback to InputHandlerClient::Animate().
-  virtual void ScheduleAnimation() = 0;
+  virtual void SetNeedsAnimate() = 0;
 
   virtual bool HaveTouchEventHandlersAt(const gfx::Point& viewport_point) = 0;
 

@@ -330,7 +330,7 @@ InputHandlerProxy::HandleGestureFling(
       // Note that the timestamp will only be used to kickstart the animation if
       // its sufficiently close to the timestamp of the first call |Animate()|.
       has_fling_animation_started_ = false;
-      fling_parameters_.startTime = gesture_event.timeStampSeconds;
+        fling_parameters_.startTime = gesture_event.timeStampSeconds;
       fling_parameters_.delta =
           WebFloatPoint(gesture_event.data.flingStart.velocityX,
                         gesture_event.data.flingStart.velocityY);
@@ -339,7 +339,7 @@ InputHandlerProxy::HandleGestureFling(
           WebPoint(gesture_event.globalX, gesture_event.globalY);
       fling_parameters_.modifiers = gesture_event.modifiers;
       fling_parameters_.sourceDevice = gesture_event.sourceDevice;
-      input_handler_->ScheduleAnimation();
+      input_handler_->SetNeedsAnimate();
       return DID_HANDLE;
     }
     case cc::InputHandler::ScrollUnknown:
@@ -380,14 +380,14 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     has_fling_animation_started_ = true;
     // Guard against invalid, future or sufficiently stale start times, as there
     // are no guarantees fling event and animation timestamps are compatible.
-    if (!fling_parameters_.startTime ||
+  if (!fling_parameters_.startTime ||
         monotonic_time_sec <= fling_parameters_.startTime ||
         monotonic_time_sec >= fling_parameters_.startTime +
                                   kMaxSecondsFromFlingTimestampToFirstAnimate) {
-      fling_parameters_.startTime = monotonic_time_sec;
-      input_handler_->ScheduleAnimation();
-      return;
-    }
+    fling_parameters_.startTime = monotonic_time_sec;
+    input_handler_->SetNeedsAnimate();
+    return;
+  }
   }
 
   bool fling_is_active =
@@ -398,7 +398,7 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     fling_is_active = false;
 
   if (fling_is_active) {
-    input_handler_->ScheduleAnimation();
+    input_handler_->SetNeedsAnimate();
   } else {
     TRACE_EVENT_INSTANT0("input",
                          "InputHandlerProxy::animate::flingOver",

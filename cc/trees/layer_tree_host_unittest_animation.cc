@@ -1323,5 +1323,69 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers);
 
+class LayerTreeHostAnimationTestAddAnimationAfterAnimating
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestAddAnimationAfterAnimating()
+      : num_swap_buffers_(0) {}
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostAnimationTest::SetupTree();
+    content_ = Layer::Create();
+    content_->SetBounds(gfx::Size(4, 4));
+    layer_tree_host()->root_layer()->AddChild(content_);
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // First frame: add an animation to the root layer.
+        AddAnimatedTransformToLayer(layer_tree_host()->root_layer(), 0.1, 5, 5);
+        break;
+      case 2:
+        // Second frame: add an animation to the content layer. The root layer
+        // animation has caused us to animate already during this frame.
+        AddOpacityTransitionToLayer(content_.get(), 0.1, 5, 5, false);
+        break;
+    }
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    // The third frame is when both animations have started. Check that both
+    // have a valid start time.
+    if (++num_swap_buffers_ == 3) {
+      EndTest();
+      AnimationRegistrar::AnimationControllerMap copy =
+          host_impl->animation_registrar()->active_animation_controllers();
+      EXPECT_EQ(2u, copy.size());
+      for (AnimationRegistrar::AnimationControllerMap::iterator iter =
+               copy.begin();
+           iter != copy.end();
+           ++iter) {
+        int id = ((*iter).second->id());
+        if (id == host_impl->RootLayer()->id()) {
+          Animation* anim = (*iter).second->GetAnimation(Animation::Transform);
+          EXPECT_GT(anim->start_time(), 0);
+        } else if (id == host_impl->RootLayer()->children()[0]->id()) {
+          Animation* anim = (*iter).second->GetAnimation(Animation::Opacity);
+          EXPECT_GT(anim->start_time(), 0);
+        }
+      }
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  scoped_refptr<Layer> content_;
+  int num_swap_buffers_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestAddAnimationAfterAnimating);
+
 }  // namespace
 }  // namespace cc
