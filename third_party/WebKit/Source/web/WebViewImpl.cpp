@@ -2914,10 +2914,13 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
 
     Document* document = page()->mainFrame()->document();
 
-    m_matchesHeuristicsForGpuRasterization = description.minimalUI
+    m_matchesHeuristicsForGpuRasterization = description.maxWidth == Length(DeviceWidth)
         && description.minZoom == 1.0
-        && description.minWidth == Length(ExtendToZoom)
-        && description.maxWidth == Length(DeviceWidth);
+        && description.minZoomIsExplicit
+        && description.zoom == 1.0
+        && description.zoomIsExplicit
+        && description.userZoom
+        && description.userZoomIsExplicit;
     if (m_layerTreeView)
         m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
 
