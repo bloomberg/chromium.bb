@@ -28,6 +28,9 @@ class PermissionBubbleRequest;
 
   // Bridge to the C++ class that created this object.
   PermissionBubbleCocoa* bridge_;  // Weak.
+
+  // Anchor's offset from parent window's upper-left-hand corner.
+  NSPoint anchorOffset_;
 }
 
 // Designated initializer.  |parentWindow| and |bridge| must both be non-nil.

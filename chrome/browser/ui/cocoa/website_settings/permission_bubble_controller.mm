@@ -175,6 +175,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // Called when the 'customize' button is pressed.
 - (void)onCustomize:(id)sender;
 
+// Called when the parent window is resized.
+- (void)parentWindowDidResize:(NSNotification*)notification;
+
 // Sets the width of both |viewA| and |viewB| to be the larger of the
 // two views' widths.  Does not change either view's origin or height.
 + (CGFloat)matchWidthsOf:(NSView*)viewA andOf:(NSView*)viewB;
@@ -202,9 +205,19 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                          anchoredAt:NSZeroPoint])) {
     [self setShouldCloseOnResignKey:NO];
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self
+           selector:@selector(parentWindowDidResize:)
+               name:NSWindowDidResizeNotification
+             object:parentWindow];
     bridge_ = bridge;
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -353,6 +366,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     [self setAnchorPoint:anchorPoint];
     [self showWindow:nil];
   }
+  // The offset of the anchor from the parent's upper-left-hand corner is kept
+  // to ensure the bubble stays anchored correctly if the parent is resized.
+  anchorOffset_ = NSMakePoint(NSMinX([[self parentWindow] frame]),
+                              NSMaxY([[self parentWindow] frame]));
+  anchorOffset_.x -= anchorPoint.x;
+  anchorOffset_.y -= anchorPoint.y;
 }
 
 - (NSView*)labelForRequest:(PermissionBubbleRequest*)request {
@@ -498,6 +517,15 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)onMenuItemClicked:(int)commandId {
   DCHECK(commandId == 0);
   [self onCustomize:nil];
+}
+
+- (void)parentWindowDidResize:(NSNotification*)notification {
+  DCHECK_EQ([self parentWindow], [notification object]);
+  NSPoint newOrigin = NSMakePoint(NSMinX([[self parentWindow] frame]),
+                                  NSMaxY([[self parentWindow] frame]));
+  newOrigin.x -= anchorOffset_.x;
+  newOrigin.y -= anchorOffset_.y;
+  [self setAnchorPoint:newOrigin];
 }
 
 + (CGFloat)matchWidthsOf:(NSView*)viewA andOf:(NSView*)viewB {
