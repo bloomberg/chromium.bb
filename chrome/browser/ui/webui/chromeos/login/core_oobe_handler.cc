@@ -361,7 +361,9 @@ void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
 }
 
 void CoreOobeHandler::HandleHeaderBarVisible() {
-  LoginDisplayHostImpl::default_host()->SetStatusAreaVisible(true);
+  LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
+  if (login_display_host)
+    login_display_host->SetStatusAreaVisible(true);
 }
 
 }  // namespace chromeos
