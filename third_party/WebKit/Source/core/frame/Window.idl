@@ -79,7 +79,7 @@
                  [Default=Undefined] optional boolean searchInFrames,
                  [Default=Undefined] optional boolean showDialog);
 
-    [Replaceable] readonly attribute  boolean offscreenBuffering;
+    [Replaceable, MeasureAs=WindowOffscreenBuffering] readonly attribute boolean offscreenBuffering;
 
     [Replaceable] readonly attribute long outerHeight;
     [Replaceable] readonly attribute long outerWidth;
@@ -117,9 +117,9 @@
     attribute DOMString name;
 
     attribute DOMString status;
-    attribute DOMString defaultStatus;
+    [MeasureAs=WindowDefaultStatus] attribute DOMString defaultStatus;
     // This attribute is an alias of defaultStatus and is necessary for legacy uses.
-    [ImplementedAs=defaultStatus] attribute DOMString defaultstatus;
+    [ImplementedAs=defaultStatus, MeasureAs=WindowDefaultstatus] attribute DOMString defaultstatus;
 
     // Self referential attributes
     [Replaceable, DoNotCheckSecurity] readonly attribute Window self;
@@ -149,10 +149,10 @@
 
     [Replaceable] readonly attribute double devicePixelRatio;
 
-    WebKitPoint webkitConvertPointFromPageToNode([Default=Undefined] optional Node node,
-                                                 [Default=Undefined] optional WebKitPoint p);
-    WebKitPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
-                                                 [Default=Undefined] optional WebKitPoint p);
+    [MeasureAs=PrefixedConvertPointFromPageToNode] WebKitPoint webkitConvertPointFromPageToNode([Default=Undefined] optional Node node,
+                                                                                                [Default=Undefined] optional WebKitPoint p);
+    [MeasureAs=PrefixedConvertPointFromNodeToPage] WebKitPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
+                                                                                                [Default=Undefined] optional WebKitPoint p);
 
     [RuntimeEnabled=ApplicationCache, PerWorldBindings, LogActivity=GetterOnly] readonly attribute ApplicationCache applicationCache;
 
@@ -200,18 +200,18 @@
     [MeasureAs=WindowReleaseEvents] void releaseEvents();
 
     // Additional constructors.
-    attribute TransitionEventConstructor WebKitTransitionEvent;
+    [MeasureAs=PrefixedTransitionEventConstructor] attribute TransitionEventConstructor WebKitTransitionEvent;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
     [MeasureAs=PrefixedWindowURL] attribute URLConstructor webkitURL; // FIXME: deprecate this.
-    attribute MutationObserverConstructor WebKitMutationObserver; // FIXME: Add metrics to determine when we can remove this.
-    attribute IDBCursorConstructor webkitIDBCursor;
-    attribute IDBDatabaseConstructor webkitIDBDatabase;
-    attribute IDBFactoryConstructor webkitIDBFactory;
-    attribute IDBIndexConstructor webkitIDBIndex;
-    attribute IDBKeyRangeConstructor webkitIDBKeyRange;
-    attribute IDBObjectStoreConstructor webkitIDBObjectStore;
-    attribute IDBRequestConstructor webkitIDBRequest;
-    attribute IDBTransactionConstructor webkitIDBTransaction;
+    [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
+    [MeasureAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;
+    [MeasureAs=PrefixedIDBDatabaseConstructor] attribute IDBDatabaseConstructor webkitIDBDatabase;
+    [MeasureAs=PrefixedIDBFactoryConstructor] attribute IDBFactoryConstructor webkitIDBFactory;
+    [MeasureAs=PrefixedIDBIndexConstructor] attribute IDBIndexConstructor webkitIDBIndex;
+    [MeasureAs=PrefixedIDBKeyRangeConstructor] attribute IDBKeyRangeConstructor webkitIDBKeyRange;
+    [MeasureAs=PrefixedIDBObjectStoreConstructor] attribute IDBObjectStoreConstructor webkitIDBObjectStore;
+    [MeasureAs=PrefixedIDBRequestConstructor] attribute IDBRequestConstructor webkitIDBRequest;
+    [MeasureAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
 
     // Constructors whose name does not match the interface name.
     // FIXME: Remove these once [ImplementedAs] is used and once constructor names match interface names.

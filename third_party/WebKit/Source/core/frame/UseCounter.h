@@ -363,6 +363,21 @@ public:
         EventSetReturnValueFalse = 353,
         NodeIteratorExpandEntityReferences = 354,
         TreeWalkerExpandEntityReferences = 355,
+        WindowOffscreenBuffering = 356,
+        WindowDefaultStatus = 357,
+        WindowDefaultstatus = 358,
+        PrefixedConvertPointFromPageToNode = 359,
+        PrefixedConvertPointFromNodeToPage = 360,
+        PrefixedTransitionEventConstructor = 361,
+        PrefixedMutationObserverConstructor = 362,
+        PrefixedIDBCursorConstructor = 363,
+        PrefixedIDBDatabaseConstructor = 364,
+        PrefixedIDBFactoryConstructor = 365,
+        PrefixedIDBIndexConstructor = 366,
+        PrefixedIDBKeyRangeConstructor = 367,
+        PrefixedIDBObjectStoreConstructor = 368,
+        PrefixedIDBRequestConstructor = 369,
+        PrefixedIDBTransactionConstructor = 370,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.
