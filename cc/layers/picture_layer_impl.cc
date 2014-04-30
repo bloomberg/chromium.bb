@@ -238,6 +238,9 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     if (visible_geometry_rect.IsEmpty())
       continue;
 
+    append_quads_data->visible_content_area +=
+        visible_geometry_rect.width() * visible_geometry_rect.height();
+
     if (!*iter || !iter->IsReadyToDraw()) {
       if (draw_checkerboard_for_missing_tiles()) {
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
@@ -258,6 +261,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
       append_quads_data->num_missing_tiles++;
       append_quads_data->had_incomplete_tile = true;
+      append_quads_data->approximated_visible_content_area +=
+          visible_geometry_rect.width() * visible_geometry_rect.height();
       continue;
     }
 
@@ -322,6 +327,11 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
     DCHECK(draw_quad);
     quad_sink->Append(draw_quad.Pass());
+
+    if (iter->priority(ACTIVE_TREE).resolution != HIGH_RESOLUTION) {
+      append_quads_data->approximated_visible_content_area +=
+          visible_geometry_rect.width() * visible_geometry_rect.height();
+    }
 
     if (seen_tilings.empty() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());

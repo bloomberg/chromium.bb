@@ -35,6 +35,8 @@ struct CC_EXPORT ImplThreadRenderingStats {
   base::TimeDelta rasterize_time;
   base::TimeDelta analysis_time;
   int64 rasterized_pixel_count;
+  int64 visible_content_area;
+  int64 approximated_visible_content_area;
 
   ImplThreadRenderingStats();
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;

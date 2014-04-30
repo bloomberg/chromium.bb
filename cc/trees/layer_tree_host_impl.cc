@@ -861,6 +861,11 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       ++layers_drawn;
     }
 
+    rendering_stats_instrumentation_->AddVisibleContentArea(
+        append_quads_data.visible_content_area);
+    rendering_stats_instrumentation_->AddApproximatedVisibleContentArea(
+        append_quads_data.approximated_visible_content_area);
+
     if (append_quads_data.num_missing_tiles) {
       bool layer_has_animating_transform =
           it->screen_space_transform_is_animating() ||

@@ -108,4 +108,21 @@ void RenderingStatsInstrumentation::AddAnalysis(base::TimeDelta duration,
   impl_stats_.analysis_time += duration;
 }
 
+void RenderingStatsInstrumentation::AddVisibleContentArea(int64 area) {
+  if (!record_rendering_stats_)
+    return;
+
+  base::AutoLock scoped_lock(lock_);
+  impl_stats_.visible_content_area += area;
+}
+
+void RenderingStatsInstrumentation::AddApproximatedVisibleContentArea(
+    int64 area) {
+  if (!record_rendering_stats_)
+    return;
+
+  base::AutoLock scoped_lock(lock_);
+  impl_stats_.approximated_visible_content_area += area;
+}
+
 }  // namespace cc

@@ -53,6 +53,8 @@ class CC_EXPORT RenderingStatsInstrumentation {
   void AddRecord(base::TimeDelta duration, int64 pixels);
   void AddRaster(base::TimeDelta duration, int64 pixels);
   void AddAnalysis(base::TimeDelta duration, int64 pixels);
+  void AddVisibleContentArea(int64 area);
+  void AddApproximatedVisibleContentArea(int64 area);
 
  protected:
   RenderingStatsInstrumentation();
