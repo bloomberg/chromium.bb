@@ -1144,7 +1144,7 @@ T* adoptRefCountedGarbageCollected(T* ptr)
 // ignore a particular class or field when checking for proper usage. When using
 // GC_PLUGIN_IGNORE a bug-number should be provided as an argument where the
 // bug describes what needs to happen to remove the GC_PLUGIN_IGNORE again.
-#if COMPILER(CLANG) && !defined(ADDRESS_SANITIZER)
+#if COMPILER(CLANG)
 #define STACK_ALLOCATED()                                       \
     private:                                                    \
         __attribute__((annotate("blink_stack_allocated")))      \
