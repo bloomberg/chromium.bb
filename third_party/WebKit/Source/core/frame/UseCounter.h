@@ -370,6 +370,8 @@ public:
         EventGetReturnValueFalse = 351,
         EventSetReturnValueTrue = 352,
         EventSetReturnValueFalse = 353,
+        NodeIteratorExpandEntityReferences = 354,
+        TreeWalkerExpandEntityReferences = 355,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'TreeWalker.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.
 This test checks the basic functionality of TreeWalker.
 
 This is a testharness.js-based test.

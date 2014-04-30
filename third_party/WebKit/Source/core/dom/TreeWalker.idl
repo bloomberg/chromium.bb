@@ -25,7 +25,7 @@
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
     readonly attribute NodeFilter filter;
-    readonly attribute boolean expandEntityReferences;
+    [DeprecateAs=TreeWalkerExpandEntityReferences] readonly attribute boolean expandEntityReferences;
              [RaisesException=Setter] attribute Node currentNode;
 
     [RaisesException] Node parentNode();

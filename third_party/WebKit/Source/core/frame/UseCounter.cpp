@@ -721,6 +721,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case AttrTextContent:
         return "'Attr.textContent' is deprecated. Please use 'value' instead.";
 
+    case NodeIteratorExpandEntityReferences:
+        return "'NodeIterator.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.";
+
+    case TreeWalkerExpandEntityReferences:
+        return "'TreeWalker.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

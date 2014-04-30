@@ -25,7 +25,7 @@
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
     readonly attribute NodeFilter filter;
-    readonly attribute boolean expandEntityReferences;
+    [DeprecateAs=NodeIteratorExpandEntityReferences] readonly attribute boolean expandEntityReferences;
     readonly attribute Node referenceNode;
     readonly attribute boolean pointerBeforeReferenceNode;
 
