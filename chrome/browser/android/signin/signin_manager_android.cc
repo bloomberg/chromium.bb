@@ -201,10 +201,18 @@ void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
 
   // All the Profile data has been wiped. Clear the last signed in username as
   // well, so that the next signin doesn't trigger the acount change dialog.
-  profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
+  ClearLastSignedInUser();
 
   Java_SigninManager_onProfileDataWiped(base::android::AttachCurrentThread(),
                                         java_signin_manager_.obj());
+}
+
+void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env, jobject obj) {
+  ClearLastSignedInUser();
+}
+
+void SigninManagerAndroid::ClearLastSignedInUser() {
+  profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 }
 
 void SigninManagerAndroid::MergeSessionCompleted(

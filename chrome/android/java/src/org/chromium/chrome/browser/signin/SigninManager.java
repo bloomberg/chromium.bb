@@ -337,6 +337,10 @@ public class SigninManager {
         nativeLogInSignedInUser(mNativeSigninManagerAndroid);
     }
 
+    public void clearLastSignedInUser() {
+        nativeClearLastSignedInUser(mNativeSigninManagerAndroid);
+    }
+
     private void cancelSignIn() {
         if (mSignInObserver != null)
             mSignInObserver.onSigninCancelled();
@@ -393,6 +397,7 @@ public class SigninManager {
     private native void nativeSignOut(long nativeSigninManagerAndroid);
     private native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
     private native void nativeWipeProfileData(long nativeSigninManagerAndroid);
+    private native void nativeClearLastSignedInUser(long nativeSigninManagerAndroid);
     private native void nativeLogInSignedInUser(long nativeSigninManagerAndroid);
     private static native boolean nativeIsNewProfileManagementEnabled();
 }

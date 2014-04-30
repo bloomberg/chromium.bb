@@ -52,6 +52,8 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
 
   void LogInSignedInUser(JNIEnv* env, jobject obj);
 
+  void ClearLastSignedInUser(JNIEnv* env, jobject obj);
+
  private:
   virtual ~SigninManagerAndroid();
 
@@ -62,6 +64,8 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
 #endif
 
   void OnBrowsingDataRemoverDone();
+
+  void ClearLastSignedInUser();
 
   // MergeSessionHelper::Observer implementation.
   virtual void MergeSessionCompleted(
