@@ -171,7 +171,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
 
   void InstallView();
   void UninstallView();
-  void InstallDraggableRegionViews();
+  void UpdateDraggableRegionViews();
 
   // Cache |restored_bounds_| only if the window is currently restored.
   void UpdateRestoredBounds();
@@ -205,7 +205,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
 
   // For system drag, the whole window is draggable and the non-draggable areas
   // have to been explicitly excluded.
-  std::vector<gfx::Rect> system_drag_exclude_areas_;
+  std::vector<extensions::DraggableRegion> draggable_regions_;
 
   // The Extension Command Registry used to determine which keyboard events to
   // handle.
