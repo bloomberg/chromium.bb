@@ -2076,8 +2076,8 @@ String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
 
 static PassRefPtrWillBeRawPtr<Range> collapsedToBoundary(const Range* range, bool forward)
 {
-    RefPtrWillBeRawPtr<Range> result = range->cloneRange(ASSERT_NO_EXCEPTION);
-    result->collapse(!forward, ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> result = range->cloneRange();
+    result->collapse(!forward);
     return result.release();
 }
 

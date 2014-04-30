@@ -165,7 +165,7 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame, DocumentMarker& 
     marker = *markers[0];
 
     // Cloning a range fails only for invalid ranges.
-    RefPtrWillBeRawPtr<Range> markerRange = selectionRange->cloneRange(ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> markerRange = selectionRange->cloneRange();
     markerRange->setStart(markerRange->startContainer(), marker.startOffset());
     markerRange->setEnd(markerRange->endContainer(), marker.endOffset());
 

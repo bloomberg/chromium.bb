@@ -25,12 +25,12 @@
     WillBeGarbageCollected,
 ] interface Range {
 
-    [RaisesException=Getter] readonly attribute Node startContainer;
-    [RaisesException=Getter] readonly attribute long startOffset;
-    [RaisesException=Getter] readonly attribute Node endContainer;
-    [RaisesException=Getter] readonly attribute long endOffset;
-    [RaisesException=Getter] readonly attribute boolean collapsed;
-    [RaisesException=Getter] readonly attribute Node commonAncestorContainer;
+    readonly attribute Node startContainer;
+    readonly attribute long startOffset;
+    readonly attribute Node endContainer;
+    readonly attribute long endOffset;
+    readonly attribute boolean collapsed;
+    readonly attribute Node commonAncestorContainer;
 
     [RaisesException] void setStart(Node refNode, long offset);
     [RaisesException] void setEnd(Node refNode, long offset);
@@ -38,7 +38,7 @@
     [RaisesException] void setStartAfter(Node refNode);
     [RaisesException] void setEndBefore(Node refNode);
     [RaisesException] void setEndAfter(Node refNode);
-    [RaisesException] void collapse([Default=Undefined] optional boolean toStart);
+    void collapse([Default=Undefined] optional boolean toStart);
     [RaisesException] void selectNode(Node refNode);
     [RaisesException] void selectNodeContents(Node refNode);
 
@@ -55,10 +55,10 @@
     [RaisesException, CustomElementCallbacks] DocumentFragment cloneContents();
     [RaisesException, CustomElementCallbacks] void insertNode(Node newNode);
     [RaisesException, CustomElementCallbacks] void surroundContents(Node newParent);
-    [RaisesException] Range cloneRange();
-    [RaisesException] DOMString toString();
+    Range cloneRange();
+    DOMString toString();
 
-    [RaisesException] void detach();
+    [DeprecateAs=RangeDetach] void detach();
 
     [RaisesException] boolean isPointInRange(Node refNode, long offset);
     [RaisesException] short comparePoint(Node refNode, long offset);

@@ -61,17 +61,13 @@ public:
     Node* endContainer() const { return m_end.container(); }
     int endOffset() const { return m_end.offset(); }
 
-    Node* startContainer(ExceptionState&) const;
-    int startOffset(ExceptionState&) const;
-    Node* endContainer(ExceptionState&) const;
-    int endOffset(ExceptionState&) const;
-    bool collapsed(ExceptionState&) const;
+    bool collapsed() const { return m_start == m_end; }
 
-    Node* commonAncestorContainer(ExceptionState&) const;
+    Node* commonAncestorContainer() const;
     static Node* commonAncestorContainer(Node* containerA, Node* containerB);
     void setStart(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void setEnd(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void collapse(bool toStart, ExceptionState&);
+    void collapse(bool toStart);
     bool isPointInRange(Node* refNode, int offset, ExceptionState&);
     short comparePoint(Node* refNode, int offset, ExceptionState&) const;
     enum CompareResults { NODE_BEFORE, NODE_AFTER, NODE_BEFORE_AND_AFTER, NODE_INSIDE };
@@ -86,15 +82,15 @@ public:
     PassRefPtr<DocumentFragment> extractContents(ExceptionState&);
     PassRefPtr<DocumentFragment> cloneContents(ExceptionState&);
     void insertNode(PassRefPtr<Node>, ExceptionState&);
-    String toString(ExceptionState&) const;
+    String toString() const;
 
     String toHTML() const;
     String text() const;
 
     PassRefPtr<DocumentFragment> createContextualFragment(const String& html, ExceptionState&);
 
-    void detach(ExceptionState&);
-    PassRefPtrWillBeRawPtr<Range> cloneRange(ExceptionState&) const;
+    void detach();
+    PassRefPtrWillBeRawPtr<Range> cloneRange() const;
 
     void setStartAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void setEndBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);

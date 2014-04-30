@@ -258,7 +258,7 @@ bool Editor::canDeleteRange(Range* range) const
     if (!startContainer->rendererIsEditable() || !endContainer->rendererIsEditable())
         return false;
 
-    if (range->collapsed(IGNORE_EXCEPTION)) {
+    if (range->collapsed()) {
         VisiblePosition start(range->startPosition(), DOWNSTREAM);
         VisiblePosition previous = start.previous();
         // FIXME: We sometimes allow deletions at the start of editable roots, like when the caret is in an empty list item.
@@ -516,7 +516,7 @@ PassRefPtrWillBeRawPtr<Range> Editor::selectedRange()
 
 bool Editor::shouldDeleteRange(Range* range) const
 {
-    if (!range || range->collapsed(IGNORE_EXCEPTION))
+    if (!range || range->collapsed())
         return false;
 
     return canDeleteRange(range);
@@ -1184,7 +1184,7 @@ PassRefPtrWillBeRawPtr<Range> Editor::rangeOfString(const String& target, Range*
     }
 
     // If nothing was found in the shadow tree, search in main content following the shadow tree.
-    if (resultRange->collapsed(ASSERT_NO_EXCEPTION) && shadowTreeRoot) {
+    if (resultRange->collapsed() && shadowTreeRoot) {
         searchRange = rangeOfContents(m_frame.document());
         if (forward)
             searchRange->setStartAfter(shadowTreeRoot->shadowHost());
@@ -1196,7 +1196,7 @@ PassRefPtrWillBeRawPtr<Range> Editor::rangeOfString(const String& target, Range*
 
     // If we didn't find anything and we're wrapping, search again in the entire document (this will
     // redundantly re-search the area already searched in some cases).
-    if (resultRange->collapsed(ASSERT_NO_EXCEPTION) && options & WrapAround) {
+    if (resultRange->collapsed() && options & WrapAround) {
         searchRange = rangeOfContents(m_frame.document());
         resultRange = findPlainText(searchRange.get(), target, options);
         // We used to return false here if we ended up with the same range that we started with
@@ -1204,7 +1204,7 @@ PassRefPtrWillBeRawPtr<Range> Editor::rangeOfString(const String& target, Range*
         // this should be a success case instead, so we'll just fall through in that case.
     }
 
-    return resultRange->collapsed(ASSERT_NO_EXCEPTION) ? nullptr : resultRange.release();
+    return resultRange->collapsed() ? nullptr : resultRange.release();
 }
 
 void Editor::setMarkedTextMatchesAreHighlighted(bool flag)

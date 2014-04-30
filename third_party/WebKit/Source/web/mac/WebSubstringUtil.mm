@@ -70,7 +70,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
         if (!numCharacters)
             continue;
 
-        Node* container = it.range()->startContainer(IGNORE_EXCEPTION);
+        Node* container = it.range()->startContainer();
         RenderObject* renderer = container->renderer();
         ASSERT(renderer);
         if (!renderer)

@@ -216,7 +216,7 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
     RefPtrWillBeRawPtr<Range> newRange = selection.toNormalizedRange();
     if (!newRange)
         return false;
-    if (newRange->collapsed(IGNORE_EXCEPTION))
+    if (newRange->collapsed())
         return false;
     EAffinity affinity = frame.selection().affinity();
     frame.selection().setSelectedRange(newRange.get(), affinity, FrameSelection::CloseTyping);

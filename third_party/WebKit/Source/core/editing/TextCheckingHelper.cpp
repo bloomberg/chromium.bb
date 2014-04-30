@@ -100,7 +100,7 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
 
 static PassRefPtrWillBeRawPtr<Range> expandToParagraphBoundary(PassRefPtrWillBeRawPtr<Range> range)
 {
-    RefPtrWillBeRawPtr<Range> paragraphRange = range->cloneRange(IGNORE_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> paragraphRange = range->cloneRange();
     setStart(paragraphRange.get(), startOfParagraph(VisiblePosition(range->startPosition())));
     setEnd(paragraphRange.get(), endOfParagraph(VisiblePosition(range->endPosition())));
     return paragraphRange;
@@ -164,7 +164,7 @@ PassRefPtrWillBeRawPtr<Range> TextCheckingParagraph::subrange(int characterOffse
 int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& exceptionState) const
 {
     ASSERT(m_checkingRange);
-    RefPtrWillBeRawPtr<Range> range = offsetAsRange()->cloneRange(ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> range = offsetAsRange()->cloneRange();
     range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), exceptionState);
     if (exceptionState.hadException())
         return 0;
@@ -306,7 +306,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
     // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    RefPtrWillBeRawPtr<Range> paragraphRange = m_range->cloneRange(IGNORE_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> paragraphRange = m_range->cloneRange();
     setStart(paragraphRange.get(), startOfParagraph(VisiblePosition(m_range->startPosition())));
     int totalRangeLength = TextIterator::rangeLength(paragraphRange.get());
     setEnd(paragraphRange.get(), endOfParagraph(VisiblePosition(m_range->startPosition())));

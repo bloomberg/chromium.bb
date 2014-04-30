@@ -724,6 +724,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case TreeWalkerExpandEntityReferences:
         return "'TreeWalker.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.";
 
+    case RangeDetach:
+        return "'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

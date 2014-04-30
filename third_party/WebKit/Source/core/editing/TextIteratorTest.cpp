@@ -489,8 +489,8 @@ TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
     setBodyInnerHTML(bodyContent);
     RefPtrWillBeRawPtr<Range> range = getBodyRange();
 
-    RefPtrWillBeRawPtr<Range> expectedRange = range->cloneRange(ASSERT_NO_EXCEPTION);
-    expectedRange->collapse(false, ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> expectedRange = range->cloneRange();
+    expectedRange->collapse(false);
 
     // A lone lead surrogate (0xDA0A) example taken from fuzz-58.
     static const UChar invalid1[] = {

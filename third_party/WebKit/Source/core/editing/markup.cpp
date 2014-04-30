@@ -496,7 +496,7 @@ static bool isElementPresentational(const Node* node)
 
 static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {
-    Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION);
+    Node* commonAncestor = range->commonAncestorContainer();
     ASSERT(commonAncestor);
     Node* specialCommonAncestor = 0;
     if (shouldAnnotate == AnnotateForInterchange) {
@@ -548,10 +548,10 @@ static String createMarkupInternal(Document& document, const Range* range, const
     ASSERT(updatedRange);
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
 
-    bool collapsed = updatedRange->collapsed(ASSERT_NO_EXCEPTION);
+    bool collapsed = updatedRange->collapsed();
     if (collapsed)
         return emptyString();
-    Node* commonAncestor = updatedRange->commonAncestorContainer(ASSERT_NO_EXCEPTION);
+    Node* commonAncestor = updatedRange->commonAncestorContainer();
     if (!commonAncestor)
         return emptyString();
 
@@ -717,7 +717,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& docum
         positionAfterNode(nodeBeforeContext.get()).parentAnchoredEquivalent(),
         positionBeforeNode(nodeAfterContext.get()).parentAnchoredEquivalent());
 
-    Node* commonAncestor = range->commonAncestorContainer(ASSERT_NO_EXCEPTION);
+    Node* commonAncestor = range->commonAncestorContainer();
     Node* specialCommonAncestor = ancestorToRetainStructureAndAppearanceWithNoRenderer(commonAncestor);
 
     // When there's a special common ancestor outside of the fragment, we must include it as well to

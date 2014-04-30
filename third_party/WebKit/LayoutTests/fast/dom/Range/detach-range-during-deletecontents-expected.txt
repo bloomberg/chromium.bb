@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 12: Uncaught InvalidStateError: Failed to execute 'deleteContents' on 'Range': The range has no container. Perhaps 'detach()' has been invoked on this object?
+CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
 Detaching a Range while deleteContents() is running should not cause a crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

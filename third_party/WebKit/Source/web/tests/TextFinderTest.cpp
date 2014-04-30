@@ -78,10 +78,10 @@ TEST_F(TextFinderTest, FindTextSimple)
     Range* activeMatch = textFinder().activeMatch();
     EXPECT_TRUE(activeMatch);
     if (activeMatch) {
-        EXPECT_EQ(textNode, activeMatch->startContainer(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(4, activeMatch->startOffset(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(textNode, activeMatch->endContainer(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(10, activeMatch->endOffset(ASSERT_NO_EXCEPTION));
+        EXPECT_EQ(textNode, activeMatch->startContainer());
+        EXPECT_EQ(4, activeMatch->startOffset());
+        EXPECT_EQ(textNode, activeMatch->endContainer());
+        EXPECT_EQ(10, activeMatch->endOffset());
     }
 
     findOptions.findNext = true;
@@ -89,10 +89,10 @@ TEST_F(TextFinderTest, FindTextSimple)
     activeMatch = textFinder().activeMatch();
     EXPECT_TRUE(activeMatch);
     if (activeMatch) {
-        EXPECT_EQ(textNode, activeMatch->startContainer(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(14, activeMatch->startOffset(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(textNode, activeMatch->endContainer(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(20, activeMatch->endOffset(ASSERT_NO_EXCEPTION));
+        EXPECT_EQ(textNode, activeMatch->startContainer());
+        EXPECT_EQ(14, activeMatch->startOffset());
+        EXPECT_EQ(textNode, activeMatch->endContainer());
+        EXPECT_EQ(20, activeMatch->endOffset());
     }
 
     // Should wrap to the first match.
@@ -100,10 +100,10 @@ TEST_F(TextFinderTest, FindTextSimple)
     activeMatch = textFinder().activeMatch();
     EXPECT_TRUE(activeMatch);
     if (activeMatch) {
-        EXPECT_EQ(textNode, activeMatch->startContainer(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(4, activeMatch->startOffset(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(textNode, activeMatch->endContainer(ASSERT_NO_EXCEPTION));
-        EXPECT_EQ(10, activeMatch->endOffset(ASSERT_NO_EXCEPTION));
+        EXPECT_EQ(textNode, activeMatch->startContainer());
+        EXPECT_EQ(4, activeMatch->startOffset());
+        EXPECT_EQ(textNode, activeMatch->endContainer());
+        EXPECT_EQ(10, activeMatch->endOffset());
     }
 }
 

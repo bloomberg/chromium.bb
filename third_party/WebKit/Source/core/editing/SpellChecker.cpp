@@ -201,7 +201,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         // else we were already at the start of the editable node
     }
 
-    if (spellingSearchRange->collapsed(IGNORE_EXCEPTION))
+    if (spellingSearchRange->collapsed())
         return; // nothing to search in
 
     // We go to the end of our first range instead of the start of it, just to be sure
@@ -222,7 +222,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     String foundItem;
     RefPtrWillBeRawPtr<Range> firstMisspellingRange = nullptr;
     if (unifiedTextCheckerEnabled()) {
-        grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
+        grammarSearchRange = spellingSearchRange->cloneRange();
         foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
         if (isSpelling) {
             misspelledWord = foundItem;
@@ -233,7 +233,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         }
     } else {
         misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
-        grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
+        grammarSearchRange = spellingSearchRange->cloneRange();
         if (!misspelledWord.isEmpty()) {
             // Stop looking at start of next misspelled word
             CharacterIterator chars(grammarSearchRange.get());
@@ -253,7 +253,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         spellingSearchRange->setEnd(searchEndNodeAfterWrap, searchEndOffsetAfterWrap, IGNORE_EXCEPTION);
 
         if (unifiedTextCheckerEnabled()) {
-            grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
+            grammarSearchRange = spellingSearchRange->cloneRange();
             foundItem = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspellingOrBadGrammar(isGrammarCheckingEnabled(), isSpelling, foundOffset, grammarDetail);
             if (isSpelling) {
                 misspelledWord = foundItem;
@@ -264,7 +264,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
             }
         } else {
             misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchRange).findFirstMisspelling(misspellingOffset, false, firstMisspellingRange);
-            grammarSearchRange = spellingSearchRange->cloneRange(IGNORE_EXCEPTION);
+            grammarSearchRange = spellingSearchRange->cloneRange();
             if (!misspelledWord.isEmpty()) {
                 // Stop looking at start of next misspelled word
                 CharacterIterator chars(grammarSearchRange.get());

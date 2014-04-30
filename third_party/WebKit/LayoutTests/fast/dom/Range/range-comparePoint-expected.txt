@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
 test 1 passed
 
 test 2 passed

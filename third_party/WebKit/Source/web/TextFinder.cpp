@@ -240,7 +240,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
     if (m_resumeScopingFromRange) {
         // This is a continuation of a scoping operation that timed out and didn't
         // complete last time around, so we should start from where we left off.
-        ASSERT(m_resumeScopingFromRange->collapsed(ASSERT_NO_EXCEPTION));
+        ASSERT(m_resumeScopingFromRange->collapsed());
         searchStart = m_resumeScopingFromRange->startPosition().next();
         if (searchStart.document() != searchEnd.document())
             return;
@@ -269,7 +269,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         }
 
         RefPtrWillBeRawPtr<Range> resultRange = Range::create(*resultStart.document(), resultStart, resultEnd);
-        if (resultRange->collapsed(ASSERT_NO_EXCEPTION)) {
+        if (resultRange->collapsed()) {
             // resultRange will be collapsed if the matched text spans over multiple TreeScopes.
             // FIXME: Show such matches to users.
             searchStart = resultStart.next();
@@ -629,7 +629,7 @@ void TextFinder::addMarker(Range* range, bool activeMatch)
 
 void TextFinder::setMarkerActive(Range* range, bool active)
 {
-    if (!range || range->collapsed(IGNORE_EXCEPTION))
+    if (!range || range->collapsed())
         return;
     m_ownerFrame.frame()->document()->markers().setMarkersActive(range, active);
 }

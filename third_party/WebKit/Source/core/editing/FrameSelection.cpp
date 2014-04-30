@@ -1409,20 +1409,15 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, SetSelec
 
     // Non-collapsed ranges are not allowed to start at the end of a line that is wrapped,
     // they start at the beginning of the next line instead
-    TrackExceptionState exceptionState;
-    bool collapsed = range->collapsed(exceptionState);
-    if (exceptionState.hadException())
-        return false;
-
     m_logicalRange = nullptr;
     stopObservingVisibleSelectionChangeIfNecessary();
 
     // FIXME: Can we provide extentAffinity?
-    VisiblePosition visibleStart(range->startPosition(), collapsed ? affinity : DOWNSTREAM);
+    VisiblePosition visibleStart(range->startPosition(), range->collapsed() ? affinity : DOWNSTREAM);
     VisiblePosition visibleEnd(range->endPosition(), SEL_DEFAULT_AFFINITY);
     setSelection(VisibleSelection(visibleStart, visibleEnd), options);
 
-    m_logicalRange = range->cloneRange(ASSERT_NO_EXCEPTION);
+    m_logicalRange = range->cloneRange();
     startObservingVisibleSelectionChange();
 
     return true;
@@ -1431,7 +1426,7 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, SetSelec
 PassRefPtrWillBeRawPtr<Range> FrameSelection::firstRange() const
 {
     if (m_logicalRange)
-        return m_logicalRange->cloneRange(ASSERT_NO_EXCEPTION);
+        return m_logicalRange->cloneRange();
     return m_selection.firstRange();
 }
 
