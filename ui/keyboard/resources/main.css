@@ -31,7 +31,7 @@ kb-keyboard[keyset="lower"] kb-shift-key /deep/ .key{
 */
 kb-keyboard.caps-locked kb-shift-key.dark /deep/
     .shift-light {
-    background-color: rgba(0, 0, 255, 0.5);
+    background-color: #4285f4;
 }
 
 .space,
