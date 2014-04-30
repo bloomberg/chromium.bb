@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<title>Service Worker: registration end-to-end</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+var t = async_test('Registration: end-to-end');
+t.step(function() {
+
+    var serviceWorkerStates = [];
+    var lastServiceWorkerState = '';
+    var receivedMessageFromPort = '';
+    var currentChangeCount = 0;
+
+    assert_true(navigator.serviceWorker instanceof ServiceWorkerContainer);
+    assert_equals(typeof navigator.serviceWorker.register, 'function');
+    assert_equals(typeof navigator.serviceWorker.unregister, 'function');
+
+    navigator.serviceWorker.oncurrentchange = function() {
+        ++currentChangeCount;
+    };
+
+    // This always tests fresh registration, so unregister it first.
+    navigator.serviceWorker.unregister('/in-scope/*').then(
+        t.step_func(doRegister),
+        unreached_func(t, 'unregister should not reject')
+    );
+
+    function doRegister() {
+        navigator.serviceWorker.register(
+                'resources/end-to-end-worker.js',
+                {scope: '/in-scope/*'}
+        ).then(
+            t.step_func(onRegister)
+        ).catch(
+            unreached_func(t, 'Registration failed')
+        );
+    }
+
+    function sendMessagePort(worker, from) {
+        var messageChannel = new MessageChannel();
+        worker.postMessage({from:from, port:messageChannel.port2}, [messageChannel.port2]);
+        return messageChannel.port1;
+    }
+
+
+    var sawMessage, sawActive;
+    var messagePromise = new Promise(function(resolve) { sawMessage = resolve; });
+    var activePromise = new Promise(function(resolve) { sawActive = resolve; });
+
+    function onRegister(sw) {
+        serviceWorkerStates.push(sw.state);
+        lastServiceWorkerState = sw.state;
+
+        var sawMessage = new Promise(t.step_func(function(resolve) {
+            sendMessagePort(sw, 'registering doc').onmessage = t.step_func(function (e) {
+                receivedMessageFromPort = e.data;
+                resolve();
+            });
+        }));
+
+        var sawActive = new Promise(t.step_func(function(resolve) {
+            sw.onstatechange = t.step_func(function() {
+                serviceWorkerStates.push(sw.state);
+
+                switch (sw.state) {
+                case 'installing':
+                    assert_equals(lastServiceWorkerState, 'parsed');
+                    break;
+                case 'installed':
+                    assert_equals(lastServiceWorkerState, 'installing');
+                    break;
+                case 'activating':
+                    assert_equals(lastServiceWorkerState, 'installed');
+                    break;
+                case 'active':
+                    assert_equals(lastServiceWorkerState, 'activating');
+                    break;
+                default:
+                    unreached_func(t, 'Unexpected state: ' + sw.state);
+                }
+
+                lastServiceWorkerState = sw.state;
+                if (sw.state === 'active')
+                    resolve();
+            });
+        }));
+
+        Promise.all([sawMessage, sawActive]).then(t.step_func(function() {
+            assert_array_equals(serviceWorkerStates,
+                                ['parsed', 'installing', 'installed', 'activating', 'active'],
+                                'Service worker should pass through four states');
+
+            assert_equals(currentChangeCount, 0,
+                          'Should not see current changes since document is out of scope');
+
+            assert_equals(receivedMessageFromPort, 'Ack for: registering doc');
+
+            t.done();
+        }));
+    }
+});
+</script>

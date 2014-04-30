@@ -20,3 +20,14 @@ function service_worker_test(url, description) {
         }
     });
 }
+
+// FIXME: Replace this with test.unreached_func(desc) once testharness.js is updated
+// Use with unexpected event handlers or Promise rejection.
+// E.g.:
+//    onbadevent = fail(t, 'Should only see good events');
+//    Promise.then(...).catch(fail(t, 'Rejection is never fun'));
+function unreached_func(test, desc) {
+    return test.step_func(function() {
+        assert_unreached(desc);
+    });
+}
