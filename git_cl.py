@@ -795,7 +795,8 @@ or verify this branch is set up to track another (via the --track argument to
         files,
         issue,
         patchset,
-        author)
+        author,
+        upstream=upstream_branch)
 
   def RunHook(self, committing, may_prompt, verbose, change):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""

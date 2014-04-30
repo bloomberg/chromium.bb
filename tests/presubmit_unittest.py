@@ -506,7 +506,8 @@ class PresubmitUnittest(PresubmitTestsBase):
         os.path.exists(full_path).AndReturn(False)
         os.path.isfile(full_path).AndReturn(True)
 
-    presubmit.scm.GIT.GenerateDiff(self.fake_root_dir, files=[], full_move=True
+    presubmit.scm.GIT.GenerateDiff(
+        self.fake_root_dir, files=[], full_move=True, branch=None
         ).AndReturn('\n'.join(unified_diff))
 
     self.mox.ReplayAll()
@@ -518,7 +519,8 @@ class PresubmitUnittest(PresubmitTestsBase):
         files,
         0,
         0,
-        None)
+        None,
+        upstream=None)
     self.failUnless(change.Name() == 'mychange')
     self.failUnless(change.DescriptionText() ==
                     'Hello there\nthis is a change\nand some more regular text')
@@ -1342,7 +1344,7 @@ class InputApiUnittest(PresubmitTestsBase):
 
   def testDefaultWhiteListBlackListFilters(self):
     def f(x):
-      return presubmit.AffectedFile(x, 'M', self.fake_root_dir)
+      return presubmit.AffectedFile(x, 'M', self.fake_root_dir, None)
     files = [
       (
         [
@@ -1672,11 +1674,11 @@ class AffectedFileUnittest(PresubmitTestsBase):
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
-        presubmit.AffectedFile('a', 'b', self.fake_root_dir), members)
+        presubmit.AffectedFile('a', 'b', self.fake_root_dir, None), members)
     self.compareMembers(
-        presubmit.SvnAffectedFile('a', 'b', self.fake_root_dir), members)
+        presubmit.SvnAffectedFile('a', 'b', self.fake_root_dir, None), members)
     self.compareMembers(
-        presubmit.GitAffectedFile('a', 'b', self.fake_root_dir), members)
+        presubmit.GitAffectedFile('a', 'b', self.fake_root_dir, None), members)
 
   def testAffectedFile(self):
     path = presubmit.os.path.join('foo', 'blat.cc')
@@ -1687,7 +1689,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
     presubmit.scm.SVN._CaptureInfo([path], self.fake_root_dir).AndReturn(
         {'URL': 'svn:/foo/foo/blat.cc'})
     self.mox.ReplayAll()
-    af = presubmit.SvnAffectedFile('foo/blat.cc', 'M', self.fake_root_dir)
+    af = presubmit.SvnAffectedFile('foo/blat.cc', 'M', self.fake_root_dir, None)
     self.assertEquals('svn:/foo/foo/blat.cc', af.ServerPath())
     self.assertEquals(presubmit.normpath('foo/blat.cc'), af.LocalPath())
     self.assertEquals('M', af.Action())
@@ -1699,7 +1701,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
     presubmit.os.path.exists(f_notfound).AndReturn(False)
     presubmit.gclient_utils.FileRead(f_notfound, 'rU').AndRaise(IOError)
     self.mox.ReplayAll()
-    af = presubmit.AffectedFile(notfound, 'A', self.fake_root_dir)
+    af = presubmit.AffectedFile(notfound, 'A', self.fake_root_dir, None)
     self.assertEquals('', af.ServerPath())
     self.assertEquals([], af.NewContents())
 
@@ -1708,7 +1710,8 @@ class AffectedFileUnittest(PresubmitTestsBase):
         'foo.cc', 'svn:secret-property', self.fake_root_dir
         ).AndReturn('secret-property-value')
     self.mox.ReplayAll()
-    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A', self.fake_root_dir)
+    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A', self.fake_root_dir,
+                                              None)
     # Verify cache coherency.
     self.assertEquals('secret-property-value',
                       affected_file.Property('svn:secret-property'))
@@ -1721,7 +1724,8 @@ class AffectedFileUnittest(PresubmitTestsBase):
     presubmit.os.path.exists(f_filename).AndReturn(False)
     presubmit.scm.SVN._CaptureInfo([filename], self.fake_root_dir).AndReturn({})
     self.mox.ReplayAll()
-    affected_file = presubmit.SvnAffectedFile(filename, 'A', self.fake_root_dir)
+    affected_file = presubmit.SvnAffectedFile(filename, 'A', self.fake_root_dir,
+                                              None)
     # Verify cache coherency.
     self.failIf(affected_file.IsDirectory())
     self.failIf(affected_file.IsDirectory())
@@ -1732,16 +1736,20 @@ class AffectedFileUnittest(PresubmitTestsBase):
     presubmit.os.path.exists(f_filename).AndReturn(True)
     presubmit.os.path.isdir(f_filename).AndReturn(True)
     self.mox.ReplayAll()
-    affected_file = presubmit.SvnAffectedFile(filename, 'A', self.fake_root_dir)
+    affected_file = presubmit.SvnAffectedFile(filename, 'A', self.fake_root_dir,
+                                              None)
     # Verify cache coherency.
     self.failUnless(affected_file.IsDirectory())
     self.failUnless(affected_file.IsDirectory())
 
   def testIsTextFile(self):
     files = [
-        presubmit.SvnAffectedFile('foo/blat.txt', 'M', self.fake_root_dir),
-        presubmit.SvnAffectedFile('foo/binary.blob', 'M', self.fake_root_dir),
-        presubmit.SvnAffectedFile('blat/flop.txt', 'D', self.fake_root_dir)
+        presubmit.SvnAffectedFile('foo/blat.txt', 'M', self.fake_root_dir,
+                                  None),
+        presubmit.SvnAffectedFile('foo/binary.blob', 'M', self.fake_root_dir,
+                                  None),
+        presubmit.SvnAffectedFile('blat/flop.txt', 'D', self.fake_root_dir,
+                                  None)
     ]
     blat = presubmit.os.path.join('foo', 'blat.txt')
     blob = presubmit.os.path.join('foo', 'binary.blob')
@@ -1984,8 +1992,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'mychange', '', self.fake_root_dir, [], 0, 0, None)
     input_api1 = self.MockInputApi(change1, committing)
     files1 = [
-      presubmit.SvnAffectedFile('foo/bar.cc', 'A', self.fake_root_dir),
-      presubmit.SvnAffectedFile('foo.cc', 'M', self.fake_root_dir),
+      presubmit.SvnAffectedFile('foo/bar.cc', 'A', self.fake_root_dir, None),
+      presubmit.SvnAffectedFile('foo.cc', 'M', self.fake_root_dir, None),
     ]
     if use_source_file:
       input_api1.AffectedSourceFiles(None).AndReturn(files1)
@@ -2001,8 +2009,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'mychange', '', self.fake_root_dir, [], 0, 0, None)
     input_api2 = self.MockInputApi(change2, committing)
     files2 = [
-      presubmit.SvnAffectedFile('foo/bar.cc', 'A', self.fake_root_dir),
-      presubmit.SvnAffectedFile('foo.cc', 'M', self.fake_root_dir),
+      presubmit.SvnAffectedFile('foo/bar.cc', 'A', self.fake_root_dir, None),
+      presubmit.SvnAffectedFile('foo.cc', 'M', self.fake_root_dir, None),
     ]
     if use_source_file:
       input_api2.AffectedSourceFiles(None).AndReturn(files2)
@@ -2368,7 +2376,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.mox.StubOutWithMock(presubmit_canned_checks, 'CheckSvnProperty')
     input_api = self.MockInputApi(None, False)
     output_api = presubmit.OutputApi(False)
-    A = lambda x: presubmit.AffectedFile(x, 'M', self.fake_root_dir)
+    A = lambda x: presubmit.AffectedFile(x, 'M', self.fake_root_dir, None)
     files = [
       A('a.pdf'), A('b.bmp'), A('c.gif'), A('d.png'), A('e.jpg'), A('f.jpe'),
       A('random'), A('g.jpeg'), A('h.ico'),

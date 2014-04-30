@@ -500,6 +500,9 @@ class InputApi(object):
 
 class _DiffCache(object):
   """Caches diffs retrieved from a particular SCM."""
+  def __init__(self, upstream=None):
+    """Stores the upstream revision against which all diffs will be computed."""
+    self._upstream = upstream
 
   def GetDiff(self, path, local_root):
     """Get the diff for a particular path."""
@@ -508,8 +511,8 @@ class _DiffCache(object):
 
 class _SvnDiffCache(_DiffCache):
   """DiffCache implementation for subversion."""
-  def __init__(self):
-    super(_SvnDiffCache, self).__init__()
+  def __init__(self, *args, **kwargs):
+    super(_SvnDiffCache, self).__init__(*args, **kwargs)
     self._diffs_by_file = {}
 
   def GetDiff(self, path, local_root):
@@ -521,8 +524,8 @@ class _SvnDiffCache(_DiffCache):
 
 class _GitDiffCache(_DiffCache):
   """DiffCache implementation for git; gets all file diffs at once."""
-  def __init__(self):
-    super(_GitDiffCache, self).__init__()
+  def __init__(self, upstream):
+    super(_GitDiffCache, self).__init__(upstream=upstream)
     self._diffs_by_file = None
 
   def GetDiff(self, path, local_root):
@@ -533,7 +536,8 @@ class _GitDiffCache(_DiffCache):
 
       # Don't specify any filenames below, because there are command line length
       # limits on some platforms and GenerateDiff would fail.
-      unified_diff = scm.GIT.GenerateDiff(local_root, files=[], full_move=True)
+      unified_diff = scm.GIT.GenerateDiff(local_root, files=[], full_move=True,
+                                          branch=self._upstream)
 
       # This regex matches the path twice, separated by a space. Note that
       # filename itself may contain spaces.
@@ -567,7 +571,7 @@ class AffectedFile(object):
 
   # Method could be a function
   # pylint: disable=R0201
-  def __init__(self, path, action, repository_root, diff_cache=None):
+  def __init__(self, path, action, repository_root, diff_cache):
     self._path = path
     self._action = action
     self._local_root = repository_root
@@ -575,10 +579,7 @@ class AffectedFile(object):
     self._properties = {}
     self._cached_changed_contents = None
     self._cached_new_contents = None
-    if diff_cache:
-      self._diff_cache = diff_cache
-    else:
-      self._diff_cache = self.DIFF_CACHE()
+    self._diff_cache = diff_cache
     logging.debug('%s(%s)' % (self.__class__.__name__, self._path))
 
   def ServerPath(self):
@@ -792,12 +793,14 @@ class Change(object):
   scm = ''
 
   def __init__(
-      self, name, description, local_root, files, issue, patchset, author):
+      self, name, description, local_root, files, issue, patchset, author,
+      upstream=None):
     if files is None:
       files = []
     self._name = name
     # Convert root into an absolute path.
     self._local_root = os.path.abspath(local_root)
+    self._upstream = upstream
     self.issue = issue
     self.patchset = patchset
     self.author_email = author
@@ -810,7 +813,7 @@ class Change(object):
     assert all(
         (isinstance(f, (list, tuple)) and len(f) == 2) for f in files), files
 
-    diff_cache = self._AFFECTED_FILES.DIFF_CACHE()
+    diff_cache = self._AFFECTED_FILES.DIFF_CACHE(self._upstream)
     self._affected_files = [
         self._AFFECTED_FILES(path, action.strip(), self._local_root, diff_cache)
         for action, path in files
@@ -1612,7 +1615,8 @@ def Main(argv):
                       files,
                       options.issue,
                       options.patchset,
-                      options.author)
+                      options.author,
+                      upstream=options.upstream)
       trybots = DoGetTrySlaves(
           change,
           change.LocalPaths(),
@@ -1631,7 +1635,8 @@ def Main(argv):
                       files,
                       options.issue,
                       options.patchset,
-                      options.author),
+                      options.author,
+                      upstream=options.upstream),
           options.commit,
           options.verbose,
           sys.stdout,
