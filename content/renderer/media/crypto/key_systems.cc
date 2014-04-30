@@ -50,6 +50,8 @@ CodecMask kCodecMasks[] = {
     {"vorbis", EME_CODEC_WEBM_VORBIS},
     {"vp8", EME_CODEC_WEBM_VP8},
     {"vp8.0", EME_CODEC_WEBM_VP8},
+    {"vp9", EME_CODEC_WEBM_VP9},
+    {"vp9.0", EME_CODEC_WEBM_VP9},
 #if defined(USE_PROPRIETARY_CODECS)
     {"mp4a", EME_CODEC_MP4_AAC},
     {"avc1", EME_CODEC_MP4_AVC1},
@@ -60,11 +62,18 @@ CodecMask kCodecMasks[] = {
 static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   KeySystemInfo info(kClearKeyKeySystem);
 
-  // On Android, Vorbis, VP8, AAC and AVC1 are supported in all MediaCodec
-  // implementations:
+  // On Android, Vorbis, VP8, AAC and AVC1 are supported in MediaCodec:
   // http://developer.android.com/guide/appendix/media-formats.html
+  // VP9 support is device dependent.
 
   info.supported_codecs = EME_CODEC_WEBM_ALL;
+
+#if defined(OS_ANDROID)
+  // Temporarily disable VP9 support for Android.
+  // TODO(xhwang): Use mime_util.h to query VP9 support on Android.
+  info.supported_codecs &= ~EME_CODEC_WEBM_VP9;
+#endif  // defined(OS_ANDROID)
+
 #if defined(USE_PROPRIETARY_CODECS)
   info.supported_codecs |= EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)

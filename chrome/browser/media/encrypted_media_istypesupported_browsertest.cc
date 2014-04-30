@@ -21,6 +21,10 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+#if defined(OS_ANDROID)
+#error This file needs to be updated to run on Android.
+#endif
+
 #if defined(USE_PROPRIETARY_CODECS)
 #define EXPECT_PROPRIETARY EXPECT_TRUE
 #else
@@ -86,6 +90,8 @@ const char kWidevineAlphaHr[] = "com.widevine.alpha.hr";
 const char kWidevineAlphaHrNonCompositing[] =
     "com.widevine.alpha.hrnoncompositing";
 
+// TODO(xhwang): Simplify this test! See http://crbug.com/367158
+
 class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
  protected:
   EncryptedMediaIsTypeSupportedTest()
@@ -94,10 +100,17 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
 
     vp80_codec_.push_back("vp8.0");
 
+    vp9_codec_.push_back("vp9");
+
+    vp90_codec_.push_back("vp9.0");
+
     vorbis_codec_.push_back("vorbis");
 
     vp8_and_vorbis_codecs_.push_back("vp8");
     vp8_and_vorbis_codecs_.push_back("vorbis");
+
+    vp9_and_vorbis_codecs_.push_back("vp9");
+    vp9_and_vorbis_codecs_.push_back("vorbis");
 
     avc1_codec_.push_back("avc1");
 
@@ -127,9 +140,14 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
   const CodecVector& no_codecs() const { return no_codecs_; }
   const CodecVector& vp8_codec() const { return vp8_codec_; }
   const CodecVector& vp80_codec() const { return vp80_codec_; }
+  const CodecVector& vp9_codec() const { return vp9_codec_; }
+  const CodecVector& vp90_codec() const { return vp90_codec_; }
   const CodecVector& vorbis_codec() const { return vorbis_codec_; }
   const CodecVector& vp8_and_vorbis_codecs() const {
     return vp8_and_vorbis_codecs_;
+  }
+  const CodecVector& vp9_and_vorbis_codecs() const {
+    return vp9_and_vorbis_codecs_;
   }
   const CodecVector& avc1_codec() const { return avc1_codec_; }
   const CodecVector& avc1_extended_codec() const {
@@ -244,8 +262,11 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
   const CodecVector no_codecs_;
   CodecVector vp8_codec_;
   CodecVector vp80_codec_;
+  CodecVector vp9_codec_;
+  CodecVector vp90_codec_;
   CodecVector vorbis_codec_;
   CodecVector vp8_and_vorbis_codecs_;
+  CodecVector vp9_and_vorbis_codecs_;
   CodecVector avc1_codec_;
   CodecVector avc1_extended_codec_;
   CodecVector avc1_dot_codec_;
@@ -423,6 +444,12 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_and_vorbis_codecs(), kPrefixedClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_codec(), kPrefixedClearKey));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp90_codec(), kPrefixedClearKey));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_and_vorbis_codecs(), kPrefixedClearKey));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vorbis_codec(), kPrefixedClearKey));
 
   // Non-Webm codecs.
@@ -444,6 +471,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
       "audio/webm", vp8_codec(), kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", vp8_and_vorbis_codecs(), kPrefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", vp9_codec(), kPrefixedClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", vp9_and_vorbis_codecs(), kPrefixedClearKey));
 
   // Non-Webm codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -598,6 +629,12 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_and_vorbis_codecs(), kExternalClearKey));
   EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_codec(), kExternalClearKey));
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp90_codec(), kExternalClearKey));
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp9_and_vorbis_codecs(), kExternalClearKey));
+  EXPECT_ECK(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vorbis_codec(), kExternalClearKey));
 
   // Non-Webm codecs.
@@ -619,6 +656,10 @@ IN_PROC_BROWSER_TEST_F(
       "audio/webm", vp8_codec(), kExternalClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", vp8_and_vorbis_codecs(), kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", vp9_codec(), kExternalClearKey));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", vp9_and_vorbis_codecs(), kExternalClearKey));
 
   // Non-Webm codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -756,6 +797,9 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       std::string(), no_codecs(), "com.widevine.alpha.foo"));
 }
+
+// TODO(xhwang): Add VP9 Widevine tests after VP9 is supported by Widevine CDM.
+// See http://crbug.com/361318
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
                        IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {

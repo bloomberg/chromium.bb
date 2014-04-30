@@ -120,10 +120,17 @@ class KeySystemsTest : public testing::Test {
 
     vp80_codec_.push_back("vp8.0");
 
+    vp9_codec_.push_back("vp9");
+
+    vp90_codec_.push_back("vp9.0");
+
     vorbis_codec_.push_back("vorbis");
 
     vp8_and_vorbis_codecs_.push_back("vp8");
     vp8_and_vorbis_codecs_.push_back("vorbis");
+
+    vp9_and_vorbis_codecs_.push_back("vp9");
+    vp9_and_vorbis_codecs_.push_back("vorbis");
 
     foovideo_codec_.push_back("foovideo");
 
@@ -167,9 +174,16 @@ class KeySystemsTest : public testing::Test {
 
   const CodecVector& vp8_codec() const { return vp8_codec_; }
   const CodecVector& vp80_codec() const { return vp80_codec_; }
+  const CodecVector& vp9_codec() const { return vp9_codec_; }
+  const CodecVector& vp90_codec() const { return vp90_codec_; }
+
   const CodecVector& vorbis_codec() const { return vorbis_codec_; }
+
   const CodecVector& vp8_and_vorbis_codecs() const {
     return vp8_and_vorbis_codecs_;
+  }
+  const CodecVector& vp9_and_vorbis_codecs() const {
+    return vp9_and_vorbis_codecs_;
   }
 
   const CodecVector& foovideo_codec() const { return foovideo_codec_; }
@@ -188,11 +202,13 @@ class KeySystemsTest : public testing::Test {
 
  private:
   const CodecVector no_codecs_;
-
   CodecVector vp8_codec_;
   CodecVector vp80_codec_;
+  CodecVector vp9_codec_;
+  CodecVector vp90_codec_;
   CodecVector vorbis_codec_;
   CodecVector vp8_and_vorbis_codecs_;
+  CodecVector vp9_and_vorbis_codecs_;
 
   CodecVector foovideo_codec_;
   CodecVector foovideo_extended_codec_;
@@ -283,6 +299,12 @@ TEST_F(KeySystemsTest,
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, vp8_and_vorbis_codecs(), kUsesAes));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp9_codec(), kUsesAes));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp90_codec(), kUsesAes));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp9_and_vorbis_codecs(), kUsesAes));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, vorbis_codec(), kUsesAes));
 
   // Non-Webm codecs.
@@ -304,6 +326,10 @@ TEST_F(KeySystemsTest,
       kAudioWebM, vp8_codec(), kUsesAes));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kAudioWebM, vp8_and_vorbis_codecs(), kUsesAes));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      kAudioWebM, vp9_codec(), kUsesAes));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      kAudioWebM, vp9_and_vorbis_codecs(), kUsesAes));
 
   // Non-Webm codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -477,6 +503,12 @@ TEST_F(
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, vp8_and_vorbis_codecs(), kExternal));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp9_codec(), kExternal));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp90_codec(), kExternal));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp9_and_vorbis_codecs(), kExternal));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, vorbis_codec(), kExternal));
 
   // Valid video types - parent key system.
@@ -488,6 +520,12 @@ TEST_F(
       kVideoWebM, vp80_codec(), kExternalParent));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, vp8_and_vorbis_codecs(), kExternalParent));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp9_codec(), kExternalParent));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp90_codec(), kExternalParent));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, vp9_and_vorbis_codecs(), kExternalParent));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, vorbis_codec(), kExternalParent));
 
@@ -516,6 +554,10 @@ TEST_F(
       kAudioWebM, vp8_codec(), kExternal));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kAudioWebM, vp8_and_vorbis_codecs(), kExternal));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      kAudioWebM, vp9_codec(), kExternal));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      kAudioWebM, vp9_and_vorbis_codecs(), kExternal));
 
   // Non-Webm codec.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(

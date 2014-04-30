@@ -35,6 +35,7 @@ struct CodecInfo {
 const CodecInfo kCodecsToQuery[] = {
   {content::EME_CODEC_WEBM_VORBIS, CODEC_AUDIO, "vorbis", "video/webm"},
   {content::EME_CODEC_WEBM_VP8, CODEC_VIDEO, "vp8", "video/webm"},
+  {content::EME_CODEC_WEBM_VP9, CODEC_VIDEO, "vp9", "video/webm"},
 #if defined(USE_PROPRIETARY_CODECS)
   {content::EME_CODEC_MP4_AAC, CODEC_AUDIO, "mp4a", "video/mp4"},
   {content::EME_CODEC_MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"}
