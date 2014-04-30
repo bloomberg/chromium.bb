@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,11 @@
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+using fileapi::CorruptDatabase;
+using fileapi::DeleteDatabaseFile;
+using fileapi::SandboxOriginDatabase;
+
+namespace content {
 
 namespace {
 const base::FilePath::CharType kFileSystemDirName[] =
@@ -300,4 +304,4 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace content

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,11 @@
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_prioritized_origin_database.h"
 
-namespace fileapi {
+using fileapi::SandboxOriginDatabase;
+using fileapi::SandboxOriginDatabaseInterface;
+using fileapi::SandboxPrioritizedOriginDatabase;
+
+namespace content {
 
 TEST(SandboxPrioritizedOriginDatabaseTest, BasicTest) {
   base::ScopedTempDir dir;
@@ -211,4 +215,4 @@ TEST(SandboxPrioritizedOriginDatabaseTest, MigrationTest) {
   EXPECT_TRUE(base::PathExists(old_dir_db_path2));
 }
 
-}  // namespace fileapi
+}  // namespace content

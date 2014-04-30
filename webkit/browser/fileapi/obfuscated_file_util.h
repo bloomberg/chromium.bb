@@ -32,6 +32,7 @@ class TimeTicks;
 
 namespace content {
 class ObfuscatedFileUtilTest;
+class QuotaBackendImplTest;
 }
 
 namespace quota {
@@ -235,8 +236,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   typedef SandboxDirectoryDatabase::FileInfo FileInfo;
 
   friend class ObfuscatedFileEnumerator;
-  friend class QuotaBackendImplTest;
   friend class content::ObfuscatedFileUtilTest;
+  friend class content::QuotaBackendImplTest;
 
   // Helper method to create an obfuscated file util for regular
   // (temporary, persistent) file systems. Used only for testing.

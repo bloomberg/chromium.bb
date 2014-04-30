@@ -18,6 +18,10 @@
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace content {
+class LocalFileStreamWriterTest;
+}
+
 namespace net {
 class FileStream;
 }
@@ -37,8 +41,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamWriter
   virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
 
  private:
+  friend class content::LocalFileStreamWriterTest;
   friend class FileStreamWriter;
-  friend class LocalFileStreamWriterTest;
   LocalFileStreamWriter(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,
                         int64 initial_offset,

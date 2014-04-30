@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 
-namespace fileapi {
+using fileapi::FileSystemFileUtil;
+using fileapi::FileSystemOperation;
+using fileapi::NativeFileUtil;
+
+namespace content {
 
 class NativeFileUtilTest : public testing::Test {
  public:
@@ -402,4 +406,4 @@ TEST_F(NativeFileUtilTest, PreserveLastModified) {
   EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
 }
 
-}  // namespace fileapi
+}  // namespace content

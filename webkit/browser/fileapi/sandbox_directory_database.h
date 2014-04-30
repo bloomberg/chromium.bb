@@ -14,6 +14,10 @@
 #include "base/time/time.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace content {
+class SandboxDirectoryDatabaseTest;
+}
+
 namespace tracked_objects {
 class Location;
 }
@@ -105,8 +109,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
     FAIL_ON_CORRUPTION,
   };
 
+  friend class content::SandboxDirectoryDatabaseTest;
   friend class ObfuscatedFileUtil;
-  friend class SandboxDirectoryDatabaseTest;
 
   bool Init(RecoveryOption recovery_option);
   bool RepairDatabase(const std::string& db_path);

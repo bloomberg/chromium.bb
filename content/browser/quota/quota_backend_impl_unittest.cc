@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,13 @@
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
-namespace fileapi {
+using fileapi::FileSystemType;
+using fileapi::FileSystemUsageCache;
+using fileapi::ObfuscatedFileUtil;
+using fileapi::QuotaBackendImpl;
+using fileapi::SandboxFileSystemBackendDelegate;
+
+namespace content {
 
 namespace {
 
@@ -263,4 +269,4 @@ TEST_F(QuotaBackendImplTest, DirtyCount) {
   EXPECT_EQ(0u, dirty);
 }
 
-}  // namespace fileapi
+}  // namespace content

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 
 using fileapi::FileSystemURL;
 
-namespace {
+namespace content {
 
 TEST(ExternalMountPointsTest, AddMountPoint) {
   scoped_refptr<fileapi::ExternalMountPoints> mount_points(
@@ -503,5 +503,5 @@ TEST(ExternalMountPointsTest, MountOption) {
   EXPECT_EQ(fileapi::COPY_SYNC_OPTION_SYNC, option.copy_sync_option());
 }
 
-}  // namespace
+}  // namespace content
 

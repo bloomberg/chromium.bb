@@ -17,6 +17,10 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
+namespace content {
+class QuotaReservationManagerTest;
+}
+
 namespace fileapi {
 
 class QuotaReservation;
@@ -83,7 +87,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
 
   friend class QuotaReservation;
   friend class QuotaReservationBuffer;
-  friend class QuotaReservationManagerTest;
+  friend class content::QuotaReservationManagerTest;
 
   void ReserveQuota(const GURL& origin,
                     FileSystemType type,

@@ -147,6 +147,6 @@ class MockQuotaManager : public QuotaManager {
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);
 };
 
-}  // namespace quota
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_

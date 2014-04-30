@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,15 @@
 #define DRIVE
 #endif
 
-namespace fileapi {
+using fileapi::FileSystemMountOption;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+using fileapi::IsolatedContext;
+using fileapi::kFileSystemTypeDragged;
+using fileapi::kFileSystemTypeIsolated;
+using fileapi::kFileSystemTypeNativeLocal;
+
+namespace content {
 
 typedef IsolatedContext::MountPointInfo FileInfo;
 
@@ -342,4 +350,4 @@ TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
   ASSERT_EQ(test_virtual_path, cracked_path);
 }
 
-}  // namespace fileapi
+}  // namespace content

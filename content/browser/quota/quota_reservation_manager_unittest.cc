@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,13 @@
 #include "webkit/browser/fileapi/quota/open_file_handle.h"
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 
-namespace fileapi {
+using fileapi::FileSystemType;
+using fileapi::kFileSystemTypeTemporary;
+using fileapi::OpenFileHandle;
+using fileapi::QuotaReservation;
+using fileapi::QuotaReservationManager;
+
+namespace content {
 
 namespace {
 
@@ -359,4 +365,4 @@ TEST_F(QuotaReservationManagerTest, ClientCrash) {
   EXPECT_EQ(kInitialFileSize + 10, fake_backend()->on_memory_usage());
 }
 
-}  // namespace fileapi
+}  // namespace content

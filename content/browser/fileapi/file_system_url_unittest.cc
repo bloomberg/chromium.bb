@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,14 @@
 #define DRIVE FPL("/a/")
 #endif
 
-namespace fileapi {
+using fileapi::FileSystemURL;
+using fileapi::kFileSystemTypeExternal;
+using fileapi::kFileSystemTypeIsolated;
+using fileapi::kFileSystemTypePersistent;
+using fileapi::kFileSystemTypeTemporary;
+using fileapi::VirtualPath;
+
+namespace content {
 
 namespace {
 
@@ -210,4 +217,4 @@ TEST(FileSystemURLTest, IsInSameFileSystem) {
   EXPECT_FALSE(url_foo_temp_a.IsInSameFileSystem(url_bar_perm_a));
 }
 
-}  // namespace fileapi
+}  // namespace content

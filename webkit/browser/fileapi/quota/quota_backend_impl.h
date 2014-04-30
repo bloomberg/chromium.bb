@@ -16,6 +16,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace content {
+class QuotaBackendImplTest;
+}
+
 namespace quota {
 class QuotaManagerProxy;
 }
@@ -60,7 +64,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackendImpl
       FileSystemType type) OVERRIDE;
 
  private:
-  friend class QuotaBackendImplTest;
+  friend class content::QuotaBackendImplTest;
 
   struct QuotaReservationInfo {
     QuotaReservationInfo(const GURL& origin, FileSystemType type, int64 delta);
