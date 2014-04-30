@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.5'
+__version__ = '0.4.6'
 
 import datetime
 import getpass
@@ -13,6 +13,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -170,6 +171,110 @@ class Manifest(object):
     return self._isolate_item
 
 
+class TaskOutputCollector(object):
+  """Fetches task output from isolate server to local disk.
+
+  This object is shared among multiple threads running 'retrieve_results'
+  function, in particular they call 'process_shard_result' method in parallel.
+  """
+
+  def __init__(self, task_output_dir, task_name, shard_count):
+    """Initializes TaskOutputCollector, ensures |task_output_dir| exists.
+
+    Args:
+      task_output_dir: local directory to put fetched files to.
+      task_name: name of the swarming task results belong to.
+      shard_count: expected number of task shards.
+    """
+    self.task_output_dir = task_output_dir
+    self.task_name = task_name
+    self.shard_count = shard_count
+
+    self._lock = threading.Lock()
+    self._per_shard_results = {}
+    self._storage = None
+
+    if not os.path.isdir(self.task_output_dir):
+      os.makedirs(self.task_output_dir)
+
+  def process_shard_result(self, result):
+    """Stores results of a single task shard, fetches output files if necessary.
+
+    Called concurrently from multiple threads.
+    """
+    # We are going to put |shard_index| into a file path. Make sure it is int.
+    shard_index = result['config_instance_index']
+    if not isinstance(shard_index, int):
+      raise ValueError('Shard index should be an int: %r' % (shard_index,))
+
+    # Sanity check index is in expected range.
+    if shard_index < 0 or shard_index >= self.shard_count:
+      logging.warning(
+          'Shard index %d is outside of expected range: [0; %d]',
+          shard_index, self.shard_count - 1)
+      return
+
+    # Store result dict of that shard, ignore results we've already seen.
+    with self._lock:
+      if shard_index in self._per_shard_results:
+        logging.warning('Ignoring duplicate shard index %d', shard_index)
+        return
+      self._per_shard_results[shard_index] = result
+
+    # Fetch output files if necessary.
+    isolated_files_location = extract_output_files_location(result['output'])
+    if isolated_files_location:
+      isolate_server, namespace, isolated_hash = isolated_files_location
+      storage = self._get_storage(isolate_server, namespace)
+      if storage:
+        # Output files are supposed to be small and they are not reused across
+        # tasks. So use MemoryCache for them instead of on-disk cache. Make
+        # files writable, so that calling script can delete them.
+        isolateserver.fetch_isolated(
+            isolated_hash,
+            storage,
+            isolateserver.MemoryCache(file_mode_mask=0700),
+            os.path.join(self.task_output_dir, str(shard_index)),
+            False)
+
+  def finalize(self):
+    """Writes summary.json, shutdowns underlying Storage."""
+    with self._lock:
+      # Write an array of shard results with None for missing shards.
+      summary = {
+        'task_name': self.task_name,
+        'shards': [
+          self._per_shard_results.get(i) for i in xrange(self.shard_count)
+        ],
+      }
+      tools.write_json(
+          os.path.join(self.task_output_dir, 'summary.json'),
+          summary,
+          False)
+      if self._storage:
+        self._storage.close()
+        self._storage = None
+
+  def _get_storage(self, isolate_server, namespace):
+    """Returns isolateserver.Storage to use to fetch files."""
+    with self._lock:
+      if not self._storage:
+        self._storage = isolateserver.get_storage(isolate_server, namespace)
+      else:
+        # Shards must all use exact same isolate server and namespace.
+        if self._storage.location != isolate_server:
+          logging.error(
+              'Task shards are using multiple isolate servers: %s and %s',
+              self._storage.location, isolate_server)
+          return None
+        if self._storage.namespace != namespace:
+          logging.error(
+              'Task shards are using multiple namespaces: %s and %s',
+              self._storage.namespace, namespace)
+          return None
+      return self._storage
+
+
 def zip_and_upload(manifest):
   """Zips up all the files necessary to run a manifest and uploads to Swarming
   master.
@@ -219,7 +324,46 @@ def get_task_keys(swarm_base_url, task_name):
       % task_name)
 
 
-def retrieve_results(base_url, task_key, timeout, should_stop):
+def extract_output_files_location(task_log):
+  """Task log -> location of task output files to fetch.
+
+  TODO(vadimsh,maruel): Use side-channel to get this information.
+  See 'run_tha_test' in run_isolated.py for where the data is generated.
+
+  Returns:
+    Tuple (isolate server URL, namespace, isolated hash) on success.
+    None if information is missing or can not be parsed.
+  """
+  match = re.search(
+      r'\[run_isolated_out_hack\](.*)\[/run_isolated_out_hack\]',
+      task_log,
+      re.DOTALL)
+  if not match:
+    return None
+
+  def to_ascii(val):
+    if not isinstance(val, basestring):
+      raise ValueError()
+    return val.encode('ascii')
+
+  try:
+    data = json.loads(match.group(1))
+    if not isinstance(data, dict):
+      raise ValueError()
+    isolated_hash = to_ascii(data['hash'])
+    namespace = to_ascii(data['namespace'])
+    isolate_server = to_ascii(data['storage'])
+    if not file_path.is_url(isolate_server):
+      raise ValueError()
+    return (isolate_server, namespace, isolated_hash)
+  except (KeyError, ValueError):
+    logging.warning(
+        'Unexpected value of run_isolated_out_hack: %s', match.group(1))
+    return None
+
+
+def retrieve_results(
+    base_url, task_key, timeout, should_stop, output_collector):
   """Retrieves results for a single task_key.
 
   Returns a dict with results on success or None on failure or timeout.
@@ -275,11 +419,16 @@ def retrieve_results(base_url, task_key, timeout, should_stop):
     # Swarming server uses non-empty 'output' value as a flag that task has
     # finished. How to wait for tasks that produce no output is a mystery.
     if result.get('output'):
+      # Record the result, try to fetch attached output files (if any).
+      if output_collector:
+        # TODO(vadimsh): Respect |should_stop| and |deadline| when fetching.
+        output_collector.process_shard_result(result)
       return result
 
 
 def yield_results(
-    swarm_base_url, task_keys, timeout, max_threads, print_status_updates):
+    swarm_base_url, task_keys, timeout, max_threads,
+    print_status_updates, output_collector):
   """Yields swarming task results from the swarming server as (index, result).
 
   Duplicate shards are ignored. Shards are yielded in order of completion.
@@ -289,6 +438,9 @@ def yield_results(
   max_threads is optional and is used to limit the number of parallel fetches
   done. Since in general the number of task_keys is in the range <=10, it's not
   worth normally to limit the number threads. Mostly used for testing purposes.
+
+  output_collector is an optional instance of TaskOutputCollector that will be
+  used to fetch files produced by a task from isolate server to the local disk.
 
   Yields:
     (index, result). In particular, 'result' is defined as the
@@ -305,7 +457,7 @@ def yield_results(
       for task_key in task_keys:
         pool.add_task(
             0, results_channel.wrap_task(retrieve_results),
-            swarm_base_url, task_key, timeout, should_stop)
+            swarm_base_url, task_key, timeout, should_stop, output_collector)
 
       # Wait for all of them to finish.
       shards_remaining = range(len(task_keys))
@@ -556,35 +708,50 @@ def decorate_shard_output(result, shard_exit_code):
     ) % (tag, result['output'] or NO_OUTPUT_FOUND, tag, shard_exit_code)
 
 
-def collect(url, task_name, timeout, decorate, print_status_updates):
+def collect(
+    url, task_name, timeout, decorate, print_status_updates, task_output_dir):
   """Retrieves results of a Swarming task."""
   logging.info('Collecting %s', task_name)
   task_keys = get_task_keys(url, task_name)
   if not task_keys:
     raise Failure('No task keys to get results with.')
 
+  # Collect output files only if explicitly asked with --task-output-dir option.
+  if task_output_dir:
+    output_collector = TaskOutputCollector(
+        task_output_dir, task_name, len(task_keys))
+  else:
+    output_collector = None
+
   exit_code = None
   seen_shards = set()
-  for index, output in yield_results(
-      url, task_keys, timeout, None, print_status_updates):
-    seen_shards.add(index)
-    shard_exit_codes = (output['exit_codes'] or '1').split(',')
-    shard_exit_code = max(int(i) for i in shard_exit_codes)
-    if decorate:
-      print decorate_shard_output(output, shard_exit_code)
-    else:
-      print(
-          '%s/%s: %s' % (
-              output['machine_id'],
-              output['machine_tag'],
-              output['exit_codes']))
-      print(''.join('  %s\n' % l for l in output['output'].splitlines()))
-    exit_code = exit_code or shard_exit_code
+
+  try:
+    for index, output in yield_results(
+        url, task_keys, timeout, None, print_status_updates, output_collector):
+      seen_shards.add(index)
+      shard_exit_codes = (output['exit_codes'] or '1').split(',')
+      shard_exit_code = max(int(i) for i in shard_exit_codes)
+      if decorate:
+        print decorate_shard_output(output, shard_exit_code)
+      else:
+        print(
+            '%s/%s: %s' % (
+                output['machine_id'],
+                output['machine_tag'],
+                output['exit_codes']))
+        print(''.join('  %s\n' % l for l in output['output'].splitlines()))
+      exit_code = exit_code or shard_exit_code
+  finally:
+    if output_collector:
+      output_collector.finalize()
+
   if len(seen_shards) != len(task_keys):
     missing_shards = [x for x in range(len(task_keys)) if x not in seen_shards]
     print >> sys.stderr, ('Results from some shards are missing: %s' %
         ', '.join(map(str, missing_shards)))
     exit_code = exit_code or 1
+
   return exit_code if exit_code is not None else 1
 
 
@@ -655,6 +822,15 @@ def add_collect_options(parser):
   parser.group_logging.add_option(
       '--print-status-updates', action='store_true',
       help='Print periodic status updates')
+  parser.task_output_group = tools.optparse.OptionGroup(parser, 'Task output')
+  parser.task_output_group.add_option(
+      '--task-output-dir',
+      help='Directory to put task results into. When the task finishes, this '
+           'directory contains <task-output-dir>/summary.json file with '
+           'a summary of task results across all shards, and per-shard '
+           'directory with output files produced by a shard: '
+           '<task-output-dir>/<zero-based-shard-index>/')
+  parser.add_option_group(parser.task_output_group)
 
 
 @subcommand.usage('task_name')
@@ -677,7 +853,8 @@ def CMDcollect(parser, args):
         args[0],
         options.timeout,
         options.decorate,
-        options.print_status_updates)
+        options.print_status_updates,
+        options.task_output_dir)
   except Failure as e:
     tools.report_error(e)
     return 1
@@ -780,7 +957,8 @@ def CMDrun(parser, args):
         task_name,
         options.timeout,
         options.decorate,
-        options.print_status_updates)
+        options.print_status_updates,
+        options.task_output_dir)
   except Failure as e:
     tools.report_error(e)
     return 1

@@ -1299,8 +1299,13 @@ class LocalCache(object):
 class MemoryCache(LocalCache):
   """LocalCache implementation that stores everything in memory."""
 
-  def __init__(self):
+  def __init__(self, file_mode_mask=0500):
+    """Args:
+      file_mode_mask: bit mask to AND file mode with. Default value will make
+          all mapped files to be read only.
+    """
     super(MemoryCache, self).__init__()
+    self._file_mode_mask = file_mode_mask
     # Let's not assume dict is thread safe.
     self._lock = threading.Lock()
     self._contents = {}
@@ -1331,8 +1336,7 @@ class MemoryCache(LocalCache):
     """Since data is kept in memory, there is no filenode to hardlink."""
     file_write(dest, [self.read(digest)])
     if file_mode is not None:
-      # Ignores all other bits.
-      os.chmod(dest, file_mode & 0500)
+      os.chmod(dest, file_mode & self._file_mode_mask)
 
 
 def get_hash_algo(_namespace):
