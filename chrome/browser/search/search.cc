@@ -53,8 +53,12 @@ namespace {
 // The first token is always GroupN for some integer N, followed by a
 // space-delimited list of key:value pairs which correspond to these flags:
 const char kEmbeddedPageVersionFlagName[] = "espv";
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
 const uint64 kEmbeddedPageVersionDefault = 1;
+#elif defined(OS_ANDROID)
+const uint64 kEmbeddedPageVersionDefault = 1;
+// Use this variant to enable EmbeddedSearch SearchBox API in the results page.
+const uint64 kEmbeddedSearchEnabledVersion = 2;
 #else
 const uint64 kEmbeddedPageVersionDefault = 2;
 #endif
@@ -256,15 +260,13 @@ base::string16 GetSearchTermsImpl(const content::WebContents* contents,
   // faking search terms in the URL. Random pages can't get into the Instant
   // renderer and scripting doesn't work cross-process, so if the page is in
   // the Instant process, we know it isn't being exploited.
-  // Since iOS and Android doesn't use the instant framework, these checks are
-  // disabled for the two platforms.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  if (!IsRenderedInInstantProcess(contents, profile) &&
+  if (IsInstantExtendedAPIEnabled() &&
+      !IsRenderedInInstantProcess(contents, profile) &&
       ((entry == contents->GetController().GetLastCommittedEntry()) ||
        !ShouldAssignURLToInstantRenderer(entry->GetURL(), profile)))
     return base::string16();
-#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+
   // Check to see if search terms have already been extracted.
   base::string16 search_terms = GetSearchTermsFromNavigationEntry(entry);
   if (!search_terms.empty())
@@ -343,16 +345,25 @@ struct NewTabURLDetails {
 const int kDisableStartMargin = -1;
 
 bool IsInstantExtendedAPIEnabled() {
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
   return false;
+#elif defined(OS_ANDROID)
+  return EmbeddedSearchPageVersion() == kEmbeddedSearchEnabledVersion;
 #else
   return true;
-#endif  // defined(OS_IOS) || defined(OS_ANDROID)
+#endif  // defined(OS_IOS)
 }
 
 // Determine what embedded search page version to request from the user's
 // default search provider. If 0, the embedded search UI should not be enabled.
 uint64 EmbeddedSearchPageVersion() {
+#if defined(OS_ANDROID)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableEmbeddedSearchAPI)) {
+    return kEmbeddedSearchEnabledVersion;
+  }
+#endif
+
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(&flags)) {
     return GetUInt64ValueForFlagWithDefault(kEmbeddedPageVersionFlagName,
@@ -430,13 +441,12 @@ base::string16 GetSearchTerms(const content::WebContents* contents) {
   if (!entry)
     return base::string16();
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // iOS and Android doesn't use the Instant framework, disable this check for
-  // the two platforms.
-  InstantSupportState state = GetInstantSupportStateFromNavigationEntry(*entry);
-  if (state == INSTANT_SUPPORT_NO)
-    return base::string16();
-#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+  if (IsInstantExtendedAPIEnabled()) {
+    InstantSupportState state =
+        GetInstantSupportStateFromNavigationEntry(*entry);
+    if (state == INSTANT_SUPPORT_NO)
+      return base::string16();
+  }
 
   return GetSearchTermsImpl(contents, entry);
 }

@@ -1805,6 +1805,15 @@ const Experiment kExperiments[] = {
     kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableAppsFileAssociations)
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-embeddedsearch-api",
+    IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_NAME,
+    IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableEmbeddedSearchAPI)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

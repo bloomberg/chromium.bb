@@ -398,6 +398,8 @@ void SearchTabHelper::MaybeRemoveMostVisitedItems(
 }
 
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
+// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
+#if !defined(OS_ANDROID)
   OmniboxView* omnibox = GetOmniboxView();
   if (!omnibox)
     return;
@@ -433,6 +435,7 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
         web_contents()->GetView()->Focus();
       break;
   }
+#endif
 }
 
 void SearchTabHelper::NavigateToURL(const GURL& url,
@@ -482,10 +485,11 @@ void SearchTabHelper::OnLogMostVisitedNavigation(
 }
 
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
+// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
+#if !defined(OS_ANDROID)
   OmniboxView* omnibox = GetOmniboxView();
   if (!omnibox)
     return;
-
   // The first case is for right click to paste, where the text is retrieved
   // from the clipboard already sanitized. The second case is needed to handle
   // drag-and-drop value and it has to be sanitazed before setting it into the
@@ -503,6 +507,7 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   omnibox->model()->OnPaste();
   omnibox->SetUserText(text_to_paste);
   omnibox->OnAfterPossibleChange();
+#endif
 }
 
 void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {

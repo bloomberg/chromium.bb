@@ -14643,6 +14643,16 @@ Do you accept?
     <message name="IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_DESCRIPTION" desc="Description to allow insecure WebSocket from https origin">
       This flag makes Chrome unsafe. Use this only if you understand what this does. Note that this flag may be removed without any notice. If enabled, frames with an https origin can use WebSockets with an insecure URL (ws://).
     </message>
+    
+    <!-- Experiment flags to enable EmbeddedSearch API in the search results page -->
+    <if expr="is_android">
+    <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_NAME" desc="An about::flags experiment title to enable EmbeddedSearch API in the search results page">
+      Enable EmbeddedSearch API
+    </message>
+    <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_DESCRIPTION" desc="Describes an about:flags experiment for enabling EmbeddedSearch API in the search results page">
+     If enabled, EmbeddedSearch API will be used to submit search queries in the search results page.
+    </message>
+    </if>
   </messages>
   </release>
 </grit>
