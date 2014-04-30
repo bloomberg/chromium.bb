@@ -90,24 +90,12 @@ Length AnimatableLength::toLength(const CSSToLengthConversionData& conversionDat
     return toCSSPrimitiveValue(range)->convertToLength<AnyConversion>(conversionData);
 }
 
-bool AnimatableLength::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    const AnimatableLength* length = toAnimatableLength(value);
-    CSSPrimitiveValue::LengthUnitType type = commonUnitType(length);
-    return isCalc(type) && (isViewportUnit() || length->isViewportUnit());
-}
-
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLength* length = toAnimatableLength(value);
     CSSPrimitiveValue::LengthUnitType type = commonUnitType(length);
     if (!isCalc(type))
         return AnimatableLength::create(blend(m_lengthValue, length->m_lengthValue, fraction), type);
-
-    // FIXME(crbug.com/168840): Support for viewport units in calc needs to be added before we can blend them with other units.
-    if (isViewportUnit() || length->isViewportUnit())
-        return defaultInterpolateTo(this, value, fraction);
-
     return AnimatableLength::create(scale(1 - fraction).get(), length->scale(fraction).get());
 }
 

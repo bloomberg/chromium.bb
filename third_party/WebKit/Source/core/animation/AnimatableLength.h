@@ -66,7 +66,6 @@ public:
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
 
 private:
     AnimatableLength(double number, CSSPrimitiveValue::LengthUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
@@ -89,14 +88,6 @@ private:
 
     static bool isCalc(CSSPrimitiveValue::LengthUnitType type) { return type == CSSPrimitiveValue::UnitTypeCalc; }
     bool isCalc() const { return isCalc(m_lengthUnitType); }
-
-    bool isViewportUnit() const
-    {
-        return m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportWidth
-            || m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportHeight
-            || m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportMin
-            || m_lengthUnitType == CSSPrimitiveValue::UnitTypeViewportMax;
-    }
 
     static PassRefPtrWillBeRawPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
     {
