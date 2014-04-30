@@ -36,12 +36,12 @@
     // DOM Level 0
     [Replaceable] readonly attribute Screen screen;
     readonly attribute History history;
-    [Replaceable] readonly attribute BarProp locationbar;
-    [Replaceable] readonly attribute BarProp menubar;
-    [Replaceable] readonly attribute BarProp personalbar;
-    [Replaceable] readonly attribute BarProp scrollbars;
-    [Replaceable] readonly attribute BarProp statusbar;
-    [Replaceable] readonly attribute BarProp toolbar;
+    [Replaceable, MeasureAs=BarPropLocationbar] readonly attribute BarProp locationbar;
+    [Replaceable, MeasureAs=BarPropMenubar] readonly attribute BarProp menubar;
+    [Replaceable, MeasureAs=BarPropPersonalbar] readonly attribute BarProp personalbar;
+    [Replaceable, MeasureAs=BarPropScrollbars] readonly attribute BarProp scrollbars;
+    [Replaceable, MeasureAs=BarPropStatusbar] readonly attribute BarProp statusbar;
+    [Replaceable, MeasureAs=BarPropToolbar] readonly attribute BarProp toolbar;
     [PerWorldBindings, LogActivity=GetterOnly] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
     [DoNotCheckSecurity, Unforgeable, Replaceable, PerWorldBindings, LogActivity, PutForwards=href] readonly attribute Location location;
@@ -141,11 +141,11 @@
 
     // DOM Level 2 Style Interface
     [PerWorldBindings] CSSStyleDeclaration getComputedStyle([Default=Undefined] optional Element element,
-                                                              [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString pseudoElement);
+                                                            [TreatNullAs=NullString, TreatUndefinedAs=NullString, Default=Undefined] optional DOMString pseudoElement);
 
     // WebKit extensions
-    CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
-                                   [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString pseudoElement);
+    [MeasureAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
+                                                                  [TreatNullAs=NullString, TreatUndefinedAs=NullString, Default=Undefined] optional DOMString pseudoElement);
 
     [Replaceable] readonly attribute double devicePixelRatio;
 
@@ -162,7 +162,7 @@
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
-    [RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
+    [RuntimeEnabled=OrientationEvent, MeasureAs=WindowOrientation] readonly attribute long orientation;
 
     [Replaceable] readonly attribute Console console;
 

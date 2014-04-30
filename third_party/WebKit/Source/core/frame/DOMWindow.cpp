@@ -595,8 +595,6 @@ int DOMWindow::orientation() const
 {
     ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
 
-    UseCounter::count(document(), UseCounter::WindowOrientation);
-
     if (!m_frame)
         return 0;
 
@@ -619,7 +617,6 @@ History& DOMWindow::history() const
 
 BarProp& DOMWindow::locationbar() const
 {
-    UseCounter::count(document(), UseCounter::BarPropLocationbar);
     if (!m_locationbar)
         m_locationbar = BarProp::create(m_frame, BarProp::Locationbar);
     return *m_locationbar;
@@ -627,7 +624,6 @@ BarProp& DOMWindow::locationbar() const
 
 BarProp& DOMWindow::menubar() const
 {
-    UseCounter::count(document(), UseCounter::BarPropMenubar);
     if (!m_menubar)
         m_menubar = BarProp::create(m_frame, BarProp::Menubar);
     return *m_menubar;
@@ -635,7 +631,6 @@ BarProp& DOMWindow::menubar() const
 
 BarProp& DOMWindow::personalbar() const
 {
-    UseCounter::count(document(), UseCounter::BarPropPersonalbar);
     if (!m_personalbar)
         m_personalbar = BarProp::create(m_frame, BarProp::Personalbar);
     return *m_personalbar;
@@ -643,7 +638,6 @@ BarProp& DOMWindow::personalbar() const
 
 BarProp& DOMWindow::scrollbars() const
 {
-    UseCounter::count(document(), UseCounter::BarPropScrollbars);
     if (!m_scrollbars)
         m_scrollbars = BarProp::create(m_frame, BarProp::Scrollbars);
     return *m_scrollbars;
@@ -651,7 +645,6 @@ BarProp& DOMWindow::scrollbars() const
 
 BarProp& DOMWindow::statusbar() const
 {
-    UseCounter::count(document(), UseCounter::BarPropStatusbar);
     if (!m_statusbar)
         m_statusbar = BarProp::create(m_frame, BarProp::Statusbar);
     return *m_statusbar;
@@ -659,7 +652,6 @@ BarProp& DOMWindow::statusbar() const
 
 BarProp& DOMWindow::toolbar() const
 {
-    UseCounter::count(document(), UseCounter::BarPropToolbar);
     if (!m_toolbar)
         m_toolbar = BarProp::create(m_frame, BarProp::Toolbar);
     return *m_toolbar;
@@ -1288,7 +1280,6 @@ PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const 
 
 PassRefPtrWillBeRawPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const String& pseudoElement) const
 {
-    UseCounter::count(document(), UseCounter::GetMatchedCSSRules);
     if (!element)
         return nullptr;
 
