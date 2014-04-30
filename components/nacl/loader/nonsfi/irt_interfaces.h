@@ -24,6 +24,7 @@ extern const struct nacl_irt_tls kIrtTls;
 extern const struct nacl_irt_clock kIrtClock;
 extern const struct nacl_irt_ppapihook kIrtPpapiHook;
 extern const struct nacl_irt_random kIrtRandom;
+extern const struct nacl_irt_exception_handling kIrtExceptionHandling;
 
 }  // namespace nonsfi
 }  // namespace nacl

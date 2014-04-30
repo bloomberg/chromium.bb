@@ -144,6 +144,22 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, IrtManifestFile) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_manifest_file_test.html"));
 }
 
+// The NonSFI test is currently available only on linux-x86-32
+// architecture.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+#define MAYBE_NONSFI(test_name) test_name
+#else
+#define MAYBE_NONSFI(test_name) DISABLED_##test_name
+#endif
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, IrtException) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_exception_test.html"));
+}
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclNonSfi,
+                       MAYBE_NONSFI(IrtException)) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_exception_test.html"));
+}
+
 NACL_BROWSER_TEST_F(NaClBrowserTest, Nameservice, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pm_nameservice_test.html"));
 })
