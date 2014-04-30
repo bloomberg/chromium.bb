@@ -24,7 +24,6 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -358,21 +357,7 @@ void WindowState::NotifyPostStateTypeChange(
 }
 
 void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
-  gfx::Rect actual_new_bounds(bounds);
-  // Ensure we don't go smaller than our minimum bounds in "normal" window
-  // modes
-  if (window_->delegate() && !IsMaximized() && !IsFullscreen()) {
-    // Get the minimum usable size of the minimum size and the screen size.
-    gfx::Size min_size = window_->delegate()->GetMinimumSize();
-    min_size.SetToMin(gfx::Screen::GetScreenFor(
-        window_)->GetDisplayNearestWindow(window_).work_area().size());
-
-    actual_new_bounds.set_width(
-        std::max(min_size.width(), actual_new_bounds.width()));
-    actual_new_bounds.set_height(
-        std::max(min_size.height(), actual_new_bounds.height()));
-  }
-  BoundsSetter().SetBounds(window_, actual_new_bounds);
+  BoundsSetter().SetBounds(window_, bounds);
 }
 
 void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
