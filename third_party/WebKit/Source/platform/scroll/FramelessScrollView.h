@@ -68,7 +68,7 @@ public:
 
     // ScrollableArea public methods:
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
-    virtual bool isActiveFocus() const OVERRIDE;
+    virtual bool isActive() const OVERRIDE;
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
 

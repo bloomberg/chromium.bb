@@ -120,7 +120,7 @@ void ScrollbarGroup::invalidateScrollCornerRect(const IntRect&)
 {
 }
 
-bool ScrollbarGroup::isActiveFocus() const
+bool ScrollbarGroup::isActive() const
 {
     return true;
 }

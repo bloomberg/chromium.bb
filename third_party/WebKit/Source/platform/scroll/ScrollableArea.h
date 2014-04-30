@@ -114,7 +114,8 @@ public:
     const IntPoint& scrollOrigin() const { return m_scrollOrigin; }
     bool scrollOriginChanged() const { return m_scrollOriginChanged; }
 
-    virtual bool isActiveFocus() const = 0;
+    // FIXME(bokan): Meaningless name, rename to isActiveFocus
+    virtual bool isActive() const = 0;
     virtual int scrollSize(ScrollbarOrientation) const = 0;
     virtual void invalidateScrollbar(Scrollbar*, const IntRect&);
     virtual bool isScrollCornerVisible() const = 0;

@@ -2309,7 +2309,7 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
     return intersection(clipRect, windowClipRect());
 }
 
-bool FrameView::isActiveFocus() const
+bool FrameView::isActive() const
 {
     Page* page = frame().page();
     return page && page->focusController().isActive();

@@ -50,7 +50,7 @@ void FramelessScrollView::invalidateScrollbarRect(Scrollbar* scrollbar, const In
     invalidateRect(dirtyRect);
 }
 
-bool FramelessScrollView::isActiveFocus() const
+bool FramelessScrollView::isActive() const
 {
     // FIXME
     return true;
@@ -58,7 +58,7 @@ bool FramelessScrollView::isActiveFocus() const
 
 bool FramelessScrollView::scrollbarsCanBeActive() const
 {
-    return isActiveFocus();
+    return isActive();
 }
 
 IntRect FramelessScrollView::scrollableAreaBoundingBox() const

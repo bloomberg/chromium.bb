@@ -121,7 +121,7 @@ void Scrollbar::getTickmarks(Vector<IntRect>& tickmarks) const
 
 bool Scrollbar::isScrollableAreaActive() const
 {
-    return m_scrollableArea && m_scrollableArea->isActiveFocus();
+    return m_scrollableArea && m_scrollableArea->isActive();
 }
 
 bool Scrollbar::isScrollViewScrollbar() const
@@ -548,7 +548,7 @@ bool Scrollbar::shouldParticipateInHitTesting()
 
 bool Scrollbar::isWindowActive() const
 {
-    return m_scrollableArea && m_scrollableArea->isActiveFocus();
+    return m_scrollableArea && m_scrollableArea->isActive();
 }
 
 void Scrollbar::invalidateRect(const IntRect& rect)

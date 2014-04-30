@@ -296,7 +296,7 @@ public:
     void setHasSoftwareFilters(bool hasSoftwareFilters) { m_hasSoftwareFilters = hasSoftwareFilters; }
     bool hasSoftwareFilters() const { return m_hasSoftwareFilters; }
 
-    virtual bool isActiveFocus() const OVERRIDE;
+    virtual bool isActive() const OVERRIDE;
 
     // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.
     IntSize scrollOffsetForFixedPosition() const;
