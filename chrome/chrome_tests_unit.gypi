@@ -1706,6 +1706,7 @@
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
+        'browser/ui/views/apps/app_info_dialog/app_info_permissions_tab_unittest.cc',
         'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
         'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
