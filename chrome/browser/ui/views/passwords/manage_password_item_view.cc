@@ -15,6 +15,40 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
+namespace {
+
+enum FieldType { USERNAME_FIELD, PASSWORD_FIELD };
+
+// Upper limit on the size of the username and password fields.
+const int kUsernameFieldSize = 30;
+const int kPasswordFieldSize = 22;
+
+// Returns the width of |type| field.
+int GetFieldWidth(FieldType type) {
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetFontList(ui::ResourceBundle::SmallFont)
+      .GetExpectedTextWidth(type == USERNAME_FIELD ? kUsernameFieldSize
+                                                   : kPasswordFieldSize);
+}
+
+int FirstFieldWidth() {
+  return std::max(
+      GetFieldWidth(USERNAME_FIELD),
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED))
+          .GetPreferredSize()
+          .width());
+}
+
+int SecondFieldWidth() {
+  return std::max(
+      GetFieldWidth(PASSWORD_FIELD),
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO))
+          .GetPreferredSize()
+          .width());
+}
+
+}  // namespace
+
 // Pending View
 ManagePasswordItemView::PendingView::PendingView(
     ManagePasswordItemView* parent) {
@@ -99,14 +133,10 @@ ManagePasswordItemView::UndoView::~UndoView() {}
 ManagePasswordItemView::ManagePasswordItemView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
     autofill::PasswordForm password_form,
-    int field_1_width,
-    int field_2_width,
     Position position)
     : manage_passwords_bubble_model_(manage_passwords_bubble_model),
       password_form_(password_form),
-      delete_password_(false),
-      field_1_width_(field_1_width),
-      field_2_width_(field_2_width) {
+      delete_password_(false) {
   views::FillLayout* layout = new views::FillLayout();
   SetLayoutManager(layout);
 
@@ -140,8 +170,8 @@ void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
                         views::GridLayout::FILL,
                         0,
                         views::GridLayout::FIXED,
-                        field_1_width_,
-                        field_1_width_);
+                        FirstFieldWidth(),
+                        FirstFieldWidth());
 
   // The password/"Undo!" field.
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
@@ -149,8 +179,8 @@ void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
                         views::GridLayout::FILL,
                         1,
                         views::GridLayout::USE_PREF,
-                        field_2_width_,
-                        field_2_width_);
+                        SecondFieldWidth(),
+                        SecondFieldWidth());
 
   // If we're in manage-mode, we need another column for the delete button.
   if (column_set_id == THREE_COLUMN_SET) {

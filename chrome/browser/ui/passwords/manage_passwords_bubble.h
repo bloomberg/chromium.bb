@@ -30,6 +30,7 @@ class ManagePasswordsBubble {
   ~ManagePasswordsBubble();
 
   ManagePasswordsBubbleModel* model() { return model_.get(); }
+  const ManagePasswordsBubbleModel* model() const { return model_.get(); }
 
  private:
   scoped_ptr<ManagePasswordsBubbleModel> model_;
