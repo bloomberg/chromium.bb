@@ -615,4 +615,32 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
+// This test verifies that a 1x1 frame is passed down to the client.
+TEST_F(VideoCaptureControllerTest, CaptureOddWidthHeightFrames) {
+  media::VideoCaptureParams session_100;
+  session_100.requested_format = media::VideoCaptureFormat(
+      gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
+  const VideoCaptureControllerID client_a_route_1(0xa1a1a1a1);
+  controller_->AddClient(client_a_route_1,
+                         client_a_.get(),
+                         base::kNullProcessHandle,
+                         100,
+                         session_100);
+  {
+    InSequence s;
+    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1)).Times(1);
+    EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_1)).Times(1);
+  }
+
+  media::VideoCaptureFormat frame_format(
+      gfx::Size(1, 1), 30, media::PIXEL_FORMAT_ARGB);
+  size_t length =
+      frame_format.frame_size.width() * frame_format.frame_size.height() * 4;
+  scoped_ptr<uint8[]> buffer(new uint8[length]);
+
+  device_->OnIncomingCapturedData(
+      buffer.get(), length, frame_format, 0, base::TimeTicks());
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace content

@@ -299,20 +299,25 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (!frame_format.IsValid())
     return;
 
-  // Chopped pixels in width/height in case video capture device has odd
-  // numbers for width/height.
-  int chopped_width = 0;
-  int chopped_height = 0;
+  // Padded pixels in width/height in case video capture device has odd
+  // numbers for width/height. When the width/height is odd, the last pixel of
+  // each row will have a Y/U/V sample. It's still considered odd width/height,
+  // not duplicated. Converting back to ARGB it will still be odd width/height.
+  // The destination buffer should be rounded up. Pass in a stride that reflects
+  // the byte per line with rounding to libyuv::ConvertToI420, but pass in the
+  // original width/height.
+  int padded_width = 0;
+  int padded_height = 0;
   int new_unrotated_width = frame_format.frame_size.width();
   int new_unrotated_height = frame_format.frame_size.height();
 
   if (new_unrotated_width & 1) {
-    --new_unrotated_width;
-    chopped_width = 1;
+    ++new_unrotated_width;
+    padded_width = 1;
   }
   if (new_unrotated_height & 1) {
-    --new_unrotated_height;
-    chopped_height = 1;
+    ++new_unrotated_height;
+    padded_height = 1;
   }
 
   int destination_width = new_unrotated_width;
@@ -364,23 +369,23 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
     case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
       break;
     case media::PIXEL_FORMAT_I420:
-      DCHECK(!chopped_width && !chopped_height);
+      DCHECK(!padded_width && !padded_height);
       origin_colorspace = libyuv::FOURCC_I420;
       break;
     case media::PIXEL_FORMAT_YV12:
-      DCHECK(!chopped_width && !chopped_height);
+      DCHECK(!padded_width && !padded_height);
       origin_colorspace = libyuv::FOURCC_YV12;
       break;
     case media::PIXEL_FORMAT_NV21:
-      DCHECK(!chopped_width && !chopped_height);
+      DCHECK(!padded_width && !padded_height);
       origin_colorspace = libyuv::FOURCC_NV21;
       break;
     case media::PIXEL_FORMAT_YUY2:
-      DCHECK(!chopped_width && !chopped_height);
+      DCHECK(!padded_width && !padded_height);
       origin_colorspace = libyuv::FOURCC_YUY2;
       break;
     case media::PIXEL_FORMAT_UYVY:
-      DCHECK(!chopped_width && !chopped_height);
+      DCHECK(!padded_width && !padded_height);
       origin_colorspace = libyuv::FOURCC_UYVY;
       break;
     case media::PIXEL_FORMAT_RGB24:
@@ -414,10 +419,10 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
                         crop_x,
                         crop_y,
                         frame_format.frame_size.width(),
-                        (flip ? -frame_format.frame_size.height() :
-                                frame_format.frame_size.height()),
-                        new_unrotated_width,
-                        new_unrotated_height,
+                        (flip ? -frame_format.frame_size.height()
+                              : frame_format.frame_size.height()),
+                        frame_format.frame_size.width(),
+                        frame_format.frame_size.height(),
                         rotation_mode,
                         origin_colorspace);
 #else
