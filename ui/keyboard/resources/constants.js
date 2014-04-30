@@ -105,3 +105,9 @@ var RESIZE_THRESHOLD = 20;
  * @type {number}
  */
 var SOUND_POOL_SIZE = 10;
+
+/**
+ * Whether or not to enable sounds on key press.
+ * @type {boolean}
+ */
+var SOUND_ENABLED = false;

@@ -770,7 +770,7 @@ Polymer('kb-keyboard', {
    * @param {Sound} sound The id of the audio tag.
    */
   playSound: function(sound) {
-    if (!sound || sound == Sound.NONE)
+    if (!SOUND_ENABLED || !sound || sound == Sound.NONE)
       return;
     var pool = this.sounds[sound];
     if (!pool) {
