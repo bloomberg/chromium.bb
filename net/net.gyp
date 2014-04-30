@@ -691,6 +691,7 @@
               # Need to read input data files.
               'filter/gzip_filter_unittest.cc',
               'socket/ssl_server_socket_unittest.cc',
+              'spdy/fuzzing/hpack_fuzz_util_test.cc',
               # Need TestServer.
               'proxy/proxy_script_fetcher_impl_unittest.cc',
               'socket/ssl_client_socket_unittest.cc',
@@ -1347,6 +1348,39 @@
           ],
           'sources': [
             'tools/quic/quic_server_bin.cc',
+          ],
+        },
+        {
+          'target_name': 'hpack_example_generator',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'spdy/fuzzing/hpack_example_generator.cc',
+          ],
+        },
+        {
+          'target_name': 'hpack_fuzz_mutator',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'spdy/fuzzing/hpack_fuzz_mutator.cc',
+          ],
+        },
+        {
+          'target_name': 'hpack_fuzz_wrapper',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'spdy/fuzzing/hpack_fuzz_wrapper.cc',
           ],
         }
       ]

@@ -86,6 +86,7 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   Representations DetermineEncodingDelta(
       const std::map<std::string, std::string>& header_set);
 
+  // Crumbles a cookie header into sorted, de-duplicated crumbs.
   static void CookieToCrumbs(const Representation& cookie,
                              Representations* crumbs_out);
 

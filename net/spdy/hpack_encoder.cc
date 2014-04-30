@@ -191,10 +191,8 @@ HpackEncoder::Representations HpackEncoder::DetermineEncodingDelta(
   for (std::map<string, string>::const_iterator it = header_set.begin();
        it != header_set.end(); ++it) {
     if (it->first == "cookie") {
-      // Crumble cookie, and sort the result crumbs.
-      size_t sort_offset = full_set.size();
+      // |CookieToCrumbs()| produces ordered crumbs.
       CookieToCrumbs(*it, &full_set);
-      std::sort(full_set.begin() + sort_offset, full_set.end());
     } else {
       // Note std::map guarantees representations are ordered.
       full_set.push_back(make_pair(
@@ -260,6 +258,8 @@ void HpackEncoder::UpdateCharacterCounts(base::StringPiece str) {
 // static
 void HpackEncoder::CookieToCrumbs(const Representation& cookie,
                                   Representations* out) {
+  size_t prior_size = out->size();
+
   // See Section 8.1.3.4 "Compressing the Cookie Header Field" in the HTTP/2
   // specification at http://tools.ietf.org/html/draft-ietf-httpbis-http2-11
   // Cookie values are split into individually-encoded HPACK representations.
@@ -270,7 +270,7 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
       out->push_back(make_pair(
           cookie.first,
           cookie.second.substr(pos)));
-      return;
+      break;
     }
     out->push_back(make_pair(
         cookie.first,
@@ -282,6 +282,10 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
       pos++;
     }
   }
+  // Sort crumbs and remove duplicates.
+  std::sort(out->begin() + prior_size, out->end());
+  out->erase(std::unique(out->begin() + prior_size, out->end()),
+             out->end());
 }
 
 }  // namespace net

@@ -400,18 +400,18 @@ TEST_F(HpackEncoderTest, CookieToCrumbs) {
   test::HpackEncoderPeer peer(NULL);
   std::vector<StringPiece> out;
 
-  // A space after ';' is consumed. All other spaces remain.
-  // ';' at beginning and end of string produce empty crumbs.
+  // A space after ';' is consumed. All other spaces remain. ';' at beginning
+  // and end of string produce empty crumbs. Duplicate crumbs are removed.
   // See section 8.1.3.4 "Compressing the Cookie Header Field" in the HTTP/2
   // specification at http://tools.ietf.org/html/draft-ietf-httpbis-http2-11
-  peer.CookieToCrumbs(" foo=1;bar=2 ; baz=3;  bing=4; ", &out);
-  EXPECT_THAT(out, ElementsAre(" foo=1", "bar=2 ", "baz=3", " bing=4", ""));
+  peer.CookieToCrumbs(" foo=1;bar=2 ; bar=3;  bing=4; ", &out);
+  EXPECT_THAT(out, ElementsAre("", " bing=4", " foo=1", "bar=2 ", "bar=3"));
 
   peer.CookieToCrumbs(";;foo = bar ;; ;baz =bing", &out);
-  EXPECT_THAT(out, ElementsAre("", "", "foo = bar ", "", "", "baz =bing"));
+  EXPECT_THAT(out, ElementsAre("", "baz =bing", "foo = bar "));
 
-  peer.CookieToCrumbs("foo=bar; baz=bing", &out);
-  EXPECT_THAT(out, ElementsAre("foo=bar", "baz=bing"));
+  peer.CookieToCrumbs("baz=bing; foo=bar; baz=bing", &out);
+  EXPECT_THAT(out, ElementsAre("baz=bing", "foo=bar"));
 
   peer.CookieToCrumbs("baz=bing", &out);
   EXPECT_THAT(out, ElementsAre("baz=bing"));
@@ -419,8 +419,8 @@ TEST_F(HpackEncoderTest, CookieToCrumbs) {
   peer.CookieToCrumbs("", &out);
   EXPECT_THAT(out, ElementsAre(""));
 
-  peer.CookieToCrumbs("foo;bar; baz;bing;", &out);
-  EXPECT_THAT(out, ElementsAre("foo", "bar", "baz", "bing", ""));
+  peer.CookieToCrumbs("foo;bar; baz;baz;bing;", &out);
+  EXPECT_THAT(out, ElementsAre("", "bar", "baz", "bing", "foo"));
 }
 
 TEST_F(HpackEncoderTest, UpdateCharacterCounts) {
