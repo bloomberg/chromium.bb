@@ -16,7 +16,7 @@ class DiscardableMemoryEmulated
     : public DiscardableMemory,
       public internal::DiscardableMemoryManagerAllocation {
  public:
-  explicit DiscardableMemoryEmulated(size_t size);
+  explicit DiscardableMemoryEmulated(size_t bytes);
   virtual ~DiscardableMemoryEmulated();
 
   static void RegisterMemoryPressureListeners();
@@ -32,11 +32,12 @@ class DiscardableMemoryEmulated
   virtual void* Memory() const OVERRIDE;
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock(size_t bytes) OVERRIDE;
+  virtual bool AllocateAndAcquireLock() OVERRIDE;
   virtual void ReleaseLock() OVERRIDE {}
   virtual void Purge() OVERRIDE;
 
  private:
+  const size_t bytes_;
   scoped_ptr<uint8[]> memory_;
   bool is_locked_;
 

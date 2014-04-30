@@ -114,7 +114,7 @@ bool DiscardableMemoryManager::AcquireLock(Allocation* allocation,
   if (std::numeric_limits<size_t>::max() - bytes_required < bytes_allocated_)
     return false;
 
-  *purged = !allocation->AllocateAndAcquireLock(info->bytes);
+  *purged = !allocation->AllocateAndAcquireLock();
   info->purgable = false;
   if (bytes_required) {
     bytes_allocated_ += bytes_required;

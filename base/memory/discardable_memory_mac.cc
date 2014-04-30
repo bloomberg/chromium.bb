@@ -115,7 +115,7 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
     DiscardableMemoryType type, size_t size) {
   switch (type) {
     case DISCARDABLE_MEMORY_TYPE_NONE:
-    case DISCARDABLE_MEMORY_TYPE_ANDROID:
+    case DISCARDABLE_MEMORY_TYPE_ASHMEM:
       return scoped_ptr<DiscardableMemory>();
     case DISCARDABLE_MEMORY_TYPE_MAC: {
       scoped_ptr<DiscardableMemoryMac> memory(new DiscardableMemoryMac(size));
@@ -144,11 +144,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 
   NOTREACHED();
   return scoped_ptr<DiscardableMemory>();
-}
-
-// static
-bool DiscardableMemory::PurgeForTestingSupported() {
-  return true;
 }
 
 // static

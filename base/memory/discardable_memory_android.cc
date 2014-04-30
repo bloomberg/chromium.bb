@@ -9,22 +9,30 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/discardable_memory_allocator_android.h"
+#include "base/memory/discardable_memory_ashmem.h"
+#include "base/memory/discardable_memory_ashmem_allocator.h"
 #include "base/memory/discardable_memory_emulated.h"
 #include "base/memory/discardable_memory_malloc.h"
 
 namespace base {
 namespace {
 
-const char kAshmemAllocatorName[] = "DiscardableMemoryAllocator";
+const char kAshmemAllocatorName[] = "DiscardableMemoryAshmemAllocator";
 
-struct DiscardableMemoryAllocatorWrapper {
-  DiscardableMemoryAllocatorWrapper()
+// When ashmem is used, have the DiscardableMemoryManager trigger userspace
+// eviction when address space usage gets too high (e.g. 512 MBytes).
+const size_t kAshmemMaxAddressSpaceUsage = 512 * 1024 * 1024;
+
+// Holds the state used for ashmem allocations.
+struct AshmemGlobalContext {
+  AshmemGlobalContext()
       : allocator(kAshmemAllocatorName,
                   GetOptimalAshmemRegionSizeForAllocator()) {
+    manager.SetMemoryLimit(kAshmemMaxAddressSpaceUsage);
   }
 
-  internal::DiscardableMemoryAllocator allocator;
+  internal::DiscardableMemoryAshmemAllocator allocator;
+  internal::DiscardableMemoryManager manager;
 
  private:
   // Returns 64 MBytes for a 512 MBytes device, 128 MBytes for 1024 MBytes...
@@ -35,8 +43,7 @@ struct DiscardableMemoryAllocatorWrapper {
   }
 };
 
-LazyInstance<DiscardableMemoryAllocatorWrapper>::Leaky g_context =
-    LAZY_INSTANCE_INITIALIZER;
+LazyInstance<AshmemGlobalContext>::Leaky g_context = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -54,7 +61,7 @@ void DiscardableMemory::UnregisterMemoryPressureListeners() {
 void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
-    DISCARDABLE_MEMORY_TYPE_ANDROID,
+    DISCARDABLE_MEMORY_TYPE_ASHMEM,
     DISCARDABLE_MEMORY_TYPE_EMULATED,
     DISCARDABLE_MEMORY_TYPE_MALLOC
   };
@@ -68,8 +75,15 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
     case DISCARDABLE_MEMORY_TYPE_NONE:
     case DISCARDABLE_MEMORY_TYPE_MAC:
       return scoped_ptr<DiscardableMemory>();
-    case DISCARDABLE_MEMORY_TYPE_ANDROID: {
-      return g_context.Pointer()->allocator.Allocate(size);
+    case DISCARDABLE_MEMORY_TYPE_ASHMEM: {
+      AshmemGlobalContext* const global_context = g_context.Pointer();
+      scoped_ptr<internal::DiscardableMemoryAshmem> memory(
+          new internal::DiscardableMemoryAshmem(
+              size, &global_context->allocator, &global_context->manager));
+      if (!memory->Initialize())
+        return scoped_ptr<DiscardableMemory>();
+
+      return memory.PassAs<DiscardableMemory>();
     }
     case DISCARDABLE_MEMORY_TYPE_EMULATED: {
       scoped_ptr<internal::DiscardableMemoryEmulated> memory(
@@ -94,13 +108,9 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 }
 
 // static
-bool DiscardableMemory::PurgeForTestingSupported() {
-  return false;
-}
-
-// static
 void DiscardableMemory::PurgeForTesting() {
-  NOTIMPLEMENTED();
+  g_context.Pointer()->manager.PurgeAll();
+  internal::DiscardableMemoryEmulated::PurgeForTesting();
 }
 
 }  // namespace base

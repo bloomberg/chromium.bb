@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/discardable_memory_allocator_android.h"
+#include "base/memory/discardable_memory_ashmem_allocator.h"
 
 #include <sys/mman.h>
 #include <unistd.h>
@@ -18,22 +18,17 @@
 #include "base/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_vector.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "third_party/ashmem/ashmem.h"
 
 // The allocator consists of three parts (classes):
-// - DiscardableMemoryAllocator: entry point of all allocations (through its
-// Allocate() method) that are dispatched to the AshmemRegion instances (which
-// it owns).
+// - DiscardableMemoryAshmemAllocator: entry point of all allocations (through
+// its Allocate() method) that are dispatched to the AshmemRegion instances
+// (which it owns).
 // - AshmemRegion: manages allocations and destructions inside a single large
 // (e.g. 32 MBytes) ashmem region.
-// - DiscardableAshmemChunk: class implementing the DiscardableMemory interface
-// whose instances are returned to the client. DiscardableAshmemChunk lets the
-// client seamlessly operate on a subrange of the ashmem region managed by
-// AshmemRegion.
+// - DiscardableAshmemChunk: class mimicking the DiscardableMemory interface
+// whose instances are returned to the client.
 
 namespace base {
 namespace {
@@ -102,10 +97,8 @@ bool CloseAshmemRegion(int fd, size_t size, void* address) {
   return close(fd) == 0;
 }
 
-DiscardableMemoryLockStatus LockAshmemRegion(int fd, size_t off, size_t size) {
-  const int result = ashmem_pin_region(fd, off, size);
-  return result == ASHMEM_WAS_PURGED ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
-                                     : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
+bool LockAshmemRegion(int fd, size_t off, size_t size) {
+  return ashmem_pin_region(fd, off, size) != ASHMEM_WAS_PURGED;
 }
 
 bool UnlockAshmemRegion(int fd, size_t off, size_t size) {
@@ -119,62 +112,13 @@ bool UnlockAshmemRegion(int fd, size_t off, size_t size) {
 
 namespace internal {
 
-class DiscardableMemoryAllocator::DiscardableAshmemChunk
-    : public DiscardableMemory {
- public:
-  // Note that |ashmem_region| must outlive |this|.
-  DiscardableAshmemChunk(AshmemRegion* ashmem_region,
-                         int fd,
-                         void* address,
-                         size_t offset,
-                         size_t size)
-      : ashmem_region_(ashmem_region),
-        fd_(fd),
-        address_(address),
-        offset_(offset),
-        size_(size),
-        locked_(true) {
-  }
-
-  // Implemented below AshmemRegion since this requires the full definition of
-  // AshmemRegion.
-  virtual ~DiscardableAshmemChunk();
-
-  // DiscardableMemory:
-  virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
-    DCHECK(!locked_);
-    locked_ = true;
-    return LockAshmemRegion(fd_, offset_, size_);
-  }
-
-  virtual void Unlock() OVERRIDE {
-    DCHECK(locked_);
-    locked_ = false;
-    UnlockAshmemRegion(fd_, offset_, size_);
-  }
-
-  virtual void* Memory() const OVERRIDE {
-    return address_;
-  }
-
- private:
-  AshmemRegion* const ashmem_region_;
-  const int fd_;
-  void* const address_;
-  const size_t offset_;
-  const size_t size_;
-  bool locked_;
-
-  DISALLOW_COPY_AND_ASSIGN(DiscardableAshmemChunk);
-};
-
-class DiscardableMemoryAllocator::AshmemRegion {
+class AshmemRegion {
  public:
   // Note that |allocator| must outlive |this|.
   static scoped_ptr<AshmemRegion> Create(
       size_t size,
       const std::string& name,
-      DiscardableMemoryAllocator* allocator) {
+      DiscardableMemoryAshmemAllocator* allocator) {
     DCHECK_EQ(size, AlignToNextPage(size));
     int fd;
     void* base;
@@ -189,8 +133,8 @@ class DiscardableMemoryAllocator::AshmemRegion {
     DCHECK(!highest_allocated_chunk_);
   }
 
-  // Returns a new instance of DiscardableMemory whose size is greater or equal
-  // than |actual_size| (which is expected to be greater or equal than
+  // Returns a new instance of DiscardableAshmemChunk whose size is greater or
+  // equal than |actual_size| (which is expected to be greater or equal than
   // |client_requested_size|).
   // Allocation works as follows:
   // 1) Reuse a previously freed chunk and return it if it succeeded. See
@@ -200,8 +144,9 @@ class DiscardableMemoryAllocator::AshmemRegion {
   // 3) If there is enough room in the ashmem region then a new chunk is
   // returned. This new chunk starts at |offset_| which is the end of the
   // previously highest chunk in the region.
-  scoped_ptr<DiscardableMemory> Allocate_Locked(size_t client_requested_size,
-                                                size_t actual_size) {
+  scoped_ptr<DiscardableAshmemChunk> Allocate_Locked(
+      size_t client_requested_size,
+      size_t actual_size) {
     DCHECK_LE(client_requested_size, actual_size);
     allocator_->lock_.AssertAcquired();
 
@@ -213,14 +158,14 @@ class DiscardableMemoryAllocator::AshmemRegion {
            used_to_previous_chunk_map_.find(highest_allocated_chunk_) !=
                used_to_previous_chunk_map_.end());
 
-    scoped_ptr<DiscardableMemory> memory = ReuseFreeChunk_Locked(
+    scoped_ptr<DiscardableAshmemChunk> memory = ReuseFreeChunk_Locked(
         client_requested_size, actual_size);
     if (memory)
       return memory.Pass();
 
     if (size_ - offset_ < actual_size) {
       // This region does not have enough space left to hold the requested size.
-      return scoped_ptr<DiscardableMemory>();
+      return scoped_ptr<DiscardableAshmemChunk>();
     }
 
     void* const address = static_cast<char*>(base_) + offset_;
@@ -273,7 +218,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
   AshmemRegion(int fd,
                size_t size,
                void* base,
-               DiscardableMemoryAllocator* allocator)
+               DiscardableMemoryAshmemAllocator* allocator)
       : fd_(fd),
         size_(size),
         base_(base),
@@ -287,14 +232,14 @@ class DiscardableMemoryAllocator::AshmemRegion {
   }
 
   // Tries to reuse a previously freed chunk by doing a closest size match.
-  scoped_ptr<DiscardableMemory> ReuseFreeChunk_Locked(
+  scoped_ptr<DiscardableAshmemChunk> ReuseFreeChunk_Locked(
       size_t client_requested_size,
       size_t actual_size) {
     allocator_->lock_.AssertAcquired();
     const FreeChunk reused_chunk = RemoveFreeChunkFromIterator_Locked(
         free_chunks_.lower_bound(FreeChunk(actual_size)));
     if (reused_chunk.is_null())
-      return scoped_ptr<DiscardableMemory>();
+      return scoped_ptr<DiscardableAshmemChunk>();
 
     used_to_previous_chunk_map_.insert(
         std::make_pair(reused_chunk.start, reused_chunk.previous_chunk));
@@ -330,9 +275,9 @@ class DiscardableMemoryAllocator::AshmemRegion {
     const size_t offset =
         static_cast<char*>(reused_chunk.start) - static_cast<char*>(base_);
     LockAshmemRegion(fd_, offset, reused_chunk_size);
-    scoped_ptr<DiscardableMemory> memory(
-        new DiscardableAshmemChunk(this, fd_, reused_chunk.start, offset,
-                                   reused_chunk_size));
+    scoped_ptr<DiscardableAshmemChunk> memory(
+        new DiscardableAshmemChunk(
+            this, fd_, reused_chunk.start, offset, reused_chunk_size));
     return memory.Pass();
   }
 
@@ -449,7 +394,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
   const int fd_;
   const size_t size_;
   void* const base_;
-  DiscardableMemoryAllocator* const allocator_;
+  DiscardableMemoryAshmemAllocator* const allocator_;
   // Points to the chunk with the highest address in the region. This pointer
   // needs to be carefully updated when chunks are merged/split.
   void* highest_allocated_chunk_;
@@ -473,13 +418,43 @@ class DiscardableMemoryAllocator::AshmemRegion {
   DISALLOW_COPY_AND_ASSIGN(AshmemRegion);
 };
 
-DiscardableMemoryAllocator::DiscardableAshmemChunk::~DiscardableAshmemChunk() {
+DiscardableAshmemChunk::~DiscardableAshmemChunk() {
   if (locked_)
     UnlockAshmemRegion(fd_, offset_, size_);
   ashmem_region_->OnChunkDeletion(address_, size_);
 }
 
-DiscardableMemoryAllocator::DiscardableMemoryAllocator(
+bool DiscardableAshmemChunk::Lock() {
+  DCHECK(!locked_);
+  locked_ = true;
+  return LockAshmemRegion(fd_, offset_, size_);
+}
+
+void DiscardableAshmemChunk::Unlock() {
+  DCHECK(locked_);
+  locked_ = false;
+  UnlockAshmemRegion(fd_, offset_, size_);
+}
+
+void* DiscardableAshmemChunk::Memory() const {
+  return address_;
+}
+
+// Note that |ashmem_region| must outlive |this|.
+DiscardableAshmemChunk::DiscardableAshmemChunk(AshmemRegion* ashmem_region,
+                                               int fd,
+                                               void* address,
+                                               size_t offset,
+                                               size_t size)
+    : ashmem_region_(ashmem_region),
+      fd_(fd),
+      address_(address),
+      offset_(offset),
+      size_(size),
+      locked_(true) {
+}
+
+DiscardableMemoryAshmemAllocator::DiscardableMemoryAshmemAllocator(
     const std::string& name,
     size_t ashmem_region_size)
     : name_(name),
@@ -489,16 +464,15 @@ DiscardableMemoryAllocator::DiscardableMemoryAllocator(
   DCHECK_GE(ashmem_region_size_, kMinAshmemRegionSize);
 }
 
-DiscardableMemoryAllocator::~DiscardableMemoryAllocator() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+DiscardableMemoryAshmemAllocator::~DiscardableMemoryAshmemAllocator() {
   DCHECK(ashmem_regions_.empty());
 }
 
-scoped_ptr<DiscardableMemory> DiscardableMemoryAllocator::Allocate(
+scoped_ptr<DiscardableAshmemChunk> DiscardableMemoryAshmemAllocator::Allocate(
     size_t size) {
   const size_t aligned_size = AlignToNextPage(size);
   if (!aligned_size)
-    return scoped_ptr<DiscardableMemory>();
+    return scoped_ptr<DiscardableAshmemChunk>();
   // TODO(pliard): make this function less naive by e.g. moving the free chunks
   // multiset to the allocator itself in order to decrease even more
   // fragmentation/speedup allocation. Note that there should not be more than a
@@ -507,7 +481,7 @@ scoped_ptr<DiscardableMemory> DiscardableMemoryAllocator::Allocate(
   DCHECK_LE(ashmem_regions_.size(), 5U);
   for (ScopedVector<AshmemRegion>::iterator it = ashmem_regions_.begin();
        it != ashmem_regions_.end(); ++it) {
-    scoped_ptr<DiscardableMemory> memory(
+    scoped_ptr<DiscardableAshmemChunk> memory(
         (*it)->Allocate_Locked(size, aligned_size));
     if (memory)
       return memory.Pass();
@@ -528,15 +502,15 @@ scoped_ptr<DiscardableMemory> DiscardableMemoryAllocator::Allocate(
     return ashmem_regions_.back()->Allocate_Locked(size, aligned_size);
   }
   // TODO(pliard): consider adding an histogram to see how often this happens.
-  return scoped_ptr<DiscardableMemory>();
+  return scoped_ptr<DiscardableAshmemChunk>();
 }
 
-size_t DiscardableMemoryAllocator::last_ashmem_region_size() const {
+size_t DiscardableMemoryAshmemAllocator::last_ashmem_region_size() const {
   AutoLock auto_lock(lock_);
   return last_ashmem_region_size_;
 }
 
-void DiscardableMemoryAllocator::DeleteAshmemRegion_Locked(
+void DiscardableMemoryAshmemAllocator::DeleteAshmemRegion_Locked(
     AshmemRegion* region) {
   lock_.AssertAcquired();
   // Note that there should not be more than a couple of ashmem region instances
