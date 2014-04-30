@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/synchronization/lock.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -64,6 +65,7 @@ class SharedRendererState {
   base::WeakPtr<SharedRendererState> ui_thread_weak_ptr_;
 
   // Accessed by both UI and RT thread.
+  mutable base::Lock lock_;
   content::SynchronousCompositor* compositor_;
   DrawGLInput draw_gl_input_;
 };
