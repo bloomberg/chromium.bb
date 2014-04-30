@@ -528,7 +528,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
 
   BluetoothGattDescriptor* descriptor = characteristic->GetDescriptors()[0];
   EXPECT_FALSE(descriptor->IsLocal());
-  EXPECT_EQ(BluetoothGattDescriptor::kClientCharacteristicConfigurationUuid,
+  EXPECT_EQ(BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid(),
             descriptor->GetUUID());
 
   // Hide the descriptor.
@@ -547,7 +547,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
 
   descriptor = characteristic->GetDescriptors()[0];
   EXPECT_FALSE(descriptor->IsLocal());
-  EXPECT_EQ(BluetoothGattDescriptor::kClientCharacteristicConfigurationUuid,
+  EXPECT_EQ(BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid(),
             descriptor->GetUUID());
 }
 
@@ -622,7 +622,7 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
 
   BluetoothGattDescriptor* descriptor = characteristic->GetDescriptors()[0];
   ASSERT_TRUE(descriptor);
-  EXPECT_EQ(BluetoothGattDescriptor::kClientCharacteristicConfigurationUuid,
+  EXPECT_EQ(BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid(),
             descriptor->GetUUID());
   EXPECT_FALSE(descriptor->IsLocal());
 }
@@ -813,7 +813,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
 
   BluetoothGattDescriptor* descriptor = characteristic->GetDescriptors()[0];
   EXPECT_FALSE(descriptor->IsLocal());
-  EXPECT_EQ(BluetoothGattDescriptor::kClientCharacteristicConfigurationUuid,
+  EXPECT_EQ(BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid(),
             descriptor->GetUUID());
 
   std::vector<uint8> desc_value;

@@ -35,7 +35,7 @@ class BluetoothGattDescriptor {
   //    - Reliable Write: 0x0001
   //    - Writable Auxiliaries: 0x0002
   //
-  static const BluetoothUUID kCharacteristicExtendedPropertiesUuid;
+  static const BluetoothUUID& CharacteristicExtendedPropertiesUuid();
 
   // The "Characteristic User Description" descriptor defines a UTF-8 string of
   // variable size that is a user textual description of the associated
@@ -43,7 +43,7 @@ class BluetoothGattDescriptor {
   // per characteristic. This descriptor can be written to if the "Writable
   // Auxiliaries" bit of the Characteristic Properties (via the "Characteristic
   // Extended Properties" descriptor) has been set.
-  static const BluetoothUUID kCharacteristicUserDescriptionUuid;
+  static const BluetoothUUID& CharacteristicUserDescriptionUuid();
 
   // The "Client Characteristic Configuration" descriptor defines how the
   // characteristic may be configured by a specific client. A server-side
@@ -57,7 +57,7 @@ class BluetoothGattDescriptor {
   //    - Notification: 0x0001
   //    - Indication: 0x0002
   //
-  static const BluetoothUUID kClientCharacteristicConfigurationUuid;
+  static const BluetoothUUID& ClientCharacteristicConfigurationUuid();
 
   // The "Server Characteristic Configuration" descriptor defines how the
   // characteristic may be configured for the server. There is one instance
@@ -70,7 +70,7 @@ class BluetoothGattDescriptor {
   //    - Default: 0x0000
   //    - Broadcast: 0x0001
   //
-  static const BluetoothUUID kServerCharacteristicConfigurationUuid;
+  static const BluetoothUUID& ServerCharacteristicConfigurationUuid();
 
   // The "Characteristic Presentation Format" declaration defines the format of
   // the Characteristic Value. The value is composed of 7 octets which are
@@ -80,7 +80,7 @@ class BluetoothGattDescriptor {
   // than one declaration of this descriptor exists for a characteristic, then a
   // "Characteristic Aggregate Format" descriptor must also exist for that
   // characteristic.
-  static const BluetoothUUID kCharacteristicPresentationFormatUuid;
+  static const BluetoothUUID& CharacteristicPresentationFormatUuid();
 
   // The "Characteristic Aggregate Format" descriptor defines the format of an
   // aggragated characteristic value. In GATT's underlying protocol, ATT, each
@@ -102,7 +102,7 @@ class BluetoothGattDescriptor {
   // Similarly for local characteristics, implementations DO NOT need to create
   // an instance of BluetoothGattDescriptor for this descriptor as this will be
   // handled by the subsystem.
-  static const BluetoothUUID kCharacteristicAggregateFormatUuid;
+  static const BluetoothUUID& CharacteristicAggregateFormatUuid();
 
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Closure ErrorCallback;
