@@ -361,7 +361,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
       init_complete_(false),
-      has_frame_pending_(false),
       overdraw_bottom_height_(0.f),
       next_paint_flags_(0),
       auto_resize_mode_(false),
@@ -668,18 +667,10 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   if (size_ != new_size) {
     size_ = new_size;
 
-    has_frame_pending_ = false;
-
     // When resizing, we want to wait to paint before ACK'ing the resize.  This
     // ensures that we only resize as fast as we can paint.  We only need to
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_size);
-
-    if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
-      // Resize should have caused an invalidation of the entire view.
-      DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
-             has_frame_pending_);
-    }
   } else if (!resizing_mode_selector_->is_synchronous_mode()) {
     resize_ack = NO_RESIZE_ACK;
   }
@@ -763,22 +754,11 @@ void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
-  if (resizer_rect_ != resizer_rect) {
-    gfx::Rect view_rect(size_);
-
-    gfx::Rect old_damage_rect = gfx::IntersectRects(view_rect, resizer_rect_);
-    if (!old_damage_rect.IsEmpty())
-      has_frame_pending_ = true;
-
-    gfx::Rect new_damage_rect = gfx::IntersectRects(view_rect, resizer_rect);
-    if (!new_damage_rect.IsEmpty())
-      has_frame_pending_ = true;
-
-    resizer_rect_ = resizer_rect;
-
-    if (webwidget_)
-      webwidget_->didChangeWindowResizerRect();
-  }
+  if (resizer_rect_ == resizer_rect)
+    return;
+  resizer_rect_ = resizer_rect;
+  if (webwidget_)
+    webwidget_->didChangeWindowResizerRect();
 }
 
 void RenderWidget::OnWasHidden() {
@@ -1062,11 +1042,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       (input_event->type == WebInputEvent::TouchMove &&
        ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  bool frame_pending = has_frame_pending_;
-  if (is_accelerated_compositing_active_) {
-    frame_pending = compositor_ &&
-                    compositor_->BeginMainFrameRequested();
-  }
+  bool frame_pending = compositor_ && compositor_->BeginMainFrameRequested();
 
   // If we don't have a fast and accurate HighResNow, we assume the input
   // handlers are heavy and rate limit them.
@@ -1274,8 +1250,6 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   if (damaged_rect.IsEmpty())
     return;
 
-  has_frame_pending_ = true;
-
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
     return;
@@ -1310,8 +1284,6 @@ void RenderWidget::didScrollRect(int dx, int dy,
   if (damaged_rect.IsEmpty())
     return;
 
-  has_frame_pending_ = true;
-
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
     return;
@@ -1336,12 +1308,6 @@ void RenderWidget::didScrollRect(int dx, int dy,
 void RenderWidget::didAutoResize(const WebSize& new_size) {
   if (size_.width() != new_size.width || size_.height() != new_size.height) {
     size_ = new_size;
-
-    // If we don't clear has_frame_pending_ after changing autoResize state,
-    // then we might end up in a situation where bitmap_rect is larger than the
-    // view_size. By clearing has_frame_pending_, we ensure that we don't end up
-    // with invalid damage rects.
-    has_frame_pending_ = false;
 
     if (resizing_mode_selector_->is_synchronous_mode()) {
       WebRect new_pos(rootWindowRect().x,
