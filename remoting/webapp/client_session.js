@@ -350,8 +350,17 @@ remoting.ClientSession.prototype.createClientPlugin_ =
       document.createElement('embed');
 
   plugin.id = id;
-  plugin.src = 'about://none';
-  plugin.type = 'application/vnd.chromium.remoting-viewer';
+  if (remoting.settings.CLIENT_PLUGIN_TYPE == 'pnacl') {
+    plugin.src = 'remoting_client_pnacl.nmf';
+    plugin.type = 'application/x-pnacl';
+  } else if (remoting.settings.CLIENT_PLUGIN_TYPE == 'nacl') {
+    plugin.src = 'remoting_client_nacl.nmf';
+    plugin.type = 'application/x-nacl';
+  } else {
+    plugin.src = 'about://none';
+    plugin.type = 'application/vnd.chromium.remoting-viewer';
+  }
+
   plugin.width = 0;
   plugin.height = 0;
   plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.

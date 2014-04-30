@@ -8,6 +8,11 @@
 #include <string>
 #include <vector>
 
+#if defined(OS_NACL)
+#include <sys/mount.h>
+#include <nacl_io/nacl_io.h>
+#endif
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -21,7 +26,7 @@
 #include "base/values.h"
 #include "crypto/random.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "media/base/media.h"
+#include "media/base/yuv_convert.h"
 #include "net/socket/ssl_server_socket.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
@@ -208,6 +213,24 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       use_async_pin_dialog_(false),
       use_media_source_rendering_(false),
       weak_factory_(this) {
+#if defined(OS_NACL)
+  // In NaCl global resources need to be initialized differently because they
+  // are not shared with Chrome.
+  thread_task_runner_handle_.reset(
+      new base::ThreadTaskRunnerHandle(plugin_task_runner_));
+  thread_wrapper_.reset(
+      new jingle_glue::JingleThreadWrapper(plugin_task_runner_));
+  media::InitializeCPUSpecificYUVConversions();
+#else
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+#endif
+
+#if defined(OS_NACL)
+  nacl_io_init_ppapi(pp_instance, pp::Module::Get()->get_browser_interface());
+  mount("", "/etc", "memfs", 0, "");
+  mount("", "/usr", "memfs", 0, "");
+#endif
+
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 
@@ -262,18 +285,15 @@ bool ChromotingInstance::Init(uint32_t argc,
 
   VLOG(1) << "Started ChromotingInstance::Init";
 
-  // Check to make sure the media library is initialized.
-  // http://crbug.com/91521.
-  if (!media::IsMediaLibraryInitialized()) {
-    LOG(ERROR) << "Media library not initialized.";
-    return false;
-  }
-
-  // Check that the calling content is part of an app or extension.
+  // Check that the calling content is part of an app or extension. This is only
+  // necessary for non-PNaCl version of the plugin. Also PPB_URLUtil_Dev doesn't
+  // work in NaCl at the moment so the check fails in NaCl builds.
+#if !defined(OS_NACL)
   if (!IsCallerAppOrExtension()) {
     LOG(ERROR) << "Not an app or extension";
     return false;
   }
+#endif
 
   // Start all the threads.
   context_.Start();
@@ -342,6 +362,9 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
 
 void ChromotingInstance::DidChangeFocus(bool has_focus) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+
+  if (!IsConnected())
+    return;
 
   input_handler_.DidChangeFocus(has_focus);
 }
@@ -624,8 +647,6 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
                                            const std::string& local_jid) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
-
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   if (use_media_source_rendering_) {
     video_renderer_.reset(new MediaSourceVideoRenderer(this));

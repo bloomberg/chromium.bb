@@ -1,0 +1,10 @@
+{
+  "program": {
+    "portable": {
+      "pnacl-translate": {
+        "url": "remoting_client_plugin_newlib.pexe",
+        "optlevel": 2
+      }
+    }
+  }
+}
