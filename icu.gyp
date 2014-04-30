@@ -44,6 +44,21 @@
           }],
         ],
       }],
+      ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
+         or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \
+        (target_arch=="arm64" or target_arch=="x64" or \
+         target_arch=="mipsel64")', {
+        'target_conditions': [
+          ['_toolset=="host"', {
+            'cflags': [ '-m64' ],
+            'ldflags': [ '-m64' ],
+            'asflags': [ '-64' ],
+            'xcode_settings': {
+              'ARCHS': [ 'x86_64' ],
+            },
+          }],
+        ],
+      }],
     ],
     'include_dirs': [
       'source/common',
@@ -95,7 +110,7 @@
               'sources/': [['exclude', 'icudtl_dat']],
               # Compile in the stub data symbol.
               'sources': ['source/stubdata/stubdata.c'],
-             
+
               # Make sure any binary depending on this gets the data file.
               'conditions': [
                 ['OS != "ios"', {
@@ -121,7 +136,7 @@
                   },
                 }], # OS!=ios
               ], # conditions
-            }], # icu_use_data_file_flag 
+            }], # icu_use_data_file_flag
           ], # conditions
           'target_conditions': [
             [ 'OS == "win" or OS == "mac" or OS == "ios" or '
