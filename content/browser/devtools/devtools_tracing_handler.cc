@@ -169,17 +169,9 @@ DevToolsTracingHandler::OnStart(
   }
 
   TracingController::GetInstance()->EnableRecording(
-      categories, options,
-      base::Bind(&DevToolsTracingHandler::OnTracingStarted,
-                 weak_factory_.GetWeakPtr(),
-                 command));
+      categories, options, TracingController::EnableRecordingDoneCallback());
 
-  return command->AsyncResponsePromise();
-}
-
-void DevToolsTracingHandler::OnTracingStarted(
-    scoped_refptr<DevToolsProtocol::Command> command) {
-  SendAsyncResponse(command->SuccessResponse(NULL));
+  return NULL;
 }
 
 void DevToolsTracingHandler::OnBufferUsage(float usage) {
