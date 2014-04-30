@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
@@ -119,9 +120,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // Ends the move loop.
   void EndMoveLoop();
 
-  typedef std::map< ::Window, std::pair<gfx::Point, unsigned long> >
-      NextPositionMap;
-
   // When we receive an position x11 message, we need to translate that into
   // the underlying aura::Window representation, as moves internal to the X11
   // window can cause internal drag leave and enter messages.
@@ -139,7 +137,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   ::Atom DragOperationToAtom(int drag_operation);
 
   // Converts a single action atom to a drag operation.
-  int AtomToDragOperation(::Atom atom);
+  ui::DragDropTypes::DragOperation AtomToDragOperation(::Atom atom);
 
   // During the blocking StartDragAndDrop() call, this converts the views-style
   // |drag_operation_| bitfield into a vector of Atoms to offer to other
@@ -198,11 +196,11 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   // In the Xdnd protocol, we aren't supposed to send another XdndPosition
   // message until we have received a confirming XdndStatus message.
-  std::set< ::Window> waiting_on_status_;
+  bool waiting_on_status_;
 
   // If we would send an XdndPosition message while we're waiting for an
   // XdndStatus response, we need to cache the latest details we'd send.
-  NextPositionMap next_position_message_;
+  scoped_ptr<std::pair<gfx::Point, unsigned long> > next_position_message_;
 
   // Source side information.
   ui::OSExchangeDataProviderAuraX11 const* source_provider_;
@@ -217,21 +215,12 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // The operation bitfield as requested by StartDragAndDrop.
   int drag_operation_;
 
-  // The operation performed. Is initialized to None at the start of
-  // StartDragAndDrop(), and is set only during the asynchronous XdndFinished
-  // message.
-  int resulting_operation_;
-
   // We offer the other window a list of possible operations,
   // XdndActionsList. This is the requested action from the other window. This
-  // is None if we haven't sent out an XdndPosition message yet, haven't yet
-  // received an XdndStatus or if the other window has told us that there's no
-  // action that we can agree on.
-  //
-  // This is a map instead of a simple variable because of the case where we
-  // put an XdndLeave in the queue at roughly the same time that the other
-  // window responds to an XdndStatus.
-  std::map< ::Window, ::Atom> negotiated_operation_;
+  // is DRAG_NONE if we haven't sent out an XdndPosition message yet, haven't
+  // yet received an XdndStatus or if the other window has told us that there's
+  // no action that we can agree on.
+  ui::DragDropTypes::DragOperation negotiated_operation_;
 
   // Ends the move loop if the target is too slow to respond after the mouse is
   // released.

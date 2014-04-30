@@ -12,7 +12,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
@@ -425,11 +424,12 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
       xwindow_(xwindow),
       atom_cache_(xdisplay_, kAtomsToCache),
       target_window_(NULL),
+      waiting_on_status_(false),
       source_provider_(NULL),
       source_current_window_(None),
       source_state_(SOURCE_STATE_OTHER),
       drag_operation_(0),
-      resulting_operation_(0),
+      negotiated_operation_(ui::DragDropTypes::DRAG_NONE),
       grab_cursor_(cursor_manager->GetInitializedCursor(ui::kCursorGrabbing)),
       copy_grab_cursor_(cursor_manager->GetInitializedCursor(ui::kCursorCopy)),
       move_grab_cursor_(cursor_manager->GetInitializedCursor(ui::kCursorMove)),
@@ -518,22 +518,26 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
 
   unsigned long source_window = event.data.l[0];
 
-  waiting_on_status_.erase(source_window);
   if (source_window != source_current_window_)
     return;
 
-  int drag_operation = ui::DragDropTypes::DRAG_NONE;
+  if (source_state_ != SOURCE_STATE_PENDING_DROP &&
+      source_state_ != SOURCE_STATE_OTHER) {
+    return;
+  }
+
+  waiting_on_status_ = false;
+
   if (event.data.l[1] & 1) {
     ::Atom atom_operation = event.data.l[4];
-    negotiated_operation_[source_window] = atom_operation;
-    drag_operation = AtomToDragOperation(atom_operation);
+    negotiated_operation_ = AtomToDragOperation(atom_operation);
   } else {
-    negotiated_operation_[source_window] = None;
+    negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
   }
 
   if (source_state_ == SOURCE_STATE_PENDING_DROP) {
     // We were waiting on the status message so we could send the XdndDrop.
-    if (drag_operation == ui::DragDropTypes::DRAG_NONE) {
+    if (negotiated_operation_ == ui::DragDropTypes::DRAG_NONE) {
       move_loop_.EndMoveLoop();
       return;
     }
@@ -542,7 +546,7 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
     return;
   }
 
-  switch (drag_operation) {
+  switch (negotiated_operation_) {
     case ui::DragDropTypes::DRAG_COPY:
       move_loop_.UpdateCursor(copy_grab_cursor_);
       break;
@@ -560,14 +564,12 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
   // the spec) the other side must handle further position messages within
   // it. GTK+ doesn't bother with this, so neither should we.
 
-  NextPositionMap::iterator it = next_position_message_.find(source_window);
-  if (source_state_ == SOURCE_STATE_OTHER &&
-      it != next_position_message_.end()) {
+  if (next_position_message_.get()) {
     // We were waiting on the status message so we could send off the next
     // position message we queued up.
-    gfx::Point p = it->second.first;
-    unsigned long time = it->second.second;
-    next_position_message_.erase(it);
+    gfx::Point p = next_position_message_->first;
+    unsigned long time = next_position_message_->second;
+    next_position_message_.reset();
 
     SendXdndPosition(source_window, p, time);
   }
@@ -576,8 +578,10 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
 void DesktopDragDropClientAuraX11::OnXdndFinished(
     const XClientMessageEvent& event) {
   DVLOG(1) << "XdndFinished";
-  resulting_operation_ = AtomToDragOperation(
-      negotiated_operation_[event.data.l[0]]);
+
+  // Clear |source_current_window_| to avoid sending XdndLeave upon ending the
+  // move loop.
+  source_current_window_ = None;
   move_loop_.EndMoveLoop();
 }
 
@@ -638,10 +642,11 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   source_current_window_ = None;
   DCHECK(!g_current_drag_drop_client);
   g_current_drag_drop_client = this;
-  waiting_on_status_.clear();
+  waiting_on_status_ = false;
+  next_position_message_.reset();
   source_state_ = SOURCE_STATE_OTHER;
   drag_operation_ = operation;
-  resulting_operation_ = ui::DragDropTypes::DRAG_NONE;
+  negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
 
   const ui::OSExchangeData::Provider* provider = &data.provider();
   source_provider_ = static_cast<const ui::OSExchangeDataProviderAuraX11*>(
@@ -682,7 +687,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom("XdndActionList"));
     XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom(kXdndDirectSave0));
 
-    return resulting_operation_;
+    return negotiated_operation_;
   }
   return ui::DragDropTypes::DRAG_NONE;
 }
@@ -727,17 +732,18 @@ void DesktopDragDropClientAuraX11::OnMouseMovement(XMotionEvent* event) {
       SendXdndLeave(source_current_window_);
 
     source_current_window_ = dest_window;
+    waiting_on_status_ = false;
+    next_position_message_.reset();
+    negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
 
-    if (source_current_window_ != None) {
-      negotiated_operation_.erase(source_current_window_);
+    if (source_current_window_ != None)
       SendXdndEnter(source_current_window_);
-    }
   }
 
   if (source_current_window_ != None) {
-    if (ContainsKey(waiting_on_status_, dest_window)) {
-      next_position_message_[dest_window] =
-          std::make_pair(screen_point, event->time);
+    if (waiting_on_status_) {
+      next_position_message_.reset(
+          new std::pair<gfx::Point, unsigned long>(screen_point, event->time));
     } else {
       SendXdndPosition(dest_window, screen_point, event->time);
     }
@@ -753,7 +759,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
   }
 
   if (source_current_window_ != None) {
-    if (ContainsKey(waiting_on_status_, source_current_window_)) {
+    if (waiting_on_status_) {
       // If we are waiting for an XdndStatus message, we need to wait for it to
       // complete.
       source_state_ = SOURCE_STATE_PENDING_DROP;
@@ -764,9 +770,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
       return;
     }
 
-    std::map< ::Window, ::Atom>::iterator it =
-        negotiated_operation_.find(source_current_window_);
-    if (it != negotiated_operation_.end() && it->second != None) {
+    if (negotiated_operation_ != ui::DragDropTypes::DRAG_NONE) {
       // We have negotiated an action with the other end.
       source_state_ = SOURCE_STATE_DROPPED;
       SendXdndDrop(source_current_window_);
@@ -776,19 +780,17 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
       StartEndMoveLoopTimer();
       return;
     }
-
-    SendXdndLeave(source_current_window_);
-    source_current_window_ = None;
   }
 
   move_loop_.EndMoveLoop();
 }
 
 void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
-  if (source_current_window_ != None)
+  if (source_current_window_ != None) {
     SendXdndLeave(source_current_window_);
+    source_current_window_ = None;
+  }
   target_current_context_.reset();
-  source_state_ = SOURCE_STATE_OTHER;
   end_move_loop_timer_.Stop();
 }
 
@@ -869,7 +871,8 @@ void DesktopDragDropClientAuraX11::NotifyDragLeave() {
   return None;
 }
 
-int DesktopDragDropClientAuraX11::AtomToDragOperation(::Atom atom) {
+ui::DragDropTypes::DragOperation
+DesktopDragDropClientAuraX11::AtomToDragOperation(::Atom atom) {
   if (atom == atom_cache_.GetAtom(kXdndActionCopy))
     return ui::DragDropTypes::DRAG_COPY;
   if (atom == atom_cache_.GetAtom(kXdndActionMove))
@@ -956,12 +959,6 @@ void DesktopDragDropClientAuraX11::SendXdndEnter(::Window dest_window) {
 }
 
 void DesktopDragDropClientAuraX11::SendXdndLeave(::Window dest_window) {
-  // If we're sending a leave message, don't wait for status messages anymore.
-  waiting_on_status_.erase(dest_window);
-  NextPositionMap::iterator it = next_position_message_.find(dest_window);
-  if (it != next_position_message_.end())
-    next_position_message_.erase(it);
-
   XEvent xev;
   xev.xclient.type = ClientMessage;
   xev.xclient.message_type = atom_cache_.GetAtom("XdndLeave");
@@ -979,7 +976,7 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
     ::Window dest_window,
     const gfx::Point& screen_point,
     unsigned long time) {
-  waiting_on_status_.insert(dest_window);
+  waiting_on_status_ = true;
 
   XEvent xev;
   xev.xclient.type = ClientMessage;
