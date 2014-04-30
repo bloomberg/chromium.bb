@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -143,7 +144,9 @@ std::string CreateServerRedirect(const std::string& dest_url) {
 void ClearBrowsingData(Browser* browser, int remove_mask) {
   BrowsingDataRemover* remover =
       BrowsingDataRemover::CreateForUnboundedRange(browser->profile());
+  BrowsingDataRemoverCompletionObserver observer(remover);
   remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
+  observer.BlockUntilCompletion();
   // BrowsingDataRemover deletes itself.
 }
 
@@ -3120,28 +3123,22 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
                        FINAL_STATUS_CACHE_OR_HISTORY_CLEARED,
                        1);
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ClearBrowsingData, current_browser(),
-                 BrowsingDataRemover::REMOVE_HISTORY));
+  ClearBrowsingData(current_browser(), BrowsingDataRemover::REMOVE_HISTORY);
   prerender->WaitForStop();
 
   // Make sure prerender history was cleared.
   EXPECT_EQ(0, GetHistoryLength());
 }
 
-// Disabled due to flakiness: crbug.com/316225
 // Checks that when the cache is cleared, prerenders are cancelled but
 // prerendering history is not cleared.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderClearCache) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
   scoped_ptr<TestPrerender> prerender =
       PrerenderTestURL("files/prerender/prerender_page.html",
                        FINAL_STATUS_CACHE_OR_HISTORY_CLEARED,
                        1);
 
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ClearBrowsingData, current_browser(),
-                 BrowsingDataRemover::REMOVE_CACHE));
+  ClearBrowsingData(current_browser(), BrowsingDataRemover::REMOVE_CACHE);
   prerender->WaitForStop();
 
   // Make sure prerender history was not cleared.  Not a vital behavior, but
