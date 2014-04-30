@@ -41,6 +41,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
+#include "content/browser/time_zone_monitor.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -325,7 +326,7 @@ BrowserMainLoop::~BrowserMainLoop() {
 }
 
 void BrowserMainLoop::Init() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::Init")
+  TRACE_EVENT0("startup", "BrowserMainLoop::Init");
   parts_.reset(
       GetContentClient()->browser()->CreateBrowserMainParts(parameters_));
 }
@@ -397,7 +398,7 @@ void BrowserMainLoop::EarlyInitialization() {
 }
 
 void BrowserMainLoop::MainMessageLoopStart() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart")
+  TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
@@ -420,50 +421,51 @@ void BrowserMainLoop::MainMessageLoopStart() {
   InitializeMainThread();
 
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor");
     system_monitor_.reset(new base::SystemMonitor);
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor");
     scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
     power_monitor_.reset(new base::PowerMonitor(power_monitor_source.Pass()));
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager");
     hi_res_timer_manager_.reset(new base::HighResolutionTimerManager);
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier");
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
 
 #if !defined(OS_IOS)
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MediaFeatures")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MediaFeatures");
     media::InitializeCPUSpecificMediaFeatures();
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMan")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMan");
     audio_manager_.reset(media::AudioManager::Create(
         MediaInternals::GetInstance()));
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MidiManager")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MidiManager");
     midi_manager_.reset(media::MidiManager::Create());
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:ContentWebUIController")
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::Subsystem:ContentWebUIController");
     WebUIControllerFactory::RegisterFactory(
         ContentWebUIControllerFactory::GetInstance());
   }
 
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMirroringManager")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMirroringManager");
     audio_mirroring_manager_.reset(new AudioMirroringManager());
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:OnlineStateObserver")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:OnlineStateObserver");
     online_state_observer_.reset(new BrowserOnlineStateObserver);
   }
 
@@ -485,20 +487,20 @@ void BrowserMainLoop::MainMessageLoopStart() {
   // message loop to avoid calling MessagePumpForUI::ScheduleWork() before
   // MessagePumpForUI::Start() as it will crash the browser.
   if (is_tracing_startup_) {
-    TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracing")
+    TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracing");
     InitStartupTracing(parsed_command_line_);
   }
 #endif  // !defined(OS_IOS)
 
 #if defined(OS_ANDROID)
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTexturePeer")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTexturePeer");
     SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl());
   }
 #endif
 
   if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MemoryObserver")
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MemoryObserver");
     memory_observer_.reset(new MemoryObserver());
     base::MessageLoop::current()->AddTaskObserver(memory_observer_.get());
   }
@@ -526,7 +528,7 @@ int BrowserMainLoop::PreCreateThreads() {
   // but must be created on the main thread. The service ctor is
   // inexpensive and does not invoke the io_thread() accessor.
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads:PluginService")
+    TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads:PluginService");
     PluginService::GetInstance()->Init();
   }
 #endif
@@ -712,7 +714,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     // Called early, nothing to do
     return;
   }
-  TRACE_EVENT0("shutdown", "BrowserMainLoop::ShutdownThreadsAndCleanUp")
+  TRACE_EVENT0("shutdown", "BrowserMainLoop::ShutdownThreadsAndCleanUp");
 
   // Teardown may start in PostMainMessageLoopRun, and during teardown we
   // need to be able to perform IO.
@@ -893,7 +895,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 }
 
 void BrowserMainLoop::InitializeMainThread() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::InitializeMainThread")
+  TRACE_EVENT0("startup", "BrowserMainLoop::InitializeMainThread");
   const char* kThreadName = "CrBrowserMain";
   base::PlatformThread::SetName(kThreadName);
   if (main_message_loop_)
@@ -905,7 +907,7 @@ void BrowserMainLoop::InitializeMainThread() {
 }
 
 int BrowserMainLoop::BrowserThreadsStarted() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted")
+  TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted");
 
 #if !defined(OS_IOS)
   indexed_db_thread_.reset(new base::Thread("IndexedDB"));
@@ -992,6 +994,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
         io_thread_->message_loop_proxy(), main_thread_->message_loop_proxy());
   }
 
+  {
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::BrowserThreadsStarted::TimeZoneMonitor");
+    time_zone_monitor_ = TimeZoneMonitor::Create();
+  }
+
   // Alert the clipboard class to which threads are allowed to access the
   // clipboard:
   std::vector<base::PlatformThreadId> allowed_clipboard_threads;
@@ -1030,7 +1038,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 }
 
 bool BrowserMainLoop::InitializeToolkit() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::InitializeToolkit")
+  TRACE_EVENT0("startup", "BrowserMainLoop::InitializeToolkit");
   // TODO(evan): this function is rather subtle, due to the variety
   // of intersecting ifdefs we have.  To keep it easy to follow, there
   // are no #else branches on any #ifs.

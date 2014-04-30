@@ -35,6 +35,7 @@
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/screen_orientation/screen_orientation_provider_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
+#include "content/browser/time_zone_monitor_android.h"
 #include "content/browser/vibration/vibration_provider_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 
@@ -44,15 +45,17 @@ namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"AndroidLocationApiAdapter",
      content::AndroidLocationApiAdapter::RegisterGeolocationService},
+    {"BatteryStatusManagerAndroid",
+     content::BatteryStatusManagerAndroid::Register},
     {"BrowserAccessibilityManager",
      content::RegisterBrowserAccessibilityManager},
     {"BrowserStartupController", content::RegisterBrowserStartupController},
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},
     {"ContentSettings", content::ContentSettings::RegisterContentSettings},
-    {"ContentViewRenderView",
-     content::ContentViewRenderView::RegisterContentViewRenderView},
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
     {"ContentViewCore", content::RegisterContentViewCore},
+    {"ContentViewRenderView",
+     content::ContentViewRenderView::RegisterContentViewRenderView},
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
     {"DownloadControllerAndroidImpl",
      content::DownloadControllerAndroidImpl::RegisterDownloadController},
@@ -75,6 +78,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"SensorManagerAndroid", content::SensorManagerAndroid::Register},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
+    {"TimeZoneMonitorAndroid", content::TimeZoneMonitorAndroid::Register},
     {"TouchEventSynthesizer",
      content::SyntheticGestureTargetAndroid::RegisterTouchEventSynthesizer},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
@@ -82,8 +86,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"WebContentsAndroid", content::WebContentsAndroid::Register},
     {"WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid},
     {"WebViewStatics", content::RegisterWebViewStatics},
-    {"BatterStatusManagerAndroid",
-     content::BatteryStatusManagerAndroid::Register}, };
+};
 
 }  // namespace
 

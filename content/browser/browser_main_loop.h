@@ -44,13 +44,15 @@ class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
-class SystemMessageWindowWin;
+class TimeZoneMonitor;
 struct MainFunctionParams;
 
 #if defined(OS_LINUX)
 class DeviceMonitorLinux;
 #elif defined(OS_MACOSX)
 class DeviceMonitorMac;
+#elif defined(OS_WIN)
+class SystemMessageWindowWin;
 #endif
 
 // Implements the main browser loop stages called from BrowserMainRunner.
@@ -173,6 +175,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   scoped_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   scoped_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
+  scoped_ptr<TimeZoneMonitor> time_zone_monitor_;
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
   scoped_ptr<BrowserProcessSubThread> db_thread_;

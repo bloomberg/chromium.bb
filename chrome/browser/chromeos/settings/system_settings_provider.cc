@@ -63,14 +63,6 @@ void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {
   timezone_value_.reset(new base::StringValue(
       system::TimezoneSettings::GetTimezoneID(timezone)));
   NotifyObservers(kSystemTimezone);
-
-  // Notify renderers
-  for (content::RenderProcessHost::iterator it(
-           content::RenderProcessHost::AllHostsIterator());
-       !it.IsAtEnd();
-       it.Advance()) {
-    it.GetCurrentValue()->NotifyTimezoneChange();
-  }
 }
 
 }  // namespace chromeos

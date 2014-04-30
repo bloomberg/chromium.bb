@@ -29,3 +29,12 @@
   (literal "/")
   (literal "/var")
 )
+
+; http://crbug.com/288697
+(allow file-read*
+  (regex #"^/(private/)?etc/localtime$")
+  (regex #"^/usr/share/zoneinfo/")
+)
+(allow file-read-metadata
+  (regex #"^/(private/)?etc$")
+)
