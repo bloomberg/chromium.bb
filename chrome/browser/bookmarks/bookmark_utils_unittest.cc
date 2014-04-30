@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"

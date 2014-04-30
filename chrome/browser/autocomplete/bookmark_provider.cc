@@ -13,12 +13,12 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "net/base/net_util.h"
 
 typedef std::vector<BookmarkMatch> BookmarkMatches;

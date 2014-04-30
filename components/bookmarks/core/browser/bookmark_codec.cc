@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_codec.h"
+#include "components/bookmarks/core/browser/bookmark_codec.h"
 
 #include <algorithm>
 
@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"

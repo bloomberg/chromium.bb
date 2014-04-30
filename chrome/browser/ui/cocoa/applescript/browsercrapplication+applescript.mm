@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 
 @implementation BrowserCrApplication (AppleScriptAdditions)
 

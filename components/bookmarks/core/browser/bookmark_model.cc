@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 
 #include <algorithm>
 #include <functional>
@@ -12,13 +12,13 @@
 #include "base/i18n/string_compare.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
-#include "chrome/browser/bookmarks/bookmark_index.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/bookmarks/bookmark_storage.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "components/bookmarks/core/browser/bookmark_expanded_state_tracker.h"
+#include "components/bookmarks/core/browser/bookmark_index.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
 #include "components/bookmarks/core/browser/bookmark_model_observer.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
+#include "components/bookmarks/core/browser/bookmark_storage.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "components/favicon_base/favicon_types.h"
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"

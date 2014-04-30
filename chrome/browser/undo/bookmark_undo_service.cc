@@ -4,15 +4,15 @@
 
 #include "chrome/browser/undo/bookmark_undo_service.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/bookmarks/scoped_group_bookmark_actions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/undo/bookmark_renumber_observer.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/undo/undo_operation.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
+#include "components/bookmarks/core/browser/scoped_group_bookmark_actions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

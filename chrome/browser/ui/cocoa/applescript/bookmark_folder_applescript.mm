@@ -7,10 +7,10 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "url/gurl.h"
 
 @implementation BookmarkFolderAppleScript

@@ -5,11 +5,11 @@
 #include "chrome/browser/undo/bookmark_undo_service.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

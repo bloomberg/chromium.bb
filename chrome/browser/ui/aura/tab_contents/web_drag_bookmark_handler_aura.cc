@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
 
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 

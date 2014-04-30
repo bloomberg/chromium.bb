@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
 
 #include <string>
 
@@ -10,7 +10,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 const char* BookmarkNodeData::kClipboardFormatString =
@@ -191,7 +191,7 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
                       &data);
 
   if (!data.empty()) {
-    Pickle pickle(data.data(), data.size());
+    Pickle pickle(data.data(), static_cast<int>(data.size()));
     if (ReadFromPickle(&pickle))
       return true;
   }

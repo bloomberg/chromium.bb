@@ -4,7 +4,6 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_handler.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"

@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
+#include "components/bookmarks/core/browser/bookmark_pasteboard_helper_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
 NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";

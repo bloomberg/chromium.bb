@@ -6,7 +6,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop_views.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"

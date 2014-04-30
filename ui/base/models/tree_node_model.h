@@ -106,7 +106,7 @@ class TreeNode : public TreeModelNode {
   void SetChildren(const std::vector<NodeType*>& children) {
     RemoveAll();
     for (size_t i = 0; i < children.size(); ++i)
-      Add(children[i], i);
+      Add(children[i], static_cast<int>(i));
   }
 
   // Returns the parent node, or NULL if this is the root node.

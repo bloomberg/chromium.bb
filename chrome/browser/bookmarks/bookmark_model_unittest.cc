@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 
 #include <set>
 #include <string>
@@ -21,10 +21,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_model_observer.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_iterator.h"

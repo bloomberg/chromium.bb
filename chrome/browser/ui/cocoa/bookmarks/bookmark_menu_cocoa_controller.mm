@@ -7,7 +7,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "content/public/browser/user_metrics.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/menu_controller.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_index.h"
+#include "components/bookmarks/core/browser/bookmark_index.h"
 
 #include <algorithm>
 #include <functional>
@@ -13,10 +13,10 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_offset_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "components/bookmarks/core/browser/bookmark_client.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
 #include "components/bookmarks/core/browser/bookmark_node.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "components/query_parser/query_parser.h"
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
@@ -32,7 +32,8 @@ base::string16 Normalize(const base::string16& text) {
   UErrorCode status = U_ZERO_ERROR;
   const icu::Normalizer2* normalizer2 =
       icu::Normalizer2::getInstance(NULL, "nfkc", UNORM2_COMPOSE, status);
-  icu::UnicodeString unicode_text(text.data(), text.length());
+  icu::UnicodeString unicode_text(
+      text.data(), static_cast<int32_t>(text.length()));
   icu::UnicodeString unicode_normalized_text;
   normalizer2->normalize(unicode_text, unicode_normalized_text, status);
   if (U_FAILURE(status))

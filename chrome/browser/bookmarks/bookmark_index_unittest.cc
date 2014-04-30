@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_index.h"
+#include "components/bookmarks/core/browser/bookmark_index.h"
 
 #include <string>
 #include <vector>
@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/test_bookmark_client.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

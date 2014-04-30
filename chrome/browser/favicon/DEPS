@@ -17,7 +17,6 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/bookmarks/bookmark_model.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
   "!chrome/browser/history/history_backend.h",
   "!chrome/browser/history/history_details.h",
@@ -26,6 +25,7 @@ include_rules = [
   "!chrome/browser/history/select_favicon_frames.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/ui/webui/chrome_web_ui_controller_factory.h",
+  "!components/bookmarks/core/browser/bookmark_model.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]

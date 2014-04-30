@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/provider/bookmark_model_observer_task.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

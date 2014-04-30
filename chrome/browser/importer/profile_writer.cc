@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 namespace {

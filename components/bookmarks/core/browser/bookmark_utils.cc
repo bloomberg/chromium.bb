@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 
 #include <utility>
 
@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/query_parser/query_parser.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -24,7 +24,7 @@
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/bookmarks/scoped_group_bookmark_actions.h"
+#include "components/bookmarks/core/browser/scoped_group_bookmark_actions.h"
 #endif
 
 using base::Time;
@@ -160,7 +160,8 @@ void CloneBookmarkNode(BookmarkModel* model,
     return;
   }
   for (size_t i = 0; i < elements.size(); ++i) {
-    CloneBookmarkNodeImpl(model, elements[i], parent, index_to_add_at + i,
+    CloneBookmarkNodeImpl(model, elements[i], parent,
+                          index_to_add_at + static_cast<int>(i),
                           reset_node_times);
   }
 }

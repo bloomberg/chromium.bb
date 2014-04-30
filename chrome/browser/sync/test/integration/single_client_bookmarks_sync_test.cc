@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/bookmarks/core/browser/bookmark_service.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
 #include "ui/base/layout.h"

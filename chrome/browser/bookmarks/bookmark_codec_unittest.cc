@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_codec.h"
+#include "components/bookmarks/core/browser/bookmark_codec.h"
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -13,9 +13,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

@@ -5,7 +5,7 @@
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
 
 void RecordBookmarkLaunch(const BookmarkNode* node,

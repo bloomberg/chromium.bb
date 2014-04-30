@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
+#import "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"

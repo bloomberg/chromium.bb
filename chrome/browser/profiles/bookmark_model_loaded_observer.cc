@@ -4,8 +4,8 @@
 
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 
 BookmarkModelLoadedObserver::BookmarkModelLoadedObserver(Profile* profile)
     : profile_(profile) {

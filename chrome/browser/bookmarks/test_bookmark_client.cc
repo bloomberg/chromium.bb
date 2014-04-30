@@ -4,8 +4,8 @@
 
 #include "chrome/browser/bookmarks/test_bookmark_client.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_storage.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_storage.h"
 
 namespace test {
 

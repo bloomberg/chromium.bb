@@ -10,9 +10,9 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 

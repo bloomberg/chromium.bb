@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_INDEX_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_INDEX_H_
+#ifndef COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_INDEX_H_
+#define COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_INDEX_H_
 
 #include <map>
 #include <set>
@@ -116,4 +116,4 @@ class BookmarkIndex {
   DISALLOW_COPY_AND_ASSIGN(BookmarkIndex);
 };
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_INDEX_H_
+#endif  // COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_INDEX_H_

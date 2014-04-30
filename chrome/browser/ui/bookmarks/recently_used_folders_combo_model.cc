@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

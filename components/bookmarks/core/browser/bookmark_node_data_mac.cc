@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
 
-#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#include "components/bookmarks/core/browser/bookmark_pasteboard_helper_mac.h"
 
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {

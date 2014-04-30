@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/test_bookmark_client.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

@@ -6,11 +6,11 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"

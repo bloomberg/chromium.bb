@@ -4,7 +4,6 @@
 
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"

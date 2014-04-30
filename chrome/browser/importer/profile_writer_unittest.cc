@@ -8,10 +8,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -19,6 +17,8 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

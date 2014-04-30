@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/scoped_group_bookmark_actions.h"
+#include "components/bookmarks/core/browser/scoped_group_bookmark_actions.h"
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 
 ScopedGroupBookmarkActions::ScopedGroupBookmarkActions(BookmarkModel* model)
     : model_(model) {

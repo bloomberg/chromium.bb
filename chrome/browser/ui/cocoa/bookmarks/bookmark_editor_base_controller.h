@@ -9,8 +9,8 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
+#include "components/bookmarks/core/browser/bookmark_expanded_state_tracker.h"
 
 class BookmarkEditorBaseControllerBridge;
 class BookmarkModel;

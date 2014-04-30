@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "url/gurl.h"
 
 class PrefService;

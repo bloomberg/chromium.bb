@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_UTILS_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_UTILS_H_
+#ifndef COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_UTILS_H_
+#define COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_UTILS_H_
 
 #include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_offset_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "components/bookmarks/core/browser/bookmark_node_data.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -142,4 +142,4 @@ base::string16 CleanUpTitleForMatching(const base::string16& title);
 // Returns the node with |id|, or NULL if there is no node with |id|.
 const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id);
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_UTILS_H_
+#endif  // COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_UTILS_H_

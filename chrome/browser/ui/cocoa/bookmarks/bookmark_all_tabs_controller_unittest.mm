@@ -6,11 +6,11 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

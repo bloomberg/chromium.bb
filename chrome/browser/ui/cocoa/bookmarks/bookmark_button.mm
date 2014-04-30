@@ -9,12 +9,12 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 

@@ -4,13 +4,13 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeBookmarkMenuController : BookmarkMenuCocoaController {

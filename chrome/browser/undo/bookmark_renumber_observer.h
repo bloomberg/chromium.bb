@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UNDO_BOOKMARK_RENUMBER_OBSERVER_H_
 #define CHROME_BROWSER_UNDO_BOOKMARK_RENUMBER_OBSERVER_H_
 
+#include "base/basictypes.h"
+
 class BookmarkRenumberObserver {
  public:
   // Invoked when a bookmark id has been renumbered so that any

@@ -5,9 +5,8 @@
 #include "chrome/browser/importer/external_process_importer_host.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/importer/external_process_importer_client.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
