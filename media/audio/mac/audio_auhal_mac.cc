@@ -155,7 +155,6 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
   if (manager_->ShouldDeferStreamStart()) {
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
-    DCHECK(deferred_start_cb_.IsCancelled());
     deferred_start_cb_.Reset(
         base::Bind(&AUHALStream::Start, base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(

@@ -291,7 +291,6 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   if (manager_->ShouldDeferStreamStart()) {
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
-    DCHECK(deferred_start_cb_.IsCancelled());
     deferred_start_cb_.Reset(base::Bind(
         &AUAudioInputStream::Start, base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(
