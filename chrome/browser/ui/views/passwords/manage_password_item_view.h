@@ -74,6 +74,8 @@ class ManagePasswordItemView : public views::View {
   ManagePasswordItemView(
       ManagePasswordsBubbleModel* manage_passwords_bubble_model,
       autofill::PasswordForm password_form,
+      int field_1_width,
+      int field_2_width,
       Position position);
 
  private:
@@ -84,7 +86,8 @@ class ManagePasswordItemView : public views::View {
   views::Label* GenerateUsernameLabel() const;
   views::Label* GeneratePasswordLabel() const;
 
-  // Build a two-label column set.
+  // Build a two-label column set using the widths stored in |field_1_width_|
+  // and |field_2_width_|.
   void BuildColumnSet(views::GridLayout*, int column_set_id);
 
   void NotifyClickedDelete();
@@ -96,6 +99,8 @@ class ManagePasswordItemView : public views::View {
   ManagePasswordsBubbleModel* manage_passwords_bubble_model_;
   autofill::PasswordForm password_form_;
   bool delete_password_;
+  int field_1_width_;
+  int field_2_width_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordItemView);
 };

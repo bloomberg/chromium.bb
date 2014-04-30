@@ -25,7 +25,6 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
@@ -33,86 +32,19 @@
 // Helpers --------------------------------------------------------------------
 
 namespace {
-enum ColumnSetType {
-  // | | (FILL, FILL) | |
-  // Used for the bubble's header, the credentials list, and for simple
-  // messages like "No passwords".
-  SINGLE_VIEW_COLUMN_SET = 0,
 
-  // | | (TRAILING, CENTER) | | (TRAILING, CENTER) | |
-  // Used for buttons at the bottom of the bubble which should nest at the
-  // bottom-right corner.
-  DOUBLE_BUTTON_COLUMN_SET = 1,
+enum FieldType { USERNAME_FIELD, PASSWORD_FIELD };
 
-  // | | (LEADING, CENTER) | | (TRAILING, CENTER) | |
-  // Used for buttons at the bottom of the bubble which should occupy
-  // the corners.
-  LINK_BUTTON_COLUMN_SET = 2,
-};
+// Upper limit on the size of the username and password fields.
+const int kUsernameFieldSize = 30;
+const int kPasswordFieldSize = 22;
 
-// Construct an appropriate ColumnSet for the given |type|, and add it
-// to |layout|.
-void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
-  views::ColumnSet* column_set = layout->AddColumnSet(type);
-  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-  switch (type) {
-    case SINGLE_VIEW_COLUMN_SET:
-      column_set->AddColumn(views::GridLayout::FILL,
-                            views::GridLayout::FILL,
-                            0,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      break;
-
-    case DOUBLE_BUTTON_COLUMN_SET:
-      column_set->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::CENTER,
-                            1,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
-      column_set->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::CENTER,
-                            0,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      break;
-    case LINK_BUTTON_COLUMN_SET:
-      column_set->AddColumn(views::GridLayout::LEADING,
-                            views::GridLayout::CENTER,
-                            1,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
-      column_set->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::CENTER,
-                            0,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      break;
-  }
-  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-}
-
-// Given a layout and a model, add an appropriate title using a
-// SINGLE_VIEW_COLUMN_SET, followed by a spacer row.
-void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
-  views::Label* title_label = new views::Label(model->title());
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetMultiLine(true);
-  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::MediumFont));
-
-  // Add the title to the layout with appropriate padding.
-  layout->StartRowWithPadding(
-      0, SINGLE_VIEW_COLUMN_SET, 0, views::kRelatedControlSmallVerticalSpacing);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+// Returns the width of |type| field.
+int GetFieldWidth(FieldType type) {
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetFontList(ui::ResourceBundle::SmallFont)
+      .GetExpectedTextWidth(type == USERNAME_FIELD ? kUsernameFieldSize
+                                                   : kPasswordFieldSize);
 }
 
 }  // namespace
@@ -133,149 +65,6 @@ void ShowManagePasswordsBubble(content::WebContents* web_contents) {
 }
 
 }  // namespace chrome
-
-
-// ManagePasswordsBubbleView::PendingView -------------------------------------
-
-ManagePasswordsBubbleView::PendingView::PendingView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-
-  // Create the pending credential item, save button and refusal combobox.
-  ManagePasswordItemView* item =
-      new ManagePasswordItemView(parent->model(),
-                                 parent->model()->pending_credentials(),
-                                 ManagePasswordItemView::FIRST_ITEM);
-  save_button_ = new views::BlueButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-
-  combobox_model_.reset(new SavePasswordRefusalComboboxModel());
-  refuse_combobox_.reset(new views::Combobox(combobox_model_.get()));
-  refuse_combobox_->set_listener(this);
-  refuse_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
-
-  // Title row.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
-
-  // Credential row.
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(item);
-
-  // Button row.
-  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(save_button_);
-  layout->AddView(refuse_combobox_.get());
-
-  // Extra padding for visual awesomeness.
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-}
-
-ManagePasswordsBubbleView::PendingView::~PendingView() {
-}
-
-void ManagePasswordsBubbleView::PendingView::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
-  DCHECK(sender == save_button_);
-  parent_->model()->OnSaveClicked();
-  parent_->Close();
-}
-
-void ManagePasswordsBubbleView::PendingView::OnPerformAction(
-    views::Combobox* source) {
-  DCHECK_EQ(source, refuse_combobox_);
-  switch (refuse_combobox_->selected_index()) {
-    case SavePasswordRefusalComboboxModel::INDEX_NOPE:
-      parent_->model()->OnNopeClicked();
-      break;
-    case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
-      parent_->model()->OnNeverForThisSiteClicked();
-      break;
-  }
-  parent_->Close();
-}
-
-// ManagePasswordsBubbleView::ManageView --------------------------------------
-
-ManagePasswordsBubbleView::ManageView::ManageView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-
-  // Add the title.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
-
-  // If we have a list of passwords to store for the current site, display
-  // them to the user for management. Otherwise, render a "No passwords for
-  // this site" message.
-  if (!parent_->model()->best_matches().empty()) {
-    for (autofill::PasswordFormMap::const_iterator i(
-             parent_->model()->best_matches().begin());
-         i != parent_->model()->best_matches().end();
-         ++i) {
-      ManagePasswordItemView* item = new ManagePasswordItemView(
-          parent_->model(),
-          *i->second,
-          i == parent_->model()->best_matches().begin()
-              ? ManagePasswordItemView::FIRST_ITEM
-              : ManagePasswordItemView::SUBSEQUENT_ITEM);
-
-      layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-      layout->AddView(item);
-    }
-  } else {
-    views::Label* empty_label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
-    empty_label->SetMultiLine(true);
-
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(empty_label);
-  }
-
-  // Then add the "manage passwords" link and "Done" button.
-  manage_link_ = new views::Link(parent_->model()->manage_link());
-  manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  manage_link_->SetUnderline(false);
-  manage_link_->set_listener(this);
-
-  done_button_ =
-      new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
-  done_button_->SetStyle(views::Button::STYLE_BUTTON);
-
-  BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, LINK_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(manage_link_);
-  layout->AddView(done_button_);
-
-  // Extra padding for visual awesomeness.
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-}
-
-ManagePasswordsBubbleView::ManageView::~ManageView() {
-}
-
-void ManagePasswordsBubbleView::ManageView::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
-  DCHECK(sender == done_button_);
-  parent_->model()->OnDoneClicked();
-  parent_->Close();
-}
-
-void ManagePasswordsBubbleView::ManageView::LinkClicked(views::Link* source,
-                                                        int event_flags) {
-  DCHECK_EQ(source, manage_link_);
-  parent_->model()->OnManageLinkClicked();
-  parent_->Close();
-}
 
 
 // ManagePasswordsBubbleView --------------------------------------------------
@@ -346,6 +135,54 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {}
 
+void ManagePasswordsBubbleView::BuildColumnSet(views::GridLayout* layout,
+                                               ColumnSetType type) {
+  views::ColumnSet* column_set = layout->AddColumnSet(type);
+  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+  switch (type) {
+    case SINGLE_VIEW_COLUMN_SET:
+      column_set->AddColumn(views::GridLayout::FILL,
+                            views::GridLayout::FILL,
+                            0,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
+      break;
+
+    case DOUBLE_BUTTON_COLUMN_SET:
+      column_set->AddColumn(views::GridLayout::TRAILING,
+                            views::GridLayout::CENTER,
+                            1,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
+      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddColumn(views::GridLayout::TRAILING,
+                            views::GridLayout::CENTER,
+                            0,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
+      break;
+    case LINK_BUTTON_COLUMN_SET:
+      column_set->AddColumn(views::GridLayout::LEADING,
+                            views::GridLayout::CENTER,
+                            1,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
+      column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+      column_set->AddColumn(views::GridLayout::TRAILING,
+                            views::GridLayout::CENTER,
+                            0,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
+      break;
+  }
+  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+}
+
 void ManagePasswordsBubbleView::AdjustForFullscreen(
     const gfx::Rect& screen_bounds) {
   if (GetAnchorView())
@@ -370,14 +207,118 @@ void ManagePasswordsBubbleView::CloseWithoutLogging() {
 }
 
 void ManagePasswordsBubbleView::Init() {
-  views::FillLayout* layout = new views::FillLayout();
-  SetLayoutManager(layout);
-  SetFocusable(true);
+  using views::GridLayout;
 
-  if (model()->WaitingToSavePassword())
-    AddChildView(new PendingView(this));
-  else
-    AddChildView(new ManageView(this));
+  GridLayout* layout = new GridLayout(this);
+  SetFocusable(true);
+  SetLayoutManager(layout);
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
+
+  // This calculates the necessary widths for credential columns in the bubble.
+  const int first_field_width = std::max(
+      GetFieldWidth(USERNAME_FIELD),
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED))
+          .GetPreferredSize()
+          .width());
+
+  const int second_field_width = std::max(
+      GetFieldWidth(PASSWORD_FIELD),
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO))
+          .GetPreferredSize()
+          .width());
+
+  // Build and populate the header.
+  views::Label* title_label = new views::Label(model()->title());
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetMultiLine(true);
+  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::MediumFont));
+
+  layout->StartRowWithPadding(
+      0, SINGLE_VIEW_COLUMN_SET, 0, views::kRelatedControlSmallVerticalSpacing);
+  layout->AddView(title_label);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+
+  if (model()->WaitingToSavePassword()) {
+    // If we've got a password that we're deciding whether or not to save,
+    // then we need to display a single-view columnset containing the
+    // ManagePasswordItemView, followed by double-view columnset containing
+    // a "Save" and "Reject" button.
+    ManagePasswordItemView* item =
+        new ManagePasswordItemView(model(),
+                                   model()->pending_credentials(),
+                                   first_field_width,
+                                   second_field_width,
+                                   ManagePasswordItemView::FIRST_ITEM);
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->AddView(item);
+
+    combobox_model_.reset(new SavePasswordRefusalComboboxModel());
+    refuse_combobox_.reset(new views::Combobox(combobox_model_.get()));
+    refuse_combobox_->set_listener(this);
+    refuse_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
+
+    save_button_ = new views::BlueButton(
+        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
+
+    layout->StartRowWithPadding(
+        0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+    layout->AddView(save_button_);
+    layout->AddView(refuse_combobox_.get());
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  } else {
+    // If we have a list of passwords to store for the current site, display
+    // them to the user for management. Otherwise, render a "No passwords for
+    // this site" message.
+    //
+    // TODO(mkwst): Do we really want the "No passwords" case? It would probably
+    // be better to only clear the pending password upon navigation, rather than
+    // as soon as the bubble closes.
+    if (!model()->best_matches().empty()) {
+      for (autofill::PasswordFormMap::const_iterator i(
+               model()->best_matches().begin());
+           i != model()->best_matches().end();
+           ++i) {
+        ManagePasswordItemView* item = new ManagePasswordItemView(
+            model(),
+            *i->second,
+            first_field_width,
+            second_field_width,
+            i == model()->best_matches().begin()
+                ? ManagePasswordItemView::FIRST_ITEM
+                : ManagePasswordItemView::SUBSEQUENT_ITEM);
+
+        layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+        layout->AddView(item);
+      }
+    } else {
+        views::Label* empty_label = new views::Label(
+            l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
+        empty_label->SetMultiLine(true);
+
+        layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+        layout->AddView(empty_label);
+    }
+
+    // Build a "manage" link and "done" button, and throw them both into a new
+    // row
+    // containing a double-view columnset.
+    manage_link_ = new views::Link(model()->manage_link());
+    manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    manage_link_->SetUnderline(false);
+    manage_link_->set_listener(this);
+
+    done_button_ =
+        new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
+    done_button_->SetStyle(views::Button::STYLE_BUTTON);
+
+    layout->StartRowWithPadding(
+        0, LINK_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+    layout->AddView(manage_link_);
+    layout->AddView(done_button_);
+  }
 }
 
 void ManagePasswordsBubbleView::WindowClosing() {
@@ -385,4 +326,38 @@ void ManagePasswordsBubbleView::WindowClosing() {
   // |manage_passwords_bubble_| may have already been reset.
   if (manage_passwords_bubble_ == this)
     manage_passwords_bubble_ = NULL;
+}
+
+void ManagePasswordsBubbleView::ButtonPressed(views::Button* sender,
+                                              const ui::Event& event) {
+  DCHECK(sender == save_button_ || sender == done_button_);
+
+  if (sender == save_button_)
+    model()->OnSaveClicked();
+  else
+    model()->OnDoneClicked();
+  Close();
+}
+
+void ManagePasswordsBubbleView::LinkClicked(views::Link* source,
+                                            int event_flags) {
+  DCHECK_EQ(source, manage_link_);
+  model()->OnManageLinkClicked();
+  Close();
+}
+
+void ManagePasswordsBubbleView::OnPerformAction(views::Combobox* source) {
+  DCHECK_EQ(source, refuse_combobox_);
+  switch (refuse_combobox_->selected_index()) {
+    case SavePasswordRefusalComboboxModel::INDEX_NOPE:
+      model()->OnNopeClicked();
+      break;
+    case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
+      model()->OnNeverForThisSiteClicked();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  Close();
 }
