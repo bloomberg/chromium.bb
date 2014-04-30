@@ -19,12 +19,15 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_utils.h"
+
+using blink::WebInputEvent;
 
 namespace content {
 
@@ -33,14 +36,14 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   TestTouchEditableImplAura()
       : selection_changed_callback_arrived_(false),
         waiting_for_selection_changed_callback_(false),
-        gesture_ack_callback_arrived_(false),
-        waiting_for_gesture_ack_callback_(false) {}
+        waiting_for_gesture_ack_type_(WebInputEvent::Undefined),
+        last_gesture_ack_type_(WebInputEvent::Undefined) {}
 
   virtual void Reset() {
     selection_changed_callback_arrived_ = false;
     waiting_for_selection_changed_callback_ = false;
-    gesture_ack_callback_arrived_ = false;
-    waiting_for_gesture_ack_callback_ = false;
+    waiting_for_gesture_ack_type_ = WebInputEvent::Undefined;
+    last_gesture_ack_type_ = WebInputEvent::Undefined;
   }
 
   virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
@@ -52,9 +55,10 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   }
 
   virtual void GestureEventAck(int gesture_event_type) OVERRIDE {
-    gesture_ack_callback_arrived_ = true;
+    last_gesture_ack_type_ =
+        static_cast<WebInputEvent::Type>(gesture_event_type);
     TouchEditableImplAura::GestureEventAck(gesture_event_type);
-    if (waiting_for_gesture_ack_callback_)
+    if (waiting_for_gesture_ack_type_ == gesture_event_type)
       gesture_ack_wait_run_loop_->Quit();
   }
 
@@ -66,10 +70,10 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
     selection_changed_wait_run_loop_->Run();
   }
 
-  virtual void WaitForGestureAck() {
-    if (gesture_ack_callback_arrived_)
+  virtual void WaitForGestureAck(WebInputEvent::Type gesture_event_type) {
+    if (last_gesture_ack_type_ == gesture_event_type)
       return;
-    waiting_for_gesture_ack_callback_ = true;
+    waiting_for_gesture_ack_type_ = gesture_event_type;
     gesture_ack_wait_run_loop_.reset(new base::RunLoop());
     gesture_ack_wait_run_loop_->Run();
   }
@@ -80,8 +84,8 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
  private:
   bool selection_changed_callback_arrived_;
   bool waiting_for_selection_changed_callback_;
-  bool gesture_ack_callback_arrived_;
-  bool waiting_for_gesture_ack_callback_;
+  WebInputEvent::Type waiting_for_gesture_ack_type_;
+  WebInputEvent::Type last_gesture_ack_type_;
   scoped_ptr<base::RunLoop> selection_changed_wait_run_loop_;
   scoped_ptr<base::RunLoop> gesture_ack_wait_run_loop_;
 
@@ -369,7 +373,8 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   // Tap textfield
   touch_editable->Reset();
   generator.GestureTapAt(gfx::Point(bounds.x() + 50, bounds.y() + 40));
-  // Tap Down and Tap acks are sent synchronously.
+  // Tap Down acks are sent synchronously, while Tap acks are asynchronous.
+  touch_editable->WaitForGestureAck(WebInputEvent::GestureTap);
   touch_editable->WaitForSelectionChangeCallback();
   touch_editable->Reset();
 
