@@ -64,14 +64,16 @@ class BASE_EXPORT RefCountedStaticMemory : public RefCountedMemory {
   DISALLOW_COPY_AND_ASSIGN(RefCountedStaticMemory);
 };
 
-// An implementation of RefCountedMemory, where we own our the data in a
-// vector.
+// An implementation of RefCountedMemory, where we own the data in a vector.
 class BASE_EXPORT RefCountedBytes : public RefCountedMemory {
  public:
   RefCountedBytes();
 
   // Constructs a RefCountedBytes object by _copying_ from |initializer|.
   explicit RefCountedBytes(const std::vector<unsigned char>& initializer);
+
+  // Constructs a RefCountedBytes object by copying |size| bytes from |p|.
+  RefCountedBytes(const unsigned char* p, size_t size);
 
   // Constructs a RefCountedBytes object by performing a swap. (To non
   // destructively build a RefCountedBytes, use the constructor that takes a

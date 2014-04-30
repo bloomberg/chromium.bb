@@ -27,6 +27,16 @@ TEST(RefCountedMemoryUnitTest, RefCountedBytes) {
   EXPECT_EQ(2U, mem->size());
   EXPECT_EQ(45U, mem->front()[0]);
   EXPECT_EQ(99U, mem->front()[1]);
+
+  scoped_refptr<RefCountedMemory> mem2;
+  {
+    unsigned char data2[] = { 12, 11, 99 };
+    mem2 = new RefCountedBytes(data2, 3);
+  }
+  EXPECT_EQ(3U, mem2->size());
+  EXPECT_EQ(12U, mem2->front()[0]);
+  EXPECT_EQ(11U, mem2->front()[1]);
+  EXPECT_EQ(99U, mem2->front()[2]);
 }
 
 TEST(RefCountedMemoryUnitTest, RefCountedString) {

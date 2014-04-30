@@ -37,6 +37,9 @@ RefCountedBytes::RefCountedBytes(const std::vector<unsigned char>& initializer)
     : data_(initializer) {
 }
 
+RefCountedBytes::RefCountedBytes(const unsigned char* p, size_t size)
+    : data_(p, p + size) {}
+
 RefCountedBytes* RefCountedBytes::TakeVector(
     std::vector<unsigned char>* to_destroy) {
   RefCountedBytes* bytes = new RefCountedBytes;
