@@ -198,9 +198,9 @@ private:
     static bool holderContainsWrapper(v8::Local<v8::Object> holder, ScriptWrappable* wrappable)
     {
         // Verify our assumptions about the main world.
-        v8::Local<v8::Object> wrapper = wrappable->newLocalWrapper(v8::Isolate::GetCurrent());
-        ASSERT(wrapper.IsEmpty() || holder != wrapper || current(v8::Isolate::GetCurrent()).m_isMainWorld);
-        return holder == wrapper;
+        ASSERT(wrappable);
+        ASSERT(!wrappable->containsWrapper() || !wrappable->isEqualTo(holder) || current(v8::Isolate::GetCurrent()).m_isMainWorld);
+        return wrappable->isEqualTo(holder);
     }
 
     bool m_isMainWorld;

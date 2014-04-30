@@ -130,6 +130,13 @@ public:
         ASSERT(containsTypeInfo());
     }
 
+    bool isEqualTo(const v8::Local<v8::Object>& other) const
+    {
+        v8::Persistent<v8::Object> persistent;
+        getPersistent(&persistent);
+        return persistent == other;
+    }
+
     static bool wrapperCanBeStoredInObject(const void*) { return false; }
     static bool wrapperCanBeStoredInObject(const ScriptWrappable*) { return true; }
 
