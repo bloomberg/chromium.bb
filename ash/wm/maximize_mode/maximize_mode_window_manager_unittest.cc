@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/strings/utf_string_conversions.h"
@@ -826,6 +827,32 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   generator.ReleaseLeftButton();
   EXPECT_EQ(first_dragged_origin.x() + 10, window->bounds().x());
   EXPECT_EQ(first_dragged_origin.y() + 5, window->bounds().y());
+}
+
+// Test that overview is exited before entering / exiting maximize mode so that
+// the window changes made by MaximizeModeWindowManager do not conflict with
+// those made in WindowOverview.
+TEST_F(MaximizeModeWindowManagerTest, ExitsOverview) {
+  // Bounds for windows we know can be controlled.
+  gfx::Rect rect1(10, 10, 200, 50);
+  gfx::Rect rect2(10, 60, 200, 50);
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect1));
+  scoped_ptr<aura::Window> w2(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
+
+  WindowSelectorController* window_selector_controller =
+      Shell::GetInstance()->window_selector_controller();
+  window_selector_controller->ToggleOverview();
+  ASSERT_TRUE(window_selector_controller->IsSelecting());
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  ASSERT_TRUE(manager);
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
+
+  window_selector_controller->ToggleOverview();
+  ASSERT_TRUE(window_selector_controller->IsSelecting());
+  // Destroy the manager again and check that the windows return to their
+  // previous state.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
 }
 
 #endif  // OS_WIN
