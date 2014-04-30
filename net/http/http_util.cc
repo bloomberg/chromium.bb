@@ -77,48 +77,6 @@ size_t HttpUtil::FindDelimiter(const std::string& line,
 }
 
 // static
-bool HttpUtil::ParseVersion(const std::string& version_str,
-                            HttpVersion* version) {
-  std::string::const_iterator p = version_str.begin();
-
-  // RFC2616 sec 3.1: HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
-  // TODO: (1*DIGIT apparently means one or more digits, but we only handle 1).
-  // TODO: handle leading zeros, which is allowed by the rfc1616 sec 3.1.
-
-  if (version_str.length() < 4 || !LowerCaseEqualsASCII(p, p + 4, "http")) {
-    DVLOG(1) << "missing status line";
-    return false;
-  }
-
-  p += 4;
-
-  if (p >= version_str.end() || *p != '/') {
-    DVLOG(1) << "missing version";
-    return false;
-  }
-
-  std::string::const_iterator dot = std::find(p, version_str.end(), '.');
-  if (dot == version_str.end()) {
-    DVLOG(1) << "malformed version";
-    return false;
-  }
-
-  ++p;  // from / to first digit.
-  ++dot;  // from . to second digit.
-
-  if (!(*p >= '0' && *p <= '9' && *dot >= '0' && *dot <= '9')) {
-    DVLOG(1) << "malformed version number";
-    return false;
-  }
-
-  uint16 major = *p - '0';
-  uint16 minor = *dot - '0';
-
-  *version = HttpVersion(major, minor);
-  return true;
-}
-
-// static
 void HttpUtil::ParseContentType(const std::string& content_type_str,
                                 std::string* mime_type,
                                 std::string* charset,

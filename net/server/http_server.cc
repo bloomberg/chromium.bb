@@ -13,7 +13,6 @@
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_util.h"
 #include "net/server/http_connection.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
@@ -283,10 +282,8 @@ bool HttpServer::ParseHeaders(HttpConnection* connection,
           buffer.clear();
           break;
         case ST_PROTO:
-          if (!HttpUtil::ParseVersion(buffer, &info->http_version)) {
-            // Treat everything else like HTTP 1.0
-            info->http_version = HttpVersion(1, 0);
-          }
+          // TODO(mbelshe): Deal better with parsing protocol.
+          DCHECK(buffer == "HTTP/1.1");
           buffer.clear();
           break;
         case ST_NAME:

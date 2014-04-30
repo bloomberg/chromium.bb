@@ -335,6 +335,14 @@ class NET_EXPORT HttpResponseHeaders
   // Initializes from the given raw headers.
   void Parse(const std::string& raw_input);
 
+  // Helper function for ParseStatusLine.
+  // Tries to extract the "HTTP/X.Y" from a status line formatted like:
+  //    HTTP/1.1 200 OK
+  // with line_begin and end pointing at the begin and end of this line.  If the
+  // status line is malformed, returns HttpVersion(0,0).
+  static HttpVersion ParseVersion(std::string::const_iterator line_begin,
+                                  std::string::const_iterator line_end);
+
   // Tries to extract the status line from a header block, given the first
   // line of said header block.  If the status line is malformed, we'll
   // construct a valid one.  Example input:
