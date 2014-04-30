@@ -412,6 +412,14 @@ void PictureLayerImpl::UpdateTilePriorities() {
   layer_tree_impl()->DidModifyTilePriorities();
 }
 
+void PictureLayerImpl::NotifyTileInitialized(const Tile* tile) {
+  if (layer_tree_impl()->IsActiveTree()) {
+    gfx::RectF layer_damage_rect =
+        gfx::ScaleRect(tile->content_rect(), 1.f / tile->contents_scale());
+    AddDamageRect(layer_damage_rect);
+  }
+}
+
 void PictureLayerImpl::DidBecomeActive() {
   LayerImpl::DidBecomeActive();
   tilings_->DidBecomeActive();

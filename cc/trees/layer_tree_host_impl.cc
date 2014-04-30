@@ -1223,15 +1223,20 @@ void LayerTreeHostImpl::NotifyReadyToActivate() {
 }
 
 void LayerTreeHostImpl::NotifyTileInitialized(const Tile* tile) {
-  if (!active_tree_)
-    return;
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::NotifyTileInitialized");
 
-  LayerImpl* layer_impl =
-      active_tree_->FindActiveTreeLayerById(tile->layer_id());
-  if (layer_impl) {
-    gfx::RectF layer_damage_rect =
-        gfx::ScaleRect(tile->content_rect(), 1.f / tile->contents_scale());
-    layer_impl->AddDamageRect(layer_damage_rect);
+  if (active_tree_) {
+    LayerImpl* layer_impl =
+        active_tree_->FindActiveTreeLayerById(tile->layer_id());
+    if (layer_impl)
+      layer_impl->NotifyTileInitialized(tile);
+  }
+
+  if (pending_tree_) {
+    LayerImpl* layer_impl =
+        pending_tree_->FindPendingTreeLayerById(tile->layer_id());
+    if (layer_impl)
+      layer_impl->NotifyTileInitialized(tile);
   }
 }
 

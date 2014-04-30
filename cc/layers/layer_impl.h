@@ -51,6 +51,7 @@ class QuadSink;
 class Renderer;
 class ScrollbarAnimationController;
 class ScrollbarLayerImplBase;
+class Tile;
 
 struct AppendQuadsData;
 
@@ -178,6 +179,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual RenderPass::Id NextContributingRenderPassId(RenderPass::Id id) const;
 
   virtual void UpdateTilePriorities() {}
+  virtual void NotifyTileInitialized(const Tile* tile) {}
 
   virtual ScrollbarLayerImplBase* ToScrollbarLayer();
 
