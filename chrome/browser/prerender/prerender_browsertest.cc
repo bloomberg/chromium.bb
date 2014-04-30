@@ -4153,6 +4153,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPPLTNormalNavigation) {
   histograms.ExpectTotalCount("Prerender.none_PerceivedPLTMatchedComplete", 0);
 }
 
+// Checks that a prerender which calls window.close() on itself is aborted.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowClose) {
+  DisableLoadEventCheck();
+  PrerenderTestURL("files/prerender/prerender_window_close.html",
+                   FINAL_STATUS_CLOSED, 0);
+}
+
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {

@@ -129,6 +129,10 @@ class PrerenderContents::WebContentsDelegateImpl
     return NULL;
   }
 
+  virtual void CloseContents(content::WebContents* contents) OVERRIDE {
+    prerender_contents_->Destroy(FINAL_STATUS_CLOSED);
+  }
+
   virtual void CanDownload(
       RenderViewHost* render_view_host,
       int request_id,
