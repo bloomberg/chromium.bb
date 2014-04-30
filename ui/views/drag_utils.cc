@@ -4,14 +4,13 @@
 
 #include "ui/views/drag_utils.h"
 
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/public/drag_drop_client.h"
+
+namespace {
 
 float GetDeviceScaleForNativeView(views::Widget* widget) {
   float device_scale = 1.0f;
@@ -27,21 +26,9 @@ float GetDeviceScaleForNativeView(views::Widget* widget) {
   return device_scale;
 }
 
-namespace views {
+}  // namespace
 
-void RunShellDrag(gfx::NativeView view,
-                  const ui::OSExchangeData& data,
-                  const gfx::Point& location,
-                  int operation,
-                  ui::DragDropTypes::DragEventSource source) {
-  gfx::Point root_location(location);
-  aura::Window* root_window = view->GetRootWindow();
-  aura::Window::ConvertPointToTarget(view, root_window, &root_location);
-  if (aura::client::GetDragDropClient(root_window)) {
-    aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_window, view, root_location, operation, source);
-  }
-}
+namespace views {
 
 gfx::Canvas* GetCanvasForDragImage(views::Widget* widget,
                                    const gfx::Size& canvas_size) {
