@@ -34,8 +34,9 @@ function readFileAndExpectContent(entry, expectedContent) {
       chrome.test.fail('Error reading file contents.');
     };
     reader.readAsText(file);
-  },
-  chrome.test.fail.bind(null, 'Unable to get file snapshot.'));
+  }, function(error) {
+    chrome.test.fail('Unable to get file snapshot: ' + error.name);
+  });
 }
 
 /**
