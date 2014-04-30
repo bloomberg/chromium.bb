@@ -956,6 +956,7 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         return true;
 
     m_progressTracker->progressCompleted();
+    m_frame->domWindow()->finishedLoading();
 
     const ResourceError& error = m_documentLoader->mainDocumentError();
     if (!error.isNull())
@@ -1023,13 +1024,6 @@ void FrameLoader::checkLoadComplete()
     ASSERT(m_client->hasWebView());
     if (Page* page = m_frame->page())
         page->mainFrame()->loader().checkLoadCompleteForThisFrame();
-}
-
-void FrameLoader::checkLoadComplete(DocumentLoader* documentLoader)
-{
-    if (documentLoader)
-        documentLoader->checkLoadComplete();
-    checkLoadComplete();
 }
 
 String FrameLoader::userAgent(const KURL& url) const

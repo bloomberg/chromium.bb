@@ -1260,7 +1260,7 @@ void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* lo
     m_multipartLoaders->add(loader);
     m_loaders->remove(loader);
     if (LocalFrame* frame = this->frame())
-        return frame->loader().checkLoadComplete(m_documentLoader);
+        return frame->loader().checkLoadComplete();
 }
 
 void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)
@@ -1280,7 +1280,7 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
     if (m_multipartLoaders && m_multipartLoaders->contains(loader))
         m_multipartLoaders->remove(loader);
     if (LocalFrame* frame = this->frame())
-        frame->loader().checkLoadComplete(m_documentLoader);
+        frame->loader().checkLoadComplete();
 }
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceRequest& request)

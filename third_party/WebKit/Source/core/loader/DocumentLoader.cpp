@@ -542,13 +542,6 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, int leng
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }
 
-void DocumentLoader::checkLoadComplete()
-{
-    if (!m_frame || isLoading() || !m_committed)
-        return;
-    m_frame->domWindow()->finishedLoading();
-}
-
 void DocumentLoader::clearRedirectChain()
 {
     m_redirectChain.clear();
@@ -577,7 +570,6 @@ void DocumentLoader::detachFromFrame()
 void DocumentLoader::clearMainResourceLoader()
 {
     m_loadingMainResource = false;
-    checkLoadComplete();
 }
 
 void DocumentLoader::clearMainResourceHandle()

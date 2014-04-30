@@ -129,7 +129,6 @@ public:
     FrameLoadType loadType() const;
     void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
 
-    void checkLoadComplete(DocumentLoader*);
     void checkLoadComplete();
 
     static void addHTTPOriginIfNeeded(ResourceRequest&, const AtomicString& origin);
