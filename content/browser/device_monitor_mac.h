@@ -25,8 +25,10 @@ class DeviceMonitorMac {
 
   // Registers the observers for the audio/video device removal, connection and
   // suspension. The AVFoundation library is also loaded and initialised if the
-  // OS supports it.
-  void StartMonitoring();
+  // OS supports it. The |device_task_runner| argument represents the thread on
+  // which device enumeration will occur.
+  void StartMonitoring(
+    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
 
   // Method called by the internal DeviceMonitorMacImpl object
   // |device_monitor_impl_| when a device of type |type| has been added to or
@@ -38,7 +40,7 @@ class DeviceMonitorMac {
   scoped_ptr<DeviceMonitorMacImpl> device_monitor_impl_;
 
   // |thread_checker_| is used to check that constructor and StartMonitoring()
-  // are called in the correct thread, that also owns the object.
+  // are called in the correct thread, the UI thread, that also owns the object.
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorMac);
