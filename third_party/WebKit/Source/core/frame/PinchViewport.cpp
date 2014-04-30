@@ -190,10 +190,9 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         ASSERT(coordinator);
         coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
 
-        // No need for the inner viewport to clip, since the compositing
-        // surface takes care of it -- and clipping here would interfere with
-        // dynamically-sized viewports on Android.
-        m_innerViewportContainerLayer->setMasksToBounds(false);
+        // Set masks to bounds so the compositor doesn't clobber a manually
+        // set inner viewport container layer size.
+        m_innerViewportContainerLayer->setMasksToBounds(m_frameHost.settings().mainFrameClipsContent());
 
         m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
             m_innerViewportContainerLayer->platformLayer());
@@ -204,7 +203,7 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
         m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());
 
-        // Ensure this class is set as the scroll layer's ScrollableArea
+        // Ensure this class is set as the scroll layer's ScrollableArea.
         coordinator->scrollableAreaScrollLayerDidChange(this);
 
         // Setup the inner viewport overlay scrollbars.
