@@ -247,8 +247,22 @@ void AutoTableLayout::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, Layout
 void AutoTableLayout::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
 {
     Length tableLogicalWidth = m_table->style()->logicalWidth();
-    if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive())
+    if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
+        // |minWidth| is the result of measuring the intrinsic content's size. Keep it to
+        // make sure we are *never* smaller than the actual content.
+        LayoutUnit minContentWidth = minWidth;
+        // FIXME: This line looks REALLY suspicious as it could allow the minimum
+        // preferred logical width to be smaller than the table content. This has
+        // to be cross-checked against other browsers.
         minWidth = maxWidth = max<int>(minWidth, tableLogicalWidth.value());
+
+        const Length& styleMaxLogicalWidth = m_table->style()->logicalMaxWidth();
+        if (styleMaxLogicalWidth.isFixed() && !styleMaxLogicalWidth.isNegative()) {
+            minWidth = min<int>(minWidth, styleMaxLogicalWidth.value());
+            minWidth = max(minWidth, minContentWidth);
+            maxWidth = minWidth;
+        }
+    }
 }
 
 /*
