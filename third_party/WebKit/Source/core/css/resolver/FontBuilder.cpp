@@ -70,10 +70,7 @@ FontBuilder::FontBuilder()
 
 void FontBuilder::initForStyleResolve(const Document& document, RenderStyle* style, bool useSVGZoomRules)
 {
-    // All documents need to be in a frame (and thus have access to Settings)
-    // for style-resolution to make sense.
-    // Unfortunately SVG Animations currently violate this: crbug.com/260966
-    // ASSERT(m_document->frame());
+    ASSERT(document.frame());
     m_document = &document;
     m_useSVGZoomRules = useSVGZoomRules;
     m_style = style;
