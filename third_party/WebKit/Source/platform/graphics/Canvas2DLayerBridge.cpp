@@ -375,7 +375,14 @@ bool Canvas2DLayerBridge::restoreSurface()
 
 bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
-    ASSERT(!m_destructionInProgress);
+    if (m_destructionInProgress) {
+        // It can be hit in the following sequence.
+        // 1. Canvas draws something.
+        // 2. The compositor begins the frame.
+        // 3. Javascript makes a context be lost.
+        // 4. Here.
+        return false;
+    }
     if (bitmap) {
         // Using accelerated 2d canvas with software renderer, which
         // should only happen in tests that use fake graphics contexts
@@ -472,7 +479,7 @@ void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox
     freeReleasedMailbox(); // Never have more than one mailbox in the released state.
     Vector<MailboxInfo>::iterator mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); ++mailboxInfo) {
-        if (!memcmp(mailboxInfo->m_mailbox.name, mailbox.name, sizeof(mailbox.name))) {
+        if (nameEquals(mailboxInfo->m_mailbox, mailbox)) {
             mailboxInfo->m_mailbox.syncPoint = mailbox.syncPoint;
             ASSERT(mailboxInfo->m_status == MailboxInUse);
             mailboxInfo->m_status = MailboxReleased;
