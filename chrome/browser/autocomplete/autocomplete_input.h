@@ -142,7 +142,7 @@ class AutocompleteInput {
   // not guaranteed to be valid, especially if the parsed type is, e.g., QUERY.
   static Type Parse(const base::string16& text,
                     const base::string16& desired_tld,
-                    url_parse::Parsed* parts,
+                    url::Parsed* parts,
                     base::string16* scheme,
                     GURL* canonicalized_url);
 
@@ -151,8 +151,8 @@ class AutocompleteInput {
   // is view-source, this function returns the positions of scheme and host
   // in the URL qualified by "view-source:" prefix.
   static void ParseForEmphasizeComponents(const base::string16& text,
-                                          url_parse::Component* scheme,
-                                          url_parse::Component* host);
+                                          url::Component* scheme,
+                                          url::Component* host);
 
   // Code that wants to format URLs with a format flag including
   // net::kFormatUrlOmitTrailingSlashOnBareHostname risk changing the meaning if
@@ -165,7 +165,7 @@ class AutocompleteInput {
       const base::string16& formatted_url);
 
   // Returns the number of non-empty components in |parts| besides the host.
-  static int NumNonHostComponents(const url_parse::Parsed& parts);
+  static int NumNonHostComponents(const url::Parsed& parts);
 
   // Returns whether |text| begins "http:" or "view-source:http:".
   static bool HasHTTPScheme(const base::string16& text);
@@ -182,7 +182,7 @@ class AutocompleteInput {
   // that they're not changing the type/scheme/etc. should use this.
   void UpdateText(const base::string16& text,
                   size_t cursor_position,
-                  const url_parse::Parsed& parts);
+                  const url::Parsed& parts);
 
   // The current URL, or an invalid GURL if query refinement is not desired.
   const GURL& current_url() const { return current_url_; }
@@ -197,7 +197,7 @@ class AutocompleteInput {
   Type type() const { return type_; }
 
   // Returns parsed URL components.
-  const url_parse::Parsed& parts() const { return parts_; }
+  const url::Parsed& parts() const { return parts_; }
 
   // The scheme parsed from the provided text; only meaningful when type_ is
   // URL.
@@ -237,7 +237,7 @@ class AutocompleteInput {
   GURL current_url_;
   AutocompleteInput::PageClassification current_page_classification_;
   Type type_;
-  url_parse::Parsed parts_;
+  url::Parsed parts_;
   base::string16 scheme_;
   GURL canonicalized_url_;
   bool prevent_inline_autocomplete_;

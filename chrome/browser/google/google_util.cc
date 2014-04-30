@@ -57,9 +57,8 @@ namespace google_util {
 // Global functions -----------------------------------------------------------
 
 bool HasGoogleSearchQueryParam(const std::string& str) {
-  url_parse::Component query(0, str.length()), key, value;
-  while (url_parse::ExtractQueryKeyValue(str.c_str(), &query, &key,
-                                         &value)) {
+  url::Component query(0, str.length()), key, value;
+  while (url::ExtractQueryKeyValue(str.c_str(), &query, &key, &value)) {
     if ((key.len == 1) && (str[key.begin] == 'q') && value.is_nonempty())
       return true;
   }

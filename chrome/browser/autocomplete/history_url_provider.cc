@@ -812,7 +812,7 @@ bool HistoryURLProvider::FixupExactSuggestion(
   }
 
   const GURL& url = match->destination_url;
-  const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
   // If the what-you-typed result looks like a single word (which can be
   // interpreted as an intranet address) followed by a pound sign ("#"),
   // leave the score for the url-what-you-typed result as is.  It will be
@@ -830,11 +830,11 @@ bool HistoryURLProvider::FixupExactSuggestion(
   // between the input "c" and the input "c#", both of which will have empty
   // reference fragments.)
   if ((type == UNVISITED_INTRANET) &&
-      (input.type() != AutocompleteInput::URL) &&
-      url.username().empty() && url.password().empty() && url.port().empty() &&
-      (url.path() == "/") && url.query().empty() &&
-      (parsed.CountCharactersBefore(url_parse::Parsed::REF, true) !=
-       parsed.CountCharactersBefore(url_parse::Parsed::REF, false))) {
+      (input.type() != AutocompleteInput::URL) && url.username().empty() &&
+      url.password().empty() && url.port().empty() && (url.path() == "/") &&
+      url.query().empty() &&
+      (parsed.CountCharactersBefore(url::Parsed::REF, true) !=
+       parsed.CountCharactersBefore(url::Parsed::REF, false))) {
     return false;
   }
 

@@ -326,9 +326,9 @@ void CanonicalizeUrl(const GURL& url,
 
   // 2. Do URL unescaping until no more hex encoded characters exist.
   std::string url_unescaped_str(Unescape(url_without_fragment.spec()));
-  url_parse::Parsed parsed;
-  url_parse::ParseStandardURL(url_unescaped_str.data(),
-      url_unescaped_str.length(), &parsed);
+  url::Parsed parsed;
+  url::ParseStandardURL(url_unescaped_str.data(), url_unescaped_str.length(),
+                        &parsed);
 
   // 3. In hostname, remove all leading and trailing dots.
   const std::string host =
@@ -350,29 +350,36 @@ void CanonicalizeUrl(const GURL& url,
           : std::string();
   std::string path_without_consecutive_slash(RemoveConsecutiveChars(path, '/'));
 
-  url_canon::Replacements<char> hp_replacements;
-  hp_replacements.SetHost(host_without_consecutive_dots.data(),
-  url_parse::Component(0, host_without_consecutive_dots.length()));
-  hp_replacements.SetPath(path_without_consecutive_slash.data(),
-  url_parse::Component(0, path_without_consecutive_slash.length()));
+  url::Replacements<char> hp_replacements;
+  hp_replacements.SetHost(
+      host_without_consecutive_dots.data(),
+      url::Component(0, host_without_consecutive_dots.length()));
+  hp_replacements.SetPath(
+      path_without_consecutive_slash.data(),
+      url::Component(0, path_without_consecutive_slash.length()));
 
   std::string url_unescaped_with_can_hostpath;
-  url_canon::StdStringCanonOutput output(&url_unescaped_with_can_hostpath);
-  url_parse::Parsed temp_parsed;
-  url_util::ReplaceComponents(url_unescaped_str.data(),
-                              url_unescaped_str.length(), parsed,
-                              hp_replacements, NULL, &output, &temp_parsed);
+  url::StdStringCanonOutput output(&url_unescaped_with_can_hostpath);
+  url::Parsed temp_parsed;
+  url::ReplaceComponents(url_unescaped_str.data(),
+                         url_unescaped_str.length(),
+                         parsed,
+                         hp_replacements,
+                         NULL,
+                         &output,
+                         &temp_parsed);
   output.Complete();
 
-  // 6. Step needed to revert escaping done in url_util::ReplaceComponents.
+  // 6. Step needed to revert escaping done in url::ReplaceComponents.
   url_unescaped_with_can_hostpath = Unescape(url_unescaped_with_can_hostpath);
 
   // 7. After performing all above steps, percent-escape all chars in url which
   // are <= ASCII 32, >= 127, #, %. Escapes must be uppercase hex characters.
   std::string escaped_canon_url_str(Escape(url_unescaped_with_can_hostpath));
-  url_parse::Parsed final_parsed;
-  url_parse::ParseStandardURL(escaped_canon_url_str.data(),
-                              escaped_canon_url_str.length(), &final_parsed);
+  url::Parsed final_parsed;
+  url::ParseStandardURL(escaped_canon_url_str.data(),
+                        escaped_canon_url_str.length(),
+                        &final_parsed);
 
   if (canonicalized_hostname && final_parsed.host.len > 0) {
     *canonicalized_hostname =

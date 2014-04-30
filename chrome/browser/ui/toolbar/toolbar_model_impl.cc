@@ -131,10 +131,9 @@ base::string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
   // otherwise look for the corpus name in the query parameters.
   const std::string& query_str(google_util::HasGoogleSearchQueryParam(
       url.ref()) ? url.ref() : url.query());
-  url_parse::Component query(0, query_str.length()), key, value;
+  url::Component query(0, query_str.length()), key, value;
   const char kChipKey[] = "sboxchip";
-  while (url_parse::ExtractQueryKeyValue(query_str.c_str(), &query, &key,
-                                         &value)) {
+  while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
     if (key.is_nonempty() && query_str.substr(key.begin, key.len) == kChipKey) {
       return net::UnescapeAndDecodeUTF8URLComponent(
           query_str.substr(value.begin, value.len),

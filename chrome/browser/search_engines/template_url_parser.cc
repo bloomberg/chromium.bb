@@ -423,10 +423,10 @@ void TemplateURLParsingContext::ProcessURLParams() {
   std::string new_query;
   bool modified = false;
   if (parameter_filter_) {
-    url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
-    url_parse::Component key, value;
+    url::Component query = url.parsed_for_possibly_invalid_spec().query;
+    url::Component key, value;
     const char* url_spec = url.spec().c_str();
-    while (url_parse::ExtractQueryKeyValue(url_spec, &query, &key, &value)) {
+    while (url::ExtractQueryKeyValue(url_spec, &query, &key, &value)) {
       std::string key_str(url_spec, key.begin, key.len);
       std::string value_str(url_spec, value.begin, value.len);
       if (parameter_filter_->KeepParameter(key_str, value_str)) {

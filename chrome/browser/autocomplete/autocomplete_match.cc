@@ -377,9 +377,8 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
 
   // Replace https protocol with http protocol.
   if (stripped_destination_url.SchemeIs(content::kHttpsScheme)) {
-    replacements.SetScheme(
-        content::kHttpScheme,
-        url_parse::Component(0, strlen(content::kHttpScheme)));
+    replacements.SetScheme(content::kHttpScheme,
+                           url::Component(0, strlen(content::kHttpScheme)));
     needs_replacement = true;
   }
 

@@ -32,174 +32,174 @@ std::ostream& operator<<(std::ostream& os, const Component& part) {
 struct SegmentCase {
   const std::string input;
   const std::string result;
-  const url_parse::Component scheme;
-  const url_parse::Component username;
-  const url_parse::Component password;
-  const url_parse::Component host;
-  const url_parse::Component port;
-  const url_parse::Component path;
-  const url_parse::Component query;
-  const url_parse::Component ref;
+  const url::Component scheme;
+  const url::Component username;
+  const url::Component password;
+  const url::Component host;
+  const url::Component port;
+  const url::Component path;
+  const url::Component query;
+  const url::Component ref;
 };
 
 static const SegmentCase segment_cases[] = {
   { "http://www.google.com/", "http",
-    url_parse::Component(0, 4), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(7, 14), // host
-    url_parse::Component(), // port
-    url_parse::Component(21, 1), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(0, 4), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(7, 14), // host
+    url::Component(), // port
+    url::Component(21, 1), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   { "aBoUt:vErSiOn", "about",
-    url_parse::Component(0, 5), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(6, 7), // host
-    url_parse::Component(), // port
-    url_parse::Component(), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(0, 5), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(6, 7), // host
+    url::Component(), // port
+    url::Component(), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   { "about:host/path?query#ref", "about",
-    url_parse::Component(0, 5), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(6, 4), // host
-    url_parse::Component(), // port
-    url_parse::Component(10, 5), // path
-    url_parse::Component(16, 5), // query
-    url_parse::Component(22, 3), // ref
+    url::Component(0, 5), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(6, 4), // host
+    url::Component(), // port
+    url::Component(10, 5), // path
+    url::Component(16, 5), // query
+    url::Component(22, 3), // ref
   },
   { "about://host/path?query#ref", "about",
-    url_parse::Component(0, 5), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(8, 4), // host
-    url_parse::Component(), // port
-    url_parse::Component(12, 5), // path
-    url_parse::Component(18, 5), // query
-    url_parse::Component(24, 3), // ref
+    url::Component(0, 5), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(8, 4), // host
+    url::Component(), // port
+    url::Component(12, 5), // path
+    url::Component(18, 5), // query
+    url::Component(24, 3), // ref
   },
   { "chrome:host/path?query#ref", "chrome",
-    url_parse::Component(0, 6), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(7, 4), // host
-    url_parse::Component(), // port
-    url_parse::Component(11, 5), // path
-    url_parse::Component(17, 5), // query
-    url_parse::Component(23, 3), // ref
+    url::Component(0, 6), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(7, 4), // host
+    url::Component(), // port
+    url::Component(11, 5), // path
+    url::Component(17, 5), // query
+    url::Component(23, 3), // ref
   },
   { "chrome://host/path?query#ref", "chrome",
-    url_parse::Component(0, 6), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(9, 4), // host
-    url_parse::Component(), // port
-    url_parse::Component(13, 5), // path
-    url_parse::Component(19, 5), // query
-    url_parse::Component(25, 3), // ref
+    url::Component(0, 6), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(9, 4), // host
+    url::Component(), // port
+    url::Component(13, 5), // path
+    url::Component(19, 5), // query
+    url::Component(25, 3), // ref
   },
   { "    www.google.com:124?foo#", "http",
-    url_parse::Component(), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(4, 14), // host
-    url_parse::Component(19, 3), // port
-    url_parse::Component(), // path
-    url_parse::Component(23, 3), // query
-    url_parse::Component(27, 0), // ref
+    url::Component(), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(4, 14), // host
+    url::Component(19, 3), // port
+    url::Component(), // path
+    url::Component(23, 3), // query
+    url::Component(27, 0), // ref
   },
   { "user@www.google.com", "http",
-    url_parse::Component(), // scheme
-    url_parse::Component(0, 4), // username
-    url_parse::Component(), // password
-    url_parse::Component(5, 14), // host
-    url_parse::Component(), // port
-    url_parse::Component(), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(), // scheme
+    url::Component(0, 4), // username
+    url::Component(), // password
+    url::Component(5, 14), // host
+    url::Component(), // port
+    url::Component(), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   { "ftp:/user:P:a$$Wd@..ftp.google.com...::23///pub?foo#bar", "ftp",
-    url_parse::Component(0, 3), // scheme
-    url_parse::Component(5, 4), // username
-    url_parse::Component(10, 7), // password
-    url_parse::Component(18, 20), // host
-    url_parse::Component(39, 2), // port
-    url_parse::Component(41, 6), // path
-    url_parse::Component(48, 3), // query
-    url_parse::Component(52, 3), // ref
+    url::Component(0, 3), // scheme
+    url::Component(5, 4), // username
+    url::Component(10, 7), // password
+    url::Component(18, 20), // host
+    url::Component(39, 2), // port
+    url::Component(41, 6), // path
+    url::Component(48, 3), // query
+    url::Component(52, 3), // ref
   },
   { "[2001:db8::1]/path", "http",
-    url_parse::Component(), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(0, 13), // host
-    url_parse::Component(), // port
-    url_parse::Component(13, 5), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(0, 13), // host
+    url::Component(), // port
+    url::Component(13, 5), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   { "[::1]", "http",
-    url_parse::Component(), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(0, 5), // host
-    url_parse::Component(), // port
-    url_parse::Component(), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(0, 5), // host
+    url::Component(), // port
+    url::Component(), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   // Incomplete IPv6 addresses (will not canonicalize).
   { "[2001:4860:", "http",
-    url_parse::Component(), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(0, 11), // host
-    url_parse::Component(), // port
-    url_parse::Component(), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(0, 11), // host
+    url::Component(), // port
+    url::Component(), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   { "[2001:4860:/foo", "http",
-    url_parse::Component(), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(0, 11), // host
-    url_parse::Component(), // port
-    url_parse::Component(11, 4), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(0, 11), // host
+    url::Component(), // port
+    url::Component(11, 4), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   { "http://:b005::68]", "http",
-    url_parse::Component(0, 4), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(7, 10), // host
-    url_parse::Component(), // port
-    url_parse::Component(), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(0, 4), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(7, 10), // host
+    url::Component(), // port
+    url::Component(), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
   // Can't do anything useful with this.
   { ":b005::68]", "",
-    url_parse::Component(0, 0), // scheme
-    url_parse::Component(), // username
-    url_parse::Component(), // password
-    url_parse::Component(), // host
-    url_parse::Component(), // port
-    url_parse::Component(), // path
-    url_parse::Component(), // query
-    url_parse::Component(), // ref
+    url::Component(0, 0), // scheme
+    url::Component(), // username
+    url::Component(), // password
+    url::Component(), // host
+    url::Component(), // port
+    url::Component(), // path
+    url::Component(), // query
+    url::Component(), // ref
   },
 };
 
 TEST(URLFixerUpperTest, SegmentURL) {
   std::string result;
-  url_parse::Parsed parts;
+  url::Parsed parts;
 
   for (size_t i = 0; i < arraysize(segment_cases); ++i) {
     SegmentCase value = segment_cases[i];

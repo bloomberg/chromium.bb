@@ -110,8 +110,8 @@ std::string VisitSegmentDatabase::ComputeSegmentName(const GURL& url) {
   if (static_cast<int>(host.size()) > kWWWDotLen &&
       LowerCaseEqualsASCII(host_c, host_c + kWWWDotLen, kWWWDot)) {
     r.SetHost(host.c_str(),
-              url_parse::Component(kWWWDotLen,
-                  static_cast<int>(host.size()) - kWWWDotLen));
+              url::Component(kWWWDotLen,
+                             static_cast<int>(host.size()) - kWWWDotLen));
   }
   // Remove other stuff we don't want.
   r.ClearUsername();

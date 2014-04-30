@@ -149,10 +149,9 @@ bool TryEncoding(const base::string16& terms,
 std::string FindSearchTermsKey(const std::string& params) {
   if (params.empty())
     return std::string();
-  url_parse::Component query, key, value;
+  url::Component query, key, value;
   query.len = static_cast<int>(params.size());
-  while (url_parse::ExtractQueryKeyValue(params.c_str(), &query, &key,
-                                         &value)) {
+  while (url::ExtractQueryKeyValue(params.c_str(), &query, &key, &value)) {
     if (key.is_nonempty() && value.is_nonempty()) {
       std::string value_string = params.substr(value.begin, value.len);
       if (value_string.find(kSearchTermsParameterFull, 0) !=
@@ -224,7 +223,7 @@ TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
       parsed_(false),
       valid_(false),
       supports_replacements_(false),
-      search_term_key_location_(url_parse::Parsed::QUERY),
+      search_term_key_location_(url::Parsed::QUERY),
       prepopulated_(false),
       showing_search_terms_(ShowingSearchTermsOnSRP()) {
   DCHECK(owner_);
@@ -238,7 +237,7 @@ TemplateURLRef::TemplateURLRef(TemplateURL* owner, size_t index_in_owner)
       parsed_(false),
       valid_(false),
       supports_replacements_(false),
-      search_term_key_location_(url_parse::Parsed::QUERY),
+      search_term_key_location_(url::Parsed::QUERY),
       prepopulated_(false),
       showing_search_terms_(ShowingSearchTermsOnSRP()) {
   DCHECK(owner_);
@@ -463,8 +462,8 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
     const GURL& url,
     base::string16* search_terms,
     const SearchTermsData& search_terms_data,
-    url_parse::Parsed::ComponentType* search_terms_component,
-    url_parse::Component* search_terms_position) const {
+    url::Parsed::ComponentType* search_terms_component,
+    url::Component* search_terms_position) const {
   DCHECK(search_terms);
   search_terms->clear();
 
@@ -491,14 +490,13 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
 
   // Parameter must be present either in the query or the ref.
   const std::string& params(
-      (search_term_key_location_ == url_parse::Parsed::QUERY) ?
+      (search_term_key_location_ == url::Parsed::QUERY) ?
           url.query() : url.ref());
 
-  url_parse::Component query, key, value;
+  url::Component query, key, value;
   query.len = static_cast<int>(params.size());
   bool key_found = false;
-  while (url_parse::ExtractQueryKeyValue(params.c_str(), &query, &key,
-                                         &value)) {
+  while (url::ExtractQueryKeyValue(params.c_str(), &query, &key, &value)) {
     if (key.is_nonempty()) {
       if (params.substr(key.begin, key.len) == search_term_key_) {
         // Fail if search term key is found twice.
@@ -755,7 +753,7 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
   search_term_key_.clear();
   host_.clear();
   path_.clear();
-  search_term_key_location_ = url_parse::Parsed::REF;
+  search_term_key_location_ = url::Parsed::REF;
 
   GURL url(url_string);
   if (!url.is_valid())
@@ -766,8 +764,8 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
   if (query_key.empty() == ref_key.empty())
     return;  // No key or multiple keys found.  We only handle having one key.
   search_term_key_ = query_key.empty() ? ref_key : query_key;
-  search_term_key_location_ = query_key.empty() ?
-      url_parse::Parsed::REF : url_parse::Parsed::QUERY;
+  search_term_key_location_ =
+      query_key.empty() ? url::Parsed::REF : url::Parsed::QUERY;
   host_ = url.host();
   path_ = url.path();
 }
@@ -1106,7 +1104,7 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
   const char favicon_path[] = "/favicon.ico";
   int favicon_path_len = arraysize(favicon_path) - 1;
 
-  rep.SetPath(favicon_path, url_parse::Component(0, favicon_path_len));
+  rep.SetPath(favicon_path, url::Component(0, favicon_path_len));
   rep.ClearUsername();
   rep.ClearPassword();
   rep.ClearQuery();
@@ -1205,10 +1203,9 @@ bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {
   std::string params[] = {url.query(), url.ref()};
 
   for (int i = 0; i < 2; ++i) {
-    url_parse::Component query, key, value;
+    url::Component query, key, value;
     query.len = static_cast<int>(params[i].size());
-    while (url_parse::ExtractQueryKeyValue(params[i].c_str(), &query, &key,
-                                           &value)) {
+    while (url::ExtractQueryKeyValue(params[i].c_str(), &query, &key, &value)) {
       if (key.is_nonempty() &&
           params[i].substr(key.begin, key.len) ==
               search_terms_replacement_key()) {
@@ -1225,8 +1222,8 @@ bool TemplateURL::ReplaceSearchTermsInURL(
     GURL* result) {
   UIThreadSearchTermsData search_terms_data(profile_);
   // TODO(beaudoin): Use AQS from |search_terms_args| too.
-  url_parse::Parsed::ComponentType search_term_component;
-  url_parse::Component search_terms_position;
+  url::Parsed::ComponentType search_term_component;
+  url::Component search_terms_position;
   base::string16 search_terms;
   if (!FindSearchTermsInURL(url, search_terms_data, &search_terms,
                             &search_term_component, &search_terms_position)) {
@@ -1243,13 +1240,13 @@ bool TemplateURL::ReplaceSearchTermsInURL(
   EncodeSearchTerms(search_terms_args, true, &input_encoding,
                     &encoded_terms, &encoded_original_query);
 
-  std::string old_params((search_term_component == url_parse::Parsed::REF) ?
-      url.ref() : url.query());
+  std::string old_params(
+      (search_term_component == url::Parsed::REF) ? url.ref() : url.query());
   std::string new_params(old_params, 0, search_terms_position.begin);
   new_params += base::UTF16ToUTF8(search_terms_args.search_terms);
   new_params += old_params.substr(search_terms_position.end());
-  url_canon::StdStringReplacements<std::string> replacements;
-  if (search_term_component == url_parse::Parsed::REF)
+  url::StdStringReplacements<std::string> replacements;
+  if (search_term_component == url::Parsed::REF)
     replacements.SetRefStr(new_params);
   else
     replacements.SetQueryStr(new_params);
@@ -1317,8 +1314,8 @@ bool TemplateURL::FindSearchTermsInURL(
     const GURL& url,
     const SearchTermsData& search_terms_data,
     base::string16* search_terms,
-    url_parse::Parsed::ComponentType* search_term_component,
-    url_parse::Component* search_terms_position) {
+    url::Parsed::ComponentType* search_term_component,
+    url::Component* search_terms_position) {
   DCHECK(search_terms);
   search_terms->clear();
 

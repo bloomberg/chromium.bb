@@ -573,7 +573,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // Note that we only block based on refs if the input is URL-typed, as search
   // queries can legitimately have #s in them which the URL parser
   // overaggressively categorizes as a url with a ref.
-  const url_parse::Parsed& parts = input_.parts();
+  const url::Parsed& parts = input_.parts();
   if (parts.username.is_nonempty() || parts.port.is_nonempty() ||
       parts.query.is_nonempty() ||
       (parts.ref.is_nonempty() && (input_.type() == AutocompleteInput::URL)))

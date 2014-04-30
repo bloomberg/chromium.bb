@@ -109,7 +109,7 @@ TEST(ChromeOSFileSystemBackendTest, GetRootDirectories) {
 }
 
 TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
-  url_util::AddStandardScheme("chrome-extension");
+  url::AddStandardScheme("chrome-extension");
 
   scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy =
       new quota::MockSpecialStoragePolicy();

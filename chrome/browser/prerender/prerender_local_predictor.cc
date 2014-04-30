@@ -312,7 +312,7 @@ int64 GetInt64URLHashForURL(const GURL& url) {
 }
 
 bool URLsIdenticalIgnoringFragments(const GURL& url1, const GURL& url2) {
-  url_canon::Replacements<char> replacement;
+  url::Replacements<char> replacement;
   replacement.ClearRef();
   GURL u1 = url1.ReplaceComponents(replacement);
   GURL u2 = url2.ReplaceComponents(replacement);

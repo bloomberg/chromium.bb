@@ -27,15 +27,15 @@ const char* URLFixerUpper::home_directory_override = NULL;
 namespace {
 
 // TODO(estade): Remove these ugly, ugly functions. They are only used in
-// SegmentURL. A url_parse::Parsed object keeps track of a bunch of indices into
+// SegmentURL. A url::Parsed object keeps track of a bunch of indices into
 // a url string, and these need to be updated when the URL is converted from
 // UTF8 to UTF16. Instead of this after-the-fact adjustment, we should parse it
 // in the correct string format to begin with.
-url_parse::Component UTF8ComponentToUTF16Component(
+url::Component UTF8ComponentToUTF16Component(
     const std::string& text_utf8,
-    const url_parse::Component& component_utf8) {
+    const url::Component& component_utf8) {
   if (component_utf8.len == -1)
-    return url_parse::Component();
+    return url::Component();
 
   std::string before_component_string =
       text_utf8.substr(0, component_utf8.begin);
@@ -44,14 +44,14 @@ url_parse::Component UTF8ComponentToUTF16Component(
   base::string16 before_component_string_16 =
       base::UTF8ToUTF16(before_component_string);
   base::string16 component_string_16 = base::UTF8ToUTF16(component_string);
-  url_parse::Component component_16(before_component_string_16.length(),
-                                    component_string_16.length());
+  url::Component component_16(before_component_string_16.length(),
+                              component_string_16.length());
   return component_16;
 }
 
 void UTF8PartsToUTF16Parts(const std::string& text_utf8,
-                           const url_parse::Parsed& parts_utf8,
-                           url_parse::Parsed* parts) {
+                           const url::Parsed& parts_utf8,
+                           url::Parsed* parts) {
   if (IsStringASCII(text_utf8)) {
     *parts = parts_utf8;
     return;
@@ -222,7 +222,7 @@ void AddDesiredTLD(const std::string& desired_tld, std::string* domain) {
 }
 
 inline void FixupUsername(const std::string& text,
-                          const url_parse::Component& part,
+                          const url::Component& part,
                           std::string* url) {
   if (!part.is_valid())
     return;
@@ -234,7 +234,7 @@ inline void FixupUsername(const std::string& text,
 }
 
 inline void FixupPassword(const std::string& text,
-                          const url_parse::Component& part,
+                          const url::Component& part,
                           std::string* url) {
   if (!part.is_valid())
     return;
@@ -245,7 +245,7 @@ inline void FixupPassword(const std::string& text,
 }
 
 void FixupHost(const std::string& text,
-               const url_parse::Component& part,
+               const url::Component& part,
                bool has_scheme,
                const std::string& desired_tld,
                std::string* url) {
@@ -274,7 +274,7 @@ void FixupHost(const std::string& text,
 }
 
 void FixupPort(const std::string& text,
-               const url_parse::Component& part,
+               const url::Component& part,
                std::string* url) {
   if (!part.is_valid())
     return;
@@ -285,7 +285,7 @@ void FixupPort(const std::string& text,
 }
 
 inline void FixupPath(const std::string& text,
-                      const url_parse::Component& part,
+                      const url::Component& part,
                       std::string* url) {
   if (!part.is_valid() || part.len == 0) {
     // We should always have a path.
@@ -298,7 +298,7 @@ inline void FixupPath(const std::string& text,
 }
 
 inline void FixupQuery(const std::string& text,
-                       const url_parse::Component& part,
+                       const url::Component& part,
                        std::string* url) {
   if (!part.is_valid())
     return;
@@ -309,7 +309,7 @@ inline void FixupQuery(const std::string& text,
 }
 
 inline void FixupRef(const std::string& text,
-                     const url_parse::Component& part,
+                     const url::Component& part,
                      std::string* url) {
   if (!part.is_valid())
     return;
@@ -320,12 +320,12 @@ inline void FixupRef(const std::string& text,
 }
 
 bool HasPort(const std::string& original_text,
-             const url_parse::Component& scheme_component) {
+             const url::Component& scheme_component) {
   // Find the range between the ":" and the "/".
   size_t port_start = scheme_component.end() + 1;
   size_t port_end = port_start;
   while ((port_end < original_text.length()) &&
-         !url_parse::IsAuthorityTerminator(original_text[port_end]))
+         !url::IsAuthorityTerminator(original_text[port_end]))
     ++port_end;
   if (port_end == port_start)
     return false;
@@ -344,25 +344,25 @@ bool HasPort(const std::string& original_text,
 // was located, and fill |canon_scheme| with its canonicalized form.
 // Otherwise, return false and leave the outputs in an indeterminate state.
 bool GetValidScheme(const std::string& text,
-                    url_parse::Component* scheme_component,
+                    url::Component* scheme_component,
                     std::string* canon_scheme) {
   canon_scheme->clear();
 
   // Locate everything up to (but not including) the first ':'
-  if (!url_parse::ExtractScheme(text.data(), static_cast<int>(text.length()),
-                                scheme_component)) {
+  if (!url::ExtractScheme(text.data(), static_cast<int>(text.length()),
+                          scheme_component)) {
     return false;
   }
 
   // Make sure the scheme contains only valid characters, and convert
   // to lowercase.  This also catches IPv6 literals like [::1], because
   // brackets are not in the whitelist.
-  url_canon::StdStringCanonOutput canon_scheme_output(canon_scheme);
-  url_parse::Component canon_scheme_component;
-  if (!url_canon::CanonicalizeScheme(text.data(), *scheme_component,
-                                     &canon_scheme_output,
-                                     &canon_scheme_component))
+  url::StdStringCanonOutput canon_scheme_output(canon_scheme);
+  url::Component canon_scheme_component;
+  if (!url::CanonicalizeScheme(text.data(), *scheme_component,
+                               &canon_scheme_output, &canon_scheme_component)) {
     return false;
+  }
 
   // Strip the ':', and any trailing buffer space.
   DCHECK_EQ(0, canon_scheme_component.begin);
@@ -386,9 +386,9 @@ bool GetValidScheme(const std::string& text,
 // Performs the work for URLFixerUpper::SegmentURL. |text| may be modified on
 // output on success: a semicolon following a valid scheme is replaced with a
 // colon.
-std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
+std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
   // Initialize the result.
-  *parts = url_parse::Parsed();
+  *parts = url::Parsed();
 
   std::string trimmed;
   TrimWhitespaceUTF8(*text, base::TRIM_ALL, &trimmed);
@@ -397,8 +397,8 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
 
 #if defined(OS_WIN)
   int trimmed_length = static_cast<int>(trimmed.length());
-  if (url_parse::DoesBeginWindowsDriveSpec(trimmed.data(), 0, trimmed_length) ||
-      url_parse::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, true))
+  if (url::DoesBeginWindowsDriveSpec(trimmed.data(), 0, trimmed_length) ||
+      url::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, true))
     return "file";
 #elif defined(OS_POSIX)
   if (base::FilePath::IsSeparator(trimmed.data()[0]) ||
@@ -432,22 +432,23 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
   if ((scheme != content::kAboutScheme) &&
       (scheme != content::kChromeUIScheme) &&
       ((scheme == content::kFileScheme) ||
-       !url_util::IsStandard(
-            scheme.c_str(),
-            url_parse::Component(0, static_cast<int>(scheme.length())))))
+       !url::IsStandard(scheme.c_str(),
+                        url::Component(0,
+                                       static_cast<int>(scheme.length()))))) {
     return scheme;
+  }
 
   if (scheme == content::kFileSystemScheme) {
     // Have the GURL parser do the heavy lifting for us.
-    url_parse::ParseFileSystemURL(text->data(),
-        static_cast<int>(text->length()), parts);
+    url::ParseFileSystemURL(text->data(), static_cast<int>(text->length()),
+                            parts);
     return scheme;
   }
 
   if (parts->scheme.is_valid()) {
     // Have the GURL parser do the heavy lifting for us.
-    url_parse::ParseStandardURL(text->data(), static_cast<int>(text->length()),
-                                parts);
+    url::ParseStandardURL(text->data(), static_cast<int>(text->length()),
+                          parts);
     return scheme;
   }
 
@@ -465,9 +466,8 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
   text_to_parse.append(first_nonwhite, text->end());
 
   // Have the GURL parser do the heavy lifting for us.
-  url_parse::ParseStandardURL(text_to_parse.data(),
-                              static_cast<int>(text_to_parse.length()),
-                              parts);
+  url::ParseStandardURL(text_to_parse.data(),
+                        static_cast<int>(text_to_parse.length()), parts);
 
   // Offset the results of the parse to match the original text.
   const int offset = -static_cast<int>(inserted_text.length());
@@ -486,15 +486,15 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
 }  // namespace
 
 std::string URLFixerUpper::SegmentURL(const std::string& text,
-                                      url_parse::Parsed* parts) {
+                                      url::Parsed* parts) {
   std::string mutable_text(text);
   return SegmentURLInternal(&mutable_text, parts);
 }
 
 base::string16 URLFixerUpper::SegmentURL(const base::string16& text,
-                                         url_parse::Parsed* parts) {
+                                         url::Parsed* parts) {
   std::string text_utf8 = base::UTF16ToUTF8(text);
-  url_parse::Parsed parts_utf8;
+  url::Parsed parts_utf8;
   std::string scheme_utf8 = SegmentURL(text_utf8, &parts_utf8);
   UTF8PartsToUTF16Parts(text_utf8, parts_utf8, parts);
   return base::UTF8ToUTF16(scheme_utf8);
@@ -508,7 +508,7 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
     return GURL();  // Nothing here.
 
   // Segment the URL.
-  url_parse::Parsed parts;
+  url::Parsed parts;
   std::string scheme(SegmentURLInternal(&trimmed, &parts));
 
   // For view-source: URLs, we strip "view-source:", do fixup, and stick it back
@@ -540,8 +540,9 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
                      (scheme == content::kChromeUIScheme));
 
   // For some schemes whose layouts we understand, we rebuild it.
-  if (chrome_url || url_util::IsStandard(scheme.c_str(),
-          url_parse::Component(0, static_cast<int>(scheme.length())))) {
+  if (chrome_url ||
+      url::IsStandard(scheme.c_str(),
+                      url::Component(0, static_cast<int>(scheme.length())))) {
     // Replace the about: scheme with the chrome: scheme.
     std::string url(chrome_url ? content::kChromeUIScheme : scheme);
     url.append(content::kStandardSchemeSeparator);
@@ -640,7 +641,7 @@ GURL URLFixerUpper::FixupRelativeFile(const base::FilePath& base_dir,
   return FixupURL(text_utf8, std::string());
 }
 
-void URLFixerUpper::OffsetComponent(int offset, url_parse::Component* part) {
+void URLFixerUpper::OffsetComponent(int offset, url::Component* part) {
   DCHECK(part);
 
   if (part->is_valid()) {

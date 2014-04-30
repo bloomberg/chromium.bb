@@ -34,8 +34,8 @@ void ParseRequest(const GURL& url,
                                     (net::UnescapeRule::URL_SPECIAL_CHARS |
                                      net::UnescapeRule::SPACES));
   std::string url_spec = url.possibly_invalid_spec();
-  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
-  url_parse::Component key, value;
+  url::Component query = url.parsed_for_possibly_invalid_spec().query;
+  url::Component key, value;
   *is_image_animated = false;
   while (ExtractQueryKeyValue(url_spec.c_str(), &query, &key, &value)) {
     if (url_spec.substr(key.begin, key.len) == kKeyAnimated) {

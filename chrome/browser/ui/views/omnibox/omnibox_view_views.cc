@@ -360,7 +360,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // this input.  This can tell us whether an UNKNOWN input string is going to
   // be treated as a search or a navigation, and is the same method the Paste
   // And Go system uses.
-  url_parse::Component scheme, host;
+  url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(text(), &scheme, &host);
   bool grey_out_url = text().substr(scheme.begin, scheme.len) ==
       base::UTF8ToUTF16(extensions::kExtensionScheme);

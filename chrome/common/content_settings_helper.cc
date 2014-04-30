@@ -12,7 +12,7 @@
 namespace content_settings_helper {
 
 std::string OriginToString(const GURL& origin) {
-  std::string port_component(origin.IntPort() != url_parse::PORT_UNSPECIFIED
+  std::string port_component(origin.IntPort() != url::PORT_UNSPECIFIED
                                  ? ":" + origin.port()
                                  : std::string());
   std::string scheme_component(!origin.SchemeIs(content::kHttpScheme)

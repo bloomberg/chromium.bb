@@ -846,10 +846,9 @@ TEST_F(GoogleURLTrackerTest, FetchesCanAutomaticallyCloseInfoBars) {
   CommitSearch(1, GURL("http://www.google.com/search?q=test"));
   EXPECT_FALSE(GetInfoBarDelegate(1) == NULL);
   NotifyIPAddressChanged();
-  url_canon::Replacements<char> replacements;
+  url::Replacements<char> replacements;
   const std::string& scheme("https");
-  replacements.SetScheme(scheme.data(),
-                         url_parse::Component(0, scheme.length()));
+  replacements.SetScheme(scheme.data(), url::Component(0, scheme.length()));
   GURL new_google_url(google_url().ReplaceComponents(replacements));
   MockSearchDomainCheckResponse(new_google_url.spec());
   EXPECT_EQ(new_google_url, GetLastPromptedGoogleURL());

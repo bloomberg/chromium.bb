@@ -503,10 +503,10 @@ void ExtensionDownloader::HandleManifestResults(
 
       // Force https (crbug.com/129587).
       if (!crx_url.SchemeIsSecure()) {
-        url_canon::Replacements<char> replacements;
+        url::Replacements<char> replacements;
         std::string scheme("https");
         replacements.SetScheme(scheme.c_str(),
-                               url_parse::Component(0, scheme.size()));
+                               url::Component(0, scheme.size()));
         crx_url = crx_url.ReplaceComponents(replacements);
       }
     }

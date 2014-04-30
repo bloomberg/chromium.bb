@@ -30,9 +30,8 @@ namespace URLFixerUpper {
   // segments.  Currently does not segment "file" schemes.
   // Returns the canonicalized scheme, or the empty string when |text| is only
   // whitespace.
-  std::string SegmentURL(const std::string& text, url_parse::Parsed* parts);
-  base::string16 SegmentURL(const base::string16& text,
-                            url_parse::Parsed* parts);
+std::string SegmentURL(const std::string& text, url::Parsed* parts);
+base::string16 SegmentURL(const base::string16& text, url::Parsed* parts);
 
   // Converts |text| to a fixed-up URL and returns it. Attempts to make
   // some "smart" adjustments to obviously-invalid input where possible.
@@ -74,7 +73,7 @@ namespace URLFixerUpper {
   // scheme component no longer exists.  In such a case, the beginning index is
   // set to 0.
   // Does nothing if |part| is invalid.
-  void OffsetComponent(int offset, url_parse::Component* part);
+  void OffsetComponent(int offset, url::Component* part);
 
   // For paths like ~, we use $HOME for the current user's home
   // directory.  For tests, we allow our idea of $HOME to be overriden

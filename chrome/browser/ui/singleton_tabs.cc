@@ -17,10 +17,9 @@ namespace chrome {
 namespace {
 
 // Returns true if two URLs are equal after taking |replacements| into account.
-bool CompareURLsWithReplacements(
-    const GURL& url,
-    const GURL& other,
-    const url_canon::Replacements<char>& replacements) {
+bool CompareURLsWithReplacements(const GURL& url,
+                                 const GURL& other,
+                                 const url::Replacements<char>& replacements) {
   if (url == other)
     return true;
 
@@ -108,7 +107,7 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
       params->browser->profile(),
       &reverse_on_redirect);
 
-    url_canon::Replacements<char> replacements;
+    url::Replacements<char> replacements;
     if (params->ref_behavior == NavigateParams::IGNORE_REF)
       replacements.ClearRef();
     if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE ||

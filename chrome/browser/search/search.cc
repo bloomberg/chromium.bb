@@ -688,10 +688,10 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   GURL effective_url(url);
 
   // Replace the scheme with "chrome-search:".
-  url_canon::Replacements<char> replacements;
+  url::Replacements<char> replacements;
   std::string search_scheme(chrome::kChromeSearchScheme);
   replacements.SetScheme(search_scheme.data(),
-                         url_parse::Component(0, search_scheme.length()));
+                         url::Component(0, search_scheme.length()));
 
   // If this is the URL for a server-provided NTP, replace the host with
   // "remote-ntp".
@@ -700,7 +700,7 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   if (details.state == NEW_TAB_URL_VALID &&
       search::MatchesOriginAndPath(url, details.url)) {
     replacements.SetHost(remote_ntp_host.c_str(),
-                         url_parse::Component(0, remote_ntp_host.length()));
+                         url::Component(0, remote_ntp_host.length()));
   }
 
   effective_url = effective_url.ReplaceComponents(replacements);

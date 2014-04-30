@@ -69,10 +69,10 @@ bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
       GURL url(value);
       if (!url.SchemeIsFile())
         break;
-      url_canon::RawCanonOutputW<1024> decoded_location;
-      url_util::DecodeURLEscapeSequences(url.path().c_str() + 1,  // Strip /.
-                                         url.path().length() - 1,
-                                         &decoded_location);
+      url::RawCanonOutputW<1024> decoded_location;
+      url::DecodeURLEscapeSequences(url.path().c_str() + 1,  // Strip /.
+                                    url.path().length() - 1,
+                                    &decoded_location);
 #if defined(OS_WIN)
       base::string16 location(decoded_location.data(),
                               decoded_location.length());

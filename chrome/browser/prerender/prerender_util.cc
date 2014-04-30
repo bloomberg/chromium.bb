@@ -95,21 +95,19 @@ const char kChromeNavigateExtraDataKey[] = "chrome_navigate";
 bool MaybeGetQueryStringBasedAliasURL(
     const GURL& url, GURL* alias_url) {
   DCHECK(alias_url);
-  url_parse::Parsed parsed;
-  url_parse::ParseStandardURL(url.spec().c_str(), url.spec().length(),
-                              &parsed);
-  url_parse::Component query = parsed.query;
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(url.spec().c_str(), &query, &key,
-                                         &value)) {
+  url::Parsed parsed;
+  url::ParseStandardURL(url.spec().c_str(), url.spec().length(), &parsed);
+  url::Component query = parsed.query;
+  url::Component key, value;
+  while (url::ExtractQueryKeyValue(url.spec().c_str(), &query, &key, &value)) {
     if (key.len != 3 || strncmp(url.spec().c_str() + key.begin, "url", key.len))
       continue;
     // We found a url= query string component.
     if (value.len < 1)
       continue;
-    url_canon::RawCanonOutputW<1024> decoded_url;
-    url_util::DecodeURLEscapeSequences(url.spec().c_str() + value.begin,
-                                       value.len, &decoded_url);
+    url::RawCanonOutputW<1024> decoded_url;
+    url::DecodeURLEscapeSequences(url.spec().c_str() + value.begin, value.len,
+                                  &decoded_url);
     GURL new_url(base::string16(decoded_url.data(), decoded_url.length()));
     if (!new_url.is_empty() && new_url.is_valid()) {
       *alias_url = new_url;
@@ -121,13 +119,11 @@ bool MaybeGetQueryStringBasedAliasURL(
 }
 
 uint8 GetQueryStringBasedExperiment(const GURL& url) {
-  url_parse::Parsed parsed;
-  url_parse::ParseStandardURL(url.spec().c_str(), url.spec().length(),
-                              &parsed);
-  url_parse::Component query = parsed.query;
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(url.spec().c_str(), &query, &key,
-                                         &value)) {
+  url::Parsed parsed;
+  url::ParseStandardURL(url.spec().c_str(), url.spec().length(), &parsed);
+  url::Component query = parsed.query;
+  url::Component key, value;
+  while (url::ExtractQueryKeyValue(url.spec().c_str(), &query, &key, &value)) {
     if (key.len != 3 || strncmp(url.spec().c_str() + key.begin, "lpe", key.len))
       continue;
 

@@ -156,7 +156,7 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
     std::string original_hostname =
         base::UTF16ToUTF8(input_text.substr(input->parts().host.begin,
                                             input->parts().host.len));
-    const url_parse::Parsed& parts =
+    const url::Parsed& parts =
         canonical_gurl.parsed_for_possibly_invalid_spec();
     // parts.host must not be empty when HostIsIPAddress() is true.
     DCHECK(parts.host.is_nonempty());
@@ -198,7 +198,7 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
   else if (num_output_slashes > num_input_slashes)
     output.erase(output.length() - num_output_slashes + num_input_slashes);
 
-  url_parse::Parsed parts;
+  url::Parsed parts;
   URLFixerUpper::SegmentURL(output, &parts);
   input->UpdateText(output, base::string16::npos, parts);
   return !output.empty();

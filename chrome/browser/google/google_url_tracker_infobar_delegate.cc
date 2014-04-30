@@ -52,9 +52,9 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
   if (redo_search) {
     // Re-do the user's search on the new domain.
     DCHECK(search_url_.is_valid());
-    url_canon::Replacements<char> replacements;
+    url::Replacements<char> replacements;
     const std::string& host(google_url_tracker_->fetched_google_url().host());
-    replacements.SetHost(host.data(), url_parse::Component(0, host.length()));
+    replacements.SetHost(host.data(), url::Component(0, host.length()));
     new_search_url = search_url_.ReplaceComponents(replacements);
   }
 

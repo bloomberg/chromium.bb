@@ -116,9 +116,9 @@ const OmniboxViewMacState* GetStateFromTab(const WebContents* tab) {
       tab->GetUserData(&kOmniboxViewMacStateKey));
 }
 
-// Helper to make converting url_parse ranges to NSRange easier to
+// Helper to make converting url ranges to NSRange easier to
 // read.
-NSRange ComponentToNSRange(const url_parse::Component& component) {
+NSRange ComponentToNSRange(const url::Component& component) {
   return NSMakeRange(static_cast<NSInteger>(component.begin),
                      static_cast<NSInteger>(component.len));
 }
@@ -494,7 +494,7 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
   [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
              range:as_entire_string];
 
-  url_parse::Component scheme, host;
+  url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
       display_text, &scheme, &host);
   bool grey_out_url = display_text.substr(scheme.begin, scheme.len) ==

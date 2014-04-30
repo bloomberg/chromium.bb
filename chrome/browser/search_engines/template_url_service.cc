@@ -338,10 +338,10 @@ base::string16 TemplateURLService::CleanUserInputKeyword(
   // Remove the scheme.
   base::string16 result(base::i18n::ToLower(keyword));
   base::TrimWhitespace(result, base::TRIM_ALL, &result);
-  url_parse::Component scheme_component;
-  if (url_parse::ExtractScheme(base::UTF16ToUTF8(keyword).c_str(),
-                               static_cast<int>(keyword.length()),
-                               &scheme_component)) {
+  url::Component scheme_component;
+  if (url::ExtractScheme(base::UTF16ToUTF8(keyword).c_str(),
+                         static_cast<int>(keyword.length()),
+                         &scheme_component)) {
     // If the scheme isn't "http" or "https", bail.  The user isn't trying to
     // type a web address, but rather an FTP, file:, or other scheme URL, or a
     // search query with some sort of initial operator (e.g. "site:").

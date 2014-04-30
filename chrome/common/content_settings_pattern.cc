@@ -188,7 +188,7 @@ bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
 
   // Canonicalize the host part.
   const std::string host(parts->host);
-  url_canon::CanonHostInfo host_info;
+  url::CanonHostInfo host_info;
   std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
   if (host_info.IsIPAddress() && parts->has_domain_wildcard)
     return false;

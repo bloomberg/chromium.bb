@@ -227,8 +227,8 @@ class TemplateURLRef {
       const GURL& url,
       base::string16* search_terms,
       const SearchTermsData& search_terms_data,
-      url_parse::Parsed::ComponentType* search_term_component,
-      url_parse::Component* search_terms_position) const;
+      url::Parsed::ComponentType* search_term_component,
+      url::Component* search_terms_position) const;
 
   // Whether the URL uses POST (as opposed to GET).
   bool UsesPOSTMethodUsingTermsData(
@@ -397,7 +397,7 @@ class TemplateURLRef {
   mutable std::string host_;
   mutable std::string path_;
   mutable std::string search_term_key_;
-  mutable url_parse::Parsed::ComponentType search_term_key_location_;
+  mutable url::Parsed::ComponentType search_term_key_location_;
 
   mutable PostParams post_params_;
 
@@ -751,12 +751,11 @@ class TemplateURL {
   // and extract |search_terms| from it as well as the |search_terms_component|
   // (either REF or QUERY) and |search_terms_component| at which the
   // |search_terms| are found in |url|. See also ExtractSearchTermsFromURL().
-  bool FindSearchTermsInURL(
-      const GURL& url,
-      const SearchTermsData& search_terms_data,
-      base::string16* search_terms,
-      url_parse::Parsed::ComponentType* search_terms_component,
-      url_parse::Component* search_terms_position);
+  bool FindSearchTermsInURL(const GURL& url,
+                            const SearchTermsData& search_terms_data,
+                            base::string16* search_terms,
+                            url::Parsed::ComponentType* search_terms_component,
+                            url::Component* search_terms_position);
 
   Profile* profile_;
   TemplateURLData data_;

@@ -178,7 +178,7 @@ TEST(AutocompleteInputTest, InputCrash) {
 }
 
 TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
-  using url_parse::Component;
+  using url::Component;
   Component kInvalidComponent(0, -1);
   struct test_data {
     const base::string16 input;

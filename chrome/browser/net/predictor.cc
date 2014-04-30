@@ -1330,10 +1330,9 @@ GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {
   if (!domain_state.ShouldUpgradeToSSL())
     return url;
 
-  url_canon::Replacements<char> replacements;
+  url::Replacements<char> replacements;
   const char kNewScheme[] = "https";
-  replacements.SetScheme(kNewScheme,
-                         url_parse::Component(0, strlen(kNewScheme)));
+  replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
   return url.ReplaceComponents(replacements);
 }
 

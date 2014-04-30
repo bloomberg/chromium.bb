@@ -154,9 +154,8 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
 
   std::string relative_path;
   const std::string& spec = stripped_url.possibly_invalid_spec();
-  const url_parse::Parsed& parsed =
-      stripped_url.parsed_for_possibly_invalid_spec();
-  int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false);
+  const url::Parsed& parsed = stripped_url.parsed_for_possibly_invalid_spec();
+  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false);
   if (offset < static_cast<int>(spec.size()))
     relative_path.assign(spec.substr(offset + bundled_path_prefix.length()));
 

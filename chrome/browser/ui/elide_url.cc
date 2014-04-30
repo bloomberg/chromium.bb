@@ -114,7 +114,7 @@ base::string16 ElideUrl(const GURL& url,
                         float available_pixel_width,
                         const std::string& languages) {
   // Get a formatted string and corresponding parsing of the url.
-  url_parse::Parsed parsed;
+  url::Parsed parsed;
   const base::string16 url_string =
       net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
                      net::UnescapeRule::SPACES, &parsed, NULL, NULL);
