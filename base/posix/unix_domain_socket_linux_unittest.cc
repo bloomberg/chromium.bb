@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/synchronization/waitable_event.h"
@@ -38,7 +39,7 @@ TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
            request));
 
   // Receive the message.
-  std::vector<int> message_fds;
+  ScopedVector<base::ScopedFD> message_fds;
   uint8_t buffer[16];
   ASSERT_EQ(static_cast<int>(request.size()),
             UnixDomainSocket::RecvMsg(fds[0], buffer, sizeof(buffer),
@@ -46,7 +47,7 @@ TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
   ASSERT_EQ(1U, message_fds.size());
 
   // Close the reply FD.
-  ASSERT_EQ(0, IGNORE_EINTR(close(message_fds.front())));
+  message_fds.clear();
 
   // Check that the thread didn't get blocked.
   WaitableEvent event(false, false);
@@ -94,7 +95,7 @@ TEST(UnixDomainSocketTest, RecvPid) {
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
   base::ProcessId sender_pid;
-  std::vector<int> fd_vec;
+  ScopedVector<base::ScopedFD> fd_vec;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
       recv_sock.get(), buf, sizeof(buf), &fd_vec, &sender_pid);
   ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
@@ -114,23 +115,21 @@ TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
   ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
   static const char kHello[] = "hello";
-  std::vector<int> fd_vec(UnixDomainSocket::kMaxFileDescriptors,
-                          send_sock.get());
+  std::vector<int> send_fds(UnixDomainSocket::kMaxFileDescriptors,
+                            send_sock.get());
   ASSERT_TRUE(UnixDomainSocket::SendMsg(
-      send_sock.get(), kHello, sizeof(kHello), fd_vec));
+      send_sock.get(), kHello, sizeof(kHello), send_fds));
 
   // Extra receiving buffer space to make sure we really received only
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
   base::ProcessId sender_pid;
+  ScopedVector<base::ScopedFD> recv_fds;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
-      recv_sock.get(), buf, sizeof(buf), &fd_vec, &sender_pid);
+      recv_sock.get(), buf, sizeof(buf), &recv_fds, &sender_pid);
   ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
   ASSERT_EQ(0, memcmp(buf, kHello, sizeof(kHello)));
-  ASSERT_EQ(UnixDomainSocket::kMaxFileDescriptors, fd_vec.size());
-  for (size_t i = 0; i < UnixDomainSocket::kMaxFileDescriptors; i++) {
-    ASSERT_EQ(0, IGNORE_EINTR(close(fd_vec[i])));
-  }
+  ASSERT_EQ(UnixDomainSocket::kMaxFileDescriptors, recv_fds.size());
 
   ASSERT_EQ(getpid(), sender_pid);
 }

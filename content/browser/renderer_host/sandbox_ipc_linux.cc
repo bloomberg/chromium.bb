@@ -11,7 +11,9 @@
 #include <sys/stat.h>
 
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/linux_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
@@ -186,7 +188,7 @@ void SandboxIPCProcess::Run() {
 }
 
 void SandboxIPCProcess::HandleRequestFromRenderer(int fd) {
-  std::vector<int> fds;
+  ScopedVector<base::ScopedFD> fds;
 
   // A FontConfigIPC::METHOD_MATCH message could be kMaxFontFamilyLength
   // bytes long (this is the largest message type).
@@ -208,29 +210,24 @@ void SandboxIPCProcess::HandleRequestFromRenderer(int fd) {
 
   int kind;
   if (!pickle.ReadInt(&iter, &kind))
-    goto error;
+    return;
 
   if (kind == FontConfigIPC::METHOD_MATCH) {
-    HandleFontMatchRequest(fd, pickle, iter, fds);
+    HandleFontMatchRequest(fd, pickle, iter, fds.get());
   } else if (kind == FontConfigIPC::METHOD_OPEN) {
-    HandleFontOpenRequest(fd, pickle, iter, fds);
+    HandleFontOpenRequest(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHAR) {
-    HandleGetFontFamilyForChar(fd, pickle, iter, fds);
+    HandleGetFontFamilyForChar(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
-    HandleLocaltime(fd, pickle, iter, fds);
+    HandleLocaltime(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_GET_CHILD_WITH_INODE) {
-    HandleGetChildWithInode(fd, pickle, iter, fds);
+    HandleGetChildWithInode(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
-    HandleGetStyleForStrike(fd, pickle, iter, fds);
+    HandleGetStyleForStrike(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
-    HandleMakeSharedMemorySegment(fd, pickle, iter, fds);
+    HandleMakeSharedMemorySegment(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_MATCH_WITH_FALLBACK) {
-    HandleMatchWithFallback(fd, pickle, iter, fds);
-  }
-
-error:
-  for (std::vector<int>::const_iterator i = fds.begin(); i != fds.end(); ++i) {
-    close(*i);
+    HandleMatchWithFallback(fd, pickle, iter, fds.get());
   }
 }
 
@@ -244,10 +241,11 @@ int SandboxIPCProcess::FindOrAddPath(const SkString& path) {
   return count;
 }
 
-void SandboxIPCProcess::HandleFontMatchRequest(int fd,
-                                               const Pickle& pickle,
-                                               PickleIterator iter,
-                                               std::vector<int>& fds) {
+void SandboxIPCProcess::HandleFontMatchRequest(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   uint32_t requested_style;
   std::string family;
   if (!pickle.ReadString(&iter, &family) ||
@@ -283,10 +281,11 @@ void SandboxIPCProcess::HandleFontMatchRequest(int fd,
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCProcess::HandleFontOpenRequest(int fd,
-                                              const Pickle& pickle,
-                                              PickleIterator iter,
-                                              std::vector<int>& fds) {
+void SandboxIPCProcess::HandleFontOpenRequest(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   uint32_t index;
   if (!pickle.ReadUInt32(&iter, &index))
     return;
@@ -311,10 +310,11 @@ void SandboxIPCProcess::HandleFontOpenRequest(int fd,
   }
 }
 
-void SandboxIPCProcess::HandleGetFontFamilyForChar(int fd,
-                                                   const Pickle& pickle,
-                                                   PickleIterator iter,
-                                                   std::vector<int>& fds) {
+void SandboxIPCProcess::HandleGetFontFamilyForChar(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is
   // chrome/renderer/renderer_sandbox_support_linux.cc
 
@@ -341,10 +341,11 @@ void SandboxIPCProcess::HandleGetFontFamilyForChar(int fd,
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCProcess::HandleGetStyleForStrike(int fd,
-                                                const Pickle& pickle,
-                                                PickleIterator iter,
-                                                std::vector<int>& fds) {
+void SandboxIPCProcess::HandleGetStyleForStrike(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   std::string family;
   int sizeAndStyle;
 
@@ -369,10 +370,11 @@ void SandboxIPCProcess::HandleGetStyleForStrike(int fd,
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCProcess::HandleLocaltime(int fd,
-                                        const Pickle& pickle,
-                                        PickleIterator iter,
-                                        std::vector<int>& fds) {
+void SandboxIPCProcess::HandleLocaltime(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is in zygote_main_linux.cc
 
   std::string time_string;
@@ -401,10 +403,11 @@ void SandboxIPCProcess::HandleLocaltime(int fd,
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCProcess::HandleGetChildWithInode(int fd,
-                                                const Pickle& pickle,
-                                                PickleIterator iter,
-                                                std::vector<int>& fds) {
+void SandboxIPCProcess::HandleGetChildWithInode(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is in zygote_main_linux.cc
   if (sandbox_cmd_.empty()) {
     LOG(ERROR) << "Not in the sandbox, this should not be called";
@@ -435,10 +438,11 @@ void SandboxIPCProcess::HandleGetChildWithInode(int fd,
   SendRendererReply(fds, reply, -1);
 }
 
-void SandboxIPCProcess::HandleMakeSharedMemorySegment(int fd,
-                                                      const Pickle& pickle,
-                                                      PickleIterator iter,
-                                                      std::vector<int>& fds) {
+void SandboxIPCProcess::HandleMakeSharedMemorySegment(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   base::SharedMemoryCreateOptions options;
   uint32_t size;
   if (!pickle.ReadUInt32(&iter, &size))
@@ -454,10 +458,11 @@ void SandboxIPCProcess::HandleMakeSharedMemorySegment(int fd,
   SendRendererReply(fds, reply, shm_fd);
 }
 
-void SandboxIPCProcess::HandleMatchWithFallback(int fd,
-                                                const Pickle& pickle,
-                                                PickleIterator iter,
-                                                std::vector<int>& fds) {
+void SandboxIPCProcess::HandleMatchWithFallback(
+    int fd,
+    const Pickle& pickle,
+    PickleIterator iter,
+    const std::vector<base::ScopedFD*>& fds) {
   // Unlike the other calls, for which we are an indirection in front of
   // WebKit or Skia, this call is always made via this sandbox helper
   // process. Therefore the fontconfig code goes in here directly.
@@ -613,9 +618,10 @@ void SandboxIPCProcess::HandleMatchWithFallback(int fd,
   }
 }
 
-void SandboxIPCProcess::SendRendererReply(const std::vector<int>& fds,
-                                          const Pickle& reply,
-                                          int reply_fd) {
+void SandboxIPCProcess::SendRendererReply(
+    const std::vector<base::ScopedFD*>& fds,
+    const Pickle& reply,
+    int reply_fd) {
   struct msghdr msg;
   memset(&msg, 0, sizeof(msg));
   struct iovec iov = {const_cast<void*>(reply.data()), reply.size()};
@@ -644,7 +650,7 @@ void SandboxIPCProcess::SendRendererReply(const std::vector<int>& fds,
     msg.msg_controllen = cmsg->cmsg_len;
   }
 
-  if (HANDLE_EINTR(sendmsg(fds[0], &msg, MSG_DONTWAIT)) < 0)
+  if (HANDLE_EINTR(sendmsg(fds[0]->get(), &msg, MSG_DONTWAIT)) < 0)
     PLOG(ERROR) << "sendmsg";
 }
 

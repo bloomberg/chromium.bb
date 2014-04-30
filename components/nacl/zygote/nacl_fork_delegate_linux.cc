@@ -18,6 +18,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -93,7 +94,7 @@ bool SendIPCRequestAndReadReply(int ipc_channel,
   }
 
   // Then read the remote reply.
-  std::vector<int> received_fds;
+  ScopedVector<base::ScopedFD> received_fds;
   const ssize_t msg_len =
       UnixDomainSocket::RecvMsg(ipc_channel, reply_data_buffer,
                                 reply_data_buffer_size, &received_fds);

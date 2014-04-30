@@ -6,9 +6,10 @@
 #define CONTENT_ZYGOTE_ZYGOTE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/containers/small_map.h"
+#include "base/files/scoped_file.h"
+#include "base/memory/scoped_vector.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
@@ -89,7 +90,7 @@ class Zygote {
   // process and the child process ID to the parent process, like fork().
   base::ProcessId ReadArgsAndFork(const Pickle& pickle,
                                   PickleIterator iter,
-                                  std::vector<int>& fds,
+                                  ScopedVector<base::ScopedFD> fds,
                                   std::string* uma_name,
                                   int* uma_sample,
                                   int* uma_boundary_value);
@@ -101,7 +102,7 @@ class Zygote {
   bool HandleForkRequest(int fd,
                          const Pickle& pickle,
                          PickleIterator iter,
-                         std::vector<int>& fds);
+                         ScopedVector<base::ScopedFD> fds);
 
   bool HandleGetSandboxStatus(int fd,
                               const Pickle& pickle,

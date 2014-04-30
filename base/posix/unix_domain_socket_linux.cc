@@ -9,12 +9,28 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <vector>
+
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 
 const size_t UnixDomainSocket::kMaxFileDescriptors = 16;
+
+// Creates a connected pair of UNIX-domain SOCK_SEQPACKET sockets, and passes
+// ownership of the newly allocated file descriptors to |one| and |two|.
+// Returns true on success.
+static bool CreateSocketPair(base::ScopedFD* one, base::ScopedFD* two) {
+  int raw_socks[2];
+  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, raw_socks) == -1)
+    return false;
+  one->reset(raw_socks[0]);
+  two->reset(raw_socks[1]);
+  return true;
+}
 
 // static
 bool UnixDomainSocket::EnableReceiveProcessId(int fd) {
@@ -63,7 +79,7 @@ bool UnixDomainSocket::SendMsg(int fd,
 ssize_t UnixDomainSocket::RecvMsg(int fd,
                                   void* buf,
                                   size_t length,
-                                  std::vector<int>* fds) {
+                                  ScopedVector<base::ScopedFD>* fds) {
   return UnixDomainSocket::RecvMsgWithPid(fd, buf, length, fds, NULL);
 }
 
@@ -71,7 +87,7 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
 ssize_t UnixDomainSocket::RecvMsgWithPid(int fd,
                                          void* buf,
                                          size_t length,
-                                         std::vector<int>* fds,
+                                         ScopedVector<base::ScopedFD>* fds,
                                          base::ProcessId* pid) {
   return UnixDomainSocket::RecvMsgWithFlags(fd, buf, length, 0, fds, pid);
 }
@@ -81,7 +97,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
                                            void* buf,
                                            size_t length,
                                            int flags,
-                                           std::vector<int>* fds,
+                                           ScopedVector<base::ScopedFD>* fds,
                                            base::ProcessId* out_pid) {
   fds->clear();
 
@@ -131,8 +147,8 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   }
 
   if (wire_fds) {
-    fds->resize(wire_fds_len);
-    memcpy(vector_as_array(fds), wire_fds, sizeof(int) * wire_fds_len);
+    for (unsigned i = 0; i < wire_fds_len; ++i)
+      fds->push_back(new base::ScopedFD(wire_fds[i]));
   }
 
   if (out_pid) {
@@ -161,44 +177,42 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
                                                int recvmsg_flags,
                                                int* result_fd,
                                                const Pickle& request) {
-  int fds[2];
-
   // This socketpair is only used for the IPC and is cleaned up before
   // returning.
-  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == -1)
+  base::ScopedFD recv_sock, send_sock;
+  if (!CreateSocketPair(&recv_sock, &send_sock))
     return -1;
 
-  std::vector<int> fd_vector;
-  fd_vector.push_back(fds[1]);
-  if (!SendMsg(fd, request.data(), request.size(), fd_vector)) {
-    close(fds[0]);
-    close(fds[1]);
-    return -1;
+  {
+    std::vector<int> send_fds;
+    send_fds.push_back(send_sock.get());
+    if (!SendMsg(fd, request.data(), request.size(), send_fds))
+      return -1;
   }
-  close(fds[1]);
 
-  fd_vector.clear();
+  // Close the sending end of the socket right away so that if our peer closes
+  // it before sending a response (e.g., from exiting), RecvMsgWithFlags() will
+  // return EOF instead of hanging.
+  send_sock.reset();
+
+  ScopedVector<base::ScopedFD> recv_fds;
   // When porting to OSX keep in mind it doesn't support MSG_NOSIGNAL, so the
   // sender might get a SIGPIPE.
   const ssize_t reply_len = RecvMsgWithFlags(
-      fds[0], reply, max_reply_len, recvmsg_flags, &fd_vector, NULL);
-  close(fds[0]);
+      recv_sock.get(), reply, max_reply_len, recvmsg_flags, &recv_fds, NULL);
+  recv_sock.reset();
   if (reply_len == -1)
     return -1;
 
-  if ((!fd_vector.empty() && result_fd == NULL) || fd_vector.size() > 1) {
-    for (std::vector<int>::const_iterator
-         i = fd_vector.begin(); i != fd_vector.end(); ++i) {
-      close(*i);
-    }
-
+  // If we received more file descriptors than caller expected, then we treat
+  // that as an error.
+  if (recv_fds.size() > (result_fd != NULL ? 1 : 0)) {
     NOTREACHED();
-
     return -1;
   }
 
   if (result_fd)
-    *result_fd = fd_vector.empty() ? -1 : fd_vector[0];
+    *result_fd = recv_fds.empty() ? -1 : recv_fds[0]->release();
 
   return reply_len;
 }

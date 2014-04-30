@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "content/child/blink_platform_impl.h"
@@ -42,44 +43,44 @@ class SandboxIPCProcess {
   void HandleFontMatchRequest(int fd,
                               const Pickle& pickle,
                               PickleIterator iter,
-                              std::vector<int>& fds);
+                              const std::vector<base::ScopedFD*>& fds);
 
   void HandleFontOpenRequest(int fd,
                              const Pickle& pickle,
                              PickleIterator iter,
-                             std::vector<int>& fds);
+                             const std::vector<base::ScopedFD*>& fds);
 
   void HandleGetFontFamilyForChar(int fd,
                                   const Pickle& pickle,
                                   PickleIterator iter,
-                                  std::vector<int>& fds);
+                                  const std::vector<base::ScopedFD*>& fds);
 
   void HandleGetStyleForStrike(int fd,
                                const Pickle& pickle,
                                PickleIterator iter,
-                               std::vector<int>& fds);
+                               const std::vector<base::ScopedFD*>& fds);
 
   void HandleLocaltime(int fd,
                        const Pickle& pickle,
                        PickleIterator iter,
-                       std::vector<int>& fds);
+                       const std::vector<base::ScopedFD*>& fds);
 
   void HandleGetChildWithInode(int fd,
                                const Pickle& pickle,
                                PickleIterator iter,
-                               std::vector<int>& fds);
+                               const std::vector<base::ScopedFD*>& fds);
 
   void HandleMakeSharedMemorySegment(int fd,
                                      const Pickle& pickle,
                                      PickleIterator iter,
-                                     std::vector<int>& fds);
+                                     const std::vector<base::ScopedFD*>& fds);
 
   void HandleMatchWithFallback(int fd,
                                const Pickle& pickle,
                                PickleIterator iter,
-                               std::vector<int>& fds);
+                               const std::vector<base::ScopedFD*>& fds);
 
-  void SendRendererReply(const std::vector<int>& fds,
+  void SendRendererReply(const std::vector<base::ScopedFD*>& fds,
                          const Pickle& reply,
                          int reply_fd);
 

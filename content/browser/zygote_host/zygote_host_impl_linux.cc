@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -176,7 +177,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     // Wait for the zygote to tell us it's running, and receive its PID,
     // which the kernel will translate to our PID namespace.
     // The sending code is in content/browser/zygote_main_linux.cc.
-    std::vector<int> fds_vec;
+    ScopedVector<base::ScopedFD> fds_vec;
     const size_t kExpectedLength = sizeof(kZygoteHelloMessage);
     char buf[kExpectedLength];
     const ssize_t len = UnixDomainSocket::RecvMsgWithPid(

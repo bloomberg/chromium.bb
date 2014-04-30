@@ -14,6 +14,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/process_handle.h"
@@ -94,15 +95,14 @@ void RecvHello(int fd,
   // Extra receiving buffer space to make sure we really received only
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
-  std::vector<int> message_fds;
+  ScopedVector<base::ScopedFD> message_fds;
   ssize_t n = UnixDomainSocket::RecvMsgWithPid(
       fd, buf, sizeof(buf), &message_fds, sender_pid);
   CHECK_EQ(sizeof(kHello), static_cast<size_t>(n));
   CHECK_EQ(0, memcmp(buf, kHello, sizeof(kHello)));
   CHECK_EQ(1U, message_fds.size());
-  base::ScopedFD message_fd(message_fds[0]);
   if (write_pipe)
-    write_pipe->swap(message_fd);
+    write_pipe->swap(*message_fds[0]);
 }
 
 // Check that receiving PIDs works across a fork().

@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -122,7 +123,7 @@ bool Zygote::UsingSUIDSandbox() const {
 }
 
 bool Zygote::HandleRequestFromBrowser(int fd) {
-  std::vector<int> fds;
+  ScopedVector<base::ScopedFD> fds;
   char buf[kZygoteMaxMessageLength];
   const ssize_t len = UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
 
@@ -145,7 +146,7 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
     switch (kind) {
       case kZygoteCommandFork:
         // This function call can return multiple times, once per fork().
-        return HandleForkRequest(fd, pickle, iter, fds);
+        return HandleForkRequest(fd, pickle, iter, fds.Pass());
 
       case kZygoteCommandReap:
         if (!fds.empty())
@@ -167,9 +168,6 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
   }
 
   LOG(WARNING) << "Error parsing message from browser";
-  for (std::vector<int>::const_iterator
-       i = fds.begin(); i != fds.end(); ++i)
-    close(*i);
   return false;
 }
 
@@ -439,7 +437,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
 
 base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
                                         PickleIterator iter,
-                                        std::vector<int>& fds,
+                                        ScopedVector<base::ScopedFD> fds,
                                         std::string* uma_name,
                                         int* uma_sample,
                                         int* uma_boundary_value) {
@@ -475,7 +473,7 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
     base::GlobalDescriptors::Key key;
     if (!pickle.ReadUInt32(&iter, &key))
       return -1;
-    mapping.push_back(std::make_pair(key, fds[i]));
+    mapping.push_back(std::make_pair(key, fds[i]->get()));
   }
 
   mapping.push_back(std::make_pair(
@@ -488,7 +486,13 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   if (!child_pid) {
     // This is the child process.
 
-    close(kZygoteSocketPairFd);  // Our socket from the browser.
+    // Our socket from the browser.
+    PCHECK(0 == IGNORE_EINTR(close(kZygoteSocketPairFd)));
+
+    // Pass ownership of file descriptors from fds to GlobalDescriptors.
+    for (ScopedVector<base::ScopedFD>::iterator i = fds.begin(); i != fds.end();
+         ++i)
+      ignore_result((*i)->release());
     base::GlobalDescriptors::GetInstance()->Reset(mapping);
 
     // Reset the process-wide command line to our new command line.
@@ -510,18 +514,14 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
 bool Zygote::HandleForkRequest(int fd,
                                const Pickle& pickle,
                                PickleIterator iter,
-                               std::vector<int>& fds) {
+                               ScopedVector<base::ScopedFD> fds) {
   std::string uma_name;
   int uma_sample;
   int uma_boundary_value;
-  base::ProcessId child_pid = ReadArgsAndFork(pickle, iter, fds,
-                                              &uma_name, &uma_sample,
-                                              &uma_boundary_value);
+  base::ProcessId child_pid = ReadArgsAndFork(
+      pickle, iter, fds.Pass(), &uma_name, &uma_sample, &uma_boundary_value);
   if (child_pid == 0)
     return true;
-  for (std::vector<int>::const_iterator
-       i = fds.begin(); i != fds.end(); ++i)
-    close(*i);
   if (uma_name.empty()) {
     // There is no UMA report from this particular fork.
     // Use the initial UMA report if any, and clear that record for next time.

@@ -22,6 +22,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
@@ -320,8 +321,7 @@ int BrokerProcess::PathAndFlagsSyscall(enum IPCCommands syscall_type,
 // that we will then close.
 // A request should start with an int that will be used as the command type.
 bool BrokerProcess::HandleRequest() const {
-
-  std::vector<int> fds;
+  ScopedVector<base::ScopedFD> fds;
   char buf[kMaxMessageLength];
   errno = 0;
   const ssize_t msg_len = UnixDomainSocket::RecvMsg(ipc_socketpair_, buf,
@@ -334,17 +334,13 @@ bool BrokerProcess::HandleRequest() const {
 
   // The parent should send exactly one file descriptor, on which we
   // will write the reply.
-  if (msg_len < 0 || fds.size() != 1 || fds.at(0) < 0) {
+  // TODO(mdempsky): ScopedVector doesn't have 'at()', only 'operator[]'.
+  if (msg_len < 0 || fds.size() != 1 || fds[0]->get() < 0) {
     PLOG(ERROR) << "Error reading message from the client";
-    // The client could try to DoS us by sending more file descriptors, so
-    // make sure we close them.
-    for (std::vector<int>::iterator it = fds.begin(); it != fds.end(); ++it) {
-      PCHECK(0 == IGNORE_EINTR(close(*it)));
-    }
     return false;
   }
 
-  base::ScopedFD temporary_ipc(fds.at(0));
+  base::ScopedFD temporary_ipc(fds[0]->Pass());
 
   Pickle pickle(buf, msg_len);
   PickleIterator iter(pickle);

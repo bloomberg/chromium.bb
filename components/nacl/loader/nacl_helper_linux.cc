@@ -21,8 +21,10 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -62,7 +64,7 @@ void ReplaceFDWithDummy(int file_descriptor) {
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
-void BecomeNaClLoader(const std::vector<int>& child_fds,
+void BecomeNaClLoader(base::ScopedFD browser_fd,
                       const NaClLoaderSystemInfo& system_info,
                       bool uses_nonsfi_mode,
                       nacl::NaClSandbox* nacl_sandbox) {
@@ -94,9 +96,8 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
   nacl_sandbox->SealLayerOneSandbox();
   nacl_sandbox->CheckSandboxingStateWithPolicy();
 
-  base::GlobalDescriptors::GetInstance()->Set(
-      kPrimaryIPCChannel,
-      child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]);
+  base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
+                                              browser_fd.release());
 
   base::MessageLoopForIO main_message_loop;
   NaClListener listener;
@@ -108,22 +109,21 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
 }
 
 // Start the NaCl loader in a child created by the NaCl loader Zygote.
-void ChildNaClLoaderInit(const std::vector<int>& child_fds,
+void ChildNaClLoaderInit(ScopedVector<base::ScopedFD> child_fds,
                          const NaClLoaderSystemInfo& system_info,
                          bool uses_nonsfi_mode,
                          nacl::NaClSandbox* nacl_sandbox,
                          const std::string& channel_id) {
-  const int parent_fd = child_fds[content::ZygoteForkDelegate::kParentFDIndex];
-  const int dummy_fd = child_fds[content::ZygoteForkDelegate::kDummyFDIndex];
-
   bool validack = false;
   base::ProcessId real_pid;
   // Wait until the parent process has discovered our PID.  We
   // should not fork any child processes (which the seccomp
   // sandbox does) until then, because that can interfere with the
   // parent's discovery of our PID.
-  const ssize_t nread =
-      HANDLE_EINTR(read(parent_fd, &real_pid, sizeof(real_pid)));
+  const ssize_t nread = HANDLE_EINTR(
+      read(child_fds[content::ZygoteForkDelegate::kParentFDIndex]->get(),
+           &real_pid,
+           sizeof(real_pid)));
   if (static_cast<size_t>(nread) == sizeof(real_pid)) {
     // Make sure the parent didn't accidentally send us our real PID.
     // We don't want it to be discoverable anywhere in our address space
@@ -139,12 +139,13 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
     LOG(ERROR) << "read returned " << nread;
   }
 
-  if (IGNORE_EINTR(close(dummy_fd)) != 0)
-    LOG(ERROR) << "close(dummy_fd) failed";
-  if (IGNORE_EINTR(close(parent_fd)) != 0)
-    LOG(ERROR) << "close(parent_fd) failed";
+  base::ScopedFD browser_fd(
+      child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]->Pass());
+  child_fds.clear();
+
   if (validack) {
-    BecomeNaClLoader(child_fds, system_info, uses_nonsfi_mode, nacl_sandbox);
+    BecomeNaClLoader(
+        browser_fd.Pass(), system_info, uses_nonsfi_mode, nacl_sandbox);
   } else {
     LOG(ERROR) << "Failed to synch with zygote";
   }
@@ -154,7 +155,7 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
 // Handle a fork request from the Zygote.
 // Some of this code was lifted from
 // content/browser/zygote_main_linux.cc:ForkWithRealPid()
-bool HandleForkRequest(const std::vector<int>& child_fds,
+bool HandleForkRequest(ScopedVector<base::ScopedFD> child_fds,
                        const NaClLoaderSystemInfo& system_info,
                        nacl::NaClSandbox* nacl_sandbox,
                        PickleIterator* input_iter,
@@ -184,18 +185,18 @@ bool HandleForkRequest(const std::vector<int>& child_fds,
   }
 
   if (child_pid == 0) {
-    ChildNaClLoaderInit(
-        child_fds, system_info, uses_nonsfi_mode, nacl_sandbox, channel_id);
+    ChildNaClLoaderInit(child_fds.Pass(),
+                        system_info,
+                        uses_nonsfi_mode,
+                        nacl_sandbox,
+                        channel_id);
     NOTREACHED();
   }
 
   // I am the parent.
   // First, close the dummy_fd so the sandbox won't find me when
   // looking for the child's pid in /proc. Also close other fds.
-  for (size_t i = 0; i < child_fds.size(); i++) {
-    if (IGNORE_EINTR(close(child_fds[i])) != 0)
-      LOG(ERROR) << "close(child_fds[i]) failed";
-  }
+  child_fds.clear();
   VLOG(1) << "nacl_helper: child_pid is " << child_pid;
 
   // Now send child_pid (eventually -1 if fork failed) to the Chrome Zygote.
@@ -238,7 +239,7 @@ bool HandleGetTerminationStatusRequest(PickleIterator* input_iter,
 // Reply to the command on |reply_fds|.
 bool HonorRequestAndReply(int reply_fd,
                           int command_type,
-                          const std::vector<int>& attached_fds,
+                          ScopedVector<base::ScopedFD> attached_fds,
                           const NaClLoaderSystemInfo& system_info,
                           nacl::NaClSandbox* nacl_sandbox,
                           PickleIterator* input_iter) {
@@ -247,8 +248,11 @@ bool HonorRequestAndReply(int reply_fd,
   // Commands must write anything to send back to |write_pickle|.
   switch (command_type) {
     case nacl::kNaClForkRequest:
-      have_to_reply = HandleForkRequest(
-          attached_fds, system_info, nacl_sandbox, input_iter, &write_pickle);
+      have_to_reply = HandleForkRequest(attached_fds.Pass(),
+                                        system_info,
+                                        nacl_sandbox,
+                                        input_iter,
+                                        &write_pickle);
       break;
     case nacl::kNaClGetTerminationStatusRequest:
       have_to_reply =
@@ -274,7 +278,7 @@ bool HonorRequestAndReply(int reply_fd,
 bool HandleZygoteRequest(int zygote_ipc_fd,
                          const NaClLoaderSystemInfo& system_info,
                          nacl::NaClSandbox* nacl_sandbox) {
-  std::vector<int> fds;
+  ScopedVector<base::ScopedFD> fds;
   char buf[kNaClMaxIPCMessageLength];
   const ssize_t msglen = UnixDomainSocket::RecvMsg(zygote_ipc_fd,
       &buf, sizeof(buf), &fds);
@@ -301,8 +305,12 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
     LOG(ERROR) << "Unable to read command from Zygote";
     return false;
   }
-  return HonorRequestAndReply(
-      zygote_ipc_fd, command_type, fds, system_info, nacl_sandbox, &read_iter);
+  return HonorRequestAndReply(zygote_ipc_fd,
+                              command_type,
+                              fds.Pass(),
+                              system_info,
+                              nacl_sandbox,
+                              &read_iter);
 }
 
 static const char kNaClHelperReservedAtZero[] = "reserved_at_zero";
