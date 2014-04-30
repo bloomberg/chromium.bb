@@ -33,7 +33,7 @@ class APIListDataSource(DataSource):
 
   def _GenerateAPIDict(self):
     def get_channel_info(api_name):
-      return self._availability_finder.GetApiAvailability(api_name)
+      return self._availability_finder.GetApiAvailability(api_name).channel_info
 
     def get_api_platform(api_name):
       feature = self._features_bundle.GetAPIFeatures().Get()[api_name]

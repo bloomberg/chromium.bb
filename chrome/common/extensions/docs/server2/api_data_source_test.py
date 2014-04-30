@@ -11,6 +11,7 @@ import unittest
 from api_data_source import (_JSCModel,
                              _FormatValue,
                              _GetEventByNameFromEvents)
+from availability_finder import AvailabilityInfo
 from branch_utility import ChannelInfo
 from extensions_paths import CHROME_EXTENSIONS
 from fake_host_file_system_provider import FakeHostFileSystemProvider
@@ -39,7 +40,13 @@ def _GetType(dict_, name):
 class _FakeAvailabilityFinder(object):
 
   def GetApiAvailability(self, version):
-    return ChannelInfo('stable', '396', 5)
+    return AvailabilityInfo(ChannelInfo('stable', '396', 5))
+
+
+class _FakeScheduledAvailabilityFinder(object):
+
+  def GetApiAvailability(self, version):
+    return AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28)
 
 
 class _FakeTemplateCache(object):
@@ -109,12 +116,18 @@ class APIDataSourceTest(unittest.TestCase):
 
   def testGetApiAvailability(self):
     api_availabilities = {
-      'bluetooth': ChannelInfo('dev', CANNED_BRANCHES[28], 28),
-      'contextMenus': ChannelInfo('trunk', CANNED_BRANCHES['trunk'], 'trunk'),
-      'jsonStableAPI': ChannelInfo('stable', CANNED_BRANCHES[20], 20),
-      'idle': ChannelInfo('stable', CANNED_BRANCHES[5], 5),
-      'input.ime': ChannelInfo('stable', CANNED_BRANCHES[18], 18),
-      'tabs': ChannelInfo('stable', CANNED_BRANCHES[18], 18)
+      'bluetooth': AvailabilityInfo(
+          ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
+      'contextMenus': AvailabilityInfo(
+          ChannelInfo('trunk', CANNED_BRANCHES['trunk'], 'trunk')),
+      'jsonStableAPI': AvailabilityInfo(
+          ChannelInfo('stable', CANNED_BRANCHES[20], 20)),
+      'idle': AvailabilityInfo(
+          ChannelInfo('stable', CANNED_BRANCHES[5], 5)),
+      'input.ime': AvailabilityInfo(
+          ChannelInfo('stable', CANNED_BRANCHES[18], 18)),
+      'tabs': AvailabilityInfo(
+          ChannelInfo('stable', CANNED_BRANCHES[18], 18))
     }
     for api_name, availability in api_availabilities.iteritems():
       model = _JSCModel(self._avail_api_models.GetModel(api_name).Get(),
@@ -142,7 +155,8 @@ class APIDataSourceTest(unittest.TestCase):
         'content': [
           { 'partial': 'handlebar chrome/common/extensions/docs/' +
                        'templates/private/intro_tables/stable_message.html',
-            'version': 5
+            'version': 5,
+            'scheduled': None
           }
         ]
       },
@@ -169,6 +183,25 @@ class APIDataSourceTest(unittest.TestCase):
         ]
       }
     ]
+    self.assertEquals(model._GetIntroTableList(), expected_list)
+
+    # Tests the same data with a scheduled availability.
+    model = _JSCModel(self._api_models.GetModel('tester').Get(),
+                      _FakeScheduledAvailabilityFinder(),
+                      self._json_cache,
+                      _FakeTemplateCache(),
+                      self._features_bundle,
+                      None)
+    expected_list[1] = {
+      'title': 'Availability',
+      'content': [
+        { 'partial': 'handlebar chrome/common/extensions/docs/' +
+                     'templates/private/intro_tables/beta_message.html',
+          'version': 27,
+          'scheduled': 28
+        }
+      ]
+    }
     self.assertEquals(model._GetIntroTableList(), expected_list)
 
   def testGetEventByNameFromEvents(self):

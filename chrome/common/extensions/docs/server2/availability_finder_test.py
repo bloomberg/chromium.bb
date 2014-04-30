@@ -7,7 +7,7 @@ import sys
 import unittest
 
 import api_schema_graph
-from availability_finder import AvailabilityFinder
+from availability_finder import AvailabilityFinder, AvailabilityInfo
 from branch_utility import BranchUtility, ChannelInfo
 from compiled_file_system import CompiledFileSystem
 from fake_host_file_system_provider import FakeHostFileSystemProvider
@@ -97,120 +97,122 @@ class AvailabilityFinderTest(unittest.TestCase):
 
     # Testing APIs with predetermined availability.
     self.assertEqual(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('jsonTrunkAPI'))
     self.assertEqual(
-        ChannelInfo('dev', CANNED_BRANCHES[28], 28),
+        AvailabilityInfo(ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
         self._avail_finder.GetApiAvailability('jsonDevAPI'))
     self.assertEqual(
-        ChannelInfo('beta', CANNED_BRANCHES[27], 27),
+        AvailabilityInfo(ChannelInfo('beta', CANNED_BRANCHES[27], 27)),
         self._avail_finder.GetApiAvailability('jsonBetaAPI'))
     self.assertEqual(
-        ChannelInfo('stable', CANNED_BRANCHES[20], 20),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[20], 20)),
         self._avail_finder.GetApiAvailability('jsonStableAPI'))
 
     # Testing a whitelisted API.
     self.assertEquals(
-        ChannelInfo('beta', CANNED_BRANCHES[27], 27),
+        AvailabilityInfo(ChannelInfo('beta', CANNED_BRANCHES[27], 27)),
         self._avail_finder.GetApiAvailability('declarativeWebRequest'))
 
     # Testing APIs found only by checking file system existence.
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[23], 23),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[23], 23)),
         self._avail_finder.GetApiAvailability('windows'))
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[18], 18),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[18], 18)),
         self._avail_finder.GetApiAvailability('tabs'))
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[18], 18),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[18], 18)),
         self._avail_finder.GetApiAvailability('input.ime'))
 
     # Testing API channel existence for _api_features.json.
     # Listed as 'dev' on |beta|, 'dev' on |dev|.
     self.assertEquals(
-        ChannelInfo('dev', CANNED_BRANCHES[28], 28),
+        AvailabilityInfo(ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
         self._avail_finder.GetApiAvailability('systemInfo.stuff'))
     # Listed as 'stable' on |beta|.
     self.assertEquals(
+        AvailabilityInfo(
         ChannelInfo('beta', CANNED_BRANCHES[27], 27),
+        scheduled=28),
         self._avail_finder.GetApiAvailability('systemInfo.cpu'))
 
     # Testing API channel existence for _manifest_features.json.
     # Listed as 'trunk' on all channels.
     self.assertEquals(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('sync'))
     # No records of API until |trunk|.
     self.assertEquals(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('history'))
     # Listed as 'dev' on |dev|.
     self.assertEquals(
-        ChannelInfo('dev', CANNED_BRANCHES[28], 28),
+        AvailabilityInfo(ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
         self._avail_finder.GetApiAvailability('storage'))
     # Stable in _manifest_features and into pre-18 versions.
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[8], 8),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[8], 8)),
         self._avail_finder.GetApiAvailability('pageAction'))
 
     # Testing API channel existence for _permission_features.json.
     # Listed as 'beta' on |trunk|.
     self.assertEquals(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('falseBetaAPI'))
     # Listed as 'trunk' on |trunk|.
     self.assertEquals(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('trunkAPI'))
     # Listed as 'trunk' on all development channels.
     self.assertEquals(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('declarativeContent'))
     # Listed as 'dev' on all development channels.
     self.assertEquals(
-        ChannelInfo('dev', CANNED_BRANCHES[28], 28),
+        AvailabilityInfo(ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
         self._avail_finder.GetApiAvailability('bluetooth'))
     # Listed as 'dev' on |dev|.
     self.assertEquals(
-        ChannelInfo('dev', CANNED_BRANCHES[28], 28),
+        AvailabilityInfo(ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
         self._avail_finder.GetApiAvailability('cookies'))
     # Treated as 'stable' APIs.
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[24], 24),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[24], 24)),
         self._avail_finder.GetApiAvailability('alarms'))
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[21], 21),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[21], 21)),
         self._avail_finder.GetApiAvailability('bookmarks'))
 
     # Testing older API existence using extension_api.json.
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[6], 6),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[6], 6)),
         self._avail_finder.GetApiAvailability('menus'))
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[5], 5),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[5], 5)),
         self._avail_finder.GetApiAvailability('idle'))
 
     # Switches between _features.json files across branches.
     # Listed as 'trunk' on all channels, in _api, _permission, or _manifest.
     self.assertEquals(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('contextMenus'))
     # Moves between _permission and _manifest as file system is traversed.
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[23], 23),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[23], 23)),
         self._avail_finder.GetApiAvailability('systemInfo.display'))
     self.assertEquals(
-        ChannelInfo('stable', CANNED_BRANCHES[17], 17),
+        AvailabilityInfo(ChannelInfo('stable', CANNED_BRANCHES[17], 17)),
         self._avail_finder.GetApiAvailability('webRequest'))
 
     # Mid-upgrade cases:
     # Listed as 'dev' on |beta| and 'beta' on |dev|.
     self.assertEquals(
-        ChannelInfo('dev', CANNED_BRANCHES[28], 28),
+        AvailabilityInfo(ChannelInfo('dev', CANNED_BRANCHES[28], 28)),
         self._avail_finder.GetApiAvailability('notifications'))
     # Listed as 'beta' on |stable|, 'dev' on |beta| ... until |stable| on trunk.
     self.assertEquals(
-        ChannelInfo('trunk', 'trunk', 'trunk'),
+        AvailabilityInfo(ChannelInfo('trunk', 'trunk', 'trunk')),
         self._avail_finder.GetApiAvailability('events'))
 
   def testGetApiNodeAvailability(self):

@@ -119,7 +119,7 @@ class _JSCModel(object):
 
   def _GetChannelWarning(self):
     if not self._IsExperimental():
-      return { self._GetApiAvailability().channel: True }
+      return { self._GetApiAvailability().channel_info.channel: True }
     return None
 
   def _IsExperimental(self):
@@ -351,10 +351,12 @@ class _JSCModel(object):
     if self._IsExperimental():
       status = 'experimental'
       version = None
+      scheduled = None
     else:
       availability = self._GetApiAvailability()
-      status = availability.channel
-      version = availability.version
+      status = availability.channel_info.channel
+      version = availability.channel_info.version
+      scheduled = availability.scheduled
     return {
       'title': 'Availability',
       'content': [{
@@ -362,7 +364,8 @@ class _JSCModel(object):
           posixpath.join(PRIVATE_TEMPLATES,
                          'intro_tables',
                          '%s_message.html' % status)).Get(),
-        'version': version
+        'version': version,
+        'scheduled': scheduled
       }]
     }
 

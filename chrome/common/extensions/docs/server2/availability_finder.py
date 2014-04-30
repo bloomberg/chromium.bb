@@ -6,7 +6,7 @@ from collections import Mapping
 import posixpath
 
 from api_schema_graph import APISchemaGraph
-from branch_utility import BranchUtility
+from branch_utility import BranchUtility, ChannelInfo
 from extensions_paths import API_PATHS, JSON_TEMPLATES
 from features_bundle import FeaturesBundle
 import features_utility
@@ -34,6 +34,30 @@ def _GetChannelFromFeatures(api_name, features):
   '''
   feature = features.Get().get(api_name)
   return feature.get('channel') if feature else None
+
+
+class AvailabilityInfo(object):
+  '''Represents availability data for an API. |scheduled| is a version number
+  specifying when dev and beta APIs will become stable, or None if that data
+  is unknown.
+  '''
+  def __init__(self, channel_info, scheduled=None):
+    assert isinstance(channel_info, ChannelInfo)
+    assert isinstance(scheduled, int) or scheduled is None
+    self.channel_info = channel_info
+    self.scheduled = scheduled
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+  def __repr__(self):
+    return '%s%s' % (type(self).__name__, repr(self.__dict__))
+
+  def __str__(self):
+    return repr(self)
 
 
 class AvailabilityFinder(object):
@@ -67,9 +91,10 @@ class AvailabilityFinder(object):
     if api_info is None:
       return None
     if api_info['channel'] == 'stable':
-      return self._branch_utility.GetStableChannelInfo(api_info['version'])
-    else:
-      return self._branch_utility.GetChannelInfo(api_info['channel'])
+      return AvailabilityInfo(
+          self._branch_utility.GetStableChannelInfo(api_info['version']))
+    return AvailabilityInfo(
+        self._branch_utility.GetChannelInfo(api_info['channel']))
 
   def _GetApiSchemaFilename(self, api_name, file_system, version):
     '''Gets the name of the file which may contain the schema for |api_name| in
@@ -208,6 +233,21 @@ class AvailabilityFinder(object):
                                           file_system,
                                           channel_info)
 
+  def _FindScheduled(self, api_name):
+    '''Determines the earliest version of Chrome where the API is stable.
+    Unlike the code in GetApiAvailability, this checks if the API is stable
+    even when Chrome is in dev or beta, which shows that the API is scheduled
+    to be stable in that verison of Chrome.
+    '''
+    def check_scheduled(file_system, channel_info):
+      return self._CheckStableAvailability(
+          api_name, file_system, channel_info.version)
+
+    stable_channel = self._file_system_iterator.Descending(
+        self._branch_utility.GetChannelInfo('dev'), check_scheduled)
+
+    return stable_channel.version if stable_channel else None
+
   def GetApiAvailability(self, api_name):
     '''Performs a search for an API's top-level availability by using a
     HostFileSystemIterator instance to traverse multiple version of the
@@ -226,12 +266,21 @@ class AvailabilityFinder(object):
     def check_api_availability(file_system, channel_info):
       return self._CheckApiAvailability(api_name, file_system, channel_info)
 
-    availability = self._file_system_iterator.Descending(
+    channel_info = self._file_system_iterator.Descending(
         self._branch_utility.GetChannelInfo('dev'),
         check_api_availability)
-    if availability is None:
+    if channel_info is None:
       # The API wasn't available on 'dev', so it must be a 'trunk'-only API.
-      availability = self._branch_utility.GetChannelInfo('trunk')
+      channel_info = self._branch_utility.GetChannelInfo('trunk')
+
+    # If the API is not stable, check when it will be scheduled to be stable.
+    if channel_info.channel == 'stable':
+      scheduled = None
+    else:
+      scheduled = self._FindScheduled(api_name)
+
+    availability = AvailabilityInfo(channel_info, scheduled=scheduled)
+
     self._top_level_object_store.Set(api_name, availability)
     return availability
 
@@ -284,8 +333,9 @@ class AvailabilityFinder(object):
       # version and trunk.
       return version_stat != trunk_stat
 
-    self._file_system_iterator.Ascending(self.GetApiAvailability(api_name),
-                                         update_availability_graph)
+    self._file_system_iterator.Ascending(
+        self.GetApiAvailability(api_name).channel_info,
+        update_availability_graph)
 
     self._node_level_object_store.Set(api_name, availability_graph)
     return availability_graph

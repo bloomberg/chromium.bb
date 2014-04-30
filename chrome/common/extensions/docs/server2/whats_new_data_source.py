@@ -36,7 +36,8 @@ class WhatsNewDataSource(DataSource):
     version = None
     category = self._api_categorizer.GetCategory(platform, api_name)
     if category == 'chrome':
-      channel_info = self._availability_finder.GetApiAvailability(api_name)
+      channel_info = self._availability_finder.GetApiAvailability(
+          api_name).channel_info
       channel = channel_info.channel
       if channel == 'stable':
         version = channel_info.version
