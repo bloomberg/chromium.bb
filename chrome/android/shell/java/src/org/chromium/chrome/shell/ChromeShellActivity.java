@@ -135,18 +135,20 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.initialize(mWindow, new ActivityContentVideoViewClient(this) {
             @Override
-            public void onShowCustomView(View view) {
-                super.onShowCustomView(view);
+            public boolean onShowCustomView(View view) {
+                if (mTabManager == null) return false;
+                boolean success = super.onShowCustomView(view);
                 if (!CommandLine.getInstance().hasSwitch(
                         ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
                     mTabManager.setOverlayVideoMode(true);
                 }
+                return success;
             }
 
             @Override
             public void onDestroyContentVideoView() {
                 super.onDestroyContentVideoView();
-                if (!CommandLine.getInstance().hasSwitch(
+                if (mTabManager != null && !CommandLine.getInstance().hasSwitch(
                         ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
                     mTabManager.setOverlayVideoMode(false);
                 }

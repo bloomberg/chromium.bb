@@ -153,7 +153,10 @@ public class ContentVideoView extends FrameLayout
         mVideoSurfaceView = new VideoSurfaceView(context);
         showContentVideoView();
         setVisibility(View.VISIBLE);
-        mClient.onShowCustomView(this);
+    }
+
+    protected ContentVideoViewClient getContentVideoViewClient() {
+        return mClient;
     }
 
     private void initResources(Context context) {
@@ -378,11 +381,17 @@ public class ContentVideoView extends FrameLayout
             Log.w(TAG, "Wrong type of context, can't create fullscreen video");
             return null;
         }
+        ContentVideoView videoView = null;
         if (legacy) {
-            return new ContentVideoViewLegacy(context, nativeContentVideoView, client);
+            videoView = new ContentVideoViewLegacy(context, nativeContentVideoView, client);
         } else {
-            return new ContentVideoView(context, nativeContentVideoView, client);
+            videoView = new ContentVideoView(context, nativeContentVideoView, client);
         }
+
+        if (videoView.getContentVideoViewClient().onShowCustomView(videoView)) {
+            return videoView;
+        }
+        return null;
     }
 
     public void removeSurfaceView() {

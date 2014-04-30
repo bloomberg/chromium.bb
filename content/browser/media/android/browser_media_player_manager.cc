@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/browser_media_player_manager.h"
 
+#include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
@@ -467,7 +468,6 @@ void BrowserMediaPlayerManager::OnRequestExternalSurface(
 
 void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
-
 #if defined(VIDEO_HOLE)
   if (external_video_surface_container_)
     external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
@@ -475,16 +475,26 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   if (video_view_.get()) {
     fullscreen_player_id_ = player_id;
     video_view_->OpenVideo();
+    return;
   } else if (!ContentVideoView::GetInstance()) {
     // In Android WebView, two ContentViewCores could both try to enter
     // fullscreen video, we just ignore the second one.
-    fullscreen_player_id_ = player_id;
     video_view_.reset(new ContentVideoView(this));
-  } else {
-    // Force the second video to exit fullscreen.
-    Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(), player_id));
-    Send(new MediaPlayerMsg_DidExitFullscreen(routing_id(), player_id));
+    base::android::ScopedJavaLocalRef<jobject> j_content_video_view =
+        video_view_->GetJavaObject(base::android::AttachCurrentThread());
+    if (!j_content_video_view.is_null()) {
+      fullscreen_player_id_ = player_id;
+      return;
+    }
   }
+
+  // Force the second video to exit fullscreen.
+  // TODO(qinmin): There is no need to send DidEnterFullscreen message.
+  // However, if we don't send the message, page layers will not be
+  // correctly restored. http:crbug.com/367346.
+  Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(), player_id));
+  Send(new MediaPlayerMsg_DidExitFullscreen(routing_id(), player_id));
+  video_view_.reset();
 }
 
 void BrowserMediaPlayerManager::OnExitFullscreen(int player_id) {

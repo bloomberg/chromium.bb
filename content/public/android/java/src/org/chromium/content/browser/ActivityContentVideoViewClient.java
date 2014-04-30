@@ -23,7 +23,7 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
     }
 
     @Override
-    public void onShowCustomView(View view) {
+    public boolean onShowCustomView(View view) {
         mActivity.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -34,6 +34,7 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         Gravity.CENTER));
         mView = view;
+        return true;
     }
 
     @Override

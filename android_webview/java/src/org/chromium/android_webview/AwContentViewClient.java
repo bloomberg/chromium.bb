@@ -21,7 +21,7 @@ public class AwContentViewClient extends ContentViewClient {
 
     private class AwContentVideoViewClient implements ContentVideoViewClient {
         @Override
-        public void onShowCustomView(View view) {
+        public boolean onShowCustomView(View view) {
             WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
                 @Override
                 public void onCustomViewHidden() {
@@ -31,6 +31,7 @@ public class AwContentViewClient extends ContentViewClient {
                 }
             };
             mAwContentsClient.onShowCustomView(view, cb);
+            return true;
         }
 
         @Override
