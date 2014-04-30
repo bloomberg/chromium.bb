@@ -110,7 +110,7 @@ class PrefModelAssociator
                                 SyncedPrefObserver* observer);
 
  protected:
-  friend class ProfileSyncServicePreferenceTest;
+  friend class PrefsSyncableServiceTest;
 
   typedef std::map<std::string, syncer::SyncData> SyncDataMap;
 
