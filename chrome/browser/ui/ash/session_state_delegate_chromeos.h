@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
@@ -41,11 +41,17 @@ class SessionStateDelegateChromeos
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsUserSessionBlocked() const OVERRIDE;
   virtual SessionState GetSessionState() const OVERRIDE;
-  virtual const ash::UserInfo* GetUserInfo(
+  virtual const base::string16 GetUserDisplayName(
       ash::MultiProfileIndex index) const OVERRIDE;
-  virtual const ash::UserInfo* GetUserInfo(
+  virtual const base::string16 GetUserGivenName(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const std::string GetUserEmail(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const std::string GetUserID(
+      ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const gfx::ImageSkia& GetUserImage(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ShouldShowAvatar(aura::Window* window) const OVERRIDE;
+  virtual bool ShouldShowAvatar(aura::Window* window) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
   virtual void CycleActiveUser(CycleUser cycle_user) OVERRIDE;
   virtual void AddSessionStateObserver(

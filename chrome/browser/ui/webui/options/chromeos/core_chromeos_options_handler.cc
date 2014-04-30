@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/prefs/pref_change_registrar.h"

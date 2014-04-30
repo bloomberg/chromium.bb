@@ -5,7 +5,7 @@
 #include "ash/wm/stacking_controller.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"

@@ -6,7 +6,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/user_info.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -239,12 +238,10 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
 
   // Switch to a new user - which has a capitalized name.
   ClickUserItem(&generator, 1);
-  const UserInfo* active_user = delegate()->GetActiveUserInfo();
-  const UserInfo* second_user = delegate()->GetUserInfo(1);
-  EXPECT_EQ(active_user->GetUserID(), second_user->GetUserID());
+  EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserID(1));
   // Since the name is capitalized, the email should be different then the
   // user_id.
-  EXPECT_NE(active_user->GetUserID(), second_user->GetEmail());
+  EXPECT_NE(delegate()->get_activated_user(), delegate()->GetUserEmail(1));
   tray()->CloseSystemBubble();
 }
 

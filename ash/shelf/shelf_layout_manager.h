@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/session/session_state_observer.h"
+#include "ash/session_state_observer.h"
 #include "ash/shelf/background_animator.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"

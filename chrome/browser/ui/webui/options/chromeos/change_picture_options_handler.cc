@@ -269,13 +269,13 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
   switch (previous_image_index_) {
     case User::kExternalImageIndex: {
       // User has image from camera/file, record it and add to the image list.
-      previous_image_ = user->GetImage();
+      previous_image_ = user->image();
       SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()));
       break;
     }
     case User::kProfileImageIndex: {
       // User has his/her Profile image as the current image.
-      SendProfileImage(user->GetImage(), true);
+      SendProfileImage(user->image(), true);
       break;
     }
     default: {

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/volume_control_delegate.h"
 #include "base/message_loop/message_loop.h"

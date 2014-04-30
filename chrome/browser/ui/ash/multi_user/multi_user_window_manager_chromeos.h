@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "ash/session/session_state_observer.h"
+#include "ash/session_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"

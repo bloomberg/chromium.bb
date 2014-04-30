@@ -12,7 +12,7 @@
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/frame_util.h"
 #include "ash/frame/header_painter.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/immersive_fullscreen_controller.h"

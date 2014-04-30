@@ -7,8 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/session/session_state_delegate.h"
-#include "ash/session/user_info.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -90,10 +89,8 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   // Retrieve the user's display name and wrap it with markers.
   // Note that since this is a public account it always has to be the primary
   // user.
-  base::string16 display_name = Shell::GetInstance()
-                                    ->session_state_delegate()
-                                    ->GetUserInfo(0)
-                                    ->GetDisplayName();
+  base::string16 display_name =
+      Shell::GetInstance()->session_state_delegate()->GetUserDisplayName(0);
   base::RemoveChars(display_name, kDisplayNameMark, &display_name);
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
@@ -308,10 +305,10 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
     base::string16 user_name_string =
         login_status == user::LOGGED_IN_GUEST
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL)
-            : delegate->GetUserInfo(multiprofile_index)->GetDisplayName();
+            : delegate->GetUserDisplayName(multiprofile_index);
     if (user_name_string.empty() && IsMultiAccountSupportedAndUserActive())
-      user_name_string = base::ASCIIToUTF16(
-          delegate->GetUserInfo(multiprofile_index)->GetEmail());
+      user_name_string =
+          base::ASCIIToUTF16(delegate->GetUserEmail(multiprofile_index));
     if (!user_name_string.empty()) {
       username = new views::Label(user_name_string);
       username->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -325,8 +322,7 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
         login_status == user::LOGGED_IN_LOCALLY_MANAGED
             ? l10n_util::GetStringUTF16(
                   IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL)
-            : base::UTF8ToUTF16(
-                  delegate->GetUserInfo(multiprofile_index)->GetEmail());
+            : base::UTF8ToUTF16(delegate->GetUserEmail(multiprofile_index));
     if (!user_email_string.empty()) {
       additional = new views::Label(user_email_string);
       additional->SetFontList(
@@ -376,7 +372,7 @@ views::View* UserCardView::CreateIcon(user::LoginStatus login_status,
         Shell::GetInstance()->session_state_delegate();
     content::BrowserContext* context =
         delegate->GetBrowserContextByIndex(multiprofile_index);
-    icon->SetImage(delegate->GetUserInfo(context)->GetImage(),
+    icon->SetImage(delegate->GetUserImage(context),
                    gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
   }
   return icon;

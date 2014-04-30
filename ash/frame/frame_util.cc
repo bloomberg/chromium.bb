@@ -4,8 +4,7 @@
 
 #include "ash/frame/frame_util.h"
 
-#include "ash/session/session_state_delegate.h"
-#include "ash/session/user_info.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -21,10 +20,8 @@ gfx::Image GetAvatarImageForContext(content::BrowserContext* context) {
   static const gfx::ImageSkia* holder_mask =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_AVATAR_HOLDER_MASK);
-  gfx::ImageSkia user_image = Shell::GetInstance()
-                                  ->session_state_delegate()
-                                  ->GetUserInfo(context)
-                                  ->GetImage();
+  gfx::ImageSkia user_image =
+      Shell::GetInstance()->session_state_delegate()->GetUserImage(context);
   gfx::ImageSkia resized = gfx::ImageSkiaOperations::CreateResizedImage(
       user_image, skia::ImageOperations::RESIZE_BEST, holder->size());
   gfx::ImageSkia masked =

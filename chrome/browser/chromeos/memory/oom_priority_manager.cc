@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/multi_profile_uma.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/multi_profile_uma.h"
-#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -44,10 +43,8 @@ AccountsDetailedView::AccountsDetailedView(TrayUser* owner,
       account_list_(NULL),
       add_account_button_(NULL),
       add_user_button_(NULL) {
-  std::string user_id = Shell::GetInstance()
-                            ->session_state_delegate()
-                            ->GetUserInfo(0)
-                            ->GetUserID();
+  std::string user_id =
+      Shell::GetInstance()->session_state_delegate()->GetUserID(0);
   delegate_ =
       Shell::GetInstance()->system_tray_delegate()->GetUserAccountsDelegate(
           user_id);
@@ -120,12 +117,11 @@ void AccountsDetailedView::AddAddAccountButton() {
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
   HoverHighlightView* add_account_button = new HoverHighlightView(this);
-  const UserInfo* user_info = session_state_delegate->GetUserInfo(0);
-  base::string16 user_name = user_info->GetGivenName();
+  base::string16 user_name = session_state_delegate->GetUserGivenName(0);
   if (user_name.empty())
-    user_name = user_info->GetDisplayName();
+    user_name = session_state_delegate->GetUserDisplayName(0);
   if (user_name.empty())
-    user_name = base::ASCIIToUTF16(user_info->GetEmail());
+    user_name = base::ASCIIToUTF16(session_state_delegate->GetUserEmail(0));
   add_account_button->AddLabel(
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ADD_ACCOUNT_LABEL,
                                  user_name),

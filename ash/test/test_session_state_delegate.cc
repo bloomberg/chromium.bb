@@ -7,16 +7,11 @@
 #include <algorithm>
 #include <string>
 
-#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/system/user/login_status.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace ash {
-namespace test {
 
 namespace {
 
@@ -29,40 +24,8 @@ std::string GetUserIDFromEmail(const std::string& email) {
 
 }  // namespace
 
-class MockUserInfo : public UserInfo {
- public:
-  explicit MockUserInfo(const std::string& id) : email_(id) {}
-  virtual ~MockUserInfo() {}
-
-  void SetUserImage(const gfx::ImageSkia& user_image) {
-    user_image_ = user_image;
-  }
-
-  virtual base::string16 GetDisplayName() const OVERRIDE {
-    return base::UTF8ToUTF16("Über tray Über tray Über tray Über tray");
-  }
-
-  virtual base::string16 GetGivenName() const OVERRIDE {
-    return base::UTF8ToUTF16("Über Über Über Über");
-  }
-
-  virtual std::string GetEmail() const OVERRIDE { return email_; }
-
-  virtual std::string GetUserID() const OVERRIDE {
-    return GetUserIDFromEmail(GetEmail());
-  }
-
-  virtual const gfx::ImageSkia& GetImage() const OVERRIDE {
-    return user_image_;
-  }
-
-  // A test user image.
-  gfx::ImageSkia user_image_;
-
-  std::string email_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockUserInfo);
-};
+namespace ash {
+namespace test {
 
 TestSessionStateDelegate::TestSessionStateDelegate()
     : has_active_user_(false),
@@ -71,26 +34,10 @@ TestSessionStateDelegate::TestSessionStateDelegate()
       should_lock_screen_before_suspending_(false),
       screen_locked_(false),
       user_adding_screen_running_(false),
-      logged_in_users_(1),
-      active_user_index_(0) {
-  user_list_.push_back(
-      new MockUserInfo("First@tray"));  // This is intended to be capitalized.
-  user_list_.push_back(
-      new MockUserInfo("Second@tray"));  // This is intended to be capitalized.
-  user_list_.push_back(new MockUserInfo("third@tray"));
-  user_list_.push_back(new MockUserInfo("someone@tray"));
+      logged_in_users_(1) {
 }
 
 TestSessionStateDelegate::~TestSessionStateDelegate() {
-  STLDeleteElements(&user_list_);
-}
-
-void TestSessionStateDelegate::AddUser(const std::string user_id) {
-  user_list_.push_back(new MockUserInfo(user_id));
-}
-
-const UserInfo* TestSessionStateDelegate::GetActiveUserInfo() const {
-  return user_list_[active_user_index_];
 }
 
 content::BrowserContext*
@@ -189,41 +136,51 @@ void TestSessionStateDelegate::SetUserAddingScreenRunning(
 
 void TestSessionStateDelegate::SetUserImage(
     const gfx::ImageSkia& user_image) {
-  user_list_[active_user_index_]->SetUserImage(user_image);
+  user_image_ = user_image;
 }
 
-const UserInfo* TestSessionStateDelegate::GetUserInfo(
+const base::string16 TestSessionStateDelegate::GetUserDisplayName(
     MultiProfileIndex index) const {
-  int max = static_cast<int>(user_list_.size());
-  return user_list_[index < max ? index : max - 1];
+  return base::UTF8ToUTF16("Über tray Über tray Über tray Über tray");
 }
 
-const UserInfo* TestSessionStateDelegate::GetUserInfo(
+const base::string16 TestSessionStateDelegate::GetUserGivenName(
+    MultiProfileIndex index) const {
+  return base::UTF8ToUTF16("Über Über Über Über");
+}
+
+const std::string TestSessionStateDelegate::GetUserEmail(
+    MultiProfileIndex index) const {
+  switch (index) {
+    case 0: return "First@tray";  // This is intended to be capitalized.
+    case 1: return "Second@tray";  // This is intended to be capitalized.
+    case 2: return "third@tray";
+    default: return "someone@tray";
+  }
+}
+
+const std::string TestSessionStateDelegate::GetUserID(
+    MultiProfileIndex index) const {
+  return GetUserIDFromEmail(GetUserEmail(index));
+}
+
+const gfx::ImageSkia& TestSessionStateDelegate::GetUserImage(
     content::BrowserContext* context) const {
-  return user_list_[active_user_index_];
+  return user_image_;
 }
 
-bool TestSessionStateDelegate::ShouldShowAvatar(aura::Window* window) const {
-  return !GetActiveUserInfo()->GetImage().isNull();
+bool TestSessionStateDelegate::ShouldShowAvatar(aura::Window* window) {
+  return !user_image_.isNull();
 }
 
 void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
   // Make sure this is a user id and not an email address.
   EXPECT_EQ(user_id, GetUserIDFromEmail(user_id));
-  active_user_index_ = 0;
-  for (std::vector<MockUserInfo*>::iterator iter = user_list_.begin();
-       iter != user_list_.end();
-       ++iter) {
-    if ((*iter)->GetUserID() == user_id) {
-      active_user_index_ = iter - user_list_.begin();
-      return;
-    }
-  }
-  NOTREACHED() << "Unknown user:" << user_id;
+  activated_user_ = user_id;
 }
 
 void TestSessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {
-  SwitchActiveUser("someone@tray");
+  activated_user_ = "someone@tray";
 }
 
 void TestSessionStateDelegate::AddSessionStateObserver(

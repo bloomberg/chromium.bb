@@ -6,7 +6,7 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/mru_window_tracker.h"

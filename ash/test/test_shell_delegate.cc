@@ -10,7 +10,7 @@
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell/keyboard_controller_proxy_stub.h"
 #include "ash/shell_window_ids.h"

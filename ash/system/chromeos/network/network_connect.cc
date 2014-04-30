@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/network/network_connect.h"
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_notifier.h"
 #include "ash/system/system_notifier.h"

@@ -5,7 +5,7 @@
 #include "ash/system/date/date_default_view.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/special_popup_row.h"

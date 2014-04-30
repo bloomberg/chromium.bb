@@ -10,8 +10,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/ash_switches.h"
 #include "ash/multi_profile_uma.h"
-#include "ash/session/session_state_delegate.h"
-#include "ash/session/user_info.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
@@ -42,11 +41,8 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
       ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
   if (!g_instance &&
       ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
-    g_instance =
-        new MultiUserWindowManagerChromeOS(ash::Shell::GetInstance()
-                                               ->session_state_delegate()
-                                               ->GetUserInfo(0)
-                                               ->GetUserID());
+    g_instance = new MultiUserWindowManagerChromeOS(
+        ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0));
     multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
     mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
   } else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {

@@ -1040,7 +1040,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(chromeos::User::kExternalImageIndex, user->image_index());
-  EXPECT_TRUE(chromeos::test::AreImagesEqual(*policy_image, user->GetImage()));
+  EXPECT_TRUE(chromeos::test::AreImagesEqual(*policy_image, user->image()));
   const base::DictionaryValue* images_pref =
       g_browser_process->local_state()->GetDictionary("user_image_info");
   ASSERT_TRUE(images_pref);

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/session/user_info.h"
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/user_image.h"
@@ -70,7 +69,7 @@ struct UserContext {
 // returned by |displayed_email()|.
 // Displayed emails are for use in UI only, anywhere else users must be referred
 // to by |email()|.
-class User : public ash::UserInfo {
+class User {
  public:
   // The user type. Used in a histogram; do not modify existing types.
   typedef enum {
@@ -124,19 +123,18 @@ class User : public ash::UserInfo {
   // The email the user used to log in.
   const std::string& email() const { return email_; }
 
-  // The displayed user name.
-  base::string16 display_name() const { return display_name_; }
+  // Returns the human name to display for this user.
+  base::string16 GetDisplayName() const;
 
-  // ash::UserInfo
-  virtual std::string GetEmail() const OVERRIDE;
-  virtual base::string16 GetDisplayName() const OVERRIDE;
-  virtual base::string16 GetGivenName() const OVERRIDE;
-  virtual const gfx::ImageSkia& GetImage() const OVERRIDE;
-  virtual std::string GetUserID() const OVERRIDE;
+  // Returns given name of user, or empty string if given name is unknown.
+  const base::string16& given_name() const { return given_name_; }
 
   // Returns the account name part of the email. Use the display form of the
   // email if available and use_display_name == true. Otherwise use canonical.
   std::string GetAccountName(bool use_display_email) const;
+
+  // The image for this user.
+  const gfx::ImageSkia& image() const { return user_image_.image(); }
 
   // Whether the user has a default image.
   bool HasDefaultImage() const;
@@ -169,6 +167,9 @@ class User : public ash::UserInfo {
 
   // True if image is being loaded from file.
   bool image_is_loading() const { return image_is_loading_; }
+
+  // The displayed user name.
+  base::string16 display_name() const { return display_name_; }
 
   // The displayed (non-canonical) user email.
   virtual std::string display_email() const;

@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_USER_USER_VIEW_H_
 #define ASH_SYSTEM_USER_USER_VIEW_H_
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"

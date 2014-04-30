@@ -4,7 +4,7 @@
 
 #include "ash/system/user/tray_user_separator.h"
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ui/views/view.h"
 

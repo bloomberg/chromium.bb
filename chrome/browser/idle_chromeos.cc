@@ -4,7 +4,7 @@
 
 #include "chrome/browser/idle.h"
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/time/time.h"
 #include "ui/wm/core/user_activity_detector.h"
