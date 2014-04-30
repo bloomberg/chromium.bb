@@ -108,7 +108,7 @@ def AddGdbTest(name, is_broken=False, is_thread_test=False):
                          direct_emulation=False)
   env.TestBindsFixedTcpPort(node)
   env.AddNodeToTestSuite(node, test_suites, 'run_gdb_%s_test' % name,
-                         is_broken=is_broken)
+                         is_broken=(is_broken or env.Bit('no_gdb_tests')))
 
 
 AddGdbTest('complete')

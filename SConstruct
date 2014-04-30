@@ -351,6 +351,10 @@ def SetUpArgumentBits(env):
       'to run the specified test(s) without actually running them.  This '
       'argument is a counterpart to built_elsewhere.')
 
+  BitFromArgument(env, 'no_gdb_tests', default=False,
+    desc='Prevents GDB tests from running.  If GDB is not available, you can '
+      'test everything else by specifying this flag.')
+
   BitFromArgument(env, 'validator_ragel', default=True,
     desc='Use the R-DFA validator instead of the original validators.')
 
