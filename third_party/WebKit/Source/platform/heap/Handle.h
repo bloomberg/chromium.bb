@@ -44,11 +44,35 @@ namespace WebCore {
 
 template<typename T> class HeapTerminatedArray;
 
+// Template to determine if a class is a GarbageCollectedMixin by checking if it
+// has adjustAndMark and isAlive. We can't check directly if the class is a
+// GarbageCollectedMixin because casting to it is potentially ambiguous.
+template<typename T>
+struct IsGarbageCollectedMixin {
+    typedef char TrueType;
+    struct FalseType {
+        char dummy[2];
+    };
+
+#if COMPILER(MSVC)
+    template<typename U> static TrueType hasAdjustAndMark(char[&U::adjustAndMark != 0]);
+    template<typename U> static TrueType hasIsAlive(char[&U::isAlive != 0]);
+#else
+    template<size_t> struct F;
+    template<typename U> static TrueType hasAdjustAndMark(F<sizeof(&U::adjustAndMark)>*);
+    template<typename U> static TrueType hasIsAlive(F<sizeof(&U::isAlive)>*);
+#endif
+    template<typename U> static FalseType hasIsAlive(...);
+    template<typename U> static FalseType hasAdjustAndMark(...);
+
+    static bool const value = (sizeof(TrueType) == sizeof(hasAdjustAndMark<T>(0))) && (sizeof(TrueType) == sizeof(hasIsAlive<T>(0)));
+};
+
 #define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                                              \
     do {                                                                                                  \
         typedef typename WTF::RemoveConst<T>::Type NonConstType;                                          \
         typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;       \
-        typedef WTF::IsSubclass<NonConstType, GarbageCollectedMixin> GarbageCollectedMixinSubclass;       \
+        typedef IsGarbageCollectedMixin<NonConstType> GarbageCollectedMixinSubclass;                      \
         typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                \
         typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;    \
         typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \

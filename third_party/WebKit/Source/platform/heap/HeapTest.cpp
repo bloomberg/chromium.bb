@@ -3623,4 +3623,63 @@ TEST(HeapTest, DestructorsCalledOnMapClear)
     ASSERT(SimpleClassWithDestructor::s_wasDestructed);
 }
 
+class MixinA : public GarbageCollectedMixin {
+public:
+    MixinA() : m_obj(IntWrapper::create(100)) { }
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_obj);
+    }
+    Member<IntWrapper> m_obj;
+};
+
+class MixinB : public GarbageCollectedMixin {
+public:
+    MixinB() : m_obj(IntWrapper::create(101)) { }
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_obj);
+    }
+    Member<IntWrapper> m_obj;
+};
+
+class MultipleMixins : public GarbageCollected<MultipleMixins>, public MixinA, public MixinB {
+    USING_GARBAGE_COLLECTED_MIXIN(MultipleMixins);
+public:
+    MultipleMixins() : m_obj(IntWrapper::create(102)) { }
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_obj);
+        MixinA::trace(visitor);
+        MixinB::trace(visitor);
+    }
+    Member<IntWrapper> m_obj;
+};
+
+static const bool s_isMixinTrue = IsGarbageCollectedMixin<MultipleMixins>::value;
+static const bool s_isMixinFalse = IsGarbageCollectedMixin<IntWrapper>::value;
+
+TEST(HeapTest, MultipleMixins)
+{
+    EXPECT_TRUE(s_isMixinTrue);
+    EXPECT_FALSE(s_isMixinFalse);
+
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    IntWrapper::s_destructorCalls = 0;
+    MultipleMixins* obj = new MultipleMixins();
+    {
+        Persistent<MixinA> a = obj;
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+    }
+    {
+        Persistent<MixinB> b = obj;
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(3, IntWrapper::s_destructorCalls);
+}
+
 } // WebCore namespace
