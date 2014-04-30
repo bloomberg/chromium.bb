@@ -37,8 +37,9 @@
 namespace WebCore {
 
 DeviceOrientationController::DeviceOrientationController(Document& document)
-    : DeviceSensorEventController(document)
+    : DeviceSensorEventController(document.page())
     , DOMWindowLifecycleObserver(document.domWindow())
+    , m_document(document)
 {
 }
 
@@ -98,6 +99,11 @@ bool DeviceOrientationController::isNullEvent(Event* event)
 {
     DeviceOrientationEvent* orientationEvent = toDeviceOrientationEvent(event);
     return !orientationEvent->orientation()->canProvideEventData();
+}
+
+Document* DeviceOrientationController::document()
+{
+    return &m_document;
 }
 
 void DeviceOrientationController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)

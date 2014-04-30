@@ -84,7 +84,7 @@ NavigatorGamepad& NavigatorGamepad::from(Navigator& navigator)
 {
     NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
-        supplement = new NavigatorGamepad(*navigator.frame()->document());
+        supplement = new NavigatorGamepad(navigator.frame());
         provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
@@ -102,19 +102,23 @@ GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator)
 
 WebKitGamepadList* NavigatorGamepad::webkitGamepads()
 {
-    startUpdating();
     if (!m_webkitGamepads)
         m_webkitGamepads = WebKitGamepadList::create();
-    sampleGamepads<WebKitGamepad>(m_webkitGamepads.get());
+    if (window()) {
+        startUpdating();
+        sampleGamepads<WebKitGamepad>(m_webkitGamepads.get());
+    }
     return m_webkitGamepads.get();
 }
 
 GamepadList* NavigatorGamepad::gamepads()
 {
-    startUpdating();
     if (!m_gamepads)
         m_gamepads = GamepadList::create();
-    sampleGamepads<Gamepad>(m_gamepads.get());
+    if (window()) {
+        startUpdating();
+        sampleGamepads<Gamepad>(m_gamepads.get());
+    }
     return m_gamepads.get();
 }
 
@@ -153,10 +157,10 @@ void NavigatorGamepad::didConnectOrDisconnectGamepad(unsigned index, const blink
     window()->dispatchEvent(event);
 }
 
-NavigatorGamepad::NavigatorGamepad(Document& document)
-    : DOMWindowProperty(document.frame())
-    , DeviceSensorEventController(document)
-    , DOMWindowLifecycleObserver(document.frame()->domWindow())
+NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
+    : DOMWindowProperty(frame)
+    , DeviceSensorEventController(frame ? frame->page() : 0)
+    , DOMWindowLifecycleObserver(frame ? frame->domWindow() : 0)
 {
 }
 
@@ -211,9 +215,19 @@ bool NavigatorGamepad::isNullEvent(Event*)
     return false;
 }
 
+Document* NavigatorGamepad::document()
+{
+    return window() ? window()->document() : 0;
+}
+
+static bool isGamepadEvent(const AtomicString& eventType)
+{
+    return eventType == EventTypeNames::gamepadconnected || eventType == EventTypeNames::gamepaddisconnected;
+}
+
 void NavigatorGamepad::didAddEventListener(DOMWindow*, const AtomicString& eventType)
 {
-    if (RuntimeEnabledFeatures::gamepadEnabled() && (eventType == EventTypeNames::gamepadconnected || eventType == EventTypeNames::gamepaddisconnected)) {
+    if (RuntimeEnabledFeatures::gamepadEnabled() && isGamepadEvent(eventType)) {
         if (page() && page()->visibilityState() == PageVisibilityStateVisible)
             startUpdating();
         m_hasEventListener = true;
@@ -222,7 +236,7 @@ void NavigatorGamepad::didAddEventListener(DOMWindow*, const AtomicString& event
 
 void NavigatorGamepad::didRemoveEventListener(DOMWindow*, const AtomicString& eventType)
 {
-    if (eventType == EventTypeNames::gamepadconnected || eventType == EventTypeNames::gamepaddisconnected)
+    if (isGamepadEvent(eventType))
         m_hasEventListener = false;
 }
 

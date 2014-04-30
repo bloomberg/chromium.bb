@@ -64,8 +64,10 @@ private:
     virtual bool hasLastData() OVERRIDE;
     virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
     virtual bool isNullEvent(Event*) OVERRIDE;
+    virtual Document* document() OVERRIDE;
 
     RefPtrWillBePersistent<DeviceOrientationData> m_overrideOrientationData;
+    Document& m_document;
 };
 
 } // namespace WebCore

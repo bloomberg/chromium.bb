@@ -26,7 +26,7 @@ BatteryManager::~BatteryManager()
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : ActiveDOMObject(context)
-    , DeviceSensorEventController(*toDocument(context))
+    , DeviceSensorEventController(toDocument(context)->page())
 {
     m_hasEventListener = true;
     startUpdating();
@@ -95,6 +95,11 @@ PassRefPtrWillBeRawPtr<Event> BatteryManager::getLastEvent()
 bool BatteryManager::isNullEvent(Event*)
 {
     return false;
+}
+
+Document* BatteryManager::document()
+{
+    return toDocument(executionContext());
 }
 
 void BatteryManager::suspend()

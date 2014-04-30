@@ -62,6 +62,9 @@ private:
     virtual bool hasLastData() OVERRIDE;
     virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
     virtual bool isNullEvent(Event*) OVERRIDE;
+    virtual Document* document() OVERRIDE;
+
+    Document& m_document;
 };
 
 } // namespace WebCore

@@ -62,25 +62,26 @@ public:
     void didConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad&, bool connected);
 
 private:
-    explicit NavigatorGamepad(Document&);
+    explicit NavigatorGamepad(LocalFrame*);
 
     static const char* supplementName();
 
     // DOMWindowProperty
-    virtual void willDestroyGlobalObjectInFrame() OVERRIDE FINAL;
-    virtual void willDetachGlobalObjectFromFrame() OVERRIDE FINAL;
+    virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
+    virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
     // DeviceSensorEventController
-    virtual void registerWithDispatcher() OVERRIDE FINAL;
-    virtual void unregisterWithDispatcher() OVERRIDE FINAL;
-    virtual bool hasLastData() OVERRIDE FINAL;
-    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE FINAL;
-    virtual bool isNullEvent(Event*) OVERRIDE FINAL;
+    virtual void registerWithDispatcher() OVERRIDE;
+    virtual void unregisterWithDispatcher() OVERRIDE;
+    virtual bool hasLastData() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
+    virtual bool isNullEvent(Event*) OVERRIDE;
+    virtual Document* document() OVERRIDE;
 
     // DOMWindowLifecycleObserver
-    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE FINAL;
-    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE FINAL;
-    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE FINAL;
+    virtual void didAddEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
+    virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
 
     PersistentWillBeMember<GamepadList> m_gamepads;
     PersistentWillBeMember<WebKitGamepadList> m_webkitGamepads;

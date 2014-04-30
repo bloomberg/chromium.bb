@@ -49,6 +49,7 @@ public:
     virtual bool hasLastData() OVERRIDE;
     virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
     virtual bool isNullEvent(Event*) OVERRIDE;
+    virtual Document* document() OVERRIDE;
 
     void trace(Visitor*) { }
 

@@ -41,7 +41,7 @@ public:
     void stopUpdating();
 
 protected:
-    explicit DeviceSensorEventController(Document&);
+    explicit DeviceSensorEventController(Page*);
     virtual ~DeviceSensorEventController();
 
     void dispatchDeviceEvent(const PassRefPtrWillBeRawPtr<Event>);
@@ -51,6 +51,7 @@ protected:
     virtual void registerWithDispatcher() = 0;
     virtual void unregisterWithDispatcher() = 0;
     virtual bool isNullEvent(Event*) = 0;
+    virtual Document* document() = 0;
 
     bool m_hasEventListener;
 
@@ -60,7 +61,6 @@ private:
 
     void fireDeviceEvent(Timer<DeviceSensorEventController>*);
 
-    Document& m_document;
     bool m_isActive;
     bool m_needsCheckingNullEvents;
     Timer<DeviceSensorEventController> m_timer;
