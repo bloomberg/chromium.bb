@@ -884,7 +884,8 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::StartDragging(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
-  NOTREACHED() << "InterstitialPage does not support dragging yet.";
+  interstitial_page_->render_view_host_->DragSourceSystemDragEnded();
+  DVLOG(1) << "InterstitialPage does not support dragging yet.";
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::UpdateDragCursor(
