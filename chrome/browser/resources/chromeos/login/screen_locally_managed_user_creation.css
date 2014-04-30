@@ -21,7 +21,22 @@
 
 #managed-user-creation .step-controls {
   -webkit-padding-end: 20px;
+  align-items: center;
   bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+#managed-user-creation .controls-links {
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+}
+
+#managed-user-creation .controls-buttons {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
 }
 
 #managed-user-creation .logo-padded-text {
@@ -211,14 +226,16 @@ input.managed-user-creation-manager-password,
 .import-pod {
   height: 32px;
   opacity: 0.8;
-  padding: 6px;
+  padding: 20px;
   width: 626px;
 }
 
 .import-pod .import-pod-name {
   color: #000;
-  display: inline;
-  max-height: 30px;
+  display: inline-block;
+  height: 32px;
+  max-height: 32px;
+  padding-top: 6px;
   vertical-align: top;
 }
 

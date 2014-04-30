@@ -741,15 +741,16 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!Array} Array of Buttons.
      */
     get buttons() {
-      var buttons = [];
-
-      var status = this.makeFromTemplate('status-container', 'status');
-      buttons.push(status);
+      var links = this.ownerDocument.createElement('div');
+      var buttons = this.ownerDocument.createElement('div');
+      links.classList.add('controls-links');
+      buttons.classList.add('controls-buttons');
 
       var importLink = this.makeFromTemplate('import-supervised-user-link',
                                              'import-link');
       importLink.hidden = true;
-      buttons.push(importLink);
+      links.appendChild(importLink);
+
       var linkElement = importLink.querySelector('.signin-link');
       linkElement.addEventListener('click',
           this.importLinkPressed_.bind(this));
@@ -757,47 +758,50 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var createLink = this.makeFromTemplate('create-supervised-user-link',
                                              'create-link');
       createLink.hidden = true;
-      buttons.push(createLink);
+      links.appendChild(createLink);
+
+      var status = this.makeFromTemplate('status-container', 'status');
+      buttons.appendChild(status);
 
       linkElement = createLink.querySelector('.signin-link');
       linkElement.addEventListener('click',
           this.createLinkPressed_.bind(this));
 
-      buttons.push(this.makeButton(
+      buttons.appendChild(this.makeButton(
           'start',
           'managedUserCreationFlow',
           this.startButtonPressed_.bind(this),
           ['intro'],
           ['custom-appearance', 'button-fancy', 'button-blue']));
 
-      buttons.push(this.makeButton(
+      buttons.appendChild(this.makeButton(
           'prev',
           'managedUserCreationFlow',
           this.prevButtonPressed_.bind(this),
           ['manager'],
           []));
 
-      buttons.push(this.makeButton(
+      buttons.appendChild(this.makeButton(
           'next',
           'managedUserCreationFlow',
           this.nextButtonPressed_.bind(this),
           ['manager', 'username'],
           []));
 
-      buttons.push(this.makeButton(
+      buttons.appendChild(this.makeButton(
           'import',
           'managedUserCreationFlow',
           this.importButtonPressed_.bind(this),
           ['import', 'import-password'],
           []));
 
-      buttons.push(this.makeButton(
+      buttons.appendChild(this.makeButton(
           'gotit',
           'managedUserCreationFlow',
           this.gotItButtonPressed_.bind(this),
           ['created'],
           ['custom-appearance', 'button-fancy', 'button-blue']));
-      return buttons;
+      return [links, buttons];
     },
 
     /**
