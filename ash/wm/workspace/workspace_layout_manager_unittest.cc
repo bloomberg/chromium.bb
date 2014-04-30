@@ -8,7 +8,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"

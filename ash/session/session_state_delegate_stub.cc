@@ -2,30 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/session_state_delegate_stub.h"
+#include "ash/session/session_state_delegate_stub.h"
 
+#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
+namespace {
 
-SessionStateDelegateStub::SessionStateDelegateStub() : screen_locked_(false) {
+class UserInfoStub : public UserInfo {
+ public:
+  UserInfoStub() {}
+  virtual ~UserInfoStub() {}
+
+  // UserInfo:
+  virtual base::string16 GetDisplayName() const OVERRIDE {
+    return base::UTF8ToUTF16("stub-user");
+  }
+  virtual base::string16 GetGivenName() const OVERRIDE {
+    return base::UTF8ToUTF16("Stub");
+  }
+  virtual std::string GetEmail() const OVERRIDE {
+    return "stub-user@domain.com";
+  }
+  virtual std::string GetUserID() const OVERRIDE { return GetEmail(); }
+  virtual const gfx::ImageSkia& GetImage() const OVERRIDE {
+    return user_image_;
+  }
+
+ private:
+  gfx::ImageSkia user_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserInfoStub);
+};
+
+}  // namespace
+
+SessionStateDelegateStub::SessionStateDelegateStub()
+    : screen_locked_(false), user_info_(new UserInfoStub()) {
 }
 
 SessionStateDelegateStub::~SessionStateDelegateStub() {
 }
 
-content::BrowserContext*
-SessionStateDelegateStub::GetBrowserContextByIndex(
+content::BrowserContext* SessionStateDelegateStub::GetBrowserContextByIndex(
     MultiProfileIndex index) {
   return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
 }
 
-content::BrowserContext*
-SessionStateDelegateStub::GetBrowserContextForWindow(
+content::BrowserContext* SessionStateDelegateStub::GetBrowserContextForWindow(
     aura::Window* window) {
   return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
 }
@@ -65,44 +95,29 @@ void SessionStateDelegateStub::UnlockScreen() {
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
-bool SessionStateDelegateStub::IsUserSessionBlocked() const  {
+bool SessionStateDelegateStub::IsUserSessionBlocked() const {
   return !IsActiveUserSessionStarted() || IsScreenLocked();
 }
 
 SessionStateDelegate::SessionState SessionStateDelegateStub::GetSessionState()
     const {
   // Assume that if session is not active we're at login.
-  return IsActiveUserSessionStarted() ?
-      SESSION_STATE_ACTIVE : SESSION_STATE_LOGIN_PRIMARY;
+  return IsActiveUserSessionStarted() ? SESSION_STATE_ACTIVE
+                                      : SESSION_STATE_LOGIN_PRIMARY;
 }
 
-const base::string16 SessionStateDelegateStub::GetUserDisplayName(
+const UserInfo* SessionStateDelegateStub::GetUserInfo(
     MultiProfileIndex index) const {
-  return base::UTF8ToUTF16("stub-user");
+  return user_info_.get();
 }
 
-const base::string16 SessionStateDelegateStub::GetUserGivenName(
-    MultiProfileIndex index) const {
-  return base::UTF8ToUTF16("Stub");
-}
-
-const std::string SessionStateDelegateStub::GetUserEmail(
-    MultiProfileIndex index) const {
-  return "stub-user@domain.com";
-}
-
-const std::string SessionStateDelegateStub::GetUserID(
-    MultiProfileIndex index) const {
-  return GetUserEmail(index);
-}
-
-const gfx::ImageSkia& SessionStateDelegateStub::GetUserImage(
+const UserInfo* SessionStateDelegateStub::GetUserInfo(
     content::BrowserContext* context) const {
-  return user_image_;
+  return user_info_.get();
 }
 
-bool SessionStateDelegateStub::ShouldShowAvatar(aura::Window* window) {
-  return !user_image_.isNull();
+bool SessionStateDelegateStub::ShouldShowAvatar(aura::Window* window) const {
+  return !user_info_->GetImage().isNull();
 }
 
 void SessionStateDelegateStub::SwitchActiveUser(const std::string& user_id) {

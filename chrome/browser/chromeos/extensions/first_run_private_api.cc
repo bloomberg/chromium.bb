@@ -19,11 +19,11 @@ bool FirstRunPrivateGetLocalizedStringsFunction::RunSync() {
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
   chromeos::User* user =
       chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
-  if (!user->given_name().empty()) {
+  if (!user->GetGivenName().empty()) {
     localized_strings->SetString(
         "greetingHeader",
         l10n_util::GetStringFUTF16(IDS_FIRST_RUN_GREETING_STEP_HEADER,
-                                   user->given_name()));
+                                   user->GetGivenName()));
   } else {
     localized_strings->SetString(
         "greetingHeader",

@@ -4,7 +4,7 @@
 
 #include "ash/system/user/login_status.h"
 
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

@@ -5,7 +5,7 @@
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"

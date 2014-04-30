@@ -28,7 +28,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation.h"
 #include "ash/screenshot_delegate.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_model.h"
@@ -71,7 +71,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/sys_info.h"
 #include "chromeos/ime/ime_keyboard.h"

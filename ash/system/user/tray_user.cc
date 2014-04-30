@@ -6,7 +6,8 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
+#include "ash/session/user_info.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -263,7 +264,7 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
 
   content::BrowserContext* context = session_state_delegate->
       GetBrowserContextByIndex(GetTrayIndex());
-  avatar_->SetImage(session_state_delegate->GetUserImage(context),
+  avatar_->SetImage(session_state_delegate->GetUserInfo(context)->GetImage(),
                     gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
 
   // Unit tests might come here with no images for some users.

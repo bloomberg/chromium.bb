@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"

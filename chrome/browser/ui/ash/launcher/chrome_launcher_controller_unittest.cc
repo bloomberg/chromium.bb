@@ -799,9 +799,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     ChromeLauncherControllerTest::SetUp();
 
     // Get some base objects.
-    session_delegate_ = static_cast<ash::test::TestSessionStateDelegate*>(
-        ash::Shell::GetInstance()->session_state_delegate());
-    session_delegate_->set_logged_in_users(2);
+    session_delegate()->set_logged_in_users(2);
     shell_delegate_ = static_cast<ash::test::TestShellDelegate*>(
         ash::Shell::GetInstance()->delegate());
     shell_delegate_->set_multi_profiles_enabled(true);
@@ -825,8 +823,11 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   // the ownership of the created object.
   TestingProfile* CreateMultiUserProfile(const std::string& user_name) {
     std::string email_string = user_name + "@example.com";
-
+    static_cast<ash::test::TestSessionStateDelegate*>(
+        ash::Shell::GetInstance()->session_state_delegate())
+        ->AddUser(email_string);
     // Add a user to the fake user manager.
+    session_delegate()->AddUser(email_string);
     GetFakeUserManager()->AddUser(email_string);
 
     GetFakeUserManager()->UserLoggedIn(
@@ -904,8 +905,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     return v1_app;
   }
 
-  ash::test::TestSessionStateDelegate*
-      session_delegate() { return session_delegate_; }
+  ash::test::TestSessionStateDelegate* session_delegate() {
+    return static_cast<ash::test::TestSessionStateDelegate*>(
+        ash::Shell::GetInstance()->session_state_delegate());
+  }
   ash::test::TestShellDelegate* shell_delegate() { return shell_delegate_; }
 
   // Override BrowserWithTestWindowTest:
@@ -936,7 +939,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
-  ash::test::TestSessionStateDelegate* session_delegate_;
   ash::test::TestShellDelegate* shell_delegate_;
 
   ProfileToNameMap created_profiles_;

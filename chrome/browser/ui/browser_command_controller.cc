@@ -61,7 +61,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/multi_profile_uma.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"

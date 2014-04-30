@@ -7,7 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"

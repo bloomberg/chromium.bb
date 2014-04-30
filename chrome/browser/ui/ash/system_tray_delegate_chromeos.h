@@ -7,7 +7,7 @@
 
 #include "apps/app_window_registry.h"
 #include "ash/ime/input_method_menu_manager.h"
-#include "ash/session_state_observer.h"
+#include "ash/session/session_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"

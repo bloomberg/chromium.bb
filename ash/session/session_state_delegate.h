@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SESSION_STATE_DELEGATE_H_
-#define ASH_SESSION_STATE_DELEGATE_H_
+#ifndef ASH_SESSION_SESSION_STATE_DELEGATE_H_
+#define ASH_SESSION_SESSION_STATE_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -26,6 +26,7 @@ class ImageSkia;
 namespace ash {
 
 class SessionStateObserver;
+class UserInfo;
 
 // The index for the multi-profile item to use. The list is always LRU sorted
 // So that the index #0 is the currently active user.
@@ -108,34 +109,18 @@ class ASH_EXPORT SessionStateDelegate {
   // Returns current session state.
   virtual SessionState GetSessionState() const = 0;
 
-  // Gets the displayed name for the user with the given |index|.
-  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
-  virtual const base::string16 GetUserDisplayName(
-      MultiProfileIndex index) const = 0;
+  // TODO(oshima): consolidate these two GetUserInfo.
 
-  // Gets the given name of the user with |index|. An empty string can be
-  // returned if the given name of the user is unknown.
+  // Gets the user info for the user with the given |index|.
   // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
-  virtual const base::string16 GetUserGivenName(
-      MultiProfileIndex index) const = 0;
-
-  // Gets the display email address for the user with the given |index|.
-  // The display email address might contains some periods in the email name
-  // as well as capitalized letters. For example: "Foo.Bar@mock.com".
-  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
-  virtual const std::string GetUserEmail(MultiProfileIndex index) const = 0;
-
-  // Gets the user id (sanitized email address) for the user with the given
-  // |index|. The function would return something like "foobar@mock.com".
-  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
-  virtual const std::string GetUserID(MultiProfileIndex index) const = 0;
+  virtual const UserInfo* GetUserInfo(MultiProfileIndex index) const = 0;
 
   // Gets the avatar image for the user associated with the |context|.
-  virtual const gfx::ImageSkia& GetUserImage(
+  virtual const UserInfo* GetUserInfo(
       content::BrowserContext* context) const = 0;
 
   // Whether or not the window's title should show the avatar.
-  virtual bool ShouldShowAvatar(aura::Window* window) = 0;
+  virtual bool ShouldShowAvatar(aura::Window* window) const = 0;
 
   // Switches to another active user with |user_id|
   // (if that user has already signed in).
@@ -152,4 +137,4 @@ class ASH_EXPORT SessionStateDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_SESSION_STATE_DELEGATE_H_
+#endif  // ASH_SESSION_SESSION_STATE_DELEGATE_H_

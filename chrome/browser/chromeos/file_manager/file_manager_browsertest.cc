@@ -13,7 +13,7 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"

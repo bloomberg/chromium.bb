@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/session_state_delegate.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"

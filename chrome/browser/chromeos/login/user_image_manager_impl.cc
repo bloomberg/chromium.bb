@@ -858,7 +858,7 @@ void UserImageManagerImpl::TryToInitDownloadedProfileImage() {
     // user if it has not been initialized already, the user image is the
     // profile image and the user image has been loaded successfully.
     VLOG(1) << "Profile image initialized from disk.";
-    downloaded_profile_image_ = user->image();
+    downloaded_profile_image_ = user->GetImage();
     profile_image_url_ = user->image_url();
   }
 }
