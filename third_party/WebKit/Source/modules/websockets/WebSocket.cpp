@@ -126,9 +126,9 @@ void WebSocket::EventQueue::dispatchQueuedEvents()
     if (m_state != Active)
         return;
 
-    RefPtr<EventQueue> protect(this);
+    RefPtrWillBeRawPtr<EventQueue> protect(this);
 
-    Deque<RefPtrWillBePersistent<Event> > events;
+    WillBeHeapDeque<RefPtrWillBeMember<Event> > events;
     events.swap(m_events);
     while (!events.isEmpty()) {
         if (m_state == Stopped || m_state == Suspended)
@@ -150,6 +150,11 @@ void WebSocket::EventQueue::resumeTimerFired(Timer<EventQueue>*)
     ASSERT(m_state == Suspended);
     m_state = Active;
     dispatchQueuedEvents();
+}
+
+void WebSocket::EventQueue::trace(Visitor* visitor)
+{
+    visitor->trace(m_events);
 }
 
 const size_t maxReasonSizeInBytes = 123;
@@ -243,20 +248,20 @@ void WebSocket::logError(const String& message)
     executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
     Vector<String> protocols;
     return create(context, url, protocols, exceptionState);
 }
 
-PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
 {
     if (url.isNull()) {
         exceptionState.throwDOMException(SyntaxError, "Failed to create a WebSocket: the provided URL is invalid.");
         return nullptr;
     }
 
-    RefPtr<WebSocket> webSocket(adoptRef(new WebSocket(context)));
+    RefPtrWillBeRawPtr<WebSocket> webSocket(adoptRefWillBeRefCountedGarbageCollected(new WebSocket(context)));
     webSocket->suspendIfNeeded();
 
     webSocket->connect(url, protocols, exceptionState);
@@ -266,7 +271,7 @@ PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String&
     return webSocket.release();
 }
 
-PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String& url, const String& protocol, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String& url, const String& protocol, ExceptionState& exceptionState)
 {
     Vector<String> protocols;
     protocols.append(protocol);
@@ -681,6 +686,11 @@ size_t WebSocket::getFramingOverhead(size_t payloadSize)
     else if (payloadSize >= minimumPayloadSizeWithTwoByteExtendedPayloadLength)
         overhead += 2;
     return overhead;
+}
+
+void WebSocket::trace(Visitor* visitor)
+{
+    visitor->trace(m_eventQueue);
 }
 
 } // namespace WebCore

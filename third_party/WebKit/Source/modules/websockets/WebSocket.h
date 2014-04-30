@@ -50,16 +50,16 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class WebSocket FINAL : public RefCounted<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
-    REFCOUNTED_EVENT_TARGET(WebSocket);
+class WebSocket FINAL : public RefCountedWillBeRefCountedGarbageCollected<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WebSocket>);
 public:
     static const char* subProtocolSeperator();
     // WebSocket instances must be used with a wrapper since this class's
     // lifetime management is designed assuming the V8 holds a ref on it while
     // hasPendingActivity() returns true.
-    static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
-    static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
-    static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<WebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<WebSocket> create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<WebSocket> create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
     virtual ~WebSocket();
 
     enum State {
@@ -124,11 +124,16 @@ public:
     virtual void didStartClosingHandshake() OVERRIDE;
     virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
+    void trace(Visitor*);
+
 private:
     // FIXME: This should inherit WebCore::EventQueue.
-    class EventQueue FINAL : public RefCounted<EventQueue> {
+    class EventQueue FINAL : public RefCountedWillBeGarbageCollectedFinalized<EventQueue> {
     public:
-        static PassRefPtr<EventQueue> create(EventTarget* target) { return adoptRef(new EventQueue(target)); }
+        static PassRefPtrWillBeRawPtr<EventQueue> create(EventTarget* target)
+        {
+            return adoptRefWillBeNoop(new EventQueue(target));
+        }
         ~EventQueue();
 
         // Dispatches the event if this queue is active.
@@ -141,6 +146,8 @@ private:
         void suspend();
         void resume();
         void stop();
+
+        void trace(Visitor*);
 
     private:
         enum State {
@@ -158,8 +165,7 @@ private:
 
         State m_state;
         EventTarget* m_target;
-        // FIXME: oilpan: This should be HeapDeque once it's implemented.
-        Deque<RefPtrWillBePersistent<Event> > m_events;
+        WillBeHeapDeque<RefPtrWillBeMember<Event> > m_events;
         Timer<EventQueue> m_resumeTimer;
     };
 
@@ -211,7 +217,7 @@ private:
     String m_subprotocol;
     String m_extensions;
 
-    RefPtr<EventQueue> m_eventQueue;
+    RefPtrWillBeMember<EventQueue> m_eventQueue;
 };
 
 } // namespace WebCore
