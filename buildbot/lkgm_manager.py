@@ -224,7 +224,16 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                               incr_type=self.incr_type)
 
   def _AddPatchesToManifest(self, manifest, patches):
-    """Adds list of patches to given manifest specified by manifest_path."""
+    """Adds list of |patches| to given |manifest|.
+
+    The manifest should have sufficient information for the slave
+    builders to fetch the patches from Gerrit and to print the CL link
+    (see cros_patch.GerritFetchOnlyPatch).
+
+    Args:
+      manifest: Path to the manifest.
+      patches: A list of cros_patch.GerritPatch objects.
+    """
     manifest_dom = minidom.parse(manifest)
     for patch in patches:
       pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)

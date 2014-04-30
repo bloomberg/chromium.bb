@@ -15,6 +15,7 @@ import mox
 import os
 import pickle
 import sys
+import tempfile
 import time
 
 import constants
@@ -1577,6 +1578,47 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     """Attempt to submit the second change in a series."""
     self.IgnoreFailures(self.patches[1])
     self.SubmitPool(submitted=[], rejected=[self.patches[0]])
+
+
+class LoadManifestTest(cros_test_lib.TempDirTestCase):
+  """Tests loading the manifest."""
+
+  manifest_content = (
+      '<?xml version="1.0" ?><manifest>'
+      '<pending_commit branch="master" '
+      'change_id="Ieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1" '
+      'commit="1ddddddddddddddddddddddddddddddddddddddd" '
+      'fail_count="2" gerrit_number="17000" owner_email="foo@chromium.org" '
+      'pass_count="0" patch_number="2" project="chromiumos/taco/bar" '
+      'project_url="https://base_url/chromiumos/taco/bar" '
+      'ref="refs/changes/51/17000/2" remote="cros" total_fail_count="3"/>'
+      '</manifest>')
+
+  def setUp(self):
+    """Sets up a pool."""
+    self.pool = MakePool()
+
+  def testAddPendingCommitsIntoPool(self):
+    """Test reading the pending commits and add them into the pool."""
+    with tempfile.NamedTemporaryFile() as f:
+      f.write(self.manifest_content)
+      f.flush()
+      self.pool.AddPendingCommitsIntoPool(f.name)
+
+    self.assertEqual(self.pool.changes[0].owner_email, 'foo@chromium.org')
+    self.assertEqual(self.pool.changes[0].tracking_branch, 'master')
+    self.assertEqual(self.pool.changes[0].remote, 'cros')
+    self.assertEqual(self.pool.changes[0].gerrit_number, '17000')
+    self.assertEqual(self.pool.changes[0].project, 'chromiumos/taco/bar')
+    self.assertEqual(self.pool.changes[0].project_url,
+                     'https://base_url/chromiumos/taco/bar')
+    self.assertEqual(self.pool.changes[0].change_id,
+                     'Ieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1')
+    self.assertEqual(self.pool.changes[0].commit,
+                     '1ddddddddddddddddddddddddddddddddddddddd')
+    self.assertEqual(self.pool.changes[0].fail_count, 2)
+    self.assertEqual(self.pool.changes[0].pass_count, 0)
+    self.assertEqual(self.pool.changes[0].total_fail_count, 3)
 
 
 if __name__ == '__main__':

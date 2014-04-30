@@ -1573,6 +1573,34 @@ class ValidationPool(object):
     pool.RecordPatchesInMetadata()
     return pool
 
+  def AddPendingCommitsIntoPool(self, manifest):
+    """Add the pending commits from |manifest| into pool.
+
+    Args:
+      manifest: path to the manifest.
+    """
+    manifest_dom = minidom.parse(manifest)
+    pending_commits = manifest_dom.getElementsByTagName(
+        lkgm_manager.PALADIN_COMMIT_ELEMENT)
+    for pc in pending_commits:
+      patch = cros_patch.GerritFetchOnlyPatch(
+          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_GERRIT_NUMBER_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
+          owner_email=pc.getAttribute(lkgm_manager.PALADIN_OWNER_EMAIL_ATTR),
+          fail_count=int(pc.getAttribute(lkgm_manager.PALADIN_FAIL_COUNT_ATTR)),
+          pass_count=int(pc.getAttribute(lkgm_manager.PALADIN_PASS_COUNT_ATTR)),
+          total_fail_count=int(pc.getAttribute(
+              lkgm_manager.PALADIN_TOTAL_FAIL_COUNT_ATTR)),)
+
+      self.changes.append(patch)
+
   @classmethod
   def AcquirePoolFromManifest(cls, manifest, overlays, repo, build_number,
                               builder_name, is_master, dryrun, metadata=None):
@@ -1597,23 +1625,7 @@ class ValidationPool(object):
     """
     pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
                           is_master, dryrun, metadata=metadata)
-    manifest_dom = minidom.parse(manifest)
-    pending_commits = manifest_dom.getElementsByTagName(
-        lkgm_manager.PALADIN_COMMIT_ELEMENT)
-    for pc in pending_commits:
-      patch = cros_patch.GerritFetchOnlyPatch(
-          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_GERRIT_NUMBER_ATTR),
-          pc.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
-          owner_email=pc.getAttribute(lkgm_manager.PALADIN_OWNER_EMAIL_ATTR),)
-      pool.changes.append(patch)
-
+    pool.AddPendingCommitsIntoPool(manifest)
     pool.RecordPatchesInMetadata()
     return pool
 
@@ -1778,6 +1790,17 @@ class ValidationPool(object):
         errors = [InternalCQError(patch, msg) for patch in self.changes]
         self._HandleApplyFailure(errors)
         raise
+
+      # Completely fill the status cache in parallel.
+      self.FillCLStatusCache(CQ, applied)
+      for change in applied:
+        change.total_fail_count = self.GetCLStatusCount(
+            CQ, change, self.STATUS_FAILED, latest_patchset_only=False)
+        change.fail_count = self.GetCLStatusCount(
+            CQ, change, self.STATUS_FAILED)
+        change.pass_count = self.GetCLStatusCount(
+            CQ, change, self.STATUS_PASSED)
+
     else:
       # Slaves do not need to create transactions and should simply
       # apply the changes serially, based on the order that the
@@ -1793,18 +1816,6 @@ class ValidationPool(object):
           raise
         else:
           applied.append(change)
-
-
-    # TODO(yjhong): Run this on only the master after the slaves
-    # switch to read CL status from the manifest (crbug.com/366277).
-
-    # Completely fill the status cache in parallel.
-    self.FillCLStatusCache(CQ, applied)
-    for change in applied:
-      change.total_fail_count = self.GetCLStatusCount(
-          CQ, change, self.STATUS_FAILED, latest_patchset_only=False)
-      change.fail_count = self.GetCLStatusCount(CQ, change, self.STATUS_FAILED)
-      change.pass_count = self.GetCLStatusCount(CQ, change, self.STATUS_PASSED)
 
     self.PrintLinksToChanges(applied)
 
