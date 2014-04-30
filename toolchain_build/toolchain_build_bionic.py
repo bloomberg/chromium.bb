@@ -38,7 +38,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '96add03ea2ca11c27a82d81066f3cdbe9e17baae'
+BIONIC_VERSION = 'ee98cde5dc484b98c0f7a5a9cc126f6f3c4f428b'
 ARCHES = ['arm']
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
@@ -425,6 +425,7 @@ def CreateProject(arch, project, clobber=False):
 # GNU Makefile based on shared rules provided by the Native Client SDK.
 # See README.Makefiles for more details.
 
+NATIVE_CLIENT_PATH?=$(nacl_path)
 TOOLCHAIN_PATH?=$(tc_path)
 TOOLCHAIN_PREFIX:=$(TOOLCHAIN_PATH)/bin/$GCC-nacl-
 
@@ -450,7 +451,8 @@ include $(src_path)/Makefile
     '$(dst_path)': paths['work'],
     '$(ins_path)': paths['ins'],
     '$(tc_path)':  GetBionicBuildPath(arch),
-    '$(build_tc_path)': TOOLCHAIN_BUILD
+    '$(build_tc_path)': TOOLCHAIN_BUILD,
+    '$(nacl_path)': NATIVE_CLIENT,
   }
   text = ReplaceText(MAKEFILE_TEMPLATE, [remap])
   text = ReplaceArch(text, arch)
@@ -638,7 +640,9 @@ def main(argv):
 
   # We can run only off buildbots
   if not options.buildbot:
-    #MakeBionicProject('tests', ['run'])
+    process.Run(['./scons', 'platform=arm', '--mode=nacl,dbg-linux', '-j20'],
+                cwd=NATIVE_CLIENT)
+    MakeBionicProject('tests', ['run'])
     MakeBionicProject('newtests', ['run'])
 
   dst = os.path.join(TOOLCHAIN_BUILD_OUT, 'linux_arm_bionic', 'log.txt')
