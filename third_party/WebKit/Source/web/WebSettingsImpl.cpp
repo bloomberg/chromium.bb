@@ -475,11 +475,6 @@ void WebSettingsImpl::setAcceleratedCompositingForGpuRasterizationHintEnabled(bo
     m_settings->setAcceleratedCompositingForGpuRasterizationHintEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForPluginsEnabled(bool enabled)
-{
-    m_settings->setAcceleratedCompositingForPluginsEnabled(enabled);
-}
-
 void WebSettingsImpl::setAcceleratedCompositingForCanvasEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForCanvasEnabled(enabled);

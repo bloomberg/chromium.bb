@@ -70,7 +70,6 @@ public:
     virtual void setCompositorDrivenAcceleratedScrollingEnabled(bool) = 0;
     // Not implemented yet, see http://crbug.com/178119
     virtual void setAcceleratedCompositingForTransitionEnabled(bool) { };
-    virtual void setAcceleratedCompositingForPluginsEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForVideoEnabled(bool) = 0;
     // If set to true, allows frames with an https origin to display passive
     // contents at an insecure URL. Otherwise, disallows it. The

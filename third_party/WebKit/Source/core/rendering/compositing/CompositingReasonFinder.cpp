@@ -45,8 +45,6 @@ void CompositingReasonFinder::updateTriggers()
     Settings& settings = m_renderView.document().page()->settings();
     if (settings.acceleratedCompositingForVideoEnabled())
         m_compositingTriggers |= VideoTrigger;
-    if (settings.acceleratedCompositingForPluginsEnabled())
-        m_compositingTriggers |= PluginTrigger;
     if (settings.acceleratedCompositingForCanvasEnabled())
         m_compositingTriggers |= CanvasTrigger;
     if (settings.compositedScrollingForFramesEnabled())

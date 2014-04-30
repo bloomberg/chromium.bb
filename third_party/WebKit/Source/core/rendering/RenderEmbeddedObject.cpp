@@ -211,7 +211,7 @@ bool RenderEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity g
 
 CompositingReasons RenderEmbeddedObject::additionalCompositingReasons(CompositingTriggerFlags triggers) const
 {
-    if ((triggers & PluginTrigger) && requiresAcceleratedCompositing())
+    if (requiresAcceleratedCompositing())
         return CompositingReasonPlugin;
     return CompositingReasonNone;
 }

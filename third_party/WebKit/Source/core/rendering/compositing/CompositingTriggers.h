@@ -26,7 +26,6 @@ namespace WebCore {
 
 enum CompositingTrigger {
     VideoTrigger = 1 << 1,
-    PluginTrigger = 1 << 2,
     CanvasTrigger = 1 << 3,
     FilterTrigger = 1 << 5,
     ScrollableInnerFrameTrigger = 1 << 6,

@@ -94,7 +94,6 @@ unsafePluginPastingEnabled initial=true
 treatIPAddressAsDomain initial=false
 
 acceleratedCompositingForVideoEnabled initial=true, invalidate=AcceleratedCompositing
-acceleratedCompositingForPluginsEnabled initial=true, invalidate=AcceleratedCompositing
 acceleratedCompositingForCanvasEnabled initial=true, invalidate=AcceleratedCompositing
 acceleratedCompositingForFiltersEnabled initial=false, invalidate=AcceleratedCompositing
 acceleratedCompositingForFixedPositionEnabled initial=false, invalidate=AcceleratedCompositing
