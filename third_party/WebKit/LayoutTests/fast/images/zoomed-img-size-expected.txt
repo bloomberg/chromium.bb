@@ -31,10 +31,10 @@ Zoom 70% PASS: 37x32 close enough to 37x33
 Zoom 100% PASS: 37x33
 
 
-Zoom 111% PASS: 37x34 close enough to 37x33
+Zoom 111% PASS: 37x33
 
 
-Zoom 150% PASS: 38x34 close enough to 37x33
+Zoom 150% PASS: 37x33
 
 
 Zoom 333% PASS: 37x33

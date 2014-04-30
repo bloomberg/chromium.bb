@@ -9,7 +9,7 @@ PASS window.matchMedia('(width: 1152px)').matches is true
 PASS window.matchMedia('(width: 960px)').matches is true
 PASS window.matchMedia('(width: 800px)').matches is true
 PASS window.matchMedia('(width: 667px)').matches is true
-PASS window.matchMedia('(width: 556px)').matches is true
+PASS window.matchMedia('(width: 555px)').matches is true
 PASS window.matchMedia('(width: 463px)').matches is true
 PASS window.matchMedia('(width: 386px)').matches is true
 PASS window.matchMedia('(width: 321px)').matches is true
