@@ -84,7 +84,7 @@ public:
     virtual bool usesCompositedScrolling() const OVERRIDE;
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
     virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE;
-    virtual bool isActive() const OVERRIDE;
+    virtual bool isActiveFocus() const OVERRIDE;
     virtual bool isScrollCornerVisible() const OVERRIDE;
     virtual IntRect scrollCornerRect() const OVERRIDE;
     virtual IntRect convertFromScrollbarToContainingView(const Scrollbar*, const IntRect&) const OVERRIDE;

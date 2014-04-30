@@ -765,7 +765,7 @@ LayoutRect RenderListBox::controlClipRect(const LayoutPoint& additionalOffset) c
     return clipRect;
 }
 
-bool RenderListBox::isActive() const
+bool RenderListBox::isActiveFocus() const
 {
     Page* page = frame()->page();
     return page && page->focusController().isActive();

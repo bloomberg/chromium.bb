@@ -229,7 +229,7 @@ void RenderLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
         m_resizer->repaintRectangle(rect);
 }
 
-bool RenderLayerScrollableArea::isActive() const
+bool RenderLayerScrollableArea::isActiveFocus() const
 {
     Page* page = m_box.frame()->page();
     return page && page->focusController().isActive();

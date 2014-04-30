@@ -107,7 +107,7 @@ private:
     virtual IntPoint scrollPosition() const OVERRIDE;
     virtual void setScrollOffset(const IntPoint&) OVERRIDE;
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
-    virtual bool isActive() const OVERRIDE;
+    virtual bool isActiveFocus() const OVERRIDE;
     virtual bool isScrollCornerVisible() const OVERRIDE { return false; } // We don't support resize on list boxes yet. If we did these would have to change.
     virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
     virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE { }

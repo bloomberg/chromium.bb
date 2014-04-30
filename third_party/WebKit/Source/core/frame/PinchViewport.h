@@ -95,7 +95,7 @@ public:
     FloatRect visibleRect() const;
 private:
     // ScrollableArea implementation
-    virtual bool isActive() const OVERRIDE { return false; }
+    virtual bool isActiveFocus() const OVERRIDE { return false; }
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
     virtual bool isScrollCornerVisible() const OVERRIDE { return false; }
     virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }

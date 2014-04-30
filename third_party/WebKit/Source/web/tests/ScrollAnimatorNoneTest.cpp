@@ -49,7 +49,7 @@ public:
     MockScrollableArea(bool scrollAnimatorEnabled)
         : m_scrollAnimatorEnabled(scrollAnimatorEnabled) { }
 
-    MOCK_CONST_METHOD0(isActive, bool());
+    MOCK_CONST_METHOD0(isActiveFocus, bool());
     MOCK_CONST_METHOD1(scrollSize, int(ScrollbarOrientation));
     MOCK_METHOD2(invalidateScrollbar, void(Scrollbar*, const IntRect&));
     MOCK_CONST_METHOD0(isScrollCornerVisible, bool());
