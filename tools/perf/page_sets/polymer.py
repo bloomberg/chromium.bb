@@ -52,9 +52,9 @@ class PolymerCalculatorPage(page_module.PageWithDefaultRunNavigate):
         'direction': 'left',
         'wait_after': {
           'javascript': '''
-            document.querySelector(
-              'body /deep/ #outerPanels'
-            ).hasAttribute('opened')
+            (o = document.querySelector(
+              "body /deep/ #outerPanels"
+            )), o.opened || o.wideMode
           '''
         },
         'top_start_percentage': 0.2,

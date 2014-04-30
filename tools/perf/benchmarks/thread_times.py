@@ -45,3 +45,12 @@ class LegacyFastPathBenchmark(ThreadTimesFastPathMobileSites):
   @classmethod
   def GetName(cls):
     return "fast_path.key_mobile_sites"
+
+
+@test.Enabled('android')
+class ThreadTimesPolymer(test.Test):
+  """Measures timeline metrics while performing smoothness action on
+  Polymer cases."""
+  test = thread_times.ThreadTimes
+  page_set = "page_sets/polymer.py"
+  options = { 'report_silk_results': True }

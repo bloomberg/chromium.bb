@@ -118,8 +118,47 @@ class SmoothnessToughPinchZoomCases(test.Test):
   page_set = 'page_sets/tough_pinch_zoom_cases.py'
 
 
+@test.Enabled('android')
 class SmoothnessPolymer(test.Test):
   """Measures rendering statistics for Polymer cases.
   """
   test = smoothness.Smoothness
   page_set = 'page_sets/polymer.py'
+
+
+@test.Enabled('android')
+class SmoothnessFastPathPolymer(test.Test):
+  """Measures rendering statistics for the Polymer cases without GPU
+  rasterization using bleeding edge rendering fast paths.
+  """
+  tag = 'fast_path'
+  test = smoothness.Smoothness
+  page_set = 'page_sets/polymer.py'
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForFastPath(options)
+
+
+@test.Enabled('android')
+class SmoothnessGpuRasterizationPolymer(test.Test):
+  """Measures rendering statistics for the Polymer cases with GPU rasterization
+  """
+  tag = 'gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = 'page_sets/polymer.py'
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+
+@test.Enabled('android')
+class SmoothnessFastPathGpuRasterizationPolymer(
+    SmoothnessGpuRasterizationPolymer):
+  """Measures rendering statistics for the Polymer cases with GPU rasterization
+  using bleeding edge rendering fast paths.
+  """
+  tag = 'fast_path_gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = 'page_sets/polymer.py'
+  def CustomizeBrowserOptions(self, options):
+    super(SmoothnessFastPathGpuRasterizationPolymer, self). \
+        CustomizeBrowserOptions(options)
+    silk_flags.CustomizeBrowserOptionsForFastPath(options)
