@@ -25,6 +25,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/tooltip_client.h"
 #include "ui/wm/public/window_types.h"
@@ -78,6 +79,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
   virtual void SetUp() OVERRIDE {
     wm_state_.reset(new wm::WMState);
     aura::test::AuraTestBase::SetUp();
+    new wm::DefaultActivationClient(root_window());
 #if defined(OS_CHROMEOS)
     controller_.reset(new TooltipController(
           scoped_ptr<views::corewm::Tooltip>(
@@ -698,6 +700,7 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
   virtual void SetUp() OVERRIDE {
     wm_state_.reset(new wm::WMState);
     aura::test::AuraTestBase::SetUp();
+    new wm::DefaultActivationClient(root_window());
     controller_.reset(new TooltipController(
                           scoped_ptr<corewm::Tooltip>(test_tooltip_)));
     root_window()->AddPreTargetHandler(controller_.get());

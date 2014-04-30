@@ -15,6 +15,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/wm/core/default_activation_client.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -65,6 +66,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     ui::InitializeContextFactoryForTests(enable_pixel_output);
     helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     helper_->SetUp();
+    new wm::DefaultActivationClient(helper_->root_window());
 
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura
     // can use gfx::NativeWindow::GetWindowAtScreenPoint() to locate the

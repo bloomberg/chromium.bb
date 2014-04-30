@@ -91,6 +91,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_test_pak',
+        '../wm/wm.gyp:wm',
         'keyboard',
       ],
       'sources': [

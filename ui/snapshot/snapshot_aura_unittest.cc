@@ -23,6 +23,7 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/wm/core/default_activation_client.h"
 
 namespace ui {
 namespace {
@@ -93,6 +94,7 @@ class SnapshotAuraTest : public testing::Test {
     helper_.reset(
         new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
     helper_->SetUp();
+    new ::wm::DefaultActivationClient(helper_->root_window());
   }
 
   virtual void TearDown() OVERRIDE {

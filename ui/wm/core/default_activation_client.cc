@@ -1,45 +1,65 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/client/default_activation_client.h"
+#include "ui/wm/core/default_activation_client.h"
 
 #include "ui/aura/window.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
 
-namespace aura {
-namespace client {
+namespace wm {
+
+// Takes care of observing root window destruction & destroying the client.
+class DefaultActivationClient::Deleter : public aura::WindowObserver {
+ public:
+  Deleter(DefaultActivationClient* client, aura::Window* root_window)
+      : client_(client),
+        root_window_(root_window) {
+    root_window_->AddObserver(this);
+  }
+
+ private:
+  virtual ~Deleter() {}
+
+  // Overridden from WindowObserver:
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+    DCHECK_EQ(window, root_window_);
+    root_window_->RemoveObserver(this);
+    delete client_;
+    delete this;
+  }
+
+  DefaultActivationClient* client_;
+  aura::Window* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(Deleter);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultActivationClient, public:
 
-DefaultActivationClient::DefaultActivationClient(Window* root_window)
+DefaultActivationClient::DefaultActivationClient(aura::Window* root_window)
     : last_active_(NULL) {
-  client::SetActivationClient(root_window, this);
-}
-
-DefaultActivationClient::~DefaultActivationClient() {
-  for (unsigned int i = 0; i < active_windows_.size(); ++i) {
-    active_windows_[i]->RemoveObserver(this);
-  }
+  aura::client::SetActivationClient(root_window, this);
+  new Deleter(this, root_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultActivationClient, client::ActivationClient implementation:
 
 void DefaultActivationClient::AddObserver(
-    client::ActivationChangeObserver* observer) {
+    aura::client::ActivationChangeObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void DefaultActivationClient::RemoveObserver(
-    client::ActivationChangeObserver* observer) {
+    aura::client::ActivationChangeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DefaultActivationClient::ActivateWindow(Window* window) {
-  Window* last_active = GetActiveWindow();
+void DefaultActivationClient::ActivateWindow(aura::Window* window) {
+  aura::Window* last_active = GetActiveWindow();
   if (last_active == window)
     return;
 
@@ -49,7 +69,7 @@ void DefaultActivationClient::ActivateWindow(Window* window) {
   window->parent()->StackChildAtTop(window);
   window->AddObserver(this);
 
-  FOR_EACH_OBSERVER(client::ActivationChangeObserver,
+  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
                     observers_,
                     OnWindowActivated(window, last_active));
 
@@ -62,7 +82,7 @@ void DefaultActivationClient::ActivateWindow(Window* window) {
     observer->OnWindowActivated(window, last_active);
 }
 
-void DefaultActivationClient::DeactivateWindow(Window* window) {
+void DefaultActivationClient::DeactivateWindow(aura::Window* window) {
   aura::client::ActivationChangeObserver* observer =
       aura::client::GetActivationChangeObserver(window);
   if (observer)
@@ -71,39 +91,40 @@ void DefaultActivationClient::DeactivateWindow(Window* window) {
     ActivateWindow(last_active_);
 }
 
-Window* DefaultActivationClient::GetActiveWindow() {
+aura::Window* DefaultActivationClient::GetActiveWindow() {
   if (active_windows_.empty())
     return NULL;
   return active_windows_.back();
 }
 
-Window* DefaultActivationClient::GetActivatableWindow(Window* window) {
+aura::Window* DefaultActivationClient::GetActivatableWindow(
+    aura::Window* window) {
   return NULL;
 }
 
-Window* DefaultActivationClient::GetToplevelWindow(Window* window) {
+aura::Window* DefaultActivationClient::GetToplevelWindow(aura::Window* window) {
   return NULL;
 }
 
-bool DefaultActivationClient::OnWillFocusWindow(Window* window,
+bool DefaultActivationClient::OnWillFocusWindow(aura::Window* window,
                                                 const ui::Event* event) {
   return true;
 }
 
-bool DefaultActivationClient::CanActivateWindow(Window* window) const {
+bool DefaultActivationClient::CanActivateWindow(aura::Window* window) const {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DefaultActivationClient, WindowObserver implementation:
+// DefaultActivationClient, aura::WindowObserver implementation:
 
-void DefaultActivationClient::OnWindowDestroyed(Window* window) {
+void DefaultActivationClient::OnWindowDestroyed(aura::Window* window) {
   if (window == last_active_)
     last_active_ = NULL;
 
   if (window == GetActiveWindow()) {
     active_windows_.pop_back();
-    Window* next_active = GetActiveWindow();
+    aura::Window* next_active = GetActiveWindow();
     if (next_active && aura::client::GetActivationChangeObserver(next_active)) {
       aura::client::GetActivationChangeObserver(next_active)->OnWindowActivated(
           next_active, NULL);
@@ -114,7 +135,16 @@ void DefaultActivationClient::OnWindowDestroyed(Window* window) {
   RemoveActiveWindow(window);
 }
 
-void DefaultActivationClient::RemoveActiveWindow(Window* window) {
+////////////////////////////////////////////////////////////////////////////////
+// DefaultActivationClient, private:
+
+DefaultActivationClient::~DefaultActivationClient() {
+  for (unsigned int i = 0; i < active_windows_.size(); ++i) {
+    active_windows_[i]->RemoveObserver(this);
+  }
+}
+
+void DefaultActivationClient::RemoveActiveWindow(aura::Window* window) {
   for (unsigned int i = 0; i < active_windows_.size(); ++i) {
     if (active_windows_[i] == window) {
       active_windows_.erase(active_windows_.begin() + i);
@@ -124,5 +154,4 @@ void DefaultActivationClient::RemoveActiveWindow(Window* window) {
   }
 }
 
-}  // namespace client
-}  // namespace aura
+}  // namespace wm
