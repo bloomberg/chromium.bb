@@ -57,6 +57,9 @@ class HpackEncoderPeer {
   void TakeString(string* out) {
     encoder_->output_stream_.TakeString(out);
   }
+  void UpdateCharacterCounts(StringPiece str) {
+    encoder_->UpdateCharacterCounts(str);
+  }
   static void CookieToCrumbs(StringPiece cookie,
                              std::vector<StringPiece>* out) {
     Representations tmp;
@@ -418,6 +421,27 @@ TEST_F(HpackEncoderTest, CookieToCrumbs) {
 
   peer.CookieToCrumbs("foo;bar; baz;bing;", &out);
   EXPECT_THAT(out, ElementsAre("foo", "bar", "baz", "bing", ""));
+}
+
+TEST_F(HpackEncoderTest, UpdateCharacterCounts) {
+  std::vector<size_t> counts(256, 0);
+  size_t total_counts = 0;
+  encoder_.SetCharCountsStorage(&counts, &total_counts);
+
+  char kTestString[] = "foo\0\1\xff""boo";
+  peer_.UpdateCharacterCounts(
+      StringPiece(kTestString, arraysize(kTestString) - 1));
+
+  std::vector<size_t> expect(256, 0);
+  expect[static_cast<uint8>('f')] = 1;
+  expect[static_cast<uint8>('o')] = 4;
+  expect[static_cast<uint8>('\0')] = 1;
+  expect[static_cast<uint8>('\1')] = 1;
+  expect[static_cast<uint8>('\xff')] = 1;
+  expect[static_cast<uint8>('b')] = 1;
+
+  EXPECT_EQ(expect, counts);
+  EXPECT_EQ(9u, total_counts);
 }
 
 }  // namespace

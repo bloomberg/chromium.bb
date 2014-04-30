@@ -31,7 +31,9 @@ const uint8 kReferencedThisEncoding = 3;
 HpackEncoder::HpackEncoder(const HpackHuffmanTable& table)
     : output_stream_(),
       allow_huffman_compression_(true),
-      huffman_table_(table) {}
+      huffman_table_(table),
+      char_counts_(NULL),
+      total_char_counts_(NULL) {}
 
 HpackEncoder::~HpackEncoder() {}
 
@@ -178,6 +180,7 @@ void HpackEncoder::EmitString(StringPiece str) {
     output_stream_.AppendUint32(str.size());
     output_stream_.AppendBytes(str);
   }
+  UpdateCharacterCounts(str);
 }
 
 // static
@@ -235,6 +238,23 @@ HpackEncoder::Representations HpackEncoder::DetermineEncodingDelta(
     ++s_it;
   }
   return explicit_set;
+}
+
+void HpackEncoder::SetCharCountsStorage(std::vector<size_t>* char_counts,
+                                        size_t* total_char_counts) {
+  CHECK_LE(256u, char_counts->size());
+  char_counts_ = char_counts;
+  total_char_counts_ = total_char_counts;
+}
+
+void HpackEncoder::UpdateCharacterCounts(base::StringPiece str) {
+  if (char_counts_ == NULL || total_char_counts_ == NULL) {
+    return;
+  }
+  for (StringPiece::const_iterator it = str.begin(); it != str.end(); ++it) {
+    ++(*char_counts_)[static_cast<uint8>(*it)];
+  }
+  (*total_char_counts_) += str.size();
 }
 
 // static

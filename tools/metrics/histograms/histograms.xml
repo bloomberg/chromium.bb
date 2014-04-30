@@ -13353,6 +13353,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.SpdyHpackEncodedCharacterFrequency" units="ASCII codes">
+  <owner>jgraettinger@chromium.org</owner>
+  <summary>
+    Frequencies of characters observed in request and response headers.
+    Temporarily being collected to inform the construction of an optimized
+    Huffman code for the HTTP/2 specification. Buckets are ASCII codes offset by
+    1.
+  </summary>
+</histogram>
+
 <histogram name="Net.SpdyIPPoolDomainMatch" enum="SpdyIPPoolDomainMatch"
     units="count">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

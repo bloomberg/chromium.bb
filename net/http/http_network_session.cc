@@ -24,6 +24,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
+#include "net/spdy/hpack_huffman_aggregator.h"
 #include "net/spdy/spdy_session_pool.h"
 
 namespace {
@@ -142,6 +143,10 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
   DCHECK(proxy_service_);
   DCHECK(ssl_config_service_.get());
   CHECK(http_server_properties_);
+
+  if (HpackHuffmanAggregator::UseAggregator()) {
+    huffman_aggregator_.reset(new HpackHuffmanAggregator());
+  }
 }
 
 HttpNetworkSession::~HttpNetworkSession() {

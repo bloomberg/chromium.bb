@@ -56,6 +56,11 @@ class NET_EXPORT_PRIVATE HpackEncoder {
     header_table_.SetSettingsHeaderTableSize(size_setting);
   }
 
+  // Sets externally-owned storage for aggregating character counts of emitted
+  // literal representations.
+  void SetCharCountsStorage(std::vector<size_t>* char_counts,
+                            size_t* total_char_counts);
+
  private:
   typedef std::pair<base::StringPiece, base::StringPiece> Representation;
   typedef std::vector<Representation> Representations;
@@ -72,6 +77,8 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   // Emits a Huffman or identity string (whichever is smaller).
   void EmitString(base::StringPiece str);
 
+  void UpdateCharacterCounts(base::StringPiece str);
+
   // Determines the representation delta required to encode |header_set| in
   // the current header table context. Entries in the reference set are
   // enumerated and marked with membership in the current |header_set|.
@@ -87,6 +94,10 @@ class NET_EXPORT_PRIVATE HpackEncoder {
 
   bool allow_huffman_compression_;
   const HpackHuffmanTable& huffman_table_;
+
+  // Externally-owned, nullable storage for character counts of literals.
+  std::vector<size_t>* char_counts_;
+  size_t* total_char_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(HpackEncoder);
 };
