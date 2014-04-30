@@ -147,13 +147,11 @@ scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
   int flags = cricket::PORTALLOCATOR_DISABLE_TCP |
               cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
               cricket::PORTALLOCATOR_ENABLE_IPV6;
-
-  if (!(network_settings.flags & NetworkSettings::NAT_TRAVERSAL_STUN))
-    flags |= cricket::PORTALLOCATOR_DISABLE_STUN;
-
-  if (!(network_settings.flags & NetworkSettings::NAT_TRAVERSAL_RELAY))
-    flags |= cricket::PORTALLOCATOR_DISABLE_RELAY;
-
+  if (network_settings.nat_traversal_mode !=
+      NetworkSettings::NAT_TRAVERSAL_ENABLED) {
+    flags |= cricket::PORTALLOCATOR_DISABLE_STUN |
+        cricket::PORTALLOCATOR_DISABLE_RELAY;
+  }
   result->set_flags(flags);
   result->SetPortRange(network_settings.min_port,
                        network_settings.max_port);

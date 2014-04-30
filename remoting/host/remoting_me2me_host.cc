@@ -36,7 +36,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
-#include "remoting/base/util.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -228,8 +227,6 @@ class HostProcess
   bool OnUsernamePolicyUpdate(bool curtain_required,
                               bool username_match_required);
   bool OnNatPolicyUpdate(bool nat_traversal_enabled);
-  bool OnRelayPolicyUpdate(bool allow_relay);
-  bool OnUdpPortPolicyUpdate(const std::string& udp_port_range);
   void OnCurtainPolicyUpdate(bool curtain_required);
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
   bool OnHostTokenUrlPolicyUpdate(
@@ -290,9 +287,6 @@ class HostProcess
   bool use_service_account_;
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
-  bool allow_relay_;
-  int min_udp_port_;
-  int max_udp_port_;
   std::string talkgadget_prefix_;
   bool allow_pairing_;
 
@@ -330,9 +324,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       state_(HOST_INITIALIZING),
       use_service_account_(false),
       allow_nat_traversal_(true),
-      allow_relay_(true),
-      min_udp_port_(0),
-      max_udp_port_(0),
       allow_pairing_(true),
       curtain_required_(false),
       enable_gnubby_auth_(false),
@@ -845,16 +836,6 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
                            &bool_value)) {
     restart_required |= OnNatPolicyUpdate(bool_value);
   }
-  if (policies->GetBoolean(policy_hack::PolicyWatcher::kRelayPolicyName,
-                           &bool_value)) {
-    restart_required |= OnRelayPolicyUpdate(bool_value);
-  }
-  std::string udp_port_range;
-  if (policies->GetString(policy_hack::PolicyWatcher::kUdpPortRangePolicyName,
-                           &udp_port_range)) {
-    restart_required |= OnUdpPortPolicyUpdate(udp_port_range);
-  }
-
   if (policies->GetString(
           policy_hack::PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
           &string_value)) {
@@ -956,49 +937,6 @@ bool HostProcess::OnNatPolicyUpdate(bool nat_traversal_enabled) {
     else
       HOST_LOG << "Policy disables NAT traversal.";
     allow_nat_traversal_ = nat_traversal_enabled;
-    return true;
-  }
-  return false;
-}
-
-bool HostProcess::OnRelayPolicyUpdate(bool allow_relay) {
-  // Returns true if the host has to be restarted after this policy update.
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (allow_relay_ != allow_relay) {
-    if (allow_relay)
-      HOST_LOG << "Policy enables use of relay server.";
-    else
-      HOST_LOG << "Policy disables use of relay server.";
-    allow_relay_ = allow_relay;
-    return true;
-  }
-  return false;
-}
-
-bool HostProcess::OnUdpPortPolicyUpdate(const std::string& udp_port_range) {
-  // Returns true if the host has to be restarted after this policy update.
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  // Use default values if policy setting is empty or invalid.
-  int min_udp_port = 0;
-  int max_udp_port = 0;
-  if (!udp_port_range.empty() &&
-      !NetworkSettings::ParsePortRange(udp_port_range, &min_udp_port,
-                                       &max_udp_port)) {
-    LOG(WARNING) << "Invalid port range policy: \"" << udp_port_range
-                 << "\". Using default values.";
-  }
-
-  if (min_udp_port_ != min_udp_port || max_udp_port_ != max_udp_port) {
-    if (min_udp_port != 0 && max_udp_port != 0) {
-      HOST_LOG << "Policy restricts UDP port range to [" << min_udp_port
-               << ", " << max_udp_port << "]";
-    } else {
-      HOST_LOG << "Policy does not restrict UDP port range.";
-    }
-    min_udp_port_ = min_udp_port;
-    max_udp_port_ = max_udp_port;
     return true;
   }
   return false;
@@ -1149,24 +1087,11 @@ void HostProcess::StartHost() {
     signaling_connector_->EnableOAuth(oauth_token_getter_.get());
   }
 
-  uint32 network_flags = allow_nat_traversal_ ?
-      NetworkSettings::NAT_TRAVERSAL_STUN : 0;
-
-  if (allow_relay_)
-    network_flags |= NetworkSettings::NAT_TRAVERSAL_RELAY;
-
-  if (allow_relay_ || allow_nat_traversal_)
-    network_flags |= NetworkSettings::NAT_TRAVERSAL_OUTGOING;
-
-  NetworkSettings network_settings(network_flags);
-
-  if (min_udp_port_ && max_udp_port_) {
-    network_settings.min_port = min_udp_port_;
-    network_settings.max_port = max_udp_port_;
-  } else if (!allow_nat_traversal_) {
-    // For legacy reasons we have to restrict the port range to a set of default
-    // values when nat traversal is disabled, even if the port range was not
-    // set in policy.
+  NetworkSettings network_settings(
+      allow_nat_traversal_ ?
+      NetworkSettings::NAT_TRAVERSAL_ENABLED :
+      NetworkSettings::NAT_TRAVERSAL_DISABLED);
+  if (!allow_nat_traversal_) {
     network_settings.min_port = NetworkSettings::kDefaultMinPort;
     network_settings.max_port = NetworkSettings::kDefaultMaxPort;
   }

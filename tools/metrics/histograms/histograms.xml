@@ -32751,10 +32751,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="260" label="Media keys default to function keys"/>
   <int value="261" label="Enable WPAD quick check"/>
   <int value="262" label="Wallpaper image"/>
-  <int value="263"
-      label="Enable the use of relay servers by the remote access host"/>
-  <int value="264"
-      label="Restrict the UDP port range used by the remote access host"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

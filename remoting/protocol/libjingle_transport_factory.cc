@@ -205,8 +205,10 @@ void LibjingleStreamTransport::DoStart() {
       this, &LibjingleStreamTransport::OnRouteChange);
   channel_->SignalWritableState.connect(
       this, &LibjingleStreamTransport::OnWritableState);
-  channel_->set_incoming_only(
-      !(network_settings_.flags & NetworkSettings::NAT_TRAVERSAL_OUTGOING));
+  if (network_settings_.nat_traversal_mode ==
+      NetworkSettings::NAT_TRAVERSAL_DISABLED) {
+    channel_->set_incoming_only(true);
+  }
 
   channel_->Connect();
 
@@ -450,9 +452,8 @@ LibjingleTransportFactory::CreateDatagramTransport() {
 }
 
 void LibjingleTransportFactory::EnsureFreshJingleInfo() {
-  uint32 stun_or_relay_flags = NetworkSettings::NAT_TRAVERSAL_STUN |
-      NetworkSettings::NAT_TRAVERSAL_RELAY;
-  if (!(network_settings_.flags & stun_or_relay_flags) ||
+  if (network_settings_.nat_traversal_mode !=
+          NetworkSettings::NAT_TRAVERSAL_ENABLED ||
       jingle_info_request_) {
     return;
   }

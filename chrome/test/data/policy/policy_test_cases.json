@@ -244,22 +244,6 @@
     ]
   },
 
-  "RemoteAccessHostAllowRelayedConnection": {
-    "os": [],
-    "test_policy": { "RemoteAccessHostAllowRelayedConnection": true },
-    "pref_mappings": [
-      { "pref": "remote_access.host_allow_relayed_connection" }
-    ]
-  },
-
-  "RemoteAccessHostUdpPortRange": {
-    "os": [],
-    "test_policy": { "RemoteAccessHostUdpPortRange": "12400-12409" },
-    "pref_mappings": [
-      { "pref": "remote_access.host_udp_port_range" }
-    ]
-  },
-
   "PrintingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrintingEnabled": false },

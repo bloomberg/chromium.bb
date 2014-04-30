@@ -184,7 +184,7 @@ void It2MeHost::FinishConnect() {
   HOST_LOG << "NAT state: " << nat_traversal_enabled_;
   NetworkSettings network_settings(
      nat_traversal_enabled_ ?
-     NetworkSettings::NAT_TRAVERSAL_FULL :
+     NetworkSettings::NAT_TRAVERSAL_ENABLED :
      NetworkSettings::NAT_TRAVERSAL_DISABLED);
   if (!nat_traversal_enabled_) {
     network_settings.min_port = NetworkSettings::kDefaultMinPort;
