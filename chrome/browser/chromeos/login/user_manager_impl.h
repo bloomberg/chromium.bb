@@ -483,10 +483,6 @@ class UserManagerImpl
   scoped_ptr<policy::CloudExternalDataPolicyObserver>
       wallpaper_policy_observer_;
 
-  // ID of the user just added to the session that needs to be activated
-  // as soon as user's profile is loaded.
-  std::string pending_user_switch_;
-
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };
 

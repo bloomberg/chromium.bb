@@ -153,15 +153,19 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   // Add second user and init its prefs with different values.
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  DisableAnimations();
   AddUser(kTestUsers[1]);
-  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(user1->is_active());
   const User* user2 = user_manager->FindUser(kTestUsers[1]);
-  EXPECT_TRUE(user2->is_active());
   PrefService* prefs2 = user_manager->GetProfileByUser(user2)->GetPrefs();
   SetPrefs(prefs2, true);
 
-  // Check that settings were changed accordingly.
+  // First user is still active, so settings was not changed.
+  EXPECT_TRUE(user1->is_active());
+  CheckSettingsCorrespondToPrefs(prefs1);
+
+  // Switch user and check that settings was changed accordingly.
+  DisableAnimations();
+  user_manager->SwitchActiveUser(kTestUsers[1]);
   EXPECT_TRUE(user2->is_active());
   CheckSettingsCorrespondToPrefs(prefs2);
 

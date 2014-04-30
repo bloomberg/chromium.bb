@@ -915,6 +915,9 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     const TestAccountInfo& info = kTestAccounts[PRIMARY_ACCOUNT_INDEX];
 
     AddUser(info, true);
+    chromeos::UserManager* const user_manager = chromeos::UserManager::Get();
+    if (user_manager->GetActiveUser() != user_manager->FindUser(info.email))
+      chromeos::UserManager::Get()->SwitchActiveUser(info.email);
     FileManagerBrowserTestBase::SetUpOnMainThread();
   }
 
