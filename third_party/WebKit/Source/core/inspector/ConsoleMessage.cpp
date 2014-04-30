@@ -233,6 +233,7 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     if (m_callStack)
         jsonObj->setStackTrace(m_callStack->buildInspectorArray());
     frontend->messageAdded(jsonObj);
+    frontend->flush();
 }
 
 void ConsoleMessage::windowCleared(DOMWindow* window)
