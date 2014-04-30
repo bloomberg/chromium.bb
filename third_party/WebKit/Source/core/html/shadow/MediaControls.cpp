@@ -29,17 +29,12 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaController.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
-
-#if OS(ANDROID)
-static const bool needOverlayPlayButton = true;
-#else
-static const bool needOverlayPlayButton = false;
-#endif
 
 static const double timeWithoutMouseMovementBeforeHidingMediaControls = 3;
 
@@ -79,7 +74,7 @@ bool MediaControls::initializeControls()
 {
     TrackExceptionState exceptionState;
 
-    if (needOverlayPlayButton) {
+    if (document().settings() && document().settings()->mediaControlsOverlayPlayButtonEnabled()) {
         RefPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
         RefPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(*this);
         m_overlayPlayButton = overlayPlayButton.get();

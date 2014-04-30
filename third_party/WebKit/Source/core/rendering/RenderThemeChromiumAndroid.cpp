@@ -81,11 +81,6 @@ void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, 
     }
 }
 
-bool RenderThemeChromiumAndroid::paintMediaOverlayPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return RenderMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
-}
-
 int RenderThemeChromiumAndroid::menuListArrowPadding() const
 {
     // We cannot use the scrollbar thickness here, as it's width is 0 on Android.

@@ -115,8 +115,38 @@ audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-bu
     color: inherit;
 }
 
-audio::-webkit-media-controls-overlay-enclosure, video::-webkit-media-controls-overlay-enclosure {
+audio::-webkit-media-controls-overlay-enclosure {
     display: none;
+}
+
+video::-webkit-media-controls-overlay-enclosure {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 1 1;
+    width: 100%;
+    max-width: 800px;
+    text-indent: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+video::-webkit-media-controls-overlay-play-button {
+    -webkit-appearance: media-overlay-play-button;
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -40px;
+    margin-top: -40px;
+    border: none;
+    box-sizing: border-box;
+    background-color: transparent;
+    width: 80px;
+    height: 80px;
+    padding: 0;
 }
 
 audio::-webkit-media-controls-play-button, video::-webkit-media-controls-play-button {

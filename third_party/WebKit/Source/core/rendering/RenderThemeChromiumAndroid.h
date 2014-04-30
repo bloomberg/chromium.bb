@@ -39,8 +39,6 @@ public:
 
     virtual bool delegatesMenuListRendering() const OVERRIDE { return true; }
 
-    virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-
     virtual String extraMediaControlsStyleSheet() OVERRIDE;
 
     virtual Color platformTapHighlightColor() const OVERRIDE
