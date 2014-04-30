@@ -86,11 +86,6 @@ PP_Bool Graphics3DResource::SetGetBuffer(int32_t shm_id) {
   return PP_FALSE;
 }
 
-gpu::CommandBuffer::State Graphics3DResource::GetState() {
-  NOTIMPLEMENTED();
-  return GetErrorState();
-}
-
 scoped_refptr<gpu::Buffer> Graphics3DResource::CreateTransferBuffer(
     uint32_t size,
     int32* id) {

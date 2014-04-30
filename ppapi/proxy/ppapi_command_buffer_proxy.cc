@@ -29,20 +29,6 @@ bool PpapiCommandBufferProxy::Initialize() {
   return true;
 }
 
-gpu::CommandBuffer::State PpapiCommandBufferProxy::GetState() {
-  // Send will flag state with lost context if IPC fails.
-  if (last_state_.error == gpu::error::kNoError) {
-    gpu::CommandBuffer::State state;
-    bool success = false;
-    if (Send(new PpapiHostMsg_PPBGraphics3D_GetState(
-             ppapi::API_ID_PPB_GRAPHICS_3D, resource_, &state, &success))) {
-      UpdateState(state, success);
-    }
-  }
-
-  return last_state_;
-}
-
 gpu::CommandBuffer::State PpapiCommandBufferProxy::GetLastState() {
   ppapi::ProxyLock::AssertAcquiredDebugOnly();
   return last_state_;

@@ -47,7 +47,7 @@ void GpuScheduler::PutChanged() {
      "gpu", "GpuScheduler:PutChanged",
      "decoder", decoder_ ? decoder_->GetLogger()->GetLogPrefix() : "None");
 
-  CommandBuffer::State state = command_buffer_->GetState();
+  CommandBuffer::State state = command_buffer_->GetLastState();
 
   // If there is no parser, exit.
   if (!parser_.get()) {

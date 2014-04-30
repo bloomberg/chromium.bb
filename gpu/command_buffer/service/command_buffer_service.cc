@@ -37,7 +37,7 @@ bool CommandBufferService::Initialize() {
   return true;
 }
 
-CommandBufferService::State CommandBufferService::GetState() {
+CommandBufferService::State CommandBufferService::GetLastState() {
   State state;
   state.num_entries = num_entries_;
   state.get_offset = get_offset_;
@@ -50,17 +50,13 @@ CommandBufferService::State CommandBufferService::GetState() {
   return state;
 }
 
-CommandBufferService::State CommandBufferService::GetLastState() {
-  return GetState();
-}
-
 int32 CommandBufferService::GetLastToken() {
-  return GetState().token;
+  return GetLastState().token;
 }
 
 void CommandBufferService::UpdateState() {
   if (shared_state_) {
-    CommandBufferService::State state = GetState();
+    CommandBufferService::State state = GetLastState();
     shared_state_->Write(state);
   }
 }

@@ -25,10 +25,6 @@ bool MockCommandBufferBase::Initialize() {
   return true;
 }
 
-CommandBuffer::State MockCommandBufferBase::GetState() {
-  return state_;
-}
-
 CommandBuffer::State MockCommandBufferBase::GetLastState() {
   return state_;
 }

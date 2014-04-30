@@ -508,10 +508,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ProduceFrontBuffer,
                     gpu::Mailbox /* mailbox */)
 
-// Get the current state of the command buffer.
-IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetState,
-                           gpu::CommandBuffer::State /* state */)
-
 // Wait until the token is in a specific range, inclusive.
 IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_WaitForTokenInRange,
                            int32 /* start */,

@@ -89,10 +89,6 @@ PP_Bool PPB_Graphics3D_Impl::SetGetBuffer(int32_t transfer_buffer_id) {
   return PP_TRUE;
 }
 
-gpu::CommandBuffer::State PPB_Graphics3D_Impl::GetState() {
-  return GetCommandBuffer()->GetState();
-}
-
 scoped_refptr<gpu::Buffer> PPB_Graphics3D_Impl::CreateTransferBuffer(
     uint32_t size,
     int32_t* id) {

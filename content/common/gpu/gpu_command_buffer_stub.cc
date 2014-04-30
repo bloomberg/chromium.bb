@@ -210,7 +210,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ProduceFrontBuffer,
                         OnProduceFrontBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Echo, OnEcho);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForTokenInRange,
                                     OnWaitForTokenInRange);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForGetOffsetInRange,
@@ -394,7 +393,7 @@ void GpuCommandBufferStub::Destroy() {
 
   bool have_context = false;
   if (decoder_ && command_buffer_ &&
-      command_buffer_->GetState().error != gpu::error::kLostContext)
+      command_buffer_->GetLastState().error != gpu::error::kLostContext)
     have_context = decoder_->MakeCurrent();
   FOR_EACH_OBSERVER(DestructionObserver,
                     destruction_observers_,
@@ -651,23 +650,10 @@ void GpuCommandBufferStub::OnProduceFrontBuffer(const gpu::Mailbox& mailbox) {
   decoder_->ProduceFrontBuffer(mailbox);
 }
 
-void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnGetState");
-  if (command_buffer_) {
-    gpu::CommandBuffer::State state = command_buffer_->GetState();
-    CheckContextLost();
-    GpuCommandBufferMsg_GetState::WriteReplyParams(reply_message, state);
-  } else {
-    DLOG(ERROR) << "no command_buffer.";
-    reply_message->set_reply_error();
-  }
-  Send(reply_message);
-}
-
 void GpuCommandBufferStub::OnParseError() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnParseError");
   DCHECK(command_buffer_.get());
-  gpu::CommandBuffer::State state = command_buffer_->GetState();
+  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   IPC::Message* msg = new GpuCommandBufferMsg_Destroyed(
       route_id_, state.context_lost_reason);
   msg->set_unblock(true);
@@ -714,7 +700,7 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
 
 void GpuCommandBufferStub::CheckCompleteWaits() {
   if (wait_for_token_ || wait_for_get_offset_) {
-    gpu::CommandBuffer::State state = command_buffer_->GetState();
+    gpu::CommandBuffer::State state = command_buffer_->GetLastState();
     if (wait_for_token_ &&
         (gpu::CommandBuffer::InRange(
              wait_for_token_->start, wait_for_token_->end, state.token) ||
@@ -1042,7 +1028,7 @@ void GpuCommandBufferStub::SuggestHaveFrontBuffer(
 
 bool GpuCommandBufferStub::CheckContextLost() {
   DCHECK(command_buffer_);
-  gpu::CommandBuffer::State state = command_buffer_->GetState();
+  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   bool was_lost = state.error == gpu::error::kLostContext;
   // Lose all other contexts if the reset was triggered by the robustness
   // extension instead of being synthetic.
@@ -1056,7 +1042,7 @@ bool GpuCommandBufferStub::CheckContextLost() {
 
 void GpuCommandBufferStub::MarkContextLost() {
   if (!command_buffer_ ||
-      command_buffer_->GetState().error == gpu::error::kLostContext)
+      command_buffer_->GetLastState().error == gpu::error::kLostContext)
     return;
 
   command_buffer_->SetContextLostReason(gpu::error::kUnknown);

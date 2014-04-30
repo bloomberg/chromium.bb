@@ -34,19 +34,19 @@ class CommandBufferServiceTest : public testing::Test {
   }
 
   int32 GetGetOffset() {
-    return command_buffer_->GetState().get_offset;
+    return command_buffer_->GetLastState().get_offset;
   }
 
   int32 GetPutOffset() {
-    return command_buffer_->GetState().put_offset;
+    return command_buffer_->GetLastState().put_offset;
   }
 
   int32 GetToken() {
-    return command_buffer_->GetState().token;
+    return command_buffer_->GetLastState().token;
   }
 
   int32 GetError() {
-    return command_buffer_->GetState().error;
+    return command_buffer_->GetLastState().error;
   }
 
   bool Initialize(size_t size) {
@@ -63,7 +63,7 @@ class CommandBufferServiceTest : public testing::Test {
 
 TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
   EXPECT_TRUE(Initialize(1024));
-  CommandBuffer::State state = command_buffer_->GetState();
+  CommandBuffer::State state = command_buffer_->GetLastState();
   EXPECT_EQ(0, state.get_offset);
   EXPECT_EQ(0, state.put_offset);
   EXPECT_EQ(0, state.token);

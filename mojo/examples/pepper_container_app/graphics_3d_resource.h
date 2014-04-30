@@ -35,7 +35,6 @@ class Graphics3DResource : public ppapi::Resource,
       scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t GetAttribMaxValue(int32_t attribute, int32_t* value) OVERRIDE;
   virtual PP_Bool SetGetBuffer(int32_t shm_id) OVERRIDE;
-  virtual gpu::CommandBuffer::State GetState() OVERRIDE;
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                           int32* id) OVERRIDE;
   virtual PP_Bool DestroyTransferBuffer(int32_t id) OVERRIDE;

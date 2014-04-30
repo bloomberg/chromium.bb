@@ -92,7 +92,7 @@ class BaseRingBufferTest : public testing::Test {
   }
 
   int32 GetToken() {
-    return command_buffer_->GetState().token;
+    return command_buffer_->GetLastState().token;
   }
 
 #if defined(OS_MACOSX)
@@ -295,7 +295,7 @@ TEST_F(RingBufferWrapperTest, TestFreePendingToken) {
   EXPECT_LE(tokens[0], GetToken());
 
   allocator_->FreePendingToken(pointer1, helper_->InsertToken());
-  EXPECT_LE(command_buffer_->GetState().token, helper_->InsertToken());
+  EXPECT_LE(command_buffer_->GetLastState().token, helper_->InsertToken());
 }
 
 }  // namespace gpu

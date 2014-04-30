@@ -163,18 +163,6 @@ bool CommandBufferProxyImpl::Initialize() {
   return true;
 }
 
-gpu::CommandBuffer::State CommandBufferProxyImpl::GetState() {
-  // Send will flag state with lost context if IPC fails.
-  if (last_state_.error == gpu::error::kNoError) {
-    gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_GetState(route_id_, &state)))
-      OnUpdateState(state);
-  }
-
-  TryUpdateState();
-  return last_state_;
-}
-
 gpu::CommandBuffer::State CommandBufferProxyImpl::GetLastState() {
   return last_state_;
 }

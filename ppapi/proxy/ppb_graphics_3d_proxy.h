@@ -35,7 +35,6 @@ class Graphics3D : public PPB_Graphics3D_Shared {
 
   // Graphics3DTrusted API. These are not implemented in the proxy.
   virtual PP_Bool SetGetBuffer(int32_t shm_id) OVERRIDE;
-  virtual gpu::CommandBuffer::State GetState() OVERRIDE;
   virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                           int32* id) OVERRIDE;
@@ -80,9 +79,6 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                    HostResource* result);
   void OnMsgSetGetBuffer(const HostResource& context,
                          int32 id);
-  void OnMsgGetState(const HostResource& context,
-                     gpu::CommandBuffer::State* state,
-                     bool* success);
   void OnMsgWaitForTokenInRange(const HostResource& context,
                                 int32 start,
                                 int32 end,

@@ -46,7 +46,6 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
 
   // CommandBuffer implementation:
   virtual bool Initialize() OVERRIDE;
-  virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
   virtual int32 GetLastToken() OVERRIDE;
   virtual void Flush(int32 put_offset) OVERRIDE;

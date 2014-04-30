@@ -23,7 +23,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
 
   // PPB_Graphics3D_API trusted implementation.
   virtual PP_Bool SetGetBuffer(int32_t transfer_buffer_id) OVERRIDE;
-  virtual gpu::CommandBuffer::State GetState() OVERRIDE;
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                           int32* id) OVERRIDE;
   virtual PP_Bool DestroyTransferBuffer(int32_t id) OVERRIDE;

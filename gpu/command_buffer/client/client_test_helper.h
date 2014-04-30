@@ -29,7 +29,6 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   virtual ~MockCommandBufferBase();
 
   virtual bool Initialize() OVERRIDE;
-  virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
   virtual int32 GetLastToken() OVERRIDE;
   virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;

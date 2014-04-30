@@ -82,7 +82,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   // CommandBuffer implementation:
   virtual bool Initialize() OVERRIDE;
-  virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
   virtual int32 GetLastToken() OVERRIDE;
   virtual void Flush(int32 put_offset) OVERRIDE;

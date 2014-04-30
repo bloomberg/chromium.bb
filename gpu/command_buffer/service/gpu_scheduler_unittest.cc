@@ -44,7 +44,7 @@ class GpuSchedulerTest : public testing::Test {
 
     CommandBuffer::State default_state;
     default_state.num_entries = kRingBufferEntries;
-    ON_CALL(*command_buffer_.get(), GetState())
+    ON_CALL(*command_buffer_.get(), GetLastState())
         .WillByDefault(Return(default_state));
 
     decoder_.reset(new gles2::MockGLES2Decoder());
@@ -64,7 +64,7 @@ class GpuSchedulerTest : public testing::Test {
   }
 
   error::Error GetError() {
-    return command_buffer_->GetState().error;
+    return command_buffer_->GetLastState().error;
   }
 
 #if defined(OS_MACOSX)
@@ -82,7 +82,7 @@ TEST_F(GpuSchedulerTest, SchedulerDoesNothingIfRingBufferIsEmpty) {
   CommandBuffer::State state;
 
   state.put_offset = 0;
-  EXPECT_CALL(*command_buffer_, GetState())
+  EXPECT_CALL(*command_buffer_, GetLastState())
     .WillRepeatedly(Return(state));
 
   EXPECT_CALL(*command_buffer_, SetParseError(_))
@@ -118,7 +118,7 @@ TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
   CommandBuffer::State state;
 
   state.put_offset = 2;
-  EXPECT_CALL(*command_buffer_, GetState())
+  EXPECT_CALL(*command_buffer_, GetLastState())
     .WillRepeatedly(Return(state));
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
@@ -142,7 +142,7 @@ TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
   CommandBuffer::State state;
 
   state.put_offset = 3;
-  EXPECT_CALL(*command_buffer_, GetState())
+  EXPECT_CALL(*command_buffer_, GetLastState())
     .WillRepeatedly(Return(state));
 
   EXPECT_CALL(*decoder_, DoCommand(7, 1, &buffer_[0]))
@@ -164,7 +164,7 @@ TEST_F(GpuSchedulerTest, SetsErrorCodeOnCommandBuffer) {
   CommandBuffer::State state;
 
   state.put_offset = 1;
-  EXPECT_CALL(*command_buffer_, GetState())
+  EXPECT_CALL(*command_buffer_, GetLastState())
     .WillRepeatedly(Return(state));
 
   EXPECT_CALL(*decoder_, DoCommand(7, 0, &buffer_[0]))
@@ -185,7 +185,7 @@ TEST_F(GpuSchedulerTest, ProcessCommandsDoesNothingAfterError) {
   CommandBuffer::State state;
   state.error = error::kGenericError;
 
-  EXPECT_CALL(*command_buffer_, GetState())
+  EXPECT_CALL(*command_buffer_, GetLastState())
     .WillRepeatedly(Return(state));
 
   scheduler_->PutChanged();

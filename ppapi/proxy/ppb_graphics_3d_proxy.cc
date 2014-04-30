@@ -68,10 +68,6 @@ PP_Bool Graphics3D::SetGetBuffer(int32_t /* transfer_buffer_id */) {
   return PP_FALSE;
 }
 
-gpu::CommandBuffer::State Graphics3D::GetState() {
-  return GetErrorState();
-}
-
 PP_Bool Graphics3D::Flush(int32_t put_offset) {
   return PP_FALSE;
 }
@@ -181,8 +177,6 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
                         OnMsgSetGetBuffer)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_GetState,
-                        OnMsgGetState)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_WaitForTokenInRange,
                         OnMsgWaitForTokenInRange)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange,
@@ -234,18 +228,6 @@ void PPB_Graphics3D_Proxy::OnMsgSetGetBuffer(
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
   if (enter.succeeded())
     enter.object()->SetGetBuffer(transfer_buffer_id);
-}
-
-void PPB_Graphics3D_Proxy::OnMsgGetState(const HostResource& context,
-                                         gpu::CommandBuffer::State* state,
-                                         bool* success) {
-  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
-  if (enter.failed()) {
-    *success = false;
-    return;
-  }
-  *state = enter.object()->GetState();
-  *success = true;
 }
 
 void PPB_Graphics3D_Proxy::OnMsgWaitForTokenInRange(

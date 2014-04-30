@@ -68,7 +68,7 @@ class MappedMemoryTestBase : public testing::Test {
   }
 
   int32 GetToken() {
-    return command_buffer_->GetState().token;
+    return command_buffer_->GetLastState().token;
   }
 
 #if defined(OS_MACOSX)

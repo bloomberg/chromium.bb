@@ -259,7 +259,7 @@ const gpu::gles2::FeatureInfo::Workarounds& GLManager::workarounds() const {
 void GLManager::PumpCommands() {
   decoder_->MakeCurrent();
   gpu_scheduler_->PutChanged();
-  ::gpu::CommandBuffer::State state = command_buffer_->GetState();
+  ::gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   if (!context_lost_allowed_) {
     ASSERT_EQ(::gpu::error::kNoError, state.error);
   }

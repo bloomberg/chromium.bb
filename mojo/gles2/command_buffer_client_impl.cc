@@ -86,11 +86,6 @@ bool CommandBufferClientImpl::Initialize() {
   return initialize_result_;
 }
 
-gpu::CommandBuffer::State CommandBufferClientImpl::GetState() {
-  MakeProgressAndUpdateState();
-  return last_state_;
-}
-
 gpu::CommandBuffer::State CommandBufferClientImpl::GetLastState() {
   return last_state_;
 }

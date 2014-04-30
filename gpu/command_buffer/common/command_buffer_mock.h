@@ -22,7 +22,6 @@ class MockCommandBuffer : public CommandBufferServiceBase {
   virtual ~MockCommandBuffer();
 
   MOCK_METHOD0(Initialize, bool());
-  MOCK_METHOD0(GetState, State());
   MOCK_METHOD0(GetLastState, State());
   MOCK_METHOD0(GetLastToken, int32());
   MOCK_METHOD1(Flush, void(int32 put_offset));

@@ -82,9 +82,6 @@ class GPU_EXPORT CommandBuffer {
   // Initialize the command buffer with the given size.
   virtual bool Initialize() = 0;
 
-  // Returns the current status.
-  virtual State GetState() = 0;
-
   // Returns the last state without synchronizing with the service.
   virtual State GetLastState() = 0;
 

@@ -231,11 +231,11 @@ class CommandBufferHelperTest : public testing::Test {
   }
 
   int32 GetGetOffset() {
-    return command_buffer_->GetState().get_offset;
+    return command_buffer_->GetLastState().get_offset;
   }
 
   int32 GetPutOffset() {
-    return command_buffer_->GetState().put_offset;
+    return command_buffer_->GetLastState().put_offset;
   }
 
   int32 GetHelperGetOffset() { return helper_->get_offset(); }
@@ -245,7 +245,7 @@ class CommandBufferHelperTest : public testing::Test {
   uint32 GetHelperFlushGeneration() { return helper_->flush_generation(); }
 
   error::Error GetError() {
-    return command_buffer_->GetState().error;
+    return command_buffer_->GetLastState().error;
   }
 
   CommandBufferOffset get_helper_put() { return helper_->put_; }

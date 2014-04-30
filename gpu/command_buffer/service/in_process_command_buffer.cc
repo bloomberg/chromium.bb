@@ -483,11 +483,6 @@ CommandBuffer::State InProcessCommandBuffer::GetStateFast() {
   return last_state_;
 }
 
-CommandBuffer::State InProcessCommandBuffer::GetState() {
-  CheckSequencedThread();
-  return GetStateFast();
-}
-
 CommandBuffer::State InProcessCommandBuffer::GetLastState() {
   CheckSequencedThread();
   return last_state_;
@@ -507,7 +502,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32 put_offset) {
   {
     // Update state before signaling the flush event.
     base::AutoLock lock(state_after_last_flush_lock_);
-    state_after_last_flush_ = command_buffer_->GetState();
+    state_after_last_flush_ = command_buffer_->GetLastState();
   }
   DCHECK((!error::IsError(state_after_last_flush_.error) && !context_lost_) ||
          (error::IsError(state_after_last_flush_.error) && context_lost_));
@@ -578,7 +573,7 @@ void InProcessCommandBuffer::SetGetBuffer(int32 shm_id) {
   }
   {
     base::AutoLock lock(state_after_last_flush_lock_);
-    state_after_last_flush_ = command_buffer_->GetState();
+    state_after_last_flush_ = command_buffer_->GetLastState();
   }
 }
 

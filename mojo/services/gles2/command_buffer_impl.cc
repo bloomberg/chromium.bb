@@ -148,7 +148,7 @@ void CommandBufferImpl::Flush(int32_t put_offset) {
 void CommandBufferImpl::MakeProgress(int32_t last_get_offset) {
   // TODO(piman): handle out-of-order.
   AllocationScope scope;
-  sync_client_->DidMakeProgress(command_buffer_->GetState());
+  sync_client_->DidMakeProgress(command_buffer_->GetLastState());
 }
 
 void CommandBufferImpl::RegisterTransferBuffer(
@@ -184,7 +184,7 @@ void CommandBufferImpl::RequestAnimationFrames() {
 void CommandBufferImpl::CancelAnimationFrames() { timer_.Stop(); }
 
 void CommandBufferImpl::OnParseError() {
-  gpu::CommandBuffer::State state = command_buffer_->GetState();
+  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   client_->LostContext(state.context_lost_reason);
 }
 
