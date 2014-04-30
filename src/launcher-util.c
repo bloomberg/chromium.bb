@@ -390,6 +390,11 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty,
 	launcher->fd = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
 	if (launcher->fd != -1) {
 		launcher->tty = weston_environment_get_fd("WESTON_TTY_FD");
+		/* We don't get a chance to read out the original kb
+		 * mode for the tty, so just hard code K_UNICODE here
+		 * in case we have to clean if weston-launch dies. */
+		launcher->kb_mode = K_UNICODE;
+
 		loop = wl_display_get_event_loop(compositor->wl_display);
 		launcher->source = wl_event_loop_add_fd(loop, launcher->fd,
 							WL_EVENT_READABLE,
