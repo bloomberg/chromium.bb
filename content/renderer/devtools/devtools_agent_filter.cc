@@ -62,8 +62,8 @@ DevToolsAgentFilter::~DevToolsAgentFilter() {}
 
 void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
     const std::string& message) {
-  if (shared_worker_routes_.find(current_routing_id_) !=
-      shared_worker_routes_.end()) {
+  if (embedded_worker_routes_.find(current_routing_id_) !=
+      embedded_worker_routes_.end()) {
     message_handled_ = false;
     return;
   }
@@ -79,26 +79,27 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
       FROM_HERE, base::Bind(&WebDevToolsAgent::processPendingMessages));
 }
 
-void DevToolsAgentFilter::AddSharedWorkerRouteOnMainThread(int32 routing_id) {
+void DevToolsAgentFilter::AddEmbeddedWorkerRouteOnMainThread(int32 routing_id) {
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&DevToolsAgentFilter::AddSharedWorkerRoute, this, routing_id));
+      base::Bind(
+          &DevToolsAgentFilter::AddEmbeddedWorkerRoute, this, routing_id));
 }
 
-void DevToolsAgentFilter::RemoveSharedWorkerRouteOnMainThread(
+void DevToolsAgentFilter::RemoveEmbeddedWorkerRouteOnMainThread(
     int32 routing_id) {
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(
-          &DevToolsAgentFilter::RemoveSharedWorkerRoute, this, routing_id));
+          &DevToolsAgentFilter::RemoveEmbeddedWorkerRoute, this, routing_id));
 }
 
-void DevToolsAgentFilter::AddSharedWorkerRoute(int32 routing_id) {
-  shared_worker_routes_.insert(routing_id);
+void DevToolsAgentFilter::AddEmbeddedWorkerRoute(int32 routing_id) {
+  embedded_worker_routes_.insert(routing_id);
 }
 
-void DevToolsAgentFilter::RemoveSharedWorkerRoute(int32 routing_id) {
-  shared_worker_routes_.erase(routing_id);
+void DevToolsAgentFilter::RemoveEmbeddedWorkerRoute(int32 routing_id) {
+  embedded_worker_routes_.erase(routing_id);
 }
 
 }  // namespace content

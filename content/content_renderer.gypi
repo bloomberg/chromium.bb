@@ -501,6 +501,8 @@
     'renderer/service_worker/embedded_worker_context_client.h',
     'renderer/service_worker/embedded_worker_context_message_filter.cc',
     'renderer/service_worker/embedded_worker_context_message_filter.h',
+    'renderer/service_worker/embedded_worker_devtools_agent.cc',
+    'renderer/service_worker/embedded_worker_devtools_agent.h',
     'renderer/service_worker/embedded_worker_dispatcher.cc',
     'renderer/service_worker/embedded_worker_dispatcher.h',
     'renderer/service_worker/service_worker_script_context.cc',

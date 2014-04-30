@@ -664,19 +664,19 @@ void RenderThreadImpl::RemoveRoute(int32 routing_id) {
   ChildThread::GetRouter()->RemoveRoute(routing_id);
 }
 
-void RenderThreadImpl::AddSharedWorkerRoute(int32 routing_id,
-                                            IPC::Listener* listener) {
+void RenderThreadImpl::AddEmbeddedWorkerRoute(int32 routing_id,
+                                              IPC::Listener* listener) {
   AddRoute(routing_id, listener);
   if (devtools_agent_message_filter_.get()) {
-    devtools_agent_message_filter_->AddSharedWorkerRouteOnMainThread(
+    devtools_agent_message_filter_->AddEmbeddedWorkerRouteOnMainThread(
         routing_id);
   }
 }
 
-void RenderThreadImpl::RemoveSharedWorkerRoute(int32 routing_id) {
+void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32 routing_id) {
   RemoveRoute(routing_id);
   if (devtools_agent_message_filter_.get()) {
-    devtools_agent_message_filter_->RemoveSharedWorkerRouteOnMainThread(
+    devtools_agent_message_filter_->RemoveEmbeddedWorkerRouteOnMainThread(
         routing_id);
   }
 }

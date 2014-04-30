@@ -11,10 +11,12 @@
 #include "content/child/scoped_child_process_reference.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
+#include "content/common/devtools_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
+#include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
@@ -26,7 +28,10 @@ namespace content {
 // references automatically.
 class EmbeddedWorkerDispatcher::WorkerWrapper {
  public:
-  explicit WorkerWrapper(blink::WebEmbeddedWorker* worker) : worker_(worker) {}
+  WorkerWrapper(blink::WebEmbeddedWorker* worker, int devtools_agent_route_id)
+      : worker_(worker),
+        dev_tools_agent_(
+            new EmbeddedWorkerDevToolsAgent(worker, devtools_agent_route_id)) {}
   ~WorkerWrapper() {}
 
   blink::WebEmbeddedWorker* worker() { return worker_.get(); }
@@ -34,6 +39,7 @@ class EmbeddedWorkerDispatcher::WorkerWrapper {
  private:
   ScopedChildProcessReference process_ref_;
   scoped_ptr<blink::WebEmbeddedWorker> worker_;
+  scoped_ptr<EmbeddedWorkerDevToolsAgent> dev_tools_agent_;
 };
 
 EmbeddedWorkerDispatcher::EmbeddedWorkerDispatcher() : weak_factory_(this) {}
@@ -64,13 +70,14 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
   RenderThread::Get()->EnsureWebKitInitialized();
   scoped_ptr<WorkerWrapper> wrapper(
       new WorkerWrapper(blink::WebEmbeddedWorker::create(
-          new EmbeddedWorkerContextClient(
-              params.embedded_worker_id,
-              params.service_worker_version_id,
-              params.scope,
-              params.script_url,
-              params.worker_devtools_agent_route_id),
-          NULL)));
+                            new EmbeddedWorkerContextClient(
+                                params.embedded_worker_id,
+                                params.service_worker_version_id,
+                                params.scope,
+                                params.script_url,
+                                params.worker_devtools_agent_route_id),
+                            NULL),
+                        params.worker_devtools_agent_route_id));
 
   blink::WebEmbeddedWorkerStartData start_data;
   start_data.scriptURL = params.script_url;
