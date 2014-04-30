@@ -582,13 +582,6 @@ crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
 
-# Skia suppressions
-Bug(fmalita) virtual/deferred/fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
-Bug(fmalita) fast/canvas/image-pattern-rotate.html [ NeedsRebaseline ]
-Bug(fmalita) virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
-Bug(fmalita) fast/gradients/radial-centered.html [ NeedsRebaseline ]
-Bug(fmalita) svg/custom/radialGradient-focal-radius.svg [ NeedsRebaseline ]
-
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
