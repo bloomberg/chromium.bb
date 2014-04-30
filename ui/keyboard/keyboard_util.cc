@@ -118,7 +118,11 @@ bool IsKeyboardOverscrollEnabled() {
       switches::kDisableVirtualKeyboardOverscroll)) {
     return false;
   }
-  return true;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVirtualKeyboardOverscroll)) {
+    return true;
+  }
+  return false;
 }
 
 bool IsInputViewEnabled() {
