@@ -101,6 +101,7 @@ private:
 class InputFieldSpeechButtonElement FINAL
     : public HTMLDivElement,
       public SpeechInputListener {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InputFieldSpeechButtonElement);
 public:
     enum SpeechInputState {
         Idle,
@@ -124,6 +125,8 @@ public:
     virtual void didCompleteRecognition(int) OVERRIDE;
     virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     InputFieldSpeechButtonElement(Document&);
     SpeechInput* speechInput();
@@ -134,7 +137,7 @@ private:
     bool m_capturing;
     SpeechInputState m_state;
     int m_listenerId;
-    WillBePersistentSpeechInputResultArray m_results;
+    SpeechInputResultArray m_results;
 };
 
 DEFINE_TYPE_CASTS(InputFieldSpeechButtonElement, Element, element, element->isInputFieldSpeechButtonElement(), element.isInputFieldSpeechButtonElement());

@@ -55,9 +55,9 @@ void fileSystemNotAllowed(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks
 
 } // namespace
 
-PassOwnPtr<LocalFileSystem> LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
+PassOwnPtrWillBeRawPtr<LocalFileSystem> LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
 {
-    return adoptPtr(new LocalFileSystem(client));
+    return adoptPtrWillBeNoop(new LocalFileSystem(client));
 }
 
 LocalFileSystem::~LocalFileSystem()
@@ -109,10 +109,10 @@ const char* LocalFileSystem::supplementName()
 LocalFileSystem* LocalFileSystem::from(ExecutionContext& context)
 {
     if (context.isDocument()) {
-        return static_cast<LocalFileSystem*>(Supplement<Page>::from(toDocument(context).page(), supplementName()));
+        return static_cast<LocalFileSystem*>(WillBeHeapSupplement<Page>::from(toDocument(context).page(), supplementName()));
     }
     ASSERT(context.isWorkerGlobalScope());
-    return static_cast<LocalFileSystem*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context).clients(), supplementName()));
+    return static_cast<LocalFileSystem*>(WillBeHeapSupplement<WorkerClients>::from(toWorkerGlobalScope(context).clients(), supplementName()));
 }
 
 void provideLocalFileSystemTo(Page& page, PassOwnPtr<FileSystemClient> client)

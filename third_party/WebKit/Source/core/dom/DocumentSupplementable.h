@@ -34,8 +34,8 @@ namespace WebCore {
 
 class Document;
 
-typedef Supplementable<Document> DocumentSupplementable;
-typedef Supplement<Document> DocumentSupplement;
+typedef WillBeHeapSupplementable<Document> DocumentSupplementable;
+typedef WillBeHeapSupplement<Document> DocumentSupplement;
 
 } // namespace WebCore
 

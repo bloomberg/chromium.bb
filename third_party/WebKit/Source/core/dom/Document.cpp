@@ -5658,13 +5658,6 @@ void Document::clearWeakMembers(Visitor* visitor)
         for (unsigned i = 0; i < deadNodes.size(); ++i)
             didClearTouchEventHandlers(deadNodes[i]);
     }
-
-    EventHandlerRegistry* registry = static_cast<EventHandlerRegistry*>(DocumentSupplement::from(this, EventHandlerRegistry::supplementName()));
-    // FIXME: Oilpan: This is pretty funky. The current code disables all modifications of the
-    // EventHandlerRegistry when the document becomes inactive. To keep that behavior we only
-    // perform weak processing of the registry when the document is active.
-    if (registry && isActive())
-        registry->clearWeakMembers(visitor);
 }
 
 void Document::trace(Visitor* visitor)
@@ -5673,7 +5666,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_visibilityObservers);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
-    Supplementable<Document>::trace(visitor);
+    DocumentSupplementable::trace(visitor);
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);
     ExecutionContext::trace(visitor);

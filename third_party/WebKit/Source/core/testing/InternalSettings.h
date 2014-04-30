@@ -43,7 +43,12 @@ class LocalFrame;
 class Page;
 class Settings;
 
+#if ENABLE(OILPAN)
+class InternalSettings FINAL : public InternalSettingsGenerated, public HeapSupplement<Page> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
+#else
 class InternalSettings FINAL : public InternalSettingsGenerated {
+#endif
 public:
     class Backup {
     public:
@@ -74,7 +79,10 @@ public:
         return adoptRefWillBeNoop(new InternalSettings(page));
     }
     static InternalSettings* from(Page&);
-    void hostDestroyed() { m_page = 0; }
+
+#if !ENABLE(OILPAN)
+    void hostDestroyed() { m_page = nullptr; }
+#endif
 
     virtual ~InternalSettings();
     void resetToConsistentState();
@@ -116,7 +124,7 @@ public:
     void setStyleScopedEnabled(bool);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { InternalSettingsGenerated::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit InternalSettings(Page&);
@@ -125,7 +133,7 @@ private:
     Page* page() const { return m_page; }
     static const char* supplementName();
 
-    Page* m_page;
+    RawPtrWillBeWeakMember<Page> m_page;
     Backup m_backup;
 };
 

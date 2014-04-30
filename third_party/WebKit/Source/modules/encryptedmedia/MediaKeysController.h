@@ -17,14 +17,13 @@ namespace WebCore {
 class ExecutionContext;
 class MediaKeysClient;
 
-class MediaKeysController FINAL : public Supplement<Page> {
+class MediaKeysController FINAL : public NoBaseWillBeGarbageCollected<MediaKeysController>, public WillBeHeapSupplement<Page> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeysController);
 public:
-    virtual ~MediaKeysController();
-
     PassOwnPtr<blink::WebContentDecryptionModule> createContentDecryptionModule(ExecutionContext*, const String& keySystem);
 
     static void provideMediaKeysTo(Page&, MediaKeysClient*);
-    static MediaKeysController* from(Page* page) { return static_cast<MediaKeysController*>(Supplement<Page>::from(page, supplementName())); }
+    static MediaKeysController* from(Page* page) { return static_cast<MediaKeysController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
 
     virtual void trace(Visitor*) OVERRIDE { }
 

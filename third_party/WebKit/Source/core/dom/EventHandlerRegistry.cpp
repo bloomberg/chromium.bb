@@ -44,7 +44,7 @@ EventHandlerRegistry* EventHandlerRegistry::from(Document& document)
     EventHandlerRegistry* registry = static_cast<EventHandlerRegistry*>(DocumentSupplement::from(document, supplementName()));
     if (!registry) {
         registry = new EventHandlerRegistry(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(registry));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(registry));
     }
     return registry;
 }
@@ -199,8 +199,18 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
     }
 }
 
+void EventHandlerRegistry::trace(Visitor* visitor)
+{
+    visitor->registerWeakMembers<EventHandlerRegistry, &EventHandlerRegistry::clearWeakMembers>(this);
+}
+
 void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
 {
+    // FIXME: Oilpan: This is pretty funky. The current code disables all modifications of the
+    // EventHandlerRegistry when the document becomes inactive. To keep that behavior we only
+    // perform weak processing of the registry when the document is active.
+    if (!m_document.isActive())
+        return;
     Vector<EventTarget*> deadNodeTargets;
     for (size_t i = 0; i < EventHandlerClassCount; ++i) {
         EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);

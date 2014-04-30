@@ -44,7 +44,7 @@ namespace WebCore {
 void HTMLImportsController::provideTo(Document& master)
 {
     DEFINE_STATIC_LOCAL(const char*, name, ("HTMLImportsController"));
-    OwnPtr<HTMLImportsController> controller = adoptPtr(new HTMLImportsController(master));
+    OwnPtrWillBeRawPtr<HTMLImportsController> controller = adoptPtrWillBeNoop(new HTMLImportsController(master));
     master.setImportsController(controller.get());
     DocumentSupplement::provideTo(master, name, controller.release());
 }

@@ -32,7 +32,8 @@
 
 namespace WebCore {
 
-class SpeechRecognitionController FINAL : public Supplement<Page> {
+class SpeechRecognitionController FINAL : public NoBaseWillBeGarbageCollectedFinalized<SpeechRecognitionController>, public WillBeHeapSupplement<Page> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 public:
     virtual ~SpeechRecognitionController();
 
@@ -44,9 +45,9 @@ public:
     void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
     void abort(SpeechRecognition* recognition) { m_client->abort(recognition); }
 
-    static PassOwnPtr<SpeechRecognitionController> create(PassOwnPtr<SpeechRecognitionClient>);
+    static PassOwnPtrWillBeRawPtr<SpeechRecognitionController> create(PassOwnPtr<SpeechRecognitionClient>);
     static const char* supplementName();
-    static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(Supplement<Page>::from(page, supplementName())); }
+    static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
 
     virtual void trace(Visitor*) OVERRIDE { }
 

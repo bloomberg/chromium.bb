@@ -65,7 +65,7 @@ DeviceOrientationController& DeviceOrientationController::from(Document& documen
     DeviceOrientationController* controller = static_cast<DeviceOrientationController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceOrientationController(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
     }
     return *controller;
 }
@@ -147,6 +147,11 @@ void DeviceOrientationController::clearOverride()
     DeviceOrientationData* orientation = lastData();
     if (orientation)
         didChangeDeviceOrientation(orientation);
+}
+
+void DeviceOrientationController::trace(Visitor* visitor)
+{
+    visitor->trace(m_overrideOrientationData);
 }
 
 } // namespace WebCore

@@ -413,6 +413,10 @@ public:
     {
         return isAlive(member.get());
     }
+    template<typename T> inline bool isAlive(RawPtr<T> ptr)
+    {
+        return isAlive(ptr.get());
+    }
 
 #ifndef NDEBUG
     void checkGCInfo(const void*, const GCInfo*);
@@ -642,13 +646,13 @@ public:
 
 #define USING_GARBAGE_COLLECTED_MIXIN(TYPE) \
 public: \
-    virtual void adjustAndMark(Visitor* visitor) const OVERRIDE \
+    virtual void adjustAndMark(WebCore::Visitor* visitor) const OVERRIDE    \
     { \
         typedef WTF::IsSubclassOfTemplate<TYPE, WebCore::GarbageCollected> IsSubclassOfGarbageCollected; \
         COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins); \
-        visitor->mark(this, &TraceTrait<TYPE>::trace);\
+        visitor->mark(this, &WebCore::TraceTrait<TYPE>::trace); \
     } \
-    virtual bool isAlive(Visitor* visitor) const OVERRIDE \
+    virtual bool isAlive(WebCore::Visitor* visitor) const OVERRIDE  \
     { \
         return visitor->isAlive(this); \
     }

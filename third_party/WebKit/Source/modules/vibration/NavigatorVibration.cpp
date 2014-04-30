@@ -157,10 +157,10 @@ bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& p
 
 NavigatorVibration& NavigatorVibration::from(Page& page)
 {
-    NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(Supplement<Page>::from(page, supplementName()));
+    NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
     if (!navigatorVibration) {
         navigatorVibration = new NavigatorVibration(page);
-        Supplement<Page>::provideTo(page, supplementName(), adoptPtr(navigatorVibration));
+        WillBeHeapSupplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(navigatorVibration));
     }
     return *navigatorVibration;
 }

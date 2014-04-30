@@ -40,10 +40,8 @@ class Document;
 class Page;
 class Prerender;
 
-class PrerendererClient : public Supplement<Page> {
+class PrerendererClient : public WillBeHeapSupplement<Page> {
 public:
-    virtual ~PrerendererClient() { }
-
     virtual void willAddPrerender(Prerender*) = 0;
 
     static const char* supplementName();

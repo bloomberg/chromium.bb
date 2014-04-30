@@ -70,7 +70,7 @@ FullscreenElementStack& FullscreenElementStack::from(Document& document)
     FullscreenElementStack* fullscreen = fromIfExists(document);
     if (!fullscreen) {
         fullscreen = new FullscreenElementStack(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(fullscreen));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(fullscreen));
     }
 
     return *fullscreen;

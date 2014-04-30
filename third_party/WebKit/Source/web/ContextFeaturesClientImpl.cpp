@@ -41,7 +41,8 @@ using namespace WebCore;
 
 namespace blink {
 
-class ContextFeaturesCache : public DocumentSupplement {
+class ContextFeaturesCache FINAL : public NoBaseWillBeGarbageCollectedFinalized<ContextFeaturesCache>, public DocumentSupplement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ContextFeaturesCache);
 public:
     class Entry {
     public:
@@ -107,7 +108,7 @@ ContextFeaturesCache& ContextFeaturesCache::from(Document& document)
     ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(DocumentSupplement::from(document, supplementName()));
     if (!cache) {
         cache = new ContextFeaturesCache();
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(cache));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
     }
 
     return *cache;

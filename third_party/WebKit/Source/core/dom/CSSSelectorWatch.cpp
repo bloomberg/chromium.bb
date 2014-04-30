@@ -57,7 +57,7 @@ CSSSelectorWatch& CSSSelectorWatch::from(Document& document)
     CSSSelectorWatch* watch = static_cast<CSSSelectorWatch*>(DocumentSupplement::from(document, kSupplementName));
     if (!watch) {
         watch = new CSSSelectorWatch(document);
-        DocumentSupplement::provideTo(document, kSupplementName, adoptPtr(watch));
+        DocumentSupplement::provideTo(document, kSupplementName, adoptPtrWillBeNoop(watch));
     }
     return *watch;
 }
@@ -162,6 +162,11 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
         m_watchedCallbackSelectors.append(rule.release());
     }
     m_document.changedSelectorWatch();
+}
+
+void CSSSelectorWatch::trace(Visitor* visitor)
+{
+    visitor->trace(m_watchedCallbackSelectors);
 }
 
 } // namespace WebCore

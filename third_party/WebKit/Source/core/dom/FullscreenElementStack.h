@@ -47,8 +47,10 @@ class RenderStyle;
 class ExecutionContext;
 
 class FullscreenElementStack FINAL
-    : public DocumentSupplement
+    : public NoBaseWillBeGarbageCollectedFinalized<FullscreenElementStack>
+    , public DocumentSupplement
     , public DocumentLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FullscreenElementStack);
 public:
     virtual ~FullscreenElementStack();
     static const char* supplementName();

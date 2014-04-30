@@ -42,10 +42,11 @@ class AsyncFileSystemCallbacks;
 class FileSystemClient;
 class ExecutionContext;
 
-class LocalFileSystem FINAL : public Supplement<Page>, public Supplement<WorkerClients> {
+class LocalFileSystem FINAL : public NoBaseWillBeGarbageCollectedFinalized<LocalFileSystem>, public WillBeHeapSupplement<Page>, public WillBeHeapSupplement<WorkerClients> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
-    static PassOwnPtr<LocalFileSystem> create(PassOwnPtr<FileSystemClient>);
+    static PassOwnPtrWillBeRawPtr<LocalFileSystem> create(PassOwnPtr<FileSystemClient>);
     virtual ~LocalFileSystem();
 
     void resolveURL(ExecutionContext*, const KURL&, PassOwnPtr<AsyncFileSystemCallbacks>);

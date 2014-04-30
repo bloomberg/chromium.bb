@@ -46,10 +46,10 @@ DatabaseClient::DatabaseClient()
 DatabaseClient* DatabaseClient::from(ExecutionContext* context)
 {
     if (context->isDocument()) {
-        return static_cast<DatabaseClient*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
+        return static_cast<DatabaseClient*>(WillBeHeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
     }
     ASSERT(context->isWorkerGlobalScope());
-    return static_cast<DatabaseClient*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
+    return static_cast<DatabaseClient*>(WillBeHeapSupplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
 }
 
 const char* DatabaseClient::supplementName()
@@ -71,14 +71,14 @@ void DatabaseClient::createInspectorAgentFor(Page* page)
     page->inspectorController().registerModuleAgent(inspectorAgent.release());
 }
 
-void provideDatabaseClientTo(Page& page, PassOwnPtr<DatabaseClient> client)
+void provideDatabaseClientTo(Page& page, PassOwnPtrWillBeRawPtr<DatabaseClient> client)
 {
     DatabaseClient* clientPtr = client.get();
     page.provideSupplement(DatabaseClient::supplementName(), client);
     clientPtr->createInspectorAgentFor(&page);
 }
 
-void provideDatabaseClientToWorker(WorkerClients* workerClients, PassOwnPtr<DatabaseClient> client)
+void provideDatabaseClientToWorker(WorkerClients* workerClients, PassOwnPtrWillBeRawPtr<DatabaseClient> client)
 {
     workerClients->provideSupplement(DatabaseClient::supplementName(), client);
 }

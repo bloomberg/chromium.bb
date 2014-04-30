@@ -35,8 +35,8 @@ namespace WebCore {
 
 class DOMWindow;
 
-class WheelController FINAL : public DocumentSupplement, public DOMWindowLifecycleObserver {
-
+class WheelController FINAL : public NoBaseWillBeGarbageCollectedFinalized<WheelController>, public DocumentSupplement, public DOMWindowLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WheelController);
 public:
     virtual ~WheelController();
 

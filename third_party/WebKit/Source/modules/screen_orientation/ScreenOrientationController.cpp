@@ -23,7 +23,7 @@ ScreenOrientationController& ScreenOrientationController::from(Document& documen
     ScreenOrientationController* controller = static_cast<ScreenOrientationController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new ScreenOrientationController(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
     }
     return *controller;
 }

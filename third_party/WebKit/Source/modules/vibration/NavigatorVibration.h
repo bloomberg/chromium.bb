@@ -32,8 +32,10 @@ class LocalFrame;
 class Navigator;
 
 class NavigatorVibration FINAL
-    : public Supplement<Page>
+    : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVibration>
+    , public WillBeHeapSupplement<Page>
     , public PageLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
 public:
     typedef Vector<unsigned> VibrationPattern;
 

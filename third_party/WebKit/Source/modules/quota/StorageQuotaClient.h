@@ -42,7 +42,7 @@ class ScriptPromise;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 
-class StorageQuotaClient : public Supplement<Page> {
+class StorageQuotaClient : public WillBeHeapSupplement<Page> {
     WTF_MAKE_NONCOPYABLE(StorageQuotaClient);
 public:
     StorageQuotaClient() { }
@@ -55,7 +55,7 @@ public:
     static StorageQuotaClient* from(ExecutionContext*);
 };
 
-void provideStorageQuotaClientTo(Page&, PassOwnPtr<StorageQuotaClient>);
+void provideStorageQuotaClientTo(Page&, PassOwnPtrWillBeRawPtr<StorageQuotaClient>);
 
 } // namespace WebCore
 

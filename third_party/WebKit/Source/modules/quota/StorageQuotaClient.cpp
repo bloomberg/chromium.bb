@@ -43,10 +43,10 @@ const char* StorageQuotaClient::supplementName()
 
 StorageQuotaClient* StorageQuotaClient::from(ExecutionContext* context)
 {
-    return static_cast<StorageQuotaClient*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
+    return static_cast<StorageQuotaClient*>(WillBeHeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
 }
 
-void provideStorageQuotaClientTo(Page& page, PassOwnPtr<StorageQuotaClient> client)
+void provideStorageQuotaClientTo(Page& page, PassOwnPtrWillBeRawPtr<StorageQuotaClient> client)
 {
     page.provideSupplement(StorageQuotaClient::supplementName(), client);
 }

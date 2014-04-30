@@ -42,12 +42,13 @@ class WorkerGlobalScopeProxy;
 
 namespace blink {
 
-class WorkerGlobalScopeProxyProviderImpl FINAL : public WebCore::WorkerGlobalScopeProxyProvider {
+class WorkerGlobalScopeProxyProviderImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public WebCore::WorkerGlobalScopeProxyProvider {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeProxyProviderImpl);
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
 public:
-    static PassOwnPtr<WorkerGlobalScopeProxyProviderImpl> create()
+    static PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProviderImpl> create()
     {
-        return adoptPtr(new WorkerGlobalScopeProxyProviderImpl());
+        return adoptPtrWillBeNoop(new WorkerGlobalScopeProxyProviderImpl());
     }
 
     virtual ~WorkerGlobalScopeProxyProviderImpl() { }

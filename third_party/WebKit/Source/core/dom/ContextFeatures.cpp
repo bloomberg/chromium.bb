@@ -85,12 +85,12 @@ bool ContextFeatures::pushStateEnabled(Document* document)
 
 void provideContextFeaturesTo(Page& page, PassOwnPtr<ContextFeaturesClient> client)
 {
-    RefCountedSupplement<Page, ContextFeatures>::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(client));
+    ContextFeatures::SupplementType::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(client));
 }
 
 void provideContextFeaturesToDocumentFrom(Document& document, Page& page)
 {
-    ContextFeatures* provided = static_cast<ContextFeatures*>(RefCountedSupplement<Page, ContextFeatures>::from(page, ContextFeatures::supplementName()));
+    ContextFeatures* provided = static_cast<ContextFeatures*>(ContextFeatures::SupplementType::from(page, ContextFeatures::supplementName()));
     if (!provided)
         return;
     document.setContextFeatures(*provided);

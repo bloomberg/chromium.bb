@@ -42,7 +42,7 @@ namespace WebCore {
 class WorkerGlobalScopeProxy;
 class Worker;
 
-class WorkerGlobalScopeProxyProvider : public Supplement<Page> {
+class WorkerGlobalScopeProxyProvider : public WillBeHeapSupplement<Page> {
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProvider);
 public:
     WorkerGlobalScopeProxyProvider() { }
@@ -54,7 +54,7 @@ public:
     static const char* supplementName();
 };
 
-void provideWorkerGlobalScopeProxyProviderTo(Page&, PassOwnPtr<WorkerGlobalScopeProxyProvider>);
+void provideWorkerGlobalScopeProxyProviderTo(Page&, PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProvider>);
 
 } // namespace WebCore
 

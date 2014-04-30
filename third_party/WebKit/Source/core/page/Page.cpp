@@ -540,18 +540,8 @@ PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
 
 void Page::trace(Visitor* visitor)
 {
-    visitor->registerWeakMembers<Page, &Page::clearWeakMembers>(this);
     visitor->trace(m_multisamplingChangedObservers);
-    Supplementable<Page>::trace(visitor);
-}
-
-void Page::clearWeakMembers(Visitor* visitor)
-{
-#if ENABLE(INPUT_SPEECH)
-    SpeechInput* input = SpeechInput::from(this);
-    if (input)
-        input->clearWeakMembers(visitor);
-#endif
+    WillBeHeapSupplementable<Page>::trace(visitor);
 }
 
 void Page::willBeDestroyed()
@@ -579,7 +569,7 @@ void Page::willBeDestroyed()
     m_mainFrame.clear();
     if (m_validationMessageClient)
         m_validationMessageClient->willBeDestroyed();
-    Supplementable<Page>::willBeDestroyed();
+    WillBeHeapSupplementable<Page>::willBeDestroyed();
 }
 
 Page::PageClients::PageClients()

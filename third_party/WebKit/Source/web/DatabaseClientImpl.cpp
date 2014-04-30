@@ -42,9 +42,9 @@ using namespace WebCore;
 
 namespace blink {
 
-PassOwnPtr<DatabaseClientImpl> DatabaseClientImpl::create()
+PassOwnPtrWillBeRawPtr<DatabaseClientImpl> DatabaseClientImpl::create()
 {
-    return adoptPtr(new DatabaseClientImpl());
+    return adoptPtrWillBeNoop(new DatabaseClientImpl());
 }
 
 DatabaseClientImpl::~DatabaseClientImpl()

@@ -37,8 +37,8 @@ namespace WebCore {
 class DeviceMotionData;
 class DOMWindow;
 
-class DeviceMotionController FINAL : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
-
+class DeviceMotionController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DeviceMotionController>, public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionController);
 public:
     virtual ~DeviceMotionController();
 

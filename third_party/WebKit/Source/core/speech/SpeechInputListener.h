@@ -39,7 +39,7 @@
 namespace WebCore {
 
 // Interface to be implemented by the element which invokes SpeechInput.
-class SpeechInputListener {
+class SpeechInputListener : public WillBeGarbageCollectedMixin {
 public:
     // Informs that audio recording has completed and recognition is underway.
     virtual void didCompleteRecording(int requestId) = 0;

@@ -43,10 +43,10 @@ const char* ServiceWorkerGlobalScopeClient::supplementName()
 
 ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::from(ExecutionContext* context)
 {
-    return static_cast<ServiceWorkerGlobalScopeClient*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
+    return static_cast<ServiceWorkerGlobalScopeClient*>(WillBeHeapSupplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
 }
 
-void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, PassOwnPtr<ServiceWorkerGlobalScopeClient> client)
+void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> client)
 {
     clients->provideSupplement(ServiceWorkerGlobalScopeClient::supplementName(), client);
 }

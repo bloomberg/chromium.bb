@@ -43,7 +43,8 @@ class ExecutionContext;
 class InspectorDatabaseAgent;
 class WorkerClients;
 
-class DatabaseClient : public Supplement<Page>, public Supplement<WorkerClients> {
+class GC_PLUGIN_IGNORE("http://crbug.com/367712") DatabaseClient;
+class DatabaseClient : public WillBeHeapSupplement<Page>, public WillBeHeapSupplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
     DatabaseClient();
@@ -62,8 +63,8 @@ private:
     InspectorDatabaseAgent* m_inspectorAgent;
 };
 
-void provideDatabaseClientTo(Page&, PassOwnPtr<DatabaseClient>);
-void provideDatabaseClientToWorker(WorkerClients*, PassOwnPtr<DatabaseClient>);
+void provideDatabaseClientTo(Page&, PassOwnPtrWillBeRawPtr<DatabaseClient>);
+void provideDatabaseClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<DatabaseClient>);
 
 } // namespace WebCore
 

@@ -20,10 +20,6 @@ MediaKeysController::MediaKeysController(MediaKeysClient* client)
 {
 }
 
-MediaKeysController::~MediaKeysController()
-{
-}
-
 PassOwnPtr<blink::WebContentDecryptionModule> MediaKeysController::createContentDecryptionModule(ExecutionContext* context, const String& keySystem)
 {
     return m_client->createContentDecryptionModule(context, keySystem);
@@ -32,7 +28,7 @@ PassOwnPtr<blink::WebContentDecryptionModule> MediaKeysController::createContent
 
 void MediaKeysController::provideMediaKeysTo(Page& page, MediaKeysClient* client)
 {
-    MediaKeysController::provideTo(page, supplementName(), adoptPtr(new MediaKeysController(client)));
+    MediaKeysController::provideTo(page, supplementName(), adoptPtrWillBeNoop(new MediaKeysController(client)));
 }
 
 } // namespace WebCore

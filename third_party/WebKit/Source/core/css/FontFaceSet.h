@@ -57,9 +57,16 @@ class FontResource;
 class FontsReadyPromiseResolver;
 class ExecutionContext;
 
-// FIXME: Oilpan: Make this RefCountedGarbageCollected<FontFaceCache> and HeapSupplement<Document> once all document supplements are moved to the managed heap.
-class FontFaceSet FINAL : public RefCountedSupplementWillBeRefCountedGarbageCollectedSupplement<Document, FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<FontFaceSet>);
+#if ENABLE(OILPAN)
+class FontFaceSet FINAL : public RefCountedGarbageCollected<FontFaceSet>, public HeapSupplement<Document>, public ActiveDOMObject, public EventTargetWithInlineData {
+    USING_GARBAGE_COLLECTED_MIXIN(FontFaceSet);
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<FontFaceSet>);
+    typedef HeapSupplement<Document> SupplementType;
+#else
+class FontFaceSet FINAL : public RefCountedSupplement<Document, FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCounted<FontFaceSet>);
+    typedef RefCountedSupplement<Document, FontFaceSet> SupplementType;
+#endif
 public:
     virtual ~FontFaceSet();
 
@@ -106,8 +113,6 @@ public:
 #endif
 
 private:
-    typedef RefCountedSupplementWillBeRefCountedGarbageCollectedSupplement<Document, FontFaceSet> SupplementType;
-
     static PassRefPtrWillBeRawPtr<FontFaceSet> create(Document& document)
     {
         return adoptRefWillBeRefCountedGarbageCollected<FontFaceSet>(new FontFaceSet(document));

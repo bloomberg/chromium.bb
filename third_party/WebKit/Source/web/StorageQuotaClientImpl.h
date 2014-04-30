@@ -36,9 +36,10 @@
 
 namespace blink {
 
-class StorageQuotaClientImpl : public WebCore::StorageQuotaClient {
+class StorageQuotaClientImpl : public NoBaseWillBeGarbageCollectedFinalized<StorageQuotaClientImpl>, public WebCore::StorageQuotaClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageQuotaClientImpl);
 public:
-    static PassOwnPtr<StorageQuotaClientImpl> create();
+    static PassOwnPtrWillBeRawPtr<StorageQuotaClientImpl> create();
 
     virtual ~StorageQuotaClientImpl();
 

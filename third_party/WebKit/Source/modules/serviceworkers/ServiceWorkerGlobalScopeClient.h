@@ -48,7 +48,7 @@ class ExecutionContext;
 class Response;
 class WorkerClients;
 
-class ServiceWorkerGlobalScopeClient : public Supplement<WorkerClients> {
+class ServiceWorkerGlobalScopeClient : public WillBeHeapSupplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
 public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
@@ -69,7 +69,7 @@ protected:
     ServiceWorkerGlobalScopeClient() { }
 };
 
-void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, PassOwnPtr<ServiceWorkerGlobalScopeClient>);
+void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient>);
 
 } // namespace WebCore
 

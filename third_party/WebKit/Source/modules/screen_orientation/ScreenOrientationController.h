@@ -10,7 +10,8 @@
 
 namespace WebCore {
 
-class ScreenOrientationController FINAL : public DocumentSupplement {
+class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientationController>, public DocumentSupplement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
 public:
     virtual ~ScreenOrientationController();
 

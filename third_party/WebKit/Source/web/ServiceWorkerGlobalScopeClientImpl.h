@@ -40,9 +40,10 @@ namespace blink {
 class WebServiceWorkerContextClient;
 class WebURL;
 
-class ServiceWorkerGlobalScopeClientImpl FINAL : public WebCore::ServiceWorkerGlobalScopeClient {
+class ServiceWorkerGlobalScopeClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public WebCore::ServiceWorkerGlobalScopeClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
 public:
-    static PassOwnPtr<WebCore::ServiceWorkerGlobalScopeClient> create(PassOwnPtr<WebServiceWorkerContextClient>);
+    static PassOwnPtrWillBeRawPtr<WebCore::ServiceWorkerGlobalScopeClient> create(PassOwnPtr<WebServiceWorkerContextClient>);
     virtual ~ServiceWorkerGlobalScopeClientImpl();
 
     virtual void getClients(WebServiceWorkerClientsCallbacks*);

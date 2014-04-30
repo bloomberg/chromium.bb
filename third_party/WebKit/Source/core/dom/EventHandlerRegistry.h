@@ -16,7 +16,8 @@ typedef HashCountedSet<EventTarget*> EventTargetSet;
 // Registry for keeping track of event handlers. Handlers can either be
 // associated with an EventTarget or be "external" handlers which live outside
 // the DOM (e.g., WebViewImpl).
-class EventHandlerRegistry FINAL : public DocumentSupplement {
+class EventHandlerRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<EventHandlerRegistry>, public DocumentSupplement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventHandlerRegistry);
 public:
     virtual ~EventHandlerRegistry();
 
@@ -48,7 +49,7 @@ public:
     void didMoveFromOtherDocument(EventTarget&, Document& oldDocument);
     void didRemoveAllEventHandlers(EventTarget&);
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor*) OVERRIDE;
     void clearWeakMembers(Visitor*);
 
 private:

@@ -450,6 +450,12 @@ void InputFieldSpeechButtonElement::stopSpeechInput()
     if (m_state == Recording)
         speechInput()->stopRecording(m_listenerId);
 }
+
+void InputFieldSpeechButtonElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_results);
+    HTMLDivElement::trace(visitor);
+}
 #endif // ENABLE(INPUT_SPEECH)
 
 }

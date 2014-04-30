@@ -49,8 +49,9 @@ class HTMLImportChild;
 class HTMLImportChildClient;
 class HTMLImportLoader;
 
-class HTMLImportsController FINAL : public HTMLImport, public DocumentSupplement {
-    WTF_MAKE_FAST_ALLOCATED;
+class HTMLImportsController FINAL : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportsController>, public HTMLImport, public DocumentSupplement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static void provideTo(Document&);
 

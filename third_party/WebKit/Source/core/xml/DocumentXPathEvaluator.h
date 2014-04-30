@@ -36,10 +36,9 @@ class ExceptionState;
 class XPathExpression;
 class XPathResult;
 
-class DocumentXPathEvaluator FINAL : public DocumentSupplement {
+class DocumentXPathEvaluator FINAL : public NoBaseWillBeGarbageCollected<DocumentXPathEvaluator>, public DocumentSupplement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
 public:
-    virtual ~DocumentXPathEvaluator();
-
     static DocumentXPathEvaluator& from(DocumentSupplementable&);
 
     static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(DocumentSupplementable&,
@@ -49,14 +48,13 @@ public:
         const String& expression, Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver>,
         unsigned short type, XPathResult*, ExceptionState&);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { visitor->trace(m_xpathEvaluator); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     DocumentXPathEvaluator();
 
     static const char* supplementName() { return "DocumentXPathEvaluator"; }
 
-    GC_PLUGIN_IGNORE("http://crbug.com/367660")
     RefPtrWillBeMember<XPathEvaluator> m_xpathEvaluator;
 };
 

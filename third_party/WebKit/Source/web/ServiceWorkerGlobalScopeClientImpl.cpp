@@ -38,11 +38,13 @@
 #include "public/web/WebServiceWorkerContextClient.h"
 #include "wtf/PassOwnPtr.h"
 
+using namespace WebCore;
+
 namespace blink {
 
-PassOwnPtr<WebCore::ServiceWorkerGlobalScopeClient> ServiceWorkerGlobalScopeClientImpl::create(PassOwnPtr<WebServiceWorkerContextClient> client)
+PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> ServiceWorkerGlobalScopeClientImpl::create(PassOwnPtr<WebServiceWorkerContextClient> client)
 {
-    return adoptPtr(new ServiceWorkerGlobalScopeClientImpl(client));
+    return adoptPtrWillBeNoop(new ServiceWorkerGlobalScopeClientImpl(client));
 }
 
 ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()
@@ -69,7 +71,7 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventI
     m_client->didHandleInstallEvent(installEventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, PassRefPtr<WebCore::Response> response)
+void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, PassRefPtr<Response> response)
 {
     if (!response) {
         m_client->didHandleFetchEvent(fetchEventID);

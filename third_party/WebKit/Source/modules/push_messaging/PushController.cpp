@@ -15,13 +15,9 @@ PushController::PushController(blink::WebPushClient* client)
 {
 }
 
-PushController::~PushController()
+PassOwnPtrWillBeRawPtr<PushController> PushController::create(blink::WebPushClient* client)
 {
-}
-
-PassOwnPtr<PushController> PushController::create(blink::WebPushClient* client)
-{
-    return adoptPtr(new PushController(client));
+    return adoptPtrWillBeNoop(new PushController(client));
 }
 
 blink::WebPushClient* PushController::clientFrom(Page* page)

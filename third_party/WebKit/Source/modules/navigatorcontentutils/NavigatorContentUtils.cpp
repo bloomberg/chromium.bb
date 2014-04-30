@@ -121,16 +121,16 @@ static bool verifyProtocolHandlerScheme(const String& scheme, const String& meth
 
 NavigatorContentUtils* NavigatorContentUtils::from(Page& page)
 {
-    return static_cast<NavigatorContentUtils*>(Supplement<Page>::from(page, supplementName()));
+    return static_cast<NavigatorContentUtils*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
 }
 
 NavigatorContentUtils::~NavigatorContentUtils()
 {
 }
 
-PassOwnPtr<NavigatorContentUtils> NavigatorContentUtils::create(PassOwnPtr<NavigatorContentUtilsClient> client)
+PassOwnPtrWillBeRawPtr<NavigatorContentUtils> NavigatorContentUtils::create(PassOwnPtr<NavigatorContentUtilsClient> client)
 {
-    return adoptPtr(new NavigatorContentUtils(client));
+    return adoptPtrWillBeNoop(new NavigatorContentUtils(client));
 }
 
 void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const String& scheme, const String& url, const String& title, ExceptionState& exceptionState)

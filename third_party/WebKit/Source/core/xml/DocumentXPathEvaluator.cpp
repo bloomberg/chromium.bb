@@ -37,16 +37,12 @@ DocumentXPathEvaluator::DocumentXPathEvaluator()
 {
 }
 
-DocumentXPathEvaluator::~DocumentXPathEvaluator()
-{
-}
-
 DocumentXPathEvaluator& DocumentXPathEvaluator::from(DocumentSupplementable& document)
 {
     DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(DocumentSupplement::from(document, supplementName()));
     if (!cache) {
         cache = new DocumentXPathEvaluator();
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(cache));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
     }
     return *cache;
 }
@@ -76,6 +72,11 @@ PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSup
     if (!suplement.m_xpathEvaluator)
         suplement.m_xpathEvaluator = XPathEvaluator::create();
     return suplement.m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, exceptionState);
+}
+
+void DocumentXPathEvaluator::trace(Visitor* visitor)
+{
+    visitor->trace(m_xpathEvaluator);
 }
 
 } // namespace WebCore

@@ -28,7 +28,8 @@
 #define NavigatorContentUtils_h
 
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include "platform/RefCountedSupplement.h"
+#include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -38,7 +39,8 @@ class ExceptionState;
 class Navigator;
 class Page;
 
-class NavigatorContentUtils FINAL : public Supplement<Page> {
+class NavigatorContentUtils FINAL : public NoBaseWillBeGarbageCollectedFinalized<NavigatorContentUtils>, public WillBeHeapSupplement<Page> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
 public:
     virtual ~NavigatorContentUtils();
 
@@ -50,7 +52,7 @@ public:
     static String isProtocolHandlerRegistered(Navigator&, const String& scheme, const String& url, ExceptionState&);
     static void unregisterProtocolHandler(Navigator&, const String& scheme, const String& url, ExceptionState&);
 
-    static PassOwnPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
+    static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
 
     virtual void trace(Visitor*) OVERRIDE { }
 

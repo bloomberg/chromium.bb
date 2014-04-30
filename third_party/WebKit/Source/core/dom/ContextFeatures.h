@@ -35,8 +35,16 @@ class ContextFeaturesClient;
 class Document;
 class Page;
 
+#if ENABLE(OILPAN)
+class ContextFeatures FINAL : public RefCountedGarbageCollected<ContextFeatures>, public HeapSupplement<Page> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ContextFeatures);
+public:
+    typedef HeapSupplement<Page> SupplementType;
+#else
 class ContextFeatures : public RefCountedSupplement<Page, ContextFeatures> {
 public:
+    typedef RefCountedSupplement<Page, ContextFeatures> SupplementType;
+#endif
     enum FeatureType {
         DialogElement = 0,
         StyleScoped,
@@ -48,7 +56,7 @@ public:
 
     static const char* supplementName();
     static ContextFeatures* defaultSwitch();
-    static PassRefPtr<ContextFeatures> create(PassOwnPtr<ContextFeaturesClient>);
+    static PassRefPtrWillBeRawPtr<ContextFeatures> create(PassOwnPtr<ContextFeaturesClient>);
 
     static bool dialogElementEnabled(Document*);
     static bool styleScopedEnabled(Document*);
@@ -58,6 +66,10 @@ public:
 
     bool isEnabled(Document*, FeatureType, bool) const;
     void urlDidChange(Document*);
+
+#if ENABLE(OILPAN)
+    virtual void trace(Visitor*) OVERRIDE { }
+#endif
 
 private:
     explicit ContextFeatures(PassOwnPtr<ContextFeaturesClient> client)
@@ -80,9 +92,9 @@ public:
 void provideContextFeaturesTo(Page&, PassOwnPtr<ContextFeaturesClient>);
 void provideContextFeaturesToDocumentFrom(Document&, Page&);
 
-inline PassRefPtr<ContextFeatures> ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)
+inline PassRefPtrWillBeRawPtr<ContextFeatures> ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)
 {
-    return adoptRef(new ContextFeatures(client));
+    return adoptRefWillBeRefCountedGarbageCollected(new ContextFeatures(client));
 }
 
 inline bool ContextFeatures::isEnabled(Document* document, FeatureType type, bool defaultValue) const

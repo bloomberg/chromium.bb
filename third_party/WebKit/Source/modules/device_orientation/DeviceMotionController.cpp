@@ -63,7 +63,7 @@ DeviceMotionController& DeviceMotionController::from(Document& document)
     DeviceMotionController* controller = static_cast<DeviceMotionController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceMotionController(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
     }
     return *controller;
 }

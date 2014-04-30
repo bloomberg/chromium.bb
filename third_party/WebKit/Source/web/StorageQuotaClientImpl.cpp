@@ -52,9 +52,9 @@ using namespace WebCore;
 
 namespace blink {
 
-PassOwnPtr<StorageQuotaClientImpl> StorageQuotaClientImpl::create()
+PassOwnPtrWillBeRawPtr<StorageQuotaClientImpl> StorageQuotaClientImpl::create()
 {
-    return adoptPtr(new StorageQuotaClientImpl());
+    return adoptPtrWillBeNoop(new StorageQuotaClientImpl());
 }
 
 StorageQuotaClientImpl::~StorageQuotaClientImpl()

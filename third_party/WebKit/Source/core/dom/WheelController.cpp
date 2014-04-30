@@ -54,7 +54,7 @@ WheelController* WheelController::from(Document& document)
     WheelController* controller = static_cast<WheelController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
         controller = new WheelController(document);
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
+        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
     }
     return controller;
 }

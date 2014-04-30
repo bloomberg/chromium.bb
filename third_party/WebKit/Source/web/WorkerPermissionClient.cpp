@@ -41,9 +41,9 @@ using namespace WebCore;
 
 namespace blink {
 
-PassOwnPtr<WorkerPermissionClient> WorkerPermissionClient::create(PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
+PassOwnPtrWillBeRawPtr<WorkerPermissionClient> WorkerPermissionClient::create(PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
 {
-    return adoptPtr(new WorkerPermissionClient(proxy));
+    return adoptPtrWillBeNoop(new WorkerPermissionClient(proxy));
 }
 
 WorkerPermissionClient::~WorkerPermissionClient()
@@ -90,7 +90,7 @@ WorkerPermissionClient* WorkerPermissionClient::from(ExecutionContext& context)
 {
     WorkerClients* clients = toWorkerGlobalScope(context).clients();
     ASSERT(clients);
-    return static_cast<WorkerPermissionClient*>(Supplement<WorkerClients>::from(*clients, supplementName()));
+    return static_cast<WorkerPermissionClient*>(WillBeHeapSupplement<WorkerClients>::from(*clients, supplementName()));
 }
 
 WorkerPermissionClient::WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy> proxy)

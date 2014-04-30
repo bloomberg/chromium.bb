@@ -35,7 +35,7 @@ namespace WebCore {
 
 WorkerGlobalScopeProxyProvider* WorkerGlobalScopeProxyProvider::from(Page& page)
 {
-    return static_cast<WorkerGlobalScopeProxyProvider*>(Supplement<Page>::from(page, supplementName()));
+    return static_cast<WorkerGlobalScopeProxyProvider*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
 }
 
 const char* WorkerGlobalScopeProxyProvider::supplementName()
@@ -43,9 +43,9 @@ const char* WorkerGlobalScopeProxyProvider::supplementName()
     return "WorkerGlobalScopeProxyProvider";
 }
 
-void provideWorkerGlobalScopeProxyProviderTo(Page& page, PassOwnPtr<WorkerGlobalScopeProxyProvider> provider)
+void provideWorkerGlobalScopeProxyProviderTo(Page& page, PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProvider> provider)
 {
-    Supplement<Page>::provideTo(page, WorkerGlobalScopeProxyProvider::supplementName(), provider);
+    WillBeHeapSupplement<Page>::provideTo(page, WorkerGlobalScopeProxyProvider::supplementName(), provider);
 }
 
 } // namespace WebCore

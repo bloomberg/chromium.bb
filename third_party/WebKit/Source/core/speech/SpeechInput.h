@@ -43,24 +43,23 @@ namespace WebCore {
 class IntRect;
 class SecurityOrigin;
 class SpeechInputClient;
-class SpeechInputListener;
-class InputFieldSpeechButtonElement;
 
 // This class connects the input elements requiring speech input with the platform specific
 // speech recognition engine. It provides methods for the input elements to activate speech
 // recognition and methods for the speech recognition engine to return back the results.
-class SpeechInput FINAL : public SpeechInputListener, public Supplement<Page> {
+class SpeechInput FINAL : public NoBaseWillBeGarbageCollectedFinalized<SpeechInput>, public SpeechInputListener, public WillBeHeapSupplement<Page> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechInput);
     WTF_MAKE_NONCOPYABLE(SpeechInput);
 public:
     virtual ~SpeechInput();
 
-    static PassOwnPtr<SpeechInput> create(PassOwnPtr<SpeechInputClient>);
+    static PassOwnPtrWillBeRawPtr<SpeechInput> create(PassOwnPtr<SpeechInputClient>);
     static const char* supplementName();
-    static SpeechInput* from(Page* page) { return static_cast<SpeechInput*>(Supplement<Page>::from(page, supplementName())); }
+    static SpeechInput* from(Page* page) { return static_cast<SpeechInput*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
 
     // Generates a unique ID for the given listener to be used for speech requests.
     // This should be the first call made by listeners before anything else.
-    int registerListener(InputFieldSpeechButtonElement*);
+    int registerListener(SpeechInputListener*);
 
     // Invoked when the listener is done with recording or getting destroyed.
     // Failure to unregister may result in crashes if there were any pending speech events.
@@ -76,18 +75,14 @@ public:
     virtual void didCompleteRecognition(int) OVERRIDE;
     virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor*) OVERRIDE;
     void clearWeakMembers(Visitor*);
 
 private:
     explicit SpeechInput(PassOwnPtr<SpeechInputClient>);
 
     OwnPtr<SpeechInputClient> m_client;
-    // FIXME: Oilpan: go back to using SpeechInputListener as the type when
-    // all SpeechInputListeners (SpeechInput and InputFieldSpeechButtonElement)
-    // have been moved to the oilpan heap. At that point SpeechInputListener
-    // will be a GarbageCollectedMixin.
-    HashMap<int, InputFieldSpeechButtonElement*> m_listeners;
+    WillBeHeapHashMap<int, RawPtrWillBeWeakMember<SpeechInputListener> > m_listeners;
     int m_nextListenerId;
 };
 

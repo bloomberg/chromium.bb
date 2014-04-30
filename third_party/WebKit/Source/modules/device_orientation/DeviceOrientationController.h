@@ -36,8 +36,8 @@ namespace WebCore {
 
 class DeviceOrientationData;
 
-class DeviceOrientationController FINAL : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
-
+class DeviceOrientationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DeviceOrientationController>, public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 public:
     virtual ~DeviceOrientationController();
 
@@ -53,7 +53,7 @@ public:
     virtual void didRemoveEventListener(DOMWindow*, const AtomicString&) OVERRIDE;
     virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit DeviceOrientationController(Document&);
@@ -66,7 +66,7 @@ private:
     virtual bool isNullEvent(Event*) OVERRIDE;
     virtual Document* document() OVERRIDE;
 
-    RefPtrWillBePersistent<DeviceOrientationData> m_overrideOrientationData;
+    RefPtrWillBeMember<DeviceOrientationData> m_overrideOrientationData;
     Document& m_document;
 };
 

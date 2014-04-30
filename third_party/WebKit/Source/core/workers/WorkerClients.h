@@ -39,7 +39,8 @@ namespace WebCore {
 // This is created on the main thread, passed to the worker thread and
 // attached to WorkerGlobalScope when it is created.
 // This class can be used to provide "client" implementations to Workers.
-class WorkerClients : public NoBaseWillBeGarbageCollectedFinalized<WorkerClients>, public Supplementable<WorkerClients> {
+class WorkerClients : public NoBaseWillBeGarbageCollectedFinalized<WorkerClients>, public WillBeHeapSupplementable<WorkerClients> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
     WTF_MAKE_NONCOPYABLE(WorkerClients);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerClients> create()
@@ -51,7 +52,7 @@ public:
 
     virtual void trace(Visitor* visitor) OVERRIDE
     {
-        Supplementable<WorkerClients>::trace(visitor);
+        WillBeHeapSupplementable<WorkerClients>::trace(visitor);
     }
 
 private:

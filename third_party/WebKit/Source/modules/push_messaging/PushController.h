@@ -17,15 +17,14 @@ class WebPushClient;
 
 namespace WebCore {
 
-class PushController FINAL : public Supplement<Page> {
+class PushController FINAL : public NoBaseWillBeGarbageCollected<PushController>, public WillBeHeapSupplement<Page> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PushController);
     WTF_MAKE_NONCOPYABLE(PushController);
 
 public:
-    virtual ~PushController();
-
-    static PassOwnPtr<PushController> create(blink::WebPushClient*);
+    static PassOwnPtrWillBeRawPtr<PushController> create(blink::WebPushClient*);
     static const char* supplementName();
-    static PushController* from(Page* page) { return static_cast<PushController*>(Supplement<Page>::from(page, supplementName())); }
+    static PushController* from(Page* page) { return static_cast<PushController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
     static blink::WebPushClient* clientFrom(Page*);
 
     blink::WebPushClient* client() const { return m_client; }
