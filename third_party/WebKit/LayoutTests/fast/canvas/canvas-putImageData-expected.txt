@@ -145,24 +145,24 @@ PASS getPixel(9,9) is [0,128,0,255]
 PASS getPixel(1,1) is [0,128,0,255]
 PASS getPixel(9,9) is [0,128,0,255]
 PASS context.putImageData({}, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS context.putImageData(buffer, NaN, 0, 0, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dx is not a number..
-PASS context.putImageData(buffer, 0, NaN, 0, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dy is not a number..
-PASS context.putImageData(buffer, 0, 0, NaN, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyX is not a number..
-PASS context.putImageData(buffer, 0, 0, 0, NaN, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyY is not a number..
-PASS context.putImageData(buffer, 0, 0, 0, 0, NaN, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyWidth is not a number..
-PASS context.putImageData(buffer, 0, 0, 0, 0, 0, NaN) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyHeight is not a number..
-PASS context.putImageData(buffer, Infinity, 0, 0, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dx is infinite..
-PASS context.putImageData(buffer, 0, Infinity, 0, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dy is infinite..
-PASS context.putImageData(buffer, 0, 0, Infinity, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyX is infinite..
-PASS context.putImageData(buffer, 0, 0, 0, Infinity, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyY is infinite..
-PASS context.putImageData(buffer, 0, 0, 0, 0, Infinity, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyWidth is infinite..
-PASS context.putImageData(buffer, 0, 0, 0, 0, 0, Infinity) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyHeight is infinite..
-PASS context.putImageData(buffer, undefined, 0, 0, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dx is not a number..
-PASS context.putImageData(buffer, 0, undefined, 0, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dy is not a number..
-PASS context.putImageData(buffer, 0, 0, undefined, 0, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyX is not a number..
-PASS context.putImageData(buffer, 0, 0, 0, undefined, 0, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyY is not a number..
-PASS context.putImageData(buffer, 0, 0, 0, 0, undefined, 0) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyWidth is not a number..
-PASS context.putImageData(buffer, 0, 0, 0, 0, 0, undefined) threw exception NotSupportedError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': The dirtyHeight is not a number..
+PASS context.putImageData(buffer, NaN, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS context.putImageData(buffer, 0, NaN, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS context.putImageData(buffer, 0, 0, NaN, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, NaN, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 5 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, 0, NaN, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 6 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, 0, 0, NaN) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 7 is non-finite..
+PASS context.putImageData(buffer, Infinity, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS context.putImageData(buffer, 0, Infinity, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS context.putImageData(buffer, 0, 0, Infinity, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, Infinity, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 5 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, 0, Infinity, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 6 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, 0, 0, Infinity) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 7 is non-finite..
+PASS context.putImageData(buffer, undefined, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS context.putImageData(buffer, 0, undefined, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS context.putImageData(buffer, 0, 0, undefined, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, undefined, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 5 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, 0, undefined, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 6 is non-finite..
+PASS context.putImageData(buffer, 0, 0, 0, 0, 0, undefined) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 7 is non-finite..
 PASS successfullyParsed is true
 
 TEST COMPLETE

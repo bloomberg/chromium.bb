@@ -3,24 +3,24 @@ This test checks createRadialGradient with infinite values
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ctx.createRadialGradient(0, 0, 100, 0, 0, NaN) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The r1 is not a number..
-PASS ctx.createRadialGradient(0, 0, 100, 0, 0, Infinity) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The r1 is infinite..
-PASS ctx.createRadialGradient(0, 0, 100, 0, 0, -Infinity) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The r1 is infinite..
-PASS ctx.createRadialGradient(0, 0, 100, 0, NaN, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The y1 is not a number..
-PASS ctx.createRadialGradient(0, 0, 100, 0, Infinity, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The y1 is infinite..
-PASS ctx.createRadialGradient(0, 0, 100, 0, -Infinity, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The y1 is infinite..
-PASS ctx.createRadialGradient(0, 0, 100, NaN, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The x1 is not a number..
-PASS ctx.createRadialGradient(0, 0, 100, Infinity, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The x1 is infinite..
-PASS ctx.createRadialGradient(0, 0, 100, -Infinity, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The x1 is infinite..
-PASS ctx.createRadialGradient(0, 0, NaN, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The r0 is not a number..
-PASS ctx.createRadialGradient(0, 0, Infinity, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The r0 is infinite..
-PASS ctx.createRadialGradient(0, 0, -Infinity, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The r0 is infinite..
-PASS ctx.createRadialGradient(0, NaN, 100, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The y0 is not a number..
-PASS ctx.createRadialGradient(0, Infinity, 100, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The y0 is infinite..
-PASS ctx.createRadialGradient(0, -Infinity, 100, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The y0 is infinite..
-PASS ctx.createRadialGradient(NaN, 0, 100, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The x0 is not a number..
-PASS ctx.createRadialGradient(Infinity, 0, 100, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The x0 is infinite..
-PASS ctx.createRadialGradient(-Infinity, 0, 100, 0, 0, 100) threw exception NotSupportedError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': The x0 is infinite..
+PASS ctx.createRadialGradient(0, 0, 100, 0, 0, NaN) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 6 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, 0, 0, Infinity) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 6 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, 0, 0, -Infinity) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 6 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, 0, NaN, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 5 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, 0, Infinity, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 5 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, 0, -Infinity, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 5 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, NaN, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, Infinity, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS ctx.createRadialGradient(0, 0, 100, -Infinity, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS ctx.createRadialGradient(0, 0, NaN, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS ctx.createRadialGradient(0, 0, Infinity, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS ctx.createRadialGradient(0, 0, -Infinity, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS ctx.createRadialGradient(0, NaN, 100, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.createRadialGradient(0, Infinity, 100, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.createRadialGradient(0, -Infinity, 100, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.createRadialGradient(NaN, 0, 100, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.createRadialGradient(Infinity, 0, 100, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.createRadialGradient(-Infinity, 0, 100, 0, 0, 100) threw exception TypeError: Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -1657,46 +1657,18 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedStroke(cons
     c->endLayer();
 }
 
-PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1, ExceptionState& exceptionState)
+PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1)
 {
-    // FIXME: These exceptions will be thrown by generated bindings code once crbug.com/354298 is fixed.
-    if (!std::isfinite(x0))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x0, "x0"));
-    else if (!std::isfinite(y0))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y0, "y0"));
-    else if (!std::isfinite(x1))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x1, "x1"));
-    else if (!std::isfinite(y1))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y1, "y1"));
-
-    if (exceptionState.hadException())
-        return nullptr;
-
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
     return gradient.release();
 }
 
 PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& exceptionState)
 {
-    // FIXME: These exceptions (except the IndexSizeError) will be thrown by
-    // generated bindings code once crbug.com/354298 is fixed.
-    if (!std::isfinite(x0))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x0, "x0"));
-    else if (!std::isfinite(y0))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y0, "y0"));
-    else if (!std::isfinite(r0))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(r0, "r0"));
-    else if (!std::isfinite(x1))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x1, "x1"));
-    else if (!std::isfinite(y1))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y1, "y1"));
-    else if (!std::isfinite(r1))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(r1, "r1"));
-    else if (r0 < 0 || r1 < 0)
+    if (r0 < 0 || r1 < 0) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The %s provided is less than 0.", r0 < 0 ? "r0" : "r1"));
-
-    if (exceptionState.hadException())
         return nullptr;
+    }
 
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
     return gradient.release();
@@ -1833,16 +1805,6 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::getImageData(float s
         exceptionState.throwSecurityError("The canvas has been tainted by cross-origin data.");
     else if (!sw || !sh)
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", sw ? "height" : "width"));
-    // FIXME: These exceptions will be thrown by generated bindings code once
-    // crbug.com/354298 is fixed.
-    else if (!std::isfinite(sx))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sx, "source X"));
-    else if (!std::isfinite(sy))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sy, "source Y"));
-    else if (!std::isfinite(sw))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sw, "source width"));
-    else if (!std::isfinite(sh))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sh, "source height"));
 
     if (exceptionState.hadException())
         return nullptr;
@@ -1876,32 +1838,13 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::getImageData(float s
     return ImageData::create(imageDataRect.size(), byteArray.release());
 }
 
-void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy)
 {
-    putImageData(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
+    putImageData(data, dx, dy, 0, 0, data->width(), data->height());
 }
 
-void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, float dirtyX, float dirtyY,
-    float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight)
 {
-    // FIXME: These exceptions will be thrown by generated bindings code once
-    // crbug.com/354298 is fixed.
-    if (!std::isfinite(dx))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dx, "dx"));
-    else if (!std::isfinite(dy))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dy, "dy"));
-    else if (!std::isfinite(dirtyX))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyX, "dirtyX"));
-    else if (!std::isfinite(dirtyY))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyY, "dirtyY"));
-    else if (!std::isfinite(dirtyWidth))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyWidth, "dirtyWidth"));
-    else if (!std::isfinite(dirtyHeight))
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyHeight, "dirtyHeight"));
-
-    if (exceptionState.hadException())
-        return;
-
     ImageBuffer* buffer = canvas()->buffer();
     if (!buffer)
         return;

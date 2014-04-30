@@ -191,15 +191,15 @@ public:
 
     void setCompositeOperation(const String&);
 
-    PassRefPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1, ExceptionState&);
+    PassRefPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1);
     PassRefPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
     PassRefPtr<CanvasPattern> createPattern(CanvasImageSource*, const String& repetitionType, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<ImageData> createImageData(PassRefPtrWillBeRawPtr<ImageData>) const;
     PassRefPtrWillBeRawPtr<ImageData> createImageData(float width, float height, ExceptionState&) const;
     PassRefPtrWillBeRawPtr<ImageData> getImageData(float sx, float sy, float sw, float sh, ExceptionState&) const;
-    void putImageData(ImageData*, float dx, float dy, ExceptionState&);
-    void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
+    void putImageData(ImageData*, float dx, float dy);
+    void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
     void reset();
 

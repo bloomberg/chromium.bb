@@ -26,7 +26,8 @@
 enum CanvasWindingRule { "nonzero", "evenodd" };
 
 [
-    WillBeGarbageCollected
+    TypeChecking=Unrestricted,
+    WillBeGarbageCollected,
 ] interface CanvasRenderingContext2D {
 
     readonly attribute HTMLCanvasElement canvas;
@@ -45,7 +46,7 @@ enum CanvasWindingRule { "nonzero", "evenodd" };
     attribute unrestricted float globalAlpha;
     [TreatNullAs=NullString] attribute DOMString globalCompositeOperation;
 
-    [RaisesException] CanvasGradient createLinearGradient(float x0, float y0, float x1, float y1);
+    CanvasGradient createLinearGradient(float x0, float y0, float x1, float y1);
     [RaisesException] CanvasGradient createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1);
 
     attribute unrestricted float lineWidth;
@@ -121,14 +122,14 @@ enum CanvasWindingRule { "nonzero", "evenodd" };
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, TypeChecking=Interface|Nullable] void drawImage(ImageBitmap imageBitmap, unrestricted float sx, unrestricted float sy, unrestricted float sw, unrestricted float sh, unrestricted float dx, unrestricted float dy, unrestricted float dw, unrestricted float dh);
 
-    [RaisesException, TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy);
-    [RaisesException, TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
+    [TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy);
+    [TypeChecking=Interface|Nullable] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLCanvasElement canvas, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLImageElement image, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException, TypeChecking=Interface|Nullable] CanvasPattern createPattern(HTMLVideoElement image, [TreatNullAs=NullString] DOMString repetitionType);
     [TypeChecking=Interface|Nullable] ImageData createImageData(ImageData imagedata);
-    [RaisesException, TypeChecking=Unrestricted] ImageData createImageData(float sw, float sh);
+    [RaisesException] ImageData createImageData(float sw, float sh);
 
     [Custom] attribute object strokeStyle;
     [Custom] attribute object fillStyle;

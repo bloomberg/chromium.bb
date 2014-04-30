@@ -3,18 +3,18 @@ Test the handling of invalid arguments in canvas getImageData().
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ctx.getImageData(NaN, 10, 10, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source X is not a number..
-PASS ctx.getImageData(10, NaN, 10, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source Y is not a number..
-PASS ctx.getImageData(10, 10, NaN, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source width is not a number..
-PASS ctx.getImageData(10, 10, 10, NaN) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source height is not a number..
-PASS ctx.getImageData(Infinity, 10, 10, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source X is infinite..
-PASS ctx.getImageData(10, Infinity, 10, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source Y is infinite..
-PASS ctx.getImageData(10, 10, Infinity, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source width is infinite..
-PASS ctx.getImageData(10, 10, 10, Infinity) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source height is infinite..
-PASS ctx.getImageData(undefined, 10, 10, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source X is not a number..
-PASS ctx.getImageData(10, undefined, 10, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source Y is not a number..
-PASS ctx.getImageData(10, 10, undefined, 10) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source width is not a number..
-PASS ctx.getImageData(10, 10, 10, undefined) threw exception NotSupportedError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source height is not a number..
+PASS ctx.getImageData(NaN, 10, 10, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.getImageData(10, NaN, 10, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.getImageData(10, 10, NaN, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS ctx.getImageData(10, 10, 10, NaN) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS ctx.getImageData(Infinity, 10, 10, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.getImageData(10, Infinity, 10, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.getImageData(10, 10, Infinity, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS ctx.getImageData(10, 10, 10, Infinity) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
+PASS ctx.getImageData(undefined, 10, 10, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 1 is non-finite..
+PASS ctx.getImageData(10, undefined, 10, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 2 is non-finite..
+PASS ctx.getImageData(10, 10, undefined, 10) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 3 is non-finite..
+PASS ctx.getImageData(10, 10, 10, undefined) threw exception TypeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': float parameter 4 is non-finite..
 PASS ctx.getImageData(10, 10, 0, 10) threw exception IndexSizeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source width is 0..
 PASS ctx.getImageData(10, 10, 10, 0) threw exception IndexSizeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The source height is 0..
 PASS successfullyParsed is true
