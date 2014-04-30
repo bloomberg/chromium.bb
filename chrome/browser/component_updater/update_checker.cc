@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/update_checker.h"
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
@@ -54,6 +55,7 @@ std::string BuildUpdateCheckRequest(const std::vector<CrxUpdateItem*>& items,
     }
     base::StringAppendF(&app, "</app>");
     app_elements.append(app);
+    VLOG(1) << "Appending to update request: " << app;
   }
 
   return BuildProtocolRequest(app_elements, additional_attributes);
@@ -140,10 +142,12 @@ void UpdateCheckerImpl::OnURLFetchComplete(const net::URLFetcher* source) {
     if (!update_response.Parse(xml)) {
       error = -1;
       error_message = update_response.errors();
+      VLOG(1) << "Update request failed: " << error_message;
     }
   } else {
     error = GetFetchError(*source);
     error_message.assign("network error");
+    VLOG(1) << "Update request failed: network error";
   }
 
   url_fetcher_.reset();

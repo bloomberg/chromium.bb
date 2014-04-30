@@ -1,0 +1,12 @@
+{
+  "manifest_version": 2,
+  "name": "CLD2 Data",
+  "description": "Compact Language Detector 2 (CLD2) data for Chrome",
+  "minimum_chrome_version": "36",
+  "version": "160",
+  "platforms": [
+    {
+      "sub_package_path": "_platform_specific/all/"
+    }
+  ]
+}

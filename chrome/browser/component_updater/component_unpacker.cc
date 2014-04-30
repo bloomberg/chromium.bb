@@ -143,6 +143,7 @@ void ComponentUnpacker::Unpack(const Callback& callback) {
 }
 
 bool ComponentUnpacker::Verify() {
+  VLOG(1) << "Verifying component: " << path_.value();
   if (pk_hash_.empty() || path_.empty()) {
     error_ = kInvalidParams;
     return false;
@@ -171,23 +172,29 @@ bool ComponentUnpacker::Verify() {
   sha256->Finish(hash, arraysize(hash));
 
   if (!std::equal(pk_hash_.begin(), pk_hash_.end(), hash)) {
+    VLOG(1) << "Hash mismatch: " << path_.value();
     error_ = kInvalidId;
     return false;
   }
+  VLOG(1) << "Verification successful: " << path_.value();
   return true;
 }
 
 bool ComponentUnpacker::Unzip() {
   base::FilePath& destination = is_delta_ ? unpack_diff_path_ : unpack_path_;
+  VLOG(1) << "Unpacking in: " << destination.value();
   if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
                                     &destination)) {
+    VLOG(1) << "Unable to create temporary directory for unpacking.";
     error_ = kUnzipPathError;
     return false;
   }
   if (!zip::Unzip(path_, destination)) {
+    VLOG(1) << "Unzipping failed.";
     error_ = kUnzipFailed;
     return false;
   }
+  VLOG(1) << "Unpacked successfully";
   return true;
 }
 

@@ -446,6 +446,14 @@
       #      be loaded at runtime.
       'cld2_dynamic%': 0,
 
+      # Whether CLD2 is a component. Only evaluated if cld_version == 2 and
+      # cld2_dynamic == 1.
+      #   0: Not a component. If cld2_dynamic == 1, it is up to the distribution
+      #      to ensure that the data file is provided if desired.
+      #   1: Componentized. CLD data should be obtained via the Component
+      #      Updater.
+      'cld2_is_component%': 0,
+
       # Enable spell checker.
       'enable_spellcheck%': 1,
 
@@ -646,6 +654,7 @@
           'enable_google_now%': 0,
           'cld_version%': 1,
           'cld2_dynamic%': 0,
+          'cld2_is_component%': 0,
           'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
@@ -1015,6 +1024,7 @@
     'cld_version%': '<(cld_version)',
     'cld2_table_size%': '<(cld2_table_size)',
     'cld2_dynamic%': '<(cld2_dynamic)',
+    'cld2_is_component%': '<(cld2_is_component)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_ftp_support%': '<(disable_ftp_support)',
     'enable_task_manager%': '<(enable_task_manager)',
@@ -2561,6 +2571,9 @@
       }],
       ['cld2_dynamic!=0', {
         'defines': ['CLD2_DYNAMIC_MODE=1'],
+      }],
+      ['cld2_is_component!=0', {
+        'defines': ['CLD2_IS_COMPONENT=1'],
       }],
       ['enable_printing==1', {
         'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],

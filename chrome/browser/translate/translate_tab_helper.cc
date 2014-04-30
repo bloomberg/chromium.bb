@@ -43,6 +43,10 @@
 #include "content/public/browser/render_view_host.h"
 #endif
 
+#if defined(CLD2_IS_COMPONENT)
+#include "chrome/browser/component_updater/cld_component_installer.h"
+#endif
+
 namespace {
 
 // The maximum number of attempts we'll do to see if the page has finshed
@@ -387,16 +391,20 @@ void TranslateTabHelper::HandleCLDDataRequest() {
   }
 
   base::FilePath path;
+#if defined(CLD2_IS_COMPONENT)
+  if (!component_updater::GetLatestCldDataFile(&path))
+    return;
+#else
   if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
     LOG(WARNING) << "Unable to locate user data directory";
     return; // Chrome isn't properly installed.
   }
-
   // If the file exists, we can send an IPC-safe construct back to the
   // renderer process immediately.
   path = path.Append(chrome::kCLDDataFilename);
   if (!base::PathExists(path))
     return;
+#endif
 
   // Attempt to open the file for reading.
   scoped_ptr<base::File> file(

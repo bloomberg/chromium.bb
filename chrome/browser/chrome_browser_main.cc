@@ -42,6 +42,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
@@ -404,6 +405,10 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   // network.
   if (!command_line.HasSwitch(switches::kDisableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+#endif
+
+#if defined(CLD2_DYNAMIC_MODE) && defined(CLD2_IS_COMPONENT)
+  RegisterCldComponent(cus);
 #endif
 
   cus->Start();
