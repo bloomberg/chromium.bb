@@ -17,6 +17,9 @@ def GetAdjustedInteractionIfContainGesture(timeline, interaction_record):
   the browser and renderer process submitting the trace events for the
   markers.
   """
+  # Only adjust the range for gestures.
+  if not interaction_record.logical_name.startswith('Gesture_'):
+    return copy.copy(interaction_record)
   gesture_events = [
     ev for ev
     in timeline.GetAllEventsOfName('SyntheticGestureController::running', True)

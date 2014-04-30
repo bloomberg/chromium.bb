@@ -14,7 +14,8 @@ class SmoothGestureUtilTest(unittest.TestCase):
     renderer_main.name = 'CrRendererMain'
 
     #      [          X          ]                   [   Y  ]
-    #          [   record_1 ]
+    #          [   record_1]
+    #          [   record_6]
     #  [  record_2 ]          [ record_3 ]
     #  [           record_4              ]
     #                                [ record_5 ]
@@ -25,11 +26,16 @@ class SmoothGestureUtilTest(unittest.TestCase):
 
     model.FinalizeImport(shift_world_to_zero=False)
 
-    record_1 = tir_module.TimelineInteractionRecord('included', 15, 25)
-    record_2 = tir_module.TimelineInteractionRecord('overlapped_left', 5, 25)
-    record_3 = tir_module.TimelineInteractionRecord('overlapped_right', 25, 35)
-    record_4 = tir_module.TimelineInteractionRecord('containing', 5, 35)
-    record_5 = tir_module.TimelineInteractionRecord('non_overlapped', 35, 45)
+    record_1 = tir_module.TimelineInteractionRecord('Gesture_included', 15, 25)
+    record_2 = tir_module.TimelineInteractionRecord(
+      'Gesture_overlapped_left', 5, 25)
+    record_3 = tir_module.TimelineInteractionRecord(
+      'Gesture_overlapped_right', 25, 35)
+    record_4 = tir_module.TimelineInteractionRecord(
+      'Gesture_containing', 5, 35)
+    record_5 = tir_module.TimelineInteractionRecord(
+      'Gesture_non_overlapped', 35, 45)
+    record_6 = tir_module.TimelineInteractionRecord('Action_included', 15, 25)
 
     adjusted_record_1 = sg_util.GetAdjustedInteractionIfContainGesture(
       model, record_1)
@@ -57,3 +63,10 @@ class SmoothGestureUtilTest(unittest.TestCase):
     self.assertEquals(adjusted_record_5.start, 35)
     self.assertEquals(adjusted_record_5.end, 45)
     self.assertTrue(adjusted_record_5 is not record_5)
+
+    adjusted_record_6 = sg_util.GetAdjustedInteractionIfContainGesture(
+      model, record_6)
+    self.assertEquals(adjusted_record_6.start, 15)
+    self.assertEquals(adjusted_record_6.end, 25)
+    self.assertTrue(adjusted_record_6 is not record_6)
+
