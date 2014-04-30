@@ -6,7 +6,19 @@ from measurements import repaint
 from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
+from telemetry.page import page as page_module
+# pylint: disable=W0401,W0614
+from telemetry.page.actions.all_page_actions import *
 from telemetry.unittest import options_for_unittests
+
+
+class TestRepaintPage(page_module.PageWithDefaultRunNavigate):
+  def __init__(self, page_set, base_dir):
+    super(TestRepaintPage, self).__init__('file://blank.html',
+                                          page_set, base_dir)
+
+  def RunRepaint(self, action_runner):
+    action_runner.RunAction(RepaintContinuouslyAction({'seconds': 2}))
 
 
 class RepaintUnitTest(
@@ -24,7 +36,8 @@ class RepaintUnitTest(
 
   @test.Disabled('android')
   def testRepaint(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
+    ps = self.CreateEmptyPageSet()
+    ps.AddPage(TestRepaintPage(ps, ps.base_dir))
     measurement = repaint.Repaint()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
