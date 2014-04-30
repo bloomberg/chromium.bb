@@ -30,6 +30,8 @@ namespace WebCore {
 class AudioSourceProviderClient {
 public:
     virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
+    virtual void lock() { };
+    virtual void unlock() { };
 protected:
     virtual ~AudioSourceProviderClient() { }
 };

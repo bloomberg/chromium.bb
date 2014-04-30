@@ -78,7 +78,7 @@
 
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioSourceProvider.h"
-#include "modules/webaudio/MediaElementAudioSourceNode.h"
+#include "platform/audio/AudioSourceProviderClient.h"
 #endif
 
 using namespace std;
@@ -3427,7 +3427,7 @@ void HTMLMediaElement::createMediaPlayer()
 
 #if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode) {
-        // When creating the player, make sure its AudioSourceProvider knows about the MediaElementAudioSourceNode.
+        // When creating the player, make sure its AudioSourceProvider knows about the client.
         if (audioSourceProvider())
             audioSourceProvider()->setClient(m_audioSourceNode);
 
@@ -3437,7 +3437,7 @@ void HTMLMediaElement::createMediaPlayer()
 }
 
 #if ENABLE(WEB_AUDIO)
-void HTMLMediaElement::setAudioSourceNode(MediaElementAudioSourceNode* sourceNode)
+void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
 {
     m_audioSourceNode = sourceNode;
 

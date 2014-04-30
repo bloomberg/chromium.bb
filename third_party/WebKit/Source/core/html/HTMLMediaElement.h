@@ -46,7 +46,7 @@ namespace WebCore {
 
 #if ENABLE(WEB_AUDIO)
 class AudioSourceProvider;
-class MediaElementAudioSourceNode;
+class AudioSourceProviderClient;
 #endif
 class ContentType;
 class Event;
@@ -255,8 +255,8 @@ public:
     virtual void contextDestroyed() OVERRIDE FINAL;
 
 #if ENABLE(WEB_AUDIO)
-    MediaElementAudioSourceNode* audioSourceNode() { return m_audioSourceNode; }
-    void setAudioSourceNode(MediaElementAudioSourceNode*);
+    AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }
+    void setAudioSourceNode(AudioSourceProviderClient*);
 
     AudioSourceProvider* audioSourceProvider();
 #endif
@@ -512,9 +512,7 @@ private:
 
 #if ENABLE(WEB_AUDIO)
     // This is a weak reference, since m_audioSourceNode holds a reference to us.
-    // The value is set just after the MediaElementAudioSourceNode is created.
-    // The value is cleared in MediaElementAudioSourceNode::~MediaElementAudioSourceNode().
-    MediaElementAudioSourceNode* m_audioSourceNode;
+    AudioSourceProviderClient* m_audioSourceNode;
 #endif
 
     friend class MediaController;

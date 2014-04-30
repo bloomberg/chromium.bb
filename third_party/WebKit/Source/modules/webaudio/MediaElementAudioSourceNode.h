@@ -53,8 +53,8 @@ public:
     // AudioSourceProviderClient
     virtual void setFormat(size_t numberOfChannels, float sampleRate) OVERRIDE;
 
-    void lock();
-    void unlock();
+    virtual void lock() OVERRIDE;
+    virtual void unlock() OVERRIDE;
 
 private:
     MediaElementAudioSourceNode(AudioContext*, HTMLMediaElement*);
