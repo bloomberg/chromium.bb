@@ -90,6 +90,10 @@ class CONTENT_EXPORT InputHandlerProxy
   bool disallow_horizontal_fling_scroll_;
   bool disallow_vertical_fling_scroll_;
 
+  // Whether an active fling has seen an |Animate()| call. This is useful for
+  // determining if the fling start time should be re-initialized.
+  bool has_fling_animation_started_;
+
   // Non-zero only within the scope of |scrollBy|.
   gfx::Vector2dF current_fling_velocity_;
 

@@ -53,9 +53,7 @@ void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity) {
                   INT_MAX,
                   INT_MIN,
                   INT_MAX,
-                  gfx::FrameTime::Now());
-  // TODO(jdduke): Initialize the fling at time 0 and use the monotonic
-  // time in |apply()| for updates, crbug.com/345459.
+                  base::TimeTicks());
 }
 
 void FlingAnimatorImpl::CancelFling() {
@@ -66,13 +64,12 @@ void FlingAnimatorImpl::CancelFling() {
   scroller_.AbortAnimation();
 }
 
-bool FlingAnimatorImpl::apply(double /* time */,
+bool FlingAnimatorImpl::apply(double time,
                               blink::WebGestureCurveTarget* target) {
-  // Historically, Android's Scroller used |currentAnimationTimeMillis()|,
-  // which is equivalent to gfx::FrameTime::Now().  In practice, this produces
-  // smoother results than using |time|, so continue using FrameTime::Now().
-  // TODO(jdduke): Use |time| upon resolution of crbug.com/345459.
-  if (!scroller_.ComputeScrollOffset(gfx::FrameTime::Now())) {
+  const base::TimeTicks time_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(
+                              time * base::Time::kMicrosecondsPerSecond);
+  if (!scroller_.ComputeScrollOffset(time_ticks)) {
     is_active_ = false;
     return false;
   }
