@@ -34,6 +34,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
+#include "core/frame/UseCounter.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/NotificationClient.h"
 #include "modules/notifications/NotificationController.h"
@@ -161,6 +162,8 @@ const String& Notification::permissionString(NotificationClient::Permission perm
 const String& Notification::permission(ExecutionContext* context)
 {
     ASSERT(toDocument(context)->page());
+
+    UseCounter::count(context, UseCounter::NotificationPermission);
     return permissionString(NotificationController::from(toDocument(context)->frame())->client()->checkPermission(context));
 }
 
