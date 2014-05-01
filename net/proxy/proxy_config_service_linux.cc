@@ -39,6 +39,9 @@
 #include "url/url_canon.h"
 
 #if defined(USE_GIO)
+#if __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
 #include "library_loaders/libgio.h"
 #endif  // defined(USE_GIO)
 
