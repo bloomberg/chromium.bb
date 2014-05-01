@@ -3451,37 +3451,71 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:
       state_.enable_flags.blend = enabled;
-      return true;
+      if (state_.enable_flags.cached_blend != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_blend = enabled;
+        return true;
+      }
+      return false;
     case GL_CULL_FACE:
       state_.enable_flags.cull_face = enabled;
-      return true;
+      if (state_.enable_flags.cached_cull_face != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_cull_face = enabled;
+        return true;
+      }
+      return false;
     case GL_DEPTH_TEST:
-      if (state_.enable_flags.depth_test != enabled) {
-        state_.enable_flags.depth_test = enabled;
+      state_.enable_flags.depth_test = enabled;
+      if (state_.enable_flags.cached_depth_test != enabled ||
+          state_.ignore_cached_state) {
         framebuffer_state_.clear_state_dirty = true;
       }
       return false;
     case GL_DITHER:
       state_.enable_flags.dither = enabled;
-      return true;
+      if (state_.enable_flags.cached_dither != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_dither = enabled;
+        return true;
+      }
+      return false;
     case GL_POLYGON_OFFSET_FILL:
       state_.enable_flags.polygon_offset_fill = enabled;
-      return true;
+      if (state_.enable_flags.cached_polygon_offset_fill != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_polygon_offset_fill = enabled;
+        return true;
+      }
+      return false;
     case GL_SAMPLE_ALPHA_TO_COVERAGE:
       state_.enable_flags.sample_alpha_to_coverage = enabled;
-      return true;
+      if (state_.enable_flags.cached_sample_alpha_to_coverage != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_sample_alpha_to_coverage = enabled;
+        return true;
+      }
+      return false;
     case GL_SAMPLE_COVERAGE:
       state_.enable_flags.sample_coverage = enabled;
-      return true;
+      if (state_.enable_flags.cached_sample_coverage != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_sample_coverage = enabled;
+        return true;
+      }
+      return false;
     case GL_SCISSOR_TEST:
-      if (state_.enable_flags.scissor_test != enabled) {
-        state_.enable_flags.scissor_test = enabled;
-        framebuffer_state_.clear_state_dirty = true;
+      state_.enable_flags.scissor_test = enabled;
+      if (state_.enable_flags.cached_scissor_test != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_scissor_test = enabled;
+        return true;
       }
       return false;
     case GL_STENCIL_TEST:
-      if (state_.enable_flags.stencil_test != enabled) {
-        state_.enable_flags.stencil_test = enabled;
+      state_.enable_flags.stencil_test = enabled;
+      if (state_.enable_flags.cached_stencil_test != enabled ||
+          state_.ignore_cached_state) {
         framebuffer_state_.clear_state_dirty = true;
       }
       return false;

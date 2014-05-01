@@ -34,7 +34,9 @@ class GLES2DecoderTest3 : public GLES2DecoderTestBase {
   GLES2DecoderTest3() { }
 };
 
-TEST_F(GLES2DecoderTest3, TraceBeginCHROMIUM) {
+INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest3, ::testing::Bool());
+
+TEST_P(GLES2DecoderTest3, TraceBeginCHROMIUM) {
   const uint32 kBucketId = 123;
   const char kName[] = "test_command";
   SetBucketAsCString(kBucketId, kName);
@@ -44,7 +46,7 @@ TEST_F(GLES2DecoderTest3, TraceBeginCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
 }
 
-TEST_F(GLES2DecoderTest3, TraceEndCHROMIUM) {
+TEST_P(GLES2DecoderTest3, TraceEndCHROMIUM) {
   // Test end fails if no begin.
   TraceEndCHROMIUM end_cmd;
   end_cmd.Init();

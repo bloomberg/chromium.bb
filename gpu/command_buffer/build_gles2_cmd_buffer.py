@@ -78,8 +78,7 @@ _CAPABILITY_FLAGS = [
   {'name': 'polygon_offset_fill'},
   {'name': 'sample_alpha_to_coverage'},
   {'name': 'sample_coverage'},
-  {'name': 'scissor_test',
-   'state_flag': 'framebuffer_state_.clear_state_dirty'},
+  {'name': 'scissor_test'},
   {'name': 'stencil_test',
    'state_flag': 'framebuffer_state_.clear_state_dirty'},
 ]
@@ -109,10 +108,30 @@ _STATES = {
     'func': 'ColorMask',
     'enum': 'GL_COLOR_WRITEMASK',
     'states': [
-      {'name': 'color_mask_red', 'type': 'GLboolean', 'default': 'true'},
-      {'name': 'color_mask_green', 'type': 'GLboolean', 'default': 'true'},
-      {'name': 'color_mask_blue', 'type': 'GLboolean', 'default': 'true'},
-      {'name': 'color_mask_alpha', 'type': 'GLboolean', 'default': 'true'},
+      {
+        'name': 'color_mask_red',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+      {
+        'name': 'color_mask_green',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+      {
+        'name': 'color_mask_blue',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+      {
+        'name': 'color_mask_alpha',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
     ],
     'state_flag': 'framebuffer_state_.clear_state_dirty',
   },
@@ -262,12 +281,14 @@ _STATES = {
         'type': 'GLuint',
         'enum': 'GL_STENCIL_WRITEMASK',
         'default': '0xFFFFFFFFU',
+        'cached': True,
       },
       {
         'name': 'stencil_back_writemask',
         'type': 'GLuint',
         'enum': 'GL_STENCIL_BACK_WRITEMASK',
         'default': '0xFFFFFFFFU',
+        'cached': True,
       },
     ],
   },
@@ -411,7 +432,12 @@ _STATES = {
     'func': 'DepthMask',
     'enum': 'GL_DEPTH_WRITEMASK',
     'states': [
-      {'name': 'depth_mask', 'type': 'GLboolean', 'default': 'true'},
+      {
+        'name': 'depth_mask',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
     ],
     'state_flag': 'framebuffer_state_.clear_state_dirty',
   },
@@ -2596,6 +2622,11 @@ def ToUnderscore(input_string):
   words = SplitWords(input_string)
   return Lower(words)
 
+def CachedStateName(item):
+  if item.get('cached', False):
+    return 'cached_' + item['name']
+  return item['name']
+
 
 class CWriter(object):
   """Writes to a file formatting it for Google's style guidelines."""
@@ -2953,8 +2984,32 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteServiceUnitTest(self, func, file):
     """Writes the service unit test for a command."""
-    valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+
+    if func.name == 'Enable':
+      valid_test = """
+TEST_P(%(test_name)s, %(name)sValidArgs) {
+  SetupExpectationsForEnableDisable(%(gl_args)s, true);
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    elif func.name == 'Disable':
+      valid_test = """
+TEST_P(%(test_name)s, %(name)sValidArgs) {
+  SetupExpectationsForEnableDisable(%(gl_args)s, false);
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    else:
+      valid_test = """
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
@@ -2966,7 +3021,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     self.WriteValidUnitTest(func, file, valid_test)
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -3238,6 +3293,10 @@ class StateSetHandler(TypeHandler):
     if 'state_flag' in state:
       file.Write("    %s = true;\n" % state['state_flag'])
     if not func.GetInfo("no_gl"):
+      for ndx,item in enumerate(states):
+        if item.get('cached', False):
+          file.Write("    state_.%s = %s;\n" %
+                     (CachedStateName(item), args[ndx].name))
       file.Write("    %s(%s);\n" %
                  (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
     file.Write("  }\n")
@@ -3252,7 +3311,7 @@ class StateSetHandler(TypeHandler):
       if 'range_checks' in item:
         for check_ndx, range_check in enumerate(item['range_checks']):
           valid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidValue%(ndx)d_%(check_ndx)d) {
+TEST_P(%(test_name)s, %(name)sInvalidValue%(ndx)d_%(check_ndx)d) {
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
   cmd.Init(%(args)s);
@@ -3724,7 +3783,7 @@ class BindHandler(TypeHandler):
 
     if len(func.GetOriginalArgs()) == 1:
       valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
@@ -3735,7 +3794,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 """
       if func.GetInfo("gen_func"):
           valid_test += """
-TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
+TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
@@ -3753,7 +3812,7 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
       })
     else:
       valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
@@ -3764,7 +3823,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 """
       if func.GetInfo("gen_func"):
           valid_test += """
-TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
+TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(first_gl_arg)s, kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
@@ -3784,7 +3843,7 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
       })
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -3971,7 +4030,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   GetSharedMemoryAs<GLuint*>()[0] = kNewClientId;
@@ -3987,7 +4046,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
         'resource_name': func.GetInfo('resource_type'),
       })
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
   GetSharedMemoryAs<GLuint*>()[0] = client_%(resource_name)s_id_;
   SpecializedSetup<cmds::%(name)s, 0>(false);
@@ -4003,7 +4062,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   def WriteImmediateServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   cmds::%(name)s* cmd = GetImmediateAs<cmds::%(name)s>();
@@ -4020,7 +4079,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
         'resource_name': func.GetInfo('resource_type'),
       })
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
   cmds::%(name)s* cmd = GetImmediateAs<cmds::%(name)s>();
   SpecializedSetup<cmds::%(name)s, 0>(false);
@@ -4137,7 +4196,7 @@ class CreateHandler(TypeHandler):
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
       .WillOnce(Return(kNewServiceId));
   SpecializedSetup<cmds::%(name)s, 0>(true);
@@ -4156,7 +4215,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
           'resource_type': func.name[6:],
         })
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -4268,7 +4327,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(
       *gl_,
       %(gl_func_name)s(1, Pointee(kService%(upper_resource_name)sId)))
@@ -4288,7 +4347,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
           'upper_resource_name': func.GetInfo('resource_type'),
         })
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   GetSharedMemoryAs<GLuint*>()[0] = kInvalidClientId;
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -4301,7 +4360,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   def WriteImmediateServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(
       *gl_,
       %(gl_func_name)s(1, Pointee(kService%(upper_resource_name)sId)))
@@ -4321,7 +4380,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
           'upper_resource_name': func.GetInfo('resource_type'),
         })
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   SpecializedSetup<cmds::%(name)s, 0>(false);
   GLuint temp = kInvalidClientId;
@@ -4617,7 +4676,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
@@ -4654,7 +4713,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       })
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s::Result* result =
@@ -4686,7 +4745,7 @@ class PUTHandler(TypeHandler):
       expected_call = ("EXPECT_CALL(*gl_, %%(gl_func_name)s(%s));" %
           ", ".join(gl_arg_strings))
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
   cmd.Init(%(args)s);
@@ -4704,7 +4763,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     self.WriteValidUnitTest(func, file, valid_test, extra)
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -4718,7 +4777,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   def WriteImmediateServiceUnitTest(self, func, file):
     """Writes the service unit test for a command."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   SpecializedSetup<cmds::%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s] = { %(data_value)s, };
@@ -4748,7 +4807,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     self.WriteValidUnitTest(func, file, valid_test, extra)
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_any_args)s, _)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
@@ -4949,7 +5008,7 @@ class PUTnHandler(TypeHandler):
     TypeHandler.WriteServiceUnitTest(self, func, file)
 
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
+TEST_P(%(test_name)s, %(name)sValidArgsCountTooLarge) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
@@ -4984,7 +5043,7 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
   def WriteImmediateServiceUnitTest(self, func, file):
     """Overridden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   EXPECT_CALL(
       *gl_,
@@ -5015,7 +5074,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     self.WriteValidUnitTest(func, file, valid_test, extra)
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_any_args)s, _)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
@@ -5245,7 +5304,7 @@ class PUTXnHandler(TypeHandler):
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(name)sv(%(local_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
@@ -5263,7 +5322,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       })
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(name)sv(_, _, _).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -5454,7 +5513,7 @@ class IsHandler(TypeHandler):
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
@@ -5471,7 +5530,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
         })
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -5484,7 +5543,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
         })
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
+TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
   SpecializedSetup<cmds::%(name)s, 0>(false);
   cmds::%(name)s cmd;
@@ -5653,7 +5712,7 @@ class STRnHandler(TypeHandler):
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     valid_test = """
-TEST_F(%(test_name)s, %(name)sValidArgs) {
+TEST_P(%(test_name)s, %(name)sValidArgs) {
   const char* kInfo = "hello";
   const uint32 kBucketId = 123;
   SpecializedSetup<cmds::%(name)s, 0>(true);
@@ -5693,7 +5752,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     self.WriteValidUnitTest(func, file, valid_test, sub)
 
     invalid_test = """
-TEST_F(%(test_name)s, %(name)sInvalidArgs) {
+TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   const uint32 kBucketId = 123;
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _, _, _))
       .Times(0);
@@ -7079,13 +7138,44 @@ class GLGenerator(object):
     file.Write("  EnableFlags();\n")
     for capability in _CAPABILITY_FLAGS:
       file.Write("  bool %s;\n" % capability['name'])
+      file.Write("  bool cached_%s;\n" % capability['name'])
     file.Write("};\n\n")
 
     for state_name in sorted(_STATES.keys()):
       state = _STATES[state_name]
       for item in state['states']:
         file.Write("%s %s;\n" % (item['type'], item['name']))
+        if item.get('cached', False):
+          file.Write("%s cached_%s;\n" % (item['type'], item['name']))
     file.Write("\n")
+
+    file.Write("""
+        inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
+          switch (cap) {
+        """)
+    for capability in _CAPABILITY_FLAGS:
+      file.Write("""\
+            case GL_%s:
+          """ % capability['name'].upper())
+      file.Write("""\
+              if (enable_flags.cached_%(name)s == enable &&
+                  !ignore_cached_state)
+                return;
+              enable_flags.cached_%(name)s = enable;
+              break;
+          """ % capability)
+
+    file.Write("""\
+            default:
+              NOTREACHED();
+              return;
+          }
+          if (enable)
+            glEnable(cap);
+          else
+            glDisable(cap);
+        }
+        """)
 
     file.Close()
 
@@ -7155,6 +7245,9 @@ bool %s::GetStateAs%s(
       code.append("%s(%s)" %
                   (capability['name'],
                    ('false', 'true')['default' in capability]))
+      code.append("cached_%s(%s)" %
+                  (capability['name'],
+                   ('false', 'true')['default' in capability]))
     file.Write("ContextState::EnableFlags::EnableFlags()\n    : %s {\n}\n" %
                ",\n      ".join(code))
     file.Write("\n")
@@ -7164,6 +7257,8 @@ bool %s::GetStateAs%s(
       state = _STATES[state_name]
       for item in state['states']:
         file.Write("  %s = %s;\n" % (item['name'], item['default']))
+        if item.get('cached', False):
+          file.Write("  cached_%s = %s;\n" % (item['name'], item['default']))
     file.Write("}\n")
 
     file.Write("""
@@ -7173,9 +7268,10 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
       for capability in _CAPABILITY_FLAGS:
         capability_name = capability['name']
         if test_prev:
-          file.Write("  if (prev_state->enable_flags.%s != enable_flags.%s)\n" %
+          file.Write("""  if (prev_state->enable_flags.cached_%s !=
+                              enable_flags.cached_%s)\n""" %
                      (capability_name, capability_name))
-        file.Write("    EnableDisable(GL_%s, enable_flags.%s);\n" %
+        file.Write("    EnableDisable(GL_%s, enable_flags.cached_%s);\n" %
                    (capability_name.upper(), capability_name))
 
     file.Write("  if (prev_state) {")
@@ -7200,7 +7296,7 @@ void ContextState::InitState(const ContextState *prev_state) const {
               file.Write("  if (")
             args = []
             for place, item in enumerate(group):
-              item_name = item['name']
+              item_name = CachedStateName(item)
               args.append('%s' % item_name)
               if test_prev:
                 if place > 0:
@@ -7213,20 +7309,22 @@ void ContextState::InitState(const ContextState *prev_state) const {
                 (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
         elif state['type'] == 'NamedParameter':
           for item in state['states']:
+            item_name = CachedStateName(item)
+
             if 'extension_flag' in item:
               file.Write("  if (feature_info_->feature_flags().%s)\n  " %
                          item['extension_flag'])
             if test_prev:
               file.Write("  if (prev_state->%s != %s)\n" %
-                         (item['name'], item['name']))
+                         (item_name, item_name))
             file.Write("  gl%s(%s, %s);\n" %
-                       (state['func'], item['enum'], item['name']))
+                       (state['func'], item['enum'], item_name))
         else:
           if test_prev:
             file.Write("  if (")
           args = []
           for place, item in enumerate(state['states']):
-            item_name = item['name']
+            item_name = CachedStateName(item)
             args.append('%s' % item_name)
             if test_prev:
               if place > 0:
@@ -7329,16 +7427,25 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
     for capability in _CAPABILITY_FLAGS:
       file.Write("    case GL_%s:\n" % capability['name'].upper())
       if 'state_flag' in capability:
-        file.Write("""      if (state_.enable_flags.%(name)s != enabled) {
-        state_.enable_flags.%(name)s = enabled;
-        %(state_flag)s = true;
-      }
-      return false;
-""" % capability)
+
+        file.Write("""\
+            state_.enable_flags.%(name)s = enabled;
+            if (state_.enable_flags.cached_%(name)s != enabled
+                || state_.ignore_cached_state) {
+              %(state_flag)s = true;
+            }
+            return false;
+            """ % capability)
       else:
-        file.Write("""      state_.enable_flags.%(name)s = enabled;
-      return true;
-""" % capability)
+        file.Write("""\
+            state_.enable_flags.%(name)s = enabled;
+            if (state_.enable_flags.cached_%(name)s != enabled
+                || state_.ignore_cached_state) {
+              state_.enable_flags.cached_%(name)s = enabled;
+              return true;
+            }
+            return false;
+            """ % capability)
     file.Write("""    default:
       NOTREACHED();
       return false;
