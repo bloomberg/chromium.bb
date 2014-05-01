@@ -130,10 +130,11 @@ LRESULT CALLBACK WindowedPluginTest::WindowProc(
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(window, &ps);
     HBRUSH brush = CreateSolidBrush(RGB(255, 0, 0));
-    SelectObject(hdc, brush);
+    HGDIOBJ orig = SelectObject(hdc, brush);
     RECT r;
     GetClientRect(window, &r);
     Rectangle(hdc, 0, 0, r.right, r.bottom);
+    SelectObject(hdc, orig); // restore
     DeleteObject(brush);
     EndPaint(window, &ps);
   }
