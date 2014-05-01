@@ -333,6 +333,10 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   inline UniquePosition& mutable_ref(UniquePositionField field) {
     return unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN];
   }
+  inline sync_pb::AttachmentMetadata& mutable_ref(
+      AttachmentMetadataField field) {
+    return attachment_metadata_fields[field - ATTACHMENT_METADATA_FIELDS_BEGIN];
+  }
 
   ModelType GetModelType() const;
   ModelType GetServerModelType() const;

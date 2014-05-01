@@ -45,6 +45,8 @@
     'internal_api/protocol_event_buffer.h',
     'internal_api/public/base/ack_handle.cc',
     'internal_api/public/base/ack_handle.h',
+    'internal_api/public/base/attachment_id_proto.cc',
+    'internal_api/public/base/attachment_id_proto.h',
     'internal_api/public/base/cancelation_observer.cc',
     'internal_api/public/base/cancelation_observer.h',
     'internal_api/public/base/cancelation_signal.cc',

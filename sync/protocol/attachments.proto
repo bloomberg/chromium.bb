@@ -21,7 +21,16 @@ message AttachmentIdProto {
   optional string unique_id = 1;
 }
 
+// Metadata for a single attachment.
+message AttachmentMetadataRecord {
+  optional AttachmentIdProto id = 1;
+  // Indicates we know this attachment exists on the server.
+  optional bool is_on_server = 2;
+}
+
 // A collection of attachment metadata. This proto is part of EntryKernel's "on
 // disk" representation. Private to sync.
 message AttachmentMetadata {
+  // One record per attachment.
+  repeated AttachmentMetadataRecord record = 1;
 }

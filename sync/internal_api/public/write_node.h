@@ -173,6 +173,10 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   void SetPriorityPreferenceSpecifics(
       const sync_pb::PriorityPreferenceSpecifics& specifics);
 
+  // Set the attachment metadata.
+  void SetAttachmentMetadata(
+      const sync_pb::AttachmentMetadata& attachment_metadata);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const OVERRIDE;
 
