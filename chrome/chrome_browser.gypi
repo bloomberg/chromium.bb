@@ -2582,6 +2582,10 @@
             '../components/components.gyp:web_modal',
             '../media/cast/cast.gyp:cast_transport',
             '../media/media.gyp:media',
+            '../mojo/mojo.gyp:mojo_cpp_bindings',
+            '../mojo/mojo.gyp:mojo_environment_chromium',
+            '../mojo/mojo.gyp:mojo_js_bindings',
+            '../mojo/mojo.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',
             # TODO(tonyg): Remove this dependency (crbug.com/280157).
             '../testing/perf/perf_test.gyp:*',
