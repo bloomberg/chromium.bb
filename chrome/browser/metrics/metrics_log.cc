@@ -846,33 +846,19 @@ void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   omnibox_event->set_selected_index(log.selected_index);
   if (log.completed_length != base::string16::npos)
     omnibox_event->set_completed_length(log.completed_length);
-  const base::TimeDelta default_time_delta =
-      base::TimeDelta::FromMilliseconds(-1);
   if (log.elapsed_time_since_user_first_modified_omnibox !=
-      default_time_delta) {
+      base::TimeDelta::FromMilliseconds(-1)) {
     // Only upload the typing duration if it is set/valid.
     omnibox_event->set_typing_duration_ms(
         log.elapsed_time_since_user_first_modified_omnibox.InMilliseconds());
   }
-  if (log.elapsed_time_since_last_change_to_default_match !=
-      default_time_delta) {
-    omnibox_event->set_duration_since_last_default_match_update_ms(
-        log.elapsed_time_since_last_change_to_default_match.InMilliseconds());
-  }
+  omnibox_event->set_duration_since_last_default_match_update_ms(
+      log.elapsed_time_since_last_change_to_default_match.InMilliseconds());
   omnibox_event->set_current_page_classification(
       AsOmniboxEventPageClassification(log.current_page_classification));
   omnibox_event->set_input_type(AsOmniboxEventInputType(log.input_type));
-  // We consider a paste-and-search/paste-and-go action to have a closed popup
-  // (as explained in omnibox_event.proto) even if it was not, because such
-  // actions ignore the contents of the popup so it doesn't matter that it was
-  // open.
-  const bool consider_popup_open = log.is_popup_open && !log.is_paste_and_go;
-  omnibox_event->set_is_popup_open(consider_popup_open);
-  omnibox_event->set_is_paste_and_go(log.is_paste_and_go);
-  if (consider_popup_open) {
-    omnibox_event->set_is_top_result_hidden_in_dropdown(
-        log.result.ShouldHideTopMatch());
-  }
+  omnibox_event->set_is_top_result_hidden_in_dropdown(
+      log.result.ShouldHideTopMatch());
 
   for (AutocompleteResult::const_iterator i(log.result.begin());
        i != log.result.end(); ++i) {

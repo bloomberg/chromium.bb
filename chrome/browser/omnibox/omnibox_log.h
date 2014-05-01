@@ -22,9 +22,7 @@ struct OmniboxLog {
       const base::string16& text,
       bool just_deleted_text,
       AutocompleteInput::Type input_type,
-      bool is_popup_open,
       size_t selected_index,
-      bool is_paste_and_go,
       SessionID::id_type tab_id,
       AutocompleteInput::PageClassification current_page_classification,
       base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
@@ -43,16 +41,8 @@ struct OmniboxLog {
   // The detected type of the user's input.
   AutocompleteInput::Type input_type;
 
-  // True if the popup is open.
-  bool is_popup_open;
-
-  // The index of the item selected in the dropdown list.  Set to 0 if the
-  // dropdown is closed (and therefore there is only one implicit suggestion).
+  // Selected index (if selected) or -1 (OmniboxPopupModel::kNoMatch).
   size_t selected_index;
-
-  // True if this is a paste-and-search or paste-and-go omnibox interaction.
-  // (The codebase refers to both these types as paste-and-go.)
-  bool is_paste_and_go;
 
   // ID of the tab the selected autocomplete suggestion was opened in.
   // Set to -1 if we haven't yet determined the destination tab.
@@ -79,9 +69,7 @@ struct OmniboxLog {
 
   // The amount of time since the last time the default (i.e., inline)
   // match changed.  This will certainly be less than
-  // elapsed_time_since_user_first_modified_omnibox.  Measuring this
-  // may be inappropriate in some cases (e.g., if editing is not in
-  // progress).  In such cases, it's set to -1 milliseconds.
+  // elapsed_time_since_user_first_modified_omnibox.
   base::TimeDelta elapsed_time_since_last_change_to_default_match;
 
   // Result set.

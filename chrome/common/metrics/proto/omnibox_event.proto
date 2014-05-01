@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 17
+// Next tag: 15
 message OmniboxEventProto {
   // The timestamp for the event, in seconds since the epoch.
   optional int64 time = 1;
@@ -38,19 +38,6 @@ message OmniboxEventProto {
   // Whether or not the top match was hidden in the omnibox suggestions
   // dropdown.
   optional bool is_top_result_hidden_in_dropdown = 14;
-
-  // Whether the omnibox popup is open.  It can be closed if, for instance,
-  // the user clicks in the omnibox and hits return to reload the same page.
-  // If the popup is closed, the suggestion list will contain only one item
-  // and selected_index will be 0 (pointing to that single item).  Because
-  // paste-and-search/paste-and-go actions ignore the current content of the
-  // omnibox dropdown (if it is open) when they happen, we pretend the
-  // dropdown is closed when logging these.
-  optional bool is_popup_open = 15;
-
-  // True if this is a paste-and-search or paste-and-go action.  (The codebase
-  // refers to both these types as paste-and-go.)
-  optional bool is_paste_and_go = 16;
 
   // The length of the inline autocomplete text in the omnibox.
   // The sum |typed_length| + |completed_length| gives the full length of the
