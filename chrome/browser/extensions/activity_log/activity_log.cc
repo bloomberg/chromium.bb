@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -32,10 +31,12 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/one_shot_event.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
 
@@ -498,7 +499,7 @@ void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
   if (watchdog_apps_active_ == 0 &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogging)) {
-   db_enabled_ = false;
+    db_enabled_ = false;
   }
 }
 
@@ -574,16 +575,11 @@ void ActivityLog::OnScriptsExecuted(
     const GURL& on_url) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  const ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
-  const ExtensionSet* extensions = extension_service->extensions();
-  const prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
-    const Extension* extension = extensions->GetByID(it->first);
+    const Extension* extension =
+        registry->GetExtensionById(it->first, ExtensionRegistry::ENABLED);
     if (!extension || ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
       continue;
 
@@ -600,6 +596,9 @@ void ActivityLog::OnScriptsExecuted(
       action->set_page_title(base::UTF16ToUTF8(web_contents->GetTitle()));
       action->set_page_incognito(
           web_contents->GetBrowserContext()->IsOffTheRecord());
+
+      const prerender::PrerenderManager* prerender_manager =
+          prerender::PrerenderManagerFactory::GetForProfile(profile);
       if (prerender_manager &&
           prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
         action->mutable_other()->SetBoolean(constants::kActionPrerender, true);
