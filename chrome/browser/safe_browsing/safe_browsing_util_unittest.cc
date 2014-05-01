@@ -341,6 +341,12 @@ TEST(SafeBrowsingUtilTest, FullHashOperators) {
   EXPECT_TRUE(SBFullHashEqual(kHash2, kHash2));
   EXPECT_FALSE(SBFullHashEqual(kHash1, kHash2));
   EXPECT_FALSE(SBFullHashEqual(kHash2, kHash1));
+
+  EXPECT_FALSE(SBFullHashLess(kHash1, kHash2));
+  EXPECT_TRUE(SBFullHashLess(kHash2, kHash1));
+
+  EXPECT_FALSE(SBFullHashLess(kHash1, kHash1));
+  EXPECT_FALSE(SBFullHashLess(kHash2, kHash2));
 }
 
 }  // namespace

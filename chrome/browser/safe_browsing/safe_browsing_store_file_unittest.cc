@@ -144,7 +144,7 @@ TEST_F(SafeBrowsingStoreFileTest, Empty) {
   EXPECT_TRUE(add_full_hashes_result.empty());
 
   std::vector<SBPrefix> prefixes_result;
-  builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+  builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
   EXPECT_TRUE(prefixes_result.empty());
 }
 
@@ -181,7 +181,7 @@ TEST_F(SafeBrowsingStoreFileTest, BasicStore) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(3U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
     EXPECT_EQ(kHash5.prefix, prefixes_result[1]);
@@ -214,7 +214,7 @@ TEST_F(SafeBrowsingStoreFileTest, PrefixMinMax) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(4U, prefixes_result.size());
     EXPECT_EQ(kMinSBPrefix, prefixes_result[0]);
     EXPECT_EQ(kHash1.prefix, prefixes_result[1]);
@@ -236,7 +236,7 @@ TEST_F(SafeBrowsingStoreFileTest, PrefixMinMax) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(2U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
     EXPECT_EQ(kHash2.prefix, prefixes_result[1]);
@@ -273,7 +273,7 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     // Knocked out the chunk expected.
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
 
@@ -297,7 +297,7 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
 
@@ -321,7 +321,7 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(2U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
     EXPECT_EQ(kHash3.prefix, prefixes_result[1]);
@@ -391,7 +391,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash3.prefix, prefixes_result[0]);
 
@@ -420,7 +420,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     EXPECT_TRUE(prefixes_result.empty());
     EXPECT_TRUE(add_full_hashes_result.empty());
   }
@@ -439,7 +439,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     EXPECT_TRUE(prefixes_result.empty());
     EXPECT_TRUE(add_full_hashes_result.empty());
   }
@@ -496,7 +496,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
     safe_browsing::PrefixSetBuilder builder;
     ASSERT_TRUE(store_->BeginUpdate());
     EXPECT_TRUE(store_->FinishUpdate(&builder, &orig_hashes));
-    builder.GetPrefixSet()->GetPrefixes(&orig_prefixes);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&orig_prefixes);
     EXPECT_GT(orig_prefixes.size(), 0U);
     EXPECT_GT(orig_hashes.size(), 0U);
     EXPECT_FALSE(corruption_detected_);
@@ -812,7 +812,7 @@ TEST_F(SafeBrowsingStoreFileTest, Version7) {
 
     // The sub'ed prefix and hash are gone.
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
     EXPECT_TRUE(add_full_hashes_result.empty());
@@ -888,7 +888,7 @@ TEST_F(SafeBrowsingStoreFileTest, Version8) {
 
     // The sub'ed prefix and hash are gone.
     std::vector<SBPrefix> prefixes_result;
-    builder.GetPrefixSet()->GetPrefixes(&prefixes_result);
+    builder.GetPrefixSetNoHashes()->GetPrefixes(&prefixes_result);
     ASSERT_EQ(1U, prefixes_result.size());
     EXPECT_EQ(kHash1.prefix, prefixes_result[0]);
     EXPECT_TRUE(add_full_hashes_result.empty());

@@ -104,11 +104,12 @@ class SafeBrowsingDatabase {
   virtual bool ResetDatabase() = 0;
 
   // Returns false if |url| is not in the browse database.  If it returns true,
-  // then |prefix_hits| and |full_hits| contains the matching hash prefixes.
-  // This function is safe to call from threads other than the creation thread.
+  // then |prefix_hits| contains the list of prefix matches, and |cached_hits|
+  // contains the cached gethash results for those prefixes (if any).  This
+  // function is safe to call from threads other than the creation thread.
   virtual bool ContainsBrowseUrl(const GURL& url,
                                  std::vector<SBPrefix>* prefix_hits,
-                                 std::vector<SBFullHashResult>* full_hits,
+                                 std::vector<SBFullHashResult>* cached_hits,
                                  base::Time last_update) = 0;
 
   // Returns false if none of |urls| are in Download database. If it returns
@@ -299,7 +300,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual bool ResetDatabase() OVERRIDE;
   virtual bool ContainsBrowseUrl(const GURL& url,
                                  std::vector<SBPrefix>* prefix_hits,
-                                 std::vector<SBFullHashResult>* full_hits,
+                                 std::vector<SBFullHashResult>* cached_hits,
                                  base::Time last_update) OVERRIDE;
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
                                    std::vector<SBPrefix>* prefix_hits) OVERRIDE;
@@ -404,8 +405,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   base::MessageLoop* creation_loop_;
 
   // Lock for protecting access to variables that may be used on the
-  // IO thread.  This includes |prefix_set_|, |full_browse_hashes_|,
-  // |cached_browse_hashes_|, |prefix_miss_cache_|, |csd_whitelist_|.
+  // IO thread.  This includes |prefix_set_|, |cached_browse_hashes_|,
+  // |prefix_miss_cache_|, |csd_whitelist_|.
   base::Lock lookup_lock_;
 
   // Underlying persistent store for chunk data.
@@ -446,12 +447,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // The IP blacklist should be small.  At most a couple hundred IPs.
   IPBlacklist ip_blacklist_;
 
-  // Cached browse store related full-hash items, ordered by prefix for
-  // efficient scanning.
-  // |full_browse_hashes_| are items from |browse_store_|,
-  // |cached_browse_hashes_| are items from |CacheHashResults()|, which will be
-  // discarded on next update.
-  std::vector<SBFullHashCached> full_browse_hashes_;
+  // Store items from CacheHashResults(), ordered by hash for efficient
+  // scanning.  Discarded on next update.
   std::vector<SBFullHashCached> cached_browse_hashes_;
 
   // Cache of prefixes that returned empty results (no full hash

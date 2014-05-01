@@ -65,8 +65,9 @@ class PrefixSet {
  public:
   ~PrefixSet();
 
-  // |true| if |prefix| was in |prefixes| passed to the constructor.
-  bool Exists(SBPrefix prefix) const;
+  // |true| if |hash| is in the hashes passed to the set's builder, or if
+  // |hash.prefix| is one of the prefixes passed to the set's builder.
+  bool Exists(const SBFullHash& hash) const;
 
   // Persist the set on disk.
   static scoped_ptr<PrefixSet> LoadFile(const base::FilePath& filter_name);
@@ -78,6 +79,8 @@ class PrefixSet {
   friend class PrefixSetTest;
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, AllBig);
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, EdgeCases);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, Empty);
+  FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, FullHashBuild);
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, IntMinMax);
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, OneElement);
   FRIEND_TEST_ALL_PREFIXES(PrefixSetTest, ReadWriteSigned);
@@ -106,6 +109,10 @@ class PrefixSet {
   void AddRun(SBPrefix index_prefix,
               const uint16* run_begin, const uint16* run_end);
 
+  // |true| if |prefix| is one of the prefixes passed to the set's builder.
+  // Provided for testing purposes.
+  bool PrefixExists(SBPrefix prefix) const;
+
   // Regenerate the vector of prefixes passed to the constructor into
   // |prefixes|.  Prefixes will be added in sorted order.  Useful for testing.
   void GetPrefixes(std::vector<SBPrefix>* prefixes) const;
@@ -128,6 +135,9 @@ class PrefixSet {
   // |index_|, or the end of |deltas_| for the last |index_| pair.
   std::vector<uint16> deltas_;
 
+  // Full hashes ordered by SBFullHashLess.
+  std::vector<SBFullHash> full_hashes_;
+
   DISALLOW_COPY_AND_ASSIGN(PrefixSet);
 };
 
@@ -145,8 +155,13 @@ class PrefixSetBuilder {
   void AddPrefix(SBPrefix prefix);
 
   // Flush any buffered prefixes, and return the final PrefixSet instance.
-  // Any call other than the destructor is illegal after this call.
-  scoped_ptr<PrefixSet> GetPrefixSet();
+  // |hashes| are sorted and stored in |full_hashes_|.  Any call other than the
+  // destructor is illegal after this call.
+  scoped_ptr<PrefixSet> GetPrefixSet(const std::vector<SBFullHash>& hashes);
+
+  // Helper for clients which only track prefixes.  Calls GetPrefixSet() with
+  // empty hash vector.
+  scoped_ptr<PrefixSet> GetPrefixSetNoHashes();
 
  private:
   // Encode a run of deltas for |AddRun()|.  The run is broken by a too-large

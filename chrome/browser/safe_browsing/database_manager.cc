@@ -359,10 +359,10 @@ bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   }
 
   std::vector<SBPrefix> prefix_hits;
-  std::vector<SBFullHashResult> full_hits;
+  std::vector<SBFullHashResult> cached_hits;
 
   bool prefix_match =
-      database_->ContainsBrowseUrl(url, &prefix_hits, &full_hits,
+      database_->ContainsBrowseUrl(url, &prefix_hits, &cached_hits,
           sb_service_->protocol_manager()->last_update());
 
   UMA_HISTOGRAM_TIMES("SB2.FilterCheck", base::TimeTicks::Now() - start);
@@ -377,9 +377,9 @@ bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
                                                    client,
                                                    safe_browsing_util::MALWARE,
                                                    expected_threats);
-  check->need_get_hash = full_hits.empty();
+  check->need_get_hash = cached_hits.empty();
   check->prefix_hits.swap(prefix_hits);
-  check->full_hits.swap(full_hits);
+  check->full_hits.swap(cached_hits);
   checks_.insert(check);
 
   BrowserThread::PostTask(

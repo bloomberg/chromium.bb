@@ -315,11 +315,6 @@ int64 GetFileSizeOrZero(const base::FilePath& file_path) {
   return size_64;
 }
 
-// Used to order whitelist storage in memory.
-bool SBFullHashLess(const SBFullHash& a, const SBFullHash& b) {
-  return memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash)) < 0;
-}
-
 }  // namespace
 
 // The default SafeBrowsingDatabaseFactory.
@@ -524,7 +519,6 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
     // threads.  Then again, that means there is no possibility of
     // contention on the lock...
     base::AutoLock locked(lookup_lock_);
-    full_browse_hashes_.clear();
     cached_browse_hashes_.clear();
     LoadPrefixSet();
   }
@@ -648,7 +642,6 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
   // Reset objects in memory.
   {
     base::AutoLock locked(lookup_lock_);
-    full_browse_hashes_.clear();
     cached_browse_hashes_.clear();
     prefix_miss_cache_.clear();
     browse_prefix_set_.reset();
@@ -664,11 +657,11 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
 bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
     const GURL& url,
     std::vector<SBPrefix>* prefix_hits,
-    std::vector<SBFullHashResult>* full_hits,
+    std::vector<SBFullHashResult>* cached_hits,
     base::Time last_update) {
   // Clear the results first.
   prefix_hits->clear();
-  full_hits->clear();
+  cached_hits->clear();
 
   std::vector<SBFullHash> full_hashes;
   BrowseFullHashesToCheck(url, false, &full_hashes);
@@ -687,8 +680,8 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
 
   size_t miss_count = 0;
   for (size_t i = 0; i < full_hashes.size(); ++i) {
-    const SBPrefix prefix = full_hashes[i].prefix;
-    if (browse_prefix_set_->Exists(prefix)) {
+    if (browse_prefix_set_->Exists(full_hashes[i])) {
+      const SBPrefix prefix = full_hashes[i].prefix;
       prefix_hits->push_back(prefix);
       if (prefix_miss_cache_.count(prefix) > 0)
         ++miss_count;
@@ -699,15 +692,11 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   if (miss_count == prefix_hits->size())
     return false;
 
-  // Find the matching full-hash results.  |full_browse_hashes_| are from the
-  // database, |cached_browse_hashes_| are from GetHash requests between
-  // updates.
+  // Find matching cached gethash responses.
   std::sort(prefix_hits->begin(), prefix_hits->end());
-
-  GetCachedFullHashesForBrowse(*prefix_hits, full_browse_hashes_,
-                               full_hits, last_update);
   GetCachedFullHashesForBrowse(*prefix_hits, cached_browse_hashes_,
-                               full_hits, last_update);
+                               cached_hits, last_update);
+
   return true;
 }
 
@@ -776,7 +765,7 @@ bool SafeBrowsingDatabaseNew::ContainsSideEffectFreeWhitelistUrl(
   if (!side_effect_free_whitelist_prefix_set_.get())
     return false;
 
-  return side_effect_free_whitelist_prefix_set_->Exists(full_hash.prefix);
+  return side_effect_free_whitelist_prefix_set_->Exists(full_hash);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
@@ -1321,31 +1310,27 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 
   const base::TimeTicks before = base::TimeTicks::Now();
 
+  // TODO(shess): Perhaps refactor to let builder accumulate full hashes on the
+  // fly?  Other clients use the SBAddFullHash vector, but AFAICT they only use
+  // the SBFullHash portion.  It would need an accessor on PrefixSet.
   safe_browsing::PrefixSetBuilder builder;
   std::vector<SBAddFullHash> add_full_hashes;
   if (!browse_store_->FinishUpdate(&builder, &add_full_hashes)) {
     RecordFailure(FAILURE_BROWSE_DATABASE_UPDATE_FINISH);
     return;
   }
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set(builder.GetPrefixSet());
 
-  std::vector<SBFullHashCached> full_hash_results;
+  std::vector<SBFullHash> full_hash_results;
   for (size_t i = 0; i < add_full_hashes.size(); ++i) {
-    SBFullHashCached result;
-    result.hash = add_full_hashes[i].full_hash;
-    result.list_id = GetListIdBit(add_full_hashes[i].chunk_id);
-    result.received = add_full_hashes[i].received;
-    full_hash_results.push_back(result);
+    full_hash_results.push_back(add_full_hashes[i].full_hash);
   }
 
-  // This needs to be in sorted order by prefix for efficient access.
-  std::sort(full_hash_results.begin(), full_hash_results.end(),
-            SBFullHashCachedPrefixLess);
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(builder.GetPrefixSet(full_hash_results));
 
   // Swap in the newly built filter and cache.
   {
     base::AutoLock locked(lookup_lock_);
-    full_browse_hashes_.swap(full_hash_results);
 
     // TODO(shess): If |CacheHashResults()| is posted between the
     // earlier lock and this clear, those pending hashes will be lost.
@@ -1399,12 +1384,12 @@ void SafeBrowsingDatabaseNew::UpdateSideEffectFreeWhitelistStore() {
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   if (!side_effect_free_whitelist_store_->FinishUpdate(
-          &builder,
-          &add_full_hashes_result)) {
+          &builder, &add_full_hashes_result)) {
     RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH);
     return;
   }
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set(builder.GetPrefixSet());
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(builder.GetPrefixSetNoHashes());
 
   // Swap in the newly built prefix set.
   {

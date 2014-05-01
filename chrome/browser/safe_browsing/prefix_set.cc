@@ -23,7 +23,7 @@ static uint32 kMagic = 0x864088dd;
 
 // Version history:
 // Version 1: b6cb7cfe/r74487 by shess@chromium.org on 2011-02-10
-// version 2: 2b59b0a6/r253924 by shess@chromium.org on 2014-02-27
+// Version 2: 2b59b0a6/r253924 by shess@chromium.org on 2014-02-27
 
 // Version 2 layout is identical to version 1.  The sort order of |index_|
 // changed from |int32| to |uint32| to match the change of |SBPrefix|.
@@ -92,7 +92,7 @@ PrefixSet::PrefixSet(IndexVector* index, std::vector<uint16>* deltas) {
 
 PrefixSet::~PrefixSet() {}
 
-bool PrefixSet::Exists(SBPrefix prefix) const {
+bool PrefixSet::PrefixExists(SBPrefix prefix) const {
   if (index_.empty())
     return false;
 
@@ -122,6 +122,14 @@ bool PrefixSet::Exists(SBPrefix prefix) const {
   }
 
   return current == prefix;
+}
+
+bool PrefixSet::Exists(const SBFullHash& hash) const {
+  if (std::binary_search(full_hashes_.begin(), full_hashes_.end(),
+                         hash, SBFullHashLess)) {
+    return true;
+  }
+  return PrefixExists(hash.prefix);
 }
 
 void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
@@ -230,7 +238,7 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
     std::vector<SBPrefix> prefixes;
     PrefixSet(&index, &deltas).GetPrefixes(&prefixes);
     std::sort(prefixes.begin(), prefixes.end());
-    return PrefixSetBuilder(prefixes).GetPrefixSet().Pass();
+    return PrefixSetBuilder(prefixes).GetPrefixSetNoHashes().Pass();
   }
 
   // Steals contents of |index| and |deltas| via swap().
@@ -331,7 +339,8 @@ PrefixSetBuilder::PrefixSetBuilder(const std::vector<SBPrefix>& prefixes)
 PrefixSetBuilder::~PrefixSetBuilder() {
 }
 
-scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSet() {
+scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSet(
+    const std::vector<SBFullHash>& hashes) {
   DCHECK(prefix_set_.get());
 
   // Flush runs until buffered data is gone.
@@ -343,9 +352,16 @@ scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSet() {
   // they're almost free.
   PrefixSet::IndexVector(prefix_set_->index_).swap(prefix_set_->index_);
 
+  prefix_set_->full_hashes_ = hashes;
+  std::sort(prefix_set_->full_hashes_.begin(), prefix_set_->full_hashes_.end(),
+            SBFullHashLess);
+
   return prefix_set_.Pass();
 }
 
+scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSetNoHashes() {
+  return GetPrefixSet(std::vector<SBFullHash>()).Pass();
+}
 
 void PrefixSetBuilder::EmitRun() {
   DCHECK(prefix_set_.get());

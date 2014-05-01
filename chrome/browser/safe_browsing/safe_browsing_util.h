@@ -40,6 +40,10 @@ inline bool SBFullHashEqual(const SBFullHash& a, const SBFullHash& b) {
   return !memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash));
 }
 
+inline bool SBFullHashLess(const SBFullHash& a, const SBFullHash& b) {
+  return memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash)) < 0;
+}
+
 // Generate full hash for the given string.
 SBFullHash SBFullHashForString(const base::StringPiece& str);
 
