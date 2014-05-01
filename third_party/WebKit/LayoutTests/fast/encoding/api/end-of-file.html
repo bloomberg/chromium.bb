@@ -1,36 +1,50 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<title>Encoding API: End-of-file</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script>
 
-description("Edge cases around non-fatal errors at EOF");
+test(function() {
+    [
+        {encoding: 'utf-8', sequence: [0xC0]},
+        {encoding: 'utf-16le', sequence: [0x00]},
+        {encoding: 'utf-16be', sequence: [0x00]}
+    ].forEach(function(testCase) {
 
-shouldThrow("new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xff]))");
+        assert_throws({name: 'EncodingError'}, function() {
+            var decoder = new TextDecoder(testCase.encoding, {fatal: true});
+            decoder.decode(new Uint8Array(testCase.sequence));
+        }, 'Unterminated ' + testCase.encoding + ' sequence should throw if fatal flag is set');
 
-debug("");
-shouldBe("new TextDecoder('utf-8').decode(new Uint8Array([0xff]))", "'\uFFFD'");
+        assert_equals(
+            new TextDecoder(testCase.encoding).decode(new Uint8Array([testCase.sequence])),
+            '\uFFFD',
+            'Unterminated UTF-8 sequence should emit replacement character if fatal flag is unset');
+    });
+}, 'Fatal flag, non-streaming cases');
 
-debug("");
-shouldThrow("new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00]))");
+test(function() {
 
-debug("");
-shouldBe("new TextDecoder('utf-16le').decode(new Uint8Array([0x00]))", "'\uFFFD'");
+    var decoder = new TextDecoder('utf-16le', {fatal: true});
+    var odd = new Uint8Array([0x00]);
+    var even = new Uint8Array([0x00, 0x00]);
 
-debug("");
-shouldThrow("new TextDecoder('utf-16be', {fatal: true}).decode(new Uint8Array([0x00]))");
+    assert_equals(decoder.decode(odd, {stream: true}), '');
+    assert_equals(decoder.decode(odd), '\u0000');
 
-debug("");
-shouldBe("new TextDecoder('utf-16be').decode(new Uint8Array([0x00]))", "'\uFFFD'");
+    assert_throws({name: 'EncodingError'}, function() {
+        decoder.decode(even, {stream: true});
+        decoder.decode(odd)
+    });
 
-debug("");
-debug("Streaming cases:");
-evalAndLog("decoder = new TextDecoder('utf-16le', {fatal: true})");
-evalAndLog("odd = new Uint8Array([0x00])");
-evalAndLog("even = new Uint8Array([0x00, 0x00])");
+    assert_throws({name: 'EncodingError'}, function() {
+        decoder.decode(odd, {stream: true});
+        decoder.decode(even);
+    });
 
-debug("");
-shouldNotThrow("decoder.decode(odd, {stream: true}); decoder.decode(odd)");
-shouldThrow("decoder.decode(even, {stream: true}); decoder.decode(odd)");
-shouldThrow("decoder.decode(odd, {stream: true}); decoder.decode(even)");
-shouldNotThrow("decoder.decode(even, {stream: true}); decoder.decode(even)");
+    assert_equals(decoder.decode(even, {stream: true}), '\u0000');
+    assert_equals(decoder.decode(even), '\u0000');
+
+}, 'Fatal flag, streaming cases');
 
 </script>

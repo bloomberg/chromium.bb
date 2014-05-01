@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<title>Encoding API: Streaming decode</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/shared.js"></script>
 <script>
 
-description("Test streaming decoding using the Encoding API.");
-
-evalAndLog("string = '\\x00123ABCabc\\x80\\xFF\\u0100\\u1000\\uFFFD\\uD800\\uDC00\\uDBFF\\uDFFF'");
+var string = '\\x00123ABCabc\\x80\\xFF\\u0100\\u1000\\uFFFD\\uD800\\uDC00\\uDBFF\\uDFFF';
 
 utf_encodings.forEach(function (encoding) {
-    debug("");
-    evalAndLog("encoded = new TextEncoder('" + encoding + "').encode(string)");
-
     for (var len = 1; len <= 5; ++len) {
-        evalAndLog("out = ''");
-        evalAndLog("decoder = new TextDecoder('" + encoding + "')");
-        for (var i = 0; i < encoded.length; i += len) {
-            var sub = [];
-            for (var j = i; j < encoded.length && j < i + len; ++j) {
-                sub.push(encoded[j]);
+        test(function() {
+            var encoded = new TextEncoder(encoding).encode(string);
+
+            var out = '';
+            var decoder = new TextDecoder(encoding);
+            for (var i = 0; i < encoded.length; i += len) {
+                var sub = [];
+                for (var j = i; j < encoded.length && j < i + len; ++j)
+                    sub.push(encoded[j]);
+                out += decoder.decode(new Uint8Array(sub), {stream: true});
             }
-            evalAndLog("out += decoder.decode(new Uint8Array(" + JSON.stringify(sub) + "), {stream: true})");
-        }
-        evalAndLog("out += decoder.decode()");
-        shouldBeEqualToString("out", string);
+            out += decoder.decode();
+            assert_equals(out, string);
+        }, 'Streaming decode: ' + encoding + ', ' + len + ' byte window');
     }
 });
 

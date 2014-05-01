@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<title>Encoding API: Encoding labels</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/shared.js"></script>
 <script>
 
-description("Test the Encoding API's use of encoding names");
-
 encodings_table.forEach(function(section) {
-    var list = section.encodings;
-    list.forEach(function(encoding) {
-        debug("");
-        evalAndLog("name = " + JSON.stringify(encoding.name));
-        encoding.labels.forEach(function(label) {
-            shouldBeEqualToString("new TextDecoder(" + JSON.stringify(label) + ").encoding", encoding.name);
-        });
+    section.encodings.forEach(function(encoding) {
+        var name = encoding.name;
+        test(function(){
+            encoding.labels.forEach(function(label) {
+                assert_equals(new TextDecoder(label).encoding, encoding.name);
+            });
+        }, 'Labels for: ' + name);
     });
 });
 

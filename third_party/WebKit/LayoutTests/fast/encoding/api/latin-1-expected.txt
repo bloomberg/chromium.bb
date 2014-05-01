@@ -1,44 +1,4 @@
-Verify that Latin-1 decoders (windows-1252, iso-8859-1, us-ascii, etc) decode identically.
+This is a testharness.js-based test.
+PASS Latin-1 decoders (windows-1252, iso-8859-1, us-ascii, etc) decode identically. 
+Harness: the test ran to completion.
 
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-array = new Uint8Array(256)
-initialize array to 0...255
-windows1252 = new TextDecoder('windows-1252')
-decoder = new TextDecoder("ansi_x3.4-1968")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("ascii")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("cp1252")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("cp819")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("csisolatin1")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("ibm819")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("iso-8859-1")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("iso-ir-100")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("iso8859-1")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("iso88591")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("iso_8859-1")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("iso_8859-1:1987")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("l1")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("latin1")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("us-ascii")
-PASS decoder.decode(array) is windows1252.decode(array)
-decoder = new TextDecoder("x-cp1252")
-PASS decoder.decode(array) is windows1252.decode(array)
-PASS successfullyParsed is true
-
-TEST COMPLETE
-B

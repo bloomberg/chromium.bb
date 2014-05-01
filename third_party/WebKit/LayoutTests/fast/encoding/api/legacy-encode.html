@@ -1,20 +1,25 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<title>Encoding API: Legacy encodings</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/shared.js"></script>
 <script>
-
-description("Non-UTF encodings supported only for decode, not encode");
 
 encodings_table.forEach(function(section) {
     section.encodings.forEach(function(encoding) {
         if (encoding.name === "replacement")
             return;
+
         if (utf_encodings.indexOf(encoding.name) !== -1) {
-            shouldBeEqualToString("new TextDecoder(" + JSON.stringify(encoding.name) + ").encoding", encoding.name);
-            shouldBeEqualToString("new TextEncoder(" + JSON.stringify(encoding.name) + ").encoding", encoding.name);
+            test(function() {
+                assert_equals(new TextDecoder(encoding.name).encoding, encoding.name);
+                assert_equals(new TextEncoder(encoding.name).encoding, encoding.name);
+            }, "UTF encodings are supported for encode and decode");
         } else {
-            shouldBeEqualToString("new TextDecoder(" + JSON.stringify(encoding.name) + ").encoding", encoding.name);
-            shouldThrow("new TextEncoder(" + JSON.stringify(encoding.name) + ").encoding");
+            test(function() {
+                assert_equals(new TextDecoder(encoding.name).encoding, encoding.name);
+                assert_throws({name:'TypeError'}, function() { new TextEncoder(encoding.name); });
+            }, "Non-UTF encodings supported only for decode, not encode");
         }
     });
 });

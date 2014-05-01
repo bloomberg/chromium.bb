@@ -1,22 +1,4 @@
-Test the Encoding API's use of encoding names
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-Encoding names are case insensitive
-PASS new TextDecoder('utf-8').encoding is "utf-8"
-PASS new TextDecoder('UTF-8').encoding is "utf-8"
-PASS new TextDecoder('utf-16').encoding is "utf-16le"
-PASS new TextDecoder('UTF-16').encoding is "utf-16le"
-PASS new TextDecoder('utf-16le').encoding is "utf-16le"
-PASS new TextDecoder('UTF-16LE').encoding is "utf-16le"
-PASS new TextDecoder('utf-16be').encoding is "utf-16be"
-PASS new TextDecoder('UTF-16BE').encoding is "utf-16be"
-PASS new TextDecoder('ascii').encoding is "windows-1252"
-PASS new TextDecoder('ASCII').encoding is "windows-1252"
-PASS new TextDecoder('iso-8859-1').encoding is "windows-1252"
-PASS new TextDecoder('ISO-8859-1').encoding is "windows-1252"
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS Encoding labels are case-insensitive 
+Harness: the test ran to completion.
 

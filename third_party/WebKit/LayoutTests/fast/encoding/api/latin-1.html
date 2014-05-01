@@ -1,37 +1,36 @@
-B<!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<!DOCTYPE html>
+<title>Encoding API: Latin-1 decoders</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/shared.js"></script>
 <script>
-
-description("Verify that Latin-1 decoders (windows-1252, iso-8859-1, us-ascii, etc) decode identically.");
 
 // Blink uses separate decoder object intances for these encoding aliases,
 // so test that they are behaving identically.
 
-var labels;
-encodings_table.forEach(function(section) {
-    section.encodings.forEach(function(encoding) {
-        if (encoding.name === "windows-1252")
-            labels = encoding.labels;
+test(function() {
+
+    var labels;
+    encodings_table.forEach(function(section) {
+        section.encodings.forEach(function(encoding) {
+            if (encoding.name === 'windows-1252')
+                labels = encoding.labels;
+        });
     });
-});
-labels = labels.filter(function(label) { return label !== 'windows-1252'; });
+    labels = labels.filter(function(label) { return label !== 'windows-1252'; });
 
-evalAndLog("array = new Uint8Array(256)");
-debug("initialize array to 0...255");
-for (var cp = 0; cp <= 255; ++cp) {
-    array[cp] = cp;
-}
-
-evalAndLog("windows1252 = new TextDecoder('windows-1252')");
-
-labels.forEach(function(label) {
-    decoder = null;
-    evalAndLog("decoder = new TextDecoder(" + JSON.stringify(label) + ")");
-    // Above may throw if encoding unsupported.
-    if (decoder) {
-        shouldBe("decoder.decode(array)", "windows1252.decode(array)");
+    var array = new Uint8Array(256);
+    for (var cp = 0; cp <= 255; ++cp) {
+        array[cp] = cp;
     }
-});
+
+    var windows1252 = new TextDecoder('windows-1252');
+
+    labels.forEach(function(label) {
+        var decoder = new TextDecoder(label);
+        assert_equals(decoder.decode(array), windows1252.decode(array));
+    });
+
+}, 'Latin-1 decoders (windows-1252, iso-8859-1, us-ascii, etc) decode identically.');
 
 </script>

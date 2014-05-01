@@ -1,30 +1,5 @@
-Edge cases around non-fatal errors at EOF
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xff])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-
-PASS new TextDecoder('utf-8').decode(new Uint8Array([0xff])) is '�'
-
-PASS new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-
-PASS new TextDecoder('utf-16le').decode(new Uint8Array([0x00])) is '�'
-
-PASS new TextDecoder('utf-16be', {fatal: true}).decode(new Uint8Array([0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-
-PASS new TextDecoder('utf-16be').decode(new Uint8Array([0x00])) is '�'
-
-Streaming cases:
-decoder = new TextDecoder('utf-16le', {fatal: true})
-odd = new Uint8Array([0x00])
-even = new Uint8Array([0x00, 0x00])
-
-PASS decoder.decode(odd, {stream: true}); decoder.decode(odd) did not throw exception.
-PASS decoder.decode(even, {stream: true}); decoder.decode(odd) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS decoder.decode(odd, {stream: true}); decoder.decode(even) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS decoder.decode(even, {stream: true}); decoder.decode(even) did not throw exception.
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS Fatal flag, non-streaming cases 
+PASS Fatal flag, streaming cases 
+Harness: the test ran to completion.
 

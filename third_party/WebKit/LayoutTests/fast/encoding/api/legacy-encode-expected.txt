@@ -1,91 +1,43 @@
-Non-UTF encodings supported only for decode, not encode
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS new TextDecoder("utf-8").encoding is "utf-8"
-PASS new TextEncoder("utf-8").encoding is "utf-8"
-FAIL new TextDecoder("ibm866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('ibm866') is invalid.
-PASS new TextEncoder("ibm866").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding label provided ('ibm866') is invalid..
-PASS new TextDecoder("iso-8859-2").encoding is "iso-8859-2"
-PASS new TextEncoder("iso-8859-2").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-2') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-3").encoding is "iso-8859-3"
-PASS new TextEncoder("iso-8859-3").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-3') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-4").encoding is "iso-8859-4"
-PASS new TextEncoder("iso-8859-4").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-4') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-5").encoding is "iso-8859-5"
-PASS new TextEncoder("iso-8859-5").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-5') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-6").encoding is "iso-8859-6"
-PASS new TextEncoder("iso-8859-6").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-6') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-7").encoding is "iso-8859-7"
-PASS new TextEncoder("iso-8859-7").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-7') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-8").encoding is "iso-8859-8"
-PASS new TextEncoder("iso-8859-8").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-8') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-8-i").encoding is "iso-8859-8-i"
-PASS new TextEncoder("iso-8859-8-i").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-8-i') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-10").encoding is "iso-8859-10"
-PASS new TextEncoder("iso-8859-10").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-10') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-13").encoding is "iso-8859-13"
-PASS new TextEncoder("iso-8859-13").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-13') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-14").encoding is "iso-8859-14"
-PASS new TextEncoder("iso-8859-14").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-14') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-15").encoding is "iso-8859-15"
-PASS new TextEncoder("iso-8859-15").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-15') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-8859-16").encoding is "iso-8859-16"
-PASS new TextEncoder("iso-8859-16").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-8859-16') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("koi8-r").encoding is "koi8-r"
-PASS new TextEncoder("koi8-r").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('koi8-r') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("koi8-u").encoding is "koi8-u"
-PASS new TextEncoder("koi8-u").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('koi8-u') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("macintosh").encoding is "macintosh"
-PASS new TextEncoder("macintosh").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('macintosh') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-874").encoding is "windows-874"
-PASS new TextEncoder("windows-874").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-874') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1250").encoding is "windows-1250"
-PASS new TextEncoder("windows-1250").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1250') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1251").encoding is "windows-1251"
-PASS new TextEncoder("windows-1251").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1251') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1252").encoding is "windows-1252"
-PASS new TextEncoder("windows-1252").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1252') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1253").encoding is "windows-1253"
-PASS new TextEncoder("windows-1253").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1253') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1254").encoding is "windows-1254"
-PASS new TextEncoder("windows-1254").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1254') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1255").encoding is "windows-1255"
-PASS new TextEncoder("windows-1255").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1255') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1256").encoding is "windows-1256"
-PASS new TextEncoder("windows-1256").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1256') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1257").encoding is "windows-1257"
-PASS new TextEncoder("windows-1257").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1257') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("windows-1258").encoding is "windows-1258"
-PASS new TextEncoder("windows-1258").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('windows-1258') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("x-mac-cyrillic").encoding is "x-mac-cyrillic"
-PASS new TextEncoder("x-mac-cyrillic").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('x-mac-cyrillic') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("gbk").encoding is "gbk"
-PASS new TextEncoder("gbk").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('gbk') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("gb18030").encoding is "gb18030"
-PASS new TextEncoder("gb18030").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('gb18030') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("hz-gb-2312").encoding is "hz-gb-2312"
-PASS new TextEncoder("hz-gb-2312").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('hz-gb-2312') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("big5").encoding is "big5"
-PASS new TextEncoder("big5").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('big5') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("euc-jp").encoding is "euc-jp"
-PASS new TextEncoder("euc-jp").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('euc-jp') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-2022-jp").encoding is "iso-2022-jp"
-PASS new TextEncoder("iso-2022-jp").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-2022-jp') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("shift_jis").encoding is "shift_jis"
-PASS new TextEncoder("shift_jis").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('shift_jis') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("euc-kr").encoding is "euc-kr"
-PASS new TextEncoder("euc-kr").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('euc-kr') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("iso-2022-kr").encoding is "iso-2022-kr"
-PASS new TextEncoder("iso-2022-kr").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('iso-2022-kr') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS new TextDecoder("utf-16be").encoding is "utf-16be"
-PASS new TextEncoder("utf-16be").encoding is "utf-16be"
-PASS new TextDecoder("utf-16le").encoding is "utf-16le"
-PASS new TextEncoder("utf-16le").encoding is "utf-16le"
-PASS new TextDecoder("x-user-defined").encoding is "x-user-defined"
-PASS new TextEncoder("x-user-defined").encoding threw exception TypeError: Failed to construct 'TextEncoder': The encoding provided ('x-user-defined') is not one of 'utf-8', 'utf-16', or 'utf-16be'..
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS UTF encodings are supported for encode and decode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS Non-UTF encodings supported only for decode, not encode 
+PASS UTF encodings are supported for encode and decode 
+PASS UTF encodings are supported for encode and decode 
+PASS Non-UTF encodings supported only for decode, not encode 
+Harness: the test ran to completion.
 

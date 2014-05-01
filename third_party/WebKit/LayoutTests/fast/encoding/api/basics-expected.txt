@@ -1,41 +1,4 @@
-This tests the basics of the Encoding API.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS 'TextEncoder' in window is true
-PASS 'TextDecoder' in window is true
-PASS 'encoding' in new TextEncoder is true
-PASS 'encoding' in new TextDecoder is true
-PASS typeof (new TextEncoder).encoding is "string"
-PASS typeof (new TextDecoder).encoding is "string"
-PASS 'encode' in new TextEncoder is true
-PASS 'decode' in new TextDecoder is true
-PASS typeof (new TextEncoder).encode is "function"
-PASS typeof (new TextDecoder).decode is "function"
-PASS (new TextEncoder).encoding is "utf-8"
-PASS (new TextDecoder).encoding is "utf-8"
-
-test encode/decode sample - utf-8
-encoded = new TextEncoder('utf-8').encode("z¢水𝄞􏿽")
-PASS JSON.stringify(toArray(encoded)) is "[122,194,162,230,176,180,240,157,132,158,244,143,191,189]"
-PASS new TextDecoder('utf-8').decode(new Uint8Array([122,194,162,230,176,180,240,157,132,158,244,143,191,189])) is "z¢水𝄞􏿽"
-
-test encode/decode sample - utf-16le
-encoded = new TextEncoder('utf-16le').encode("z¢水𝄞􏿽")
-PASS JSON.stringify(toArray(encoded)) is "[122,0,162,0,52,108,52,216,30,221,255,219,253,223]"
-PASS new TextDecoder('utf-16le').decode(new Uint8Array([122,0,162,0,52,108,52,216,30,221,255,219,253,223])) is "z¢水𝄞􏿽"
-
-test encode/decode sample - utf-16be
-encoded = new TextEncoder('utf-16be').encode("z¢水𝄞􏿽")
-PASS JSON.stringify(toArray(encoded)) is "[0,122,0,162,108,52,216,52,221,30,219,255,223,253]"
-PASS new TextDecoder('utf-16be').decode(new Uint8Array([0,122,0,162,108,52,216,52,221,30,219,255,223,253])) is "z¢水𝄞􏿽"
-
-test encode/decode sample - utf-16
-encoded = new TextEncoder('utf-16').encode("z¢水𝄞􏿽")
-PASS JSON.stringify(toArray(encoded)) is "[122,0,162,0,52,108,52,216,30,221,255,219,253,223]"
-PASS new TextDecoder('utf-16').decode(new Uint8Array([122,0,162,0,52,108,52,216,30,221,255,219,253,223])) is "z¢水𝄞􏿽"
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS Encoding API basics 
+Harness: the test ran to completion.
 

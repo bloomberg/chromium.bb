@@ -18,6 +18,7 @@ encodings_table = [
     },
     {
         "encodings": [
+            /* FIXME: Support ibm866 (crbug.com/277023)
             {
                 "labels": [
                     "866",
@@ -27,6 +28,7 @@ encodings_table = [
                 ],
                 "name": "ibm866"
             },
+             */
             {
                 "labels": [
                     "csisolatin2",

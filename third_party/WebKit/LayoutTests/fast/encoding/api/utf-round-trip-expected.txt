@@ -1,24 +1,8 @@
-Sanity check the Encoding API's handling of UTF encodings.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-utf-8 - Encode/Decode Range U+0000 - U+10FFFF
-no output means all ranges matched
-
-utf-16le - Encode/Decode Range U+0000 - U+10FFFF
-no output means all ranges matched
-
-utf-16be - Encode/Decode Range U+0000 - U+10FFFF
-no output means all ranges matched
-
-UTF-8 encoding (compare against unescape/encodeURIComponent)
-no output means all ranges matched
-
-UTF-8 decoding (compare against decodeURIComponent/escape)
-no output means all ranges matched
-
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS utf-8 - encode/decode round trip 
+PASS utf-16le - encode/decode round trip 
+PASS utf-16be - encode/decode round trip 
+PASS UTF-8 encoding (compare against unescape/encodeURIComponent) 
+PASS UTF-8 decoding (compare against decodeURIComponent/escape) 
+Harness: the test ran to completion.
 

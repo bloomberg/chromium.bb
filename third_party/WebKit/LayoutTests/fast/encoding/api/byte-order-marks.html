@@ -1,38 +1,48 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<title>Encoding API: Byte-order marks</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script>
 
-description("Test the Encoding API's handling of byte-order marks (BOMs).");
+var testCases = [
+    {
+        encoding: 'utf-8',
+        bom: [0xEF, 0xBB, 0xBF],
+        bytes: [0x7A, 0xC2, 0xA2, 0xE6, 0xB0, 0xB4, 0xF0, 0x9D, 0x84, 0x9E, 0xF4, 0x8F, 0xBF, 0xBD]
+    },
+    {
+        encoding: 'utf-16le',
+        bom: [0xff, 0xfe],
+        bytes: [0x7A, 0x00, 0xA2, 0x00, 0x34, 0x6C, 0x34, 0xD8, 0x1E, 0xDD, 0xFF, 0xDB, 0xFD, 0xDF]
+    },
+    {
+        encoding: 'utf-16be',
+        bom: [0xfe, 0xff],
+        bytes: [0x00, 0x7A, 0x00, 0xA2, 0x6C, 0x34, 0xD8, 0x34, 0xDD, 0x1E, 0xDB, 0xFF, 0xDF, 0xFD]
+    }
+];
 
-var utf8_bom = [0xEF, 0xBB, 0xBF];
-var utf8 = [0x7A, 0xC2, 0xA2, 0xE6, 0xB0, 0xB4, 0xF0, 0x9D, 0x84, 0x9E, 0xF4, 0x8F, 0xBF, 0xBD];
+var string = 'z\xA2\u6C34\uD834\uDD1E\uDBFF\uDFFD'; // z, cent, CJK water, G-Clef, Private-use character
 
-var utf16le_bom = [0xff, 0xfe];
-var utf16le = [0x7A, 0x00, 0xA2, 0x00, 0x34, 0x6C, 0x34, 0xD8, 0x1E, 0xDD, 0xFF, 0xDB, 0xFD, 0xDF];
+testCases.forEach(function(t) {
+    test(function() {
 
-var utf16be_bom = [0xfe, 0xff];
-var utf16be = [0x00, 0x7A, 0x00, 0xA2, 0x6C, 0x34, 0xD8, 0x34, 0xDD, 0x1E, 0xDB, 0xFF, 0xDF, 0xFD];
+        var decoder = new TextDecoder(t.encoding);
+        assert_equals(decoder.decode(new Uint8Array(t.bytes)), string,
+                      'Sequence without BOM should decode successfully');
 
-var string = "z\xA2\u6C34\uD834\uDD1E\uDBFF\uDFFD"; // z, cent, CJK water, G-Clef, Private-use character
+        assert_equals(decoder.decode(new Uint8Array(t.bom.concat(t.bytes))), string,
+                      'Sequence with BOM should decode successfully (with no BOM present in output)');
 
-// missing BOMs
-shouldBeEqualToString("new TextDecoder('utf-8').decode(new Uint8Array(utf8))", string);
-shouldBeEqualToString("new TextDecoder('utf-16le').decode(new Uint8Array(utf16le))", string);
-shouldBeEqualToString("new TextDecoder('utf-16be').decode(new Uint8Array(utf16be))", string);
+        testCases.forEach(function(o) {
+            if (o === t)
+                return;
 
-// matching BOMs
-shouldBeEqualToString("new TextDecoder('utf-8').decode(new Uint8Array(utf8_bom.concat(utf8)))", string);
-shouldBeEqualToString("new TextDecoder('utf-16le').decode(new Uint8Array(utf16le_bom.concat(utf16le)))", string);
-shouldBeEqualToString("new TextDecoder('utf-16be').decode(new Uint8Array(utf16be_bom.concat(utf16be)))", string);
+            assert_not_equals(decoder.decode(new Uint8Array(o.bom.concat(t.bytes))), string,
+                              'Mismatching BOM should not be ignored - treated as garbage bytes.');
+        });
 
-// mismatching BOMs
-shouldNotBe("new TextDecoder('utf-8').decode(new Uint8Array(utf16le_bom.concat(utf8)))", JSON.stringify(string));
-shouldNotBe("new TextDecoder('utf-8').decode(new Uint8Array(utf16be_bom.concat(utf8)))", JSON.stringify(string));
-shouldNotBe("new TextDecoder('utf-16le').decode(new Uint8Array(utf8_bom.concat(utf16le)))", JSON.stringify(string));
-shouldNotBe("new TextDecoder('utf-16le').decode(new Uint8Array(utf16be_bom.concat(utf16le)))", JSON.stringify(string));
-shouldNotBe("new TextDecoder('utf-16be').decode(new Uint8Array(utf8_bom.concat(utf16be)))", JSON.stringify(string));
-shouldNotBe("new TextDecoder('utf-16be').decode(new Uint8Array(utf16le_bom.concat(utf16be)))", JSON.stringify(string));
-
-// FIXME: Add tests where the BOM is split across buffers.
+    }, 'Byte-order marks: ' + t.encoding);
+});
 
 </script>

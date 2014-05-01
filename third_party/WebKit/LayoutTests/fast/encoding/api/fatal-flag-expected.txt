@@ -1,23 +1,37 @@
-Test the Encoding API's 'fatal' flag
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xC0])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xC0, 0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xC0, 0xC0])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0, 0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0, 0xC0])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0, 0x80, 0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0, 0x80, 0xC0])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xFC, 0x80, 0x80, 0x80, 0x80, 0x80])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-PASS new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00, 0xd8])) should throw an exception. Was í €.
-FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00, 0xd8, 0x00, 0x00])) should throw an exception. Was í €\0.
-FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00, 0xdc, 0x00, 0x00])) should throw an exception. Was í°€\0.
-FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00, 0xdc, 0x00, 0xd8])) should throw an exception. Was í°€í €.
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS Fatal flag: utf-8 - invalid code 
+PASS Fatal flag: utf-8 - ends early 
+PASS Fatal flag: utf-8 - invalid trail 
+PASS Fatal flag: utf-8 - invalid trail 
+PASS Fatal flag: utf-8 - ends early 
+PASS Fatal flag: utf-8 - invalid trail 
+PASS Fatal flag: utf-8 - invalid trail 
+PASS Fatal flag: utf-8 - invalid trail 
+PASS Fatal flag: utf-8 - invalid trail 
+PASS Fatal flag: utf-8 - > 0x10FFFF 
+PASS Fatal flag: utf-8 - obsolete lead byte 
+PASS Fatal flag: utf-8 - overlong U+0000 - 2 bytes 
+PASS Fatal flag: utf-8 - overlong U+0000 - 3 bytes 
+PASS Fatal flag: utf-8 - overlong U+0000 - 4 bytes 
+PASS Fatal flag: utf-8 - overlong U+0000 - 5 bytes 
+PASS Fatal flag: utf-8 - overlong U+0000 - 6 bytes 
+PASS Fatal flag: utf-8 - overlong U+007F - 2 bytes 
+PASS Fatal flag: utf-8 - overlong U+007F - 3 bytes 
+PASS Fatal flag: utf-8 - overlong U+007F - 4 bytes 
+PASS Fatal flag: utf-8 - overlong U+007F - 5 bytes 
+PASS Fatal flag: utf-8 - overlong U+007F - 6 bytes 
+PASS Fatal flag: utf-8 - overlong U+07FF - 3 bytes 
+PASS Fatal flag: utf-8 - overlong U+07FF - 4 bytes 
+PASS Fatal flag: utf-8 - overlong U+07FF - 5 bytes 
+PASS Fatal flag: utf-8 - overlong U+07FF - 6 bytes 
+PASS Fatal flag: utf-8 - overlong U+FFFF - 4 bytes 
+PASS Fatal flag: utf-8 - overlong U+FFFF - 5 bytes 
+PASS Fatal flag: utf-8 - overlong U+FFFF - 6 bytes 
+PASS Fatal flag: utf-8 - overlong U+10FFFF - 5 bytes 
+PASS Fatal flag: utf-8 - overlong U+10FFFF - 6 bytes 
+PASS Fatal flag: utf-8 - lead surrogate 
+PASS Fatal flag: utf-8 - trail surrogate 
+PASS Fatal flag: utf-8 - surrogate pair 
+PASS Fatal flag: utf-16le - truncated code unit 
+Harness: the test ran to completion.
 

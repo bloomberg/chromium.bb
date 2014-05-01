@@ -1,309 +1,44 @@
-Test the Encoding API's use of encoding names
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-
-name = "utf-8"
-PASS new TextDecoder("unicode-1-1-utf-8").encoding is "utf-8"
-PASS new TextDecoder("utf-8").encoding is "utf-8"
-PASS new TextDecoder("utf8").encoding is "utf-8"
-
-name = "ibm866"
-FAIL new TextDecoder("866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('866') is invalid.
-FAIL new TextDecoder("cp866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('cp866') is invalid.
-FAIL new TextDecoder("csibm866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('csibm866') is invalid.
-FAIL new TextDecoder("ibm866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('ibm866') is invalid.
-
-name = "iso-8859-2"
-PASS new TextDecoder("csisolatin2").encoding is "iso-8859-2"
-PASS new TextDecoder("iso-8859-2").encoding is "iso-8859-2"
-PASS new TextDecoder("iso-ir-101").encoding is "iso-8859-2"
-PASS new TextDecoder("iso8859-2").encoding is "iso-8859-2"
-PASS new TextDecoder("iso88592").encoding is "iso-8859-2"
-PASS new TextDecoder("iso_8859-2").encoding is "iso-8859-2"
-PASS new TextDecoder("iso_8859-2:1987").encoding is "iso-8859-2"
-PASS new TextDecoder("l2").encoding is "iso-8859-2"
-PASS new TextDecoder("latin2").encoding is "iso-8859-2"
-
-name = "iso-8859-3"
-PASS new TextDecoder("csisolatin3").encoding is "iso-8859-3"
-PASS new TextDecoder("iso-8859-3").encoding is "iso-8859-3"
-PASS new TextDecoder("iso-ir-109").encoding is "iso-8859-3"
-PASS new TextDecoder("iso8859-3").encoding is "iso-8859-3"
-PASS new TextDecoder("iso88593").encoding is "iso-8859-3"
-PASS new TextDecoder("iso_8859-3").encoding is "iso-8859-3"
-PASS new TextDecoder("iso_8859-3:1988").encoding is "iso-8859-3"
-PASS new TextDecoder("l3").encoding is "iso-8859-3"
-PASS new TextDecoder("latin3").encoding is "iso-8859-3"
-
-name = "iso-8859-4"
-PASS new TextDecoder("csisolatin4").encoding is "iso-8859-4"
-PASS new TextDecoder("iso-8859-4").encoding is "iso-8859-4"
-PASS new TextDecoder("iso-ir-110").encoding is "iso-8859-4"
-PASS new TextDecoder("iso8859-4").encoding is "iso-8859-4"
-PASS new TextDecoder("iso88594").encoding is "iso-8859-4"
-PASS new TextDecoder("iso_8859-4").encoding is "iso-8859-4"
-PASS new TextDecoder("iso_8859-4:1988").encoding is "iso-8859-4"
-PASS new TextDecoder("l4").encoding is "iso-8859-4"
-PASS new TextDecoder("latin4").encoding is "iso-8859-4"
-
-name = "iso-8859-5"
-PASS new TextDecoder("csisolatincyrillic").encoding is "iso-8859-5"
-PASS new TextDecoder("cyrillic").encoding is "iso-8859-5"
-PASS new TextDecoder("iso-8859-5").encoding is "iso-8859-5"
-PASS new TextDecoder("iso-ir-144").encoding is "iso-8859-5"
-PASS new TextDecoder("iso8859-5").encoding is "iso-8859-5"
-PASS new TextDecoder("iso88595").encoding is "iso-8859-5"
-PASS new TextDecoder("iso_8859-5").encoding is "iso-8859-5"
-PASS new TextDecoder("iso_8859-5:1988").encoding is "iso-8859-5"
-
-name = "iso-8859-6"
-PASS new TextDecoder("arabic").encoding is "iso-8859-6"
-PASS new TextDecoder("asmo-708").encoding is "iso-8859-6"
-PASS new TextDecoder("csiso88596e").encoding is "iso-8859-6"
-PASS new TextDecoder("csiso88596i").encoding is "iso-8859-6"
-PASS new TextDecoder("csisolatinarabic").encoding is "iso-8859-6"
-PASS new TextDecoder("ecma-114").encoding is "iso-8859-6"
-PASS new TextDecoder("iso-8859-6").encoding is "iso-8859-6"
-PASS new TextDecoder("iso-8859-6-e").encoding is "iso-8859-6"
-PASS new TextDecoder("iso-8859-6-i").encoding is "iso-8859-6"
-PASS new TextDecoder("iso-ir-127").encoding is "iso-8859-6"
-PASS new TextDecoder("iso8859-6").encoding is "iso-8859-6"
-PASS new TextDecoder("iso88596").encoding is "iso-8859-6"
-PASS new TextDecoder("iso_8859-6").encoding is "iso-8859-6"
-PASS new TextDecoder("iso_8859-6:1987").encoding is "iso-8859-6"
-
-name = "iso-8859-7"
-PASS new TextDecoder("csisolatingreek").encoding is "iso-8859-7"
-PASS new TextDecoder("ecma-118").encoding is "iso-8859-7"
-PASS new TextDecoder("elot_928").encoding is "iso-8859-7"
-PASS new TextDecoder("greek").encoding is "iso-8859-7"
-PASS new TextDecoder("greek8").encoding is "iso-8859-7"
-PASS new TextDecoder("iso-8859-7").encoding is "iso-8859-7"
-PASS new TextDecoder("iso-ir-126").encoding is "iso-8859-7"
-PASS new TextDecoder("iso8859-7").encoding is "iso-8859-7"
-PASS new TextDecoder("iso88597").encoding is "iso-8859-7"
-PASS new TextDecoder("iso_8859-7").encoding is "iso-8859-7"
-PASS new TextDecoder("iso_8859-7:1987").encoding is "iso-8859-7"
-PASS new TextDecoder("sun_eu_greek").encoding is "iso-8859-7"
-
-name = "iso-8859-8"
-PASS new TextDecoder("csiso88598e").encoding is "iso-8859-8"
-PASS new TextDecoder("csisolatinhebrew").encoding is "iso-8859-8"
-PASS new TextDecoder("hebrew").encoding is "iso-8859-8"
-PASS new TextDecoder("iso-8859-8").encoding is "iso-8859-8"
-PASS new TextDecoder("iso-8859-8-e").encoding is "iso-8859-8"
-PASS new TextDecoder("iso-ir-138").encoding is "iso-8859-8"
-PASS new TextDecoder("iso8859-8").encoding is "iso-8859-8"
-PASS new TextDecoder("iso88598").encoding is "iso-8859-8"
-PASS new TextDecoder("iso_8859-8").encoding is "iso-8859-8"
-PASS new TextDecoder("iso_8859-8:1988").encoding is "iso-8859-8"
-PASS new TextDecoder("visual").encoding is "iso-8859-8"
-
-name = "iso-8859-8-i"
-PASS new TextDecoder("csiso88598i").encoding is "iso-8859-8-i"
-PASS new TextDecoder("iso-8859-8-i").encoding is "iso-8859-8-i"
-PASS new TextDecoder("logical").encoding is "iso-8859-8-i"
-
-name = "iso-8859-10"
-PASS new TextDecoder("csisolatin6").encoding is "iso-8859-10"
-PASS new TextDecoder("iso-8859-10").encoding is "iso-8859-10"
-PASS new TextDecoder("iso-ir-157").encoding is "iso-8859-10"
-PASS new TextDecoder("iso8859-10").encoding is "iso-8859-10"
-PASS new TextDecoder("iso885910").encoding is "iso-8859-10"
-PASS new TextDecoder("l6").encoding is "iso-8859-10"
-PASS new TextDecoder("latin6").encoding is "iso-8859-10"
-
-name = "iso-8859-13"
-PASS new TextDecoder("iso-8859-13").encoding is "iso-8859-13"
-PASS new TextDecoder("iso8859-13").encoding is "iso-8859-13"
-PASS new TextDecoder("iso885913").encoding is "iso-8859-13"
-
-name = "iso-8859-14"
-PASS new TextDecoder("iso-8859-14").encoding is "iso-8859-14"
-PASS new TextDecoder("iso8859-14").encoding is "iso-8859-14"
-PASS new TextDecoder("iso885914").encoding is "iso-8859-14"
-
-name = "iso-8859-15"
-PASS new TextDecoder("csisolatin9").encoding is "iso-8859-15"
-PASS new TextDecoder("iso-8859-15").encoding is "iso-8859-15"
-PASS new TextDecoder("iso8859-15").encoding is "iso-8859-15"
-PASS new TextDecoder("iso885915").encoding is "iso-8859-15"
-PASS new TextDecoder("iso_8859-15").encoding is "iso-8859-15"
-PASS new TextDecoder("l9").encoding is "iso-8859-15"
-
-name = "iso-8859-16"
-PASS new TextDecoder("iso-8859-16").encoding is "iso-8859-16"
-
-name = "koi8-r"
-PASS new TextDecoder("cskoi8r").encoding is "koi8-r"
-PASS new TextDecoder("koi").encoding is "koi8-r"
-PASS new TextDecoder("koi8").encoding is "koi8-r"
-PASS new TextDecoder("koi8-r").encoding is "koi8-r"
-PASS new TextDecoder("koi8_r").encoding is "koi8-r"
-
-name = "koi8-u"
-PASS new TextDecoder("koi8-u").encoding is "koi8-u"
-
-name = "macintosh"
-PASS new TextDecoder("csmacintosh").encoding is "macintosh"
-PASS new TextDecoder("mac").encoding is "macintosh"
-PASS new TextDecoder("macintosh").encoding is "macintosh"
-PASS new TextDecoder("x-mac-roman").encoding is "macintosh"
-
-name = "windows-874"
-PASS new TextDecoder("dos-874").encoding is "windows-874"
-PASS new TextDecoder("iso-8859-11").encoding is "windows-874"
-PASS new TextDecoder("iso8859-11").encoding is "windows-874"
-PASS new TextDecoder("iso885911").encoding is "windows-874"
-PASS new TextDecoder("tis-620").encoding is "windows-874"
-PASS new TextDecoder("windows-874").encoding is "windows-874"
-
-name = "windows-1250"
-PASS new TextDecoder("cp1250").encoding is "windows-1250"
-PASS new TextDecoder("windows-1250").encoding is "windows-1250"
-PASS new TextDecoder("x-cp1250").encoding is "windows-1250"
-
-name = "windows-1251"
-PASS new TextDecoder("cp1251").encoding is "windows-1251"
-PASS new TextDecoder("windows-1251").encoding is "windows-1251"
-PASS new TextDecoder("x-cp1251").encoding is "windows-1251"
-
-name = "windows-1252"
-PASS new TextDecoder("ansi_x3.4-1968").encoding is "windows-1252"
-PASS new TextDecoder("ascii").encoding is "windows-1252"
-PASS new TextDecoder("cp1252").encoding is "windows-1252"
-PASS new TextDecoder("cp819").encoding is "windows-1252"
-PASS new TextDecoder("csisolatin1").encoding is "windows-1252"
-PASS new TextDecoder("ibm819").encoding is "windows-1252"
-PASS new TextDecoder("iso-8859-1").encoding is "windows-1252"
-PASS new TextDecoder("iso-ir-100").encoding is "windows-1252"
-PASS new TextDecoder("iso8859-1").encoding is "windows-1252"
-PASS new TextDecoder("iso88591").encoding is "windows-1252"
-PASS new TextDecoder("iso_8859-1").encoding is "windows-1252"
-PASS new TextDecoder("iso_8859-1:1987").encoding is "windows-1252"
-PASS new TextDecoder("l1").encoding is "windows-1252"
-PASS new TextDecoder("latin1").encoding is "windows-1252"
-PASS new TextDecoder("us-ascii").encoding is "windows-1252"
-PASS new TextDecoder("windows-1252").encoding is "windows-1252"
-PASS new TextDecoder("x-cp1252").encoding is "windows-1252"
-
-name = "windows-1253"
-PASS new TextDecoder("cp1253").encoding is "windows-1253"
-PASS new TextDecoder("windows-1253").encoding is "windows-1253"
-PASS new TextDecoder("x-cp1253").encoding is "windows-1253"
-
-name = "windows-1254"
-PASS new TextDecoder("cp1254").encoding is "windows-1254"
-PASS new TextDecoder("csisolatin5").encoding is "windows-1254"
-PASS new TextDecoder("iso-8859-9").encoding is "windows-1254"
-PASS new TextDecoder("iso-ir-148").encoding is "windows-1254"
-PASS new TextDecoder("iso8859-9").encoding is "windows-1254"
-PASS new TextDecoder("iso88599").encoding is "windows-1254"
-PASS new TextDecoder("iso_8859-9").encoding is "windows-1254"
-PASS new TextDecoder("iso_8859-9:1989").encoding is "windows-1254"
-PASS new TextDecoder("l5").encoding is "windows-1254"
-PASS new TextDecoder("latin5").encoding is "windows-1254"
-PASS new TextDecoder("windows-1254").encoding is "windows-1254"
-PASS new TextDecoder("x-cp1254").encoding is "windows-1254"
-
-name = "windows-1255"
-PASS new TextDecoder("cp1255").encoding is "windows-1255"
-PASS new TextDecoder("windows-1255").encoding is "windows-1255"
-PASS new TextDecoder("x-cp1255").encoding is "windows-1255"
-
-name = "windows-1256"
-PASS new TextDecoder("cp1256").encoding is "windows-1256"
-PASS new TextDecoder("windows-1256").encoding is "windows-1256"
-PASS new TextDecoder("x-cp1256").encoding is "windows-1256"
-
-name = "windows-1257"
-PASS new TextDecoder("cp1257").encoding is "windows-1257"
-PASS new TextDecoder("windows-1257").encoding is "windows-1257"
-PASS new TextDecoder("x-cp1257").encoding is "windows-1257"
-
-name = "windows-1258"
-PASS new TextDecoder("cp1258").encoding is "windows-1258"
-PASS new TextDecoder("windows-1258").encoding is "windows-1258"
-PASS new TextDecoder("x-cp1258").encoding is "windows-1258"
-
-name = "x-mac-cyrillic"
-PASS new TextDecoder("x-mac-cyrillic").encoding is "x-mac-cyrillic"
-PASS new TextDecoder("x-mac-ukrainian").encoding is "x-mac-cyrillic"
-
-name = "gbk"
-PASS new TextDecoder("chinese").encoding is "gbk"
-PASS new TextDecoder("csgb2312").encoding is "gbk"
-PASS new TextDecoder("csiso58gb231280").encoding is "gbk"
-PASS new TextDecoder("gb2312").encoding is "gbk"
-PASS new TextDecoder("gb_2312").encoding is "gbk"
-PASS new TextDecoder("gb_2312-80").encoding is "gbk"
-PASS new TextDecoder("gbk").encoding is "gbk"
-PASS new TextDecoder("iso-ir-58").encoding is "gbk"
-PASS new TextDecoder("x-gbk").encoding is "gbk"
-
-name = "gb18030"
-PASS new TextDecoder("gb18030").encoding is "gb18030"
-
-name = "hz-gb-2312"
-PASS new TextDecoder("hz-gb-2312").encoding is "hz-gb-2312"
-
-name = "big5"
-PASS new TextDecoder("big5").encoding is "big5"
-FAIL new TextDecoder("big5-hkscs").encoding should be big5. Was big5-hkscs.
-PASS new TextDecoder("cn-big5").encoding is "big5"
-PASS new TextDecoder("csbig5").encoding is "big5"
-PASS new TextDecoder("x-x-big5").encoding is "big5"
-
-name = "euc-jp"
-PASS new TextDecoder("cseucpkdfmtjapanese").encoding is "euc-jp"
-PASS new TextDecoder("euc-jp").encoding is "euc-jp"
-PASS new TextDecoder("x-euc-jp").encoding is "euc-jp"
-
-name = "iso-2022-jp"
-PASS new TextDecoder("csiso2022jp").encoding is "iso-2022-jp"
-PASS new TextDecoder("iso-2022-jp").encoding is "iso-2022-jp"
-
-name = "shift_jis"
-PASS new TextDecoder("csshiftjis").encoding is "shift_jis"
-PASS new TextDecoder("ms_kanji").encoding is "shift_jis"
-PASS new TextDecoder("shift-jis").encoding is "shift_jis"
-PASS new TextDecoder("shift_jis").encoding is "shift_jis"
-PASS new TextDecoder("sjis").encoding is "shift_jis"
-PASS new TextDecoder("windows-31j").encoding is "shift_jis"
-PASS new TextDecoder("x-sjis").encoding is "shift_jis"
-
-name = "euc-kr"
-PASS new TextDecoder("cseuckr").encoding is "euc-kr"
-PASS new TextDecoder("csksc56011987").encoding is "euc-kr"
-PASS new TextDecoder("euc-kr").encoding is "euc-kr"
-PASS new TextDecoder("iso-ir-149").encoding is "euc-kr"
-PASS new TextDecoder("korean").encoding is "euc-kr"
-PASS new TextDecoder("ks_c_5601-1987").encoding is "euc-kr"
-PASS new TextDecoder("ks_c_5601-1989").encoding is "euc-kr"
-PASS new TextDecoder("ksc5601").encoding is "euc-kr"
-PASS new TextDecoder("ksc_5601").encoding is "euc-kr"
-PASS new TextDecoder("windows-949").encoding is "euc-kr"
-
-name = "iso-2022-kr"
-PASS new TextDecoder("csiso2022kr").encoding is "iso-2022-kr"
-PASS new TextDecoder("iso-2022-kr").encoding is "iso-2022-kr"
-
-name = "replacement"
-FAIL new TextDecoder("iso-2022-cn").encoding should be replacement. Was iso-2022-cn.
-FAIL new TextDecoder("iso-2022-cn-ext").encoding should be replacement. Was iso-2022-cn-ext.
-
-name = "utf-16be"
-PASS new TextDecoder("utf-16be").encoding is "utf-16be"
-
-name = "utf-16le"
-PASS new TextDecoder("utf-16").encoding is "utf-16le"
-PASS new TextDecoder("utf-16le").encoding is "utf-16le"
-
-name = "x-user-defined"
-PASS new TextDecoder("x-user-defined").encoding is "x-user-defined"
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS Labels for: utf-8 
+PASS Labels for: iso-8859-2 
+PASS Labels for: iso-8859-3 
+PASS Labels for: iso-8859-4 
+PASS Labels for: iso-8859-5 
+PASS Labels for: iso-8859-6 
+PASS Labels for: iso-8859-7 
+PASS Labels for: iso-8859-8 
+PASS Labels for: iso-8859-8-i 
+PASS Labels for: iso-8859-10 
+PASS Labels for: iso-8859-13 
+PASS Labels for: iso-8859-14 
+PASS Labels for: iso-8859-15 
+PASS Labels for: iso-8859-16 
+PASS Labels for: koi8-r 
+PASS Labels for: koi8-u 
+PASS Labels for: macintosh 
+PASS Labels for: windows-874 
+PASS Labels for: windows-1250 
+PASS Labels for: windows-1251 
+PASS Labels for: windows-1252 
+PASS Labels for: windows-1253 
+PASS Labels for: windows-1254 
+PASS Labels for: windows-1255 
+PASS Labels for: windows-1256 
+PASS Labels for: windows-1257 
+PASS Labels for: windows-1258 
+PASS Labels for: x-mac-cyrillic 
+PASS Labels for: gbk 
+PASS Labels for: gb18030 
+PASS Labels for: hz-gb-2312 
+FAIL Labels for: big5 assert_equals: expected "big5" but got "big5-hkscs"
+PASS Labels for: euc-jp 
+PASS Labels for: iso-2022-jp 
+PASS Labels for: shift_jis 
+PASS Labels for: euc-kr 
+PASS Labels for: iso-2022-kr 
+FAIL Labels for: replacement assert_equals: expected "replacement" but got "iso-2022-cn"
+PASS Labels for: utf-16be 
+PASS Labels for: utf-16le 
+PASS Labels for: x-user-defined 
+Harness: the test ran to completion.
 

@@ -1,28 +1,27 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<title>Encoding API: UTF encoding round trips</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/shared.js"></script>
 <script>
 
-description("Sanity check the Encoding API's handling of UTF encodings.");
-
-BATCH_SIZE = 0x1000; // Convert in batches spanning this made code points.
-SKIP_SIZE = 0x77; // For efficiency, don't test every code point.
-quiet = true; // Don't log every matching range.
+var BATCH_SIZE = 0x1000; // Convert in batches spanning this many code points.
+var SKIP_SIZE = 0x77; // For efficiency, don't test every code point.
 
 function fromCodePoint(cp) {
-    if (0xd800 <= cp && cp <= 0xdfff) throw new Error('Invalid code point');
+    if (0xD800 <= cp && cp <= 0xDFFF) throw new Error('Invalid code point');
 
-    if (cp > 0xffff) {
-        // outside BMP - encode as surrogate pair
-        return String.fromCharCode(0xd800 + ((cp >> 10) & 0x3ff), 0xdc00 + (cp & 0x3ff));
-    }
-    return String.fromCharCode(i);
+    if (cp <= 0xFFFF)
+        return String.fromCharCode(cp);
+
+    // outside BMP - encode as surrogate pair
+    return String.fromCharCode(0xD800 + ((cp >> 10) & 0x3FF), 0xDC00 + (cp & 0x3FF));
 }
 
 function makeBatch(cp) {
     var string = '';
     for (var i = cp; i < cp + BATCH_SIZE && cp < 0x10FFFF; i += SKIP_SIZE) {
-        if (0xd800 <= i && i <= 0xdfff) {
+        if (0xD800 <= i && i <= 0xDFFF) {
             // surrogate half
             continue;
         }
@@ -31,28 +30,15 @@ function makeBatch(cp) {
     return string;
  }
 
-function testEncodeDecode(encoding, min, max) {
-    debug(encoding + " - Encode/Decode Range " + cpname(min) + " - " + cpname(max));
-
-    function cpname(n) {
-        return 'U+' + ((n <= 0xFFFF) ?
-                       ('0000' + n.toString(16).toUpperCase()).slice(-4) :
-                       n.toString(16).toUpperCase());
-    }
-
-    for (i = min; i < max; i += BATCH_SIZE) {
-        string = makeBatch(i);
-        encoded = new TextEncoder(encoding).encode(string);
-        decoded = new TextDecoder(encoding).decode(encoded);
-        shouldBe("string", "decoded", quiet);
-    }
-
-    debug("no output means all ranges matched");
-    debug("");
-}
-
 utf_encodings.forEach(function(encoding) {
-    testEncodeDecode(encoding, 0, 0x10FFFF);
+    test(function() {
+        for (var i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
+            var string = makeBatch(i);
+            var encoded = new TextEncoder(encoding).encode(string);
+            var decoded = new TextDecoder(encoding).decode(encoded);
+            assert_equals(decoded, string);
+        }
+    }, encoding + ' - encode/decode round trip');
 });
 
 
@@ -60,10 +46,9 @@ utf_encodings.forEach(function(encoding) {
 // http://ecmanaut.blogspot.com/2006/07/encoding-decoding-utf8-in-javascript.html
 function encode_utf8(string) {
     var utf8 = unescape(encodeURIComponent(string));
-    var octets = [], i;
-    for (i = 0; i < utf8.length; i += 1) {
+    var octets = [];
+    for (var i = 0; i < utf8.length; i += 1)
         octets.push(utf8.charCodeAt(i));
-    }
     return octets;
 }
 
@@ -72,25 +57,23 @@ function decode_utf8(octets) {
     return decodeURIComponent(escape(utf8));
 }
 
-debug("UTF-8 encoding (compare against unescape/encodeURIComponent)");
-for (i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
-    str = makeBatch(i);
-    expected = encode_utf8(str);
-    actual = new TextEncoder('UTF-8').encode(str);
-    shouldBe("actual", "expected", quiet);
-}
-debug("no output means all ranges matched");
-debug("");
+test(function() {
+    for (var i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
+        var string = makeBatch(i);
+        var expected = encode_utf8(string);
+        var actual = new TextEncoder('UTF-8').encode(string);
+        assert_array_equals(actual, expected);
+    }
+}, 'UTF-8 encoding (compare against unescape/encodeURIComponent)');
 
-debug("UTF-8 decoding (compare against decodeURIComponent/escape)");
-for (i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
-    str = makeBatch(i);
-    encoded = encode_utf8(str);
-    expected = decode_utf8(encoded);
-    actual = new TextDecoder('UTF-8').decode(new Uint8Array(encoded));
-    shouldBe("actual", "expected", quiet);
-}
-debug("no output means all ranges matched");
-debug("");
+test(function() {
+    for (var i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
+        var string = makeBatch(i);
+        var encoded = encode_utf8(string);
+        var expected = decode_utf8(encoded);
+        var actual = new TextDecoder('UTF-8').decode(new Uint8Array(encoded));
+        assert_equals(actual, expected);
+    }
+}, 'UTF-8 decoding (compare against decodeURIComponent/escape)');
 
 </script>

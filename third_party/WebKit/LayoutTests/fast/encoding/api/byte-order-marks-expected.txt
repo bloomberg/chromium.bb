@@ -1,21 +1,6 @@
-Test the Encoding API's handling of byte-order marks (BOMs).
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS new TextDecoder('utf-8').decode(new Uint8Array(utf8)) is "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16le').decode(new Uint8Array(utf16le)) is "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16be').decode(new Uint8Array(utf16be)) is "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-8').decode(new Uint8Array(utf8_bom.concat(utf8))) is "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16le').decode(new Uint8Array(utf16le_bom.concat(utf16le))) is "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16be').decode(new Uint8Array(utf16be_bom.concat(utf16be))) is "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-8').decode(new Uint8Array(utf16le_bom.concat(utf8))) is not "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-8').decode(new Uint8Array(utf16be_bom.concat(utf8))) is not "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16le').decode(new Uint8Array(utf8_bom.concat(utf16le))) is not "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16le').decode(new Uint8Array(utf16be_bom.concat(utf16le))) is not "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16be').decode(new Uint8Array(utf8_bom.concat(utf16be))) is not "z¢水𝄞􏿽"
-PASS new TextDecoder('utf-16be').decode(new Uint8Array(utf16le_bom.concat(utf16be))) is not "z¢水𝄞􏿽"
-PASS successfullyParsed is true
-
-TEST COMPLETE
+This is a testharness.js-based test.
+PASS Byte-order marks: utf-8 
+PASS Byte-order marks: utf-16le 
+PASS Byte-order marks: utf-16be 
+Harness: the test ran to completion.
 
