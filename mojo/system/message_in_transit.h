@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/embedder/platform_handle.h"
 #include "mojo/system/dispatcher.h"
@@ -178,11 +179,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   void DeserializeDispatchers(Channel* channel);
 
   // Gets the main buffer and its size (in number of bytes), respectively.
-  const void* main_buffer() const { return main_buffer_; }
+  const void* main_buffer() const { return main_buffer_.get(); }
   size_t main_buffer_size() const { return main_buffer_size_; }
 
   // Gets the secondary buffer and its size (in number of bytes), respectively.
-  const void* secondary_buffer() const { return secondary_buffer_; }
+  const void* secondary_buffer() const { return secondary_buffer_.get(); }
   size_t secondary_buffer_size() const { return secondary_buffer_size_; }
 
   // Gets the total size of the message (see comment in |Header|, below).
@@ -192,10 +193,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   uint32_t num_bytes() const { return header()->num_bytes; }
 
   // Gets the message data (of size |num_bytes()| bytes).
-  const void* bytes() const {
-    return static_cast<const char*>(main_buffer_) + sizeof(Header);
-  }
-  void* bytes() { return static_cast<char*>(main_buffer_) + sizeof(Header); }
+  const void* bytes() const { return main_buffer_.get() + sizeof(Header); }
+  void* bytes() { return main_buffer_.get() + sizeof(Header); }
 
   uint32_t num_handles() const { return header()->num_handles; }
 
@@ -281,17 +280,17 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
                                              size_t secondary_buffer_size);
 
   const Header* header() const {
-    return static_cast<const Header*>(main_buffer_);
+    return reinterpret_cast<const Header*>(main_buffer_.get());
   }
-  Header* header() { return static_cast<Header*>(main_buffer_); }
+  Header* header() { return reinterpret_cast<Header*>(main_buffer_.get()); }
 
   void UpdateTotalSize();
 
-  size_t main_buffer_size_;
-  void* main_buffer_;
+  const size_t main_buffer_size_;
+  const scoped_ptr<char, base::AlignedFreeDeleter> main_buffer_;  // Never null.
 
   size_t secondary_buffer_size_;
-  void* secondary_buffer_;  // May be null.
+  scoped_ptr<char, base::AlignedFreeDeleter> secondary_buffer_;  // May be null.
 
   // Any dispatchers that may be attached to this message. These dispatchers
   // should be "owned" by this message, i.e., have a ref count of exactly 1. (We

@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/aligned_memory.h"
 #include "mojo/system/constants.h"
 
 namespace mojo {
@@ -106,9 +105,9 @@ MessageInTransit::MessageInTransit(Type type,
                                    uint32_t num_handles,
                                    const void* bytes)
     : main_buffer_size_(RoundUpMessageAlignment(sizeof(Header) + num_bytes)),
-      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)),
-      secondary_buffer_size_(0),
-      secondary_buffer_(NULL) {
+      main_buffer_(static_cast<char*>(base::AlignedAlloc(main_buffer_size_,
+                                                         kMessageAlignment))),
+      secondary_buffer_size_(0) {
   DCHECK_LE(num_bytes, kMaxMessageNumBytes);
   DCHECK_LE(num_handles, kMaxMessageNumHandles);
 
@@ -136,16 +135,18 @@ MessageInTransit::MessageInTransit(Type type,
 // I just create (deserialize) the dispatchers right away?
 MessageInTransit::MessageInTransit(const View& message_view)
     : main_buffer_size_(message_view.main_buffer_size()),
-      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)),
+      main_buffer_(static_cast<char*>(base::AlignedAlloc(main_buffer_size_,
+                                                         kMessageAlignment))),
       secondary_buffer_size_(message_view.secondary_buffer_size()),
       secondary_buffer_(secondary_buffer_size_ ?
-                            base::AlignedAlloc(secondary_buffer_size_,
-                                               kMessageAlignment) : NULL) {
+                            static_cast<char*>(
+                                base::AlignedAlloc(secondary_buffer_size_,
+                                                   kMessageAlignment)) : NULL) {
   DCHECK_GE(main_buffer_size_, sizeof(Header));
   DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
 
-  memcpy(main_buffer_, message_view.main_buffer(), main_buffer_size_);
-  memcpy(secondary_buffer_, message_view.secondary_buffer(),
+  memcpy(main_buffer_.get(), message_view.main_buffer(), main_buffer_size_);
+  memcpy(secondary_buffer_.get(), message_view.secondary_buffer(),
          secondary_buffer_size_);
 
   DCHECK_EQ(main_buffer_size_,
@@ -153,9 +154,6 @@ MessageInTransit::MessageInTransit(const View& message_view)
 }
 
 MessageInTransit::~MessageInTransit() {
-  base::AlignedFree(main_buffer_);
-  base::AlignedFree(secondary_buffer_);  // Okay if null.
-
   if (dispatchers_) {
     for (size_t i = 0; i < dispatchers_->size(); i++) {
       if (!(*dispatchers_)[i])
@@ -172,10 +170,7 @@ MessageInTransit::~MessageInTransit() {
   }
 
 #ifndef NDEBUG
-  main_buffer_size_ = 0;
-  main_buffer_ = NULL;
   secondary_buffer_size_ = 0;
-  secondary_buffer_ = NULL;
   dispatchers_.reset();
   platform_handles_.reset();
 #endif
@@ -216,10 +211,9 @@ void MessageInTransit::SetDispatchers(
 void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   DCHECK(channel);
   DCHECK(!secondary_buffer_);
-  CHECK_EQ(num_handles(),
-           dispatchers_ ? dispatchers_->size() : static_cast<size_t>(0));
 
-  if (!num_handles())
+  const size_t num_handles = dispatchers_ ? dispatchers_->size() : 0;
+  if (!num_handles)
     return;
 
   // The offset to the start of the (Mojo) handle table.
@@ -227,15 +221,16 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   const size_t handle_table_start_offset = 0;
   // The offset to the start of the serialized dispatcher data.
   const size_t serialized_dispatcher_start_offset =
-      handle_table_start_offset + num_handles() * sizeof(HandleTableEntry);
-  // The size of the secondary buffer we'll add to this as we go along).
-  size_t size = serialized_dispatcher_start_offset;
+      handle_table_start_offset + num_handles * sizeof(HandleTableEntry);
+  // The estimated size of the secondary buffer. We compute this estimate below.
+  // It must be at least as big as the (eventual) actual size.
+  size_t estimated_size = serialized_dispatcher_start_offset;
   size_t num_platform_handles = 0;
 #if DCHECK_IS_ON
-  std::vector<size_t> all_max_sizes(num_handles());
-  std::vector<size_t> all_max_platform_handles(num_handles());
+  std::vector<size_t> all_max_sizes(num_handles);
+  std::vector<size_t> all_max_platform_handles(num_handles);
 #endif
-  for (size_t i = 0; i < num_handles(); i++) {
+  for (size_t i = 0; i < num_handles; i++) {
     if (Dispatcher* dispatcher = (*dispatchers_)[i].get()) {
       size_t max_size = 0;
       size_t max_platform_handles = 0;
@@ -243,8 +238,8 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
               dispatcher, channel, &max_size, &max_platform_handles);
 
       DCHECK_LE(max_size, kMaxSerializedDispatcherSize);
-      size += RoundUpMessageAlignment(max_size);
-      DCHECK_LE(size, kMaxSecondaryBufferSize);
+      estimated_size += RoundUpMessageAlignment(max_size);
+      DCHECK_LE(estimated_size, kMaxSecondaryBufferSize);
 
       DCHECK_LE(max_platform_handles,
                 kMaxSerializedDispatcherPlatformHandles);
@@ -258,12 +253,12 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
     }
   }
 
-  secondary_buffer_ = base::AlignedAlloc(size, kMessageAlignment);
-  secondary_buffer_size_ = static_cast<uint32_t>(size);
+  secondary_buffer_.reset(static_cast<char*>(
+      base::AlignedAlloc(estimated_size, kMessageAlignment)));
   // Entirely clear out the secondary buffer, since then we won't have to worry
   // about clearing padding or unused space (e.g., if a dispatcher fails to
   // serialize).
-  memset(secondary_buffer_, 0, size);
+  memset(secondary_buffer_.get(), 0, estimated_size);
 
   if (num_platform_handles > 0) {
     DCHECK(!platform_handles_);
@@ -271,9 +266,9 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   }
 
   HandleTableEntry* handle_table = reinterpret_cast<HandleTableEntry*>(
-      static_cast<char*>(secondary_buffer_) + handle_table_start_offset);
+      secondary_buffer_.get() + handle_table_start_offset);
   size_t current_offset = serialized_dispatcher_start_offset;
-  for (size_t i = 0; i < num_handles(); i++) {
+  for (size_t i = 0; i < num_handles; i++) {
     Dispatcher* dispatcher = (*dispatchers_)[i].get();
     if (!dispatcher) {
       COMPILE_ASSERT(Dispatcher::kTypeUnknown == 0,
@@ -286,7 +281,7 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
         platform_handles_ ? platform_handles_->size() : 0;
 #endif
 
-    void* destination = static_cast<char*>(secondary_buffer_) + current_offset;
+    void* destination = secondary_buffer_.get() + current_offset;
     size_t actual_size = 0;
     if (Dispatcher::MessageInTransitAccess::EndSerializeAndClose(
             dispatcher, channel, destination, &actual_size,
@@ -308,11 +303,19 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
     }
 
     current_offset += RoundUpMessageAlignment(actual_size);
-    DCHECK_LE(current_offset, size);
+    DCHECK_LE(current_offset, estimated_size);
     DCHECK_LE(platform_handles_ ? platform_handles_->size() : 0,
               num_platform_handles);
   }
 
+  // There's no aligned realloc, so it's no good way to release unused space (if
+  // we overshot our estimated space requirements).
+  secondary_buffer_size_ = current_offset;
+
+  // The dispatchers (which we "owned") were closed. We can dispose of them now.
+  dispatchers_.reset();
+
+  // Update the sizes in the message header.
   UpdateTotalSize();
 }
 
@@ -335,7 +338,7 @@ void MessageInTransit::DeserializeDispatchers(Channel* channel) {
   DCHECK_LE(handle_table_size, secondary_buffer_size_);
 
   const HandleTableEntry* handle_table =
-      static_cast<const HandleTableEntry*>(secondary_buffer_);
+      reinterpret_cast<const HandleTableEntry*>(secondary_buffer_.get());
   for (size_t i = 0; i < num_handles(); i++) {
     size_t offset = handle_table[i].offset;
     size_t size = handle_table[i].size;
@@ -344,7 +347,7 @@ void MessageInTransit::DeserializeDispatchers(Channel* channel) {
     DCHECK_LE(offset, secondary_buffer_size_);
     DCHECK_LE(offset + size, secondary_buffer_size_);
 
-    const void* source = static_cast<const char*>(secondary_buffer_) + offset;
+    const void* source = secondary_buffer_.get() + offset;
     (*dispatchers_)[i] = Dispatcher::MessageInTransitAccess::Deserialize(
         channel, handle_table[i].type, source, size);
   }
