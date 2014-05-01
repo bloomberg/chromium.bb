@@ -164,6 +164,8 @@ public class SQLiteCursor extends AbstractCursor {
                         case Types.NULL:
                             hasRoom = fillRow(window, null, mPos, i);
                             break;
+                        default:
+                            // Ignore an unknown type.
                     }
                     if (!hasRoom) {
                         break;

@@ -16,7 +16,6 @@ M C CST: Shouldn't use synchronized(this), please narrow down the synchronizatio
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testAutoBadPath()  At ArchiveTest.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
 M D SF: Switch statement found in org.chromium.chrome.browser.ChromeBrowserProvider.insert(Uri, ContentValues) where one case falls through to the next case  At ChromeBrowserProvider.java
-M D SF: Switch statement found in org.chromium.chrome.browser.database.SQLiteCursor.fillWindow(int, CursorWindow) where default case is missing  At SQLiteCursor.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getBooleanValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setBooleanValue(boolean) is synchronized  At JavaBridgeReturnValuesTest.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getStringValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setStringValue(String) is synchronized  At JavaBridgeReturnValuesTest.java
 M V EI2: new org.chromium.chrome.browser.FindMatchRectsDetails(int, RectF[], RectF) may expose internal representation by storing an externally mutable object into FindMatchRectsDetails.rects  At FindMatchRectsDetails.java
