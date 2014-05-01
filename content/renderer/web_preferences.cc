@@ -199,10 +199,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   settings->setThreadedHTMLParser(prefs.threaded_html_parser);
 
-  // Display visualization of what has changed on the screen using an
-  // overlay of rects, if requested on the command line.
-  settings->setShowPaintRects(prefs.show_paint_rects);
-
   // Enable gpu-accelerated compositing always.
   settings->setAcceleratedCompositingEnabled(true);
 

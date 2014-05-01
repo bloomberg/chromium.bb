@@ -106,7 +106,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool mock_scrollbars_enabled;
   bool layer_squashing_enabled;
   bool threaded_html_parser;
-  bool show_paint_rects;
   bool asynchronous_spell_checking_enabled;
   bool unified_textchecker_enabled;
   bool force_compositing_mode;

@@ -299,15 +299,6 @@ class CONTENT_EXPORT RenderWidget
   // active RenderWidgets.
   void SetSwappedOut(bool is_swapped_out);
 
-  // Paints the given rectangular region of the WebWidget into canvas (a
-  // shared memory segment returned by AllocPaintBuf on Windows). The caller
-  // must ensure that the given rect fits within the bounds of the WebWidget.
-  void PaintRect(const gfx::Rect& rect, const gfx::Point& canvas_origin,
-                 SkCanvas* canvas);
-
-  // Paints a border at the given rect for debugging purposes.
-  void PaintDebugBorder(const gfx::Rect& rect, SkCanvas* canvas);
-
   void AnimationCallback();
   void InvalidationCallback();
   void FlushPendingInputEventAck();

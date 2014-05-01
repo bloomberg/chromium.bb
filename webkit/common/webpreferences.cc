@@ -58,7 +58,6 @@ WebPreferences::WebPreferences()
       mock_scrollbars_enabled(false),
       layer_squashing_enabled(true),
       threaded_html_parser(true),
-      show_paint_rects(false),
       asynchronous_spell_checking_enabled(true),
       unified_textchecker_enabled(false),
       force_compositing_mode(true),

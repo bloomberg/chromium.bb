@@ -411,8 +411,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   if (command_line.HasSwitch(switches::kDisableLayerSquashing))
       prefs.layer_squashing_enabled = false;
 
-  prefs.show_paint_rects =
-      command_line.HasSwitch(switches::kShowPaintRects);
   prefs.accelerated_2d_canvas_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
