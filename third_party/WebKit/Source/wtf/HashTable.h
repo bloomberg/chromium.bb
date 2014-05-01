@@ -33,6 +33,40 @@
 #include "wtf/DataLog.h"
 #endif
 
+#if DUMP_HASHTABLE_STATS
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+#define UPDATE_PROBE_COUNTS()                            \
+    ++probeCount;                                        \
+    HashTableStats::recordCollisionAtCount(probeCount);  \
+    ++perTableProbeCount;                                \
+    m_stats->recordCollisionAtCount(perTableProbeCount)
+#define UPDATE_ACCESS_COUNTS()                           \
+    atomicIncrement(&HashTableStats::numAccesses);       \
+    int probeCount = 0;                                  \
+    ++m_stats->numAccesses;                              \
+    int perTableProbeCount = 0
+#else
+#define UPDATE_PROBE_COUNTS()                            \
+    ++probeCount;                                        \
+    HashTableStats::recordCollisionAtCount(probeCount)
+#define UPDATE_ACCESS_COUNTS()                           \
+    atomicIncrement(&HashTableStats::numAccesses);       \
+    int probeCount = 0
+#endif
+#else
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+#define UPDATE_PROBE_COUNTS()                            \
+    ++perTableProbeCount;                                \
+    m_stats->recordCollisionAtCount(perTableProbeCount)
+#define UPDATE_ACCESS_COUNTS()                           \
+    ++m_stats->numAccesses;                              \
+    int perTableProbeCount = 0
+#else
+#define UPDATE_PROBE_COUNTS() do { } while (0)
+#define UPDATE_ACCESS_COUNTS() do { } while (0)
+#endif
+#endif
+
 namespace WTF {
 
 #if DUMP_HASHTABLE_STATS
@@ -458,9 +492,15 @@ namespace WTF {
         static const unsigned m_maxLoad = 2;
         static const unsigned m_minLoad = 6;
 
+        unsigned tableSizeMask() const
+        {
+            size_t mask = m_tableSize - 1;
+            ASSERT((mask & m_tableSize) == 0);
+            return mask;
+        }
+
         ValueType* m_table;
         unsigned m_tableSize;
-        unsigned m_tableSizeMask;
         unsigned m_keyCount;
         unsigned m_deletedCount;
 #ifdef ASSERT_ENABLED
@@ -518,7 +558,6 @@ namespace WTF {
     inline HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::HashTable()
         : m_table(0)
         , m_tableSize(0)
-        , m_tableSizeMask(0)
         , m_keyCount(0)
         , m_deletedCount(0)
 #ifdef ASSERT_ENABLED
@@ -529,6 +568,7 @@ namespace WTF {
 #endif
     {
     }
+
 
     inline unsigned doubleHash(unsigned key)
     {
@@ -556,24 +596,15 @@ namespace WTF {
             return 0;
 
         size_t k = 0;
-        size_t sizeMask = m_tableSizeMask;
+        size_t sizeMask = tableSizeMask();
         unsigned h = HashTranslator::hash(key);
         size_t i = h & sizeMask;
 
-#if DUMP_HASHTABLE_STATS
-        atomicIncrement(&HashTableStats::numAccesses);
-        int probeCount = 0;
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-        ++m_stats->numAccesses;
-        int perTableProbeCount = 0;
-#endif
+        UPDATE_ACCESS_COUNTS();
 
         while (1) {
             const ValueType* entry = table + i;
 
-            // we count on the compiler to optimize out this branch
             if (HashFunctions::safeToCompareToEmptyOrDeleted) {
                 if (HashTranslator::equal(Extractor::extract(*entry), key))
                     return entry;
@@ -587,16 +618,7 @@ namespace WTF {
                 if (!isDeletedBucket(*entry) && HashTranslator::equal(Extractor::extract(*entry), key))
                     return entry;
             }
-#if DUMP_HASHTABLE_STATS
-            ++probeCount;
-            HashTableStats::recordCollisionAtCount(probeCount);
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-            ++perTableProbeCount;
-            m_stats->recordCollisionAtCount(perTableProbeCount);
-#endif
-
+            UPDATE_PROBE_COUNTS();
             if (!k)
                 k = 1 | doubleHash(h);
             i = (i + k) & sizeMask;
@@ -610,56 +632,35 @@ namespace WTF {
         ASSERT(m_table);
         registerModification();
 
-        size_t k = 0;
         ValueType* table = m_table;
-        size_t sizeMask = m_tableSizeMask;
+        size_t k = 0;
+        size_t sizeMask = tableSizeMask();
         unsigned h = HashTranslator::hash(key);
         size_t i = h & sizeMask;
 
-#if DUMP_HASHTABLE_STATS
-        atomicIncrement(&HashTableStats::numAccesses);
-        int probeCount = 0;
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-        ++m_stats->numAccesses;
-        int perTableProbeCount = 0;
-#endif
+        UPDATE_ACCESS_COUNTS();
 
         ValueType* deletedEntry = 0;
 
         while (1) {
             ValueType* entry = table + i;
 
-            // we count on the compiler to optimize out this branch
-            if (HashFunctions::safeToCompareToEmptyOrDeleted) {
-                if (isEmptyBucket(*entry))
-                    return LookupType(deletedEntry ? deletedEntry : entry, false);
+            if (isEmptyBucket(*entry))
+                return LookupType(deletedEntry ? deletedEntry : entry, false);
 
+            if (HashFunctions::safeToCompareToEmptyOrDeleted) {
                 if (HashTranslator::equal(Extractor::extract(*entry), key))
                     return LookupType(entry, true);
 
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
             } else {
-                if (isEmptyBucket(*entry))
-                    return LookupType(deletedEntry ? deletedEntry : entry, false);
-
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
                 else if (HashTranslator::equal(Extractor::extract(*entry), key))
                     return LookupType(entry, true);
             }
-#if DUMP_HASHTABLE_STATS
-            ++probeCount;
-            HashTableStats::recordCollisionAtCount(probeCount);
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-            ++perTableProbeCount;
-            m_stats->recordCollisionAtCount(perTableProbeCount);
-#endif
-
+            UPDATE_PROBE_COUNTS();
             if (!k)
                 k = 1 | doubleHash(h);
             i = (i + k) & sizeMask;
@@ -673,56 +674,35 @@ namespace WTF {
         ASSERT(m_table);
         registerModification();
 
-        size_t k = 0;
         ValueType* table = m_table;
-        size_t sizeMask = m_tableSizeMask;
+        size_t k = 0;
+        size_t sizeMask = tableSizeMask();
         unsigned h = HashTranslator::hash(key);
         size_t i = h & sizeMask;
 
-#if DUMP_HASHTABLE_STATS
-        atomicIncrement(&HashTableStats::numAccesses);
-        int probeCount = 0;
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-        ++m_stats->numAccesses;
-        int perTableProbeCount = 0;
-#endif
+        UPDATE_ACCESS_COUNTS();
 
         ValueType* deletedEntry = 0;
 
         while (1) {
             ValueType* entry = table + i;
 
-            // we count on the compiler to optimize out this branch
-            if (HashFunctions::safeToCompareToEmptyOrDeleted) {
-                if (isEmptyBucket(*entry))
-                    return makeLookupResult(deletedEntry ? deletedEntry : entry, false, h);
+            if (isEmptyBucket(*entry))
+                return makeLookupResult(deletedEntry ? deletedEntry : entry, false, h);
 
+            if (HashFunctions::safeToCompareToEmptyOrDeleted) {
                 if (HashTranslator::equal(Extractor::extract(*entry), key))
                     return makeLookupResult(entry, true, h);
 
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
             } else {
-                if (isEmptyBucket(*entry))
-                    return makeLookupResult(deletedEntry ? deletedEntry : entry, false, h);
-
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
                 else if (HashTranslator::equal(Extractor::extract(*entry), key))
                     return makeLookupResult(entry, true, h);
             }
-#if DUMP_HASHTABLE_STATS
-            ++probeCount;
-            HashTableStats::recordCollisionAtCount(probeCount);
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-            ++perTableProbeCount;
-            m_stats->recordCollisionAtCount(perTableProbeCount);
-#endif
-
+            UPDATE_PROBE_COUNTS();
             if (!k)
                 k = 1 | doubleHash(h);
             i = (i + k) & sizeMask;
@@ -763,56 +743,35 @@ namespace WTF {
 
         ASSERT(m_table);
 
-        size_t k = 0;
         ValueType* table = m_table;
-        size_t sizeMask = m_tableSizeMask;
+        size_t k = 0;
+        size_t sizeMask = tableSizeMask();
         unsigned h = HashTranslator::hash(key);
         size_t i = h & sizeMask;
 
-#if DUMP_HASHTABLE_STATS
-        atomicIncrement(&HashTableStats::numAccesses);
-        int probeCount = 0;
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-        ++m_stats->numAccesses;
-        int perTableProbeCount = 0;
-#endif
+        UPDATE_ACCESS_COUNTS();
 
         ValueType* deletedEntry = 0;
         ValueType* entry;
         while (1) {
             entry = table + i;
 
-            // we count on the compiler to optimize out this branch
-            if (HashFunctions::safeToCompareToEmptyOrDeleted) {
-                if (isEmptyBucket(*entry))
-                    break;
+            if (isEmptyBucket(*entry))
+                break;
 
+            if (HashFunctions::safeToCompareToEmptyOrDeleted) {
                 if (HashTranslator::equal(Extractor::extract(*entry), key))
                     return AddResult(this, entry, false);
 
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
             } else {
-                if (isEmptyBucket(*entry))
-                    break;
-
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
                 else if (HashTranslator::equal(Extractor::extract(*entry), key))
                     return AddResult(this, entry, false);
             }
-#if DUMP_HASHTABLE_STATS
-            ++probeCount;
-            HashTableStats::recordCollisionAtCount(probeCount);
-#endif
-
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-            ++perTableProbeCount;
-            m_stats->recordCollisionAtCount(perTableProbeCount);
-#endif
-
+            UPDATE_PROBE_COUNTS();
             if (!k)
                 k = 1 | doubleHash(h);
             i = (i + k) & sizeMask;
@@ -1034,7 +993,6 @@ namespace WTF {
 
         m_table = allocateTable(newTableSize);
         m_tableSize = newTableSize;
-        m_tableSizeMask = newTableSize - 1;
 
         Value* newEntry = 0;
         for (unsigned i = 0; i != oldTableSize; ++i) {
@@ -1067,7 +1025,6 @@ namespace WTF {
         deleteAllBucketsAndDeallocate(m_table, m_tableSize);
         m_table = 0;
         m_tableSize = 0;
-        m_tableSizeMask = 0;
         m_keyCount = 0;
     }
 
@@ -1075,7 +1032,6 @@ namespace WTF {
     HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::HashTable(const HashTable& other)
         : m_table(0)
         , m_tableSize(0)
-        , m_tableSizeMask(0)
         , m_keyCount(0)
         , m_deletedCount(0)
 #ifdef ASSERT_ENABLED
@@ -1097,7 +1053,6 @@ namespace WTF {
     {
         std::swap(m_table, other.m_table);
         std::swap(m_tableSize, other.m_tableSize);
-        std::swap(m_tableSizeMask, other.m_tableSizeMask);
         std::swap(m_keyCount, other.m_keyCount);
         std::swap(m_deletedCount, other.m_deletedCount);
 
