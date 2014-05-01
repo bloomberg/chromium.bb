@@ -10,8 +10,6 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/gpu_rasterization_settings.h"
-#include "cc/test/hybrid_rasterization_settings.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -84,12 +82,13 @@ TEST(PictureLayerTest, ForcedCpuRaster) {
   EXPECT_FALSE(layer->ShouldUseGpuRasterization());
 }
 
-TEST(PictureLayerTest, ForcedGpuRaster) {
+TEST(PictureLayerTest, ForceGpuRaster) {
   MockContentLayerClient client;
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
 
-  scoped_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(GpuRasterizationSettings());
+  LayerTreeSettings settings;
+  settings.gpu_rasterization_forced = true;
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(settings);
   host->SetRootLayer(layer);
 
   // The default value is true.
@@ -106,12 +105,13 @@ TEST(PictureLayerTest, ForcedGpuRaster) {
   EXPECT_TRUE(layer->ShouldUseGpuRasterization());
 }
 
-TEST(PictureLayerTest, HybridRaster) {
+TEST(PictureLayerTest, EnableGpuRaster) {
   MockContentLayerClient client;
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
 
-  scoped_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(HybridRasterizationSettings());
+  LayerTreeSettings settings;
+  settings.gpu_rasterization_enabled = true;
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(settings);
   host->SetRootLayer(layer);
 
   // The default value is false.
@@ -134,8 +134,9 @@ TEST(PictureLayerTest, VetoGpuRaster) {
   MockContentLayerClient client;
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
 
-  scoped_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(HybridRasterizationSettings());
+  LayerTreeSettings settings;
+  settings.gpu_rasterization_enabled = true;
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(settings);
   host->SetRootLayer(layer);
 
   EXPECT_FALSE(layer->ShouldUseGpuRasterization());

@@ -4963,11 +4963,11 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources);
 
-class LayerTreeHostTestHybridRasterizationSetting : public LayerTreeHostTest {
+class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
  protected:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->impl_side_painting = true;
-    settings->rasterization_site = LayerTreeSettings::HybridRasterization;
+    settings->gpu_rasterization_enabled = true;
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -5014,13 +5014,13 @@ class LayerTreeHostTestHybridRasterizationSetting : public LayerTreeHostTest {
   FakeContentLayerClient client_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestHybridRasterizationSetting);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
 
-class LayerTreeHostTestGpuRasterizationSetting : public LayerTreeHostTest {
+class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
  protected:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->impl_side_painting = true;
-    settings->rasterization_site = LayerTreeSettings::GpuRasterization;
+    settings->gpu_rasterization_forced = true;
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -5047,7 +5047,7 @@ class LayerTreeHostTestGpuRasterizationSetting : public LayerTreeHostTest {
         static_cast<PictureLayerImpl*>(parent->children()[0]);
 
     // All layers should use GPU rasterization, regardless of whether a GPU
-    // rasterization hint has been set.
+    // rasterization trigger has been set.
     EXPECT_TRUE(parent->ShouldUseGpuRasterization());
     EXPECT_TRUE(child->ShouldUseGpuRasterization());
   }
@@ -5060,7 +5060,7 @@ class LayerTreeHostTestGpuRasterizationSetting : public LayerTreeHostTest {
         static_cast<PictureLayerImpl*>(parent->children()[0]);
 
     // All layers should use GPU rasterization, regardless of whether a GPU
-    // rasterization hint has been set.
+    // rasterization trigger has been set.
     EXPECT_TRUE(parent->ShouldUseGpuRasterization());
     EXPECT_TRUE(child->ShouldUseGpuRasterization());
     EndTest();
@@ -5071,7 +5071,7 @@ class LayerTreeHostTestGpuRasterizationSetting : public LayerTreeHostTest {
   FakeContentLayerClient client_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationSetting);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationForced);
 
 class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
  public:

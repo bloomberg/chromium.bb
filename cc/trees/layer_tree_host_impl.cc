@@ -1769,7 +1769,7 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   // rasterization per layer, we also need to disable pre-painting selectively:
   // crbug.com/335387
   if (debug_state_.rasterize_only_visible_content ||
-      settings_.rasterization_site == LayerTreeSettings::GpuRasterization) {
+      settings_.gpu_rasterization_forced) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
   }

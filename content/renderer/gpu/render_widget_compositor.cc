@@ -140,12 +140,10 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   if (render_thread) {
     settings.impl_side_painting =
         render_thread->is_impl_side_painting_enabled();
-    if (render_thread->is_gpu_rasterization_forced())
-      settings.rasterization_site = cc::LayerTreeSettings::GpuRasterization;
-    else if (render_thread->is_gpu_rasterization_enabled())
-      settings.rasterization_site = cc::LayerTreeSettings::HybridRasterization;
-    else
-      settings.rasterization_site = cc::LayerTreeSettings::CpuRasterization;
+    settings.gpu_rasterization_forced =
+        render_thread->is_gpu_rasterization_forced();
+    settings.gpu_rasterization_enabled =
+        render_thread->is_gpu_rasterization_enabled();
     settings.create_low_res_tiling = render_thread->is_low_res_tiling_enabled();
     settings.can_use_lcd_text = render_thread->is_lcd_text_enabled();
     settings.use_zero_copy = render_thread->is_zero_copy_enabled();

@@ -143,17 +143,14 @@ void PictureLayer::SetIsMask(bool is_mask) {
 }
 
 bool PictureLayer::ShouldUseGpuRasterization() const {
-  switch (layer_tree_host()->settings().rasterization_site) {
-    case LayerTreeSettings::CpuRasterization:
-      return false;
-    case LayerTreeSettings::HybridRasterization:
-      return layer_tree_host()->has_gpu_rasterization_trigger() &&
-             pile_->is_suitable_for_gpu_rasterization();
-    case LayerTreeSettings::GpuRasterization:
-      return true;
+  if (layer_tree_host()->settings().gpu_rasterization_forced) {
+    return true;
+  } else if (layer_tree_host()->settings().gpu_rasterization_enabled) {
+    return layer_tree_host()->has_gpu_rasterization_trigger() &&
+           pile_->is_suitable_for_gpu_rasterization();
+  } else {
+    return false;
   }
-  NOTREACHED();
-  return false;
 }
 
 bool PictureLayer::SupportsLCDText() const {

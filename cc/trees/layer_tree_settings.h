@@ -31,12 +31,8 @@ class CC_EXPORT LayerTreeSettings {
   bool accelerated_animation_enabled;
   bool can_use_lcd_text;
   bool should_clear_root_render_pass;
-  enum RasterizationSite {
-    CpuRasterization,
-    HybridRasterization,
-    GpuRasterization,
-  };
-  RasterizationSite rasterization_site;
+  bool gpu_rasterization_enabled;
+  bool gpu_rasterization_forced;
   bool create_low_res_tiling;
 
   enum ScrollbarAnimator {

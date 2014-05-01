@@ -5767,8 +5767,8 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
       gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
 
   // GPU rasterization should be disabled by default.
-  EXPECT_EQ(LayerTreeSettings::CpuRasterization,
-            host_impl_->settings().rasterization_site);
+  EXPECT_FALSE(host_impl_->settings().gpu_rasterization_enabled);
+  EXPECT_FALSE(host_impl_->settings().gpu_rasterization_forced);
 
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);
@@ -5786,7 +5786,7 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   // Now enable GPU rasterization and test if we get required only cutoff,
   // when visible.
   LayerTreeSettings settings;
-  settings.rasterization_site = LayerTreeSettings::GpuRasterization;
+  settings.gpu_rasterization_forced = true;
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &proxy_, &stats_instrumentation_, NULL, 0);
 
