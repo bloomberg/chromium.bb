@@ -8,16 +8,12 @@
 
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
-#include "content/browser/renderer_host/sandbox_ipc_linux.h"
 
 namespace content {
 
 // Runs on the main thread at startup.
 RenderSandboxHostLinux::RenderSandboxHostLinux()
-    : initialized_(false),
-      renderer_socket_(0),
-      childs_lifeline_fd_(0),
-      pid_(0) {
+    : initialized_(false), renderer_socket_(0) {
 }
 
 // static
@@ -48,34 +44,18 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
   // Instead, it replies on a temporary socket provided by the caller.
   PCHECK(0 == shutdown(browser_socket, SHUT_WR)) << "shutdown";
 
-  int pipefds[2];
-  CHECK(0 == pipe(pipefds));
-  const int child_lifeline_fd = pipefds[0];
-  childs_lifeline_fd_ = pipefds[1];
-
-  // We need to be monothreaded before we fork().
-#if !defined(THREAD_SANITIZER)
-  DCHECK_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
-#endif  // !defined(THREAD_SANITIZER)
-  pid_ = fork();
-  if (pid_ == 0) {
-    if (IGNORE_EINTR(close(fds[0])) < 0)
-      DPLOG(ERROR) << "close";
-    if (IGNORE_EINTR(close(pipefds[1])) < 0)
-      DPLOG(ERROR) << "close";
-
-    SandboxIPCProcess handler(child_lifeline_fd, browser_socket, sandbox_path);
-    handler.Run();
-    _exit(0);
-  }
+  ipc_handler_.reset(new SandboxIPCHandler(browser_socket, sandbox_path));
+  ipc_thread_.reset(
+      new base::DelegateSimpleThread(ipc_handler_.get(), "sandbox_ipc_thread"));
+  ipc_thread_->Start();
 }
 
 RenderSandboxHostLinux::~RenderSandboxHostLinux() {
   if (initialized_) {
     if (IGNORE_EINTR(close(renderer_socket_)) < 0)
       PLOG(ERROR) << "close";
-    if (IGNORE_EINTR(close(childs_lifeline_fd_)) < 0)
-      PLOG(ERROR) << "close";
+
+    ipc_thread_->Join();
   }
 }
 
