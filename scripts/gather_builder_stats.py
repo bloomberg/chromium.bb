@@ -128,7 +128,7 @@ class SpreadsheetMasterTable(StatsTable):
   """Stats table for master builder that puts results in a spreadsheet."""
   # Bump this number whenever this class adds new data columns, or changes
   # the values of existing data columns.
-  SHEETS_VERSION = 1
+  SHEETS_VERSION = 2
 
   # These must match up with the column names on the spreadsheet.
   COL_BUILD_NUMBER = 'build number'
@@ -140,6 +140,7 @@ class SpreadsheetMasterTable(StatsTable):
   COL_CHROMEOS_VERSION = 'chromeos version'
   COL_CHROME_VERSION = 'chrome version'
   COL_FAILED_STAGES = 'failed stages'
+  COL_FAILURE_MESSAGE = 'failure message'
 
   # It is required that the ID_COL be an integer value.
   ID_COL = COL_BUILD_NUMBER
@@ -154,6 +155,7 @@ class SpreadsheetMasterTable(StatsTable):
      COL_CHROMEOS_VERSION,
      COL_CHROME_VERSION,
      COL_FAILED_STAGES,
+     COL_FAILURE_MESSAGE,
   )
 
   def __init__(self, target, waterfall, columns=None):
@@ -227,6 +229,7 @@ class SpreadsheetMasterTable(StatsTable):
         self.COL_CHROMEOS_VERSION: build_data.chromeos_version,
         self.COL_CHROME_VERSION: build_data.chrome_version,
         self.COL_FAILED_STAGES: ' '.join(build_data.GetFailedStages()),
+        self.COL_FAILURE_MESSAGE: build_data.failure_message,
     }
 
     slaves = build_data.slaves
@@ -282,7 +285,7 @@ class PFQMasterTable(SpreadsheetMasterTable):
 
   # Bump this number whenever this class adds new data columns, or changes
   # the values of existing data columns.
-  SHEETS_VERSION = 1
+  SHEETS_VERSION = SpreadsheetMasterTable.SHEETS_VERSION + 1
 
   # These columns are in addition to those inherited from
   # SpreadsheetMasterTable
@@ -303,7 +306,7 @@ class CQMasterTable(SpreadsheetMasterTable):
 
   # Bump this number whenever this class adds new data columns, or changes
   # the values of existing data columns.
-  SHEETS_VERSION = 1
+  SHEETS_VERSION = SpreadsheetMasterTable.SHEETS_VERSION + 1
 
   COL_CL_COUNT = 'cl count'
 

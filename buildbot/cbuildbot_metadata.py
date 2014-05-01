@@ -290,6 +290,7 @@ class BuildData(object):
   epoch_time_seconds
   count_changes
   run_date
+  failure_message
   """
 
   __slots__ = (
@@ -449,7 +450,7 @@ class BuildData(object):
 
   @property
   def slaves(self):
-    return self.get('slave_targets', [])
+    return self.get('slave_targets', {})
 
   @property
   def chromeos_version(self):
@@ -506,6 +507,20 @@ class BuildData(object):
   @property
   def finish_datetime_str(self):
     return self.finish_datetime.strftime(NICE_DATETIME_FORMAT)
+
+  @property
+  def failure_message(self):
+    mapping = {}
+    # Dedup the messages from the slaves.
+    for slave in self.GetFailedSlaves():
+      message = self.slaves[slave]['message']
+      mapping[message] = mapping.get(message, []) + [slave]
+
+    message_list = []
+    for message, slaves in mapping.iteritems():
+      message_list.append('%s: %s' % (','.join(slaves), message))
+
+    return ' | '.join(message_list)
 
   def GetChangelistsStr(self):
     cl_strs = []
