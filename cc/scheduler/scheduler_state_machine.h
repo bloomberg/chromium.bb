@@ -270,7 +270,6 @@ class CC_EXPORT SchedulerStateMachine {
 
   void AdvanceCurrentFrameNumber();
   bool HasSentBeginMainFrameThisFrame() const;
-  bool HasScheduledManageTilesThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
   bool HasSwappedThisFrame() const;
 
@@ -316,7 +315,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool has_pending_tree_;
   bool pending_tree_is_ready_for_activation_;
   bool active_tree_needs_first_draw_;
-  bool draw_if_possible_failed_;
   bool did_create_and_initialize_first_output_surface_;
   bool smoothness_takes_priority_;
   bool skip_next_begin_main_frame_to_reduce_latency_;

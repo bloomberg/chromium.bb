@@ -42,7 +42,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       has_pending_tree_(false),
       pending_tree_is_ready_for_activation_(false),
       active_tree_needs_first_draw_(false),
-      draw_if_possible_failed_(false),
       did_create_and_initialize_first_output_surface_(false),
       smoothness_takes_priority_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
@@ -251,7 +250,6 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
                           pending_tree_is_ready_for_activation_);
   minor_state->SetBoolean("active_tree_needs_first_draw",
                           active_tree_needs_first_draw_);
-  minor_state->SetBoolean("draw_if_possible_failed", draw_if_possible_failed_);
   minor_state->SetBoolean("did_create_and_initialize_first_output_surface",
                           did_create_and_initialize_first_output_surface_);
   minor_state->SetBoolean("smoothness_takes_priority",
@@ -727,9 +725,6 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
   // This post-commit work is common to both completed and aborted commits.
   pending_tree_is_ready_for_activation_ = false;
 
-  if (draw_if_possible_failed_)
-    last_frame_number_swap_performed_ = -1;
-
   if (continuous_painting_)
     needs_commit_ = true;
 }
@@ -793,7 +788,6 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
     commit_state_ = COMMIT_STATE_IDLE;
 
   needs_redraw_ = false;
-  draw_if_possible_failed_ = false;
   active_tree_needs_first_draw_ = false;
 
   if (did_request_swap)
