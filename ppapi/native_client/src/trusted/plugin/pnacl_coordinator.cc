@@ -58,16 +58,14 @@ class PnaclManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          PP_PNaClOptions* pnacl_options,
-                          ErrorInfo* error_info) const {
+                          PP_PNaClOptions* pnacl_options) const {
     // All of the component files are native (do not require pnacl translate).
     pnacl_options->translate = PP_FALSE;
     // We can only resolve keys in the files/ namespace.
     const nacl::string kFilesPrefix = "files/";
     size_t files_prefix_pos = key.find(kFilesPrefix);
     if (files_prefix_pos == nacl::string::npos) {
-      error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-                            "key did not start with files/");
+      PLUGIN_PRINTF(("key did not start with files/"));
       return false;
     }
     // Resolve the full URL to the file. Provide it with a platform-specific

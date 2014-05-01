@@ -515,8 +515,9 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
 
   // When the application actually requests a resolved URL, we must have
   // a matching entry (sandbox_isa_ or portable) for NaCl.
+  ErrorInfo ignored_error_info;
   if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa_, true,
-                            nonsfi_enabled_, error_info)) {
+                            nonsfi_enabled_, &ignored_error_info)) {
     error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                           "architecture " + sandbox_isa_ +
                           " is not found for file " + parent_key);
@@ -567,22 +568,25 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
 bool JsonManifest::GetKeyUrl(const Json::Value& dictionary,
                              const nacl::string& key,
                              nacl::string* full_url,
-                             PP_PNaClOptions* pnacl_options,
-                             ErrorInfo* error_info) const {
-  DCHECK(full_url != NULL && pnacl_options != NULL && error_info != NULL);
+                             PP_PNaClOptions* pnacl_options) const {
+  DCHECK(full_url != NULL && pnacl_options != NULL);
   if (!dictionary.isMember(key)) {
-    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-                          "file key not found in manifest");
+    PLUGIN_PRINTF(("file key not found in manifest"));
     return false;
   }
   const Json::Value& isa_dict = dictionary[key];
   nacl::string relative_url;
   bool uses_nonsfi_mode;
+
+  // We ignore the error_info we receive here but it's needed for the calls
+  // below.
+  ErrorInfo error_info;
+
   if (!GetURLFromISADictionary(isa_dict, key, &relative_url,
-                               pnacl_options, &uses_nonsfi_mode, error_info)) {
+                               pnacl_options, &uses_nonsfi_mode, &error_info)) {
     return false;
   }
-  return ResolveURL(relative_url, full_url, error_info);
+  return ResolveURL(relative_url, full_url, &error_info);
 }
 
 bool JsonManifest::GetProgramURL(nacl::string* full_url,
@@ -593,10 +597,7 @@ bool JsonManifest::GetProgramURL(nacl::string* full_url,
     return false;
 
   const Json::Value& program = dictionary_[kProgramKey];
-
   nacl::string nexe_url;
-  nacl::string error_string;
-
   if (!GetURLFromISADictionary(program,
                                kProgramKey,
                                &nexe_url,
@@ -605,37 +606,32 @@ bool JsonManifest::GetProgramURL(nacl::string* full_url,
                                error_info)) {
     return false;
   }
-
   return ResolveURL(nexe_url, full_url, error_info);
 }
 
 bool JsonManifest::ResolveKey(const nacl::string& key,
                               nacl::string* full_url,
-                              PP_PNaClOptions* pnacl_options,
-                              ErrorInfo* error_info) const {
+                              PP_PNaClOptions* pnacl_options) const {
   NaClLog(3, "JsonManifest::ResolveKey(%s)\n", key.c_str());
   // key must be one of kProgramKey or kFileKey '/' file-section-key
 
-  if (full_url == NULL || pnacl_options == NULL || error_info == NULL)
+  if (full_url == NULL || pnacl_options == NULL)
     return false;
 
-  if (key == kProgramKey) {
-    return GetKeyUrl(dictionary_, key, full_url, pnacl_options, error_info);
-  }
+  if (key == kProgramKey)
+    return GetKeyUrl(dictionary_, key, full_url, pnacl_options);
   nacl::string::const_iterator p = find(key.begin(), key.end(), '/');
   if (p == key.end()) {
-    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-                          nacl::string("ResolveKey: invalid key, no slash: ")
-                          + key);
+    std::string err = "ResolveKey: invalid key, no slash: " + key;
+    PLUGIN_PRINTF((err.c_str()));
     return false;
   }
 
   // generalize to permit other sections?
   nacl::string prefix(key.begin(), p);
   if (prefix != kFilesKey) {
-    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-                          nacl::string("ResolveKey: invalid key: not \"files\""
-                                       " prefix: ") + key);
+    std::string err = "ResolveKey: invalid key: no \"files\" prefix: " + key;
+    PLUGIN_PRINTF((err.c_str()));
     return false;
   }
 
@@ -643,18 +639,16 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
 
   const Json::Value& files = dictionary_[kFilesKey];
   if (!files.isObject()) {
-    error_info->SetReport(
-        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-        nacl::string("ResolveKey: no \"files\" dictionary"));
+    std::string err = "ResolveKey: no \"files\" dictionary";
+    PLUGIN_PRINTF((err.c_str()));
     return false;
   }
   if (!files.isMember(rest)) {
-    error_info->SetReport(
-        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-        nacl::string("ResolveKey: no such \"files\" entry: ") + key);
+    std::string err = "ResolveKey: no such \"files\" entry: " + key;
+    PLUGIN_PRINTF((err.c_str()));
     return false;
   }
-  return GetKeyUrl(files, rest, full_url, pnacl_options, error_info);
+  return GetKeyUrl(files, rest, full_url, pnacl_options);
 }
 
 bool JsonManifest::ResolveURL(const nacl::string& relative_url,

@@ -52,11 +52,9 @@ class Manifest {
   // manifest's URL.  Fills in |pnacl_options| if
   // the resolved key requires a pnacl translation step to obtain
   // the final requested resource.
-  // If there was an error, details are reported via error_info.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          PP_PNaClOptions* pnacl_options,
-                          ErrorInfo* error_info) const = 0;
+                          PP_PNaClOptions* pnacl_options) const = 0;
 
  protected:
   NACL_DISALLOW_COPY_AND_ASSIGN(Manifest);

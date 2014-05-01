@@ -57,11 +57,9 @@ class JsonManifest : public Manifest {
   // Resolves a key from the "files" section to a fully resolved URL,
   // i.e., relative URL values are fully expanded relative to the
   // manifest's URL (via ResolveURL).
-  // If there was an error, details are reported via error_info.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          PP_PNaClOptions* pnacl_options,
-                          ErrorInfo* error_info) const;
+                          PP_PNaClOptions* pnacl_options) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(JsonManifest);
@@ -79,8 +77,7 @@ class JsonManifest : public Manifest {
   bool GetKeyUrl(const Json::Value& dictionary,
                  const nacl::string& key,
                  nacl::string* full_url,
-                 PP_PNaClOptions* pnacl_options,
-                 ErrorInfo* error_info) const;
+                 PP_PNaClOptions* pnacl_options) const;
 
   bool GetURLFromISADictionary(const Json::Value& dictionary,
                                const nacl::string& parent_key,
